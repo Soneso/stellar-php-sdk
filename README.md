@@ -6,12 +6,11 @@ The Soneso open source Stellar SDK for PHP will provide APIs to build and sign t
 
 ## Roadmap
 
-• Step 1 (Q2 & Q3 2021): Implement Core Functionalty
+#### Okt 2021 – March 2022
+Implementation of the Core Functionalty including SEP-029
 
-• Step 2 (Q1 2022): Implementation of SEP-001, SEP-002, SEP-023, Maintanance
+#### April – August 2022
+Implementation of SEP-001, SEP-002, SEP-023, SEP-005, SEP-010, SEP-007, SEP-009, SEP-006, SEP-012, SEP-011
 
-• Step 3 (Q2 2022): Implementation of SEP-005, SEP-010, SEP-007, Maintanance
-
-• Step 4 (Q3 2022): Implementation of SEP-009, SEP-006, SEP-012, Maintanance
-
-• Step 5 (Q4 2022): Implementation of SEP-011, Maintanance
+#### Sept 2022 – Dec 2022
+Maintenance and continuous improvement of the sdk
