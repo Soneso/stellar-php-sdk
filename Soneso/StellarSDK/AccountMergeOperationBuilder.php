@@ -7,11 +7,19 @@
 
 namespace Soneso\StellarSDK;
 
+/**
+ * Builds AccountMerge operation.
+ * @see AccountMergeOperation
+ */
 class AccountMergeOperationBuilder
 {
     private ?MuxedAccount $sourceAccount = null;
     private MuxedAccount $destination;
 
+    /**
+     * Creates a new AccountMerge builder.
+     * @param string $destinationAccountId The account that receives the remaining XLM balance of the source account.
+     */
     public function __construct(string $destinationAccountId) {
         $this->destination = new MuxedAccount($destinationAccountId);
     }
@@ -20,14 +28,30 @@ class AccountMergeOperationBuilder
         return new AccountMergeOperationBuilder($destination->getAccountId());
     }
 
-    public function setSourceAccount(string $accountId) {
+    /**
+     * Set source account of this operation.
+     * @param string $accountId source account.
+     * @return AccountMergeOperationBuilder Builder object so you can chain methods.
+     */
+    public function setSourceAccount(string $accountId) : AccountMergeOperationBuilder {
         $this->sourceAccount = new MuxedAccount($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    /**
+     * Set muxed source account of this operation.
+     * @param MuxedAccount $sourceAccount muxed source account.
+     * @return AccountMergeOperationBuilder Builder object so you can chain methods.
+     */
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : AccountMergeOperationBuilder  {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
+    /**
+     * Builds an operation.
+     * @return AccountMergeOperation
+     */
     public function build(): AccountMergeOperation {
         $result = new AccountMergeOperation($this->destination);
         if ($this->sourceAccount != null) {

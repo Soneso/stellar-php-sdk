@@ -35,8 +35,7 @@ final class AccountTest extends TestCase
 {
     private string $accountId = "GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL";
 
-    public function testSetAccountOptions(): void
-    {
+    public function testSetAccountOptions(): void {
         $sdk = StellarSDK::getTestNetInstance();
         $keyPairA = KeyPair::random();
         $accountId = $keyPairA->getAccountId();
@@ -98,8 +97,7 @@ final class AccountTest extends TestCase
         $this->assertTrue($accountA->getFlags()->isAuthImmutable() == false);
     }
 
-    public function testFindAccountforAsset(): void
-    {
+    public function testFindAccountforAsset(): void {
         $sdk = StellarSDK::getTestNetInstance();
         $keyPairA = KeyPair::random();
         $accountAId = $keyPairA->getAccountId();
@@ -138,6 +136,28 @@ final class AccountTest extends TestCase
             $found = true;
         }
         $this->assertTrue($found);
+    }
+
+    public function testAccountMerge(): void {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairX = KeyPair::random();
+        $keyPairY = KeyPair::random();
+        $accountXId = $keyPairX->getAccountId();
+        $accountYId = $keyPairY->getAccountId();
+        FriendBot::fundTestAccount($accountXId);
+        FriendBot::fundTestAccount($accountYId);
+
+        $accountMergeOperation = (new AccountMergeOperationBuilder($accountXId))->build();
+        $accountY = $sdk->requestAccount($accountYId);
+        $transaction = (new TransactionBuilder($accountY))
+            ->addOperation($accountMergeOperation)
+            ->build();
+
+        $transaction->sign($keyPairY, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $this->assertFalse($sdk->accountExists($accountYId));
     }
 
     public function testExistingAccount(): void
@@ -316,24 +336,5 @@ final class AccountTest extends TestCase
         $this->assertNotNull($submitTxResponse);
     }
 
-    public function testAccountMerge(): void
-    {
-        $sdk = StellarSDK::getTestNetInstance();
-        $keyPair1 = KeyPair::random();
-        $keyPair2 = KeyPair::random();
-        $acountId1 = $keyPair1->getAccountId();
-        $acountId2 = $keyPair2->getAccountId();
-        FriendBot::fundTestAccount($acountId1);
-        FriendBot::fundTestAccount($acountId2);
-        $response = $sdk->requestAccount($acountId1);
-        $this->assertEquals($acountId1, $response->getAccountId());
-        $opBuilder = new AccountMergeOperationBuilder($acountId2);
-        $builder = new TransactionBuilder($response);
-        $builder->addOperation($opBuilder->build());
-        $transaction = $builder->build();
-        $transaction->sign($keyPair1, Network::testnet());
-        $submitTxResponse = $sdk->submitTransaction($transaction);
-        $this->assertNotNull($submitTxResponse);
-    }
 }
 

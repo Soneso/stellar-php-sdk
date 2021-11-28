@@ -180,6 +180,22 @@ class StellarSDK
     }
 
     /**
+     * Checks if the account exists by querying from horizon.
+     * @throws HorizonRequestException
+     */
+    public function accountExists(string $accountId) : bool {
+        try {
+            $account = $this->requestAccount($accountId);
+        } catch (HorizonRequestException $e) {
+            if ($e->getStatusCode() == 404) {
+                return false;
+            }
+            throw $e;
+        }
+        return true;
+    }
+
+    /**
      * Requests the ledger details from horizon for the given ledger sequence
      * @throws HorizonRequestException
      */
