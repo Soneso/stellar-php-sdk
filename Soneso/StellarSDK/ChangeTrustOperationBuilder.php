@@ -6,12 +6,21 @@
 
 namespace Soneso\StellarSDK;
 
+/**
+ * Builds ChangeTrust operation.
+ * @see ChangeTrustOperation
+ */
 class ChangeTrustOperationBuilder
 {
     private Asset $asset;
     private ?string $limit = null;
     private ?MuxedAccount $sourceAccount = null;
 
+    /**
+     * Creates a new ChangeTrust builder.
+     * @param Asset $asset The asset of the trustline. For example, if a gateway extends a trustline of up to 200 USD to a user, the line is USD.
+     * @param string|null $limit The limit of the trustline. For example, if a gateway extends a trustline of up to 200 USD to a user, the limit is 200.
+     */
     public function __construct(Asset $asset, ?string $limit = null) {
         $this->asset = $asset;
         $this->limit = $limit;

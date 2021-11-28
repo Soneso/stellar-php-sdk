@@ -10,7 +10,9 @@ use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AccountMergeOperationBuilder;
 use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\BumpSequenceOperationBuilder;
+use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
@@ -18,6 +20,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Price;
 use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
@@ -93,6 +96,48 @@ final class AccountTest extends TestCase
         $this->assertTrue($accountA->getFlags()->isAuthRequired() == false);
         $this->assertTrue($accountA->getFlags()->isAuthRevocable() == true);
         $this->assertTrue($accountA->getFlags()->isAuthImmutable() == false);
+    }
+
+    public function testFindAccountforAsset(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairC = KeyPair::random();
+        $accountCId = $keyPairC->getAccountId();
+
+        $createAccountOperation = (new CreateAccountOperationBuilder($accountCId, "10"))->build();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($createAccountOperation)
+            ->build();
+
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountCId);
+
+        $changeTrustOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))->build();
+        $accountA->incrementSequenceNumber();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($changeTrustOperation)
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // Find account for asset
+        $response = $sdk->accounts()->forAsset($iomAsset)->execute();
+        $this->assertGreaterThan(0, $response->getAccounts()->count());
+        $found = false;
+        foreach ($response->getAccounts() as $account) {
+            $this->assertTrue($account->getAccountId() === $accountAId);
+            $found = true;
+        }
+        $this->assertTrue($found);
     }
 
     public function testExistingAccount(): void

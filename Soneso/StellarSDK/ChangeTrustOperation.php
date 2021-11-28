@@ -12,12 +12,21 @@ use Soneso\StellarSDK\Xdr\XdrChangeTrustOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#change-trust" target="_blank">ChangeTrust</a> operation.
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ */
 class ChangeTrustOperation extends AbstractOperation
 {
 
     private Asset $asset;
     private BigInteger $limit;
 
+    /**
+     * Creates a new ChangeTrustOperation object.
+     * @param Asset $asset The asset of the trustline.
+     * @param string|null $limit The limit of the trustline. If null => max. Set to 0 to remove the trust line.
+     */
     public function __construct(Asset $asset, ?string $limit = null) {
         $this->asset = $asset;
         if ($limit != null) {
@@ -28,25 +37,24 @@ class ChangeTrustOperation extends AbstractOperation
     }
 
     /**
+     * The asset of the trustline. For example, if a gateway extends a trustline of up to 200 USD to a user, the line is USD.
      * @return Asset
      */
-    public function getAsset(): Asset
-    {
+    public function getAsset(): Asset {
         return $this->asset;
     }
 
     /**
-     * @return BigInteger
+     * The limit of the trustline. For example, if a gateway extends a trustline of up to 200 USD to a user, the limit is 200.
+     * @return string
      */
-    public function getLimit(): BigInteger
-    {
-        return $this->limit;
+    public function getLimit() : string {
+        return $this->limit->toString();
     }
 
-    public function toOperationBody(): XdrOperationBody
-    {
+    public function toOperationBody(): XdrOperationBody {
         $changeTrustAsset = $this->asset->toXdrChangeTrustAsset();
-        $op = new XdrChangeTrustOperation($changeTrustAsset,$this->limit);
+        $op = new XdrChangeTrustOperation($changeTrustAsset, $this->limit);
         $type = new XdrOperationType(XdrOperationType::CHANGE_TRUST);
         $result = new XdrOperationBody($type);
         $result->setChangeTrustOp($op);

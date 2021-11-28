@@ -39,6 +39,32 @@ class Price
         return new XdrPrice($this->n, $this->d);
     }
 
-    //TODO: public static function fromString(string $price) : Price {}
+    public static function fromString(string $price) : Price | false {
+        $price = Price::float2fraction($price);
+        if ($price) {
+            print($price["nominator"].PHP_EOL);
+            print($price["denominator"].PHP_EOL);
+            return new Price(intval($price["nominator"]), intval($price["denominator"]));
+        }
+        return false;
+    }
 
+    private static function float2fraction($n, $tolerance = 1.e-9) : array | false {
+        $n = (float) $n;
+        $h1=1; $h2=0;
+        $k1=0; $k2=1;
+        $b = 1/$n;
+        do {
+            $b = 1/$b;
+            $a = floor($b);
+            $aux = $h1; $h1 = $a*$h1+$h2; $h2 = $aux;
+            $aux = $k1; $k1 = $a*$k1+$k2; $k2 = $aux;
+            $b = $b-$a;
+        } while (abs($n-$h1/$k1) > $n*$tolerance);
+
+        if ( ! empty ( $h1 ) && ! empty ( $k1 ))
+            return array ( "nominator" => $h1, "denominator" => $k1, "str_view" => "$h1/$k1" ) ;
+        else
+            return false;
+    }
 }

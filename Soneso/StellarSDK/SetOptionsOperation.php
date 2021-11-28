@@ -31,6 +31,19 @@ class SetOptionsOperation extends AbstractOperation
     private ?int $signerWeight = null;
 
 
+    /**
+     * Creates a new SetOptionsOperation object.
+     * @param string|null $inflationDestination
+     * @param int|null $clearFlags
+     * @param int|null $setFlags
+     * @param int|null $masterKeyWeight
+     * @param int|null $lowThreshold
+     * @param int|null $mediumThreshold
+     * @param int|null $highThreshold
+     * @param string|null $homeDomain
+     * @param XdrSignerKey|null $signerKey
+     * @param int|null $signerWeight
+     */
     public function __construct(?string $inflationDestination = null, ?int $clearFlags = null, ?int $setFlags = null, ?int $masterKeyWeight = null, ?int $lowThreshold = null,?int $mediumThreshold = null,
                                 ?int $highThreshold = null, ?string $homeDomain = null, ?XdrSignerKey $signerKey = null, ?int $signerWeight = null) {
         $this->inflationDestination = $inflationDestination;
