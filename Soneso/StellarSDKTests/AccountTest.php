@@ -15,17 +15,85 @@ use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\SetOptionsOperation;
+use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrSignerKey;
+use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 
 final class AccountTest extends TestCase
 {
     private string $accountId = "GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL";
+
+    public function testSetAccountOptions(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountId);
+        $accountA = $sdk->requestAccount($accountId);
+        $seqNr = $accountA->getSequenceNumber();
+
+        $keyPairB = KeyPair::random();
+        $bkey = new XdrSignerKey();
+        $bkey->setType(new XdrSignerKeyType(XdrSignerKeyType::ED25519));
+        $bkey->setEd25519($keyPairB->getPublicKey());
+
+        $newHomeDomain = "www".rand(1, 10000).".com";
+
+        $setOptionsOperation = (new SetOptionsOperationBuilder())
+            ->setHomeDomain($newHomeDomain)
+            ->setSigner($bkey, 6)
+            ->setHighThreshold(5)
+            ->setMediumThreshold(3)
+            ->setLowThreshold(2)
+            ->setMasterKeyWeight(5)
+            ->setSetFlags(2)
+            ->build();
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($setOptionsOperation)
+            ->addMemo(Memo::text("test set options"))
+            ->build();
+
+        $transaction->sign($keyPairA, Network::testnet());
+
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $accountA = $sdk->requestAccount($accountId);
+        $this->assertTrue($accountA->getSequenceNumber() > $seqNr);
+        $this->assertTrue($accountA->getHomeDomain() === $newHomeDomain);
+        $this->assertTrue($accountA->getThresholds()->getLowThreshold() === 2);
+        $this->assertTrue($accountA->getThresholds()->getMedThreshold() === 3);
+        $this->assertTrue($accountA->getThresholds()->getHighThreshold() === 5);
+
+        $aFound = false;
+        $bFound = false;
+        foreach($accountA->getSigners() as $signer) {
+            if ($signer->getKey() == $accountA->getAccountId()) {
+                $aFound = true;
+                $this->assertTrue($signer->getWeight() === 5);
+            }
+            else if ($signer->getKey() == $keyPairB->getAccountId()) {
+                $bFound = true;
+                $this->assertTrue($signer->getWeight() === 6);
+            }
+        }
+        $this->assertTrue($aFound);
+        $this->assertTrue($bFound);
+
+        $this->assertTrue($accountA->getFlags()->isAuthRequired() == false);
+        $this->assertTrue($accountA->getFlags()->isAuthRevocable() == true);
+        $this->assertTrue($accountA->getFlags()->isAuthImmutable() == false);
+    }
 
     public function testExistingAccount(): void
     {

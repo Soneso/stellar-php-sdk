@@ -9,6 +9,10 @@ namespace Soneso\StellarSDK;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
+/**
+ * Builds SetOptions operation.
+ * @see SetOptionsOperation
+ */
 class SetOptionsOperationBuilder
 {
     private ?MuxedAccount $sourceAccount = null;
@@ -23,98 +27,125 @@ class SetOptionsOperationBuilder
     private ?XdrSignerKey $signerKey = null;
     private ?int $signerWeight = null;
 
-
-    public function setSourceAccount(string $accountId) {
+    /**
+     * Sets the source account for this operation. G...
+     * @param string $accountId The operation's source account.
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
+     */
+    public function setSourceAccount(string $accountId) : SetOptionsOperationBuilder {
         $this->sourceAccount = new MuxedAccount($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    /**
+     * Sets the muxed source account for this operation.
+     * @param MuxedAccount $sourceAccount The operation's source account.
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
+     */
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : SetOptionsOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     /**
-     * @param string $inflationDestination
+     * Sets the inflation destination for the account.
+     * @param string $inflationDestination The inflation destination account.
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setInflationDestination(string $inflationDestination): void
-    {
+    public function setInflationDestination(string $inflationDestination) : SetOptionsOperationBuilder {
         $this->inflationDestination = $inflationDestination;
+        return $this;
     }
 
     /**
-     * @param int $clearFlags
+     * Clears the given flags from the account.
+     * @param int $clearFlags For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setClearFlags(int $clearFlags): void
-    {
+    public function setClearFlags(int $clearFlags) : SetOptionsOperationBuilder {
         $this->clearFlags = $clearFlags;
+        return $this;
     }
 
     /**
-     * @param int $setFlags
+     * Sets the given flags on the account.
+     * @param int $setFlags For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setSetFlags(int $setFlags): void
-    {
+    public function setSetFlags(int $setFlags) : SetOptionsOperationBuilder {
         $this->setFlags = $setFlags;
+        return $this;
     }
 
     /**
-     * @param int $masterKeyWeight
+     * Sets the weight of the master key.
+     * @param int $masterKeyWeight Number between 0 and 255
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setMasterKeyWeight(int $masterKeyWeight): void
-    {
+    public function setMasterKeyWeight(int $masterKeyWeight) : SetOptionsOperationBuilder {
         $this->masterKeyWeight = $masterKeyWeight;
+        return $this;
     }
 
     /**
-     * @param int $lowThreshold
+     * A number from 0-255 representing the threshold this account sets on all operations it performs that have a low threshold.
+     * @param int $lowThreshold Number between 0 and 255
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setLowThreshold(int $lowThreshold): void
-    {
+    public function setLowThreshold(int $lowThreshold) : SetOptionsOperationBuilder {
         $this->lowThreshold = $lowThreshold;
+        return $this;
     }
 
     /**
-     * @param int $mediumThreshold
+     * A number from 0-255 representing the threshold this account sets on all operations it performs that have a medium threshold.
+     * @param int $mediumThreshold Number between 0 and 255
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setMediumThreshold(int $mediumThreshold): void
-    {
+    public function setMediumThreshold(int $mediumThreshold) : SetOptionsOperationBuilder {
         $this->mediumThreshold = $mediumThreshold;
+        return $this;
     }
 
     /**
-     * @param int $highThreshold
+     * A number from 0-255 representing the threshold this account sets on all operations it performs that have a high threshold.
+     * @param int $highThreshold Number between 0 and 255
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setHighThreshold(int $highThreshold): void
-    {
+    public function setHighThreshold(int $highThreshold) : SetOptionsOperationBuilder {
         $this->highThreshold = $highThreshold;
+        return $this;
     }
 
     /**
-     * @param string $homeDomain
+     * Sets the account's home domain address used in <a href="https://www.stellar.org/developers/learn/concepts/federation.html" target="_blank">Federation</a>.
+     * @param string $homeDomain A string of the address which can be up to 32 characters.
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setHomeDomain(string $homeDomain): void
-    {
+    public function setHomeDomain(string $homeDomain) : SetOptionsOperationBuilder {
         if(strlen($homeDomain) > 32) {
             throw new InvalidArgumentException("Home domain must be <= 32 characters");
         }
         $this->homeDomain = $homeDomain;
+        return $this;
     }
 
     /**
-     * @param XdrSignerKey $signerKey
+     * Add, update, or remove a signer from the account. Signer is deleted if the weight = 0;
+     * @param XdrSignerKey $signerKey The signer key. Use {@link Signer} helper to create this object.
+     * @param int $weight The weight to attach to the signer (0-255).
+     * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
-    public function setSignerKey(XdrSignerKey $signerKey): void
-    {
+    public function setSigner(XdrSignerKey $signerKey, int $weight) : SetOptionsOperationBuilder {
         $this->signerKey = $signerKey;
+        $this->signerWeight = $weight & 0xFF;
+        return $this;
     }
 
     /**
-     * @param int $signerWeight
+     * Builds a SetOptionsOperation.
+     * @return SetOptionsOperation The operation build.
      */
-    public function setSignerWeight(int $signerWeight): void
-    {
-        $this->signerWeight = $signerWeight;
-    }
-
     public function build(): SetOptionsOperation {
         $result = new SetOptionsOperation($this->inflationDestination, $this->clearFlags, $this->setFlags,
             $this->masterKeyWeight, $this->lowThreshold, $this->mediumThreshold, $this->highThreshold,

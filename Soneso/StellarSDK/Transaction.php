@@ -20,6 +20,9 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0Envelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/glossary/transactions/" target="_blank">Transaction</a> in Stellar network.
+ */
 class Transaction extends AbstractTransaction
 {
     private int $fee = AbstractTransaction::MIN_BASE_FEE;
@@ -66,6 +69,7 @@ class Transaction extends AbstractTransaction
     }
 
     /**
+     * Returns fee paid for transaction in stroops (1 stroop = 0.0000001 XLM).
      * @return int
      */
     public function getFee(): int
@@ -82,6 +86,7 @@ class Transaction extends AbstractTransaction
     }
 
     /**
+     * Returns operations in this transaction.
      * @return array
      */
     public function getOperations(): array
@@ -98,6 +103,7 @@ class Transaction extends AbstractTransaction
     }
 
     /**
+     * TimeBounds, or null (representing no time restrictions).
      * @return TimeBounds|null
      */
     public function getTimeBounds(): ?TimeBounds

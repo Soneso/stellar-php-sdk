@@ -13,6 +13,10 @@ use Soneso\StellarSDK\Xdr\XdrSetOptionsOperation;
 use Soneso\StellarSDK\Xdr\XdrSigner;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-options">SetOptions</a> operation.
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/">List of Operations</a>
+ */
 class SetOptionsOperation extends AbstractOperation
 {
     private ?string $inflationDestination = null;
@@ -42,6 +46,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * Account of the inflation destination.
      * @return string|null
      */
     public function getInflationDestination(): ?string
@@ -50,6 +55,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * Indicates which flags to clear. For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
      * @return int|null
      */
     public function getClearFlags(): ?int
@@ -58,6 +64,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * Indicates which flags to set. For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
      * @return int|null
      */
     public function getSetFlags(): ?int
@@ -66,6 +73,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * Weight of the master key.
      * @return int|null
      */
     public function getMasterKeyWeight(): ?int
@@ -74,6 +82,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">a low threshold</a>.
      * @return int|null
      */
     public function getLowThreshold(): ?int
@@ -82,6 +91,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">a medium threshold</a>.
      * @return int|null
      */
     public function getMediumThreshold(): ?int
@@ -90,6 +100,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">a high threshold</a>.
      * @return int|null
      */
     public function getHighThreshold(): ?int
@@ -98,6 +109,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * The home domain of an account.
      * @return string|null
      */
     public function getHomeDomain(): ?string
@@ -106,6 +118,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * Additional signer added/removed in this operation.
      * @return XdrSignerKey|null
      */
     public function getSignerKey(): ?XdrSignerKey
@@ -114,6 +127,7 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
+     * Additional signer weight. The signer is deleted if the weight is 0.
      * @return int|null
      */
     public function getSignerWeight(): ?int
@@ -151,7 +165,7 @@ class SetOptionsOperation extends AbstractOperation
         }
         if ($this->signerKey) {
             $weight = $this->signerWeight ?? 0;
-            $signer = new XdrSigner($this->signer, $weight);
+            $signer = new XdrSigner($this->signerKey, $weight);
             $result->setSigner($signer);
         }
         $type = new XdrOperationType(XdrOperationType::SET_OPTIONS);
