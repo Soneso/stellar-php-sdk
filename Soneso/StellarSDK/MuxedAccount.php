@@ -18,10 +18,14 @@ class MuxedAccount
 {
     private string $ed25519AccountId;
     private ?string $accountId = null;
-    private ?int $id = null;
+    private ?int $id;
     private ?XdrMuxedAccount $xdr = null;
 
     public function __construct(string $ed25519AccountId, ?int $id = null) {
+        $firstChar = substr( $ed25519AccountId, 0, 1);
+        if ("G" != $firstChar) {
+            throw new InvalidArgumentException("ed25519AccountId must start with G");
+        }
         $this->ed25519AccountId = $ed25519AccountId;
         $this->id = $id;
     }

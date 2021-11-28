@@ -29,21 +29,24 @@ class PathPaymentStrictReceiveOperationBuilder
         return new PathPaymentStrictReceiveOperationBuilder($sendAsset, $sendMax, $destination->getAccountId(), $destAsset, $destAmount);
     }
 
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : PathPaymentStrictReceiveOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setPath(array $path) {
+    public function setPath(array $path) : PathPaymentStrictReceiveOperationBuilder {
         $this->path = array();
         foreach ($path as $asset) {
             if ($asset instanceof Asset) {
                 array_push($this->path, $asset);
             }
         }
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : PathPaymentStrictReceiveOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): PathPaymentStrictReceiveOperation {

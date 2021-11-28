@@ -26,12 +26,14 @@ class ChangeTrustOperationBuilder
         $this->limit = $limit;
     }
 
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : ChangeTrustOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : ChangeTrustOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): ChangeTrustOperation {

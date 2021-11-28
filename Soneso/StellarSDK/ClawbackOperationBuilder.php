@@ -20,12 +20,14 @@ class ClawbackOperationBuilder
         $this->amount = $amount;
     }
 
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : ClawbackOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : ClawbackOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): ClawbackOperation {

@@ -21,7 +21,7 @@ class AccountMergeOperationBuilder
      * @param string $destinationAccountId The account that receives the remaining XLM balance of the source account.
      */
     public function __construct(string $destinationAccountId) {
-        $this->destination = new MuxedAccount($destinationAccountId);
+        $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
     }
 
     public static function forMuxedDestinationAccount(MuxedAccount $destination) : AccountMergeOperationBuilder {
@@ -34,7 +34,7 @@ class AccountMergeOperationBuilder
      * @return AccountMergeOperationBuilder Builder object so you can chain methods.
      */
     public function setSourceAccount(string $accountId) : AccountMergeOperationBuilder {
-        $this->sourceAccount = new MuxedAccount($accountId);
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
         return $this;
     }
 

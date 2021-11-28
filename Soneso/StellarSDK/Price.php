@@ -42,8 +42,6 @@ class Price
     public static function fromString(string $price) : Price | false {
         $price = Price::float2fraction($price);
         if ($price) {
-            print($price["nominator"].PHP_EOL);
-            print($price["denominator"].PHP_EOL);
             return new Price(intval($price["nominator"]), intval($price["denominator"]));
         }
         return false;

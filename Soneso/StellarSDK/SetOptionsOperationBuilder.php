@@ -33,7 +33,7 @@ class SetOptionsOperationBuilder
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setSourceAccount(string $accountId) : SetOptionsOperationBuilder {
-        $this->sourceAccount = new MuxedAccount($accountId);
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
         return $this;
     }
 

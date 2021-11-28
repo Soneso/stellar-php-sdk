@@ -64,13 +64,15 @@ class TransactionBuilder
     /**
      * Sets the maximal operation fee (base fee) for the transaction.
      * @param int $maxOperationFee maximal operation fee (base fee).
+     * @return TransactionBuilder Builder object so you can chain methods.
      */
-    public function setMaxOperationFee(int $maxOperationFee) {
+    public function setMaxOperationFee(int $maxOperationFee) : TransactionBuilder {
         if ($maxOperationFee < AbstractTransaction::MIN_BASE_FEE) {
             throw new InvalidArgumentException(
                 "maxOperationFee cannot be smaller than the BASE_FEE (" . AbstractTransaction::MIN_BASE_FEE . ") : " . $maxOperationFee);
         }
         $this->maxOperationFee = $maxOperationFee;
+        return $this;
     }
 
     /**

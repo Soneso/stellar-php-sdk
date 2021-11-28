@@ -12,17 +12,18 @@ class BeginSponsoringFutureReservesOperationBuilder
     private string $sponsoredId;
     private ?MuxedAccount $sourceAccount = null;
 
-
     public function __construct(string $sponsoredId) {
         $this->sponsoredId = $sponsoredId;
     }
 
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : BeginSponsoringFutureReservesOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : BeginSponsoringFutureReservesOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): BeginSponsoringFutureReservesOperation {

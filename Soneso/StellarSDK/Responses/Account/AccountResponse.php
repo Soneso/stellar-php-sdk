@@ -33,8 +33,8 @@ class AccountResponse extends Response implements TransactionBuilderAccount
     private ?string $sponsor = null;
     private string $pagingToken;
     private KeyPair $keyPair;
-    private ?MuxedAccount $muxedAccount = null;
-    
+    private ?int $muxedAccountMed25519Id = null; // ID to be used if this account is used as MuxedAccountMed25519
+
     public function getAccountId() : string {
         return $this->accountId;
     }
@@ -103,6 +103,23 @@ class AccountResponse extends Response implements TransactionBuilderAccount
         return $this->pagingToken;
     }
 
+    /**
+     * @return int|null
+     */
+    public function getMuxedAccountMed25519Id(): ?int
+    {
+        return $this->muxedAccountMed25519Id;
+    }
+
+    /**
+     * ID to be used if this account is used as MuxedAccountMed25519.
+     * @param int|null $muxedAccountMed25519Id
+     */
+    public function setMuxedAccountMed25519Id(?int $muxedAccountMed25519Id): void
+    {
+        $this->muxedAccountMed25519Id = $muxedAccountMed25519Id;
+    }
+
     protected function loadFromJson(array $json) : void {
         
         if (isset($json['account_id'])) $this->accountId = $json['account_id'];
@@ -132,7 +149,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount
             }
         }
         
-        if (isset($json['data'])) $this->data = AccountDataResponse::fromJson($json['data']);
+        if (isset($json['data'])) $this->data = AccountDataResponse::fromJson($json);
         if (isset($json['_links'])) $this->links = AccountLinksResponse::fromJson($json['_links']);
         if (isset($json['num_sponsoring'])) $this->numSponsoring = $json['num_sponsoring'];
         if (isset($json['num_sponsored'])) $this->numSponsored = $json['num_sponsored'];
@@ -140,34 +157,26 @@ class AccountResponse extends Response implements TransactionBuilderAccount
         if (isset($json['paging_token'])) $this->pagingToken = $json['paging_token'];
     }
     
-    public static function fromJson(array $json) : AccountResponse
-    {
+    public static function fromJson(array $json) : AccountResponse {
         $result = new AccountResponse();
         $result->loadFromJson($json);
         return $result;
     }
 
-    public function getKeyPair(): KeyPair
-    {
+    public function getKeyPair(): KeyPair {
         return $this->keyPair;
     }
 
-    public function getIncrementedSequenceNumber(): BigInteger
-    {
+    public function getIncrementedSequenceNumber(): BigInteger {
         return $this->sequenceNumber->add(new BigInteger(1));
     }
 
-    public function incrementSequenceNumber(): void
-    {
+    public function incrementSequenceNumber(): void {
         $this->sequenceNumber = $this->getIncrementedSequenceNumber();
     }
 
-    public function getMuxedAccount(): MuxedAccount
-    {
-        if ($this->muxedAccount == null) {
-            $this->muxedAccount = new MuxedAccount($this->accountId);
-        }
-        return $this->muxedAccount;
+    public function getMuxedAccount(): MuxedAccount {
+        return new MuxedAccount($this->accountId, $this->muxedAccountMed25519Id);
     }
 }
 

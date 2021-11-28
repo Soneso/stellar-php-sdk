@@ -10,12 +10,15 @@ use DateTime;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\ChangeTrustOperation;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperation;
+use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
+use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
@@ -28,6 +31,334 @@ use Soneso\StellarSDK\Util\FriendBot;
 
 class PaymentsTest extends TestCase
 {
+
+    public function testSendNativePayment(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairC = KeyPair::random();
+        $accountCId = $keyPairC->getAccountId();
+
+        $createAccountOperation = (new CreateAccountOperationBuilder($accountCId, "10"))->build();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($createAccountOperation)->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // send 100 XLM payment form A to C
+        $paymentOperation = (new PaymentOperationBuilder($accountCId, Asset::native(), "100"))->build();
+        $accountA->incrementSequenceNumber();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($paymentOperation)->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountC = $sdk->requestAccount($accountCId);
+        foreach($accountC->getBalances() as $balance) {
+            if ($balance->getAssetType() == Asset::TYPE_NATIVE) {
+                $this->assertTrue(floatval($balance->getBalance()) > 100.00);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+        $response = $sdk->payments()->forAccount($accountCId)->execute();
+        $found = false;
+        foreach ($response->getOperations() as $operation) {
+            if($operation instanceof PaymentOperationResponse) {
+                $this->assertTrue($operation->getSourceAccount() === $accountAId);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testSendNativePaymentMuxedAccounts(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairC = KeyPair::random();
+        $accountCId = $keyPairC->getAccountId();
+
+        $createAccountOperation = (new CreateAccountOperationBuilder($accountCId, "10"))->build();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($createAccountOperation)->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // send 100 XLM payment form A to C
+        $muxedSource = new MuxedAccount($accountAId, 1909291282);
+        $muxedDestination = new MuxedAccount($accountCId, 999919919);
+
+        $paymentOperation = (PaymentOperationBuilder::forMuxedDestinationAccount($muxedDestination, Asset::native(), "100"))
+            ->setMuxedSourceAccount($muxedSource)->build();
+        $accountA->incrementSequenceNumber();
+        $accountA->setMuxedAccountMed25519Id(888181818);
+        $transaction = (new TransactionBuilder($accountA))->addOperation($paymentOperation)->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $transactionHash = $response->getHash();
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountC = $sdk->requestAccount($accountCId);
+        foreach($accountC->getBalances() as $balance) {
+            if ($balance->getAssetType() == Asset::TYPE_NATIVE) {
+                $this->assertTrue(floatval($balance->getBalance()) > 100.00);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+        $response = $sdk->payments()->forAccount($accountCId)->execute();
+        $found = false;
+        foreach ($response->getOperations() as $operation) {
+            if($operation instanceof PaymentOperationResponse) {
+                $this->assertTrue($operation->getSourceAccount() === $accountAId);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+
+        $response = $sdk->transactions()->forAccount($accountCId)->execute();
+        $found = false;
+        foreach ($response->getTransactions() as $transaction) {
+            if($transaction->getHash() == $transactionHash) {
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testSendNativePaymentWithMaxOperationFee(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairC = KeyPair::random();
+        $accountCId = $keyPairC->getAccountId();
+
+        $createAccountOperation = (new CreateAccountOperationBuilder($accountCId, "10"))->build();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($createAccountOperation)->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // send 100 XLM payment form A to C
+        $paymentOperation = (new PaymentOperationBuilder($accountCId, Asset::native(), "100"))->build();
+        $accountA->incrementSequenceNumber();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($paymentOperation)
+            ->setMaxOperationFee(300)
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountC = $sdk->requestAccount($accountCId);
+        foreach($accountC->getBalances() as $balance) {
+            if ($balance->getAssetType() == Asset::TYPE_NATIVE) {
+                $this->assertTrue(floatval($balance->getBalance()) > 100.00);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+        $response = $sdk->payments()->forAccount($accountCId)->execute();
+        $found = false;
+        foreach ($response->getOperations() as $operation) {
+            if($operation instanceof PaymentOperationResponse) {
+                $this->assertTrue($operation->getSourceAccount() === $accountAId);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testSendNonNativePayment() {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairB = KeyPair::random();
+        $keyPairC = KeyPair::random();
+        $accountBId = $keyPairB->getAccountId();
+        $accountCId = $keyPairC->getAccountId();
+
+        $createAccountBOperation = (new CreateAccountOperationBuilder($accountBId, "10"))->build();
+        $createAccountCOperation = (new CreateAccountOperationBuilder($accountCId, "10"))->build();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($createAccountBOperation)
+            ->addOperation($createAccountCOperation)
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountAId);
+        $changeTrustBOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
+            ->setSourceAccount($accountBId)->build();
+        $changeTrustCOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
+            ->setSourceAccount($accountCId)->build();
+        $accountA->incrementSequenceNumber();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($changeTrustBOperation)
+            ->addOperation($changeTrustCOperation)
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $transaction->sign($keyPairB, Network::testnet());
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // send 100 IOM non native payment from A to C
+        $paymentOperation = (new PaymentOperationBuilder($accountCId, $iomAsset, "100"))->build();
+        $accountA->incrementSequenceNumber();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($paymentOperation)
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountC = $sdk->requestAccount($accountCId);
+        foreach($accountC->getBalances() as $balance) {
+            if ($balance->getAssetCode() == "IOM") {
+                $this->assertTrue(floatval($balance->getBalance()) > 90.00);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+
+        // send 50.09 IOM non native payment from C to B
+        $paymentOperation = (new PaymentOperationBuilder($accountBId, $iomAsset, "50.9"))->build();
+        $transaction = (new TransactionBuilder($accountC))
+            ->addOperation($paymentOperation)
+            ->build();
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountB = $sdk->requestAccount($accountBId);
+        foreach($accountC->getBalances() as $balance) {
+            if ($balance->getAssetCode() == "IOM") {
+                $this->assertTrue(floatval($balance->getBalance()) > 40.00);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testSendNonNativePaymentMuxedAccounts() {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairB = KeyPair::random();
+        $keyPairC = KeyPair::random();
+        $accountBId = $keyPairB->getAccountId();
+        $accountCId = $keyPairC->getAccountId();
+
+        $muxedBAccount = new MuxedAccount($accountBId, 1012929292);
+        $muxedAAccount = new MuxedAccount($accountAId, 9999999999);
+        $muxedCAccount = new MuxedAccount($accountCId, 5353535353);
+
+        $createAccountBOperation = (new CreateAccountOperationBuilder($accountBId, "10"))
+            ->setMuxedSourceAccount($muxedAAccount)->build();
+        $createAccountCOperation = (new CreateAccountOperationBuilder($accountCId, "10"))
+            ->setMuxedSourceAccount($muxedAAccount)->build();
+        $accountA->setMuxedAccountMed25519Id(9999999999);
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($createAccountBOperation)
+            ->addOperation($createAccountCOperation)
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountAId);
+        $changeTrustBOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
+            ->setMuxedSourceAccount($muxedBAccount)->build();
+        $changeTrustCOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
+            ->setMuxedSourceAccount($muxedCAccount)->build();
+        $accountA->incrementSequenceNumber();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($changeTrustBOperation)
+            ->addOperation($changeTrustCOperation)
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $transaction->sign($keyPairB, Network::testnet());
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // send 100 IOM non native payment from A to C
+        $paymentOperation = (PaymentOperationBuilder::forMuxedDestinationAccount($muxedCAccount, $iomAsset, "100"))->build();
+        $accountA->incrementSequenceNumber();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($paymentOperation)
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountC = $sdk->requestAccount($accountCId);
+        foreach($accountC->getBalances() as $balance) {
+            if ($balance->getAssetCode() == "IOM") {
+                $this->assertTrue(floatval($balance->getBalance()) > 90.00);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+
+        // send 50.09 IOM non native payment from C to B
+        $paymentOperation = (PaymentOperationBuilder::forMuxedDestinationAccount($muxedBAccount, $iomAsset, "50.9"))->build();
+        $accountC->setMuxedAccountMed25519Id(5353535353);
+        $transaction = (new TransactionBuilder($accountC))
+            ->addOperation($paymentOperation)
+            ->build();
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountB = $sdk->requestAccount($accountBId);
+        foreach($accountC->getBalances() as $balance) {
+            if ($balance->getAssetCode() == "IOM") {
+                $this->assertTrue(floatval($balance->getBalance()) > 40.00);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+    }
 
     public function testBI(): void
     {

@@ -33,7 +33,7 @@ class CreateAccountOperationBuilder
      * @return CreateAccountOperationBuilder Builder object so you can chain methods.
      */
     public function setSourceAccount(string $accountId) : CreateAccountOperationBuilder {
-        $this->sourceAccount = new MuxedAccount($accountId);
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
         return $this;
     }
 

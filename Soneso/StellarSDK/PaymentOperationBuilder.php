@@ -6,6 +6,10 @@
 
 namespace Soneso\StellarSDK;
 
+/**
+ * Builds Payment operation.
+ * @see PaymentOperation
+ */
 class PaymentOperationBuilder
 {
     private ?MuxedAccount $sourceAccount = null;
@@ -13,8 +17,14 @@ class PaymentOperationBuilder
     private Asset $asset;
     private string $amount;
 
+    /**
+     * Creates a new PaymentOperation builder.
+     * @param string $destinationAccountId The destination account id.
+     * @param Asset $asset The asset to send.
+     * @param string $amount The amount to send in lumens.
+     */
     public function __construct(string $destinationAccountId, Asset $asset, string $amount) {
-        $this->destination = new MuxedAccount($destinationAccountId);
+        $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
         $this->asset = $asset;
         $this->amount = $amount;
     }
@@ -23,14 +33,30 @@ class PaymentOperationBuilder
         return  new PaymentOperationBuilder($destination->getAccountId(), $asset, $amount);
     }
 
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    /**
+     * Sets the source account for this operation.
+     * @param string $accountId The operation's source account.
+     * @return PaymentOperationBuilder Builder object so you can chain methods.
+     */
+    public function setSourceAccount(string $accountId) : PaymentOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    /**
+     * Sets the muxed source account for this operation.
+     * @param MuxedAccount $sourceAccount The operation's muxed source account.
+     * @return PaymentOperationBuilder Builder object so you can chain methods.
+     */
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : PaymentOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
+    /**
+     * Builds an operation
+     * @return PaymentOperation
+     */
     public function build(): PaymentOperation {
         $result = new PaymentOperation($this->destination, $this->asset, $this->amount);
         if ($this->sourceAccount != null) {

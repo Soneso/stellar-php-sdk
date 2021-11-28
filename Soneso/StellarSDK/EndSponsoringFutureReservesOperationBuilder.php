@@ -11,13 +11,14 @@ class EndSponsoringFutureReservesOperationBuilder
 {
     private ?MuxedAccount $sourceAccount = null;
 
-
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : EndSponsoringFutureReservesOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : EndSponsoringFutureReservesOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): EndSponsoringFutureReservesOperation {

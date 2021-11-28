@@ -9,6 +9,8 @@ use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
 
 class TransactionsRequestBuilder extends RequestBuilder
 {
+    private const INCLUDE_FAILED_PARAMETER_NAME = "include_failed";
+
     public function __construct(Client $httpClient)
     {
         parent::__construct($httpClient, "transactions");
@@ -24,6 +26,61 @@ class TransactionsRequestBuilder extends RequestBuilder
         $this->setSegments("transactions", $transactionId);
         return parent::executeRequest($this->buildUrl(), RequestType::SINGLE_TRANSACTION);
     }
+    /**
+     * Builds request to <code>GET /accounts/{account}/transactions</code>
+     * @param string $accountId ID of the account for which to get transactions.
+     * @return TransactionsRequestBuilder
+     * @see <a href="https://developers.stellar.org/api/resources/accounts/transactions/">Transactions for Account</a>
+     */
+    public function forAccount(string $accountId) : TransactionsRequestBuilder {
+        $this->setSegments("accounts", $accountId, "transactions");
+        return $this;
+    }
+
+    /**
+     * Builds request to <code>GET /claimable_balances/{claimable_balance_id}/transactions</code>
+     * @param string $claimableBalanceId ID of Claimable Balance for which to get transactions.
+     * @return TransactionsRequestBuilder
+     * @see <a href="https://developers.stellar.org/api/resources/claimablebalances/transactions/">transactions for ClaimableBalance</a>
+     */
+    public function forClaimableBalance(string $claimableBalanceId) : TransactionsRequestBuilder {
+        $this->setSegments("claimable_balances", $claimableBalanceId, "transactions");
+        return $this;
+    }
+
+    /**
+     * Builds request to <code>GET /ledgers/{ledgerSeq}/transactions</code>
+     * @param string $ledgerSeq Ledger for which to get transactions.
+     * @return TransactionsRequestBuilder
+     * @see <a href="https://developers.stellar.org/api/resources/ledgers/transactions/">transactions for Ledger</a>
+     */
+    public function forLedger(string $ledgerSeq) : TransactionsRequestBuilder {
+        $this->setSegments("ledgers", $ledgerSeq, "transactions");
+        return $this;
+    }
+
+    /**
+     * Builds request to <code>GET /liquidity_pools/{poolID}/transactions</code>
+     * @param string $liquidityPoolId  Liquidity pool for which to get transactions.
+     * @return TransactionsRequestBuilder
+     * @see <a href="https://developers.stellar.org/api/resources/liquiditypools/transactions/">transactions for Liquidity Pool</a>
+     */
+    public function forLiquidityPool(string $liquidityPoolId) : TransactionsRequestBuilder {
+        $this->setSegments("liquidity_pools", $liquidityPoolId, "transactions");
+        return $this;
+    }
+
+    /**
+     * Adds a parameter defining whether to include operations of failed transactions. By default, only transactions of
+     * successful transactions are returned.
+     * @param bool $value  Set to <code>true</code> to include failed transactions.
+     * @return TransactionsRequestBuilder
+     */
+    public function includeFailed(bool $value) : TransactionsRequestBuilder {
+        $this->queryParameters[TransactionsRequestBuilder::INCLUDE_FAILED_PARAMETER_NAME] = $value ? "true" : "false";
+        return $this;
+    }
+
     /**
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.

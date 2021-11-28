@@ -12,6 +12,10 @@ use Soneso\StellarSDK\Xdr\XdrManageDataOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-data" target="_blank">ManageData</a> operation.
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ */
 class ManageDataOperation extends AbstractOperation
 {
     private string $key;
@@ -22,22 +26,20 @@ class ManageDataOperation extends AbstractOperation
         $this->value = $value;
     }
 
-    /**
+    /** The name of the data value.
      * @return string
      */
-    public function getKey(): string
-    {
+    public function getKey(): string {
         return $this->key;
     }
 
     /**
+     * Data value
      * @return string|null
      */
-    public function getValue(): ?string
-    {
+    public function getValue(): ?string {
         return $this->value;
     }
-
 
     public function toOperationBody(): XdrOperationBody
     {

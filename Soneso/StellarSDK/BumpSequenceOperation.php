@@ -12,15 +12,24 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#bump-sequence">BumpSequence</a> operation.
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/">List of Operations</a>
+ */
 class BumpSequenceOperation extends AbstractOperation
 {
     private BigInteger $bumpTo;
 
+    /**
+     * Creates a BumpSequence operation.
+     * @param BigInteger $bumpTo desired value for the operation’s source account sequence number.
+     */
     public function __construct(BigInteger $bumpTo) {
         $this->bumpTo = $bumpTo;
     }
 
     /**
+     * Desired value for the operation’s source account sequence number.
      * @return BigInteger
      */
     public function getBumpTo(): BigInteger

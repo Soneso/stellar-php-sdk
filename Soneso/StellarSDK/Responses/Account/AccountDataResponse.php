@@ -18,26 +18,15 @@ class AccountDataResponse
     }
     
     public function get(string $key) : string {
+        return base64_decode($this->data[$key], true);
+    }
+
+    public function getBase64Encoded(string $key) : string {
         return $this->data[$key];
     }
     
     public function getData() : array {
         return $this->data;
-    }
-    
-    /**
-     * Decodes the data for the given if encoded with MIME base64
-     * @link http://www.php.net/manual/en/function.base64-decode.php
-     * @param string $key The key for the data.
-     * @param bool $strict [optional] If the strict parameter is set to true
-     * then the function will return
-     * false if the input contains character from outside the base64
-     * alphabet. Otherwise, invalid characters will be silently discarded.
-     * @return string the decoded data or false on failure. The returned data may be
-     * binary.
-     */
-    public function getDecoded(string $key, bool $strict = null) : string {
-        return base64_decode($this->data[$key], $strict);
     }
     
     public static function fromJson(array $json) : AccountDataResponse {

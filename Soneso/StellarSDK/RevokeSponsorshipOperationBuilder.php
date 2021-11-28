@@ -1,4 +1,10 @@
-<?php
+<?php declare(strict_types=1);
+
+// Copyright 2021 The Stellar PHP SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+
 
 namespace Soneso\StellarSDK;
 
@@ -13,67 +19,40 @@ class RevokeSponsorshipOperationBuilder
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @return XdrLedgerKey|null
-     */
-    public function getLedgerKey(): ?XdrLedgerKey
-    {
-        return $this->ledgerKey;
-    }
-
-    /**
      * @param XdrLedgerKey|null $ledgerKey
+     * @return RevokeSponsorshipOperationBuilder
      */
-    public function setLedgerKey(?XdrLedgerKey $ledgerKey): void
-    {
+    public function setLedgerKey(?XdrLedgerKey $ledgerKey) : RevokeSponsorshipOperationBuilder {
         $this->ledgerKey = $ledgerKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSignerAccount(): string
-    {
-        return $this->signerAccount;
+        return $this;
     }
 
     /**
      * @param string $signerAccount
+     * @return RevokeSponsorshipOperationBuilder
      */
-    public function setSignerAccount(string $signerAccount): void
-    {
+    public function setSignerAccount(string $signerAccount) : RevokeSponsorshipOperationBuilder {
         $this->signerAccount = $signerAccount;
-    }
-
-    /**
-     * @return XdrSignerKey
-     */
-    public function getSignerKey(): XdrSignerKey
-    {
-        return $this->signerKey;
+        return $this;
     }
 
     /**
      * @param XdrSignerKey $signerKey
+     * @return RevokeSponsorshipOperationBuilder
      */
-    public function setSignerKey(XdrSignerKey $signerKey): void
-    {
+    public function setSignerKey(XdrSignerKey $signerKey) : RevokeSponsorshipOperationBuilder {
         $this->signerKey = $signerKey;
+        return $this;
     }
 
-    /**
-     * @return MuxedAccount|null
-     */
-    public function getSourceAccount(): ?MuxedAccount
-    {
-        return $this->sourceAccount;
+    public function setSourceAccount(string $accountId) : RevokeSponsorshipOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    /**
-     * @param MuxedAccount|null $sourceAccount
-     */
-    public function setSourceAccount(?MuxedAccount $sourceAccount): void
-    {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : RevokeSponsorshipOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): RevokeSponsorshipOperation {
@@ -86,5 +65,4 @@ class RevokeSponsorshipOperationBuilder
         }
         return $result;
     }
-
 }

@@ -17,8 +17,7 @@ class PathPaymentStrictSendOperationBuilder
     private string $destMin;
     private ?array $path = null; // [Asset]
 
-    public function __construct(Asset $sendAsset, string $sendAmount, string $destinationAccountId, Asset $destAsset, string $destMin)
-    {
+    public function __construct(Asset $sendAsset, string $sendAmount, string $destinationAccountId, Asset $destAsset, string $destMin) {
         $this->sendAsset = $sendAsset;
         $this->sendAmount = $sendAmount;
         $this->destination = new MuxedAccount($destinationAccountId);
@@ -26,33 +25,31 @@ class PathPaymentStrictSendOperationBuilder
         $this->destMin = $destMin;
     }
 
-    public static function forMuxedDestinationAccount(Asset $sendAsset, string $sendAmount, MuxedAccount $destination, Asset $destAsset, string $destMin): PathPaymentStrictSendOperationBuilder
-    {
+    public static function forMuxedDestinationAccount(Asset $sendAsset, string $sendAmount, MuxedAccount $destination, Asset $destAsset, string $destMin): PathPaymentStrictSendOperationBuilder{
         return new PathPaymentStrictSendOperationBuilder($sendAsset, $sendAmount, $destination->getAccountId(), $destAsset, $destMin);
     }
 
-    public function setSourceAccount(string $accountId)
-    {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : PathPaymentStrictSendOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setPath(array $path)
-    {
+    public function setPath(array $path) : PathPaymentStrictSendOperationBuilder {
         $this->path = array();
         foreach ($path as $asset) {
             if ($asset instanceof Asset) {
                 array_push($this->path, $asset);
             }
         }
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount)
-    {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : PathPaymentStrictSendOperationBuilder  {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
-    public function build(): PathPaymentStrictSendOperation
-    {
+    public function build(): PathPaymentStrictSendOperation {
         $result = new PathPaymentStrictSendOperation($this->sendAsset, $this->sendAmount, $this->destination, $this->destAsset, $this->destMin, $this->path);
         if ($this->sourceAccount != null) {
             $result->setSourceAccount($this->sourceAccount);

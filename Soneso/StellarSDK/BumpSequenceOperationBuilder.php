@@ -9,22 +9,31 @@ namespace Soneso\StellarSDK;
 
 use phpseclib3\Math\BigInteger;
 
+/**
+ * Builds BumpSequence operation.
+ * @see BumpSequenceOperation
+ */
 class BumpSequenceOperationBuilder
 {
-
     private BigInteger $bumpTo;
     private ?MuxedAccount $sourceAccount = null;
 
+    /**
+     * Creates a BumpSequenceOperationBuilder
+     * @param BigInteger $bumpTo Desired value for the operation’s source account sequence number.
+     */
     public function __construct(BigInteger $bumpTo) {
         $this->bumpTo = $bumpTo;
     }
 
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : BumpSequenceOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : BumpSequenceOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): BumpSequenceOperation {

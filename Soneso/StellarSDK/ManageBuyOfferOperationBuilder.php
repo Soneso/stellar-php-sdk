@@ -24,19 +24,22 @@ class ManageBuyOfferOperationBuilder
         $this->price = $price;
     }
 
-    public function setOfferId(int $offerId) {
+    public function setOfferId(int $offerId) : ManageBuyOfferOperationBuilder {
         if ($offerId < 0) {
             throw new InvalidArgumentException("Invalid offer id: ".$offerId);
         }
         $this->offerId = $offerId;
+        return $this;
     }
 
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : ManageBuyOfferOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : ManageBuyOfferOperationBuilder {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): ManageBuyOfferOperation {

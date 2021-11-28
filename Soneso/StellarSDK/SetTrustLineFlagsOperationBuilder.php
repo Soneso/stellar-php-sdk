@@ -21,20 +21,21 @@ class SetTrustLineFlagsOperationBuilder
      * @param int $clearFlags
      * @param int $setFlags
      */
-    public function __construct(string $trustorId, Asset $asset, int $clearFlags, int $setFlags)
-    {
+    public function __construct(string $trustorId, Asset $asset, int $clearFlags, int $setFlags) {
         $this->trustorId = $trustorId;
         $this->asset = $asset;
         $this->clearFlags = $clearFlags;
         $this->setFlags = $setFlags;
     }
 
-    public function setSourceAccount(string $accountId) {
-        $this->sourceAccount = new MuxedAccount($accountId);
+    public function setSourceAccount(string $accountId) : SetTrustLineFlagsOperationBuilder {
+        $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
+        return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : SetTrustLineFlagsOperationBuilder  {
         $this->sourceAccount = $sourceAccount;
+        return $this;
     }
 
     public function build(): SetTrustLineFlagsOperation {
