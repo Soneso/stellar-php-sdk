@@ -8,9 +8,14 @@ namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation;
+use Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-sell-offer" target="_blank">ManageSellOffer</a> operation.
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ */
 class ManageSellOfferOperation extends AbstractOperation
 {
     private Asset $selling;
@@ -37,6 +42,7 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
+     * The asset being sold in this operation.
      * @return Asset
      */
     public function getSelling(): Asset
@@ -45,6 +51,7 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
+     * The asset being bought in this operation.
      * @return Asset
      */
     public function getBuying(): Asset
@@ -53,6 +60,7 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
+     * Amount of selling being sold.
      * @return string
      */
     public function getAmount(): string
@@ -61,6 +69,7 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
+     * Price of 1 unit of selling in terms of buying.
      * @return Price
      */
     public function getPrice(): Price
@@ -69,6 +78,7 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
+     *  The ID of the offer.
      * @return int
      */
     public function getOfferId(): int
@@ -82,10 +92,10 @@ class ManageSellOfferOperation extends AbstractOperation
         $xdrBuying = $this->buying->toXdr();
         $xdrAmount = AbstractOperation::toXdrAmount($this->amount);
         $xdrPrice = $this->price->toXdr();
-        $op = new XdrManageBuyOfferOperation($xdrSelling, $xdrBuying, $xdrAmount, $xdrPrice, $this->offerId);
+        $op = new XdrManageSellOfferOperation($xdrSelling, $xdrBuying, $xdrAmount, $xdrPrice, $this->offerId);
         $type = new XdrOperationType(XdrOperationType::MANAGE_SELL_OFFER);
         $result = new XdrOperationBody($type);
-        $result->setManageBuyOfferOp($op);
+        $result->setManageSellOfferOp($op);
         return $result;
     }
 }

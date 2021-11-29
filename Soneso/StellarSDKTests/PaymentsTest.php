@@ -9,6 +9,7 @@ namespace StellarSDKTests;
 use DateTime;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\AssetTypeNative;
@@ -17,10 +18,15 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\PathPaymentStrictReceiveOperation;
+use Soneso\StellarSDK\PathPaymentStrictSendOperationBuilder;
 use Soneso\StellarSDK\PaymentOperationBuilder;
+use Soneso\StellarSDK\Price;
 use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 use Soneso\StellarSDK\StellarSDK;
@@ -51,7 +57,6 @@ class PaymentsTest extends TestCase
 
         // send 100 XLM payment form A to C
         $paymentOperation = (new PaymentOperationBuilder($accountCId, Asset::native(), "100"))->build();
-        $accountA->incrementSequenceNumber();
         $transaction = (new TransactionBuilder($accountA))->addOperation($paymentOperation)->build();
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
@@ -102,7 +107,6 @@ class PaymentsTest extends TestCase
 
         $paymentOperation = (PaymentOperationBuilder::forMuxedDestinationAccount($muxedDestination, Asset::native(), "100"))
             ->setMuxedSourceAccount($muxedSource)->build();
-        $accountA->incrementSequenceNumber();
         $accountA->setMuxedAccountMed25519Id(888181818);
         $transaction = (new TransactionBuilder($accountA))->addOperation($paymentOperation)->build();
         $transaction->sign($keyPairA, Network::testnet());
@@ -161,7 +165,6 @@ class PaymentsTest extends TestCase
 
         // send 100 XLM payment form A to C
         $paymentOperation = (new PaymentOperationBuilder($accountCId, Asset::native(), "100"))->build();
-        $accountA->incrementSequenceNumber();
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($paymentOperation)
             ->setMaxOperationFee(300)
@@ -219,7 +222,6 @@ class PaymentsTest extends TestCase
             ->setSourceAccount($accountBId)->build();
         $changeTrustCOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
             ->setSourceAccount($accountCId)->build();
-        $accountA->incrementSequenceNumber();
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($changeTrustBOperation)
             ->addOperation($changeTrustCOperation)
@@ -232,7 +234,6 @@ class PaymentsTest extends TestCase
 
         // send 100 IOM non native payment from A to C
         $paymentOperation = (new PaymentOperationBuilder($accountCId, $iomAsset, "100"))->build();
-        $accountA->incrementSequenceNumber();
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($paymentOperation)
             ->build();
@@ -306,7 +307,6 @@ class PaymentsTest extends TestCase
             ->setMuxedSourceAccount($muxedBAccount)->build();
         $changeTrustCOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
             ->setMuxedSourceAccount($muxedCAccount)->build();
-        $accountA->incrementSequenceNumber();
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($changeTrustBOperation)
             ->addOperation($changeTrustCOperation)
@@ -319,7 +319,6 @@ class PaymentsTest extends TestCase
 
         // send 100 IOM non native payment from A to C
         $paymentOperation = (PaymentOperationBuilder::forMuxedDestinationAccount($muxedCAccount, $iomAsset, "100"))->build();
-        $accountA->incrementSequenceNumber();
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($paymentOperation)
             ->build();
@@ -360,101 +359,152 @@ class PaymentsTest extends TestCase
         $this->assertTrue($found);
     }
 
-    public function testBI(): void
-    {
-        $bi = new BigInteger("100000.8.01");
-        print($bi->toString());
-        $this->assertNotNull($bi);
-    }
-    public function testEffectsPage(): void
+    public function testPaymentStrictSendReceive()
     {
         $sdk = StellarSDK::getTestNetInstance();
-        $requestBuilder = $sdk->payments()->forAccount("GAOF7ARG3ZAVUA63GCLXG5JQTMBAH3ZFYHGLGJLDXGDSXQRHD72LLGOB");
-        $response = $requestBuilder->execute();
-        foreach ($response->getOperations() as $payment) {
-            $this->assertTrue(($payment instanceof CreateAccountOperationResponse || $payment instanceof PaymentOperationResponse));
-            $this->assertGreaterThan(0, strlen($payment->getOperationId()));
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairB = KeyPair::random();
+        $keyPairC = KeyPair::random();
+        $keyPairD = KeyPair::random();
+        $keyPairE = KeyPair::random();
+        $accountBId = $keyPairB->getAccountId();
+        $accountCId = $keyPairC->getAccountId();
+        $accountDId = $keyPairD->getAccountId();
+        $accountEId = $keyPairE->getAccountId();
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation((new CreateAccountOperationBuilder($accountBId, "10"))->build())
+            ->addOperation((new CreateAccountOperationBuilder($accountCId, "10"))->build())
+            ->addOperation((new CreateAccountOperationBuilder($accountDId, "10"))->build())
+            ->addOperation((new CreateAccountOperationBuilder($accountEId, "10"))->build())
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $accountB = $sdk->requestAccount($accountBId);
+        $accountC = $sdk->requestAccount($accountCId);
+        $accountD = $sdk->requestAccount($accountDId);
+        $accountE = $sdk->requestAccount($accountEId);
+
+        $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountAId);
+        $ecoAsset = new AssetTypeCreditAlphanum4("ECO", $accountAId);
+        $moonAsset = new AssetTypeCreditAlphanum4("MOON", $accountAId);
+
+        $ctIOMOp = new ChangeTrustOperationBuilder($iomAsset, "200999");
+        $ctECOOp = new ChangeTrustOperationBuilder($ecoAsset, "200999");
+        $ctMOONOp = new ChangeTrustOperationBuilder($moonAsset, "200999");
+
+        $transaction = (new TransactionBuilder($accountC))->addOperation($ctIOMOp->build())->build();
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $transaction = (new TransactionBuilder($accountB))
+            ->addOperation($ctIOMOp->build())
+            ->addOperation($ctECOOp->build())->build();
+        $transaction->sign($keyPairB, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $transaction = (new TransactionBuilder($accountD))
+            ->addOperation($ctECOOp->build())
+            ->addOperation($ctMOONOp->build())->build();
+        $transaction->sign($keyPairD, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $transaction = (new TransactionBuilder($accountE))->addOperation($ctMOONOp->build())->build();
+        $transaction->sign($keyPairE, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation((new PaymentOperationBuilder($accountCId, $iomAsset, "100"))->build())
+            ->addOperation((new PaymentOperationBuilder($accountBId, $iomAsset, "100"))->build())
+            ->addOperation((new PaymentOperationBuilder($accountBId, $ecoAsset, "100"))->build())
+            ->addOperation((new PaymentOperationBuilder($accountDId, $moonAsset, "100"))->build())
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $sellOfferOp = (new ManageSellOfferOperationBuilder($ecoAsset, $iomAsset, "100", "0.5"))->build();
+        $transaction = (new TransactionBuilder($accountB))->addOperation($sellOfferOp)->build();
+        $transaction->sign($keyPairB, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $sellOfferOp = (new ManageSellOfferOperationBuilder($moonAsset, $ecoAsset, "100", "0.5"))->build();
+        $transaction = (new TransactionBuilder($accountD))->addOperation($sellOfferOp)->build();
+        $transaction->sign($keyPairD, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $destinationAssets = [$moonAsset];
+        $exceptionThrown = false;
+        try {
+            $strictSendPaths = $sdk->findStrictSendPaths()
+                ->forSourceAsset($iomAsset)
+                ->forSourceAmount("10")
+                ->forDestinationAccount($accountEId)
+                ->forDestinationAssets($destinationAssets)
+                ->execute();
+        } catch (RuntimeException $e) {
+            $exceptionThrown = true;
         }
+        $this->assertTrue($exceptionThrown);
+        sleep(3);
+        $strictSendPaths = $sdk->findStrictSendPaths()
+            ->forSourceAsset($iomAsset)
+            ->forSourceAmount("10")
+            ->forDestinationAccount($accountEId)
+            ->execute();
+        $this->assertTrue($strictSendPaths->getPaths()->count() > 0);
+        $pathArr = array();
+        foreach($strictSendPaths->getPaths() as $path) {
+            $this->assertTrue(floatval($path->getDestinationAmount()) == 40);
+            $this->assertTrue($path->getDestinationAssetType() == "credit_alphanum4");
+            $this->assertTrue($path->getDestinationAssetCode() == "MOON");
+            $this->assertTrue($path->getDestinationAssetIssuer() == $accountAId);
+            $this->assertTrue(floatval($path->getSourceAmount()) == 10);
+            $this->assertTrue($path->getSourceAssetType() == "credit_alphanum4");
+            $this->assertTrue($path->getSourceAssetCode() == "IOM");
+            $this->assertTrue($path->getDestinationAssetIssuer() == $accountAId);
+            $this->assertTrue($path->getPath()->count() > 0);
+            $found = false;
+            foreach($path->getPath() as $pathAsset) {
+                if (!$found && $pathAsset instanceof AssetTypeCreditAlphanum4 && $pathAsset->getCode() == $ecoAsset->getCode()) {
+                    $found = true;
+                }
+                $this->assertTrue($found);
+                array_push($pathArr, $pathAsset);
+            }
+            break;
+        }
+
+        $strictSendOp = (new PathPaymentStrictSendOperationBuilder($iomAsset, "10", $accountEId, $moonAsset, "38"))
+            ->setPath($pathArr)
+            ->build();
+        $transaction = (new TransactionBuilder($accountC))->addOperation($strictSendOp)->build();
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountE = $sdk->requestAccount($accountEId);
+        foreach($accountE->getBalances() as $balance) {
+            if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == "MOON") {
+                $this->assertTrue(floatval($balance->getBalance()) > 39);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
     }
 
-    public function testNativeAndNonNativePayment(): void {
-        $sdk = StellarSDK::getTestNetInstance();
-        $keyPair = KeyPair::random();
-        $this->assertNotNull($keyPair->getPrivateKey());
-        $acountId = $keyPair->getAccountId();
-        print(PHP_EOL. "1:".$acountId. ":" . $keyPair->getSecretSeed() . PHP_EOL);
-        FriendBot::fundTestAccount($acountId);
-        $response = $sdk->requestAccount($acountId);
-        $this->assertEquals($acountId, $response->getAccountId());
-        $this->assertGreaterThan(0, strlen($response->getSequenceNumber()->toString()));
-        $this->assertGreaterThan(0, strlen($response->getIncrementedSequenceNumber()->toString()));
-
-        $keyPair2 = KeyPair::random();
-        $acountId2 = $keyPair2->getAccountId();
-        print(PHP_EOL. "2:".$acountId2 . ":" . $keyPair2->getSecretSeed() . PHP_EOL);
-
-        $builder = new TransactionBuilder($response);
-        $createAccountOp = new CreateAccountOperation($acountId2, "120");
-        $memo = Memo::id(19929182111);
-        $builder->setMemo($memo);
-        $builder->addOperation($createAccountOp);
-        $transaction = $builder->build();
-        $transaction->sign($keyPair, Network::testnet());
-        $submitTxResponse = $sdk->submitTransaction($transaction);
-        $this->assertNotNull($submitTxResponse);
-
-        $account2 = $sdk->requestAccount($acountId2);
-        $builder = Transaction::builder($account2);
-        $paymentOpBuilder = new PaymentOperationBuilder($acountId, Asset::native(), "12.32");
-        $builder->addOperation($paymentOpBuilder->build());
-        $transaction = $builder->build();
-        $transaction->sign($keyPair2, Network::testnet());
-        $submitTxResponse = $sdk->submitTransaction($transaction);
-        $this->assertNotNull($submitTxResponse);
-
-        $keyPair3 = KeyPair::random();
-        $acountId3 = $keyPair3->getAccountId();
-        print(PHP_EOL. "3:".$acountId3 . ":" . $keyPair3->getSecretSeed() . PHP_EOL);
-        FriendBot::fundTestAccount($acountId3);
-        $account1 = $sdk->requestAccount($acountId);
-        $builder = Transaction::builder($account1);
-        $assetIXO = Asset::createNonNativeAsset("IXO", $acountId3);
-        $chTrustOpBuilder = new ChangeTrustOperationBuilder($assetIXO);
-        $chTrustOpBuilder->setSourceAccount($acountId);
-        $chop1 =  $chTrustOpBuilder->build();
-        $chTrustOpBuilder->setSourceAccount($acountId2);
-        $chop2 =  $chTrustOpBuilder->build();
-        $strHash32 = "9e76beeae3ca55ea1efea80f8fb32ef0";
-        $memo = Memo::hash($strHash32);
-        $builder->setMemo($memo);
-        $builder->addOperation($chop1);
-        $builder->addOperation($chop2);
-        $from = new DateTime();
-        $from->modify("-1 day");
-        $to = new DateTime();
-        $to->modify("+1 day");
-        $timeBounds = new TimeBounds($from, $to);
-        $builder->setTimeBounds($timeBounds);
-        $transaction = $builder->build();
-        $transaction->sign($keyPair, Network::testnet());
-        $transaction->sign($keyPair2, Network::testnet());
-        $submitTxResponse = $sdk->submitTransaction($transaction);
-        $this->assertNotNull($submitTxResponse);
-        $this->assertEquals($submitTxResponse->getMemo()->getValue(), $strHash32);
-
-        $account3 = $sdk->requestAccount($acountId3);
-        $paymentOpBuilder = new PaymentOperationBuilder($acountId, $assetIXO, "200002.12223");
-        $pop1 = $paymentOpBuilder->build();
-        $paymentOpBuilder = new PaymentOperationBuilder($acountId2, $assetIXO, "2828");
-        $pop2 = $paymentOpBuilder->build();
-        $builder = Transaction::builder($account3);
-        $memo = Memo::text("jaja, kuppal s");
-        $builder->setMemo($memo);
-        $builder->addOperation($pop1);
-        $builder->addOperation($pop2);
-        $transaction = $builder->build();
-        $transaction->sign($keyPair3, Network::testnet());
-        $submitTxResponse = $sdk->submitTransaction($transaction);
-        $this->assertNotNull($submitTxResponse);
-    }
 }

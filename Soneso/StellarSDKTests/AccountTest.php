@@ -120,7 +120,6 @@ final class AccountTest extends TestCase
         $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountCId);
 
         $changeTrustOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))->build();
-        $accountA->incrementSequenceNumber();
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($changeTrustOperation)
             ->build();

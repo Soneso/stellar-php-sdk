@@ -11,6 +11,10 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-send" target="_blank">PathPaymentStrictSend</a> operation.
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ */
 class PathPaymentStrictSendOperation extends AbstractOperation
 {
     private Asset $sendAsset;
@@ -20,7 +24,15 @@ class PathPaymentStrictSendOperation extends AbstractOperation
     private String $destMin;
     private ?array $path = null; // [Asset]
 
-
+    /**
+     * Constructs a new PathPaymentStrictSendOperation object.
+     * @param Asset $sendAsset The asset deducted from the sender's account.
+     * @param string $sendAmount The amount of send asset to deduct (excluding fees).
+     * @param MuxedAccount $destination Account that receives the payment.
+     * @param Asset $destAsset The asset the destination account receives.
+     * @param string $destMin The minimum amount of destination asset the destination account receives.
+     * @param array|null $path The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -&raquo; XLM -&raquo; BTC -&raquo; EUR and the path would contain XLM and BTC.
+     */
     public function __construct(Asset $sendAsset, string $sendAmount, MuxedAccount $destination, Asset $destAsset, string $destMin, ?array $path = null) {
         $this->sendAsset = $sendAsset;
         $this->sendAmount = $sendAmount;
@@ -31,50 +43,50 @@ class PathPaymentStrictSendOperation extends AbstractOperation
     }
 
     /**
+     * The asset deducted from the sender's account.
      * @return Asset
      */
-    public function getSendAsset(): Asset
-    {
+    public function getSendAsset(): Asset {
         return $this->sendAsset;
     }
 
     /**
+     * The amount of send asset to deduct (excluding fees)
      * @return string
      */
-    public function getSendAmount(): string
-    {
+    public function getSendAmount(): string {
         return $this->sendAmount;
     }
 
     /**
+     * Account that receives the payment.
      * @return MuxedAccount
      */
-    public function getDestination(): MuxedAccount
-    {
+    public function getDestination(): MuxedAccount {
         return $this->destination;
     }
 
     /**
+     * The asset the destination account receives.
      * @return Asset
      */
-    public function getDestAsset(): Asset
-    {
+    public function getDestAsset(): Asset {
         return $this->destAsset;
     }
 
     /**
+     * The minimum amount of destination asset the destination account receives.
      * @return string
      */
-    public function getDestMin(): string
-    {
+    public function getDestMin(): string {
         return $this->destMin;
     }
 
     /**
+     * The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -&raquo; XLM -&raquo; BTC -&raquo; EUR and the path would contain XLM and BTC.
      * @return array|null
      */
-    public function getPath(): ?array
-    {
+    public function getPath(): ?array {
         return $this->path;
     }
 

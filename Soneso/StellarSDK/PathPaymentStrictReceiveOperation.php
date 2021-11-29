@@ -4,13 +4,16 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-
 namespace Soneso\StellarSDK;
 
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-receive" target="_blank">PathPaymentStrictReceive</a> operation.
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ */
 class PathPaymentStrictReceiveOperation extends AbstractOperation
 {
     private Asset $sendAsset;
@@ -20,7 +23,15 @@ class PathPaymentStrictReceiveOperation extends AbstractOperation
     private String $destAmount;
     private ?array $path = null; // [Asset]
 
-
+    /**
+     * Creates a new PathPaymentStrictReceiveOperation object.
+     * @param Asset $sendAsset The asset deducted from the sender's account.
+     * @param string $sendMax The maximum amount of send asset to deduct (excluding fees).
+     * @param MuxedAccount $destination Account that receives the payment.
+     * @param Asset $destAsset The asset the destination account receives.
+     * @param string $destAmount The amount of destination asset the destination account receives.
+     * @param array|null $path The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -&raquo; XLM -&raquo; BTC -&raquo; EUR and the path would contain XLM and BTC.
+     */
     public function __construct(Asset $sendAsset, string $sendMax, MuxedAccount $destination, Asset $destAsset, string $destAmount, ?array $path = null) {
         $this->sendAsset = $sendAsset;
         $this->sendMax = $sendMax;
@@ -31,55 +42,54 @@ class PathPaymentStrictReceiveOperation extends AbstractOperation
     }
 
     /**
+     * The asset deducted from the sender's account.
      * @return Asset
      */
-    public function getSendAsset(): Asset
-    {
+    public function getSendAsset(): Asset {
         return $this->sendAsset;
     }
 
     /**
+     * The maximum amount of send asset to deduct (excluding fees).
      * @return string
      */
-    public function getSendMax(): string
-    {
+    public function getSendMax(): string {
         return $this->sendMax;
     }
 
     /**
+     * Account that receives the payment.
      * @return MuxedAccount
      */
-    public function getDestination(): MuxedAccount
-    {
+    public function getDestination(): MuxedAccount {
         return $this->destination;
     }
 
     /**
+     * The asset the destination account receives.
      * @return Asset
      */
-    public function getDestAsset(): Asset
-    {
+    public function getDestAsset(): Asset {
         return $this->destAsset;
     }
 
     /**
+     * The amount of destination asset the destination account receives.
      * @return string
      */
-    public function getDestAmount(): string
-    {
+    public function getDestAmount(): string {
         return $this->destAmount;
     }
 
     /**
+     * The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -&raquo; XLM -&raquo; BTC -&raquo; EUR and the path would contain XLM and BTC.
      * @return array|null
      */
-    public function getPath(): ?array
-    {
+    public function getPath(): ?array {
         return $this->path;
     }
 
-    public function toOperationBody(): XdrOperationBody
-    {
+    public function toOperationBody(): XdrOperationBody {
         $xdrSendAsset = $this->sendAsset->toXdr();
         $xdrSendAmount = AbstractOperation::toXdrAmount($this->sendMax);
         $xdrDestination = $this->destination->toXdr();

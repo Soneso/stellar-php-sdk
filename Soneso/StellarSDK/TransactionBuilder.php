@@ -86,6 +86,9 @@ class TransactionBuilder
         $fee = count($this->operations) * $this->maxOperationFee;
         $source = $this->sourceAccount->getMuxedAccount();
         $seqNr = $this->sourceAccount->getIncrementedSequenceNumber();
-        return new Transaction($source, $seqNr, $this->operations, $this->memo, $this->timeBounds, $fee);
+        $transaction = new Transaction($source, $seqNr, $this->operations, $this->memo, $this->timeBounds, $fee);
+        // Increment sequence number when there were no exceptions when creating a transaction
+        $this->sourceAccount->incrementSequenceNumber();
+        return $transaction;
     }
 }
