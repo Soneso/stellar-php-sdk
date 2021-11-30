@@ -7,7 +7,7 @@
 
 namespace Soneso\StellarSDK\Responses\Asset;
 
-class AssetsResponse  extends \IteratorIterator
+class AssetsResponse extends \IteratorIterator
 {
 
     public function __construct(AssetResponse ...$assets)
@@ -28,5 +28,13 @@ class AssetsResponse  extends \IteratorIterator
     public function count(): int
     {
         return $this->getInnerIterator()->count();
+    }
+
+    public function toArray() : array {
+        $result = array();
+        foreach($this as $value) {
+            array_push($result, $value);
+        }
+        return $result;
     }
 }

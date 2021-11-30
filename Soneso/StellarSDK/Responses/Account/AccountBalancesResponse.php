@@ -22,4 +22,12 @@ class AccountBalancesResponse extends \IteratorIterator {
     public function count() : int {
         return $this->getInnerIterator()->count();
     }
+
+    public function toArray() : array {
+        $result = array();
+        foreach($this as $value) {
+            array_push($result, $value);
+        }
+        return $result;
+    }
 }

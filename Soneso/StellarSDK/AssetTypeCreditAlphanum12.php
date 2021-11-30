@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK;
 
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12;
 use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
@@ -26,8 +27,7 @@ class AssetTypeCreditAlphanum12 extends AssetTypeCreditAlphanum
     /**
      * @inheritDoc
      */
-    public function getType(): string
-    {
+    public function getType(): string {
         return Asset::TYPE_CREDIT_ALPHANUM_12;
     }
 
@@ -36,8 +36,8 @@ class AssetTypeCreditAlphanum12 extends AssetTypeCreditAlphanum
         $xrAssetType = new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12);
         $xdrAsset = new XdrAsset($xrAssetType);
         $xdrIssuer = new XdrAccountID($this->getIssuer());
-        $a4 = new XdrAssetAlphaNum4($this->getCode(), $xdrIssuer);
-        $xdrAsset->setAlphaNum4($a4);
+        $a12 = new XdrAssetAlphaNum12($this->getCode(), $xdrIssuer);
+        $xdrAsset->setAlphaNum12($a12);
         return $xdrAsset;
     }
 }

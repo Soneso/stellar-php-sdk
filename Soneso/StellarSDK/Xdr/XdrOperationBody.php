@@ -409,6 +409,7 @@ class XdrOperationBody
             XdrOperationType::BUMP_SEQUENCE => $this->bumpSequenceOp->encode() ?? "",
             XdrOperationType::ACCOUNT_MERGE => $this->accountMergeOp->encode() ?? "",
             XdrOperationType::MANAGE_SELL_OFFER => $this->manageSellOfferOp->encode() ?? "",
+            XdrOperationType::MANAGE_BUY_OFFER => $this->manageBuyOfferOp->encode() ?? "",
             XdrOperationType::ALLOW_TRUST => $this->allowTrustOperation->encode() ?? "",
             XdrOperationType::MANAGE_DATA => $this->manageDataOperation->encode() ?? "",
             XdrOperationType::CREATE_CLAIMABLE_BALANCE => $this->createClaimableBalanceOperation->encode() ?? "",

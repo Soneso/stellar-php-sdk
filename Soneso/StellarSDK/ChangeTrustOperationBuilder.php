@@ -26,16 +26,30 @@ class ChangeTrustOperationBuilder
         $this->limit = $limit;
     }
 
+    /**
+     * Sets the source account for this operation. G...
+     * @param string $accountId The operation's source account.
+     * @return ChangeTrustOperationBuilder Builder object so you can chain methods
+     */
     public function setSourceAccount(string $accountId) : ChangeTrustOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
         return $this;
     }
 
+    /**
+     * Sets the muxed source account for this operation.
+     * @param MuxedAccount $sourceAccount The operation's source account.
+     * @return ChangeTrustOperationBuilder Builder object so you can chain methods
+     */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : ChangeTrustOperationBuilder {
         $this->sourceAccount = $sourceAccount;
         return $this;
     }
 
+    /**
+     * Builds an operation.
+     * @return ChangeTrustOperation
+     */
     public function build(): ChangeTrustOperation {
         $result = new ChangeTrustOperation($this->asset, $this->limit);
         if ($this->sourceAccount != null) {

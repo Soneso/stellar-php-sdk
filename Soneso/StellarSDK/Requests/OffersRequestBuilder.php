@@ -38,6 +38,17 @@ class OffersRequestBuilder  extends RequestBuilder
     }
 
     /**
+     * Builds request to <code>GET /accounts/{account}/offers</code>
+     * @param string $accountId ID of the account for which to get payments.
+     * @return OffersRequestBuilder
+     * @see <a href="https://developers.stellar.org/api/resources/accounts/offers/">Offers for Account</a>
+     */
+    public function forAccount(string $accountId) : OffersRequestBuilder {
+        $this->setSegments("accounts", $accountId, "offers");
+        return $this;
+    }
+
+    /**
      * Returns all offers sponsored by a given account.
      * @param string $sponsor sponsor Account ID of the sponsor.
      * @return OffersRequestBuilder current instance

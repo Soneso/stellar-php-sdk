@@ -85,7 +85,10 @@ class XdrEncoder
     {
         $xdrBytes = '';
         $bigIntBytes = $value->toBytes(true);
-        $bigIntBits = $value->toBits(true);
+        $bigIntBits = '';
+        if($value != new BigInteger(0)) {
+            $bigIntBits = $value->toBits(true);
+        }
 
         // Special case: MAX_UINT_64 will look like 00ffffffffffffffff and have an
         // extra preceding byte we need to get rid of
