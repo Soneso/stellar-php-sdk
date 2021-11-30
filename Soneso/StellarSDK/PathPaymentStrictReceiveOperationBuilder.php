@@ -32,7 +32,7 @@ class PathPaymentStrictReceiveOperationBuilder
     public function __construct(Asset $sendAsset, string $sendMax, string $destinationAccountId, Asset $destAsset, string $destAmount) {
         $this->sendAsset = $sendAsset;
         $this->sendMax = $sendMax;
-        $this->destination = new MuxedAccount($destinationAccountId);
+        $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
         $this->destAsset = $destAsset;
         $this->destAmount = $destAmount;
     }

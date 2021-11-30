@@ -32,7 +32,7 @@ class PathPaymentStrictSendOperationBuilder
     public function __construct(Asset $sendAsset, string $sendAmount, string $destinationAccountId, Asset $destAsset, string $destMin) {
         $this->sendAsset = $sendAsset;
         $this->sendAmount = $sendAmount;
-        $this->destination = new MuxedAccount($destinationAccountId);
+        $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
         $this->destAsset = $destAsset;
         $this->destMin = $destMin;
     }

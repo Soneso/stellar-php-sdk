@@ -24,6 +24,7 @@ use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PathPaymentStrictReceiveOperation;
+use Soneso\StellarSDK\PathPaymentStrictReceiveOperationBuilder;
 use Soneso\StellarSDK\PathPaymentStrictSendOperationBuilder;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Price;
@@ -505,6 +506,238 @@ class PaymentsTest extends TestCase
             }
         }
         $this->assertTrue($found);
+
+        $sourceAssets = [$iomAsset];
+        $exceptionThrown = false;
+        try {
+            $strictSendPaths = $sdk->findStrictReceivePaths()
+                ->forDestinationAsset($moonAsset)
+                ->forDestinationAmount("8")
+                ->forSourceAccount($accountCId)
+                ->forSourceAssets($sourceAssets)
+                ->execute();
+        } catch (RuntimeException $e) {
+            $exceptionThrown = true;
+        }
+        $this->assertTrue($exceptionThrown);
+        sleep(3);
+        $strictReceivePaths = $sdk->findStrictReceivePaths()
+            ->forDestinationAsset($moonAsset)
+            ->forDestinationAmount("8")
+            ->forSourceAssets($sourceAssets)
+            ->execute();
+        $this->assertTrue($strictReceivePaths->getPaths()->count() > 0);
+
+        $pathArr = array();
+        foreach($strictReceivePaths->getPaths() as $path) {
+            $this->assertTrue(floatval($path->getDestinationAmount()) == 8);
+            $this->assertTrue($path->getDestinationAssetType() == "credit_alphanum4");
+            $this->assertTrue($path->getDestinationAssetCode() == "MOON");
+            $this->assertTrue($path->getDestinationAssetIssuer() == $accountAId);
+            $this->assertTrue(floatval($path->getSourceAmount()) == 2);
+            $this->assertTrue($path->getSourceAssetType() == "credit_alphanum4");
+            $this->assertTrue($path->getSourceAssetCode() == "IOM");
+            $this->assertTrue($path->getDestinationAssetIssuer() == $accountAId);
+            $this->assertTrue($path->getPath()->count() > 0);
+            $found = false;
+            foreach($path->getPath() as $pathAsset) {
+                if (!$found && $pathAsset instanceof AssetTypeCreditAlphanum4 && $pathAsset->getCode() == $ecoAsset->getCode()) {
+                    $found = true;
+                }
+                $this->assertTrue($found);
+                array_push($pathArr, $pathAsset);
+            }
+            break;
+        }
+
+        $strictReceiveOp = (new PathPaymentStrictReceiveOperationBuilder($iomAsset, "2", $accountEId, $moonAsset, "8"))
+            ->setPath($pathArr)
+            ->build();
+        $transaction = (new TransactionBuilder($accountC))->addOperation($strictReceiveOp)->build();
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountE = $sdk->requestAccount($accountEId);
+        foreach($accountE->getBalances() as $balance) {
+            if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == "MOON") {
+                $this->assertTrue(floatval($balance->getBalance()) > 47);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
     }
 
+    public function testPaymentStrictSendReceiveMuxedAccounts()
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairB = KeyPair::random();
+        $keyPairC = KeyPair::random();
+        $keyPairD = KeyPair::random();
+        $accountBId = $keyPairB->getAccountId();
+        $accountCId = $keyPairC->getAccountId();
+        $accountDId = $keyPairD->getAccountId();
+
+        $muxedAAccount = new MuxedAccount($accountAId, 111111111111);
+        $muxedBAccount = new MuxedAccount($accountBId, 222222222222);
+        $muxedCAccount = new MuxedAccount($accountCId, 333333333333);
+        $muxedDAccount = new MuxedAccount($accountDId, 444444444444);
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation((new CreateAccountOperationBuilder($accountBId, "10"))->setMuxedSourceAccount($muxedAAccount)->build())
+            ->addOperation((new CreateAccountOperationBuilder($accountCId, "10"))->setMuxedSourceAccount($muxedAAccount)->build())
+            ->addOperation((new CreateAccountOperationBuilder($accountDId, "10"))->setMuxedSourceAccount($muxedAAccount)->build())
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $accountB = $sdk->requestAccount($accountBId);
+        $accountC = $sdk->requestAccount($accountCId);
+        $accountD = $sdk->requestAccount($accountDId);
+
+        $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountAId);
+        $ecoAsset = new AssetTypeCreditAlphanum4("ECO", $accountAId);
+
+        $ctIOMOp = new ChangeTrustOperationBuilder($iomAsset, "200999");
+        $ctECOOp = new ChangeTrustOperationBuilder($ecoAsset, "200999");
+
+        $transaction = (new TransactionBuilder($accountC))->addOperation($ctIOMOp->build())->build();
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $transaction = (new TransactionBuilder($accountB))
+            ->addOperation($ctIOMOp->build())
+            ->addOperation($ctECOOp->build())->build();
+        $transaction->sign($keyPairB, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $transaction = (new TransactionBuilder($accountD))
+            ->addOperation($ctECOOp->build())->build();
+        $transaction->sign($keyPairD, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation((PaymentOperationBuilder::forMuxedDestinationAccount($muxedCAccount, $iomAsset, "100"))->build())
+            ->addOperation((PaymentOperationBuilder::forMuxedDestinationAccount($muxedBAccount, $iomAsset, "100"))->build())
+            ->addOperation((PaymentOperationBuilder::forMuxedDestinationAccount($muxedBAccount, $ecoAsset, "100"))->build())
+            ->addOperation((PaymentOperationBuilder::forMuxedDestinationAccount($muxedDAccount, $ecoAsset, "100"))->build())
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $sellOfferOp = (new ManageSellOfferOperationBuilder($ecoAsset, $iomAsset, "30", "0.5"))
+            ->setMuxedSourceAccount($muxedBAccount)->build();
+        $transaction = (new TransactionBuilder($accountB))->addOperation($sellOfferOp)->build();
+        $transaction->sign($keyPairB, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+
+        $strictSendOp = (PathPaymentStrictSendOperationBuilder::forMuxedDestinationAccount($iomAsset, "10", $muxedDAccount, $ecoAsset, "18"))
+            ->setMuxedSourceAccount($muxedCAccount)
+            ->build();
+        $transaction = (new TransactionBuilder($accountC))->addOperation($strictSendOp)->build();
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountD = $sdk->requestAccount($accountDId);
+        foreach($accountD->getBalances() as $balance) {
+            if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == "ECO") {
+                $this->assertTrue(floatval($balance->getBalance()) > 19);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+
+        $strictReceiveOp = (PathPaymentStrictReceiveOperationBuilder::forMuxedDestinationAccount($iomAsset, "2", $muxedDAccount, $ecoAsset, "3"))
+            ->setMuxedSourceAccount($muxedCAccount)
+            ->build();
+        $transaction = (new TransactionBuilder($accountC))->addOperation($strictReceiveOp)->build();
+        $transaction->sign($keyPairC, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $found = false;
+        $accountD = $sdk->requestAccount($accountDId);
+        foreach($accountD->getBalances() as $balance) {
+            if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == "ECO") {
+                $this->assertTrue(floatval($balance->getBalance()) > 22);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testQueryPayments()
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairB = KeyPair::random();
+        $keyPairC = KeyPair::random();
+        $keyPairD = KeyPair::random();
+        $accountBId = $keyPairB->getAccountId();
+        $accountCId = $keyPairC->getAccountId();
+        $accountDId = $keyPairD->getAccountId();
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation((new CreateAccountOperationBuilder($accountBId, "10"))->build())
+            ->addOperation((new CreateAccountOperationBuilder($accountCId, "10"))->build())
+            ->addOperation((new CreateAccountOperationBuilder($accountDId, "10"))->build())
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation((new PaymentOperationBuilder($accountBId, Asset::native(),"10"))->build())
+            ->addOperation((new PaymentOperationBuilder($accountCId, Asset::native(),"10"))->build())
+            ->addOperation((new PaymentOperationBuilder($accountDId, Asset::native(),"10"))->build())
+            ->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $payments = $sdk->payments()->forAccount($accountAId)->order("desc")->execute();
+        $this->assertTrue($payments->getOperations()->count() > 0);
+        $createAccTransactionHash = "";
+        $paymentTransactionHash = "";
+        foreach($payments->getOperations() as $operation) {
+            if ($operation instanceof PaymentOperationResponse) {
+                $paymentTransactionHash = $operation->getTransactionHash();
+            } else if ($operation instanceof CreateAccountOperationResponse) {
+                $createAccTransactionHash = $operation->getTransactionHash();
+            }
+        }
+        $this->assertTrue(strlen($createAccTransactionHash) > 0);
+        $this->assertTrue(strlen($paymentTransactionHash) > 0);
+        $payments = $sdk->payments()->forTransaction($createAccTransactionHash)->order("desc")->execute();
+        $this->assertTrue($payments->getOperations()->count() > 0);
+        $payments = $sdk->payments()->forTransaction($paymentTransactionHash)->order("desc")->execute();
+        $this->assertTrue($payments->getOperations()->count() > 0);
+        $transactionResponse = $sdk->requestTransaction($paymentTransactionHash);
+        $this->assertNotNull($transactionResponse->getLedger());
+        $payments = $sdk->payments()->forLedger(strval($transactionResponse->getLedger()))->order("desc")->execute();
+        $this->assertTrue($payments->getOperations()->count() > 0);
+
+    }
 }
