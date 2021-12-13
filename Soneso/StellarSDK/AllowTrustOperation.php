@@ -22,7 +22,7 @@ class AllowTrustOperation extends AbstractOperation
 
     public function __construct(string $trustor, string $assetCode, bool $authorize, bool $authorizeToMaintainLiabilities)
     {
-        $this->$trustor = $trustor;
+        $this->trustor = $trustor;
         $this->assetCode = $assetCode;
         $this->authorize = $authorize;
         $this->authorizeToMaintainLiabilities = $authorizeToMaintainLiabilities;

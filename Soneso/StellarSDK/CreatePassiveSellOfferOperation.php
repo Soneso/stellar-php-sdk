@@ -11,7 +11,7 @@ use Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
-class CreatePassiveSellOfferOperation
+class CreatePassiveSellOfferOperation extends AbstractOperation
 {
     private Asset $selling;
     private Asset $buying;

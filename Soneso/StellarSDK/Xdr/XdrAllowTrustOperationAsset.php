@@ -25,10 +25,10 @@ class XdrAllowTrustOperationAsset
         if ($len <= 0 || $len > 12) {
             throw new InvalidArgumentException("invalid asset code ". $assetCode);
         }
-        $type = $len > 4 ? XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4 : XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12;
+        $type = $len > 4 ? XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12 : XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4;
         $assetCode4 = $len > 4 ? null : $assetCode;
         $assetCode12 = $len > 4 ? $assetCode : null;
-        return new XdrAllowTrustOperationAsset($type, $assetCode4, $assetCode12);
+        return new XdrAllowTrustOperationAsset(new XdrAssetType($type), $assetCode4, $assetCode12);
     }
 
     /**
@@ -68,7 +68,7 @@ class XdrAllowTrustOperationAsset
     }
 
     public static function decode(XdrBuffer $xdr): XdrAllowTrustOperationAsset {
-        $type = XdrSequenceNumber::decode($xdr);
+        $type = XdrAssetType::decode($xdr);
 
         if ($type->getValue() == XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4) {
             $assetCode = $xdr->readOpaqueFixedString(4);

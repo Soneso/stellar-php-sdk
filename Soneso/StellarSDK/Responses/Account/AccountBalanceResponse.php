@@ -16,7 +16,7 @@ class AccountBalanceResponse
     private ?string $liquidityPoolId = null;
     private ?string $buyingLiabilities = null;
     private ?string $sellingLiabilities = null;
-    private string $limit;
+    private ?string $limit = null;
     private ?string $sponsor = null;
     private ?bool $isAuthorized = null;
     private ?bool $isAuthorizedToMaintainLiabilities = null;
@@ -80,12 +80,13 @@ class AccountBalanceResponse
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getLimit(): string
+    public function getLimit(): ?string
     {
         return $this->limit;
     }
+
 
     /**
      * @return string|null
@@ -137,6 +138,7 @@ class AccountBalanceResponse
         if (isset($json['buying_liabilities'])) $this->buyingLiabilities = $json['buying_liabilities'];
         if (isset($json['selling_liabilities'])) $this->sellingLiabilities = $json['selling_liabilities'];
         if (isset($json['sponsor'])) $this->sponsor = $json['sponsor'];
+        if (isset($json['limit'])) $this->limit = $json['limit'];
         if (isset($json['is_authorized'])) $this->isAuthorized = $json['is_authorized'];
         if (isset($json['is_authorized_to_maintain_liabilities'])) $this->isAuthorizedToMaintainLiabilities = $json['is_authorized_to_maintain_liabilities'];
         if (isset($json['is_clawback_enabled'])) $this->isClawbackEnabled = $json['is_clawback_enabled'];

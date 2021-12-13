@@ -34,7 +34,6 @@ use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 
 final class AccountTest extends TestCase
 {
-    private string $accountId = "GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL";
 
     public function testSetAccountOptions(): void {
         $sdk = StellarSDK::getTestNetInstance();

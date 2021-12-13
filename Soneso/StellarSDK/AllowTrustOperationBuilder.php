@@ -24,6 +24,7 @@ class AllowTrustOperationBuilder
         $this->trustor = $trustor;
         $this->assetCode = $assetCode;
         $this->authorized = $authorized;
+        $this->authorizedToMaintainLiabilities = $authorizedToMaintainLiabilities;
     }
 
     public function setSourceAccount(string $accountId) : AllowTrustOperationBuilder {
