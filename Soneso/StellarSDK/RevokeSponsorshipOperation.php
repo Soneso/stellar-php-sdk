@@ -19,8 +19,8 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
 class RevokeSponsorshipOperation extends AbstractOperation
 {
     private ?XdrLedgerKey $ledgerKey = null;
-    private string $signerAccount;
-    private XdrSignerKey $signerKey;
+    private ?string $signerAccount = null;
+    private ?XdrSignerKey $signerKey = null;
 
     /**
      * @return XdrLedgerKey|null
@@ -39,37 +39,36 @@ class RevokeSponsorshipOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getSignerAccount(): string
+    public function getSignerAccount(): ?string
     {
         return $this->signerAccount;
     }
 
     /**
-     * @param string $signerAccount
+     * @param string|null $signerAccount
      */
-    public function setSignerAccount(string $signerAccount): void
+    public function setSignerAccount(?string $signerAccount): void
     {
         $this->signerAccount = $signerAccount;
     }
 
     /**
-     * @return XdrSignerKey
+     * @return XdrSignerKey|null
      */
-    public function getSignerKey(): XdrSignerKey
+    public function getSignerKey(): ?XdrSignerKey
     {
         return $this->signerKey;
     }
 
     /**
-     * @param XdrSignerKey $signerKey
+     * @param XdrSignerKey|null $signerKey
      */
-    public function setSignerKey(XdrSignerKey $signerKey): void
+    public function setSignerKey(?XdrSignerKey $signerKey): void
     {
         $this->signerKey = $signerKey;
     }
-
 
     public function toOperationBody(): XdrOperationBody
     {

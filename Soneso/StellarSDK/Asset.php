@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK;
 
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
+use Soneso\StellarSDK\Xdr\XdrTrustlineAsset;
 
 abstract class Asset {
 
@@ -95,5 +96,10 @@ abstract class Asset {
     public function toXdrChangeTrustAsset(): XdrChangeTrustAsset
     {
         return XdrChangeTrustAsset::fromXdrAsset($this->toXdr());
+    }
+
+    public function toXdrTrustlineAsset(): XdrTrustlineAsset
+    {
+        return XdrTrustlineAsset::fromXdrAsset($this->toXdr());
     }
 }

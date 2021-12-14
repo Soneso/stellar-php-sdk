@@ -34,7 +34,7 @@ class BeginSponsoringFutureReservesOperation extends AbstractOperation
         $op = new XdrBeginSponsoringFutureReservesOperation($xdrSponsoredId);
         $type = new XdrOperationType(XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES);
         $result = new XdrOperationBody($type);
-        $result->set($op);
+        $result->setBeginSponsoringFutureReservesOperation($op);
         return $result;
     }
 }

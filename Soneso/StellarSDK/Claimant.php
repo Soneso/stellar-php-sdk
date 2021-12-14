@@ -39,6 +39,10 @@ class Claimant
         return $this->predicate;
     }
 
+    public static function predicateUnconditional() : XdrClaimPredicate {
+        $type = new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL);
+        return new XdrClaimPredicate($type);
+    }
 
     public static function predicateAnd(XdrClaimPredicate $left, XdrClaimPredicate $right) : XdrClaimPredicate {
         $type = new XdrClaimPredicateType(XdrClaimPredicateType::AND);
