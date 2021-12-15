@@ -12,7 +12,7 @@ class XdrLiquidityPoolParameters
     private XdrLiquidityPoolType $type;
     private ?XdrLiquidityPoolConstantProductParameters $constantProduct = null;
 
-    public function __construct(XdrLiquidityPoolType $type, XdrLiquidityPoolConstantProductParameters $constantProduct = null) {
+    public function __construct(XdrLiquidityPoolType $type, ?XdrLiquidityPoolConstantProductParameters $constantProduct = null) {
         $this->type = $type;
         $this->constantProduct = $constantProduct;
     }

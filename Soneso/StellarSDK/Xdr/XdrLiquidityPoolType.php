@@ -29,8 +29,8 @@ class XdrLiquidityPoolType
         return XdrEncoder::integer32($this->value);
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrOperationType {
+    public static function decode(XdrBuffer $xdr) : XdrLiquidityPoolType {
         $value = $xdr->readInteger32();
-        return new XdrOperationType($value);
+        return new XdrLiquidityPoolType($value);
     }
 }

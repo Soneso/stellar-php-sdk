@@ -8,23 +8,24 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrChangeTrustAsset extends XdrAsset
 {
-    private ?XdrLiquidityPoolConstantProductParameters $liquidityPool = null;
+    private ?XdrLiquidityPoolParameters $liquidityPool = null;
 
     /**
-     * @return XdrLiquidityPoolConstantProductParameters|null
+     * @return XdrLiquidityPoolParameters|null
      */
-    public function getLiquidityPool(): ?XdrLiquidityPoolConstantProductParameters
+    public function getLiquidityPool(): ?XdrLiquidityPoolParameters
     {
         return $this->liquidityPool;
     }
 
     /**
-     * @param XdrLiquidityPoolConstantProductParameters|null $liquidityPool
+     * @param XdrLiquidityPoolParameters|null $liquidityPool
      */
-    public function setLiquidityPool(?XdrLiquidityPoolConstantProductParameters $liquidityPool): void
+    public function setLiquidityPool(?XdrLiquidityPoolParameters $liquidityPool): void
     {
         $this->liquidityPool = $liquidityPool;
     }
+
 
     public function encode() : string {
         $bytes = parent::encode();
@@ -49,7 +50,7 @@ class XdrChangeTrustAsset extends XdrAsset
                 $result->setAlphaNum12($alphanum12);
                 break;
             case XdrAssetType::ASSET_TYPE_POOL_SHARE:
-                $liquidityPool = XdrLiquidityPoolConstantProductParameters::decode($xdr);
+                $liquidityPool = XdrLiquidityPoolParameters::decode($xdr);
                 $result->setLiquidityPool($liquidityPool);
                 break;
         }

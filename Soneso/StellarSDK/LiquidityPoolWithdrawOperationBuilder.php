@@ -23,7 +23,11 @@ class LiquidityPoolWithdrawOperationBuilder
      */
     public function __construct(string $liqudityPoolId, string $amount, string $maxAmountA, string $maxAmountB)
     {
-        $this->liqudityPoolId = $liqudityPoolId;
+        $liqudityPoolIdBytes = pack("H*", $liqudityPoolId);
+        if (strlen($liqudityPoolIdBytes) > 32) {
+            $liqudityPoolIdBytes = substr($liqudityPoolIdBytes, -32);
+        }
+        $this->liqudityPoolId = $liqudityPoolIdBytes;
         $this->amount = $amount;
         $this->maxAmountA = $maxAmountA;
         $this->maxAmountB = $maxAmountB;

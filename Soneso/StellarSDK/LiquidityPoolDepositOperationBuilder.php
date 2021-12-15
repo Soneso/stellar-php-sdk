@@ -24,7 +24,12 @@ class LiquidityPoolDepositOperationBuilder
      */
     public function __construct(string $liqudityPoolId, string $maxAmountA, string $maxAmountB, Price $minPrice, Price $maxPrice)
     {
-        $this->liqudityPoolId = $liqudityPoolId;
+        $liqudityPoolIdBytes = pack("H*", $liqudityPoolId);
+        if (strlen($liqudityPoolIdBytes) > 32) {
+            $liqudityPoolIdBytes = substr($liqudityPoolIdBytes, -32);
+        }
+        $this->liqudityPoolId = $liqudityPoolIdBytes;
+
         $this->maxAmountA = $maxAmountA;
         $this->maxAmountB = $maxAmountB;
         $this->minPrice = $minPrice;

@@ -47,14 +47,14 @@ class XdrLiquidityPoolConstantProductParameters
     public function encode(): string {
         $bytes = $this->assetA->encode();
         $bytes .= $this->assetB->encode();
-        $bytes .= XdrEncoder::integer64($this->fee);
+        $bytes .= XdrEncoder::integer32($this->fee);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrLiquidityPoolConstantProductParameters {
         $assetA = XdrAsset::decode($xdr);
         $assetB = XdrAsset::decode($xdr);
-        $fee = $xdr->readInteger64();
+        $fee = $xdr->readInteger32();
         return new XdrLiquidityPoolConstantProductParameters($assetA, $assetB, $fee);
     }
 }

@@ -7,8 +7,11 @@
 namespace Soneso\StellarSDK;
 
 use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
 
 class AssetTypePoolShare extends Asset
 {
@@ -69,8 +72,9 @@ class AssetTypePoolShare extends Asset
     public function toXdr(): XdrAsset
     {
         $lp = new XdrLiquidityPoolConstantProductParameters($this->assetA->toXdr(), $this->assetB->toXdr());
-        $xdrAsset = new XdrChangeTrustAsset();
-        $xdrAsset->setLiquidityPool($lp);
+        $poolParameters = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT), $lp);
+        $xdrAsset = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
+        $xdrAsset->setLiquidityPool($poolParameters);
         return $xdrAsset;
     }
 }
