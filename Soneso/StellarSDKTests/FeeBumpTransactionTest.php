@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
-use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;

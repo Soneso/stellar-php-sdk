@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation;
 
 class SetTrustLineFlagsOperation extends AbstractOperation
 {

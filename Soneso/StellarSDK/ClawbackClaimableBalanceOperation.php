@@ -37,7 +37,7 @@ class ClawbackClaimableBalanceOperation extends AbstractOperation
         $op = new XdrClawbackClaimableBalanceOperation($bId);
         $type = new XdrOperationType(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE);
         $result = new XdrOperationBody($type);
-        $result->setClaimClaimableBalanceOperation($op);
+        $result->setClawbackClaimableBalanceOperation($op);
         return $result;
     }
 }

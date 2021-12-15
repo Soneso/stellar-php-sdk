@@ -58,7 +58,7 @@ class ClawbackOperation extends AbstractOperation
         $op = new XdrClawbackOperation($asset, $from, $amount);
         $type = new XdrOperationType(XdrOperationType::CLAWBACK);
         $result = new XdrOperationBody($type);
-        $result->setCla($op);
+        $result->setClawbackOperation($op);
         return $result;
     }
 }
