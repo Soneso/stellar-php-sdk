@@ -6,7 +6,13 @@
 
 namespace Soneso\StellarSDK;
 
+use Exception;
+use Soneso\StellarSDK\Util\Hash;
+use Soneso\StellarSDK\Xdr\XdrEncoder;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
 class FeeBumpTransaction extends AbstractTransaction
@@ -18,6 +24,7 @@ class FeeBumpTransaction extends AbstractTransaction
     public function __construct(MuxedAccount $feeAccount, int $fee, Transaction $innerTx) {
         $this->fee = $fee;
         $this->feeAccount = $feeAccount;
+        $this->innerTx = $innerTx;
         parent::__construct();
     }
 
@@ -46,14 +53,38 @@ class FeeBumpTransaction extends AbstractTransaction
     }
 
 
+    /**
+     * @throws Exception if inner transaction is not signed.
+     */
     public function signatureBase(Network $network): string
     {
-        // TODO: Implement signatureBase() method.
+        $bytes = Hash::generate($network->getNetworkPassphrase());
+        $bytes .= XdrEncoder::unsignedInteger32(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP);
+        $bytes .= $this->toXdr()->encode();
+        return $bytes;
     }
 
+    /**
+     * @throws Exception if inner transaction is not signed.
+     */
+    public function toXdr() : XdrFeeBumpTransaction {
+        $xdrInnerTxV1 = $this->innerTx->toEnvelopeXdr()->getV1();
+        $xdrInnerTx = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX), $xdrInnerTxV1);
+        return new XdrFeeBumpTransaction($this->feeAccount->toXdr(), $this->fee, $xdrInnerTx);
+    }
+
+    /**
+     * @throws Exception if transaction is not signed.
+     */
     public function toEnvelopeXdr(): XdrTransactionEnvelope
     {
-        // TODO: Implement toEnvelopeXdr() method.
+        $xdr = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP));
+        if (count($this->getSignatures()) == 0) {
+            throw new Exception("Transaction must be signed by at least one signer. Use transaction.sign().");
+        }
+        $feeBumpEnvelope = new XdrFeeBumpTransactionEnvelope($this->toXdr(), $this->getSignatures());
+        $xdr->setFeeBump($feeBumpEnvelope);
+        return $xdr;
     }
 
     public static function fromFeeBumpTransactionEnvelope(XdrFeeBumpTransactionEnvelope $envelope) : FeeBumpTransaction {

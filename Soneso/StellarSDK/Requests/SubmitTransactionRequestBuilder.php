@@ -7,9 +7,9 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
-use Soneso\StellarSDK\Transaction;
 
 class SubmitTransactionRequestBuilder extends RequestBuilder
 {
@@ -19,7 +19,7 @@ class SubmitTransactionRequestBuilder extends RequestBuilder
     }
 
 
-    public function setTransaction(Transaction $transaction): SubmitTransactionRequestBuilder {
+    public function setTransaction(AbstractTransaction $transaction): SubmitTransactionRequestBuilder {
         $this->queryParameters["tx"] = $transaction->toEnvelopeXdrBase64();
         return $this;
     }

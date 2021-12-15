@@ -266,7 +266,7 @@ class StellarSDK
     /**
      * @throws HorizonRequestException
      */
-    public function submitTransaction(Transaction $transaction) : SubmitTransactionResponse {
+    public function submitTransaction(AbstractTransaction $transaction) : SubmitTransactionResponse {
         $builder = new SubmitTransactionRequestBuilder($this->httpClient);
         $builder->setTransaction($transaction);
         return $builder->execute();
