@@ -20,30 +20,26 @@ class XdrClaimableBalanceID
     /**
      * @return XdrClaimableBalanceIDType
      */
-    public function getType(): XdrClaimableBalanceIDType
-    {
+    public function getType(): XdrClaimableBalanceIDType {
         return $this->type;
     }
 
     /**
      * @return string
      */
-    public function getHash(): string
-    {
+    public function getHash() : string {
         return $this->hash;
     }
 
-    public function encode() : string
-    {
+    public function encode() : string {
         $bytes = $this->type->encode();
         $bytes .= XdrEncoder::opaqueFixed($this->hash, 32);
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):XdrClaimableBalanceID {
-        $result = new XdrClaimableBalanceID();
-        $result->type = XdrClaimableBalanceIDType::decode($xdr);
-        $result->hash = $xdr->readOpaqueFixed(32);
-        return $result;
+    public static function decode(XdrBuffer $xdr) : XdrClaimableBalanceID {
+        $type = XdrClaimableBalanceIDType::decode($xdr);
+        $hash = $xdr->readOpaqueFixed(32);
+        return new XdrClaimableBalanceID($type, $hash);
     }
 }
