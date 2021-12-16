@@ -13,6 +13,8 @@ use Soneso\StellarSDK\SEP\Derivation\Bip39;
 use Soneso\StellarSDK\SEP\Derivation\HDNode;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
+use Soneso\StellarSDK\Xdr\XdrSignerKey;
+use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 
 /**
  * A public/private keypair for use with the Stellar network
@@ -250,5 +252,12 @@ class KeyPair
 
     public function getXdrMuxedAccount() : XdrMuxedAccount {
         return new XdrMuxedAccount($this->publicKey, null);
+    }
+
+    public function getXdrSignerKey() : XdrSignerKey {
+        $signerKey = new XdrSignerKey();
+        $signerKey->setType(new XdrSignerKeyType(XdrSignerKeyType::ED25519));
+        $signerKey->setEd25519($this->getPublicKey());
+        return $signerKey;
     }
 }

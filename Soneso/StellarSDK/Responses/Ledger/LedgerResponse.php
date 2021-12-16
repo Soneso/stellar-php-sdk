@@ -7,7 +7,7 @@
 
 namespace Soneso\StellarSDK\Responses\Ledger;
 
-use Brick\Math\BigInteger;
+use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Responses\Response;
 
 class LedgerResponse extends Response
@@ -182,7 +182,7 @@ class LedgerResponse extends Response
         if (isset($json['paging_token'])) $this->pagingToken = $json['paging_token'];
         if (isset($json['hash'])) $this->hash = $json['hash'];
         if (isset($json['prev_hash'])) $this->previousHash = $json['prev_hash'];
-        if (isset($json['sequence'])) $this->sequence = BigInteger::of($json['sequence']);
+        if (isset($json['sequence'])) $this->sequence = new BigInteger($json['sequence']);
         if (isset($json['successful_transaction_count'])) $this->successfulTransactionCount = $json['successful_transaction_count'];
         if (isset($json['failed_transaction_count'])) $this->failedTransactionCount = $json['failed_transaction_count'];
         if (isset($json['operation_count'])) $this->operationCount = $json['operation_count'];
