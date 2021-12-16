@@ -1,4 +1,8 @@
-<?php
+<?php declare(strict_types=1);
+
+// Copyright 2021 The Stellar PHP SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
 
 namespace Soneso\StellarSDK\Requests;
 
@@ -21,7 +25,7 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder
      * @param string $liquidityPoolID (liquidity_pool_id) of the liquidity pool to fetch
      * @throws HorizonRequestException
      */
-    public function liquidityPool(string $liquidityPoolID) : LiquidityPoolResponse
+    public function forPoolId(string $liquidityPoolID) : LiquidityPoolResponse
     {
         $this->setSegments("liquidity_pools", $liquidityPoolID);
         return parent::executeRequest($this->buildUrl(), RequestType::SINGLE_LIQUIDITY_POOL);

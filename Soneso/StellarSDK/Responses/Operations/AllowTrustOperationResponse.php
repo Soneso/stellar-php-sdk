@@ -15,7 +15,9 @@ class AllowTrustOperationResponse extends OperationResponse
     private string $trustee;
     private ?string $trusteeMuxed = null;
     private ?string $trusteeMuxedId = null;
-    private Asset $asset;
+    private string $assetType;
+    private ?string $assetCode = null;
+    private ?string $assetIssuer = null;
     private bool $authorize;
     private ?bool $authorizeToMaintainLiabilities = null;
 
@@ -52,11 +54,27 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * @return string
      */
-    public function getAsset(): Asset
+    public function getAssetType(): string
     {
-        return $this->asset;
+        return $this->assetType;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAssetCode(): ?string
+    {
+        return $this->assetCode;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAssetIssuer(): ?string
+    {
+        return $this->assetIssuer;
     }
 
     /**
@@ -75,22 +93,18 @@ class AllowTrustOperationResponse extends OperationResponse
         return $this->authorizeToMaintainLiabilities;
     }
 
+
     protected function loadFromJson(array $json) : void {
 
         if (isset($json['trustor'])) $this->trustor = $json['trustor'];
         if (isset($json['trustee'])) $this->trustee = $json['trustee'];
         if (isset($json['trustee_muxed'])) $this->trusteeMuxed = $json['trustee_muxed'];
         if (isset($json['trustee_muxed_id'])) $this->trusteeMuxedId = $json['trustee_muxed_id'];
-         if (isset($json['authorize'])) $this->authorize = $json['authorize'];
+        if (isset($json['authorize'])) $this->authorize = $json['authorize'];
         if (isset($json['authorize_to_maintain_liabilities'])) $this->authorizeToMaintainLiabilities = $json['authorize_to_maintain_liabilities'];
-
-        if (isset($json['asset_type'])) {
-            $assetCode = $json['asset_code'] ?? null;
-            $assetIssuer = $json['asset_issuer'] ?? null;
-            $this->asset = Asset::create($json['asset_type'], $assetCode, $assetIssuer);
-        }
-
-
+        if (isset($json['asset_type'])) $this->assetType = $json['asset_type'];
+        if (isset($json['asset_code'])) $this->assetCode = $json['asset_code'];
+        if (isset($json['asset_issuer'])) $this->assetIssuer = $json['asset_issuer'];
         parent::loadFromJson($json);
     }
 

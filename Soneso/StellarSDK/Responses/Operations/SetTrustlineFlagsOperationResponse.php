@@ -11,7 +11,9 @@ use Soneso\StellarSDK\Asset;
 class SetTrustlineFlagsOperationResponse extends OperationResponse
 {
     private string $trustor;
-    private Asset $asset;
+    private string $assetType;
+    private ?string $assetCode = null;
+    private ?string $assetIssuer = null;
     private ?array $setFlags = null; // [int]
     private ?array $setFlagsS = null; // [string]
     private ?array $clearFlags = null; // [int]
@@ -26,11 +28,27 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * @return string
      */
-    public function getAsset(): Asset
+    public function getAssetType(): string
     {
-        return $this->asset;
+        return $this->assetType;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAssetCode(): ?string
+    {
+        return $this->assetCode;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAssetIssuer(): ?string
+    {
+        return $this->assetIssuer;
     }
 
     /**
@@ -63,17 +81,17 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     public function getClearFlagsS(): ?array
     {
         return $this->clearFlagsS;
-    } // [string]
+    }
+
+
 
     protected function loadFromJson(array $json) : void {
 
         if (isset($json['trustor'])) $this->trustor = $json['trustor'];
 
-        if (isset($json['asset_type'])) {
-            $assetCode = $json['asset_code'] ?? null;
-            $assetIssuer = $json['asset_issuer'] ?? null;
-            $this->asset = Asset::create($json['asset_type'], $assetCode, $assetIssuer);
-        }
+        if (isset($json['asset_type'])) $this->assetType = $json['asset_type'];
+        if (isset($json['asset_code'])) $this->assetCode = $json['asset_code'];
+        if (isset($json['asset_issuer'])) $this->assetIssuer = $json['asset_issuer'];
 
         if (isset($json['set_flags'])) {
             $this->setFlags = array();

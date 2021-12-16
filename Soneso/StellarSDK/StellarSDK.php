@@ -250,7 +250,7 @@ class StellarSDK
      * @throws HorizonRequestException
      */
     public function requestLiquidityPool(string $poolId) : LiquidityPoolResponse {
-        return $this->liquidityPools()->liquidityPool($poolId);
+        return $this->liquidityPools()->forPoolId($poolId);
     }
 
     /**
