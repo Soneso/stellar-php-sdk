@@ -68,7 +68,7 @@ class ClaimableBalancesTest extends TestCase
             }
         }
         $this->assertNotEquals("", $bId);
-
+        print($bId);
         $requestBuilder = $sdk->claimableBalances()->forClaimant($fistClaimantId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getClaimableBalances()->count() > 0);

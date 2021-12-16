@@ -8,11 +8,17 @@
 namespace StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
+use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
+use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\ManageBuyOfferOperationBuilder;
+use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -134,6 +140,77 @@ class QueryTest extends TestCase
             }
         }
         $this->assertTrue($found);
+    }
+
+    public function testQueryForClaimableBalance(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        // get balance id from ClaimableBalancesTest
+        $bId = "0000000096e97913cc3ea783589ff98be9bf201f2d8c9d03d53e7764d73c292610f79094";
+        $response = $sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
+        $this->assertTrue($response->getOperations()->count() == 1);
+        $response = $sdk->transactions()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
+        $this->assertTrue($response->getTransactions()->count() == 1);
+    }
+
+    public function testQueryLedgers(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $response = $sdk->ledgers()->limit(1)->order("desc")->execute();
+        $this->assertTrue($response->getLedgers()->count() == 1);
+        $seq = $response->getLedgers()->toArray()[0]->getSequence()->toString();
+        $response = $sdk->requestLedger($seq);
+        $this->assertEquals($response->getSequence()->toString(), $seq);
+    }
+
+    public function testQueryOffersAndOrderBook(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $issuerKp = KeyPair::random();
+        $issuerAccountId = $issuerKp->getAccountId();
+        $buyerKp = KeyPair::random();
+        $buyerAccountId = $buyerKp->getAccountId();
+
+        FriendBot::fundTestAccount($buyerAccountId);
+        $buyerAccount = $sdk->requestAccount($buyerAccountId);
+        $createAccount = (new CreateAccountOperationBuilder($issuerAccountId, "100"))->build();
+        $transaction = (new TransactionBuilder($buyerAccount))->addOperation($createAccount)->build();
+        $transaction->sign($buyerKp, Network::testnet());
+        $this->assertTrue($sdk->submitTransaction($transaction)->isSuccessful());
+
+        $astroDollar = new AssetTypeCreditAlphanum12("ASTRO", $issuerAccountId);
+        $ctob = (new ChangeTrustOperationBuilder($astroDollar, "10000"))->build();
+        $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ctob)->build();
+        $transaction->sign($buyerKp, Network::testnet());
+        $this->assertTrue($sdk->submitTransaction($transaction)->isSuccessful());
+
+        $amountBuying = "100";
+        $price = "0.5";
+
+        $ms = (new ManageBuyOfferOperationBuilder(Asset::native(),$astroDollar, $amountBuying, $price))->build();
+        $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ms)->build();
+        $transaction->sign($buyerKp, Network::testnet());
+        $this->assertTrue($sdk->submitTransaction($transaction)->isSuccessful());
+
+        $response = $sdk->offers()->forAccount($buyerAccountId)->execute();
+        $this->assertTrue($response->getOffers()->count() == 1);
+        $offer = $response->getOffers()->toArray()[0];
+        $this->assertTrue($offer->getBuying()->getCode() == $astroDollar->getCode());
+        $this->assertTrue($offer->getSelling()->getType() == Asset::TYPE_NATIVE);
+        $offerAmount = floatval($offer->getAmount());
+        $offerPrice = floatval($offer->getPrice());
+
+        $r = round($offerPrice * $offerAmount);
+        $this->assertTrue($r == intval($amountBuying));
+        $this->assertTrue($offer->getSeller() == $buyerAccountId);
+
+        $response = $sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
+        $offerAmount = floatval($response->getAsks()->toArray()[0]->getAmount());
+        $offerPrice = floatval($response->getAsks()->toArray()[0]->getPrice());
+        $r = round($offerPrice * $offerAmount);
+        $this->assertTrue($r == intval($amountBuying));
+        $this->assertTrue($response->getCounter()->getCode() == $astroDollar->getCode());
+        $this->assertTrue($response->getBase()->getType() == Asset::TYPE_NATIVE);
     }
 
     public function testQueryRoot(): void
