@@ -15,8 +15,6 @@ use Soneso\StellarSDK\ManageBuyOfferOperationBuilder;
 use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
-use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
-use Soneso\StellarSDK\Responses\Operations\ManageBuyOfferOperationResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;

@@ -95,7 +95,6 @@ class XdrPathPaymentStrictSendOperation
         $destination = XdrMuxedAccount::decode($xdr);
         $destAsset = XdrAsset::decode($xdr);
         $destAmount = $xdr->readBigInteger64();
-        $count = $xdr->readInteger32();
         $path = array();
         $count = $xdr->readInteger32();
         for ($i = 0; $i < $count; $i++) {

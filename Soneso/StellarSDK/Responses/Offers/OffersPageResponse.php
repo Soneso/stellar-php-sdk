@@ -7,33 +7,23 @@
 
 namespace Soneso\StellarSDK\Responses\Offers;
 
+use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
-use Soneso\StellarSDK\Responses\Page\PagingLinksResponse;
 
 class OffersPageResponse extends PageResponse
 {
-    private PagingLinksResponse $links;
-    private OffersResponse $offers;
 
-    /**
-     * @return PagingLinksResponse
-     */
-    public function getLinks(): PagingLinksResponse
-    {
-        return $this->links;
-    }
+    private OffersResponse $offers;
 
     /**
      * @return OffersResponse
      */
-    public function getOffers(): OffersResponse
-    {
+    public function getOffers(): OffersResponse {
         return $this->offers;
     }
 
     protected function loadFromJson(array $json) : void {
-
-        if (isset($json['_links'])) $this->links = PagingLinksResponse::fromJson($json['_links']);
+        parent::loadFromJson($json);
         if (isset($json['_embedded']['records'])) {
             $this->offers = new OffersResponse();
             foreach ($json['_embedded']['records'] as $jsonValue) {
@@ -43,10 +33,17 @@ class OffersPageResponse extends PageResponse
         }
     }
 
-    public static function fromJson(array $json) : OffersPageResponse
-    {
+    public static function fromJson(array $json) : OffersPageResponse {
         $result = new OffersPageResponse();
         $result->loadFromJson($json);
         return $result;
+    }
+
+    public function getNextPage(): OffersPageResponse | null {
+        return $this->executeRequest(RequestType::OFFERS_PAGE, $this->getNextPageUrl());
+    }
+
+    public function getPreviousPage(): OffersPageResponse | null {
+        return $this->executeRequest(RequestType::OFFERS_PAGE, $this->getPrevPageUrl());
     }
 }

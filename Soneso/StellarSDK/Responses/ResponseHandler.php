@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Responses;
 
+use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Account\AccountsPageResponse;
@@ -36,7 +37,7 @@ use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
 class ResponseHandler
 {
 
-    public function handleResponse(ResponseInterface $response, string $requestType) : Response {
+    public function handleResponse(ResponseInterface $response, string $requestType, Client $httpClient) : Response {
 
         $content = $response->getBody()->__toString();
         
@@ -84,6 +85,7 @@ class ResponseHandler
         };
 
         $horizonResponse?->setHeaders($response->getHeaders());
+        $horizonResponse?->setHttpClient($httpClient);
         return $horizonResponse;
     }
 }

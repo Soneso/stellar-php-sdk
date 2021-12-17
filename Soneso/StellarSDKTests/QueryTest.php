@@ -10,15 +10,11 @@ namespace StellarSDKTests;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
-use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
-use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\ManageBuyOfferOperationBuilder;
-use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
 use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -266,6 +262,43 @@ class QueryTest extends TestCase
         $this->assertGreaterThan(0,strlen($maxFee->getP90()));
         $this->assertGreaterThan(0,strlen($maxFee->getP95()));
         $this->assertGreaterThan(0,strlen($maxFee->getP99()));
+    }
+
+    public function testPaging(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $response = $sdk->ledgers()->execute();
+        $this->assertTrue($response->getLedgers()->count() > 0);
+        $next = $response->getNextPage();
+        $this->assertNotNull($next);
+        $this->assertTrue($next->getLedgers()->count() > 0);
+        $prev = $next->getPreviousPage();
+        $this->assertNotNull($prev);
+        $this->assertTrue($prev->getLedgers()->count() > 0);
+        $count = $prev->getLedgers()->count();
+        $this->assertEquals($response->getLedgers()->toArray()[0]->getHash(), $prev->getLedgers()->toArray()[$count - 1]->getHash());
+
+        $response = $sdk->transactions()->execute();
+        $this->assertTrue($response->getTransactions()->count() > 0);
+        $next = $response->getNextPage();
+        $this->assertNotNull($next);
+        $this->assertTrue($next->getTransactions()->count() > 0);
+        $prev = $next->getPreviousPage();
+        $this->assertNotNull($prev);
+        $this->assertTrue($prev->getTransactions()->count() > 0);
+        $count = $prev->getTransactions()->count();
+        $this->assertEquals($response->getTransactions()->toArray()[0]->getHash(), $prev->getTransactions()->toArray()[$count - 1]->getHash());
+
+        $response = $sdk->operations()->execute();
+        $this->assertTrue($response->getOperations()->count() > 0);
+        $next = $response->getNextPage();
+        $this->assertNotNull($next);
+        $this->assertTrue($next->getOperations()->count() > 0);
+        $prev = $next->getPreviousPage();
+        $this->assertNotNull($prev);
+        $this->assertTrue($prev->getOperations()->count() > 0);
+        $count = $prev->getOperations()->count();
+        $this->assertEquals($response->getOperations()->toArray()[0]->getOperationId(), $prev->getOperations()->toArray()[$count - 1]->getOperationId());
     }
 }
 

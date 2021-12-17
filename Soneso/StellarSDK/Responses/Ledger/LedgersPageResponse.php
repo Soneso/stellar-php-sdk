@@ -6,33 +6,22 @@
 
 namespace Soneso\StellarSDK\Responses\Ledger;
 
+use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
-use Soneso\StellarSDK\Responses\Page\PagingLinksResponse;
 
 class LedgersPageResponse extends PageResponse
 {
-    private PagingLinksResponse $links;
     private LedgersResponse $ledgers;
-
-    /**
-     * @return PagingLinksResponse
-     */
-    public function getLinks(): PagingLinksResponse
-    {
-        return $this->links;
-    }
 
     /**
      * @return LedgersResponse
      */
-    public function getLedgers(): LedgersResponse
-    {
+    public function getLedgers(): LedgersResponse {
         return $this->ledgers;
     }
 
     protected function loadFromJson(array $json) : void {
-
-        if (isset($json['_links'])) $this->links = PagingLinksResponse::fromJson($json['_links']);
+        parent::loadFromJson($json);
         if (isset($json['_embedded']['records'])) {
             $this->ledgers = new LedgersResponse();
             foreach ($json['_embedded']['records'] as $jsonLedger) {
@@ -42,10 +31,17 @@ class LedgersPageResponse extends PageResponse
         }
     }
 
-    public static function fromJson(array $json) : LedgersPageResponse
-    {
+    public static function fromJson(array $json) : LedgersPageResponse {
         $result = new LedgersPageResponse();
         $result->loadFromJson($json);
         return $result;
+    }
+
+    public function getNextPage(): LedgersPageResponse | null {
+        return $this->executeRequest(RequestType::LEDGERS_PAGE, $this->getNextPageUrl());
+    }
+
+    public function getPreviousPage(): LedgersPageResponse | null {
+        return $this->executeRequest(RequestType::LEDGERS_PAGE, $this->getPrevPageUrl());
     }
 }

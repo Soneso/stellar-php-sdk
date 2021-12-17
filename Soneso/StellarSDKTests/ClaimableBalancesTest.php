@@ -13,7 +13,6 @@ use Soneso\StellarSDK\ClaimClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\Responses\Effects\ClaimableBalanceClaimantCreatedEffectResponse;
 use Soneso\StellarSDK\Responses\Effects\ClaimableBalanceCreatedEffectResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -86,24 +85,4 @@ class ClaimableBalancesTest extends TestCase
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
     }
-
-    public function testExistingClaimableBalance(): void
-    {
-        $claimableBalanceId = "000000006c08443899e3e5d3a4c0c93881dc70c4a35c93a4d35bf8bbfd4dd57770b58365";
-        $sdk = StellarSDK::getTestNetInstance();
-        $response = $sdk->requestClaimableBalance($claimableBalanceId);
-        $this->assertEquals($claimableBalanceId, $response->getBalanceId());
-    }
-
-    public function testQueryClaimableBalances(): void
-    {
-        $claimableBalanceId = "000000006c08443899e3e5d3a4c0c93881dc70c4a35c93a4d35bf8bbfd4dd57770b58365";
-        $sdk = StellarSDK::getTestNetInstance();
-        $requestBuilder = $sdk->claimableBalances()->forSponsor("GDCMAMQQEF762HKWOILEVRTMC36UXC32LXV3XK4QI4POYQ5SUWZAVFSR")->order("desc")->limit(1);
-        $response = $requestBuilder->execute();
-        foreach ($response->getClaimableBalances() as $claimableBalance) {
-            $this->assertEquals($claimableBalanceId, $claimableBalance->getBalanceId());
-        }
-    }
-
 }

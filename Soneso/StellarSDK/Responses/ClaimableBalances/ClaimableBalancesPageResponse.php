@@ -6,33 +6,22 @@
 
 namespace Soneso\StellarSDK\Responses\ClaimableBalances;
 
+use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
-use Soneso\StellarSDK\Responses\Page\PagingLinksResponse;
 
 class ClaimableBalancesPageResponse extends PageResponse
 {
-    private PagingLinksResponse $links;
     private ClaimableBalancesResponse $claimableBalances;
-
-    /**
-     * @return PagingLinksResponse
-     */
-    public function getLinks(): PagingLinksResponse
-    {
-        return $this->links;
-    }
 
     /**
      * @return ClaimableBalancesResponse
      */
-    public function getClaimableBalances(): ClaimableBalancesResponse
-    {
+    public function getClaimableBalances(): ClaimableBalancesResponse {
         return $this->claimableBalances;
     }
 
     protected function loadFromJson(array $json) : void {
-
-        if (isset($json['_links'])) $this->links = PagingLinksResponse::fromJson($json['_links']);
+        parent::loadFromJson($json);
         if (isset($json['_embedded']['records'])) {
             $this->claimableBalances = new ClaimableBalancesResponse();
             foreach ($json['_embedded']['records'] as $jsonValue) {
@@ -42,10 +31,17 @@ class ClaimableBalancesPageResponse extends PageResponse
         }
     }
 
-    public static function fromJson(array $json) : ClaimableBalancesPageResponse
-    {
+    public static function fromJson(array $json) : ClaimableBalancesPageResponse {
         $result = new ClaimableBalancesPageResponse();
         $result->loadFromJson($json);
         return $result;
+    }
+
+    public function getNextPage(): ClaimableBalancesPageResponse | null {
+        return $this->executeRequest(RequestType::CLAIMABLE_BALANCES_PAGE, $this->getNextPageUrl());
+    }
+
+    public function getPreviousPage(): ClaimableBalancesPageResponse | null {
+        return $this->executeRequest(RequestType::CLAIMABLE_BALANCES_PAGE, $this->getPrevPageUrl());
     }
 }

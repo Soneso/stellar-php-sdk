@@ -6,33 +6,22 @@
 
 namespace Soneso\StellarSDK\Responses\TradeAggregations;
 
+use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
-use Soneso\StellarSDK\Responses\Page\PagingLinksResponse;
 
 class TradeAggregationsPageResponse extends PageResponse
 {
-    private PagingLinksResponse $links;
     private TradeAggregationsResponse $tradeAggregations;
-
-    /**
-     * @return PagingLinksResponse
-     */
-    public function getLinks(): PagingLinksResponse
-    {
-        return $this->links;
-    }
 
     /**
      * @return TradeAggregationsResponse
      */
-    public function getTradeAggregations(): TradeAggregationsResponse
-    {
+    public function getTradeAggregations(): TradeAggregationsResponse {
         return $this->tradeAggregations;
     }
 
     protected function loadFromJson(array $json) : void {
-
-        if (isset($json['_links'])) $this->links = PagingLinksResponse::fromJson($json['_links']);
+        parent::loadFromJson($json);
         if (isset($json['_embedded']['records'])) {
             $this->tradeAggregations = new TradeAggregationsResponse();
             foreach ($json['_embedded']['records'] as $jsonValue) {
@@ -42,10 +31,17 @@ class TradeAggregationsPageResponse extends PageResponse
         }
     }
 
-    public static function fromJson(array $json) : TradeAggregationsPageResponse
-    {
+    public static function fromJson(array $json) : TradeAggregationsPageResponse {
         $result = new TradeAggregationsPageResponse();
         $result->loadFromJson($json);
         return $result;
+    }
+
+    public function getNextPage(): TradeAggregationsPageResponse | null {
+        return $this->executeRequest(RequestType::TRADE_AGGREGATIONS_PAGE, $this->getNextPageUrl());
+    }
+
+    public function getPreviousPage(): TradeAggregationsPageResponse | null {
+        return $this->executeRequest(RequestType::TRADE_AGGREGATIONS_PAGE, $this->getPrevPageUrl());
     }
 }

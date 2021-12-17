@@ -7,33 +7,22 @@
 
 namespace Soneso\StellarSDK\Responses\PaymentPath;
 
+use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
-use Soneso\StellarSDK\Responses\Page\PagingLinksResponse;
 
 class PathsPageResponse extends PageResponse
 {
-    private PagingLinksResponse $links;
     private PathsResponse $paths;
-
-    /**
-     * @return PagingLinksResponse
-     */
-    public function getLinks(): PagingLinksResponse
-    {
-        return $this->links;
-    }
 
     /**
      * @return PathsResponse
      */
-    public function getPaths(): PathsResponse
-    {
+    public function getPaths(): PathsResponse {
         return $this->paths;
     }
 
     protected function loadFromJson(array $json) : void {
-
-        if (isset($json['_links'])) $this->links = PagingLinksResponse::fromJson($json['_links']);
+        parent::loadFromJson($json);
         if (isset($json['_embedded']['records'])) {
             $this->paths = new PathsResponse();
             foreach ($json['_embedded']['records'] as $jsonValue) {
@@ -43,10 +32,17 @@ class PathsPageResponse extends PageResponse
         }
     }
 
-    public static function fromJson(array $json) : PathsPageResponse
-    {
+    public static function fromJson(array $json) : PathsPageResponse {
         $result = new PathsPageResponse();
         $result->loadFromJson($json);
         return $result;
+    }
+
+    public function getNextPage(): PathsPageResponse | null {
+        return $this->executeRequest(RequestType::PATHS_PAGE, $this->getNextPageUrl());
+    }
+
+    public function getPreviousPage(): PathsPageResponse | null {
+        return $this->executeRequest(RequestType::PATHS_PAGE, $this->getPrevPageUrl());
     }
 }

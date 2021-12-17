@@ -104,7 +104,7 @@ abstract class RequestBuilder
         }
         $responseHandler = new ResponseHandler();
         try {
-            return $responseHandler->handleResponse($response, $requestType);
+            return $responseHandler->handleResponse($response, $requestType, $this->httpClient);
         } catch (\Exception $e) {
             throw HorizonRequestException::fromOtherException($url, $requestMethod, $e, $response);
         }

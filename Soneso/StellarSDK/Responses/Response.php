@@ -6,12 +6,15 @@
 
 namespace Soneso\StellarSDK\Responses;
 
+use GuzzleHttp\Client;
+
 abstract class Response
 {
     protected ?int $rateLimitLimit = null;
     protected ?int $rateLimitRemaining = null;
     protected ?int $rateLimitReset = null;
-    
+    protected Client $httpClient;
+
     public function setHeaders(array $headers) : void {
         
         if ($headers["X-Ratelimit-Limit"] != null) {
@@ -56,6 +59,18 @@ abstract class Response
         if (isset($json['rateLimitLimit'])) $this->rateLimitLimit = $json['rateLimitLimit'];
         if (isset($json['rateLimitRemaining'])) $this->rateLimitRemaining = $json['rateLimitRemaining'];
         if (isset($json['rateLimitReset'])) $this->rateLimitReset = $json['rateLimitReset'];
+    }
+
+    public function setHttpClient(Client $httpClient) : void {
+        $this->httpClient = $httpClient;
+    }
+
+    /**
+     * @return Client
+     */
+    public function getHttpClient(): Client
+    {
+        return $this->httpClient;
     }
 }
 

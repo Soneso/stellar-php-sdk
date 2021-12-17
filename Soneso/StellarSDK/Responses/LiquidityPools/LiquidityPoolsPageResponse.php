@@ -7,33 +7,23 @@
 
 namespace Soneso\StellarSDK\Responses\LiquidityPools;
 
+use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
-use Soneso\StellarSDK\Responses\Page\PagingLinksResponse;
 
 class LiquidityPoolsPageResponse extends PageResponse
 {
-    private PagingLinksResponse $links;
     private LiquidityPoolsResponse $liquidityPools;
 
-    /**
-     * @return PagingLinksResponse
-     */
-    public function getLinks(): PagingLinksResponse
-    {
-        return $this->links;
-    }
 
     /**
      * @return LiquidityPoolsResponse
      */
-    public function getLiquidityPools(): LiquidityPoolsResponse
-    {
+    public function getLiquidityPools(): LiquidityPoolsResponse {
         return $this->liquidityPools;
     }
 
     protected function loadFromJson(array $json) : void {
-
-        if (isset($json['_links'])) $this->links = PagingLinksResponse::fromJson($json['_links']);
+        parent::loadFromJson($json);
         if (isset($json['_embedded']['records'])) {
             $this->liquidityPools = new LiquidityPoolsResponse();
             foreach ($json['_embedded']['records'] as $jsonValue) {
@@ -43,10 +33,17 @@ class LiquidityPoolsPageResponse extends PageResponse
         }
     }
 
-    public static function fromJson(array $json) : LiquidityPoolsPageResponse
-    {
+    public static function fromJson(array $json) : LiquidityPoolsPageResponse {
         $result = new LiquidityPoolsPageResponse();
         $result->loadFromJson($json);
         return $result;
+    }
+
+    public function getNextPage(): LiquidityPoolsPageResponse | null {
+        return $this->executeRequest(RequestType::LIQUIDITY_POOLS_PAGE, $this->getNextPageUrl());
+    }
+
+    public function getPreviousPage(): LiquidityPoolsPageResponse | null {
+        return $this->executeRequest(RequestType::LIQUIDITY_POOLS_PAGE, $this->getPrevPageUrl());
     }
 }
