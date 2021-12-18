@@ -7,6 +7,7 @@
 
 namespace StellarSDKTests;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
@@ -15,6 +16,10 @@ use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\ManageBuyOfferOperationBuilder;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Responses\Effects\EffectResponse;
+use Soneso\StellarSDK\Responses\Ledger\LedgerResponse;
+use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -300,5 +305,78 @@ class QueryTest extends TestCase
         $count = $prev->getOperations()->count();
         $this->assertEquals($response->getOperations()->toArray()[0]->getOperationId(), $prev->getOperations()->toArray()[$count - 1]->getOperationId());
     }
+
+    public function testStreamPayments(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $found = false;
+        try {
+            $sdk->streamPayments('now', function(OperationResponse $payment) {
+                printf('Payment operation %s id %s' . PHP_EOL, get_class($payment), $payment->getOperationId());
+                if ($payment instanceof CreateAccountOperationResponse) {
+                    throw new Exception("stop");
+                }
+            });
+        } catch (Exception $e) {
+            if ($e->getMessage() == "stop") {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testStreamOperations(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $found = false;
+        try {
+            $sdk->streamOperations('now', function(OperationResponse $operation) {
+                printf('Operation id %s' . PHP_EOL, $operation->getOperationId());
+                if ($operation instanceof CreateAccountOperationResponse) {
+                    throw new Exception("stop");
+                }
+            });
+        } catch (Exception $e) {
+            if ($e->getMessage() == "stop") {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testStreamLedgers(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $found = false;
+        try {
+            $sdk->streamLedgers('now', function(LedgerResponse $ledger) {
+                printf('Ledger sequence %s' . PHP_EOL, $ledger->getSequence()->toString());
+                throw new Exception("stop");
+            });
+        } catch (Exception $e) {
+            if ($e->getMessage() == "stop") {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testStreamEffects(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $found = false;
+        try {
+            $sdk->streamEffects('now', function(EffectResponse $effect) {
+                printf('Effect id %s' . PHP_EOL, $effect->getEffectId());
+                throw new Exception("stop");
+            });
+        } catch (Exception $e) {
+            if ($e->getMessage() == "stop") {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
 }
 
