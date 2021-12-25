@@ -1,5 +1,5 @@
 
-### Send a native (XLM) payment
+### Path Payments
 
 In this example we will send a custom token (IOM) from a sender account to a receiver account. 
 But the receiver account can not hold the IOM asset because it has no trustline for this asset. 
