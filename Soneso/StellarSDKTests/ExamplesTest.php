@@ -5,18 +5,26 @@ namespace Soneso\StellarSDKTests;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AccountMergeOperationBuilder;
+use Soneso\StellarSDK\AllowTrustOperationBuilder;
 use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\AssetTypeCreditAlphanum;
+use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\BumpSequenceOperationBuilder;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
+use Soneso\StellarSDK\CreatePassiveSellOfferOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\ManageBuyOfferOperationBuilder;
+use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PathPaymentStrictReceiveOperationBuilder;
 use Soneso\StellarSDK\PathPaymentStrictSendOperationBuilder;
 use Soneso\StellarSDK\PaymentOperationBuilder;
+use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
@@ -556,6 +564,663 @@ class ExamplesTest extends TestCase
         } else {
             print("failed");
         }
+        $this->assertTrue(true);
+    }
+
+    public function testManageData(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+
+        // Create a random keypair for our new account.
+        $keyPair = KeyPair::random();
+
+        // Account Id.
+        $accountId = $keyPair->getAccountId();
+
+        // Create account.
+        FriendBot::fundTestAccount($accountId);
+
+        // Load account data including it's current sequence number.
+        $account = $sdk->requestAccount($accountId);
+
+        // Define a key value pair to save as a data entry.
+        $key = "soneso";
+        $value = "is cool!";
+
+        // Prepare the manage data operation.
+        $manageDataOperation = (new ManageDataOperationBuilder($key, $value))->build();
+
+        // Create the transaction.
+        $transaction = (new TransactionBuilder($account))->addOperation($manageDataOperation)->build();
+
+        // Sign the transaction.
+        $transaction->sign($keyPair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        $account = $sdk->requestAccount($accountId);
+
+        // Compare.
+        if ($account->getData()->get($key) === $value) {
+            print("okay");
+        } else {
+            print("failed");
+        }
+
+        // In the next step we prepare the operation to delete the entry by passing null as a value.
+        $manageDataOperation = (new ManageDataOperationBuilder($key, null))->build();
+
+        // Prepare the transaction.
+        $transaction = (new TransactionBuilder($account))->addOperation($manageDataOperation)->build();
+
+        // Sign the transaction.
+        $transaction->sign($keyPair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Reload account.
+        $account = $sdk->requestAccount($accountId);
+
+        if (!array_key_exists($key, $account->getData()->getData())) {
+            print(PHP_EOL."success");
+        }
+
+        $this->assertTrue(true);
+    }
+
+    public function testManageBuyOffer(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        // Prepare two random keypairs, we will need the later for signing.
+        $issuerKeypair = KeyPair::random();
+        $buyerKeypair = KeyPair::random();
+
+        // Account Ids.
+        $issuerAccountId = $issuerKeypair->getAccountId();
+        $buyerAccountId = $buyerKeypair->getAccountId();
+
+        // Create the buyer account.
+        FriendBot::fundTestAccount($buyerAccountId);
+
+        // Create the issuer account.
+        $buyerAccount = $sdk->requestAccount($buyerAccountId);
+        $caOp = (new CreateAccountOperationBuilder($issuerAccountId, "10"))->build();
+        $transaction = (new TransactionBuilder($buyerAccount))->addOperation($caOp)->build();
+
+        // Sign the transaction.
+        $transaction->sign($buyerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Define an asset.
+        $astroDollar = new AssetTypeCreditAlphaNum12("ASTRO", $issuerAccountId);
+
+        // Create a trustline for the buyer account.
+        $ctOp = (new ChangeTrustOperationBuilder($astroDollar, "10000"))->build();
+        $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ctOp)->build();
+
+        // Sign the transaction.
+        $transaction->sign($buyerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Create the offer.
+        // I want to pay max. 50 XLM for 100 ASTRO.
+        $amountBuying = "100"; // Want to buy 100 ASTRO
+        $price = "0.5"; // Price of 1 unit of buying in terms of selling
+
+        // Create the manage buy offer operation. Buying: 100 ASTRO for 50 XLM (price = 0.5 => Price of 1 unit of buying in terms of selling)
+        $ms = (new ManageBuyOfferOperationBuilder(Asset::native(), $astroDollar, $amountBuying, $price))->build();
+
+        // Create the transaction.
+        $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ms)->build();
+
+        // Sign the transaction.
+        $transaction->sign($buyerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Now let's load the offers of our account to see if the offer has been created.
+        $offersPage = $sdk->offers()->forAccount($buyerAccountId)->execute();
+        $offer = $offersPage->getOffers()->toArray()[0];
+
+        $buyingAssetCode = $offer->getBuying() instanceof AssetTypeCreditAlphaNum ? $offer->getBuying()->getCode() : "XLM";
+        $sellingAssetCode = $offer->getSelling() instanceof AssetTypeCreditAlphaNum ? $offer->getSelling()->getCode() : "XLM";
+
+        printf(PHP_EOL."offerId: %s - buying: %s - selling: %s %s price: %s", $offer->getOfferId(), $buyingAssetCode, $offer->getAmount(), $sellingAssetCode, $offer->getPrice());
+
+        // offerId: 16245277 - buying: ASTRO - selling: 50.0000000 XLM price: 2.0000000
+        // As you can see, the price is stored here as "Price of 1 unit of selling in terms of buying".
+
+        // Now lets modify our offer.
+        $offerId = $offer->getOfferId();
+
+        // New data.
+        $amountBuying = "150";
+        $price = "0.3";
+
+        // Build the manage buy offer operation
+        $ms = (new ManageBuyOfferOperationBuilder(Asset::native(), $astroDollar, $amountBuying, $price))->setOfferId($offerId)->build();
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ms)->build();
+
+        // Sign the transaction.
+        $transaction->sign($buyerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Load the offer from stellar.
+        $offersPage = $sdk->offers()->forAccount($buyerAccountId)->execute();
+        $offer = $offersPage->getOffers()->toArray()[0];
+
+        $buyingAssetCode = $offer->getBuying() instanceof AssetTypeCreditAlphaNum ? $offer->getBuying()->getCode() : "XLM";
+        $sellingAssetCode = $offer->getSelling() instanceof AssetTypeCreditAlphaNum ? $offer->getSelling()->getCode() : "XLM";
+
+        printf(PHP_EOL."offerId: %s - buying: %s - selling: %s %s price: %s", $offer->getOfferId(), $buyingAssetCode, $offer->getAmount(), $sellingAssetCode, $offer->getPrice());
+        // offerId: 16245277 - buying: ASTRO - selling: 45.0000000 XLM price: 3.3333333
+
+        // And now let's delete our offer
+        // To delete, we need to set the amount to 0.
+        $amountBuying = "0";
+
+        // Create the operation
+        $ms = (new ManageBuyOfferOperationBuilder(Asset::native(), $astroDollar, $amountBuying, $price))->setOfferId($offerId)->build();
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ms)->build();
+
+        // Sign the transaction.
+        $transaction->sign($buyerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // check if the offer has been deleted.
+        $offersPage = $sdk->offers()->forAccount($buyerAccountId)->execute();
+        if($offersPage->getOffers()->count() == 0) {
+            print(PHP_EOL."success");
+        }
+        $this->assertTrue(true);
+    }
+
+    public function testManageSellOffer(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        // Prepare two random keypairs, we will need the later for signing.
+        $issuerKeypair = KeyPair::random();
+        $sellerKeypair = KeyPair::random();
+
+        // Account Ids.
+        $issuerAccountId = $issuerKeypair->getAccountId();
+        $sellerAccountId = $sellerKeypair->getAccountId();
+
+        // Create the buyer account.
+        FriendBot::fundTestAccount($sellerAccountId);
+
+        // Create the issuer account.
+        $sellerAccount = $sdk->requestAccount($sellerAccountId);
+        $caOp = (new CreateAccountOperationBuilder($issuerAccountId, "10"))->build();
+        $transaction = (new TransactionBuilder($sellerAccount))->addOperation($caOp)->build();
+
+        // Sign the transaction.
+        $transaction->sign($sellerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Define an asset.
+        $moonDollar = new AssetTypeCreditAlphaNum4("MOON", $issuerAccountId);
+
+        // Create a trustline for the buyer account.
+        $ctOp = (new ChangeTrustOperationBuilder($moonDollar, "10000"))->build();
+        $transaction = (new TransactionBuilder($sellerAccount))->addOperation($ctOp)->build();
+
+        // Sign the transaction.
+        $transaction->sign($sellerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Send 2000 MOON asset to the seller account.
+        $paymentOp = (new PaymentOperationBuilder($sellerAccountId, $moonDollar, "2000"))->build();
+
+        $issuerAccount = $sdk->requestAccount($issuerAccountId);
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($paymentOp)->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Create the offer.
+        // I want to pay max. 50 XLM for 100 ASTRO.
+        $amountSelling = "100"; // Want to buy 100 ASTRO
+        $price = "0.5"; // Price of 1 unit of buying in terms of selling
+
+        // Create the manage sell offer operation. Selling: 100 MOON for 50 XLM (price = 0.5 => Price of 1 unit of selling in terms of buying.)
+        $ms = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))->build();
+
+        // Create the transaction.
+        $transaction = (new TransactionBuilder($sellerAccount))->addOperation($ms)->build();
+
+        // Sign the transaction.
+        $transaction->sign($sellerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Now let's load the offers of our account to see if the offer has been created.
+        $offersPage = $sdk->offers()->forAccount($sellerAccountId)->execute();
+        $offer = $offersPage->getOffers()->toArray()[0];
+
+        $buyingAssetCode = $offer->getBuying() instanceof AssetTypeCreditAlphaNum ? $offer->getBuying()->getCode() : "XLM";
+        $sellingAssetCode = $offer->getSelling() instanceof AssetTypeCreditAlphaNum ? $offer->getSelling()->getCode() : "XLM";
+
+        printf(PHP_EOL."offerId: %s - selling: %s %s buying: %s - price: %s", $offer->getOfferId(), $offer->getAmount(), $sellingAssetCode, $buyingAssetCode, $offer->getPrice());
+
+        // offerId: 16252986 - selling: 100.0000000 MOON buying: XLM price: 0.5000000
+        // Price of 1 unit of selling in terms of buying.
+
+        // Now lets modify our offer.
+        $offerId = $offer->getOfferId();
+
+        // New data.
+        $amountSelling = "150";
+        $price = "0.3";
+
+        // Build the manage sell offer operation
+        $ms = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))->setOfferId($offerId)->build();
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($sellerAccount))->addOperation($ms)->build();
+
+        // Sign the transaction.
+        $transaction->sign($sellerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Load the offer from stellar.
+        $offersPage = $sdk->offers()->forAccount($sellerAccountId)->execute();
+        $offer = $offersPage->getOffers()->toArray()[0];
+
+        $buyingAssetCode = $offer->getBuying() instanceof AssetTypeCreditAlphaNum ? $offer->getBuying()->getCode() : "XLM";
+        $sellingAssetCode = $offer->getSelling() instanceof AssetTypeCreditAlphaNum ? $offer->getSelling()->getCode() : "XLM";
+
+        printf(PHP_EOL."offerId: %s - selling: %s %s buying: %s - price: %s", $offer->getOfferId(), $offer->getAmount(), $sellingAssetCode, $buyingAssetCode, $offer->getPrice());
+        // offerId: 16252986 - selling: 150.0000000 MOON buying: XLM price: 0.3000000
+
+        // And now let's delete our offer
+        // To delete, we need to set the amount to 0.
+        $amountSelling = "0";
+
+        // Build the manage sell offer operation
+        $ms = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))->setOfferId($offerId)->build();
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($sellerAccount))->addOperation($ms)->build();
+
+        // Sign the transaction.
+        $transaction->sign($sellerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // check if the offer has been deleted.
+        $offersPage = $sdk->offers()->forAccount($sellerAccountId)->execute();
+        if ($offersPage->getOffers()->count() == 0) {
+            print(PHP_EOL."success");
+        }
+        $this->assertTrue(true);
+    }
+
+    public function testChangeTrust(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        // Create two random key pairs, we will need them later for signing.
+        $issuerKeypair = KeyPair::random();
+        $trustorKeypair = KeyPair::random();
+
+        // Account Ids.
+        $issuerAccountId = $issuerKeypair->getAccountId();
+        $trustorAccountId = $trustorKeypair->getAccountId();
+
+        // Create trustor account.
+        FriendBot::fundTestAccount($trustorAccountId);
+
+        // Load the trustor account so that we can later create the trustline.
+        $trustorAccount =  $sdk->requestAccount($trustorAccountId);
+
+        // Create the issuer account.
+        $cao = (new CreateAccountOperationBuilder($issuerAccountId, "10"))->build();
+        $transaction = (new TransactionBuilder($trustorAccount))->addOperation($cao)->build();
+
+        // Sign the transaction.
+        $transaction->sign($trustorKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Create our custom asset.
+        $assetCode = "ASTRO";
+        $astroDollar = new AssetTypeCreditAlphaNum12($assetCode, $issuerAccountId);
+
+        // Create the trustline. Limit: 10000 ASTRO.
+        $limit = "10000";
+
+        // Build the operation.
+        $cto = (new ChangeTrustOperationBuilder($astroDollar, $limit))->build();
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($trustorAccount))->addOperation($cto)->build();
+
+        // Sign the transaction.
+        $transaction->sign($trustorKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Load the trustor account again to see if the trustline has been created.
+        $trustorAccount =  $sdk->requestAccount($trustorAccountId);
+
+        // Check if the trustline exists.
+        foreach ($trustorAccount->getBalances() as $balance) {
+            if ($balance->getAssetCode() == $assetCode) {
+                print(PHP_EOL."Trustline for ".$assetCode." found. Limit: ".$balance->getLimit());
+                // Trustline for ASTRO found. Limit: 10000.0
+                break;
+            }
+        }
+
+        // Now, let's modify the trustline, change the trust limit to 40000.
+        $limit = "40000";
+
+        // Build the operation.
+        $cto = (new ChangeTrustOperationBuilder($astroDollar, $limit))->build();
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($trustorAccount))->addOperation($cto)->build();
+
+        // Sign the transaction.
+        $transaction->sign($trustorKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Load the trustor account again to see if the trustline has been created.
+        $trustorAccount =  $sdk->requestAccount($trustorAccountId);
+
+        // Check if the trustline exists.
+        foreach ($trustorAccount->getBalances() as $balance) {
+            if ($balance->getAssetCode() == $assetCode) {
+                print(PHP_EOL."Trustline for ".$assetCode." found. Limit: ".$balance->getLimit());
+                // Trustline for ASTRO found. Limit: 40000.0
+                break;
+            }
+        }
+
+        // And now let's delete the trustline.
+        // To delete it, we must set the trust limit to zero.
+        $limit = "0";
+
+        // Build the operation.
+        $cto = (new ChangeTrustOperationBuilder($astroDollar, $limit))->build();
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($trustorAccount))->addOperation($cto)->build();
+
+        // Sign the transaction.
+        $transaction->sign($trustorKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Load the trustor account again to see if the trustline has been created.
+        $trustorAccount =  $sdk->requestAccount($trustorAccountId);
+
+        $found = false;
+        // Check if the trustline exists.
+        foreach ($trustorAccount->getBalances() as $balance) {
+            if ($balance->getAssetCode() == $assetCode) {
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            print(PHP_EOL."success, trustline deleted");
+        }
+        $this->assertTrue(true);
+    }
+
+    public function testAllowTrust(): void
+    {
+
+        $sdk = StellarSDK::getTestNetInstance();
+        // Create two random key pairs, we will need them later for signing.
+        $issuerKeypair = KeyPair::random();
+        $trustorKeypair = KeyPair::random();
+
+        // Account Ids.
+        $issuerAccountId = $issuerKeypair->getAccountId();
+        $trustorAccountId = $trustorKeypair->getAccountId();
+
+        // Create trustor account.
+        FriendBot::fundTestAccount($trustorAccountId);
+
+        // Load the trustor account so that we can later create the trustline.
+        $trustorAccount =  $sdk->requestAccount($trustorAccountId);
+
+        // Create the issuer account.
+        $cao = (new CreateAccountOperationBuilder($issuerAccountId, "10"))->build();
+        $transaction = (new TransactionBuilder($trustorAccount))->addOperation($cao)->build();
+
+        // Sign the transaction.
+        $transaction->sign($trustorKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Load the issuer account.
+        $issuerAccount = $sdk->requestAccount($issuerAccountId);
+
+        // Set up the flags on the isser account.
+        $sopb = new SetOptionsOperationBuilder();
+        $sopb->setSetFlags(3); // Auth required, auth revocable
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($sopb->build())->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Reload the issuer account to check the flags.
+        $issuerAccount = $sdk->requestAccount($issuerAccountId);
+        if ($issuerAccount->getFlags()->isAuthRequired()
+            && $issuerAccount->getFlags()->isAuthRevocable()
+            && !$issuerAccount->getFlags()->isAuthImmutable()) {
+            print(PHP_EOL."issuer account flags correctly set");
+        }
+
+        // Define our custom asset.
+        $assetCode = "ASTRO";
+        $astroDollar = new AssetTypeCreditAlphaNum12($assetCode, $issuerAccountId);
+
+        // Build the trustline.
+        $limit = "10000";
+
+        // Build the operation.
+        $cto = (new ChangeTrustOperationBuilder($astroDollar, $limit))->build();
+
+        // Build the transaction.
+        $transaction = (new TransactionBuilder($trustorAccount))->addOperation($cto)->build();
+
+        // Sign the transaction.
+        $transaction->sign($trustorKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Reload the trustor account to see if the trustline has been created.
+        $trustorAccount = $sdk->requestAccount($trustorAccountId);
+        foreach ($trustorAccount->getBalances() as $balance) {
+            if ($balance->getAssetCode() == $assetCode) {
+                print(PHP_EOL."trustline awailable");
+                break;
+            }
+        }
+
+        // Now lets try to send some custom asset funds to the trustor account.
+        // This should not work, because the issuer must authorize the trustline first.
+        $po = (new PaymentOperationBuilder($trustorAccountId, $astroDollar, "100"))->build();
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($po)->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        try {
+            $response = $sdk->submitTransaction($transaction);
+        } catch (HorizonRequestException $e) {
+            print(PHP_EOL."trustline is not authorized.");
+        }
+
+        // Now let's authorize the trustline.
+        // Build the allow trust operation. Set the authorized flag to 1.
+        $aop = (new AllowTrustOperationBuilder($trustorAccountId, $assetCode, 1, 0))->build(); // authorize
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($aop)->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $response = $sdk->submitTransaction($transaction);
+
+        // Try again to send the payment. Should work now.
+        $po = (new PaymentOperationBuilder($trustorAccountId, $astroDollar, "100"))->build();
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($po)->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $response = $sdk->submitTransaction($transaction);
+
+        if ($response->isSuccessful()) { // authorized.
+            print(PHP_EOL."success - trustline is now authorized.");
+        }
+
+        // Now create an offer, to see if it will be deleted after we will remove the authorized flag.
+        $amountSelling = "100";
+        $price = "0.5";
+        $cpso = (new CreatePassiveSellOfferOperationBuilder($astroDollar, Asset::native(), $amountSelling, Price::fromString($price)))->build();
+        $transaction = (new TransactionBuilder($trustorAccount))->addOperation($cpso)->build();
+
+        // Sign the transaction.
+        $transaction->sign($trustorKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $response = $sdk->submitTransaction($transaction);
+
+        // Check if the offer has been added.
+        $offersPage = $sdk->offers()->forAccount($trustorAccountId)->execute();
+        $offer = $offersPage->getOffers()->toArray()[0];
+
+        if ($offer->getBuying() == Asset::native()
+            && $offer->getSelling() == $astroDollar) {
+            print(PHP_EOL."offer found");
+        }
+
+        // Now lets remove the authorization. To do so, we set the authorized flag to 0.
+        // This should also delete the offer.
+        $aop = (new AllowTrustOperationBuilder($trustorAccountId, $assetCode, 0, 0))->build(); // not authorized
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($aop)->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Check if the offer has been deleted.
+        $offersPage = $sdk->offers()->forAccount($trustorAccountId)->execute();
+
+        if ($offersPage->getOffers()->count() == 0) {
+            print(PHP_EOL."success, offer has been deleted");
+        }
+
+        // Now, let's authorize the trustline again and then authorize it only to maintain liabilities.
+        $aop = (new AllowTrustOperationBuilder($trustorAccountId, $assetCode, 1, 0))->build(); // authorize
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($aop)->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Create the offer again.
+        $cpso = (new CreatePassiveSellOfferOperationBuilder($astroDollar, Asset::native(), $amountSelling, Price::fromString($price)))->build();
+        $transaction = (new TransactionBuilder($trustorAccount))->addOperation($cpso)->build();
+
+        // Sign the transaction.
+        $transaction->sign($trustorKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Check that the offer has been created.
+        $offersPage = $sdk->offers()->forAccount($trustorAccountId)->execute();
+
+        if ($offersPage->getOffers()->count() == 1) {
+            print(PHP_EOL."offer has been created");
+        }
+
+        // Now let's deautorize the trustline but allow the trustor to maintain his offer.
+        // For this, we set the authorized flag to 2.
+        $aop = (new AllowTrustOperationBuilder($trustorAccountId, $assetCode, 0, 1))->build(); // authorized to maintain liabilities.
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($aop)->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        // Submit the transaction to stellar.
+        $sdk->submitTransaction($transaction);
+
+        // Load the offers to see if our offer is still there.
+        // Check that the offer has been created.
+        $offersPage = $sdk->offers()->forAccount($trustorAccountId)->execute();
+
+        if ($offersPage->getOffers()->count() == 1) {
+            print(PHP_EOL."offer exists");
+        }
+
+        // Next, let's try to send some ASTRO to the trustor account.
+        // This should not work, since the trustline has been deauthorized before.
+        $po = (new PaymentOperationBuilder($trustorAccountId, $astroDollar, "100"))->build();
+        $transaction = (new TransactionBuilder($issuerAccount))->addOperation($po)->build();
+
+        // Sign the transaction.
+        $transaction->sign($issuerKeypair, Network::testnet());
+
+        try {
+            // Submit the transaction to stellar.
+            $sdk->submitTransaction($transaction);
+        } catch (HorizonRequestException $e) {
+            print(PHP_EOL."payment correctly blocked.");
+        }
+
         $this->assertTrue(true);
     }
 }
