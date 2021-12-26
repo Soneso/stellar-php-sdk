@@ -1,12 +1,11 @@
 
-### Manage sell offer
+### Create passive sell offer
 
-In this example we are going to create, update, and delete an offer to sell one asset for another, otherwise known as an "ask" order or “offer” on a traditional orderbook.
+In this example we are going to create an offer to sell one asset for another, otherwise known as a "ask" order or “offer” on a traditional orderbook, _without taking a reverse offer of equal price_.
 
-First we are going to prepare the example by creating a seller account, an issuer account and a trusted asset. Then, we send some funds to from the issuer account to the seller account so that the seller is able to offer them for sale. Then, we are going to create, modify and delete the sell offer.
+First we are going to prepare the example by creating a seller account, an issuer account and a trusted asset. Then, we send some custom asset funds to from the issuer account to the seller account so that the seller is able to offer them for sale. Then, we are going to create, modify and delete the passive sell offer.
 
 ```php
-// Prepare two random keypairs, we will need the later for signing.
 $issuerKeypair = KeyPair::random();
 $sellerKeypair = KeyPair::random();
 
@@ -28,11 +27,11 @@ $transaction->sign($sellerKeypair, Network::testnet());
 // Submit the transaction to stellar.
 $sdk->submitTransaction($transaction);
 
-// Define an asset.
-$moonDollar = new AssetTypeCreditAlphaNum4("MOON", $issuerAccountId);
+// Define our custom asset.
+$marsDollar = new AssetTypeCreditAlphaNum4("MARS", $issuerAccountId);
 
-// Create a trustline for the seller account.
-$ctOp = (new ChangeTrustOperationBuilder($moonDollar, "10000"))->build();
+// Let the seller account trust our issuer and custom asset.
+$ctOp = (new ChangeTrustOperationBuilder($marsDollar, "10000"))->build();
 $transaction = (new TransactionBuilder($sellerAccount))->addOperation($ctOp)->build();
 
 // Sign the transaction.
@@ -41,8 +40,8 @@ $transaction->sign($sellerKeypair, Network::testnet());
 // Submit the transaction to stellar.
 $sdk->submitTransaction($transaction);
 
-// Send 2000 MOON asset to the seller account.
-$paymentOp = (new PaymentOperationBuilder($sellerAccountId, $moonDollar, "2000"))->build();
+// Send a couple of custom asset MARS funds from the issuer to the seller account so that the seller can offer them
+$paymentOp = (new PaymentOperationBuilder($sellerAccountId, $marsDollar, "2000"))->build();
 
 $issuerAccount = $sdk->requestAccount($issuerAccountId);
 $transaction = (new TransactionBuilder($issuerAccount))->addOperation($paymentOp)->build();
@@ -54,12 +53,12 @@ $transaction->sign($issuerKeypair, Network::testnet());
 $sdk->submitTransaction($transaction);
 
 // Create the offer.
-// I want to sell 100 MOON for 50 XLM.
-$amountSelling = "100"; // Want to buy 100 ASTRO
-$price = "0.5"; // Price of 1 unit of selling in terms of buying
+// I want to sell 100 MARS for 50 XLM.
+$amountSelling = "100";
+$price = "0.5";
 
-// Create the manage sell offer operation. Selling: 100 MOON for 50 XLM (price = 0.5 => Price of 1 unit of selling in terms of buying.)
-$ms = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))->build();
+// Create the passive sell offer operation. Selling: 100 MARS for 50 XLM (price = 0.5 => Price of 1 unit of selling in terms of buying.)
+$ms = (new ManageSellOfferOperationBuilder($marsDollar, Asset::native(), $amountSelling, $price))->build();
 
 // Create the transaction.
 $transaction = (new TransactionBuilder($sellerAccount))->addOperation($ms)->build();
@@ -79,10 +78,10 @@ $sellingAssetCode = $offer->getSelling() instanceof AssetTypeCreditAlphaNum ? $o
 
 printf(PHP_EOL."offerId: %s - selling: %s %s buying: %s - price: %s", $offer->getOfferId(), $offer->getAmount(), $sellingAssetCode, $buyingAssetCode, $offer->getPrice());
 
-// offerId: 16252986 - selling: 100.0000000 MOON buying: XLM price: 0.5000000
+// offerId: 16260716 - selling: 100.0000000 MARS buying: XLM price: 0.5000000
 // Price of 1 unit of selling in terms of buying.
 
-// Now lets modify our offer.
+// Now let's modify our offer.
 $offerId = $offer->getOfferId();
 
 // New data.
@@ -90,7 +89,7 @@ $amountSelling = "150";
 $price = "0.3";
 
 // Build the manage sell offer operation
-$ms = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))->setOfferId($offerId)->build();
+$ms = (new ManageSellOfferOperationBuilder($marsDollar, Asset::native(), $amountSelling, $price))->setOfferId($offerId)->build();
 
 // Build the transaction.
 $transaction = (new TransactionBuilder($sellerAccount))->addOperation($ms)->build();
@@ -109,14 +108,14 @@ $buyingAssetCode = $offer->getBuying() instanceof AssetTypeCreditAlphaNum ? $off
 $sellingAssetCode = $offer->getSelling() instanceof AssetTypeCreditAlphaNum ? $offer->getSelling()->getCode() : "XLM";
 
 printf(PHP_EOL."offerId: %s - selling: %s %s buying: %s - price: %s", $offer->getOfferId(), $offer->getAmount(), $sellingAssetCode, $buyingAssetCode, $offer->getPrice());
-// offerId: 16252986 - selling: 150.0000000 MOON buying: XLM price: 0.3000000
+// offerId: 16252986 - selling: 150.0000000 MARS buying: XLM price: 0.3000000
 
 // And now let's delete our offer
 // To delete, we need to set the amount to 0.
 $amountSelling = "0";
 
 // Build the manage sell offer operation
-$ms = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))->setOfferId($offerId)->build();
+$ms = (new ManageSellOfferOperationBuilder($marsDollar, Asset::native(), $amountSelling, $price))->setOfferId($offerId)->build();
 
 // Build the transaction.
 $transaction = (new TransactionBuilder($sellerAccount))->addOperation($ms)->build();
