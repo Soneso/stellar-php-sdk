@@ -627,7 +627,7 @@ class ExamplesTest extends TestCase
         // Reload account.
         $account = $sdk->requestAccount($accountId);
 
-        if (!array_key_exists($key, $account->getData()->getData())) {
+        if (!in_array($key, $account->getData()->getKeys())) {
             print(PHP_EOL."success");
         }
 

@@ -7,8 +7,6 @@
 
 namespace Soneso\StellarSDK\Responses\Account;
 
-use JetBrains\PhpStorm\Pure;
-
 class AccountDataResponse
 {
     private array $data;
@@ -17,12 +15,22 @@ class AccountDataResponse
         $this->data = $data;
     }
     
-    public function get(string $key) : string {
-        return base64_decode($this->data[$key], true);
+    public function get(string $key) : ?string {
+        if (array_key_exists($key, $this->getData())) {
+            return base64_decode($this->data[$key], true);
+        }
+        return null;
     }
 
-    public function getBase64Encoded(string $key) : string {
-        return $this->data[$key];
+    public function getBase64Encoded(string $key) : ?string {
+        if (array_key_exists($key, $this->getData())) {
+            return $this->data[$key];
+        }
+        return null;
+    }
+
+    public function getKeys() : array {
+        return array_keys($this->getData());
     }
     
     public function getData() : array {

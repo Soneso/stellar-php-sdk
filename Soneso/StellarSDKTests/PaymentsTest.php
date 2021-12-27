@@ -13,6 +13,7 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
@@ -728,5 +729,37 @@ class PaymentsTest extends TestCase
         $payments = $sdk->payments()->forLedger(strval($transactionResponse->getLedger()))->order("desc")->execute();
         $this->assertTrue($payments->getOperations()->count() > 0);
 
+    }
+
+    public function testCheckMemoRequirements(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        $keyPairB = KeyPair::random();
+        $accountBId = $keyPairB->getAccountId();
+
+        FriendBot::fundTestAccount($accountAId);
+        FriendBot::fundTestAccount($accountBId);
+        $accountA = $sdk->requestAccount($accountAId);
+        $accountB = $sdk->requestAccount($accountBId);
+
+        $key = "config.memo_required";
+        $value = "1";
+        $manageDataOperation = (new ManageDataOperationBuilder($key, $value))->build();
+        $transaction = (new TransactionBuilder($accountB))
+            ->addOperation($manageDataOperation)
+            ->build();
+
+        $transaction->sign($keyPairB, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $paymentOperation = (new PaymentOperationBuilder($accountBId, Asset::native(), "100"))->build();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($paymentOperation)->build();
+
+        $destination = $sdk->checkMemoRequired($transaction);
+
+        $this->assertTrue($destination == $accountBId);
     }
 }

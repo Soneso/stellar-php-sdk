@@ -9,8 +9,6 @@ namespace Soneso\StellarSDK;
 
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\ServerException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Requests\AccountsRequestBuilder;
 use Soneso\StellarSDK\Requests\AssetsRequestBuilder;
@@ -33,17 +31,11 @@ use Soneso\StellarSDK\Requests\TradesRequestBuilder;
 use Soneso\StellarSDK\Requests\TransactionsRequestBuilder;
 use Soneso\StellarSDK\Responses\Account\AccountResponse;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalanceResponse;
-use Soneso\StellarSDK\Responses\Effects\EffectResponse;
 use Soneso\StellarSDK\Responses\FeeStats\FeeStatsResponse;
 use Soneso\StellarSDK\Responses\Ledger\LedgerResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolResponse;
 use Soneso\StellarSDK\Responses\Offers\OfferResponse;
-use Soneso\StellarSDK\Responses\Operations\AccountMergeOperationResponse;
-use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationResponse;
-use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictReceiveOperationResponse;
-use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictSendOperationResponse;
-use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 use Soneso\StellarSDK\Responses\Root\RootResponse;
 use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
@@ -276,59 +268,46 @@ class StellarSDK
     }
 
     /**
-     * @param string $relativeUrl
-     * @param callable $callback
-     * @param $retryOnServerException bool If true, ignore ServerException errors and retry
-     * @throws GuzzleException
+     * SEP-029 implementation. See https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
+     * Account Memo Requirements. An account owner configures memo requirements by adding a data entry that
+     * specifies whether a transaction memo is required when transferring funds to the account.
+     * A payment sender ensures that a memo is attached before submitting the transaction to the network.
+     * @param AbstractTransaction $transaction
+     * @return string|false account id of the first destination found that requires memo, false if none is found.
+     * @throws HorizonRequestException if thrown during requesting destination account data from horizon
      */
-    public function getAndStream(string $relativeUrl, callable $callback, bool $retryOnServerException = true) : void
-    {
-        while (true) {
-            try {
-                $response = $this->httpClient->get($relativeUrl, [
-                    'stream' => true,
-                    'read_timeout' => null,
-                    'headers' => [
-                        'Accept' => 'text/event-stream',
-                    ]
-                ]);
-
-                $body = $response->getBody();
-
-                while (!$body->eof()) {
-                    $line = '';
-
-                    $char = null;
-                    while ($char != "\n") {
-                        $line .= $char;
-                        $char = $body->read(1);
-                    }
-
-                    // Ignore empty lines
-                    if (!$line) continue;
-
-                    // Ignore "data: hello" handshake
-                    if (str_starts_with($line, 'data: "hello"')) continue;
-
-                    // Ignore lines that don't start with "data: "
-                    $sentinel = 'data: ';
-                    if (!str_starts_with($line, $sentinel)) continue;
-
-                    // Remove sentinel prefix
-                    $json = substr($line, strlen($sentinel));
-
-                    $decoded = json_decode($json, true);
-                    if ($decoded) {
-                        $callback($decoded);
+    public function checkMemoRequired(AbstractTransaction $transaction) : string | false {
+        if ($transaction instanceof FeeBumpTransaction) {
+            return false;
+        }
+        $destinations = array();
+        if ($transaction instanceof Transaction) {
+            if ($transaction->getMemo()->getType() != Memo::MEMO_TYPE_NONE) {
+                return false;
+            }
+            foreach ($transaction->getOperations() as $operation) {
+                if ($operation instanceof PaymentOperation
+                    || $operation instanceof PathPaymentStrictSendOperation
+                    || $operation instanceof PathPaymentStrictReceiveOperation
+                    || $operation instanceof AccountMergeOperation) {
+                    $destination = $operation->getDestination();
+                    if (!$destination->getId()) {
+                        array_push($destinations, $destination->getAccountId());
                     }
                 }
             }
-            catch (ServerException $e) {
-                if (!$retryOnServerException) throw $e;
+        }
+        if (count($destinations) == 0) {
+            return false;
+        }
 
-                // Delay for a bit before trying again
-                sleep(10);
+        $key = "config.memo_required";
+        foreach ($destinations as $destination) {
+            $account = $this->requestAccount($destination);
+            if ($account->getData()->get($key) == "1") {
+                return $destination;
             }
         }
+        return false;
     }
 }
