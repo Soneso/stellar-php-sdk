@@ -131,6 +131,27 @@ foreach ($operationsPage->getOperations() as $payment) {
 ```
 You can use:`limit`, `order`, and `cursor` to customize the query. Get the most recent payments for accounts, ledgers and transactions.
 
+Horizon has SSE support for push data. You can use it like this:
+```php
+$accountId = "GCDBA6GFGEHAMVAMRL6R2733EXUENJ35EMYNA2LE7WWJPVANORVC4UNA";
+
+$sdk->payments()->forAccount($accountId)->cursor("now")->stream(function(OperationResponse $response) {
+    if ($response instanceof PaymentOperationResponse) {
+        switch ($response->getAsset()->getType()) {
+            case Asset::TYPE_NATIVE:
+                printf("Payment of %s XLM from %s received.", $response->getAmount(), $response->getSourceAccount());
+                break;
+            default:
+                printf("Payment of %s %s from %s received.", $response->getAmount(),  $response->getAsset()->getCode(), $response->getSourceAccount());
+        }
+        if (floatval($response->getAmount()) > 0.5) {
+            exit;
+        }
+    }
+});
+```
+see also [stream payments example](examples/stream_payments.md)
+
 #### 3.3 Check others
 
 Just like payments, you can check `assets`, `transactions`, `effects`, `offers`, `operations`, `ledgers` etc. 
@@ -192,5 +213,6 @@ if ($response->isSuccessful()) {
 | [Allow trust](examples/allow_trust.md) | Updates the authorized flag of an existing trustline. | [Allow trust](https://www.stellar.org/developers/learn/concepts/list-of-operations.html#allow-trust) and [Assets documentation](https://www.stellar.org/developers/learn/concepts/assets.html) |
 | [Fee bump transaction](examples/fee_bump.md) | Fee bump transactions allow an arbitrary account to pay the fee for a transaction.| [Fee bump transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)|
 | [Muxed accounts](examples/muxed_account_payment.md) | In this example we will see how to use a muxed account in a payment operation.| [First-class multiplexed accounts](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0027.md)|
+| [Stream payments](examples/stream_payments.md) | Listens for payments received by a given account.| [Streaming](https://developers.stellar.org/api/introduction/streaming/) |
 
 More examples can be found in the [tests](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests).

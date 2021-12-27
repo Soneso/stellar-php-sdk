@@ -7,7 +7,9 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\Responses\Effects\EffectResponse;
 use Soneso\StellarSDK\Responses\Effects\EffectsPageResponse;
 
 class EffectsRequestBuilder extends RequestBuilder
@@ -113,5 +115,29 @@ class EffectsRequestBuilder extends RequestBuilder
      */
     public function execute() : EffectsPageResponse {
         return $this->request($this->buildUrl());
+    }
+
+    /**
+     * Streams Effect objects to $callback
+     *
+     * $callback should have arguments:
+     *  EffectResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $sdk->effects()->cursor("now")->stream(function(EffectResponse $effect) {
+     * printf('Effect type: %s' . PHP_EOL, $effect->getEffectType());
+     * });
+     *
+     * @param callable|null $callback
+     * @throws GuzzleException
+     */
+    public function stream(callable $callback = null)
+    {
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = EffectResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
     }
 }

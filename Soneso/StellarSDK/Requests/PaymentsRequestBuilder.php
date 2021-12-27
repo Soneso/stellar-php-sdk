@@ -7,8 +7,14 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\Responses\Operations\AccountMergeOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
+use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictReceiveOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictSendOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 use Soneso\StellarSDK\Responses\Payments\PaymentsPageResponse;
 
 class PaymentsRequestBuilder extends RequestBuilder
@@ -112,4 +118,37 @@ class PaymentsRequestBuilder extends RequestBuilder
     public function execute() : OperationsPageResponse {
         return $this->request($this->buildUrl());
     }
+
+    /**
+     * Streams Payment or CreateAccount objects to $callback
+     *
+     * $callback should have arguments:
+     *  OperationResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $sdk->payments()->cursor("now")->stream(function(OperationResponse $payment) {
+     * printf('Payment operation id %s' . PHP_EOL, $payment->getOperationId());
+     * });
+     *
+     * @param callable|null $callback
+     * @throws GuzzleException
+     */
+    public function stream(callable $callback = null)
+    {
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            if (isset($rawData['type'])){
+                $parsedObject = match ($rawData['type']) {
+                    'create_account' => CreateAccountOperationResponse::fromJson($rawData),
+                    'payment' => PaymentOperationResponse::fromJson($rawData),
+                    'account_merge' => AccountMergeOperationResponse::fromJson($rawData),
+                    'path_payment_strict_send' => PathPaymentStrictSendOperationResponse::fromJson($rawData),
+                    'path_payment_strict_receive' => PathPaymentStrictReceiveOperationResponse::fromJson($rawData)
+                };
+                $callback($parsedObject);
+            }
+        });
+    }
+
 }

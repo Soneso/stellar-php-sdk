@@ -3,6 +3,7 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
@@ -125,5 +126,30 @@ class TransactionsRequestBuilder extends RequestBuilder
      */
     public function execute() : TransactionsPageResponse {
         return $this->request($this->buildUrl());
+    }
+
+
+    /**
+     * Streams Transaction objects to $callback
+     *
+     * $callback should have arguments:
+     *  TransactionResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $sdk->transactions()->cursor("now")->stream(function(TransactionResponse $transaction) {
+     * printf('Transaction Hash %s' . PHP_EOL, $transaction->getHash());
+     * });
+     *
+     * @param callable|null $callback
+     * @throws GuzzleException
+     */
+    public function stream(callable $callback = null)
+    {
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = TransactionResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
     }
 }

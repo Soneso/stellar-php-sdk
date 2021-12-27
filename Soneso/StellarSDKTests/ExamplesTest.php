@@ -26,6 +26,8 @@ use Soneso\StellarSDK\PathPaymentStrictReceiveOperationBuilder;
 use Soneso\StellarSDK\PathPaymentStrictSendOperationBuilder;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\Responses\Operations\OperationResponse;
+use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -1469,4 +1471,26 @@ class ExamplesTest extends TestCase
 
         $this->assertTrue(true);
     }
+
+    public function testStreamPayments(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $accountId = "GCDBA6GFGEHAMVAMRL6R2733EXUENJ35EMYNA2LE7WWJPVANORVC4UNA";
+
+        $sdk->payments()->forAccount($accountId)->cursor("now")->stream(function(OperationResponse $response) {
+            if ($response instanceof PaymentOperationResponse) {
+                switch ($response->getAsset()->getType()) {
+                    case Asset::TYPE_NATIVE:
+                        printf("Payment of %s XLM from %s received.", $response->getAmount(), $response->getSourceAccount());
+                        break;
+                    default:
+                        printf("Payment of %s %s from %s received.", $response->getAmount(),  $response->getAsset()->getCode(), $response->getSourceAccount());
+                }
+                if (floatval($response->getAmount()) > 0.5) {
+                    exit;
+                }
+            }
+        });
+    }
+
 }

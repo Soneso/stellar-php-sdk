@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Request;
 use RuntimeException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
@@ -115,4 +116,61 @@ abstract class RequestBuilder
      *  @throws HorizonRequestException
     */
     public abstract function execute() : Response;
+
+    /**
+     * @param string $relativeUrl
+     * @param callable $callback
+     * @param $retryOnServerException bool If true, ignore ServerException errors and retry
+     * @throws GuzzleException
+     */
+    public function getAndStream(string $relativeUrl, callable $callback, bool $retryOnServerException = true) : void
+    {
+        while (true) {
+            try {
+                $response = $this->httpClient->get($relativeUrl, [
+                    'stream' => true,
+                    'read_timeout' => null,
+                    'headers' => [
+                        'Accept' => 'text/event-stream',
+                    ]
+                ]);
+
+                $body = $response->getBody();
+
+                while (!$body->eof()) {
+                    $line = '';
+
+                    $char = null;
+                    while ($char != "\n") {
+                        $line .= $char;
+                        $char = $body->read(1);
+                    }
+
+                    // Ignore empty lines
+                    if (!$line) continue;
+
+                    // Ignore "data: hello" handshake
+                    if (str_starts_with($line, 'data: "hello"')) continue;
+
+                    // Ignore lines that don't start with "data: "
+                    $sentinel = 'data: ';
+                    if (!str_starts_with($line, $sentinel)) continue;
+
+                    // Remove sentinel prefix
+                    $json = substr($line, strlen($sentinel));
+
+                    $decoded = json_decode($json, true);
+                    if ($decoded) {
+                        $callback($decoded);
+                    }
+                }
+            }
+            catch (ServerException $e) {
+                if (!$retryOnServerException) throw $e;
+
+                // Delay for a bit before trying again
+                sleep(10);
+            }
+        }
+    }
 }

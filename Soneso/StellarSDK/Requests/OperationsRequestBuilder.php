@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
@@ -158,5 +159,29 @@ class OperationsRequestBuilder extends RequestBuilder
      */
     public function execute() : OperationsPageResponse {
         return $this->request($this->buildUrl());
+    }
+
+    /**
+     * Streams Operation objects to $callback
+     *
+     * $callback should have arguments:
+     *  OperationResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $sdk->operations()->cursor("now")->stream(function(OperationResponse $operation) {
+     * printf('Operation id %s' . PHP_EOL, $operation->getOperationId());
+     * });
+     *
+     * @param callable|null $callback
+     * @throws GuzzleException
+     */
+    public function stream(callable $callback = null)
+    {
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = OperationResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
     }
 }

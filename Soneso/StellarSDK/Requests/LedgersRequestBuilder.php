@@ -8,6 +8,7 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Ledger\LedgerResponse;
 use Soneso\StellarSDK\Responses\Ledger\LedgersPageResponse;
@@ -73,5 +74,29 @@ class LedgersRequestBuilder extends RequestBuilder
      */
     public function execute() : LedgersPageResponse {
         return $this->request($this->buildUrl());
+    }
+
+    /**
+     * Streams Ledger objects to $callback
+     *
+     * $callback should have arguments:
+     *  LedgerResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $sdk->ledgers()->cursor("now")->stream(function(LedgerResponse $ledger) {
+     * printf('Ledger closed at: %s' . PHP_EOL, $ledger->getCreatedAt());
+     * });
+     *
+     * @param callable|null $callback
+     * @throws GuzzleException
+     */
+    public function stream(callable $callback = null)
+    {
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = LedgerResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
     }
 }
