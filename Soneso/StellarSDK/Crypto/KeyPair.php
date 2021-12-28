@@ -9,8 +9,8 @@ namespace Soneso\StellarSDK\Crypto;
 use Exception;
 use ParagonIE\Sodium\Core\Ed25519;
 use SodiumException;
-use Soneso\StellarSDK\SEP\Derivation\Bip39;
 use Soneso\StellarSDK\SEP\Derivation\HDNode;
+use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
@@ -111,24 +111,32 @@ class KeyPair
     }
 
     /**
-     * Creates a new keypair from a mnemonic, passphrase (optional) and index (defaults to 0)
+     * Creates a new keypair from a mnemonic, index and passphrase (optional)
      *
-     * For more details, see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
-     *
-     * @param string $mnemonic
-     * @param string $passphrase
+     * @param Mnemonic $mnemonic
      * @param int $index
-     * @return Keypair
+     * @param string|null $passphrase
+     * @return KeyPair
      */
-    public static function fromMnemonic(string $mnemonic, string $passphrase = '', int $index = 0): KeyPair
+    public static function fromMnemonic(Mnemonic $mnemonic, int $index, ?string $passphrase = ''): KeyPair
     {
-        $bip39 = new Bip39();
-        $seedBytes = $bip39->mnemonicToSeedBytesWithErrorChecking($mnemonic, $passphrase);
-
+        $seedBytes = $mnemonic->generateSeed($passphrase, 64);
         $masterNode = HDNode::newMasterNode($seedBytes);
-
         $accountNode = $masterNode->derivePath(sprintf("m/44'/148'/%s'", $index));
+        return static::fromPrivateKey($accountNode->getPrivateKeyBytes());
+    }
 
+    /**
+     * Creates a new keypair from a bip 39 seed (as hex string) and index
+     * @param string $bip39SeedHex
+     * @param int $index
+     * @return KeyPair
+     */
+    public static function fromBip39SeedHex(string $bip39SeedHex, int $index): KeyPair
+    {
+        $seedBytes = hex2bin($bip39SeedHex);
+        $masterNode = HDNode::newMasterNode($seedBytes);
+        $accountNode = $masterNode->derivePath(sprintf("m/44'/148'/%s'", $index));
         return static::fromPrivateKey($accountNode->getPrivateKeyBytes());
     }
 

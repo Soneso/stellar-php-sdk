@@ -4,210 +4,260 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+
 namespace Soneso\StellarSDK\SEP\Derivation;
 
-class Bip39
+use Exception;
+
+class BIP39
 {
-    protected array $words;
+
+    private int $wordsCount;
+    private int $overallBits;
+    private int $checksumBits;
+    private int $entropyBits;
+    private ?string $entropy = null;
+    private ?array $rawBinaryChunks = null;
+
+    /** @var null|WordList */
+    private ?WordList $wordList = null;
 
     /**
-     * Returns the hex-encoded checksum for the raw bytes in the entropy
-     *
-     * @param string $entropyBytes
-     * @return string
+     * @param string $entropy
+     * @return Mnemonic
+     * @throws Exception
      */
-    public static function getEntropyChecksumHex(string $entropyBytes): string
+    public static function Entropy(string $entropy): Mnemonic
     {
-        $checksumLengthBits = (strlen($entropyBytes)*8) / 32;
-        $hashBytes = hash('sha256', $entropyBytes, true);
+        self::validateEntropy($entropy);
 
-        // base_convert can only handle up to 64 bits, so we have to reduce the
-        // length of data that gets sent to it
-        $checksumLengthBytes = ceil($checksumLengthBits / 8);
-        $reducedBytesToChecksum = substr($hashBytes, 0, $checksumLengthBytes);
-
-        $reducedChecksumHex = bin2hex($reducedBytesToChecksum);
-        $reducedChecksumBits = str_pad(base_convert($reducedChecksumHex, 16, 2), $checksumLengthBytes * 8, '0', STR_PAD_LEFT);
-
-        $checksumBitstring = substr($reducedChecksumBits, 0, $checksumLengthBits);
-        $checksumHex = static::bitstringToHex($checksumBitstring);
-
-        return $checksumHex;
+        $entropyBits = strlen($entropy) * 4;
+        $checksumBits = (($entropyBits - 128) / 32) + 4;
+        $wordsCount = ($entropyBits + $checksumBits) / 11;
+        return (new self($wordsCount))
+            ->useEntropy($entropy)
+            ->wordlist(WordList::English())
+            ->mnemonic();
     }
 
     /**
-     * Utility method to convert a bitstring to hex.
-     *
-     * Primarily a workaround to avoid requiring a real math library
-     *
-     * @param string $bitstring
-     * @return string
+     * @param int $wordCount
+     * @return Mnemonic
+     * @throws Exception
      */
-    public static function bitstringToHex(string $bitstring): string
+    public static function Generate(int $wordCount = 12): Mnemonic
     {
-        $chunkSizeBits = 8;
+        return (new self($wordCount))
+            ->generateSecureEntropy()
+            ->wordlist(WordList::English())
+            ->mnemonic();
+    }
 
-        // If the string is shorter than the chunk size it can be 0-padded
-        if (strlen($bitstring) < $chunkSizeBits) {
-            $bitstring = str_pad($bitstring, $chunkSizeBits, '0', STR_PAD_LEFT);
+    /**
+     * @param $words
+     * @param WordList|null $wordList
+     * @param bool $verifyChecksum
+     * @return Mnemonic
+     * @throws Exception
+     */
+    public static function Words($words, ?WordList $wordList = null, bool $verifyChecksum = true): Mnemonic
+    {
+        if (is_string($words)) {
+            $words = explode(" ", $words);
         }
 
-        if (strlen($bitstring) % $chunkSizeBits !== 0) throw new \InvalidArgumentException(sprintf('Got bitstring of length %s, but it must be divisible by %s', strlen($bitstring), $chunkSizeBits));
-
-        $finalHex = '';
-        for ($i=0; $i < strlen($bitstring); $i += $chunkSizeBits) {
-            $bitstringPart = substr($bitstring, $i, $chunkSizeBits);
-            $hex = base_convert($bitstringPart, 2, 16);
-            // Ensure hex is always two characters
-            $hex = str_pad($hex, 2, '0', STR_PAD_LEFT);
-
-            $finalHex .= $hex;
+        if (!is_array($words)) {
+            throw new Exception('Mnemonic constructor requires an Array of words');
         }
 
-        return $finalHex;
+        $wordCount = count($words);
+        return (new self($wordCount))
+            ->wordlist($wordList ?? WordList::English())
+            ->reverse($words, $verifyChecksum);
     }
 
     /**
-     * Bip39 constructor.
-     *
-     * @param string|null $lang possible values: english, chinese_simplified, chinese_traditional, french, italian, spanish, korean, japanese
+     * BIP39 constructor.
+     * @param int $wordCount
+     * @throws Exception
      */
-    public function __construct(?string $lang = null)
+    public function __construct(int $wordCount = 12)
     {
-        $wordlistPath = __DIR__ . "/wordlists/english.txt";
-        if ($lang != null) {
-            $wordlistPath = __DIR__ . "/wordlists/" . $lang . ".txt";
+        if ($wordCount < 12 || $wordCount > 24) {
+            throw new Exception('Mnemonic words count must be between 12-24');
+        } elseif ($wordCount % 3 !== 0) {
+            throw new Exception('Words count must be generated in multiples of 3');
         }
 
-        $this->words = $this->loadWordlist($wordlistPath);
+        // Actual words count
+        $this->wordsCount = $wordCount;
+        // Overall entropy bits (ENT+CS)
+        $this->overallBits = $this->wordsCount * 11;
+        // Checksum Bits are 1 bit per 3 words, starting from 12 words with 4 CS bits
+        $this->checksumBits = (($this->wordsCount - 12) / 3) + 4;
+        // Entropy Bits (ENT)
+        $this->entropyBits = $this->overallBits - $this->checksumBits;
     }
 
     /**
-     * Converts a mnemonic to raw bytes
-     *
-     * NOTE: this is NOT the raw bytes used for a Stellar key! See mnemonicToSeedBytes
-     *
-     * @param string $mnenomic
-     * @return false|string
+     * @param string $entropy
+     * @return BIP39
+     * @throws Exception
      */
-    public function mnemonicToEntropy(string $mnenomic): false|string
+    public function useEntropy(string $entropy): self
     {
-        $bitstring = $this->parseMnemonic($mnenomic);
+        self::validateEntropy($entropy);
+        $this->entropy = $entropy;
+        $checksum = $this->checksum($entropy, $this->checksumBits);
+        $this->rawBinaryChunks = str_split($this->hex2bits($this->entropy) . $checksum, 11);
+        return $this;
+    }
 
-        // Calculate expected lengths
-        $numChecksumBits = strlen($bitstring) / 33;
-        $numEntropyBits = strlen($bitstring) - $numChecksumBits;
+    /**
+     * @return BIP39
+     * @throws Exception
+     */
+    public function generateSecureEntropy(): self
+    {
+        $this->useEntropy(bin2hex(random_bytes($this->entropyBits / 8)));
+        return $this;
+    }
 
-        // Get checksum bits from the end of the string
-        $checksumBits = substr($bitstring, -1 * $numChecksumBits);
-        $checksumHex = static::bitstringToHex($checksumBits);
-
-        // Remaining bits are the entropy
-        $entropyBits = substr($bitstring, 0, $numEntropyBits);
-        $entropyHex = static::bitstringToHex($entropyBits);
-
-        $entropyBytes = hex2bin($entropyHex);
-
-        if ($checksumHex !== static::getEntropyChecksumHex($entropyBytes)) {
-            throw new \InvalidArgumentException('Invalid checksum');
+    /**
+     * @return Mnemonic
+     * @throws Exception
+     */
+    public function mnemonic(): Mnemonic
+    {
+        if (!$this->entropy) {
+            throw new Exception('Entropy is not defined');
         }
 
-        return $entropyBytes;
+        if (!$this->wordList) {
+            throw new Exception('Word list is not defined');
+        }
+
+        $mnemonic = new Mnemonic($this->entropy);
+        foreach ($this->rawBinaryChunks as $bit) {
+            $index = bindec($bit);
+            $mnemonic->wordsIndex[] = $index;
+            $mnemonic->words[] = $this->wordList->getWord($index);
+            $mnemonic->rawBinaryChunks[] = $bit;
+            $mnemonic->wordsCount++;
+        }
+
+        return $mnemonic;
     }
 
     /**
-     * Converts a mnemonic and optional passphrase to a 64-byte string for use
-     * as entropy.
-     *
-     * Note that this is specific to the wordlist being used and is NOT portable
-     * across wordlists.
-     *
-     * In most cases, mnemonicToSeedBytesWithErrorChecking should be used since
-     * it will fail if there's a checksum error in the mnemonic
-     *
-     * @param string $mnemonic
-     * @param string $passphrase
-     * @return string
+     * @param WordList $wordList
+     * @return BIP39
      */
-    public function mnemonicToSeedBytes(string $mnemonic, string $passphrase = '') : string
+    public function wordList(WordList $wordList): self
     {
-        $salt = 'mnemonic' . $passphrase;
-        return hash_pbkdf2("sha512", $mnemonic, $salt, 2048, 64, true);
+        $this->wordList = $wordList;
+        return $this;
     }
 
     /**
-     * Converts $mnemonic to seed bytes suitable for creating a new HDNode
-     *
-     * If the mnemonic is invalid, an exception is thrown
-     *
-     * @param string $mnemonic
-     * @param string $passphrase
-     * @return string raw bytes
+     * @param array $words
+     * @param bool $verifyChecksum
+     * @return Mnemonic
+     * @throws Exception
      */
-    public function mnemonicToSeedBytesWithErrorChecking(string $mnemonic, string $passphrase = '') : string
+    public function reverse(array $words, bool $verifyChecksum = true): Mnemonic
     {
-        // This will throw an exception if the embedded checksum is incorrect
-        $this->mnemonicToEntropy($mnemonic);
+        if (!$this->wordList) {
+            throw new Exception('Wordlist is not defined');
+        }
 
-        return $this->mnemonicToSeedBytes($mnemonic, $passphrase);
-    }
-
-    /**
-     * Parses a string of words and returns a string representing the binary
-     * encoding of the mnemonic (including checksum)
-     *
-     * Note that this is a literal string of "101101110" and not raw bytes!
-     *
-     * @param string $mnemonic
-     * @return string
-     */
-    protected function parseMnemonic(string $mnemonic): string
-    {
-        $words = explode(' ', $mnemonic);
-        if (count($words) %3 !== 0) throw new \InvalidArgumentException('Invalid mnemonic (number of words must be a multiple of 3)');
-
-        $wordBitstrings = [];
+        $mnemonic = new Mnemonic();
+        $pos = 0;
         foreach ($words as $word) {
-            $wordIdx = $this->getWordIndex($word);
+            $pos++;
+            $index = $this->wordList->findIndex($word);
+            if (is_null($index)) {
+                throw new Exception(sprintf('Invalid/unknown word at position %d', $pos));
+            }
 
-            // Convert $wordIdx to an 11-bit number (preserving 0s)
-            $wordBitstrings[] = str_pad(decbin($wordIdx), 11, '0', STR_PAD_LEFT);
+            $mnemonic->words[] = $word;
+            $mnemonic->wordsIndex[] = $index;
+            $mnemonic->wordsCount++;
+            $mnemonic->rawBinaryChunks[] = str_pad(decbin($index), 11, '0', STR_PAD_LEFT);
         }
 
-        // Return a string representing each bit
-        return join('', $wordBitstrings);
+        $rawBinary = implode('', $mnemonic->rawBinaryChunks);
+        $entropyBits = substr($rawBinary, 0, $this->entropyBits);
+        $checksumBits = substr($rawBinary, $this->entropyBits, $this->checksumBits);
+
+        $mnemonic->entropy = $this->bits2hex($entropyBits);
+
+        // Verify Checksum?
+        if ($verifyChecksum) {
+            if (!hash_equals($checksumBits, $this->checksum($mnemonic->entropy, $this->checksumBits))) {
+                throw new Exception('Entropy checksum match failed');
+            }
+        }
+
+        return $mnemonic;
     }
 
     /**
-     * @param string $word
-     * @return int
+     * @param string $hex
+     * @return string
      */
-    protected function getWordIndex(string $word) : int
+    private function hex2bits(string $hex): string
     {
-        $index = 0;
-
-        foreach ($this->words as $wordInList) {
-            if ($wordInList === $word) return $index;
-
-            $index++;
+        $bits = "";
+        for ($i = 0; $i < strlen($hex); $i++) {
+            $bits .= str_pad(base_convert($hex[$i], 16, 2), 4, '0', STR_PAD_LEFT);
         }
-
-        throw new \InvalidArgumentException(sprintf('Word "%s" not found in wordlist', $word));
+        return $bits;
     }
 
     /**
-     * @param string $wordlistPath
-     * @return array
+     * @param string $bits
+     * @return string
      */
-    protected function loadWordlist(string $wordlistPath): array
+    private function bits2hex(string $bits): string
     {
-        $this->words = [];
-        if (!file_exists($wordlistPath)) throw new \InvalidArgumentException('Cannot load wordlist from "%s"', $wordlistPath);
-
-        foreach (file($wordlistPath) as $word) {
-            $this->words[] = trim($word);
+        $hex = "";
+        foreach (str_split($bits, 4) as $chunk) {
+            $hex .= base_convert($chunk, 2, 16);
         }
 
-        return $this->words;
+        return $hex;
+    }
+
+    /**
+     * @param string $entropy
+     * @param int $bits
+     * @return string
+     */
+    private function checksum(string $entropy, int $bits): string
+    {
+        $checksumChar = ord(hash("sha256", hex2bin($entropy), true)[0]);
+        $checksum = '';
+        for ($i = 0; $i < $bits; $i++) {
+            $checksum .= $checksumChar >> (7 - $i) & 1;
+        }
+
+        return $checksum;
+    }
+
+    /**
+     * @param string $entropy
+     * @throws Exception
+     */
+    private static function validateEntropy(string $entropy): void
+    {
+        if (!preg_match('/^[a-f0-9]{2,}$/', $entropy)) {
+            throw new Exception('Invalid entropy (requires hexadecimal)');
+        }
+
+        $entropyBits = strlen($entropy) * 4;
+        if (!in_array($entropyBits, [128, 160, 192, 224, 256])) {
+            throw new Exception('Invalid entropy length');
+        }
     }
 }
