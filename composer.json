@@ -13,7 +13,7 @@
 		"paragonie/sodium_compat" : "~1.17",
 		"phpseclib/phpseclib" : "~3.0"
 	},
-	"license" : "Apache 2.0",
+	"license" : "Apache-2.0",
 	"authors" : [{
 			"name" : "Christian Rogobete",
 			"email" : "c.rogobete@soneso.com"
