@@ -19,7 +19,7 @@ Maintenance and continuous improvement of the sdk
 
 ## Installation
 
-composer require soneso/stellar-php-sdk
+```composer require soneso/stellar-php-sdk```
 
 ## Quick Start
 
