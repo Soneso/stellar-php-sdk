@@ -1,6 +1,7 @@
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
 ![PHP](https://img.shields.io/badge/PHP-blue.svg)
+![alpha](https://img.shields.io/badge/alpha-red.svg)![0.0.1](https://img.shields.io/badge/0.0.1-yellow.svg)
 
 The Soneso open source Stellar SDK for PHP will provide APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
@@ -214,6 +215,6 @@ if ($response->isSuccessful()) {
 | [Fee bump transaction](examples/fee_bump.md) | Fee bump transactions allow an arbitrary account to pay the fee for a transaction.| [Fee bump transactions](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md)|
 | [Muxed accounts](examples/muxed_account_payment.md) | In this example we will see how to use a muxed account in a payment operation.| [First-class multiplexed accounts](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0027.md)|
 | [Stream payments](examples/stream_payments.md) | Listens for payments received by a given account.| [Streaming](https://developers.stellar.org/api/introduction/streaming/) |
-| [SEP-0005: Key derivation](examples/sep-0005-key-derivation.md) | In this examples you can see how to generate 12 or 24 words mnemonics for different languages using the Flutter SDK, how to generate key pairs from a mnemonic (with and without BIP 39 passphrase) and how to generate key pairs from a BIP 39 seed. | [SEP-0005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)|
+| [SEP-0005: Key derivation](examples/sep-0005-key-derivation.md) | In this examples you can see how to generate 12 or 24 words mnemonics for different languages using the PHP SDK, how to generate key pairs from a mnemonic (with and without BIP 39 passphrase) and how to generate key pairs from a BIP 39 seed. | [SEP-0005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)|
 
 More examples can be found in the [tests](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests).
