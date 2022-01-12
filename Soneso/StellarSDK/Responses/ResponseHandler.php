@@ -33,6 +33,7 @@ use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
 use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
+use Soneso\StellarSDK\SEP\Federation\FederationResponse;
 
 class ResponseHandler
 {
@@ -81,6 +82,7 @@ class ResponseHandler
             RequestType::OPERATIONS_PAGE => OperationsPageResponse::fromJson($jsonData),
             RequestType::EFFECTS_PAGE => EffectsPageResponse::fromJson($jsonData),
             RequestType::SUBMIT_TRANSACTION => SubmitTransactionResponse::fromJson($jsonData),
+            RequestType::FEDERATION => FederationResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };
 

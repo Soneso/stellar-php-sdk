@@ -17,13 +17,13 @@ abstract class Response
 
     public function setHeaders(array $headers) : void {
         
-        if ($headers["X-Ratelimit-Limit"] != null) {
+        if (array_key_exists("X-Ratelimit-Limit", $headers)) {
             $this->rateLimitLimit = (int)$headers["X-Ratelimit-Limit"];
         }
-        if ($headers["X-Ratelimit-Remaining"] != null) {
+        if (array_key_exists("X-Ratelimit-Remaining", $headers)) {
             $this->rateLimitRemaining = (int)$headers["X-Ratelimit-Remaining"];
         }
-        if ($headers["X-Ratelimit-Reset"] != null) {
+        if (array_key_exists("X-Ratelimit-Reset", $headers)) {
             $this->rateLimitReset = (int)$headers["X-Ratelimit-Reset"];
         }
     }
