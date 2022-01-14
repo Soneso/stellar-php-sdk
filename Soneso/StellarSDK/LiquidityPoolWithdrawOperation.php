@@ -64,6 +64,14 @@ class LiquidityPoolWithdrawOperation extends AbstractOperation
         return $this->maxAmountB;
     }
 
+    public static function fromXdrOperation(XdrLiquidityPoolWithdrawOperation $xdrOp): LiquidityPoolWithdrawOperation {
+        $maxAmountA = AbstractOperation::fromXdrAmount($xdrOp->getMaxAmountA());
+        $maxAmountB = AbstractOperation::fromXdrAmount($xdrOp->getMaxAmountB());
+        $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
+        $liquidityPoolId = $xdrOp->getLiquidityPoolID();
+        return new LiquidityPoolWithdrawOperation($liquidityPoolId, $amount, $maxAmountA, $maxAmountB);
+    }
+
     public function toOperationBody(): XdrOperationBody
     {
         $amount = AbstractOperation::toXdrAmount($this->amount);

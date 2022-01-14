@@ -6,10 +6,7 @@
 
 namespace Soneso\StellarSDK;
 
-use Soneso\StellarSDK\Xdr\XdrAccountID;
-use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrClawbackOperation;
-use Soneso\StellarSDK\Xdr\XdrCreateAccountOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
@@ -49,6 +46,12 @@ class ClawbackOperation extends AbstractOperation
         return $this->amount;
     }
 
+    public static function fromXdrOperation(XdrClawbackOperation $xdrOp): ClawbackOperation {
+        $asset = Asset::fromXdr($xdrOp->getAsset());
+        $from = MuxedAccount::fromXdr($xdrOp->getFrom());
+        $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
+        return new ClawbackOperation($asset, $from, $amount);
+    }
 
     public function toOperationBody(): XdrOperationBody
     {

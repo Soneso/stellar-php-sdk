@@ -74,6 +74,14 @@ class LiquidityPoolDepositOperation extends AbstractOperation
         return $this->maxPrice;
     }
 
+    public static function fromXdrOperation(XdrLiquidityPoolDepositOperation $xdrOp): LiquidityPoolDepositOperation {
+        $maxAmountA = AbstractOperation::fromXdrAmount($xdrOp->getMaxAmountA());
+        $maxAmountB = AbstractOperation::fromXdrAmount($xdrOp->getMaxAmountB());
+        $minPrice = Price::fromXdr($xdrOp->getMinPrice());
+        $maxPrice = Price::fromXdr($xdrOp->getMinPrice());
+        $liquidityPoolId = $xdrOp->getLiquidityPoolID();
+        return new LiquidityPoolDepositOperation($liquidityPoolId, $maxAmountA, $maxAmountB, $minPrice, $maxPrice);
+    }
 
     public function toOperationBody(): XdrOperationBody
     {

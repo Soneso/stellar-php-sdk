@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Responses\Operations\SetTrustlineFlagsOperationResponse;
 use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
@@ -52,17 +53,6 @@ abstract class AbstractOperation
         return $stellarAmount->getDecimalValueAsString();
     }
 
-    /*
-    const BEGIN_SPONSORING_FUTURE_RESERVES = 16;
-    const END_SPONSORING_FUTURE_RESERVES = 17;
-    const REVOKE_SPONSORSHIP = 18;
-    const CLAWBACK = 19;
-    const CLAWBACK_CLAIMABLE_BALANCE = 20;
-    const SET_TRUST_LINE_FLAGS = 21;
-    const LIQUIDITY_POOL_DEPOSIT = 22;
-    const LIQUIDITY_POOL_WITHDRAW = 23;
-     */
-
     public static function fromXdr(XdrOperation $xdrOp) : AbstractOperation {
         $body = $xdrOp->getBody();
         $sourceAccount = null;
@@ -70,7 +60,7 @@ abstract class AbstractOperation
             $sourceAccount = MuxedAccount::fromXdr($xdrOp->getSourceAccount());
         }
         $type = $body->getType()->getValue();
-        return match ($type) {
+        $result = match ($type) {
             XdrOperationType::CREATE_ACCOUNT => self::creatAccountOperation($body),
             XdrOperationType::PAYMENT => self::paymentOperation($body),
             XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE => self::pathPaymentStrictReceiveOperation($body),
@@ -86,18 +76,81 @@ abstract class AbstractOperation
             XdrOperationType::PATH_PAYMENT_STRICT_SEND => self::pathPaymentStrictSendOperation($body),
             XdrOperationType::CREATE_CLAIMABLE_BALANCE => self::createClaimableBalance($body),
             XdrOperationType::CLAIM_CLAIMABLE_BALANCE => self::claimClaimableClaimableBalance($body),
-            /*
-            const BEGIN_SPONSORING_FUTURE_RESERVES = 16;
-            const END_SPONSORING_FUTURE_RESERVES = 17;
-            const REVOKE_SPONSORSHIP = 18;
-            const CLAWBACK = 19;
-            const CLAWBACK_CLAIMABLE_BALANCE = 20;
-            const SET_TRUST_LINE_FLAGS = 21;
-            const LIQUIDITY_POOL_DEPOSIT = 22;
-            const LIQUIDITY_POOL_WITHDRAW = 23;
-             */
+            XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES => self::beginSponsoringFutureReserves($body),
+            XdrOperationType::END_SPONSORING_FUTURE_RESERVES => new EndSponsoringFutureReservesOperation(),
+            XdrOperationType::REVOKE_SPONSORSHIP => self::revokeSponsorship($body),
+            XdrOperationType::CLAWBACK => self::clawback($body),
+            XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE => self::clawbackClaimableBalance($body),
+            XdrOperationType::SET_TRUST_LINE_FLAGS => self::setTrustlineFlags($body),
+            XdrOperationType::LIQUIDITY_POOL_DEPOSIT => self::liquidityPoolDeposit($body),
+            XdrOperationType::LIQUIDITY_POOL_WITHDRAW => self::liquidityPoolWithdraw($body),
             default => throw new InvalidArgumentException(sprintf("Unknown operation type: %s", $type))
         };
+        $result->setSourceAccount($sourceAccount);
+        return $result;
+    }
+
+    private static function liquidityPoolWithdraw(XdrOperationBody $body) : LiquidityPoolWithdrawOperation {
+        $op = $body->getLiquidityPoolWithdrawOperation();
+        if ($op != null) {
+            return LiquidityPoolWithdrawOperation::fromXdrOperation($op);
+        } else {
+            throw new InvalidArgumentException("missing liquidity pool withdraw operation in xdr operation body");
+        }
+    }
+
+    private static function liquidityPoolDeposit(XdrOperationBody $body) : LiquidityPoolDepositOperation {
+        $op = $body->getLiquidityPoolDepositOperation();
+        if ($op != null) {
+            return LiquidityPoolDepositOperation::fromXdrOperation($op);
+        } else {
+            throw new InvalidArgumentException("missing liquidity pool deposit operation in xdr operation body");
+        }
+    }
+
+    private static function setTrustlineFlags(XdrOperationBody $body) : SetTrustlineFlagsOperation {
+        $op = $body->getSetTrustLineFlagsOperation();
+        if ($op != null) {
+            return SetTrustLineFlagsOperation::fromXdrOperation($op);
+        } else {
+            throw new InvalidArgumentException("missing set trustline flags operation in xdr operation body");
+        }
+    }
+
+    private static function clawbackClaimableBalance(XdrOperationBody $body) : ClawbackClaimableBalanceOperation {
+        $op = $body->getClaimClaimableBalanceOperation();
+        if ($op != null) {
+            return ClawbackClaimableBalanceOperation::fromXdrOperation($op);
+        } else {
+            throw new InvalidArgumentException("missing clawback claimable operation in xdr operation body");
+        }
+    }
+
+    private static function clawback(XdrOperationBody $body) : ClawbackOperation {
+        $op = $body->getClawbackOperation();
+        if ($op != null) {
+            return ClawbackOperation::fromXdrOperation($op);
+        } else {
+            throw new InvalidArgumentException("missing clawback operation in xdr operation body");
+        }
+    }
+
+    private static function revokeSponsorship(XdrOperationBody $body) : RevokeSponsorshipOperation {
+        $op = $body->getRevokeSponsorshipOperation();
+        if ($op != null) {
+            return RevokeSponsorshipOperation::fromXdrOperation($op);
+        } else {
+            throw new InvalidArgumentException("missing revoke sponsorship operation in xdr operation body");
+        }
+    }
+
+    private static function beginSponsoringFutureReserves(XdrOperationBody $body) : BeginSponsoringFutureReservesOperation {
+        $op = $body->getBeginSponsoringFutureReservesOperation();
+        if ($op != null) {
+            return BeginSponsoringFutureReservesOperation::fromXdrOperation($op);
+        } else {
+            throw new InvalidArgumentException("missing begin sponsoring future reserves operation in xdr operation body");
+        }
     }
 
     private static function claimClaimableClaimableBalance(XdrOperationBody $body) : ClaimClaimableBalanceOperation {

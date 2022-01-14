@@ -64,6 +64,13 @@ class SetTrustLineFlagsOperation extends AbstractOperation
         return $this->setFlags;
     }
 
+    public static function fromXdrOperation(XdrSetTrustLineFlagsOperation $xdrOp): SetTrustLineFlagsOperation {
+        $trustorId = $xdrOp->getAccountID()->getAccountId();
+        $asset = Asset::fromXdr($xdrOp->getAsset());
+        $clearFlags = $xdrOp->getClearFlags();
+        $setFlags = $xdrOp->getSetFlags();
+        return new SetTrustLineFlagsOperation($trustorId, $asset, $clearFlags, $setFlags);
+    }
 
     public function toOperationBody(): XdrOperationBody
     {

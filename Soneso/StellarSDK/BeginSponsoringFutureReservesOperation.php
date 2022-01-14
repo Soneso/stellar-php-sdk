@@ -28,6 +28,11 @@ class BeginSponsoringFutureReservesOperation extends AbstractOperation
         return $this->sponsoredId;
     }
 
+    public static function fromXdrOperation(XdrBeginSponsoringFutureReservesOperation $xdrOp): BeginSponsoringFutureReservesOperation {
+        $sponsoredId = $xdrOp->getSponsoredID()->getAccountId();
+        return new BeginSponsoringFutureReservesOperation($sponsoredId);
+    }
+
     public function toOperationBody(): XdrOperationBody
     {
         $xdrSponsoredId = new XdrAccountID($this->sponsoredId);

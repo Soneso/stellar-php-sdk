@@ -70,6 +70,17 @@ class RevokeSponsorshipOperation extends AbstractOperation
         $this->signerKey = $signerKey;
     }
 
+    public static function fromXdrOperation(XdrRevokeSponsorshipOperation $xdrOp): RevokeSponsorshipOperation {
+        $result = new RevokeSponsorshipOperation();
+        if ($xdrOp->getType()->getValue() == XdrRevokeSponsorshipType::LEDGER_ENTRY) {
+            $result->setLedgerKey($xdrOp->getLedgerKey());
+        } else if ($xdrOp->getType()->getValue() == XdrRevokeSponsorshipType::SIGNER) {
+            $result->setSignerAccount($xdrOp->getSigner()->getAccountId()->getAccountId());
+            $result->setSignerKey($xdrOp->getSigner()->getSignerKey());
+        }
+        return $result;
+    }
+
     public function toOperationBody(): XdrOperationBody
     {
         $op = new XdrRevokeSponsorshipOperation();
