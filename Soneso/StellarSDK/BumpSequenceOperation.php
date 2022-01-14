@@ -37,6 +37,11 @@ class BumpSequenceOperation extends AbstractOperation
         return $this->bumpTo;
     }
 
+    public static function fromXdrOperation(XdrBumpSequenceOperation $xdrOp): BumpSequenceOperation {
+        $bumpTo = $xdrOp->getBumpTo()->getValue();
+        return new BumpSequenceOperation($bumpTo);
+    }
+
     public function toOperationBody(): XdrOperationBody {
         $seqNr = new XdrSequenceNumber($this->bumpTo);
         $op = new XdrBumpSequenceOperation($seqNr);

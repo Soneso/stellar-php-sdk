@@ -346,25 +346,6 @@ class QueryTest extends TestCase
         }
     }
 
-    public function testStreamPayments3(): void
-    {
-        $sdk = StellarSDK::getTestNetInstance();
-        $found = false;
-        try {
-            $sdk->payments()->forAccount("GCDBA6GFGEHAMVAMRL6R2733EXUENJ35EMYNA2LE7WWJPVANORVC4UNA")->cursor("now")->stream(function(OperationResponse $payment) {
-                printf('Payment operation %s id %s' . PHP_EOL, get_class($payment), $payment->getOperationId());
-                if ($payment instanceof PaymentOperationResponse) {
-                    throw new Exception("stop");
-                }
-            });
-        } catch (Exception $e) {
-            if ($e->getMessage() == "stop") {
-                $found = true;
-            }
-        }
-        $this->assertTrue($found);
-    }
-
     public function testStreamOperations(): void
     {
         $sdk = StellarSDK::getTestNetInstance();

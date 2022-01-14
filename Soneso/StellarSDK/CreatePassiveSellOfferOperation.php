@@ -62,8 +62,15 @@ class CreatePassiveSellOfferOperation extends AbstractOperation
         return $this->price;
     }
 
-    public function toOperationBody(): XdrOperationBody
-    {
+    public static function fromXdrOperation(XdrCreatePassiveSellOfferOperation $xdrOp): CreatePassiveSellOfferOperation {
+        $selling = Asset::fromXdr($xdrOp->getSelling());
+        $buying = Asset::fromXdr($xdrOp->getBuying());
+        $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
+        $price = Price::fromXdr($xdrOp->getPrice());
+        return new CreatePassiveSellOfferOperation($selling, $buying, $amount, $price);
+    }
+
+    public function toOperationBody(): XdrOperationBody {
         $xdrSelling = $this->selling->toXdr();
         $xdrBuying = $this->buying->toXdr();
         $xdrAmount = AbstractOperation::toXdrAmount($this->amount);

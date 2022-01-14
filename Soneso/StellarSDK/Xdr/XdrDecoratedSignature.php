@@ -25,13 +25,28 @@ class XdrDecoratedSignature
     }
 
     /**
+     * @return string
+     */
+    public function getHint(): string
+    {
+        return $this->hint;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSignature(): string
+    {
+        return $this->signature;
+    }
+
+    /**
      * @inheritDoc
      */
     public function encode(): string
     {
-        $bytes = '';
 
-        $bytes .= XdrEncoder::opaqueFixed($this->hint, 4);
+        $bytes = XdrEncoder::opaqueFixed($this->hint, 4);
         $bytes .= XdrEncoder::opaqueVariable($this->signature);
 
         return $bytes;

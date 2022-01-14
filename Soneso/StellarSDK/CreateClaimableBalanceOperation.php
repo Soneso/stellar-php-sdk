@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK;
 
+use Soneso\StellarSDK\Xdr\XdrClaimant;
 use Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
@@ -45,6 +46,18 @@ class CreateClaimableBalanceOperation extends AbstractOperation
     public function getAmount(): string
     {
         return $this->amount;
+    }
+
+    public static function fromXdrOperation(XdrCreateClaimableBalanceOperation $xdrOp): CreateClaimableBalanceOperation {
+        $asset = Asset::fromXdr($xdrOp->getAsset());
+        $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
+        $claimants = array();
+        foreach($xdrOp->getClaimants() as $xdrClaimant) {
+            if ($xdrClaimant instanceof XdrClaimant) {
+                array_push($claimants, Claimant::fromXdr($xdrClaimant));
+            }
+        }
+        return new CreateClaimableBalanceOperation($claimants, $asset, $amount);
     }
 
     public function toOperationBody(): XdrOperationBody

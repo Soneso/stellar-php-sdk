@@ -39,6 +39,10 @@ class Price
         return new XdrPrice($this->n, $this->d);
     }
 
+    public static function fromXdr(XdrPrice $xdrPrice) : Price {
+        return new Price($xdrPrice->getN(), $xdrPrice->getD());
+    }
+
     public static function fromString(string $price) : Price | false {
         $price = Price::float2fraction($price);
         if ($price) {

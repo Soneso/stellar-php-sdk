@@ -37,6 +37,11 @@ class AccountMergeOperation extends AbstractOperation
         return $this->destination;
     }
 
+    public static function fromXdrOperation(XdrAccountMergeOperation $xdrOp): AccountMergeOperation {
+        $destination = MuxedAccount::fromXdr($xdrOp->getDestination());
+        return new AccountMergeOperation($destination);
+    }
+
     public function toOperationBody(): XdrOperationBody {
         $xdrDestination = $this->destination->toXdr();
         $op = new XdrAccountMergeOperation($xdrDestination);

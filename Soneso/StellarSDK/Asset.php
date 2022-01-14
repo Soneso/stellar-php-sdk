@@ -7,7 +7,9 @@
 
 namespace Soneso\StellarSDK;
 
+use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
 use Soneso\StellarSDK\Xdr\XdrTrustlineAsset;
 
@@ -96,6 +98,31 @@ abstract class Asset {
     public function toXdrChangeTrustAsset(): XdrChangeTrustAsset
     {
         return XdrChangeTrustAsset::fromXdrAsset($this->toXdr());
+    }
+
+    public static function fromXdr(XdrAsset $xdrAsset) : Asset {
+        switch ($xdrAsset->getType()->getValue()) {
+            case XdrAssetType::ASSET_TYPE_NATIVE:
+                return new AssetTypeNative();
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
+                $assetCode4 = $xdrAsset->getAlphaNum4()->getAssetCode();
+                $issuer = $xdrAsset->getAlphaNum4()->getIssuer()->getAccountId();
+                return new AssetTypeCreditAlphanum4($assetCode4, $issuer);
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
+                $assetCode12 = $xdrAsset->getAlphaNum12()->getAssetCode();
+                $issuer = $xdrAsset->getAlphaNum12()->getIssuer()->getAccountId();
+                return new AssetTypeCreditAlphanum12($assetCode12, $issuer);
+            case XdrAssetType::ASSET_TYPE_POOL_SHARE:
+                if ($xdrAsset instanceof XdrChangeTrustAsset) {
+                    $a = $xdrAsset->getLiquidityPool()->getConstantProduct()->getAssetA();
+                    $b = $xdrAsset->getLiquidityPool()->getConstantProduct()->getAssetB();
+                    return new AssetTypePoolShare(Asset::fromXdr($a), Asset::fromXdr($b));
+                } else {
+                    throw new InvalidArgumentException("Unknown pool share asset type");
+                }
+            default:
+                throw new InvalidArgumentException("Unknown asset type " . $xdrAsset->getType()->getValue());
+        }
     }
 
     public function toXdrTrustlineAsset(): XdrTrustlineAsset

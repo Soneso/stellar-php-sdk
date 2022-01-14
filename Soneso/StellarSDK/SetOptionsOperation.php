@@ -148,6 +148,23 @@ class SetOptionsOperation extends AbstractOperation
         return $this->signerWeight;
     }
 
+    public static function fromXdrOperation(XdrSetOptionsOperation $xdrOp): SetOptionsOperation {
+
+        $inflationDestination = $xdrOp->getInflationDest()->getAccountId();
+        $clearFlags = $xdrOp->getClearFlags();
+        $setFlags = $xdrOp->getSetFlags();
+        $masterKeyWeight = $xdrOp->getMasterWeight();
+        $lowThreshold = $xdrOp->getLowThreshold();
+        $mediumThreshold = $xdrOp->getMedThreshold();
+        $highThreshold = $xdrOp->getHighThreshold();
+        $homeDomain = $xdrOp->getHomeDomain();
+        $signerKey = $xdrOp->getSigner()->getKey();
+        $signerWeight = $xdrOp->getSigner()->getWeight();
+
+        return new SetOptionsOperation($inflationDestination, $clearFlags, $setFlags, $masterKeyWeight, $lowThreshold, $mediumThreshold,
+            $highThreshold, $homeDomain, $signerKey, $signerWeight);
+    }
+
     public function toOperationBody(): XdrOperationBody
     {
         $result = new XdrSetOptionsOperation();

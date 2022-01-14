@@ -41,6 +41,12 @@ class ManageDataOperation extends AbstractOperation
         return $this->value;
     }
 
+    public static function fromXdrOperation(XdrManageDataOperation $xdrOp): ManageDataOperation {
+        $key = $xdrOp->getKey();
+        $value = $xdrOp->getValue()->getValue();
+        return new ManageDataOperation($key, $value);
+    }
+
     public function toOperationBody(): XdrOperationBody
     {
         $value = new XdrDataValue($this->value);

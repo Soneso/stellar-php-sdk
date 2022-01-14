@@ -14,6 +14,14 @@ class XdrClaimClaimableBalanceOperation
         $this->balanceID = $balanceID;
     }
 
+    /**
+     * @return XdrClaimableBalanceID
+     */
+    public function getBalanceID(): XdrClaimableBalanceID
+    {
+        return $this->balanceID;
+    }
+
     public function encode() : string {
         return $this->balanceID->encode();
     }

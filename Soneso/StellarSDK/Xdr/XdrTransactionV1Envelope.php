@@ -27,6 +27,14 @@ class XdrTransactionV1Envelope
     }
 
     /**
+     * @param array $signatures
+     */
+    public function setSignatures(array $signatures): void
+    {
+        $this->signatures = $signatures;
+    }
+
+    /**
      * @return array
      */
     public function getSignatures(): array

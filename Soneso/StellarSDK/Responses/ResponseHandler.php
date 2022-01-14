@@ -34,6 +34,7 @@ use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
 use Soneso\StellarSDK\SEP\Federation\FederationResponse;
+use Soneso\StellarSDK\SEP\WebAuth\ChallengeResponse;
 
 class ResponseHandler
 {
@@ -42,7 +43,7 @@ class ResponseHandler
 
         $content = $response->getBody()->__toString();
         
-        // print($content);
+        print($content);
         
         // not success
         // this should normally not happen since it will be handled by gruzzle (throwing corresponding gruzzle exception)
@@ -83,6 +84,7 @@ class ResponseHandler
             RequestType::EFFECTS_PAGE => EffectsPageResponse::fromJson($jsonData),
             RequestType::SUBMIT_TRANSACTION => SubmitTransactionResponse::fromJson($jsonData),
             RequestType::FEDERATION => FederationResponse::fromJson($jsonData),
+            RequestType::CHALLENGE => ChallengeResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };
 

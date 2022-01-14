@@ -7,6 +7,7 @@
 
 namespace Soneso\StellarSDK;
 
+use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation;
@@ -88,6 +89,21 @@ class PathPaymentStrictSendOperation extends AbstractOperation
      */
     public function getPath(): ?array {
         return $this->path;
+    }
+
+    public static function fromXdrOperation(XdrPathPaymentStrictSendOperation $xdrOp): PathPaymentStrictSendOperation {
+        $sendAmount = AbstractOperation::fromXdrAmount($xdrOp->getSendAmount());
+        $sendAsset = Asset::fromXdr($xdrOp->getSendAsset());
+        $destination = MuxedAccount::fromXdr($xdrOp->getDestination());
+        $destAsset = Asset::fromXdr($xdrOp->getDestAsset());
+        $destAmount = AbstractOperation::fromXdrAmount($xdrOp->getDestAmount());
+        $path = array();
+        foreach ($xdrOp->getPath() as $pathAsset) {
+            if ($pathAsset instanceof XdrAsset) {
+                array_push($path, Asset::fromXdr($pathAsset));
+            }
+        }
+        return new PathPaymentStrictSendOperation($sendAsset, $sendAmount, $destination, $destAsset, $destAmount, $path);
     }
 
     public function toOperationBody(): XdrOperationBody

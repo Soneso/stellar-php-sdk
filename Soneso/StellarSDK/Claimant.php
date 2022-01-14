@@ -85,6 +85,12 @@ class Claimant
         return $result;
     }
 
+    public static function fromXdr(XdrClaimant $xdr) : Claimant {
+        $destination = $xdr->getV0()->getDestination()->getAccountId();
+        $predicate = $xdr->getV0()->getPredicate();
+        return new Claimant($destination, $predicate);
+    }
+
     public function toXdr() : XdrClaimant {
         $type = new XdrClaimantType(XdrClaimantType::V0);
         $result = new XdrClaimant($type);

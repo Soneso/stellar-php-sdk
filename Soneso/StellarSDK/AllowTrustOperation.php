@@ -60,6 +60,18 @@ class AllowTrustOperation extends AbstractOperation
         return $this->authorizeToMaintainLiabilities;
     }
 
+    public static function fromXdrOperation(XdrAllowTrustOperation $xdrOp): AllowTrustOperation {
+        $trustor = $xdrOp->getTrustor()->getAccountId();
+        $assetCode = $xdrOp->getAsset()->getAssetCode4();
+        if (!$assetCode) {
+            $assetCode = $xdrOp->getAsset()->getAssetCode12();
+        }
+        $flag = $xdrOp->getAuthorized();
+        $authorize = $flag == XdrTrustLineFlags::AUTHORIZED_FLAG;
+        $authorizeToMaintainLiabilities = $flag == XdrTrustLineFlags::AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG;
+        return new AllowTrustOperation($trustor, $assetCode, $authorize, $authorizeToMaintainLiabilities);
+    }
+
     public function toOperationBody(): XdrOperationBody
     {
         $xdrTrustor = XdrAccountID::fromAccountId($this->trustor);

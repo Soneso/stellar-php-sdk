@@ -80,6 +80,14 @@ class ManageBuyOfferOperation extends AbstractOperation
         return $this->offerId;
     }
 
+    public static function fromXdrOperation(XdrManageBuyOfferOperation $xdrOp): ManageBuyOfferOperation {
+        $selling = Asset::fromXdr($xdrOp->getSelling());
+        $buying = Asset::fromXdr($xdrOp->getBuying());
+        $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
+        $price = Price::fromXdr($xdrOp->getPrice());
+        return new ManageBuyOfferOperation($selling, $buying, $amount, $price, $xdrOp->getOfferId());
+    }
+
     public function toOperationBody(): XdrOperationBody {
         $xdrSelling = $this->selling->toXdr();
         $xdrBuying = $this->buying->toXdr();

@@ -33,4 +33,5 @@ class RequestType
     public const EFFECTS_PAGE = "effects_page";
     public const SUBMIT_TRANSACTION = "submit_transaction";
     public const FEDERATION = "federation";
+    public const CHALLENGE = "challenge";
 }

@@ -7,7 +7,6 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
-use Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
@@ -81,13 +80,19 @@ class ManageSellOfferOperation extends AbstractOperation
      *  The ID of the offer.
      * @return int
      */
-    public function getOfferId(): int
-    {
+    public function getOfferId(): int {
         return $this->offerId;
     }
 
-    public function toOperationBody(): XdrOperationBody
-    {
+    public static function fromXdrOperation(XdrManageSellOfferOperation $xdrOp): ManageSellOfferOperation {
+        $selling = Asset::fromXdr($xdrOp->getSelling());
+        $buying = Asset::fromXdr($xdrOp->getBuying());
+        $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
+        $price = Price::fromXdr($xdrOp->getPrice());
+        return new ManageSellOfferOperation($selling, $buying, $amount, $price, $xdrOp->getOfferId());
+    }
+
+    public function toOperationBody(): XdrOperationBody {
         $xdrSelling = $this->selling->toXdr();
         $xdrBuying = $this->buying->toXdr();
         $xdrAmount = AbstractOperation::toXdrAmount($this->amount);

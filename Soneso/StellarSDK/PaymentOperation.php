@@ -57,6 +57,13 @@ class PaymentOperation extends AbstractOperation
         return $this->amount;
     }
 
+    public static function fromXdrOperation(XdrPaymentOperation $xdrOp): PaymentOperation {
+        $destination = MuxedAccount::fromXdr($xdrOp->getDestination());
+        $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
+        $asset = Asset::fromXdr($xdrOp->getAsset());
+        return new PaymentOperation($destination, $asset, $amount);
+    }
+
     public function toOperationBody(): XdrOperationBody {
         $xdrDestination = $this->destination->toXdr();
         $xdrAsset = $this->asset->toXdr();

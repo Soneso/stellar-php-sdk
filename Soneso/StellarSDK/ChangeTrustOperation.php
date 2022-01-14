@@ -52,6 +52,12 @@ class ChangeTrustOperation extends AbstractOperation
         return $this->limit->toString();
     }
 
+    public static function fromXdrOperation(XdrChangeTrustOperation $xdrOp): ChangeTrustOperation {
+        $asset = Asset::fromXdr($xdrOp->getLine());
+        $amount = AbstractOperation::fromXdrAmount($xdrOp->getLimit());
+        return new ChangeTrustOperation($asset, $amount);
+    }
+
     public function toOperationBody(): XdrOperationBody {
         $changeTrustAsset = $this->asset->toXdrChangeTrustAsset();
         $op = new XdrChangeTrustOperation($changeTrustAsset, $this->limit);

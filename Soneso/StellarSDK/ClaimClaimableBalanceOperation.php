@@ -28,6 +28,11 @@ class ClaimClaimableBalanceOperation extends AbstractOperation
         return $this->balanceId;
     }
 
+    public static function fromXdrOperation(XdrClaimClaimableBalanceOperation $xdrOp): ClaimClaimableBalanceOperation {
+        $balanceId = $xdrOp->getBalanceID()->getHash();
+        return new ClaimClaimableBalanceOperation($balanceId);
+    }
+
     public function toOperationBody(): XdrOperationBody
     {
         $type = new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0);
