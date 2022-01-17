@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\RequestOptions;
+use InvalidArgumentException;
 use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
@@ -19,6 +20,7 @@ use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrOperation;
@@ -96,7 +98,7 @@ class WebAuth
      * @throws SubmitCompletedChallengeErrorResponseException
      * @throws SubmitCompletedChallengeTimeoutResponseException
      * @throws SubmitCompletedChallengeUnknownResponseException
-     * @throws GuzzleException
+     * @throws GuzzleException|ChallengeRequestErrorResponse
      */
     public function jwtToken(string $clientAccountId, array $signers, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null, ?KeyPair $clientDomainKeyPair = null) : string {
 
@@ -105,6 +107,7 @@ class WebAuth
 
         // validate the transaction received from the web auth server.
         $this->validateChallenge($transaction, $clientAccountId, $clientDomainKeyPair?->getAccountId(), $this->gracePeriod, $memo);
+
         if ($clientDomainKeyPair) {
             array_push($signers, $clientDomainKeyPair);
         }
@@ -128,8 +131,7 @@ class WebAuth
      * @throws GuzzleException
      */
     private function sendSignedChallengeTransaction(string $base64EnvelopeXDR) : string {
-        $client = new Client();
-        $response = $client->post($this->authEndpoint, [RequestOptions::JSON => ['transaction' => $base64EnvelopeXDR]]);
+        $response = $this->httpClient->post($this->authEndpoint, [RequestOptions::JSON => ['transaction' => $base64EnvelopeXDR]]);
         $statusCode = $response->getStatusCode();
         if (200 == $statusCode || 400 == $statusCode) {
             $content = $response->getBody()->__toString();
@@ -172,7 +174,7 @@ class WebAuth
             if ($signer instanceof KeyPair) {
                 $signature = $signer->signDecorated($txHash);
                 if ($signature) {
-                    array_push($signature);
+                    array_push($signatures, $signature);
                 }
             }
         }
@@ -188,14 +190,14 @@ class WebAuth
      * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml
      * @return string
-     * @throws Exception
+     * @throws ChallengeRequestErrorResponse
      */
     private function getChallenge(string $clientAccountId, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : string {
 
         $response = $this->getChallengeResponse($clientAccountId, $memo, $homeDomain, $clientDomain);
         $transaction = $response->getTransaction();
         if (!$transaction) {
-            throw new Exception("Error parsing challenge response");
+            throw new ChallengeRequestErrorResponse("Error parsing challenge response");
         }
         return $transaction;
     }
@@ -216,6 +218,7 @@ class WebAuth
      * @throws ChallengeValidationErrorInvalidTimeBounds
      * @throws ChallengeValidationErrorInvalidWebAuthDomain
      * @throws ChallengeValidationErrorMemoAndMuxedAccount
+     * @throws ChallengeValidationErrorInvalidOperationType
      */
     private function validateChallenge(string $challengeTransaction, string $userAccountId,  ?string $clientDomainAccountId = null, ?int $timeBoundsGracePeriod = null, ?int $memo = null) {
         $res = base64_decode($challengeTransaction);
@@ -239,7 +242,7 @@ class WebAuth
             } else if ($memo && $transaction->getMemo()->getId() != $memo) {
                 throw new ChallengeValidationErrorInvalidMemoValue("invalid memo value");
             }
-        } else {
+        } else if ($memo) {
             throw new ChallengeValidationErrorInvalidMemoValue("missing memo");
         }
 
@@ -260,10 +263,14 @@ class WebAuth
 
             $opSourceAccountId = (MuxedAccount::fromXdr($operation->getSourceAccount()))->getAccountId();
 
+            if ($count == 0 && $opSourceAccountId != $userAccountId) {
+                throw new ChallengeValidationErrorInvalidSourceAccount(
+                    "invalid source account in operation[" . $count . "]");
+            }
             // all operations must be manage data operations
             if($operation->getBody()->getType()->getValue() != XdrOperationType::MANAGE_DATA
                 || !$operation->getBody()->getManageDataOperation()) {
-                throw new ChallengeValidationError("invalid type of operation " . $count);
+                throw new ChallengeValidationErrorInvalidOperationType("invalid type of operation " . $count);
             }
 
             $dataName = $operation->getBody()->getManageDataOperation()->getKey();
@@ -313,10 +320,13 @@ class WebAuth
             }
             $firstSignature = $signatures[0];
 
-            // validate signatures
+            if (!$firstSignature instanceof XdrDecoratedSignature) {
+                throw new ChallengeValidationErrorInvalidSignature("Invalid transaction envelope, invalid signature type");
+            }
+            // validate signature
             $serverKeyPair = KeyPair::fromAccountId($this->serverSigningKey);
             $transactionHash = (AbstractTransaction::fromEnvelopeXdr($envelopeXdr))->hash($this->network);
-            $valid = $serverKeyPair->verifySignature($transactionHash, $firstSignature->getSignature());
+            $valid = $serverKeyPair->verifySignature($firstSignature->getSignature(), $transactionHash);
             if (!$valid) {
                 throw new ChallengeValidationErrorInvalidSignature("Invalid transaction envelope, invalid signature");
             }
@@ -326,11 +336,16 @@ class WebAuth
 
 
     /**
-     * @throws Exception
+     * @param string $accountId
+     * @param int|null $memo
+     * @param string|null $homeDomain
+     * @param string|null $clientDomain
+     * @return ChallengeResponse
+     * @throws ChallengeRequestErrorResponse
      */
     private function getChallengeResponse(string $accountId, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : ChallengeResponse {
         if ($memo && strpos($accountId, "M" ) === 0) {
-            throw new Exception("memo cannot be used if accountId is a muxed account");
+            throw new InvalidArgumentException("memo cannot be used if accountId is a muxed account");
         }
         $requestBuilder = (new ChallengeRequestBuilder($this->httpClient))->forAccountId($accountId);
         if ($memo) {

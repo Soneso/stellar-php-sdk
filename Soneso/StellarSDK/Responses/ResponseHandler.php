@@ -43,7 +43,7 @@ class ResponseHandler
 
         $content = $response->getBody()->__toString();
         
-        print($content);
+        //print($content);
         
         // not success
         // this should normally not happen since it will be handled by gruzzle (throwing corresponding gruzzle exception)

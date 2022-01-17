@@ -200,7 +200,7 @@ class KeyPair
      */
     public function getPublicKeyChecksum(): string
     {
-        $checksumBytes = substr($this->getPublicKeyBytes(), -2);
+        $checksumBytes = substr($this->publicKey, -2);
         $unpacked = unpack('v', $checksumBytes);
         return array_shift($unpacked);
     }
