@@ -8,7 +8,6 @@ namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
-use Soneso\StellarSDK\Responses\Operations\SetTrustlineFlagsOperationResponse;
 use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
