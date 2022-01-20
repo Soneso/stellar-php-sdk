@@ -66,15 +66,15 @@ class OrderBookResponse extends Response
         }
         if (isset($json['asks'])) {
             $this->asks = new OrderBookRowsResponse();
-            foreach ($json['asks'] as $json) {
-                $val = OrderBookRowResponse::fromJson($json);
+            foreach ($json['asks'] as $jsonValue) {
+                $val = OrderBookRowResponse::fromJson($jsonValue);
                 $this->asks->add($val);
             }
         }
         if (isset($json['bids'])) {
             $this->bids = new OrderBookRowsResponse();
-            foreach ($json['bids'] as $json) {
-                $val = OrderBookRowResponse::fromJson($json);
+            foreach ($json['bids'] as $jsonValue) {
+                $val = OrderBookRowResponse::fromJson($jsonValue);
                 $this->bids->add($val);
             }
         }

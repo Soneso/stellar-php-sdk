@@ -209,4 +209,14 @@ class TradesTest extends TestCase
         $offers = $sdk->offers()->forAccount($sellerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 0);
     }
+
+    public function testIssue2() {
+        $sdk = StellarSDK::getPublicNetInstance();
+        $sellingAsset = Asset::createNonNativeAsset('yXLM', 'GARDNV3Q7YGT4AKSDF25LT32YSCCW4EV22Y2TV3I2PU2MMXJTEDL5T55');
+        $orderBook = $sdk->orderBook()->forBuyingAsset(Asset::native())->forSellingAsset($sellingAsset)->limit(1)->execute();
+        $offerAmount = $orderBook->getBids()->toArray()[0]->getAmount();
+        $offerPrice = $orderBook->getBids()->toArray()[0]->getPrice();
+        $this->assertTrue($offerAmount > 0);
+        $this->assertTrue($offerPrice > 0);
+    }
 }
