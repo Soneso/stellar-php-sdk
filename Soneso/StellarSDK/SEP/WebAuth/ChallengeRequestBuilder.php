@@ -34,7 +34,7 @@ class ChallengeRequestBuilder extends RequestBuilder
     }
 
     public function forQueryParameters(array $queryParameters) : ChallengeRequestBuilder {
-        array_push($this->queryParameters, $queryParameters);
+        $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
         return $this;
     }
 

@@ -67,7 +67,7 @@ abstract class PageResponse extends Response
         $requestMethod = "GET";
         $response = null;
         try {
-            $request = new Request($requestMethod, $url, ['headers' => RequestBuilder::HEADERS]);
+            $request = new Request($requestMethod, $url, RequestBuilder::HEADERS);
             $response = $this->httpClient->send($request);
         }
         catch (GuzzleException $e) {

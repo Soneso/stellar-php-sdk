@@ -21,7 +21,7 @@ abstract class RequestBuilder
     protected Client $httpClient;
     protected array $queryParameters;
     public const HEADERS = ["X-Client-Name" => "stellar_php_sdk", "X-Client-Version" => StellarSDK::VERSION_NR];
-    private array $segments;
+    protected array $segments;
     private bool $segmentsAdded = false;
     
     
@@ -97,7 +97,7 @@ abstract class RequestBuilder
 
         $response = null;
         try {
-            $request = new Request($requestMethod, $url, ['headers' => RequestBuilder::HEADERS]);
+            $request = new Request($requestMethod, $url, RequestBuilder::HEADERS);
             $response = $this->httpClient->send($request);
         }
         catch (GuzzleException $e) {

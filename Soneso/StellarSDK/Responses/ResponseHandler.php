@@ -34,6 +34,8 @@ use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
 use Soneso\StellarSDK\SEP\Federation\FederationResponse;
+use Soneso\StellarSDK\SEP\KYCService\GetCustomerInfoResponse;
+use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoResponse;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeResponse;
 
 class ResponseHandler
@@ -85,6 +87,8 @@ class ResponseHandler
             RequestType::SUBMIT_TRANSACTION => SubmitTransactionResponse::fromJson($jsonData),
             RequestType::FEDERATION => FederationResponse::fromJson($jsonData),
             RequestType::CHALLENGE => ChallengeResponse::fromJson($jsonData),
+            RequestType::GET_CUSTOMER_INFO, RequestType::PUT_CUSTOMER_VERIFICATION => GetCustomerInfoResponse::fromJson($jsonData),
+            RequestType::PUT_CUSTOMER_INFO => PutCustomerInfoResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };
 

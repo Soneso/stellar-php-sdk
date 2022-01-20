@@ -188,7 +188,7 @@ class StellarToml
         $url = "https://" . $domain . "/.well-known/stellar.toml";
         $httpClient = new Client();
         try {
-            $request = new Request('GET', $url, ['headers' => RequestBuilder::HEADERS]);
+            $request = new Request('GET', $url, RequestBuilder::HEADERS);
             $response = $httpClient->send($request);
             if ($response->getStatusCode() != 200) {
                 throw new Exception("Stellar toml not found. Response status code ". $response->getStatusCode());
@@ -207,7 +207,7 @@ class StellarToml
     public static function currencyFromUrl(string $toml) : Currency {
         $httpClient = new Client();
         try {
-            $request = new Request('GET', $toml, ['headers' => RequestBuilder::HEADERS]);
+            $request = new Request('GET', $toml, RequestBuilder::HEADERS);
             $response = $httpClient->send($request);
             if ($response->getStatusCode() != 200) {
                 throw new Exception("Currency toml not found. Response status code ". $response->getStatusCode());

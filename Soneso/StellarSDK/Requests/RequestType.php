@@ -34,4 +34,7 @@ class RequestType
     public const SUBMIT_TRANSACTION = "submit_transaction";
     public const FEDERATION = "federation";
     public const CHALLENGE = "challenge";
+    public const GET_CUSTOMER_INFO = "get_customer_info";
+    public const PUT_CUSTOMER_INFO = "put_customer_info";
+    public const PUT_CUSTOMER_VERIFICATION = "put_customer_verification";
 }

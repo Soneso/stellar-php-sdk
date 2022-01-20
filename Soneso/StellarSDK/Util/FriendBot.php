@@ -17,7 +17,7 @@ class FriendBot
         try {
             $httpClient = new Client(['exceptions' => false]);
             $url = "https://friendbot.stellar.org/?addr=" . $accountId;
-            $request = new Request('GET', $url, ['headers' => RequestBuilder::HEADERS]);
+            $request = new Request('GET', $url, RequestBuilder::HEADERS);
             $response = $httpClient->send($request);
             if ($response->getStatusCode() == 200) {
                 return true;
