@@ -37,4 +37,6 @@ class RequestType
     public const GET_CUSTOMER_INFO = "get_customer_info";
     public const PUT_CUSTOMER_INFO = "put_customer_info";
     public const PUT_CUSTOMER_VERIFICATION = "put_customer_verification";
+    public const ANCHOR_INFO = "anchor_info";
+    public const ANCHOR_DEPOSIT = "anchor_deposit";
 }
