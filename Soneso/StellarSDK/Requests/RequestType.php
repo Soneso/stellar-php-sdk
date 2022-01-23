@@ -39,4 +39,7 @@ class RequestType
     public const PUT_CUSTOMER_VERIFICATION = "put_customer_verification";
     public const ANCHOR_INFO = "anchor_info";
     public const ANCHOR_DEPOSIT = "anchor_deposit";
+    public const ANCHOR_WITHDRAW = "anchor_withdraw";
+    public const ANCHOR_FEE = "anchor_fee";
+    public const ANCHOR_TRANSACTIONS = "anchor_transactions";
 }

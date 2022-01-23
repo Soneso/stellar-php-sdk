@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+use DateTimeInterface;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -70,7 +71,7 @@ class TransferServerService
      * @throws GuzzleException if en request error occurs.
      */
     public function deposit(DepositRequest $request) : DepositResponse {
-        $requestBuilder = new DepositRequesteBuilder($this->httpClient, $request->jwt);
+        $requestBuilder = new DepositRequestBuilder($this->httpClient, $request->jwt);
         $queryParameters = array();
         $queryParameters += ["asset_code" => $request->assetCode];
         $queryParameters += ["account" => $request->account];
@@ -108,6 +109,111 @@ class TransferServerService
             $queryParameters += ["claimable_balance_supported" => $request->claimableBalanceSupported];
         }
 
+        $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
+
+        //TODO handle forbidden response!!!
+        return $requestBuilder->execute();
+    }
+
+    /**
+     * @param WithdrawRequest $request
+     * @return WithdrawResponse
+     * @throws GuzzleException
+     */
+    public function withdraw(WithdrawRequest $request) : WithdrawResponse {
+        $requestBuilder = new WithdrawRequestBuilder($this->httpClient, $request->jwt);
+        $queryParameters = array();
+        $queryParameters += ["asset_code" => $request->assetCode];
+        $queryParameters += ["type" => $request->type];
+        $queryParameters += ["dest" => $request->dest];
+        if ($request->destExtra) {
+            $queryParameters += ["dest_extra" => $request->destExtra];
+        }
+        if ($request->account) {
+            $queryParameters += ["account" => $request->account];
+        }
+        if ($request->memo) {
+            $queryParameters += ["memo" => $request->memo];
+        }
+        if ($request->memoType) {
+            $queryParameters += ["memo_type" => $request->memoType];
+        }
+        if ($request->walletName) {
+            $queryParameters += ["wallet_name" => $request->walletName];
+        }
+        if ($request->walletUrl) {
+            $queryParameters += ["wallet_url" => $request->walletUrl];
+        }
+        if ($request->lang) {
+            $queryParameters += ["lang" => $request->lang];
+        }
+        if ($request->onChangeCallback) {
+            $queryParameters += ["on_change_callback" => $request->onChangeCallback];
+        }
+        if ($request->amount) {
+            $queryParameters += ["amount" => $request->amount];
+        }
+        if ($request->countryCode) {
+            $queryParameters += ["country_code" => $request->countryCode];
+        }
+
+        $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
+        //TODO handle forbidden response!!!
+        return $requestBuilder->execute();
+    }
+
+    /**
+     * @param FeeRequest $request
+     * @return FeeResponse
+     * @throws GuzzleException
+     */
+    public function fee(FeeRequest $request) : FeeResponse {
+        $requestBuilder = new FeeRequestBuilder($this->httpClient, $request->jwt);
+        $queryParameters = array();
+        $queryParameters += ["operation" => $request->operation];
+        $queryParameters += ["asset_code" => $request->assetCode];
+        $queryParameters += ["amount" => $request->amount];
+
+        if ($request->type) {
+            $queryParameters += ["type" => $request->type];
+        }
+
+        $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
+        //TODO handle forbidden response!!!
+        return $requestBuilder->execute();
+    }
+
+    /**
+     * The transaction history endpoint helps anchors enable a better experience for users using an external wallet.
+     * With it, wallets can display the status of deposits and withdrawals while they process and a history of
+     * past transactions with the anchor. It's only for transactions that are deposits to or withdrawals from the anchor.
+     * @param AnchorTransactionsRequest $request
+     * @return AnchorTransactionsResponse
+     * @throws GuzzleException
+     */
+    public function transactions(AnchorTransactionsRequest $request) : AnchorTransactionsResponse {
+        $requestBuilder = new FeeRequestBuilder($this->httpClient, $request->jwt);
+        $queryParameters = array();
+        $queryParameters += ["asset_code" => $request->assetCode];
+        $queryParameters += ["account" => $request->account];
+
+        if ($request->noOlderThan) {
+            $queryParameters += ["no_older_than" => $request->noOlderThan->format(DateTimeInterface::ATOM)];
+        }
+
+        if ($request->limit) {
+            $queryParameters += ["limit" => $request->limit];
+        }
+
+        if ($request->kind) {
+            $queryParameters += ["kind" => $request->kind];
+        }
+
+        if ($request->pagingId) {
+            $queryParameters += ["paging_id" => $request->pagingId];
+        }
+
+        $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
         //TODO handle forbidden response!!!
         return $requestBuilder->execute();
     }

@@ -76,8 +76,9 @@ class GetCustomerInfoProvidedField extends Response
         if (isset($json['type'])) $this->type = $json['type'];
         if (isset($json['description'])) $this->description = $json['description'];
         if (isset($json['choices'])) {
+            $this->choices = array();
             foreach ($json['choices'] as $choice) {
-                $this->choices->add($choice);
+                array_push($this->choices, $choice);
             }
         }
         if (isset($json['optional'])) $this->optional = $json['optional'];

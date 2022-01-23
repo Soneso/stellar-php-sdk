@@ -113,7 +113,7 @@ class DepositResponse extends Response
         if (isset($json['fee_fixed'])) $this->feeFixed = $json['fee_fixed'];
         if (isset($json['fee_percent'])) $this->feePercent = $json['fee_percent'];
         if (isset($json['min_amount'])) $this->minAmount = $json['min_amount'];
-        if (isset($json['max_amount'])) $this->minAmount = $json['max_amount'];
+        if (isset($json['max_amount'])) $this->maxAmount = $json['max_amount'];
         if (isset($json['extra_info'])) $this->extraInfo = $json['extra_info'];
     }
 

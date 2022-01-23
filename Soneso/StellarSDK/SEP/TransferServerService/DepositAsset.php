@@ -89,7 +89,6 @@ class DepositAsset extends Response
                 $this->fields += [$key => $value];
             }
         }
-
     }
 
     public static function fromJson(array $json) : DepositAsset

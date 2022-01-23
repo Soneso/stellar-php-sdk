@@ -13,7 +13,7 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
-class DepositRequesteBuilder extends RequestBuilder
+class FeeRequestBuilder extends RequestBuilder
 {
     private string $jwtToken;
 
@@ -24,35 +24,35 @@ class DepositRequesteBuilder extends RequestBuilder
     public function __construct(Client $httpClient, string $jwtToken)
     {
         $this->jwtToken = $jwtToken;
-        parent::__construct($httpClient, "deposit");
+        parent::__construct($httpClient, "fee");
     }
 
-    public function forQueryParameters(array $queryParameters) : DepositRequesteBuilder {
+    public function forQueryParameters(array $queryParameters) : FeeRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
         return $this;
     }
 
     /**
      * @param string $url
-     * @return InfoResponse
+     * @return FeeResponse
      * @throws GuzzleException
      */
-    public function request(string $url) : DepositResponse {
+    public function request(string $url) : FeeResponse {
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
         $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
-        return $responseHandler->handleResponse($response, RequestType::ANCHOR_INFO, $this->httpClient);
+        return $responseHandler->handleResponse($response, RequestType::ANCHOR_FEE, $this->httpClient);
     }
 
     /**
      * Build and execute request.
-     * @return DepositResponse
+     * @return FeeResponse
      * @throws GuzzleException
      */
-    public function execute() : DepositResponse {
+    public function execute() : FeeResponse {
         return $this->request($this->buildUrl());
     }
 }
