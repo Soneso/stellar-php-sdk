@@ -36,6 +36,7 @@ use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
 use Soneso\StellarSDK\SEP\Federation\FederationResponse;
 use Soneso\StellarSDK\SEP\KYCService\GetCustomerInfoResponse;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoResponse;
+use Soneso\StellarSDK\SEP\TransferServerService\AnchorTransactionResponse;
 use Soneso\StellarSDK\SEP\TransferServerService\AnchorTransactionsResponse;
 use Soneso\StellarSDK\SEP\TransferServerService\DepositResponse;
 use Soneso\StellarSDK\SEP\TransferServerService\FeeResponse;
@@ -99,6 +100,7 @@ class ResponseHandler
             RequestType::ANCHOR_WITHDRAW => WithdrawResponse::fromJson($jsonData),
             RequestType::ANCHOR_FEE => FeeResponse::fromJson($jsonData),
             RequestType::ANCHOR_TRANSACTIONS => AnchorTransactionsResponse::fromJson($jsonData),
+            RequestType::ANCHOR_TRANSACTION => AnchorTransactionResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };
 

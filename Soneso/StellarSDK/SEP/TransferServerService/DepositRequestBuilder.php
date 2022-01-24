@@ -35,6 +35,8 @@ class DepositRequestBuilder extends RequestBuilder
     /**
      * @param string $url
      * @return DepositResponse
+     * @throws CustomerInformationNeededException
+     * @throws CustomerInformationStatusException
      * @throws GuzzleException
      */
     public function request(string $url) : DepositResponse {
@@ -43,13 +45,28 @@ class DepositRequestBuilder extends RequestBuilder
         $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
+        if (403 == $response->getStatusCode()) {
+            $content = $response->getBody()->__toString();
+            $jsonData = @json_decode($content, true);
+            if (isset($jsonData['type'])){
+                $type = $jsonData['type'];
+                if ("non_interactive_customer_info_needed" == $type) {
+                    $val = CustomerInformationNeededResponse::fromJson($jsonData);
+                    throw new CustomerInformationNeededException($val);
+                } else if ("customer_info_status" == $type) {
+                    $val = CustomerInformationStatusResponse::fromJson($jsonData);
+                    throw new CustomerInformationStatusException($val);
+                }
+            }
+        }
         $responseHandler = new ResponseHandler();
         return $responseHandler->handleResponse($response, RequestType::ANCHOR_DEPOSIT, $this->httpClient);
     }
 
     /**
-     * Build and execute request.
      * @return DepositResponse
+     * @throws CustomerInformationNeededException
+     * @throws CustomerInformationStatusException
      * @throws GuzzleException
      */
     public function execute() : DepositResponse {

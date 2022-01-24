@@ -10,6 +10,9 @@ use DateTimeInterface;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\HandlerStack;
+use Psr\Http\Message\ResponseInterface;
+use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 class TransferServerService
@@ -67,8 +70,10 @@ class TransferServerService
      * additional information (if desired) that the user must submit via the /customer endpoint
      * to be able to deposit.
      * @param DepositRequest $request request
-     * @return DepositResponse response
-     * @throws GuzzleException if en request error occurs.
+     * @return DepositResponse response in case of success
+     * @throws CustomerInformationNeededException The anchor needs more information about the customer.
+     * @throws CustomerInformationStatusException Customer information was submitted for the account, but the information is either still being processed or was not accepted.
+     * @throws GuzzleException if a request error occurs.
      */
     public function deposit(DepositRequest $request) : DepositResponse {
         $requestBuilder = new DepositRequestBuilder($this->httpClient, $request->jwt);
@@ -110,15 +115,15 @@ class TransferServerService
         }
 
         $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
-
-        //TODO handle forbidden response!!!
         return $requestBuilder->execute();
     }
 
     /**
-     * @param WithdrawRequest $request
-     * @return WithdrawResponse
-     * @throws GuzzleException
+     * @param WithdrawRequest $request request
+     * @return WithdrawResponse response if success
+     * @throws CustomerInformationNeededException The anchor needs more information about the customer.
+     * @throws CustomerInformationStatusException Customer information was submitted for the account, but the information is either still being processed or was not accepted.
+     * @throws GuzzleException in case of request error
      */
     public function withdraw(WithdrawRequest $request) : WithdrawResponse {
         $requestBuilder = new WithdrawRequestBuilder($this->httpClient, $request->jwt);
@@ -158,7 +163,6 @@ class TransferServerService
         }
 
         $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
-        //TODO handle forbidden response!!!
         return $requestBuilder->execute();
     }
 
@@ -179,7 +183,6 @@ class TransferServerService
         }
 
         $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
-        //TODO handle forbidden response!!!
         return $requestBuilder->execute();
     }
 
@@ -192,7 +195,7 @@ class TransferServerService
      * @throws GuzzleException
      */
     public function transactions(AnchorTransactionsRequest $request) : AnchorTransactionsResponse {
-        $requestBuilder = new FeeRequestBuilder($this->httpClient, $request->jwt);
+        $requestBuilder = new AnchorTransactionsRequestBuilder($this->httpClient, $request->jwt);
         $queryParameters = array();
         $queryParameters += ["asset_code" => $request->assetCode];
         $queryParameters += ["account" => $request->account];
@@ -214,7 +217,55 @@ class TransferServerService
         }
 
         $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
-        //TODO handle forbidden response!!!
         return $requestBuilder->execute();
+    }
+
+    /**
+     * The transaction endpoint enables clients to query/validate a specific transaction at an anchor.
+     * @param AnchorTransactionRequest $request
+     * @return AnchorTransactionResponse
+     * @throws GuzzleException
+     */
+    public function transaction(AnchorTransactionRequest $request) : AnchorTransactionResponse {
+        $requestBuilder = new AnchorTransactionRequestBuilder($this->httpClient, $request->jwt);
+        $queryParameters = array();
+
+        if ($request->id) {
+            $queryParameters += ["id" => $request->id];
+        }
+
+        if ($request->stallarTransactionId) {
+            $queryParameters += ["stellar_transaction_id" => $request->stallarTransactionId];
+        }
+
+        if ($request->externalTransactionId) {
+            $queryParameters += ["external_transaction_id" => $request->externalTransactionId];
+        }
+
+        $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
+        return $requestBuilder->execute();
+    }
+
+    /**
+     * Updates a transaction. This endpoint should only be used when the anchor requests more info via the pending_transaction_info_update status.
+     * The required_info_updates transaction field should contain the fields required for the update.
+     * If the sender tries to update at a time when no info is requested the receiver will fail with an error response.
+     * @param PatchTransactionRequest $request request data
+     * @return ResponseInterface response
+     * @throws GuzzleException if a request error occurs
+     */
+    public function patchTransaction(PatchTransactionRequest $request) : ResponseInterface {
+        $headers = array();
+        $headers = array_merge($headers, RequestBuilder::HEADERS);
+        $headers = array_merge($headers, ['Authorization' => "Bearer " . $request->jwt]);
+        $url = "/transaction/" . $request->id;
+        return $this->httpClient->request("PATCH", $url, [
+            "json" => $request->fields,
+            "headers" => $headers
+        ]);
+    }
+
+    public function setMockHandlerStack(HandlerStack $handlerStack) {
+        $this->httpClient = new Client(['handler' => $handlerStack]);
     }
 }

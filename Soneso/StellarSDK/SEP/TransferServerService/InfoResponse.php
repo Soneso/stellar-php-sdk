@@ -12,8 +12,8 @@ class InfoResponse extends Response
 {
     private array $depositAssets; //[string => DepositAsset]
     private array $withdrawAssets; //[string => WithdrawAsset]
-    private AnchorTransactionsInfo $transactions;
-    private ?AnchorTransactionInfo $transaction;
+    private AnchorTransactionsInfo $transactionsInfo;
+    private ?AnchorTransactionInfo $transactionInfo;
     private ?AnchorFeeInfo $feeInfo;
 
     /**
@@ -35,18 +35,19 @@ class InfoResponse extends Response
     /**
      * @return AnchorTransactionsInfo
      */
-    public function getTransactions(): AnchorTransactionsInfo
+    public function getTransactionsInfo(): AnchorTransactionsInfo
     {
-        return $this->transactions;
+        return $this->transactionsInfo;
     }
 
     /**
      * @return AnchorTransactionInfo|null
      */
-    public function getTransaction(): ?AnchorTransactionInfo
+    public function getTransactionInfo(): ?AnchorTransactionInfo
     {
-        return $this->transaction;
+        return $this->transactionInfo;
     }
+
 
     /**
      * @return AnchorFeeInfo|null
@@ -69,13 +70,13 @@ class InfoResponse extends Response
             $this->withdrawAssets = array();
             $jsonFields = $json['withdraw'];
             foreach(array_keys($jsonFields) as $key) {
-                $value = DepositAsset::fromJson($jsonFields[$key]);
+                $value = WithdrawAsset::fromJson($jsonFields[$key]);
                 $this->withdrawAssets += [$key => $value];
             }
         }
         if (isset($json['fee'])) $this->feeInfo = AnchorFeeInfo::fromJson($json['fee']);
-        if (isset($json['transactions'])) $this->transactions = AnchorTransactionsInfo::fromJson($json['transactions']);
-        if (isset($json['transaction'])) $this->transaction = AnchorTransactionInfo::fromJson($json['transaction']);
+        if (isset($json['transactions'])) $this->transactionsInfo = AnchorTransactionsInfo::fromJson($json['transactions']);
+        if (isset($json['transaction'])) $this->transactionInfo = AnchorTransactionInfo::fromJson($json['transaction']);
     }
 
     public static function fromJson(array $json) : InfoResponse

@@ -1,7 +1,7 @@
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
 ![PHP](https://img.shields.io/badge/PHP-blue.svg)
-![alpha](https://img.shields.io/badge/alpha-red.svg)![0.4.0](https://img.shields.io/badge/0.4.0-yellow.svg)
+![alpha](https://img.shields.io/badge/alpha-red.svg)![0.5.0](https://img.shields.io/badge/0.5.0-yellow.svg)
 
 The Soneso open source Stellar SDK for PHP will provide APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
@@ -218,7 +218,20 @@ if ($response->isSuccessful()) {
 | [SEP-0001: stellar.toml](examples/sep-0001-toml.md) | In this example you can find out how to obtain data about an organization’s Stellar integration.| [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)|
 | [SEP-0002: Federation](examples/sep-0002-federation.md) | This example shows how to resolve a stellar address, a stellar account id, a transaction id and a forward by using the federation protocol. | [SEP-0002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)|
 | [SEP-0005: Key derivation](examples/sep-0005-key-derivation.md) | In this examples you can see how to generate 12 or 24 words mnemonics for different languages using the PHP SDK, how to generate key pairs from a mnemonic (with and without BIP 39 passphrase) and how to generate key pairs from a BIP 39 seed. | [SEP-0005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)|
+| [SEP-0006: Deposit and Withdrawal API](examples/sep-0006-transfer.md) | In this examples you can see how to use the sdk to communicate with anchors.| [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)|
 | [SEP-0010: Stellar Web Authentication](examples/sep-0010-webauth.md) | This example shows how to authenticate with any web service which requires a Stellar account ownership verification. | [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)|
 | [SEP-0012: KYC API](examples/sep-0012-kyc.md) | In this examples you can see how to use the sdk to send KYC data to anchors and other services. | [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)|
 
 More examples can be found in the [tests](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests).
+
+### SEPs implemented
+
+- [SEP-0001 (stellar.toml)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
+- [SEP-0002 (Federation)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
+- [SEP-0005 (Key derivation)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
+- [SEP-0006: Deposit and Withdrawal API](documentation/sdk_examples/sep-0006-transfer.md)
+- [SEP-0009: Standard KYC Fields](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md)
+- [SEP-0010 (Stellar Web Authentication)](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
+- [SEP-0012: KYC API](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
+- [SEP-0023: Strkeys](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
+- [SEP-0029: Account Memo Requirements](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)

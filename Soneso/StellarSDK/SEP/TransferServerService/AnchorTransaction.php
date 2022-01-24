@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Soneso\StellarSDK\Responses\Response;
+use Soneso\StellarSDK\SEP\KYCService\GetCustomerInfoField;
 
 class AnchorTransaction extends Response
 {
@@ -348,11 +349,14 @@ class AnchorTransaction extends Response
         if (isset($json['refunded'])) $this->refunded = $json['refunded'];
         if (isset($json['required_info_message'])) $this->requiredInfoMessage = $json['required_info_message'];
         if (isset($json['claimable_balance_id'])) $this->id = $json['claimable_balance_id'];
-        if (isset($json['required_info_updates'])) {
-            // TODO
-            print(PHP_EOL."TODO AnchorTransaction:required_info_updates");
+        if (isset($json['required_info_updates']) && isset($json['required_info_updates']['transaction'])) {
+            $transaction = $json['required_info_updates']['transaction'];
+            $this->requiredInfoUpdates = array();
+            foreach(array_keys($transaction) as $key) {
+                $value = AnchorField::fromJson($transaction[$key]);
+                $this->requiredInfoUpdates += [$key => $value];
+            }
         }
-
     }
 
     public static function fromJson(array $json) : AnchorTransaction

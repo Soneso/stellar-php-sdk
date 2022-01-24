@@ -42,4 +42,5 @@ class RequestType
     public const ANCHOR_WITHDRAW = "anchor_withdraw";
     public const ANCHOR_FEE = "anchor_fee";
     public const ANCHOR_TRANSACTIONS = "anchor_transactions";
+    public const ANCHOR_TRANSACTION = "anchor_transaction";
 }
