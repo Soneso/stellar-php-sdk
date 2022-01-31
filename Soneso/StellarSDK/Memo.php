@@ -153,19 +153,19 @@ class Memo
     public static function fromXdr(XdrMemo $xdr): Memo
     {
         $type = $xdr->getType()->getValue();
-        $memo = new Memo($type);
+        $value = null;
 
-        if ($memo->type == static::MEMO_TYPE_TEXT) {
-            $memo->value = $xdr->getText();
+        if ($type == static::MEMO_TYPE_TEXT) {
+            $value = $xdr->getText();
         }
-        else if ($memo->type == static::MEMO_TYPE_ID) {
-            $memo->value = $xdr->getId();
+        else if ($type == static::MEMO_TYPE_ID) {
+            $value = $xdr->getId();
         }
-        else if ($memo->type == static::MEMO_TYPE_HASH) {
-            $memo->value = $xdr->getHash();
-        } else if ($memo->type == static::MEMO_TYPE_RETURN) {
-            $memo->value = $xdr->getReturnHash();
+        else if ($type == static::MEMO_TYPE_HASH) {
+            $value = $xdr->getHash();
+        } else if ($type == static::MEMO_TYPE_RETURN) {
+            $value = $xdr->getReturnHash();
         }
-        return $memo;
+        return new Memo($type, $value);
     }
 }

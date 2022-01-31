@@ -91,6 +91,11 @@ class FeeBumpTransaction extends AbstractTransaction
         $inner = Transaction::fromV1EnvelopeXdr($envelope->getTx()->getInnerTx()->getV1());
         $feeSourceAccount = MuxedAccount::fromXdr($envelope->getTx()->getFeeSource());
         $fee = $envelope->getTx()->getFee();
-        return new FeeBumpTransaction($feeSourceAccount, $fee, $inner);
+        $transaction = new FeeBumpTransaction($feeSourceAccount, $fee, $inner);
+        $signatures = $envelope->getSignatures();
+        foreach($signatures as $signature) {
+            $transaction->addSignature($signature);
+        }
+        return $transaction;
     }
 }

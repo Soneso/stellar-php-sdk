@@ -6,7 +6,6 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 
 class XdrTransactionResult

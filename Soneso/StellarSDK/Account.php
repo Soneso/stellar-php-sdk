@@ -22,6 +22,11 @@ class Account implements TransactionBuilderAccount
         $this->muxedAccount = new MuxedAccount($accountId,$muxedAccountMed25519Id);
     }
 
+    public static function fromAccountId(string $accountId, BigInteger $sequenceNumber) : Account {
+        $mux = MuxedAccount::fromAccountId($accountId);
+        return new Account($mux->getEd25519AccountId(), $sequenceNumber, $mux->getId());
+    }
+
     public function getAccountId(): string
     {
         return $this->accountId;

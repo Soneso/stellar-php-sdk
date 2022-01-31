@@ -98,9 +98,9 @@ class StellarAmount
         /** @var $quotient BigInteger */
         /** @var $remainder BigInteger */
         list($quotient, $remainder) = $this->stroops->divide($this->stroopScaleBignum);
-        
-        $number = intval($quotient->toString()) + (intval($remainder->toString()) / intval($this->stroopScaleBignum->toString()));
-        return number_format($number, 7, '.', '');
+        $x = bcdiv($remainder->toString(), $this->stroopScaleBignum->toString(), 7);
+        $q = $quotient->toString();
+        return bcadd($q, strval($x), 7);
     }
     
     /**

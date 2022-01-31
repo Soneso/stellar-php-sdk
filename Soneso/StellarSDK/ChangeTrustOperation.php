@@ -49,7 +49,8 @@ class ChangeTrustOperation extends AbstractOperation
      * @return string
      */
     public function getLimit() : string {
-        return $this->limit->toString();
+        $res = new StellarAmount($this->limit);
+        return $res->getDecimalValueAsString();
     }
 
     public static function fromXdrOperation(XdrChangeTrustOperation $xdrOp): ChangeTrustOperation {

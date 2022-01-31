@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Crypto;
 use Exception;
 use ParagonIE\Sodium\Core\Ed25519;
 use SodiumException;
+use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\SEP\Derivation\HDNode;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
@@ -78,7 +79,12 @@ class KeyPair
      * @return KeyPair
      */
     public static function fromAccountId(string $accountId): KeyPair {
-        return new KeyPair(StrKey::decodeAccountId($accountId));
+        $toDecode = $accountId;
+        if (str_starts_with($accountId, 'M')) {
+            $mux = MuxedAccount::fromMed25519AccountId($accountId);
+            $toDecode = $mux->getEd25519AccountId();
+        }
+        return new KeyPair(StrKey::decodeAccountId($toDecode));
     }
 
     /**

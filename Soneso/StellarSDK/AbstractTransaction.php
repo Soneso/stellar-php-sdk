@@ -9,6 +9,8 @@ namespace Soneso\StellarSDK;
 
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Util\Hash;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
@@ -35,6 +37,9 @@ abstract class AbstractTransaction
 
     public abstract function signatureBase(Network $network) : string;
 
+    public function addSignature(XdrDecoratedSignature $signature) : void {
+        array_push($this->signatures, $signature);
+    }
     /**
      * @return array
      */
@@ -69,9 +74,10 @@ abstract class AbstractTransaction
         };
     }
 
-    public static function fromEnvelopeXdrString(string $envelope) : AbstractTransaction {
+    public static function fromEnvelopeBase64XdrString(string $envelope) : AbstractTransaction {
         $xdr = base64_decode($envelope);
-        $xdrEnvelope = XdrTransactionEnvelope::decode($xdr);
+        $xdrBuffer = new XdrBuffer($xdr);
+        $xdrEnvelope = XdrTransactionEnvelope::decode($xdrBuffer);
         return static::fromEnvelopeXdr($xdrEnvelope);
     }
 }

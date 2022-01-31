@@ -167,7 +167,11 @@ class Transaction extends AbstractTransaction
         foreach($tx->getOperations() as $operation) {
             array_push($operations, AbstractOperation::fromXdr($operation));
         }
-        return new Transaction($sourceAccount, $seqNr, $operations, $memo, $timeBounds, $fee);
+        $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $timeBounds, $fee);
+        foreach($envelope->getSignatures() as $signature) {
+            $transaction->addSignature($signature);
+        }
+        return $transaction;
     }
 
     public static function fromV0EnvelopeXdr(XdrTransactionV0Envelope $envelope) : Transaction {
@@ -185,7 +189,11 @@ class Transaction extends AbstractTransaction
         foreach($tx->getOperations() as $operation) {
             array_push($operations, AbstractOperation::fromXdr($operation));
         }
-        return new Transaction($sourceAccount, $seqNr, $operations, $memo, $timeBounds, $fee);
+        $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $timeBounds, $fee);
+        foreach($envelope->getSignatures() as $signature) {
+            $transaction->addSignature($signature);
+        }
+        return $transaction;
     }
 
     public static function builder(TransactionBuilderAccount $sourceAccount) : TransactionBuilder{
