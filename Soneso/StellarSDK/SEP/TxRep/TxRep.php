@@ -23,8 +23,11 @@ use Soneso\StellarSDK\BumpSequenceOperation;
 use Soneso\StellarSDK\BumpSequenceOperationBuilder;
 use Soneso\StellarSDK\ChangeTrustOperation;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
+use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
+use Soneso\StellarSDK\CreateClaimableBalanceOperation;
+use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperation;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -53,6 +56,8 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
+use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
@@ -236,7 +241,7 @@ class TxRep
 
         $minTimeStr = self::getClearValue($prefix.'timeBounds.minTime', $map);
         $maxTimeStr = self::getClearValue($prefix.'timeBounds.maxTime', $map);
-        if (self::getClearValue($prefix.'timeBounds._present', $map) == 'true' && $minTimeStr && $maxTimeStr) {
+        if (self::getClearValue($prefix.'timeBounds._present', $map) == 'true' && $minTimeStr != null && $maxTimeStr != null) {
             $minTime = (int)$minTimeStr;
             $maxTime = (int)$maxTimeStr;
             $timeBounds = new TimeBounds((new DateTime)->setTimestamp($minTime), (new DateTime)->setTimestamp($maxTime));
@@ -432,8 +437,145 @@ class TxRep
             $opPrefix = $prefix.'manageBuyOfferOp.';
             return self::getManageBuyOfferOperation($opPrefix, $map, $sourceAccountId);
         }
+        if ($opType == 'CREATE_CLAIMABLE_BALANCE') {
+            $opPrefix = $prefix.'createClaimableBalanceOp.';
+            return self::getCreateClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
+        }
 
         return null;
+    }
+    private static function getCreateClaimableBalanceOp($opPrefix, array $map, ?string $sourceAccountId) : CreateClaimableBalanceOperation
+    {
+        $assetStr = self::getClearValue($opPrefix . 'asset', $map);
+        if (!$assetStr) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'asset');
+        }
+        $asset = Asset::createFromCanonicalForm($assetStr);
+        if (!$asset) {
+            throw new InvalidArgumentException('invalid ' . $opPrefix . 'asset');
+        }
+        $amountStr = self::getClearValue($opPrefix.'amount', $map);
+        if (!$amountStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'amount');
+        }
+        if (!is_numeric($amountStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'amount');
+        }
+        $amount = self::fromAmount($amountStr);
+
+        $claimants = array();
+        $claimantsLengthKey = $opPrefix.'claimants.len';
+        $claimantsLengthStr = self::getClearValue($claimantsLengthKey, $map);
+        if ($claimantsLengthStr) {
+            if (!is_numeric($claimantsLengthStr)) {
+                throw new InvalidArgumentException('invalid '.$claimantsLengthKey);
+            }
+            $claimantsLen = (int)$claimantsLengthStr;
+            for ($i = 0; $i < $claimantsLen; $i++) {
+                $nextClaimant = self::getClaimant($opPrefix, $map, $i);
+                array_push($claimants, $nextClaimant);
+            }
+        }
+        $builder = new CreateClaimableBalanceOperationBuilder($claimants,$asset,$amount);
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
+    }
+
+    private static function getClaimant($opPrefix, array $map, int $index) : Claimant
+    {
+        $destination = self::getClearValue($opPrefix.'claimants['.$index.'].v0.destination', $map);
+        if (!$destination) {
+            throw new InvalidArgumentException('missing ' . $opPrefix.'claimants['.$index.'].v0.destination');
+        }
+        try {
+            KeyPair::fromAccountId($destination);
+        } catch (Exception $e) {
+            throw new InvalidArgumentException('invalid ' . $opPrefix.'claimants['.$index.'].v0.destination');
+        }
+        $predicate = self::getClaimPredicate($opPrefix.'claimants['.$index.'].v0.predicate.', $map);
+        return new Claimant($destination, $predicate);
+
+    }
+
+    private static function getClaimPredicate($prefix, array $map) : XdrClaimPredicate {
+        $type = self::getClearValue($prefix.'type', $map);
+        if (!$type) {
+            throw new InvalidArgumentException('missing ' . $prefix.'type');
+        }
+        switch ($type) {
+            case 'CLAIM_PREDICATE_UNCONDITIONAL':
+               return new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL));
+            case 'CLAIM_PREDICATE_AND':
+                $lenStr = self::getClearValue($prefix.'andPredicates.len', $map);
+                if (!$lenStr) {
+                    throw new InvalidArgumentException('missing ' . $prefix.'andPredicates.len');
+                }
+                if (!is_numeric($lenStr)) {
+                    throw new InvalidArgumentException('invalid ' . $prefix.'andPredicates.len');
+                }
+                $len = (int)$lenStr;
+                if ($len != 2) {
+                    throw new InvalidArgumentException('invalid ' . $prefix.'andPredicates.len');
+                }
+                $andPredicates = array();
+                for ($i = 0; $i < $len; $i++) {
+                    $next = self::getClaimPredicate($prefix.'andPredicates['.strval($i).'].',$map);
+                    array_push($andPredicates,$next);
+                }
+                $res = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::AND));
+                $res->setAndPredicates($andPredicates);
+                return $res;
+            case 'CLAIM_PREDICATE_OR':
+                $lenStr = self::getClearValue($prefix.'orPredicates.len', $map);
+                if (!$lenStr) {
+                    throw new InvalidArgumentException('missing ' . $prefix.'orPredicates.len');
+                }
+                if (!is_numeric($lenStr)) {
+                    throw new InvalidArgumentException('invalid ' . $prefix.'orPredicates.len');
+                }
+                $len = (int)$lenStr;
+                if ($len != 2) {
+                    throw new InvalidArgumentException('invalid ' . $prefix.'orPredicates.len');
+                }
+                $orPredicates = array();
+                for ($i = 0; $i < $len; $i++) {
+                    $next = self::getClaimPredicate($prefix.'orPredicates['.strval($i).'].',$map);
+                    array_push($orPredicates,$next);
+                }
+                $res = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::OR));
+                $res->setOrPredicates($orPredicates);
+                return $res;
+            case 'CLAIM_PREDICATE_NOT':
+                $res = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::NOT));
+                $res->setNotPredicate(self::getClaimPredicate($prefix.'notPredicate.', $map));
+                return $res;
+            case 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME':
+                $res = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME));
+                $timeStr = self::getClearValue($prefix.'absBefore', $map);
+                if (!$timeStr) {
+                    throw new InvalidArgumentException('missing ' . $prefix.'absBefore');
+                }
+                if (!is_numeric($timeStr)) {
+                    throw new InvalidArgumentException('invalid ' . $prefix.'absBefore');
+                }
+                $res->setAbsBefore((int)$timeStr);
+                return $res;
+            case 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME':
+                $res = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME));
+                $timeStr = self::getClearValue($prefix.'relBefore', $map);
+                if (!$timeStr) {
+                    throw new InvalidArgumentException('missing ' . $prefix.'relBefore');
+                }
+                if (!is_numeric($timeStr)) {
+                    throw new InvalidArgumentException('invalid ' . $prefix.'relBefore');
+                }
+                $res->setRelBefore((int)$timeStr);
+                return $res;
+            default:
+                throw new InvalidArgumentException('invalid ' . $prefix.'type');
+        }
     }
 
     private static function getBumpSequenceOperation($opPrefix, array $map, ?string $sourceAccountId) : BumpSequenceOperation
@@ -486,7 +628,7 @@ class TxRep
         return $builder->build();
     }
 
-    private static function getAccountMergeOperation($index, array $map, string $txPrefix, ?string $sourceAccountId) : AccountMergeOperation
+    private static function getAccountMergeOperation(int $index, array $map, string $txPrefix, ?string $sourceAccountId) : AccountMergeOperation
     {
         $destination = self::getClearValue($txPrefix.'operations['.strval($index).'].body.destination', $map);
         if (!$destination) {
@@ -1164,7 +1306,7 @@ class TxRep
 
     private static function getClearValue(string $key, array $map) : ?string {
         // check if exists
-        if (!array_key_exists($key, $map) || !$map[$key]) {
+        if (!array_key_exists($key, $map) || $map[$key] == null) {
             return null;
         }
         // remove comment
@@ -1367,9 +1509,69 @@ class TxRep
             $lines += [$prefix.'price.n' => strval($price->getN())];
             $lines += [$prefix.'price.d' => strval($price->getD())];
             $lines += [$prefix.'offerID' => strval($operation->getOfferId())];
+        } else if ($operation instanceof CreateClaimableBalanceOperation) {
+            $lines += [$prefix.'asset' => self::encodeAsset($operation->getAsset())];
+            $lines += [$prefix.'amount' => self::toAmount($operation->getAmount())];
+            $claimants = $operation->getClaimants();
+            $lines += [$prefix.'claimants.len' => strval(count($claimants))];
+            $index = 0;
+            foreach ($claimants as $claimant) {
+                if($claimant instanceof Claimant) {
+                    $lines += [$prefix.'claimants['.strval($index.'].type') => 'CLAIMANT_TYPE_V0'];
+                    $lines += [$prefix.'claimants['.strval($index.'].v0.destination') => $claimant->getDestination()];
+                    $px = $prefix.'claimants[' . strval($index) . '].v0.predicate.';
+                    $predicate = $claimant->getPredicate();
+                    $lines = array_merge($lines, self::getPredicateTx($px, $predicate));
+                    $index++;
+                }
+            }
         }
-
         return $lines;
+    }
+    private static function getPredicateTx(string $prefix, XdrClaimPredicate $predicate) : array {
+        $type = $predicate->getType()->getValue();
+        $lines = array();
+        switch ($type) {
+            case XdrClaimPredicateType::UNCONDITIONAL:
+                $lines += [$prefix.'type' => 'CLAIM_PREDICATE_UNCONDITIONAL'];
+                return $lines;
+            case XdrClaimPredicateType::AND:
+                $lines += [$prefix.'type' => 'CLAIM_PREDICATE_AND'];
+                $andPredicates = $predicate->getAndPredicates();
+                $count = count($andPredicates);
+                $lines += [$prefix.'andPredicates.len' => strval($count)];
+                for($i = 0; $i < $count; $i++) {
+                    $px = $prefix.'andPredicates['.strval($i).'].';
+                    $lines += self::getPredicateTx($px, $andPredicates[$i]);
+                }
+                return $lines;
+            case XdrClaimPredicateType::OR:
+                $lines += [$prefix.'type' => 'CLAIM_PREDICATE_OR'];
+                $orPredicates = $predicate->getOrPredicates();
+                $count = count($orPredicates);
+                $lines += [$prefix.'orPredicates.len' => strval($count)];
+                for ($i = 0; $i < $count; $i++) {
+                    $px = $prefix.'orPredicates['.strval($i).'].';
+                    $lines += self::getPredicateTx($px, $orPredicates[$i]);
+                }
+                return $lines;
+            case XdrClaimPredicateType::NOT:
+                $lines += [$prefix.'type' => 'CLAIM_PREDICATE_NOT'];
+                $lines += [$prefix.'notPredicate._present' => 'true'];
+                $px = $prefix . 'notPredicate.';
+                $lines += self::getPredicateTx($px, $predicate->getNotPredicate());
+                return $lines;
+            case XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME:
+                $lines += [$prefix.'type' => 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME'];
+                $lines += [$prefix.'absBefore' => strval($predicate->getAbsBefore())];
+                return $lines;
+            case XdrClaimPredicateType::BEFORE_RELATIVE_TIME:
+                $lines += [$prefix.'type' => 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME'];
+                $lines += [$prefix.'relBefore' => strval($predicate->getRelBefore())];
+                return $lines;
+            default:
+                return $lines;
+        }
     }
 
     private static function encodeAsset(Asset $asset) : string {
