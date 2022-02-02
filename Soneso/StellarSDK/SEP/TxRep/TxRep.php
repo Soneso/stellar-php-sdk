@@ -24,6 +24,8 @@ use Soneso\StellarSDK\BumpSequenceOperationBuilder;
 use Soneso\StellarSDK\ChangeTrustOperation;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\Claimant;
+use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
+use Soneso\StellarSDK\ClaimClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperation;
@@ -441,9 +443,27 @@ class TxRep
             $opPrefix = $prefix.'createClaimableBalanceOp.';
             return self::getCreateClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
         }
+        if ($opType == 'CLAIM_CLAIMABLE_BALANCE') {
+            $opPrefix = $prefix.'claimClaimableBalanceOp.';
+            return self::getClaimClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
+        }
 
         return null;
     }
+
+    private static function getClaimClaimableBalanceOp($opPrefix, array $map, ?string $sourceAccountId) : ClaimClaimableBalanceOperation
+    {
+        $claimableBalanceId = self::getClearValue($opPrefix . 'balanceID.v0', $map);
+        if (!$claimableBalanceId) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'balanceID.v0');
+        }
+        $builder = new ClaimClaimableBalanceOperationBuilder($claimableBalanceId);
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
+    }
+
     private static function getCreateClaimableBalanceOp($opPrefix, array $map, ?string $sourceAccountId) : CreateClaimableBalanceOperation
     {
         $assetStr = self::getClearValue($opPrefix . 'asset', $map);
@@ -1525,6 +1545,9 @@ class TxRep
                     $index++;
                 }
             }
+        } else if ($operation instanceof ClaimClaimableBalanceOperation) {
+            $lines += [$prefix.'balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
+            $lines += [$prefix.'balanceID.v0' => $operation->getBalanceId()];
         }
         return $lines;
     }
@@ -1557,9 +1580,15 @@ class TxRep
                 return $lines;
             case XdrClaimPredicateType::NOT:
                 $lines += [$prefix.'type' => 'CLAIM_PREDICATE_NOT'];
-                $lines += [$prefix.'notPredicate._present' => 'true'];
-                $px = $prefix . 'notPredicate.';
-                $lines += self::getPredicateTx($px, $predicate->getNotPredicate());
+                $notPredicate = $predicate->getNotPredicate();
+                if ($notPredicate != null) {
+                    $lines += [$prefix.'notPredicate._present' => 'true'];
+                    $px = $prefix . 'notPredicate.';
+                    $lines += self::getPredicateTx($px, $predicate->getNotPredicate());
+                }
+                else {
+                    $lines += [$prefix.'notPredicate._present' => 'false'];
+                }
                 return $lines;
             case XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME:
                 $lines += [$prefix.'type' => 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME'];

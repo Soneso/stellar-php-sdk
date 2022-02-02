@@ -39,7 +39,7 @@ class XdrClaimableBalanceID
 
     public static function decode(XdrBuffer $xdr) : XdrClaimableBalanceID {
         $type = XdrClaimableBalanceIDType::decode($xdr);
-        $hash = $xdr->readOpaqueFixed(32);
+        $hash = bin2hex($xdr->readOpaqueFixed(32));
         return new XdrClaimableBalanceID($type, $hash);
     }
 }
