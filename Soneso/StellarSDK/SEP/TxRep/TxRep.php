@@ -19,6 +19,8 @@ use Soneso\StellarSDK\AllowTrustOperationBuilder;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\AssetTypeNative;
+use Soneso\StellarSDK\BeginSponsoringFutureReservesOperation;
+use Soneso\StellarSDK\BeginSponsoringFutureReservesOperationBuilder;
 use Soneso\StellarSDK\BumpSequenceOperation;
 use Soneso\StellarSDK\BumpSequenceOperationBuilder;
 use Soneso\StellarSDK\ChangeTrustOperation;
@@ -34,6 +36,8 @@ use Soneso\StellarSDK\CreatePassiveSellOfferOperation;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\EndSponsoringFutureReservesOperation;
+use Soneso\StellarSDK\EndSponsoringFutureReservesOperationBuilder;
 use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
 use Soneso\StellarSDK\ManageBuyOfferOperation;
@@ -51,6 +55,8 @@ use Soneso\StellarSDK\PathPaymentStrictSendOperationBuilder;
 use Soneso\StellarSDK\PaymentOperation;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\RevokeSponsorshipOperation;
+use Soneso\StellarSDK\RevokeSponsorshipOperationBuilder;
 use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\TimeBounds;
@@ -62,6 +68,7 @@ use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
@@ -447,8 +454,153 @@ class TxRep
             $opPrefix = $prefix.'claimClaimableBalanceOp.';
             return self::getClaimClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
         }
+        if ($opType == 'BEGIN_SPONSORING_FUTURE_RESERVES') {
+            $opPrefix = $prefix.'beginSponsoringFutureReservesOp.';
+            return self::getBeginSponsoringFutureReservesOp($opPrefix, $map, $sourceAccountId);
+        }
+        if ($opType == 'END_SPONSORING_FUTURE_RESERVES') {
+            return self::getEndSponsoringFutureReservesOp($sourceAccountId);
+        }
+        if ($opType == 'REVOKE_SPONSORSHIP') {
+            $opPrefix = $prefix.'revokeSponsorshipOp.';
+            return self::getRevokeSponsorshipOp($opPrefix, $map, $sourceAccountId);
+        }
 
         return null;
+    }
+
+    private static function getRevokeSponsorshipOp($opPrefix, array $map, ?string $sourceAccountId) : RevokeSponsorshipOperation
+    {
+        $type = self::getClearValue($opPrefix . 'type', $map);
+        if (!$type) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'type');
+        }
+        $builder = new RevokeSponsorshipOperationBuilder();
+
+        if ($type == "REVOKE_SPONSORSHIP_LEDGER_ENTRY") {
+            $ledgerKeyType = $type = self::getClearValue($opPrefix . 'ledgerKey.type', $map);
+            if ($ledgerKeyType == 'ACCOUNT') {
+                $accountId = self::getClearValue($opPrefix . 'ledgerKey.account.accountID', $map);
+                if (!$accountId) {
+                    throw new InvalidArgumentException('missing '.$opPrefix.'ledgerKey.account.accountID');
+                }
+                try {
+                    KeyPair::fromAccountId($accountId);
+                } catch (Exception $e) {
+                    throw new InvalidArgumentException('invalid '.$opPrefix.'ledgerKey.account.accountID');
+                }
+                $builder = $builder->revokeAccountSponsorship($accountId);
+            } else if($ledgerKeyType == 'TRUSTLINE') {
+                $accountId = self::getClearValue($opPrefix . 'ledgerKey.trustLine.accountID', $map);
+                if (!$accountId) {
+                    throw new InvalidArgumentException('missing '.$opPrefix.'ledgerKey.trustLine.accountID');
+                }
+                try {
+                    KeyPair::fromAccountId($accountId);
+                } catch (Exception $e) {
+                    throw new InvalidArgumentException('invalid '.$opPrefix.'ledgerKey.trustLine.accountID');
+                }
+                $assetStr = self::getClearValue($opPrefix . 'ledgerKey.trustLine.asset', $map);
+                if (!$assetStr) {
+                    throw new InvalidArgumentException('missing ' . $opPrefix . 'ledgerKey.trustLine.asset');
+                }
+                $asset = Asset::createFromCanonicalForm($assetStr);
+                if (!$asset) {
+                    throw new InvalidArgumentException('invalid ' . $opPrefix . 'ledgerKey.trustLine.asset');
+                }
+                $builder = $builder->revokeTrustlineSponsorship($accountId,$asset);
+            } else if($ledgerKeyType == 'OFFER') {
+                $sellerId = self::getClearValue($opPrefix . 'ledgerKey.offer.sellerID', $map);
+                if (!$sellerId) {
+                    throw new InvalidArgumentException('missing '.$opPrefix.'ledgerKey.offer.sellerID');
+                }
+                try {
+                    KeyPair::fromAccountId($sellerId);
+                } catch (Exception $e) {
+                    throw new InvalidArgumentException('invalid '.$opPrefix.'ledgerKey.offer.sellerID');
+                }
+                $offerId = self::getClearValue($opPrefix . 'ledgerKey.offer.offerID', $map);
+                if (!$offerId) {
+                    throw new InvalidArgumentException('missing '.$opPrefix.'ledgerKey.offer.offerID');
+                }
+                if(!is_numeric($offerId)) {
+                    throw new InvalidArgumentException('invalid '.$opPrefix.'ledgerKey.offer.offerID');
+                }
+                $builder = $builder->revokeOfferSponsorship($sellerId,(int)$offerId);
+            } else if($ledgerKeyType == 'DATA') {
+                $accountId = self::getClearValue($opPrefix . 'ledgerKey.data.accountID', $map);
+                if (!$accountId) {
+                    throw new InvalidArgumentException('missing '.$opPrefix.'ledgerKey.data.accountID');
+                }
+                try {
+                    KeyPair::fromAccountId($accountId);
+                } catch (Exception $e) {
+                    throw new InvalidArgumentException('invalid '.$opPrefix.'ledgerKey.data.accountID');
+                }
+                $dataNameStr = self::getClearValue($opPrefix . 'ledgerKey.data.dataName', $map);
+                if (!$dataNameStr) {
+                    throw new InvalidArgumentException('missing ' . $opPrefix . 'ledgerKey.data.dataName');
+                }
+                $dataName = str_replace('"','', $dataNameStr);
+                $builder = $builder->revokeDataSponsorship($accountId, $dataName);
+            } else if($ledgerKeyType == 'CLAIMABLE_BALANCE') {
+                $claimableBalanceId = self::getClearValue($opPrefix . 'ledgerKey.claimableBalance.balanceID.v0', $map);
+                if (!$claimableBalanceId) {
+                    throw new InvalidArgumentException('missing ' . $opPrefix . 'ledgerKey.claimableBalance.balanceID.v0');
+                }
+                $builder = $builder->revokeClaimableBalanceSponsorship($claimableBalanceId);
+            }
+        } else if ($type == "REVOKE_SPONSORSHIP_SIGNER") {
+            $accountId = self::getClearValue($opPrefix . 'signer.accountID', $map);
+            if (!$accountId) {
+                throw new InvalidArgumentException('missing '.$opPrefix.'signer.accountID');
+            }
+            try {
+                KeyPair::fromAccountId($accountId);
+            } catch (Exception $e) {
+                throw new InvalidArgumentException('invalid '.$opPrefix.'signer.accountID');
+            }
+            $key = self::getClearValue($opPrefix . 'signer.signerKey', $map);
+            if (!$key) {
+                throw new InvalidArgumentException('missing ' . $opPrefix . 'signer.signerKey');
+            }
+
+            if (str_starts_with($key, 'G')) {
+                $builder->revokeEd25519Signer($accountId, $key);
+            } else if (str_starts_with($key, 'T')) {
+                $builder->revokePreAuthTxSigner($accountId, $key);
+            } else if (str_starts_with($key, 'X')) {
+                $builder->revokeSha256HashSigner($accountId, $key);
+            } else {
+                throw new InvalidArgumentException('invalid ' . $opPrefix . 'signer.signerKey');
+            }
+        }
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
+    }
+
+    private static function getEndSponsoringFutureReservesOp(?string $sourceAccountId) : EndSponsoringFutureReservesOperation
+    {
+        $builder = new EndSponsoringFutureReservesOperationBuilder();
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
+    }
+
+    private static function getBeginSponsoringFutureReservesOp($opPrefix, array $map, ?string $sourceAccountId) : BeginSponsoringFutureReservesOperation
+    {
+        $sponsoredID = self::getClearValue($opPrefix . 'sponsoredID', $map);
+        if (!$sponsoredID) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'sponsoredID');
+        }
+        $builder = new BeginSponsoringFutureReservesOperationBuilder($sponsoredID);
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
     }
 
     private static function getClaimClaimableBalanceOp($opPrefix, array $map, ?string $sourceAccountId) : ClaimClaimableBalanceOperation
@@ -1548,6 +1700,49 @@ class TxRep
         } else if ($operation instanceof ClaimClaimableBalanceOperation) {
             $lines += [$prefix.'balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
             $lines += [$prefix.'balanceID.v0' => $operation->getBalanceId()];
+        } else if ($operation instanceof BeginSponsoringFutureReservesOperation) {
+            $lines += [$prefix.'sponsoredID' => $operation->getSponsoredId()];
+        } else if ($operation instanceof RevokeSponsorshipOperation) {
+            $ledgerKey = $operation->getLedgerKey();
+            $signerKey = $operation->getSignerKey();
+            $signer = $operation->getSignerAccount();
+            if($ledgerKey != null) {
+                $lines += [$prefix.'type' => 'REVOKE_SPONSORSHIP_LEDGER_ENTRY'];
+                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::ACCOUNT) {
+                    $lines += [$prefix.'ledgerKey.type' => 'ACCOUNT'];
+                    $lines += [$prefix.'ledgerKey.account.accountID' => $ledgerKey->getAccount()->getAccountID()->getAccountId()];
+                }
+                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::TRUSTLINE) {
+                    $lines += [$prefix.'ledgerKey.type' => 'TRUSTLINE'];
+                    $lines += [$prefix.'ledgerKey.trustLine.accountID' => $ledgerKey->getTrustline()->getAccountID()->getAccountId()];
+                    $lines += [$prefix.'ledgerKey.trustLine.asset' => self::encodeAsset(Asset::fromXdr($ledgerKey->getTrustline()->getAsset()))];
+                }
+                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::OFFER) {
+                    $lines += [$prefix.'ledgerKey.type' => 'OFFER'];
+                    $lines += [$prefix.'ledgerKey.offer.sellerID' => $ledgerKey->getOffer()->getSellerID()->getAccountId()];
+                    $lines += [$prefix.'ledgerKey.offer.offerID' => $ledgerKey->getOffer()->getOfferID()];
+                }
+                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::DATA) {
+                    $lines += [$prefix.'ledgerKey.type' => 'DATA'];
+                    $lines += [$prefix.'ledgerKey.data.accountID' => $ledgerKey->getData()->getAccountID()->getAccountId()];
+                    $lines += [$prefix.'ledgerKey.data.dataName' => '"' . $ledgerKey->getData()->getDataName() . '"'];
+                }
+                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::CLAIMABLE_BALANCE) {
+                    $lines += [$prefix.'ledgerKey.type' => 'CLAIMABLE_BALANCE'];
+                    $lines += [$prefix.'ledgerKey.claimableBalance.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
+                    $lines += [$prefix.'ledgerKey.claimableBalance.balanceID.v0' => $ledgerKey->getBalanceID()->getHash()];
+                }
+            } else if($signerKey != null && $signer != null) {
+                $lines += [$prefix.'type' => 'REVOKE_SPONSORSHIP_SIGNER'];
+                $lines += [$prefix.'signer.accountID' => $signer];
+                if($signerKey->getEd25519() != null) {
+                    $lines += [$prefix.'signer.signerKey' => StrKey::encodeAccountId($signerKey->getEd25519())];
+                } else if($signerKey->getPreAuthTx() != null) {
+                    $lines += [$prefix.'signer.signerKey' => StrKey::encodePreAuth($signerKey->getPreAuthTx())];
+                } else if($signerKey->getHashX() != null) {
+                    $lines += [$prefix.'signer.signerKey' => StrKey::encodeSha256Hash($signerKey->getHashX())];
+                }
+            }
         }
         return $lines;
     }
