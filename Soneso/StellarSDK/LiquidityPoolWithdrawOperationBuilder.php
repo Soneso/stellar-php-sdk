@@ -11,26 +11,22 @@ class LiquidityPoolWithdrawOperationBuilder
 
     private string $liqudityPoolId;
     private string $amount;
-    private string $maxAmountA;
-    private string $maxAmountB;
+    private string $minAmountA;
+    private string $minAmountB;
     private ?MuxedAccount $sourceAccount = null;
 
     /**
      * @param string $liqudityPoolId
      * @param string $amount
-     * @param string $maxAmountA
-     * @param string $maxAmountB
+     * @param string $minAmountA
+     * @param string $minAmountB
      */
-    public function __construct(string $liqudityPoolId, string $amount, string $maxAmountA, string $maxAmountB)
+    public function __construct(string $liqudityPoolId, string $amount, string $minAmountA, string $minAmountB)
     {
-        $liqudityPoolIdBytes = pack("H*", $liqudityPoolId);
-        if (strlen($liqudityPoolIdBytes) > 32) {
-            $liqudityPoolIdBytes = substr($liqudityPoolIdBytes, -32);
-        }
-        $this->liqudityPoolId = $liqudityPoolIdBytes;
+        $this->liqudityPoolId = $liqudityPoolId;
         $this->amount = $amount;
-        $this->maxAmountA = $maxAmountA;
-        $this->maxAmountB = $maxAmountB;
+        $this->minAmountA = $minAmountA;
+        $this->minAmountB = $minAmountB;
     }
 
     public function setSourceAccount(string $accountId) : LiquidityPoolWithdrawOperationBuilder {
@@ -44,7 +40,7 @@ class LiquidityPoolWithdrawOperationBuilder
     }
 
     public function build(): LiquidityPoolWithdrawOperation {
-        $result = new LiquidityPoolWithdrawOperation($this->liqudityPoolId, $this->amount, $this->maxAmountA, $this->maxAmountB);
+        $result = new LiquidityPoolWithdrawOperation($this->liqudityPoolId, $this->amount, $this->minAmountA, $this->minAmountB);
         if ($this->sourceAccount != null) {
             $result->setSourceAccount($this->sourceAccount);
         }

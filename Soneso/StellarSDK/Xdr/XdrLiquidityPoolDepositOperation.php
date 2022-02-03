@@ -73,7 +73,11 @@ class XdrLiquidityPoolDepositOperation
     }
 
     public function encode(): string {
-        $bytes = XdrEncoder::opaqueFixed($this->liquidityPoolID, 32);
+        $poolIdBytes = pack("H*", $this->liquidityPoolID);
+        if (strlen($poolIdBytes) > 32) {
+            $poolIdBytes = substr($poolIdBytes, -32);
+        }
+        $bytes = XdrEncoder::opaqueFixed($poolIdBytes, 32);
         $bytes .= XdrEncoder::bigInteger64($this->maxAmountA);
         $bytes .= XdrEncoder::bigInteger64($this->maxAmountB);
         $bytes .= $this->minPrice->encode();
@@ -82,7 +86,7 @@ class XdrLiquidityPoolDepositOperation
     }
 
     public static function decode(XdrBuffer $xdr) : XdrLiquidityPoolDepositOperation {
-        $liquidityPoolID = $xdr->readOpaqueFixed(32);
+        $liquidityPoolID = bin2hex($xdr->readOpaqueFixed(32));
         $maxAmountA = $xdr->readBigInteger64();
         $maxAmountB = $xdr->readBigInteger64();
         $minPrice = XdrPrice::decode($xdr);

@@ -28,6 +28,10 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperationBuilder;
+use Soneso\StellarSDK\ClawbackClaimableBalanceOperation;
+use Soneso\StellarSDK\ClawbackClaimableBalanceOperationBuilder;
+use Soneso\StellarSDK\ClawbackOperation;
+use Soneso\StellarSDK\ClawbackOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperation;
@@ -40,6 +44,10 @@ use Soneso\StellarSDK\EndSponsoringFutureReservesOperation;
 use Soneso\StellarSDK\EndSponsoringFutureReservesOperationBuilder;
 use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
+use Soneso\StellarSDK\LiquidityPoolDepositOperation;
+use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
+use Soneso\StellarSDK\LiquidityPoolWithdrawOperation;
+use Soneso\StellarSDK\LiquidityPoolWithdrawOperationBuilder;
 use Soneso\StellarSDK\ManageBuyOfferOperation;
 use Soneso\StellarSDK\ManageBuyOfferOperationBuilder;
 use Soneso\StellarSDK\ManageDataOperation;
@@ -59,6 +67,8 @@ use Soneso\StellarSDK\RevokeSponsorshipOperation;
 use Soneso\StellarSDK\RevokeSponsorshipOperationBuilder;
 use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
+use Soneso\StellarSDK\SetTrustLineFlagsOperation;
+use Soneso\StellarSDK\SetTrustLineFlagsOperationBuilder;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -397,76 +407,276 @@ class TxRep
         if ($opType == 'CREATE_ACCOUNT') {
             $opPrefix = $prefix.'createAccountOp.';
             return self::getCreateAccountOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'PAYMENT') {
+        } else if ($opType == 'PAYMENT') {
             $opPrefix = $prefix.'paymentOp.';
             return self::getPaymentOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'PATH_PAYMENT_STRICT_RECEIVE') {
+        } else if ($opType == 'PATH_PAYMENT_STRICT_RECEIVE') {
             $opPrefix = $prefix.'pathPaymentStrictReceiveOp.';
             return self::getPathPaymentStrictReceiveOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'PATH_PAYMENT_STRICT_SEND') {
+        } else if ($opType == 'PATH_PAYMENT_STRICT_SEND') {
             $opPrefix = $prefix.'pathPaymentStrictSendOp.';
             return self::getPathPaymentStrictSendOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'MANAGE_SELL_OFFER') {
+        } else if ($opType == 'MANAGE_SELL_OFFER') {
             $opPrefix = $prefix.'manageSellOfferOp.';
             return self::getManageSellOfferOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'CREATE_PASSIVE_SELL_OFFER') {
+        } else if ($opType == 'CREATE_PASSIVE_SELL_OFFER') {
             $opPrefix = $prefix.'createPassiveSellOfferOp.';
             return self::getCreatePassiveSellOfferOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'SET_OPTIONS') {
+        } else if ($opType == 'SET_OPTIONS') {
             $opPrefix = $prefix.'setOptionsOp.';
             return self::getSetOptionsOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'CHANGE_TRUST') {
+        } else if ($opType == 'CHANGE_TRUST') {
             $opPrefix = $prefix.'changeTrustOp.';
             return self::getChangeTrustOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'ALLOW_TRUST') {
+        } else if ($opType == 'ALLOW_TRUST') {
             $opPrefix = $prefix.'allowTrustOp.';
             return self::getAllowTrustOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'ACCOUNT_MERGE') {
+        } else if ($opType == 'ACCOUNT_MERGE') {
             // account merge does not include 'accountMergeOp' prefix
             return self::getAccountMergeOperation($index, $map, $txPrefix, $sourceAccountId);
-        }
-        if ($opType == 'MANAGE_DATA') {
+        } else if ($opType == 'MANAGE_DATA') {
             $opPrefix = $prefix.'manageDataOp.';
             return self::getManageDataOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'BUMP_SEQUENCE') {
+        } else if ($opType == 'BUMP_SEQUENCE') {
             $opPrefix = $prefix.'bumpSequenceOp.';
             return self::getBumpSequenceOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'MANAGE_BUY_OFFER') {
+        } else if ($opType == 'MANAGE_BUY_OFFER') {
             $opPrefix = $prefix.'manageBuyOfferOp.';
             return self::getManageBuyOfferOperation($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'CREATE_CLAIMABLE_BALANCE') {
+        } else if ($opType == 'CREATE_CLAIMABLE_BALANCE') {
             $opPrefix = $prefix.'createClaimableBalanceOp.';
             return self::getCreateClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'CLAIM_CLAIMABLE_BALANCE') {
+        } else if ($opType == 'CLAIM_CLAIMABLE_BALANCE') {
             $opPrefix = $prefix.'claimClaimableBalanceOp.';
             return self::getClaimClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'BEGIN_SPONSORING_FUTURE_RESERVES') {
+        } else if ($opType == 'BEGIN_SPONSORING_FUTURE_RESERVES') {
             $opPrefix = $prefix.'beginSponsoringFutureReservesOp.';
             return self::getBeginSponsoringFutureReservesOp($opPrefix, $map, $sourceAccountId);
-        }
-        if ($opType == 'END_SPONSORING_FUTURE_RESERVES') {
+        } else if ($opType == 'END_SPONSORING_FUTURE_RESERVES') {
             return self::getEndSponsoringFutureReservesOp($sourceAccountId);
-        }
-        if ($opType == 'REVOKE_SPONSORSHIP') {
+        } else if ($opType == 'REVOKE_SPONSORSHIP') {
             $opPrefix = $prefix.'revokeSponsorshipOp.';
             return self::getRevokeSponsorshipOp($opPrefix, $map, $sourceAccountId);
+        } else if ($opType == 'CLAWBACK') {
+            $opPrefix = $prefix.'clawbackOp.';
+            return self::getClawbackOp($opPrefix, $map, $sourceAccountId);
+        } else if ($opType == 'CLAWBACK_CLAIMABLE_BALANCE') {
+            $opPrefix = $prefix.'clawbackClaimableBalanceOp.';
+            return self::getClawbackClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
+        } else if ($opType == 'SET_TRUST_LINE_FLAGS') {
+            $opPrefix = $prefix.'setTrustLineFlagsOp.';
+            return self::getSetTrustlineFlagsOp($opPrefix, $map, $sourceAccountId);
+        } else if ($opType == 'LIQUIDITY_POOL_DEPOSIT') {
+            $opPrefix = $prefix.'liquidityPoolDepositOp.';
+            return self::getLiquidityPoolDepositOp($opPrefix, $map, $sourceAccountId);
+        } else if ($opType == 'LIQUIDITY_POOL_WITHDRAW') {
+            $opPrefix = $prefix.'liquidityPoolWithdrawOp.';
+            return self::getLiquidityPoolWithdrawOp($opPrefix, $map, $sourceAccountId);
+        }
+        return null;
+    }
+
+    private static function getLiquidityPoolWithdrawOp($opPrefix, array $map, ?string $sourceAccountId) : LiquidityPoolWithdrawOperation
+    {
+        $liquidityPoolID = self::getClearValue($opPrefix . 'liquidityPoolID', $map);
+        if (!$liquidityPoolID) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'liquidityPoolID');
         }
 
-        return null;
+        $amountStr = self::getClearValue($opPrefix.'amount', $map);
+        if (!$amountStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'amount');
+        }
+        if (!is_numeric($amountStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'amount');
+        }
+        $amount = self::fromAmount($amountStr);
+
+        $minAmountAStr = self::getClearValue($opPrefix.'minAmountA', $map);
+        if (!$minAmountAStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'minAmountA');
+        }
+        if (!is_numeric($minAmountAStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'minAmountA');
+        }
+        $minAmountA = self::fromAmount($minAmountAStr);
+
+        $minAmountBStr = self::getClearValue($opPrefix.'minAmountB', $map);
+        if (!$minAmountBStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'minAmountB');
+        }
+        if (!is_numeric($minAmountBStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'minAmountB');
+        }
+        $minAmountB = self::fromAmount($minAmountBStr);
+
+        $builder = new LiquidityPoolWithdrawOperationBuilder($liquidityPoolID,$amount, $minAmountA, $minAmountB);
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
+    }
+
+    private static function getLiquidityPoolDepositOp($opPrefix, array $map, ?string $sourceAccountId) : LiquidityPoolDepositOperation
+    {
+        $liquidityPoolID = self::getClearValue($opPrefix . 'liquidityPoolID', $map);
+        if (!$liquidityPoolID) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'liquidityPoolID');
+        }
+
+        $maxAmountAStr = self::getClearValue($opPrefix.'maxAmountA', $map);
+        if (!$maxAmountAStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'maxAmountA');
+        }
+        if (!is_numeric($maxAmountAStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'maxAmountA');
+        }
+        $maxAmountA = self::fromAmount($maxAmountAStr);
+
+        $maxAmountBStr = self::getClearValue($opPrefix.'maxAmountB', $map);
+        if (!$maxAmountBStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'maxAmountB');
+        }
+        if (!is_numeric($maxAmountBStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'maxAmountB');
+        }
+        $maxAmountB = self::fromAmount($maxAmountBStr);
+
+        $minPriceNStr = self::getClearValue($opPrefix.'minPrice.n', $map);
+        if (!$minPriceNStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'minPrice.n');
+        }
+        if (!is_numeric($minPriceNStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'minPrice.n');
+        }
+        $minPriceN = (int)($minPriceNStr);
+
+        $minPriceDStr = self::getClearValue($opPrefix.'minPrice.d', $map);
+        if (!$minPriceDStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'minPrice.d');
+        }
+        if (!is_numeric($minPriceDStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'minPrice.d');
+        }
+        $minPriceD = (int)($minPriceDStr);
+
+        $maxPriceNStr = self::getClearValue($opPrefix.'maxPrice.n', $map);
+        if (!$maxPriceNStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'maxPrice.n');
+        }
+        if (!is_numeric($maxPriceNStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'maxPrice.n');
+        }
+        $maxPriceN = (int)($maxPriceNStr);
+
+        $maxPriceDStr = self::getClearValue($opPrefix.'maxPrice.d', $map);
+        if (!$maxPriceDStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'maxPrice.d');
+        }
+        if (!is_numeric($maxPriceDStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'maxPrice.d');
+        }
+        $maxPriceD = (int)($maxPriceDStr);
+
+        $builder = new LiquidityPoolDepositOperationBuilder($liquidityPoolID,$maxAmountA, $maxAmountB,
+            new Price($minPriceN, $minPriceD), new Price($maxPriceN, $maxPriceD));
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
+    }
+
+    private static function getSetTrustlineFlagsOp($opPrefix, array $map, ?string $sourceAccountId) : SetTrustLineFlagsOperation
+    {
+        $trustor = self::getClearValue($opPrefix . 'trustor', $map);
+        if (!$trustor) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'trustor');
+        }
+        try {
+            KeyPair::fromAccountId($trustor);
+        } catch (Exception $e) {
+            throw new InvalidArgumentException('invalid ' . $opPrefix . 'trustor');
+        }
+
+        $assetStr = self::getClearValue($opPrefix . 'asset', $map);
+        if (!$assetStr) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'asset');
+        }
+        $asset = Asset::createFromCanonicalForm($assetStr);
+        if (!$asset) {
+            throw new InvalidArgumentException('invalid ' . $opPrefix . 'asset');
+        }
+
+        $clearFlags = self::getClearValue($opPrefix . 'clearFlags', $map);
+        if (!$clearFlags) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'clearFlags');
+        }
+        if(!is_numeric($clearFlags)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'clearFlags');
+        }
+
+        $setFlags = self::getClearValue($opPrefix . 'setFlags', $map);
+        if (!$setFlags) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'setFlags');
+        }
+        if(!is_numeric($setFlags)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'setFlags');
+        }
+
+        $builder = new SetTrustLineFlagsOperationBuilder($trustor, $asset, (int)$clearFlags, (int)$setFlags);
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
+    }
+
+    private static function getClawbackClaimableBalanceOp($opPrefix, array $map, ?string $sourceAccountId) : ClawbackClaimableBalanceOperation
+    {
+        $claimableBalanceId = self::getClearValue($opPrefix . 'balanceID.v0', $map);
+        if (!$claimableBalanceId) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'balanceID.v0');
+        }
+        $builder = new ClawbackClaimableBalanceOperationBuilder($claimableBalanceId);
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
+    }
+
+    private static function getClawbackOp($opPrefix, array $map, ?string $sourceAccountId) : ClawbackOperation
+    {
+        $assetStr = self::getClearValue($opPrefix . 'asset', $map);
+        if (!$assetStr) {
+            throw new InvalidArgumentException('missing ' . $opPrefix . 'asset');
+        }
+        $asset = Asset::createFromCanonicalForm($assetStr);
+        if (!$asset) {
+            throw new InvalidArgumentException('invalid ' . $opPrefix . 'asset');
+        }
+        $amountStr = self::getClearValue($opPrefix.'amount', $map);
+        if (!$amountStr) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'amount');
+        }
+        if (!is_numeric($amountStr)) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'amount');
+        }
+        $amount = self::fromAmount($amountStr);
+
+        $accountId = self::getClearValue($opPrefix . 'from', $map);
+        if (!$accountId) {
+            throw new InvalidArgumentException('missing '.$opPrefix.'from');
+        }
+        try {
+            KeyPair::fromAccountId($accountId);
+        } catch (Exception $e) {
+            throw new InvalidArgumentException('invalid '.$opPrefix.'from');
+        }
+
+        $builder = new ClawbackOperationBuilder($asset, MuxedAccount::fromAccountId($accountId), $amount);
+        if ($sourceAccountId != null) {
+            $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $builder->build();
     }
 
     private static function getRevokeSponsorshipOp($opPrefix, array $map, ?string $sourceAccountId) : RevokeSponsorshipOperation
@@ -478,7 +688,10 @@ class TxRep
         $builder = new RevokeSponsorshipOperationBuilder();
 
         if ($type == "REVOKE_SPONSORSHIP_LEDGER_ENTRY") {
-            $ledgerKeyType = $type = self::getClearValue($opPrefix . 'ledgerKey.type', $map);
+            $ledgerKeyType = self::getClearValue($opPrefix . 'ledgerKey.type', $map);
+            if (!$ledgerKeyType) {
+                throw new InvalidArgumentException('missing ' . $opPrefix . 'ledgerKey.type');
+            }
             if ($ledgerKeyType == 'ACCOUNT') {
                 $accountId = self::getClearValue($opPrefix . 'ledgerKey.account.accountID', $map);
                 if (!$accountId) {
@@ -1712,22 +1925,22 @@ class TxRep
                     $lines += [$prefix.'ledgerKey.type' => 'ACCOUNT'];
                     $lines += [$prefix.'ledgerKey.account.accountID' => $ledgerKey->getAccount()->getAccountID()->getAccountId()];
                 }
-                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::TRUSTLINE) {
+                else if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::TRUSTLINE) {
                     $lines += [$prefix.'ledgerKey.type' => 'TRUSTLINE'];
                     $lines += [$prefix.'ledgerKey.trustLine.accountID' => $ledgerKey->getTrustline()->getAccountID()->getAccountId()];
                     $lines += [$prefix.'ledgerKey.trustLine.asset' => self::encodeAsset(Asset::fromXdr($ledgerKey->getTrustline()->getAsset()))];
                 }
-                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::OFFER) {
+                else if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::OFFER) {
                     $lines += [$prefix.'ledgerKey.type' => 'OFFER'];
                     $lines += [$prefix.'ledgerKey.offer.sellerID' => $ledgerKey->getOffer()->getSellerID()->getAccountId()];
                     $lines += [$prefix.'ledgerKey.offer.offerID' => $ledgerKey->getOffer()->getOfferID()];
                 }
-                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::DATA) {
+                else if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::DATA) {
                     $lines += [$prefix.'ledgerKey.type' => 'DATA'];
                     $lines += [$prefix.'ledgerKey.data.accountID' => $ledgerKey->getData()->getAccountID()->getAccountId()];
                     $lines += [$prefix.'ledgerKey.data.dataName' => '"' . $ledgerKey->getData()->getDataName() . '"'];
                 }
-                if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::CLAIMABLE_BALANCE) {
+                else if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::CLAIMABLE_BALANCE) {
                     $lines += [$prefix.'ledgerKey.type' => 'CLAIMABLE_BALANCE'];
                     $lines += [$prefix.'ledgerKey.claimableBalance.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
                     $lines += [$prefix.'ledgerKey.claimableBalance.balanceID.v0' => $ledgerKey->getBalanceID()->getHash()];
@@ -1743,6 +1956,33 @@ class TxRep
                     $lines += [$prefix.'signer.signerKey' => StrKey::encodeSha256Hash($signerKey->getHashX())];
                 }
             }
+        } else if ($operation instanceof ClawbackOperation) {
+            $lines += [$prefix.'asset' => self::encodeAsset($operation->getAsset())];
+            $lines += [$prefix.'from' => $operation->getFrom()->getAccountId()];
+            $lines += [$prefix.'amount' => self::toAmount($operation->getAmount())];
+        } else if ($operation instanceof ClawbackClaimableBalanceOperation) {
+            $lines += [$prefix.'balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
+            $lines += [$prefix.'balanceID.v0' => $operation->getBalanceId()];
+        } else if ($operation instanceof SetTrustLineFlagsOperation) {
+            $lines += [$prefix.'trustor' => $operation->getTrustorId()];
+            $lines += [$prefix.'asset' => self::encodeAsset($operation->getAsset())];
+            $lines += [$prefix.'clearFlags' => $operation->getClearFlags()];
+            $lines += [$prefix.'setFlags' => $operation->getSetFlags()];
+        } else if ($operation instanceof LiquidityPoolDepositOperation) {
+            $lines += [$prefix.'liquidityPoolID' => $operation->getLiqudityPoolId()];
+            $lines += [$prefix.'maxAmountA' => self::toAmount($operation->getMaxAmountA())];
+            $lines += [$prefix.'maxAmountB' => self::toAmount($operation->getMaxAmountB())];
+            $minPrice = $operation->getMinPrice();
+            $maxPrice = $operation->getMaxPrice();
+            $lines += [$prefix.'minPrice.n' => strval($minPrice->getN())];
+            $lines += [$prefix.'minPrice.d' => strval($minPrice->getD())];
+            $lines += [$prefix.'maxPrice.n' => strval($maxPrice->getN())];
+            $lines += [$prefix.'maxPrice.d' => strval($maxPrice->getD())];
+        } else if ($operation instanceof LiquidityPoolWithdrawOperation) {
+            $lines += [$prefix.'liquidityPoolID' => $operation->getLiqudityPoolId()];
+            $lines += [$prefix.'amount' => self::toAmount($operation->getAmount())];
+            $lines += [$prefix.'minAmountA' => self::toAmount($operation->getMinAmountA())];
+            $lines += [$prefix.'minAmountB' => self::toAmount($operation->getMinAmountB())];
         }
         return $lines;
     }
@@ -1875,7 +2115,7 @@ class TxRep
             XdrOperationType::REVOKE_SPONSORSHIP => 'revokeSponsorshipOp',
             XdrOperationType::CLAWBACK => 'clawbackOp',
             XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE => 'clawbackClaimableBalanceOp',
-            XdrOperationType::SET_TRUST_LINE_FLAGS => 'setTrustlineFlagsOp',
+            XdrOperationType::SET_TRUST_LINE_FLAGS => 'setTrustLineFlagsOp',
             XdrOperationType::LIQUIDITY_POOL_DEPOSIT => 'liquidityPoolDepositOp',
             XdrOperationType::LIQUIDITY_POOL_WITHDRAW => 'liquidityPoolWithdrawOp',
             default => strval($type)

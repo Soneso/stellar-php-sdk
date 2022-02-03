@@ -79,12 +79,7 @@ class RevokeSponsorshipOperationBuilder
         }
         $this->ledgerKey = new XdrLedgerKey(new XdrLedgerEntryType(XdrLedgerEntryType::CLAIMABLE_BALANCE));
 
-        $balanceIdBytes = pack("H*", $balanceId);
-        if (strlen($balanceIdBytes) > 32) {
-            $balanceIdBytes = substr($balanceIdBytes, -32);
-        }
-
-        $bId = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), $balanceIdBytes);
+        $bId = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), $balanceId);
         $this->ledgerKey->setBalanceID($bId);
         return $this;
     }

@@ -12,11 +12,7 @@ class ClaimClaimableBalanceOperationBuilder
     private string $balanceId;
 
     public function __construct(string $balanceId) {
-        $balanceIdBytes = pack("H*", $balanceId);
-        if (strlen($balanceIdBytes) > 32) {
-            $balanceIdBytes = substr($balanceIdBytes, -32);
-        }
-        $this->balanceId = $balanceIdBytes;
+        $this->balanceId = $balanceId;
     }
 
     public function setSourceAccount(string $accountId) : ClaimClaimableBalanceOperationBuilder {

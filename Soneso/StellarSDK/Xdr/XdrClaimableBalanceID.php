@@ -33,7 +33,11 @@ class XdrClaimableBalanceID
 
     public function encode() : string {
         $bytes = $this->type->encode();
-        $bytes .= XdrEncoder::opaqueFixed($this->hash, 32);
+        $balanceIdBytes = pack("H*", $this->hash);
+        if (strlen($balanceIdBytes) > 32) {
+            $balanceIdBytes = substr($balanceIdBytes, -32);
+        }
+        $bytes .= XdrEncoder::opaqueFixed($balanceIdBytes, 32);
         return $bytes;
     }
 

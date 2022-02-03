@@ -14,21 +14,21 @@ class XdrLiquidityPoolWithdrawOperation
 {
     private string $liquidityPoolID; //hash
     private BigInteger $amount;
-    private BigInteger $maxAmountA;
-    private BigInteger $maxAmountB;
+    private BigInteger $minAmountA;
+    private BigInteger $minAmountB;
 
     /**
      * @param string $liquidityPoolID
      * @param BigInteger $amount
-     * @param BigInteger $maxAmountA
-     * @param BigInteger $maxAmountB
+     * @param BigInteger $minAmountA
+     * @param BigInteger $minAmountB
      */
-    public function __construct(string $liquidityPoolID, BigInteger $amount, BigInteger $maxAmountA, BigInteger $maxAmountB)
+    public function __construct(string $liquidityPoolID, BigInteger $amount, BigInteger $minAmountA, BigInteger $minAmountB)
     {
         $this->liquidityPoolID = $liquidityPoolID;
         $this->amount = $amount;
-        $this->maxAmountA = $maxAmountA;
-        $this->maxAmountB = $maxAmountB;
+        $this->minAmountA = $minAmountA;
+        $this->minAmountB = $minAmountB;
     }
 
     /**
@@ -50,31 +50,37 @@ class XdrLiquidityPoolWithdrawOperation
     /**
      * @return BigInteger
      */
-    public function getMaxAmountA(): BigInteger
+    public function getMinAmountA(): BigInteger
     {
-        return $this->maxAmountA;
+        return $this->minAmountA;
     }
 
     /**
      * @return BigInteger
      */
-    public function getMaxAmountB(): BigInteger
+    public function getMinAmountB(): BigInteger
     {
-        return $this->maxAmountB;
+        return $this->minAmountB;
     }
+
+
     public function encode(): string {
-        $bytes = XdrEncoder::opaqueFixed($this->liquidityPoolID, 32);
+        $poolIdBytes = pack("H*", $this->liquidityPoolID);
+        if (strlen($poolIdBytes) > 32) {
+            $poolIdBytes = substr($poolIdBytes, -32);
+        }
+        $bytes = XdrEncoder::opaqueFixed($poolIdBytes, 32);
         $bytes .= XdrEncoder::bigInteger64($this->amount);
-        $bytes .= XdrEncoder::bigInteger64($this->maxAmountA);
-        $bytes .= XdrEncoder::bigInteger64($this->maxAmountB);
+        $bytes .= XdrEncoder::bigInteger64($this->minAmountA);
+        $bytes .= XdrEncoder::bigInteger64($this->minAmountB);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrLiquidityPoolWithdrawOperation {
-        $liquidityPoolID = $xdr->readOpaqueFixed(32);
+        $liquidityPoolID = bin2hex($xdr->readOpaqueFixed(32));
         $amount = $xdr->readBigInteger64();
-        $maxAmountA = $xdr->readBigInteger64();
-        $maxAmountB = $xdr->readBigInteger64();
-        return new XdrLiquidityPoolWithdrawOperation($liquidityPoolID, $amount, $maxAmountA, $maxAmountB);
+        $minAmountA = $xdr->readBigInteger64();
+        $minAmountB = $xdr->readBigInteger64();
+        return new XdrLiquidityPoolWithdrawOperation($liquidityPoolID, $amount, $minAmountA, $minAmountB);
     }
 }

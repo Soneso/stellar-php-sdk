@@ -15,21 +15,21 @@ class LiquidityPoolWithdrawOperation extends AbstractOperation
 
     private string $liqudityPoolId;
     private string $amount;
-    private string $maxAmountA;
-    private string $maxAmountB;
+    private string $minAmountA;
+    private string $minAmountB;
 
     /**
      * @param string $liqudityPoolId
      * @param string $amount
-     * @param string $maxAmountA
-     * @param string $maxAmountB
+     * @param string $minAmountA
+     * @param string $minAmountB
      */
-    public function __construct(string $liqudityPoolId, string $amount, string $maxAmountA, string $maxAmountB)
+    public function __construct(string $liqudityPoolId, string $amount, string $minAmountA, string $minAmountB)
     {
         $this->liqudityPoolId = $liqudityPoolId;
         $this->amount = $amount;
-        $this->maxAmountA = $maxAmountA;
-        $this->maxAmountB = $maxAmountB;
+        $this->minAmountA = $minAmountA;
+        $this->minAmountB = $minAmountB;
     }
 
     /**
@@ -51,34 +51,35 @@ class LiquidityPoolWithdrawOperation extends AbstractOperation
     /**
      * @return string
      */
-    public function getMaxAmountA(): string
+    public function getMinAmountA(): string
     {
-        return $this->maxAmountA;
+        return $this->minAmountA;
     }
 
     /**
      * @return string
      */
-    public function getMaxAmountB(): string
+    public function getMinAmountB(): string
     {
-        return $this->maxAmountB;
+        return $this->minAmountB;
     }
 
+
     public static function fromXdrOperation(XdrLiquidityPoolWithdrawOperation $xdrOp): LiquidityPoolWithdrawOperation {
-        $maxAmountA = AbstractOperation::fromXdrAmount($xdrOp->getMaxAmountA());
-        $maxAmountB = AbstractOperation::fromXdrAmount($xdrOp->getMaxAmountB());
+        $minAmountA = AbstractOperation::fromXdrAmount($xdrOp->getMinAmountA());
+        $minAmountB = AbstractOperation::fromXdrAmount($xdrOp->getMinAmountB());
         $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
         $liquidityPoolId = $xdrOp->getLiquidityPoolID();
-        return new LiquidityPoolWithdrawOperation($liquidityPoolId, $amount, $maxAmountA, $maxAmountB);
+        return new LiquidityPoolWithdrawOperation($liquidityPoolId, $amount, $minAmountA, $minAmountB);
     }
 
     public function toOperationBody(): XdrOperationBody
     {
         $amount = AbstractOperation::toXdrAmount($this->amount);
-        $maxAmountA = AbstractOperation::toXdrAmount($this->maxAmountA);
-        $maxAmountB = AbstractOperation::toXdrAmount($this->maxAmountB);
+        $minAmountA = AbstractOperation::toXdrAmount($this->minAmountA);
+        $minAmountB = AbstractOperation::toXdrAmount($this->minAmountB);
 
-        $op = new XdrLiquidityPoolWithdrawOperation($this->liqudityPoolId, $amount, $maxAmountA, $maxAmountB);
+        $op = new XdrLiquidityPoolWithdrawOperation($this->liqudityPoolId, $amount, $minAmountA, $minAmountB);
         $type = new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_WITHDRAW);
         $result = new XdrOperationBody($type);
         $result->setLiquidityPoolWithdrawOperation($op);

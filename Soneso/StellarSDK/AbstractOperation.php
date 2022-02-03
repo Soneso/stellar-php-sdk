@@ -117,7 +117,7 @@ abstract class AbstractOperation
     }
 
     private static function clawbackClaimableBalance(XdrOperationBody $body) : ClawbackClaimableBalanceOperation {
-        $op = $body->getClaimClaimableBalanceOperation();
+        $op = $body->getClawbackClaimableBalanceOperation();
         if ($op != null) {
             return ClawbackClaimableBalanceOperation::fromXdrOperation($op);
         } else {
