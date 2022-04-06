@@ -30,7 +30,19 @@ class TransactionBuilder
         $this->sourceAccount = $sourceAccount;
         $this->operations = array();
     }
-
+    
+    /**
+     * Adds N new <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">operation</a> to this transaction.
+     * @param Array Array of itens.
+     * @return TransactionBuilder Builder object so you can chain methods.
+     */
+    public function addOperations(Array $allOperations) : TransactionBuilder {
+        foreach($allOperations as $operations){
+            array_push($this->operations, $operations);
+        }
+        return $this;
+    }
+    
     /**
      * Adds a new <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">operation</a> to this transaction.
      * @param AbstractOperation $operation The operation to add.
