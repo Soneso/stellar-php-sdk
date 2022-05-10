@@ -15,7 +15,7 @@ class TransactionBuilder
 {
     private TransactionBuilderAccount $sourceAccount;
     private ?Memo $memo = null;
-    private ?TimeBounds $timeBounds = null;
+    private ?TransactionPreconditions $preconditions = null;
     private array $operations; //[AbstractOperation]
     private ?int $maxOperationFee = null;
 
@@ -30,7 +30,17 @@ class TransactionBuilder
         $this->sourceAccount = $sourceAccount;
         $this->operations = array();
     }
-    
+
+    /**
+     * Adds a new <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">operation</a> to this transaction.
+     * @param AbstractOperation $operation The operation to add.
+     * @return TransactionBuilder Builder object so you can chain methods.
+     */
+    public function addOperation(AbstractOperation $operation) : TransactionBuilder {
+        array_push($this->operations, $operation);
+        return $this;
+    }
+
     /**
      * Adds N new <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">operation</a> to this transaction.
      * @param Array Array of itens.
@@ -40,16 +50,6 @@ class TransactionBuilder
         foreach($allOperations as $operations){
             array_push($this->operations, $operations);
         }
-        return $this;
-    }
-    
-    /**
-     * Adds a new <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">operation</a> to this transaction.
-     * @param AbstractOperation $operation The operation to add.
-     * @return TransactionBuilder Builder object so you can chain methods.
-     */
-    public function addOperation(AbstractOperation $operation) : TransactionBuilder {
-        array_push($this->operations, $operation);
         return $this;
     }
 
@@ -69,7 +69,20 @@ class TransactionBuilder
      * @return TransactionBuilder Builder object so you can chain methods.
      */
     public function setTimeBounds(TimeBounds $timeBounds) : TransactionBuilder {
-        $this->timeBounds = $timeBounds;
+        if ($this->preconditions == null) {
+            $this->preconditions = new TransactionPreconditions();
+        }
+        $this->preconditions->setTimeBounds($timeBounds);
+        return $this;
+    }
+
+    /**
+     * Adds a <a href="https://developers.stellar.org/docs/glossary/transactions/" target="_blank">transaction preconditions</a> to this transaction.
+     * @param TransactionPreconditions $preconditions Preconditions to add.
+     * @return TransactionBuilder Builder object so you can chain methods.
+     */
+    public function setPreconditions(TransactionPreconditions $preconditions): TransactionBuilder {
+        $this->preconditions = $preconditions;
         return $this;
     }
 
@@ -92,13 +105,13 @@ class TransactionBuilder
      */
     public function build() : Transaction {
         if ($this->maxOperationFee == null) {
-           $this->maxOperationFee =  AbstractTransaction::MIN_BASE_FEE;
+            $this->maxOperationFee =  AbstractTransaction::MIN_BASE_FEE;
         }
 
         $fee = count($this->operations) * $this->maxOperationFee;
         $source = $this->sourceAccount->getMuxedAccount();
         $seqNr = $this->sourceAccount->getIncrementedSequenceNumber();
-        $transaction = new Transaction($source, $seqNr, $this->operations, $this->memo, $this->timeBounds, $fee);
+        $transaction = new Transaction($source, $seqNr, $this->operations, $this->memo, $this->preconditions, $fee);
         // Increment sequence number when there were no exceptions when creating a transaction
         $this->sourceAccount->incrementSequenceNumber();
         return $transaction;

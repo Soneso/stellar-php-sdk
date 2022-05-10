@@ -30,10 +30,10 @@ class Transaction extends AbstractTransaction
     private MuxedAccount $sourceAccount;
     private array $operations; //[AbstractOperation]
     private Memo $memo;
-    private ?TimeBounds $timeBounds;
+    private ?TransactionPreconditions $preconditions;
 
     public function __construct(MuxedAccount $sourceAccount, BigInteger $sequenceNumber, array $operations,
-                                ?Memo $memo = null, ?TimeBounds $timeBounds = null,
+                                ?Memo $memo = null, ?TransactionPreconditions $preconditions = null,
                                 ?int $fee = null) {
 
         if (count($operations) == 0) {
@@ -55,10 +55,19 @@ class Transaction extends AbstractTransaction
         $this->sourceAccount = $sourceAccount;
         $this->sequenceNumber = $sequenceNumber;
         $this->operations = $operations;
-        $this->timeBounds = $timeBounds;
+        $this->preconditions = $preconditions;
         $this->memo = $memo ?? Memo::none();
         parent::__construct();
     }
+
+    /**
+     * @return TransactionPreconditions|null
+     */
+    public function getPreconditions(): ?TransactionPreconditions
+    {
+        return $this->preconditions;
+    }
+
 
     /**
      * @return BigInteger
@@ -108,7 +117,10 @@ class Transaction extends AbstractTransaction
      */
     public function getTimeBounds(): ?TimeBounds
     {
-        return $this->timeBounds;
+        if ($this->preconditions != null) {
+            return $this->preconditions->getTimeBounds();
+        }
+        return null;
     }
 
     public function signatureBase(Network $network): string
@@ -129,8 +141,8 @@ class Transaction extends AbstractTransaction
             }
         }
         $xdrMemo = $this->memo->toXdr();
-        $xdrTimeBounds = $this->timeBounds?->toXdr();
-        return new XdrTransaction($xdrMuxedSourceAccount, $xdrSequenceNr, $xdrOperations, $this->fee, $xdrMemo, $xdrTimeBounds);
+        $xdrCond = $this->preconditions?->toXdr();
+        return new XdrTransaction($xdrMuxedSourceAccount, $xdrSequenceNr, $xdrOperations, $this->fee, $xdrMemo, $xdrCond);
     }
 
     public function toXdrBase64() : string {
@@ -160,14 +172,14 @@ class Transaction extends AbstractTransaction
         $seqNr = $tx->getSequenceNumber()->getValue();
         $memo = Memo::fromXdr($tx->getMemo());
         $operations = array();
-        $timeBounds = null;
-        if ($tx->getTimeBounds() != null) {
-            $timeBounds = TimeBounds::fromXdr($tx->getTimeBounds());
+        $cond = null;
+        if ($tx->getPreconditions() != null) {
+            $cond = TransactionPreconditions::fromXdr($tx->getPreconditions());
         }
         foreach($tx->getOperations() as $operation) {
             array_push($operations, AbstractOperation::fromXdr($operation));
         }
-        $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $timeBounds, $fee);
+        $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $cond, $fee);
         foreach($envelope->getSignatures() as $signature) {
             $transaction->addSignature($signature);
         }
@@ -182,14 +194,15 @@ class Transaction extends AbstractTransaction
         $seqNr = $tx->getSequenceNumber()->getValue();
         $memo = Memo::fromXdr($tx->getMemo());
         $operations = array();
-        $timeBounds = null;
+        $cond = null;
         if ($tx->getTimeBounds() != null) {
-            $timeBounds = TimeBounds::fromXdr($tx->getTimeBounds());
+            $cond = new TransactionPreconditions();
+            $cond->setTimeBounds(TimeBounds::fromXdr($tx->getTimeBounds()));
         }
         foreach($tx->getOperations() as $operation) {
             array_push($operations, AbstractOperation::fromXdr($operation));
         }
-        $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $timeBounds, $fee);
+        $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $cond, $fee);
         foreach($envelope->getSignatures() as $signature) {
             $transaction->addSignature($signature);
         }

@@ -161,6 +161,45 @@ class KeyPair
     }
 
     /**
+     * @param string $signerPayload
+     * @return ?XdrDecoratedSignature
+     */
+    public function signPayloadDecorated(string $signerPayload): ?XdrDecoratedSignature
+    {
+        $payloadSignature = $this->signDecorated($signerPayload);
+        $payloadSignatureHint = str_split($payloadSignature->getHint());
+        $hintArr = str_split($signerPayload,1);
+        $lenBytes = count($hintArr);
+        if ($lenBytes >= 4) {
+            $hintArr = array_slice($hintArr, $lenBytes - 4,4);
+        } else {
+            while (count($hintArr) < 4) {
+                $hintArr[] = 0;
+            }
+        }
+        for ($x = 0; $x < count($hintArr); $x++) {
+            $hintArr[$x] ^= $payloadSignatureHint[$x];
+        }
+        $payloadSignature->setHint(implode($hintArr));
+        return $payloadSignature;
+    }
+
+    /**
+     * Convert a string into a stream resource
+     *
+     * @param string $string The string to convert
+     *
+     * @return resource A stream resource.
+     */
+    function str_to_stream(string $string)
+    {
+        $stream = fopen('php://memory','r+');
+        fwrite($stream, $string);
+        rewind($stream);
+        return $stream;
+    }
+
+    /**
      * Signs the specified $value with the private key
      *
      * @param string $value

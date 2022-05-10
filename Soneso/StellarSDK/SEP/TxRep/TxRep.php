@@ -1238,11 +1238,11 @@ class TxRep
             } else if (str_starts_with($key, 'X')) {
                 $signer = new XdrSignerKey();
                 $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::PRE_AUTH_TX));
-                $signer->setEd25519(StrKey::decodePreAuth($key));
+                $signer->setPreAuthTx(StrKey::decodePreAuth($key));
             } else if (str_starts_with($key, 'T')) {
                 $signer = new XdrSignerKey();
                 $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::HASH_X));
-                $signer->setEd25519(StrKey::decodeSha256Hash($key));
+                $signer->setHashX(StrKey::decodeSha256Hash($key));
             } else {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'signer.key');
             }

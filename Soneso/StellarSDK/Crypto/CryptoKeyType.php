@@ -11,6 +11,7 @@ class CryptoKeyType
     public const KEY_TYPE_ED25519 = 0;
     public const KEY_TYPE_PRE_AUTH_TX = 1;
     public const KEY_TYPE_HASH_X = 2;
+    public const KEY_TYPE_ED25519_SIGNED_PAYLOAD = 3;
     public const KEY_TYPE_MUXED_ED25519 = 256;
 
     private int $value;

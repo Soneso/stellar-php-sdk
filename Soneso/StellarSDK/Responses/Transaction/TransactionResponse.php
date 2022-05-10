@@ -41,6 +41,7 @@ class TransactionResponse extends Response
     private ?FeeBumpTransactionResponse $feeBumpTransactionResponse = null;
     private ?InnerTransactionResponse $innerTransactionResponse = null;
     private TransactionLinksResponse $links;
+    private ?TransactionPreconditionsResponse $preconditions;
 
     /**
      * @return string
@@ -250,6 +251,14 @@ class TransactionResponse extends Response
         return $this->links;
     }
 
+    /**
+     * @return TransactionPreconditionsResponse|null
+     */
+    public function getPreconditions(): ?TransactionPreconditionsResponse
+    {
+        return $this->preconditions;
+    }
+
 
     protected function loadFromJson(array $json) : void {
 
@@ -305,7 +314,7 @@ class TransactionResponse extends Response
 
         if (isset($json['fee_bump_transaction'])) $this->feeBumpTransactionResponse = FeeBumpTransactionResponse::fromJson($json['fee_bump_transaction']);
         if (isset($json['inner_transaction'])) $this->innerTransactionResponse = InnerTransactionResponse::fromJson($json['inner_transaction']);
-
+        if (isset($json['preconditions'])) $this->preconditions = TransactionPreconditionsResponse::fromJson($json['preconditions']);
         if (isset($json['_links'])) $this->links = TransactionLinksResponse::fromJson($json['_links']);
 
         parent::loadFromJson($json);

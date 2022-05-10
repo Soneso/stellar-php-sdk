@@ -13,4 +13,5 @@ class VersionByte
     const SEED = 18 << 3; // S
     const PRE_AUTH_TX = 19 << 3; // T
     const SHA256_HASH = 23 << 3; //X
+    const SIGNED_PAYLOAD = 15 << 3; // P
 }

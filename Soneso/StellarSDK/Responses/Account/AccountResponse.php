@@ -34,6 +34,8 @@ class AccountResponse extends Response implements TransactionBuilderAccount
     private string $pagingToken;
     private KeyPair $keyPair;
     private ?int $muxedAccountMed25519Id = null; // ID to be used if this account is used as MuxedAccountMed25519
+    private ?int $sequenceLedger = null;
+    private ?string $sequenceTime = null;
 
     public function getAccountId() : string {
         return $this->accountId;
@@ -106,6 +108,22 @@ class AccountResponse extends Response implements TransactionBuilderAccount
     /**
      * @return int|null
      */
+    public function getSequenceLedger(): ?int
+    {
+        return $this->sequenceLedger;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSequenceTime(): ?string
+    {
+        return $this->sequenceTime;
+    }
+
+    /**
+     * @return int|null
+     */
     public function getMuxedAccountMed25519Id(): ?int
     {
         return $this->muxedAccountMed25519Id;
@@ -155,6 +173,8 @@ class AccountResponse extends Response implements TransactionBuilderAccount
         if (isset($json['num_sponsored'])) $this->numSponsored = $json['num_sponsored'];
         if (isset($json['sponsor'])) $this->sponsor = $json['sponsor'];
         if (isset($json['paging_token'])) $this->pagingToken = $json['paging_token'];
+        if (isset($json['sequence_ledger'])) $this->sequenceLedger = $json['sequence_ledger'];
+        if (isset($json['sequence_time'])) $this->sequenceTime = $json['sequence_time'];
     }
     
     public static function fromJson(array $json) : AccountResponse {

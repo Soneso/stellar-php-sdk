@@ -6,6 +6,8 @@
 
 namespace StellarSDKTests;
 
+use DateTime;
+use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Soneso\StellarSDK\Asset;
@@ -13,6 +15,7 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\LedgerBounds;
 use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
 use Soneso\StellarSDK\MuxedAccount;
@@ -23,7 +26,9 @@ use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\TransactionPreconditions;
 use Soneso\StellarSDK\Util\FriendBot;
 
 class PaymentsTest extends TestCase
@@ -73,6 +78,82 @@ class PaymentsTest extends TestCase
             }
         }
         $this->assertTrue($found);
+    }
+
+    public function testSendNativePaymentWithPreconditions(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairC = KeyPair::random();
+        $accountCId = $keyPairC->getAccountId();
+
+        $createAccountOperation = (new CreateAccountOperationBuilder($accountCId, "10"))->build();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($createAccountOperation)->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $precond = new TransactionPreconditions();
+        $testTb = new TimeBounds((new DateTime)->setTimestamp(1652110741), (new DateTime)->setTimestamp(1752110741));
+        $precond->setTimeBounds($testTb);
+        $testLb =  new LedgerBounds(892052,1892052);
+        $precond->setLedgerBounds($testLb);
+        sleep(6);
+        $precond->setMinSeqAge(1);
+        $precond->setMinSeqLedgerGap(1);
+        $testSeqNr = $accountA->getSequenceNumber();
+        $precond->setMinSeqNumber($testSeqNr);
+
+        // send 100 XLM payment form A to C
+        $paymentOperation = (new PaymentOperationBuilder($accountCId, Asset::native(), "100"))->build();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($paymentOperation)->setPreconditions($precond)->build();
+        $transaction->sign($keyPairA, Network::testnet());
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        $txHash = $response->getHash();
+        print($txHash);
+        $trans = $sdk->requestTransaction($txHash);
+        $this->assertNotNull($trans->getPreconditions());
+        $conds = $trans->getPreconditions();
+        $this->assertNotNull($conds->getTimeBounds());
+        $this->assertEquals("1652110741", $conds->getTimeBounds()->getMinTime());
+        $this->assertEquals("1752110741", $conds->getTimeBounds()->getMaxTime());
+        $this->assertNotNull($conds->getLedgerBounds());
+        $this->assertEquals(892052, $conds->getLedgerBounds()->getMinLedger());
+        $this->assertEquals(1892052, $conds->getLedgerBounds()->getMaxLedger());
+        $this->assertEquals($testSeqNr, new BigInteger($conds->getMinAccountSequence()));
+        $this->assertEquals("1", $conds->getMinAccountSequenceAge());
+        $this->assertEquals(1, $conds->getMinAccountSequenceLedgerGap());
+
+        $found = false;
+        $accountC = $sdk->requestAccount($accountCId);
+        foreach($accountC->getBalances() as $balance) {
+            if ($balance->getAssetType() == Asset::TYPE_NATIVE) {
+                $this->assertTrue(floatval($balance->getBalance()) > 100.00);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+        $response = $sdk->payments()->forAccount($accountCId)->execute();
+        $found = false;
+        foreach ($response->getOperations() as $operation) {
+            if($operation instanceof PaymentOperationResponse) {
+                $this->assertTrue($operation->getSourceAccount() === $accountAId);
+                $found = true;
+                break;
+            }
+        }
+        $this->assertTrue($found);
+
+        $accountA = $sdk->requestAccount($accountAId);
+        $this->assertNotNull($accountA->getSequenceLedger());
+        $this->assertNotNull($accountA->getSequenceTime());
     }
 
     public function testSendNativePaymentMuxedAccounts(): void

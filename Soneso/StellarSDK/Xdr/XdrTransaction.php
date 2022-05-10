@@ -13,12 +13,12 @@ class XdrTransaction
     private XdrMuxedAccount $sourceAccount;
     private int $fee; //uint32
     private XdrSequenceNumber $sequenceNumber;
-    private ?XdrTimeBounds $timeBounds = null;
+    private ?XdrPreconditions $preconditions = null;
     private XdrMemo $memo;
     private array $operations; // [XdrOperation]
     private XdrTransactionExt $ext;
 
-    public function __construct(XdrMuxedAccount $sourceAccount, XdrSequenceNumber $sequenceNumber, array $operations, ?int $fee = null, ?XdrMemo $memo = null, ?XdrTimeBounds $timeBounds = null, ?XdrTransactionExt $ext = null)
+    public function __construct(XdrMuxedAccount $sourceAccount, XdrSequenceNumber $sequenceNumber, array $operations, ?int $fee = null, ?XdrMemo $memo = null, ?XdrPreconditions $preconditions = null, ?XdrTransactionExt $ext = null)
     {
         $this->sourceAccount = $sourceAccount;
         $this->sequenceNumber = $sequenceNumber;
@@ -34,7 +34,7 @@ class XdrTransaction
         } else {
             $this->memo = $memo;
         }
-        $this->timeBounds = $timeBounds;
+        $this->preconditions = $preconditions;
         if ($ext != null) {
             $this->ext = $ext;
         } else {
@@ -67,11 +67,26 @@ class XdrTransaction
     }
 
     /**
+     * @return XdrPreconditions|null
+     */
+    public function getPreconditions(): ?XdrPreconditions
+    {
+        return $this->preconditions;
+    }
+
+    /**
      * @return XdrTimeBounds|null
      */
     public function getTimeBounds(): ?XdrTimeBounds
     {
-        return $this->timeBounds;
+        if ($this->preconditions != null) {
+            if ($this->preconditions->getType()->getValue() == XdrPreconditionType::TIME) {
+               return $this->preconditions->getTimeBounds();
+            } else if ($this->preconditions->getType()->getValue() == XdrPreconditionType::V2 && $this->preconditions->getV2() != null) {
+                return $this->preconditions->getV2()->getTimeBounds();
+            }
+        }
+        return null;
     }
 
     /**
@@ -103,9 +118,8 @@ class XdrTransaction
 
         $bytes .= XdrEncoder::unsignedInteger32($this->fee);
         $bytes .= $this->sequenceNumber->encode();
-        if ($this->timeBounds != null) {
-            $bytes .= XdrEncoder::integer32(1);
-            $bytes .= $this->timeBounds->encode();
+        if ($this->preconditions != null && $this->preconditions->getType()->getValue() != XdrPreconditionType::NONE) {
+            $bytes .= $this->preconditions->encode();
         } else {
             $bytes .= XdrEncoder::integer32(0);
         }
@@ -125,10 +139,7 @@ class XdrTransaction
         $sourceAccount = XdrMuxedAccount::decode($xdr);
         $fee = $xdr->readUnsignedInteger32();
         $seqNr = XdrSequenceNumber::decode($xdr);
-        $tb = null;
-        if($xdr->readInteger32() == 1) {
-            $tb = XdrTimeBounds::decode($xdr);
-        }
+        $pcond = XdrPreconditions::decode($xdr);
         $memo = XdrMemo::decode($xdr);
         $opCount = $xdr->readInteger32();
         $operations = array();
@@ -136,6 +147,6 @@ class XdrTransaction
             array_push($operations, XdrOperation::decode($xdr));
         }
         $ext = XdrTransactionExt::decode($xdr);
-        return new XdrTransaction($sourceAccount, $seqNr, $operations, $fee, $memo, $tb, $ext);
+        return new XdrTransaction($sourceAccount, $seqNr, $operations, $fee, $memo, $pcond, $ext);
     }
 }

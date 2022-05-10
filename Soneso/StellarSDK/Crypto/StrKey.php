@@ -10,6 +10,10 @@ namespace Soneso\StellarSDK\Crypto;
 use Base32\Base32;
 use InvalidArgumentException;
 use ParagonIE\Sodium\Core\Ed25519;
+use Soneso\StellarSDK\SignedPayloadSigner;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrDataValue;
+use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use function preg_replace;
 
 class StrKey
@@ -53,6 +57,20 @@ class StrKey
 
     public static function decodeSha256Hash(string $hash) : string {
         return static::decodeCheck(VersionByte::SHA256_HASH, $hash);
+    }
+
+    public static function encodeSignedPayload(SignedPayloadSigner $signedPayloadSigner) : string {
+        $pk = (KeyPair::fromAccountId($signedPayloadSigner->getSignerAccountId()->getAccountId()))->getPublicKey();
+        $signedPayload = new XdrSignedPayload($pk, $signedPayloadSigner->getPayload());
+        $data = $signedPayload->encode();
+        return static::encodeCheck(VersionByte::SIGNED_PAYLOAD, $data);
+    }
+
+    public static function decodeSignedPayload(string $data) : SignedPayloadSigner {
+        $signedPayloadRaw = self::decodeCheck(VersionByte::SIGNED_PAYLOAD, $data);
+        $xdr = new XdrBuffer($signedPayloadRaw);
+        $xdrPayloadSigner = XdrSignedPayload::decode($xdr);
+        return SignedPayloadSigner::fromPublicKey($xdrPayloadSigner->getEd25519(), $xdrPayloadSigner->getPayload());
     }
 
     public static function publicKeyFromPrivateKey($privateKey) {

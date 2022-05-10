@@ -6,14 +6,13 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-use Soneso\StellarSDK\Crypto\CryptoKeyType;
-
 class XdrSignerKey
 {
     private XdrSignerKeyType $type;
     private ?string $ed25519 = null;
     private ?string $preAuthTx = null;
     private ?string $hashX = null;
+    private ?XdrSignedPayload $signedPayload = null;
 
     /**
      * @return XdrSignerKeyType
@@ -79,6 +78,22 @@ class XdrSignerKey
         $this->hashX = $hashX;
     }
 
+    /**
+     * @return XdrSignedPayload|null
+     */
+    public function getSignedPayload(): ?XdrSignedPayload
+    {
+        return $this->signedPayload;
+    }
+
+    /**
+     * @param XdrSignedPayload|null $signedPayload
+     */
+    public function setSignedPayload(?XdrSignedPayload $signedPayload): void
+    {
+        $this->signedPayload = $signedPayload;
+    }
+
     public function encode(): string {
         $bytes = $this->type->encode();
         if ($this->ed25519) {
@@ -87,6 +102,8 @@ class XdrSignerKey
             $bytes .= XdrEncoder::unsignedInteger256($this->preAuthTx);
         } else if ($this->hashX) {
             $bytes .= XdrEncoder::unsignedInteger256($this->hashX);
+        } else if ($this->signedPayload) {
+            $bytes .= $this->signedPayload->encode();
         }
         return $bytes;
     }
@@ -106,6 +123,9 @@ class XdrSignerKey
         } else if ($type == XdrSignerKeyType::HASH_X) {
             $value = $xdr->readUnsignedInteger256();
             $result->hashX = $value;
+        } else if ($type == XdrSignerKeyType::ED25519_SIGNED_PAYLOAD) {
+            $value = XdrSignedPayload::decode($xdr);
+            $result->signedPayload = $value;
         }
         return $result;
     }

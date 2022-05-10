@@ -41,6 +41,22 @@ class XdrDecoratedSignature
     }
 
     /**
+     * @param string $hint
+     */
+    public function setHint(string $hint): void
+    {
+        $this->hint = $hint;
+    }
+
+    /**
+     * @param string $signature
+     */
+    public function setSignature(string $signature): void
+    {
+        $this->signature = $signature;
+    }
+
+    /**
      * @inheritDoc
      */
     public function encode(): string

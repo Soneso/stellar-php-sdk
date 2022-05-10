@@ -56,10 +56,10 @@ class HorizonErrorResponseExtras
         if (isset($json['result_xdr'])) $this->resultXdr = $json['result_xdr'];
         if (isset($json['result_codes.transaction'])) $this->resultCodesTransaction = $json['result_codes.transaction'];
 
-        if (isset($json['result_codes.operations'])) {
-            $this->resultCodesOperation = array();
-            foreach ($json['result_codes.operations'] as $resultCode) {
-                $this->resultCodesOperation->add($resultCode);
+        $this->resultCodesOperation = array();
+        if (isset($json['result_codes']['operations'])) {
+            foreach ($json['result_codes']['operations'] as $resultCode) {
+                $this->resultCodesOperation[] = $resultCode;
             }
         }
     }
