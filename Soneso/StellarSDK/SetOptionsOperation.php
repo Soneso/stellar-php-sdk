@@ -150,7 +150,7 @@ class SetOptionsOperation extends AbstractOperation
 
     public static function fromXdrOperation(XdrSetOptionsOperation $xdrOp): SetOptionsOperation {
 
-        $inflationDestination = $xdrOp->getInflationDest()->getAccountId();
+        $inflationDestination = $xdrOp->getInflationDest()?->getAccountId();
         $clearFlags = $xdrOp->getClearFlags();
         $setFlags = $xdrOp->getSetFlags();
         $masterKeyWeight = $xdrOp->getMasterWeight();

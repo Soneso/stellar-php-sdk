@@ -19,6 +19,7 @@ use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -53,6 +54,11 @@ final class AccountTest extends TestCase
             ->setMasterKeyWeight(5)
             ->setSetFlags(2)
             ->build();
+
+        // test issue #7
+        $xdrTest = $setOptionsOperation->toXdr();
+        $setOpTest = SetOptionsOperation::fromXdr($xdrTest);
+        self::assertEquals($setOptionsOperation->getHomeDomain(), $setOpTest->getHomeDomain());
 
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($setOptionsOperation)
