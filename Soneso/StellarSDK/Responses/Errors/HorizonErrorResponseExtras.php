@@ -49,7 +49,7 @@ class HorizonErrorResponseExtras
     {
         return $this->resultCodesOperation;
     }
-    
+
     protected function loadFromJson(array $json): void
     {
         if (isset($json['envelope_xdr'])) $this->envelopeXdr = $json['envelope_xdr'];
