@@ -79,9 +79,6 @@ class FeeBumpTransaction extends AbstractTransaction
     public function toEnvelopeXdr(): XdrTransactionEnvelope
     {
         $xdr = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP));
-        if (count($this->getSignatures()) == 0) {
-            throw new Exception("Transaction must be signed by at least one signer. Use transaction.sign().");
-        }
         $feeBumpEnvelope = new XdrFeeBumpTransactionEnvelope($this->toXdr(), $this->getSignatures());
         $xdr->setFeeBump($feeBumpEnvelope);
         return $xdr;

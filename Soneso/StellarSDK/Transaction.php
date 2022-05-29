@@ -154,9 +154,6 @@ class Transaction extends AbstractTransaction
      */
     public function toEnvelopeXdr(): XdrTransactionEnvelope
     {
-        if (count($this->getSignatures()) == 0) {
-            throw new Exception("Transaction must be signed by at least one signer. Use transaction.sign().");
-        }
         $xdrTransaction = $this->toXdr();
         $v1Envelope = new XdrTransactionV1Envelope($xdrTransaction, $this->getSignatures());
         $type = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX);

@@ -27,6 +27,7 @@ use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TimeBounds;
+use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\TransactionPreconditions;
 use Soneso\StellarSDK\Util\FriendBot;
@@ -842,5 +843,33 @@ class PaymentsTest extends TestCase
         $destination = $sdk->checkMemoRequired($transaction);
 
         $this->assertTrue($destination == $accountBId);
+    }
+
+    public function testIssue8(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+        $keyPairA = KeyPair::random();
+        $accountAId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountAId);
+        $accountA = $sdk->requestAccount($accountAId);
+
+        $keyPairC = KeyPair::random();
+        $accountCId = $keyPairC->getAccountId();
+
+        $cond = new TransactionPreconditions();
+        $cond->setMinSeqNumber(new BigInteger(91891891));
+        $cond->setMinSeqAge(181811);
+        $cond->setMinSeqLedgerGap(1991);
+
+        $createAccountOperation = (new CreateAccountOperationBuilder($accountCId, "10"))->build();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($createAccountOperation)->setPreconditions($cond)->build();
+        $envelope = $transaction->toEnvelopeXdrBase64();
+
+        $transaction2 = Transaction::fromEnvelopeBase64XdrString($envelope);
+        if ($transaction2 instanceof  Transaction) {
+            self::assertEquals($transaction2->getSourceAccount()->getAccountId(), $accountAId);
+        } else {
+            self::fail();
+        }
     }
 }
