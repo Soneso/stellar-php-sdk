@@ -102,4 +102,10 @@ class XdrTransactionEnvelope
         }
         return $envelope;
     }
+
+    public static function fromEnvelopeBase64XdrString(string $envelope) : XdrTransactionEnvelope {
+        $xdr = base64_decode($envelope);
+        $xdrBuffer = new XdrBuffer($xdr);
+        return XdrTransactionEnvelope::decode($xdrBuffer);
+    }
 }

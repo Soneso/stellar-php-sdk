@@ -101,7 +101,7 @@ class PaymentsTest extends TestCase
         $precond = new TransactionPreconditions();
         $testTb = new TimeBounds((new DateTime)->setTimestamp(1652110741), (new DateTime)->setTimestamp(1752110741));
         $precond->setTimeBounds($testTb);
-        $testLb =  new LedgerBounds(892052,1892052);
+        $testLb =  new LedgerBounds(1,1892052);
         $precond->setLedgerBounds($testLb);
         sleep(6);
         $precond->setMinSeqAge(1);
@@ -125,7 +125,7 @@ class PaymentsTest extends TestCase
         $this->assertEquals("1652110741", $conds->getTimeBounds()->getMinTime());
         $this->assertEquals("1752110741", $conds->getTimeBounds()->getMaxTime());
         $this->assertNotNull($conds->getLedgerBounds());
-        $this->assertEquals(892052, $conds->getLedgerBounds()->getMinLedger());
+        $this->assertEquals(1, $conds->getLedgerBounds()->getMinLedger());
         $this->assertEquals(1892052, $conds->getLedgerBounds()->getMaxLedger());
         $this->assertEquals($testSeqNr, new BigInteger($conds->getMinAccountSequence()));
         $this->assertEquals("1", $conds->getMinAccountSequenceAge());

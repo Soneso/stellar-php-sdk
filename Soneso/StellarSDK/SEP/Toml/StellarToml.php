@@ -184,12 +184,15 @@ class StellarToml
     /**
      * @throws Exception
      */
-    public static function fromDomain(string $domain) : StellarToml {
+    public static function fromDomain(string $domain, ?Client $httpClient = null) : StellarToml {
         $url = "https://" . $domain . "/.well-known/stellar.toml";
-        $httpClient = new Client();
+        $client = $httpClient;
+        if ($client == null) {
+            $client = new Client();
+        }
         try {
             $request = new Request('GET', $url, RequestBuilder::HEADERS);
-            $response = $httpClient->send($request);
+            $response = $client->send($request);
             if ($response->getStatusCode() != 200) {
                 throw new Exception("Stellar toml not found. Response status code ". $response->getStatusCode());
             }

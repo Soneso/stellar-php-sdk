@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests;
 
+use Exception;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AccountMergeOperationBuilder;
@@ -32,6 +33,15 @@ final class AccountTest extends TestCase
 
     public function testSetAccountOptions(): void {
         $sdk = StellarSDK::getTestNetInstance();
+        $isValid = true;
+        try {
+            KeyPair::fromAccountId("GBEJWZEYDCJIKBW7PZKIJPRHD6WSPNETCEDV5UWRLDBLKXA7QT2DTLVF");
+        } catch (Exception $e) {
+            $isValid = false;
+        }
+        if ($isValid) {
+            self::fail();
+        }
         $keyPairA = KeyPair::random();
         $accountId = $keyPairA->getAccountId();
         FriendBot::fundTestAccount($accountId);
