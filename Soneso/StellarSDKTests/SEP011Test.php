@@ -16,9 +16,9 @@ class SEP011Test extends TestCase {
 tx.sourceAccount: GDICQ4HZOFVPJF7QNLHOUFUBNAH3TN4AJSRHZKFQH25I465VDVQE4ZS2
 tx.fee: 1400
 tx.seqNum: 1102902109202
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 1595282368
-tx.timeBounds.maxTime: 1595284000
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 1595282368
+tx.cond.timeBounds.maxTime: 1595284000
 tx.memo.type: MEMO_TEXT
 tx.memo.text: "Enjoy this transaction"
 tx.operations.len: 14
@@ -140,9 +140,9 @@ feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX
 feeBump.tx.innerTx.tx.sourceAccount: GDXLKEY5TR4IDEV7FZWYFG6MA6M24YDCX5HENQ7DTESBE233EHT6HHGK
 feeBump.tx.innerTx.tx.fee: 1400
 feeBump.tx.innerTx.tx.seqNum: 1102902109202
-feeBump.tx.innerTx.tx.timeBounds._present: true
-feeBump.tx.innerTx.tx.timeBounds.minTime: 1595282368
-feeBump.tx.innerTx.tx.timeBounds.maxTime: 1595284000
+feeBump.tx.innerTx.tx.cond.type: PRECOND_TIME
+feeBump.tx.innerTx.tx.cond.timeBounds.minTime: 1595282368
+feeBump.tx.innerTx.tx.cond.timeBounds.maxTime: 1595284000
 feeBump.tx.innerTx.tx.memo.type: MEMO_TEXT
 feeBump.tx.innerTx.tx.memo.text: "Enjoy this transaction"
 feeBump.tx.innerTx.tx.operations.len: 14
@@ -268,9 +268,9 @@ feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX
 feeBump.tx.innerTx.tx.sourceAccount: GDXLKEY5TR4IDEV7FZWYFG6MA6M24YDCX5HENQ7DTESBE233EHT6HHGK
 feeBump.tx.innerTx.tx.fee: 1400
 feeBump.tx.innerTx.tx.seqNum: 1102902109202
-feeBump.tx.innerTx.tx.timeBounds._present: true
-feeBump.tx.innerTx.tx.timeBounds.minTime: 1595282368 (Mon Jul 20 23:59:28 CEST 2020)
-feeBump.tx.innerTx.tx.timeBounds.maxTime: 1595284000 (Tue Jul 21 00:26:40 CEST 2020)
+feeBump.tx.innerTx.tx.cond.type: PRECOND_TIME
+feeBump.tx.innerTx.tx.cond.timeBounds.minTime: 1595282368 (Mon Jul 20 23:59:28 CEST 2020)
+feeBump.tx.innerTx.tx.cond.timeBounds.maxTime: 1595284000 (Tue Jul 21 00:26:40 CEST 2020)
 feeBump.tx.innerTx.tx.memo.type: MEMO_TEXT
 feeBump.tx.innerTx.tx.memo.text: "Enjoy this transaction"
 feeBump.tx.innerTx.tx.operations.len: 14
@@ -390,9 +390,9 @@ feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX
 feeBump.tx.innerTx.tx.sourceAccount: GDXLKEY5TR4IDEV7FZWYFG6MA6M24YDCX5HENQ7DTESBE233EHT6HHGK
 feeBump.tx.innerTx.tx.fee: 1400
 feeBump.tx.innerTx.tx.seqNum: 1102902109202
-feeBump.tx.innerTx.tx.timeBounds._present: true
-feeBump.tx.innerTx.tx.timeBounds.minTime: 1595282368
-feeBump.tx.innerTx.tx.timeBounds.maxTime: 1595284000
+feeBump.tx.innerTx.tx.cond.type: PRECOND_TIME
+feeBump.tx.innerTx.tx.cond.timeBounds.minTime: 1595282368
+feeBump.tx.innerTx.tx.cond.timeBounds.maxTime: 1595284000
 feeBump.tx.innerTx.tx.memo.type: MEMO_TEXT
 feeBump.tx.innerTx.tx.memo.text: "Enjoy this transaction"
 feeBump.tx.innerTx.tx.operations.len: 14
@@ -521,9 +521,9 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 100
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: true
@@ -585,9 +585,9 @@ signatures[0].signature: 98f329b240374d898cfcb0171b37f495c488db1abd0e290c0678296
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 100
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: false
@@ -611,9 +611,9 @@ signatures[0].signature: 9475bef299458bb105f63ac58df4201064d60f7cfd8ffec8ac8fd34
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 200
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 2
 tx.operations[0].sourceAccount._present: true
@@ -641,9 +641,9 @@ signatures[0].signature: 194a962d2f51ae1af1c4bfa3e8eeca7aa2b6654a84ac03de37d1738
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 800
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 8
 tx.operations[0].sourceAccount._present: false
@@ -708,9 +708,9 @@ signatures[0].signature: 73c223f85c34f1399e9af3322a638a8877987724567e452179a9f2b
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 100
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: true
@@ -737,9 +737,9 @@ signatures[0].signature: 336998785b7815aac464789d04735d06d0421c5f92d1307a9d164e2
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 100
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: false
@@ -764,9 +764,9 @@ signatures[0].signature: 6db5b9ff8e89c2103971550a485754286d1f782aa7fac17e2553bba
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 200
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 2
 tx.operations[0].sourceAccount._present: true
@@ -799,9 +799,9 @@ signatures[0].signature: 5d4569d07068fd4824c87bf531061cf962a820d9ac5d4fdda0a2728
 tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
 tx.fee: 200
 tx.seqNum: 2916609211498497
-tx.timeBounds._present: true
-tx.timeBounds.minTime: 0
-tx.timeBounds.maxTime: 0
+tx.cond.type: PRECOND_TIME
+tx.cond.timeBounds.minTime: 0
+tx.cond.timeBounds.maxTime: 0
 tx.memo.type: MEMO_NONE
 tx.operations.len: 2
 tx.operations[0].sourceAccount._present: true
@@ -831,6 +831,24 @@ signatures[0].signature: ed97d0d018a671c5a914a15346c1b38912d6695d1d152ffe976b8c9
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
         print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
+    }
+
+    public function testPreconditions1(): void {
+
+        $xdr = "AAAAAgAAAQAAAAAAABODoXOW2Y6q7AdenusH1X8NBxVPFXEW+/PQFDiBQV05qf4DAAAAZAAKAJMAAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAKAJMAAAABAAAAAAAAAAEAAAABAAAAAgAAAACUkeBPpCcGYCoqeszK1YjZ1Ww1qY6fRI02d2hKG1nqvwAAAAHW9EEhELfDtkfmtBrXuEgEpTBlO8E/iQ2ZI/uNXLDV9AAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohc5bZjqrsB16e6wfVfw0HFU8VcRb789AUOIFBXTmp/gMAAAABAAABAAAAAAJPOttvlJHgT6QnBmAqKnrMytWI2dVsNamOn0SNNndoShtZ6r8AAAAAAAAAAADk4cAAAAAAAAAAATmp/gMAAABAvm+8CxO9sj4KEDwSS6hDxZAiUGdpIN2l+KOxTIkdI2joBFjT9B1U9YaORVDx4LTrLd4QM2taUuzXB51QtDQYDA==";
+        $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
+        print($txRepRes);
+        $xdr2 = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
+        self::assertEquals($xdr2, $xdr);
+    }
+
+    public function testPreconditions2(): void {
+
+        $xdr = "AAAAAgAAAQAAAAAAABODoa9e0m5apwHpUf3/HzJOJeQ5q7+CwSWrnHXENS8XoAfmAAAAZAAJ/s4AAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAJ/s4AAAABAAAAAAAAAAEAAAABAAAAAgAAAAJulGoyRpAB8JhKT+ffEiXh8Kgd8qrEXfiG3aK69JgQlAAAAAM/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAACABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohr17SblqnAelR/f8fMk4l5Dmrv4LBJaucdcQ1LxegB+YAAAABAAABAAAAAAJPOttvipEw04NyfzwAhgQlf2S77YVGYbytcXKVNuM46+sMNAYAAAAAAAAAAADk4cAAAAAAAAAAARegB+YAAABAJG8wTpECV0rpq3TV9d26UL0MULmDxXKXGmKSJLiy9NCNJW3WMcrvrA6wiBsLHuCN7sIurD3o1/AKgntagup3Cw==";
+        $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
+        print($txRepRes);
+        $xdr2 = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
+        self::assertEquals($xdr2, $xdr);
     }
 }
 

@@ -66,11 +66,22 @@ class StrKey
         return static::encodeCheck(VersionByte::SIGNED_PAYLOAD, $data);
     }
 
+    public static function encodeXdrSignedPayload(XdrSignedPayload $signedPayload) : string {
+        $data = $signedPayload->encode();
+        return static::encodeCheck(VersionByte::SIGNED_PAYLOAD, $data);
+    }
+
     public static function decodeSignedPayload(string $data) : SignedPayloadSigner {
         $signedPayloadRaw = self::decodeCheck(VersionByte::SIGNED_PAYLOAD, $data);
         $xdr = new XdrBuffer($signedPayloadRaw);
         $xdrPayloadSigner = XdrSignedPayload::decode($xdr);
         return SignedPayloadSigner::fromPublicKey($xdrPayloadSigner->getEd25519(), $xdrPayloadSigner->getPayload());
+    }
+
+    public static function decodeXdrSignedPayload(string $data) : XdrSignedPayload {
+        $signedPayloadRaw = self::decodeCheck(VersionByte::SIGNED_PAYLOAD, $data);
+        $xdr = new XdrBuffer($signedPayloadRaw);
+        return XdrSignedPayload::decode($xdr);
     }
 
     public static function publicKeyFromPrivateKey($privateKey) {

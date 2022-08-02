@@ -44,6 +44,7 @@ use Soneso\StellarSDK\EndSponsoringFutureReservesOperation;
 use Soneso\StellarSDK\EndSponsoringFutureReservesOperationBuilder;
 use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
+use Soneso\StellarSDK\LedgerBounds;
 use Soneso\StellarSDK\LiquidityPoolDepositOperation;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
 use Soneso\StellarSDK\LiquidityPoolWithdrawOperation;
@@ -72,6 +73,7 @@ use Soneso\StellarSDK\SetTrustLineFlagsOperationBuilder;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\TransactionPreconditions;
 use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
@@ -125,14 +127,7 @@ class TxRep
         $lines += [$prefix.'fee' => strval($tx->getFee())];
         $lines += [$prefix.'seqNum' => $tx->getSequenceNumber()->toString()];
 
-        $timeBounds = $tx->getTimeBounds();
-        if ($timeBounds) {
-            $lines += [$prefix.'timeBounds._present' => 'true'];
-            $lines += [$prefix.'timeBounds.minTime' => strval($timeBounds->getMinTime()->getTimestamp())];
-            $lines += [$prefix.'timeBounds.maxTime' => strval($timeBounds->getMaxTime()->getTimestamp())];
-        } else {
-            $lines += [$prefix.'timeBounds._present' => 'false'];
-        }
+        $lines = array_merge($lines, self::getPreconditions($tx->getPreconditions(), $prefix));
 
         $memo = $tx->getMemo();
         if ($memo->getType() == Memo::MEMO_TYPE_NONE) {
@@ -258,14 +253,7 @@ class TxRep
         $sourceAccount = Account::fromAccountId($sourceAccountId, $sequenceNumber->subtract(new BigInteger(1)));
         $txBuilder = new TransactionBuilder($sourceAccount);
 
-        $minTimeStr = self::getClearValue($prefix.'timeBounds.minTime', $map);
-        $maxTimeStr = self::getClearValue($prefix.'timeBounds.maxTime', $map);
-        if (self::getClearValue($prefix.'timeBounds._present', $map) == 'true' && $minTimeStr != null && $maxTimeStr != null) {
-            $minTime = (int)$minTimeStr;
-            $maxTime = (int)$maxTimeStr;
-            $timeBounds = new TimeBounds((new DateTime)->setTimestamp($minTime), (new DateTime)->setTimestamp($maxTime));
-            $txBuilder->setTimeBounds($timeBounds);
-        }
+        $txBuilder->setPreconditions(self::parsePreconditions($map,$prefix));
 
         $memoType = self::getClearValue($prefix.'memo.type', $map);
         if (!$memoType) {
@@ -383,6 +371,145 @@ class TxRep
             return new XdrDecoratedSignature($hint, $signature);
         }
         return null;
+    }
+
+    private static function parsePreconditions(array $map, string $txPrefix) : ?TransactionPreconditions {
+        $cond = new TransactionPreconditions();
+        $preonditionsType = self::getClearValue($txPrefix.'cond.type', $map);
+        if ($preonditionsType == "PRECOND_TIME") {
+            $precondPrefix = $txPrefix.'cond.';
+            $minTimeStr = self::getClearValue($precondPrefix.'timeBounds.minTime', $map);
+            $maxTimeStr = self::getClearValue($precondPrefix.'timeBounds.maxTime', $map);
+            if ($minTimeStr != null && $maxTimeStr != null) {
+                if (!is_numeric($minTimeStr)) {
+                    throw new InvalidArgumentException('invalid '.$precondPrefix.'minTime');
+                }
+                if (!is_numeric($maxTimeStr)) {
+                    throw new InvalidArgumentException('invalid '.$precondPrefix.'maxTime');
+                }
+                $minTime = (int)$minTimeStr;
+                $maxTime = (int)$maxTimeStr;
+                $timeBounds = new TimeBounds((new DateTime)->setTimestamp($minTime), (new DateTime)->setTimestamp($maxTime));
+                $cond->setTimeBounds($timeBounds);
+                return $cond;
+            } else {
+                throw new InvalidArgumentException('invalid '.$precondPrefix.'timeBounds');
+            }
+        } else if ($preonditionsType == "PRECOND_V2") {
+            $precondPrefix = $txPrefix.'cond.v2.';
+            $cond->setTimeBounds(self::parseTimeBounds($map, $precondPrefix));
+            $cond->setLedgerBounds(self::parseLedgerBounds($map, $precondPrefix));
+            $minSeqNrStr = self::getClearValue($precondPrefix.'minSeqNum', $map);
+            if (self::getClearValue($precondPrefix.'minSeqNum._present', $map) == 'true' && $minSeqNrStr != null) {
+                $minSeqNr = new BigInteger($minSeqNrStr);
+                $cond->setMinSeqNumber($minSeqNr);
+            } else {
+                throw new InvalidArgumentException('invalid '.$precondPrefix.'minSeqNum');
+            }
+            $minSeqAgeStr = self::getClearValue($precondPrefix.'minSeqAge', $map);
+            if ($minSeqAgeStr != null) {
+                if (!is_numeric($minSeqAgeStr)) {
+                    throw new InvalidArgumentException('invalid '.$precondPrefix.'minSeqAge');
+                }
+                $minSeqAge = (int)$minSeqAgeStr;
+                $cond->setMinSeqAge($minSeqAge);
+            } else {
+                throw new InvalidArgumentException('missing '.$precondPrefix.'minSeqAge');
+            }
+            $minSeqLedgerGapStr = self::getClearValue($precondPrefix.'minSeqLedgerGap', $map);
+            if ($minSeqLedgerGapStr != null) {
+                if (!is_numeric($minSeqLedgerGapStr)) {
+                    throw new InvalidArgumentException('invalid '.$precondPrefix.'minSeqLedgerGap');
+                }
+                $minSeqLedgerGap = (int)$minSeqLedgerGapStr;
+                $cond->setMinSeqLedgerGap($minSeqLedgerGap);
+            } else {
+                throw new InvalidArgumentException('missing '.$precondPrefix.'minSeqLedgerGap');
+            }
+
+            $extraSignersLen = self::getClearValue($precondPrefix.'extraSigners.len', $map);
+            if (!$extraSignersLen) {
+                throw new InvalidArgumentException('missing '.$precondPrefix.'extraSigners.len');
+            }
+            if (!is_numeric($extraSignersLen)) {
+                throw new InvalidArgumentException('invalid '.$precondPrefix.'extraSigners.len');
+            }
+            $nrOfExtraSigners= (int)$extraSignersLen;
+            if ($nrOfExtraSigners > 2) {
+                throw new InvalidArgumentException('invalid '.$precondPrefix.'extraSigners.len - greater than 2');
+            }
+            $extraSigners = array();
+            for ($i = 0; $i < $nrOfExtraSigners; $i++) {
+                $key = self::getClearValue($precondPrefix . 'extraSigners['.strval($i).']', $map);
+                if (!$key) {
+                    throw new InvalidArgumentException('missing ' . $precondPrefix . 'extraSigners['.strval($i).']');
+                }
+
+                if (str_starts_with($key, 'G')) {
+                    $signer = new XdrSignerKey();
+                    $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::ED25519));
+                    $signer->setEd25519(StrKey::decodeAccountId($key));
+                    array_push($extraSigners, $signer);
+                } else if (str_starts_with($key, 'T')) {
+                    $signer = new XdrSignerKey();
+                    $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::PRE_AUTH_TX));
+                    $signer->setPreAuthTx(StrKey::decodePreAuth($key));
+                    array_push($extraSigners, $signer);
+                } else if (str_starts_with($key, 'X')) {
+                    $signer = new XdrSignerKey();
+                    $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::HASH_X));
+                    $signer->setHashX(StrKey::decodeSha256Hash($key));
+                    array_push($extraSigners, $signer);
+                } else if (str_starts_with($key, 'P')) {
+                    $signer = new XdrSignerKey();
+                    $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::ED25519_SIGNED_PAYLOAD));
+                    $signer->setSignedPayload(StrKey::decodeXdrSignedPayload($key));
+                    array_push($extraSigners, $signer);
+                } else {
+                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners['.strval($i).']');
+                }
+            }
+            $cond->setExtraSigners($extraSigners);
+            return $cond;
+        }
+        $cond->setTimeBounds(self::parseTimeBounds($map, $txPrefix));
+        return $cond;
+    }
+
+    private static function parseTimeBounds(array $map, string $prefix) : ?TimeBounds {
+        $minTimeStr = self::getClearValue($prefix.'timeBounds.minTime', $map);
+        $maxTimeStr = self::getClearValue($prefix.'timeBounds.maxTime', $map);
+        if (self::getClearValue($prefix.'timeBounds._present', $map) == 'true' && $minTimeStr != null && $maxTimeStr != null) {
+            if (!is_numeric($minTimeStr)) {
+                throw new InvalidArgumentException('invalid '.$prefix.'minTime');
+            }
+            if (!is_numeric($maxTimeStr)) {
+                throw new InvalidArgumentException('invalid '.$prefix.'maxTime');
+            }
+            $minTime = (int)$minTimeStr;
+            $maxTime = (int)$maxTimeStr;
+            return new TimeBounds((new DateTime)->setTimestamp($minTime), (new DateTime)->setTimestamp($maxTime));
+        } else {
+            throw new InvalidArgumentException('invalid '.$prefix.'timeBounds');
+        }
+    }
+
+    private static function parseLedgerBounds(array $map, string $prefix) : ?LedgerBounds {
+        $minLedgerStr = self::getClearValue($prefix.'ledgerBounds.minLedger', $map);
+        $maxLedgerStr = self::getClearValue($prefix.'ledgerBounds.maxLedger', $map);
+        if (self::getClearValue($prefix.'ledgerBounds._present', $map) == 'true' && $minLedgerStr != null && $maxLedgerStr != null) {
+            if (!is_numeric($minLedgerStr)) {
+                throw new InvalidArgumentException('invalid '.$prefix.'minLedger');
+            }
+            if (!is_numeric($maxLedgerStr)) {
+                throw new InvalidArgumentException('invalid '.$prefix.'maxLedger');
+            }
+            $minLedger = (int)$minLedgerStr;
+            $maxLedger = (int)$maxLedgerStr;
+            return new LedgerBounds($minLedger, $maxLedger);
+        } else {
+            throw new InvalidArgumentException('invalid '.$prefix.'ledgerBounds');
+        }
     }
 
     private static function getOperation(int $index, array $map, string $txPrefix) : ?AbstractOperation {
@@ -1235,11 +1362,11 @@ class TxRep
                 $signer = new XdrSignerKey();
                 $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::ED25519));
                 $signer->setEd25519(StrKey::decodeAccountId($key));
-            } else if (str_starts_with($key, 'X')) {
+            } else if (str_starts_with($key, 'T')) {
                 $signer = new XdrSignerKey();
                 $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::PRE_AUTH_TX));
                 $signer->setPreAuthTx(StrKey::decodePreAuth($key));
-            } else if (str_starts_with($key, 'T')) {
+            } else if (str_starts_with($key, 'X')) {
                 $signer = new XdrSignerKey();
                 $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::HASH_X));
                 $signer->setHashX(StrKey::decodeSha256Hash($key));
@@ -1722,6 +1849,76 @@ class TxRep
         $lines += [$prefix.'signatures['.strval($index).'].signature' => bin2hex($signature->getSignature())];
         return $lines;
     }
+
+    private static function getPreconditions(?TransactionPreconditions $cond, string $prefix) : array {
+        $lines = array();
+
+        if (!$cond || (!$cond->hasV2() && !$cond->getTimeBounds())) {
+            $lines += [$prefix.'cond.type' => 'PRECOND_NONE'];
+            return $lines;
+        }
+        if ($cond->hasV2()) {
+            $lines += [$prefix.'cond.type' => 'PRECOND_V2'];
+            $precondPrefix = $prefix."cond.v2.";
+            $lines = array_merge($lines, self::getTimeBounds($cond->getTimeBounds(), $precondPrefix));
+            $lines = array_merge($lines, self::getLedgerBounds($cond->getLedgerBounds(), $precondPrefix));
+            if ($cond->getMinSeqNumber()) {
+                $lines += [$precondPrefix.'minSeqNum._present' => 'true'];
+                $lines += [$precondPrefix.'minSeqNum' => $cond->getMinSeqNumber()->toString()];
+            } else {
+                $lines += [$precondPrefix.'minSeqNum._present' => 'false'];
+            }
+            $lines += [$precondPrefix.'minSeqAge' => strval($cond->getMinSeqAge())];
+            $lines += [$precondPrefix.'minSeqLedgerGap' => strval($cond->getMinSeqLedgerGap())];
+            $extraSigners = $cond->getExtraSigners();
+            $lines += [$precondPrefix.'extraSigners.len' => count($extraSigners)];
+            $index = 0;
+            foreach ($extraSigners as $signer) {
+                if ($signer instanceof XdrSignerKey) {
+                    if ($signer->getType()->getValue() == XdrSignerKeyType::ED25519) {
+                        $lines += [$precondPrefix.'extraSigners['.strval($index).']' => StrKey::encodeAccountId($signer->getEd25519())];
+                    } else if ($signer->getType()->getValue() == XdrSignerKeyType::PRE_AUTH_TX) {
+                        $lines += [$precondPrefix.'extraSigners['.strval($index).']' => StrKey::encodePreAuth($signer->getPreAuthTx())];
+                    } else if ($signer->getType()->getValue() == XdrSignerKeyType::HASH_X) {
+                        $lines += [$precondPrefix.'extraSigners['.strval($index).']' => StrKey::encodeSha256Hash($signer->getHashX())];
+                    } else if ($signer->getType()->getValue() == XdrSignerKeyType::ED25519_SIGNED_PAYLOAD) {
+                        $lines += [$precondPrefix.'extraSigners['.strval($index).']' => StrKey::encodeXdrSignedPayload($signer->getSignedPayload())];
+                    }
+                }
+                $index++;
+            }
+        } else if($cond->getTimeBounds()) {
+            $lines += [$prefix.'cond.type' => 'PRECOND_TIME'];
+            $lines += [$prefix.'cond.timeBounds.minTime' => strval($cond->getTimeBounds()->getMinTime()->getTimestamp())];
+            $lines += [$prefix.'cond.timeBounds.maxTime' => strval($cond->getTimeBounds()->getMaxTime()->getTimestamp())];
+        }
+        return $lines;
+    }
+
+    private static function getTimeBounds(?TimeBounds $timeBounds, string $prefix) : array {
+        $lines = array();
+        if ($timeBounds) {
+            $lines += [$prefix.'timeBounds._present' => 'true'];
+            $lines += [$prefix.'timeBounds.minTime' => strval($timeBounds->getMinTime()->getTimestamp())];
+            $lines += [$prefix.'timeBounds.maxTime' => strval($timeBounds->getMaxTime()->getTimestamp())];
+        } else {
+            $lines += [$prefix.'timeBounds._present' => 'false'];
+        }
+        return $lines;
+    }
+
+    private static function getLedgerBounds(?LedgerBounds $ledgerBounds, string $prefix) : array {
+        $lines = array();
+        if ($ledgerBounds) {
+            $lines += [$prefix.'ledgerBounds._present' => 'true'];
+            $lines += [$prefix.'ledgerBounds.minLedger' => strval($ledgerBounds->getMinLedger())];
+            $lines += [$prefix.'ledgerBounds.maxLedger' => strval($ledgerBounds->getMaxLedger())];
+        } else {
+            $lines += [$prefix.'ledgerBounds._present' => 'false'];
+        }
+        return $lines;
+    }
+
 
     private static function getOperationTx(AbstractOperation $operation, int $index, string $txPrefix) : array {
         $lines = array();
