@@ -21,6 +21,7 @@ class WordList
     public const LANGUAGE_JAPANESE = 'japanese';
     public const LANGUAGE_KOREAN = 'korean';
     public const LANGUAGE_SPANISH = 'spanish';
+    public const LANGUAGE_MALAY = 'malay';
 
     private static array $instances = [];
     private string $language;

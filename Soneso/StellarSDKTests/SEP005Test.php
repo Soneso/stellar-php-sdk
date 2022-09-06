@@ -305,6 +305,15 @@ class SEP005Test extends TestCase
 
         $mnemonic = Mnemonic::generate24WordsMnemonic(WordList::LANGUAGE_SPANISH);
         $this->assertEquals(24, count($mnemonic->words));
+
+        $mnemonic = Mnemonic::generate12WordsMnemonic(WordList::LANGUAGE_MALAY);
+        $this->assertEquals(12, count($mnemonic->words));
+
+        $mnemonic = Mnemonic::generate15WordsMnemonic(WordList::LANGUAGE_MALAY);
+        $this->assertEquals(15, count($mnemonic->words));
+
+        $mnemonic = Mnemonic::generate24WordsMnemonic(WordList::LANGUAGE_MALAY);
+        $this->assertEquals(24, count($mnemonic->words));
     }
 
     public function testBip39HexKeypair(): void
