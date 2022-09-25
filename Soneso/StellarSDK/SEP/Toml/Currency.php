@@ -49,7 +49,7 @@ class Currency
     /// true if token can be redeemed for underlying asset, otherwise false.
     public ?bool $isAssetAnchored = null;
 
-    /// Type of asset anchored. Can be fiat, crypto, stock, bond, commodity, realestate, or other.
+    /// Type of asset anchored. Can be fiat, crypto, nft, stock, bond, commodity, realestate, or other.
     public ?string $anchorAssetType = null;
 
     /// If anchored token, code / symbol for asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.

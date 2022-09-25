@@ -24,7 +24,9 @@ class SEP001Test extends TestCase
               "GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7",
               "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"
           ]
-    
+          DIRECT_PAYMENT_SERVER="https://test.direct-payment.com"
+          ANCHOR_QUOTE_SERVER="https://test.anchor-quote.com"
+          
           [DOCUMENTATION]
           ORG_NAME="Organization Name"
           ORG_DBA="Organization DBA"
@@ -38,7 +40,8 @@ class SEP001Test extends TestCase
           ORG_KEYBASE="accountname"
           ORG_TWITTER="orgtweet"
           ORG_GITHUB="orgcode"
-          ORG_OFFICIAL_EMAIL="support@domain.com"
+          ORG_OFFICIAL_EMAIL="info@domain.com"
+          ORG_SUPPORT_EMAIL="support@domain.com"
     
           [[PRINCIPALS]]
           name="Jane Jedidiah Johnson"
@@ -131,6 +134,8 @@ class SEP001Test extends TestCase
         $this->assertTrue(in_array("GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7", $generalInformation->accounts));
         $this->assertTrue(in_array("GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U", $generalInformation->accounts));
         $this->assertNull($generalInformation->uriRequestSigningKey);
+        $this->assertEquals("https://test.direct-payment.com", $generalInformation->directPaymentServer);
+        $this->assertEquals("https://test.anchor-quote.com", $generalInformation->anchorQuoteServer);
 
         $documentation = $stellarToml->getDocumentation();
         $this->assertNotNull($documentation);
@@ -146,7 +151,8 @@ class SEP001Test extends TestCase
         $this->assertEquals("accountname", $documentation->orgKeybase);
         $this->assertEquals("orgtweet", $documentation->orgTwitter);
         $this->assertEquals("orgcode", $documentation->orgGithub);
-        $this->assertEquals("support@domain.com", $documentation->orgOfficialEmail);
+        $this->assertEquals("info@domain.com", $documentation->orgOfficialEmail);
+        $this->assertEquals("support@domain.com", $documentation->orgSupportEmail);
         $this->assertNull($documentation->orgLicensingAuthority);
         $this->assertNull($documentation->orgLicenseType);
         $this->assertNull($documentation->orgLicenseNumber);

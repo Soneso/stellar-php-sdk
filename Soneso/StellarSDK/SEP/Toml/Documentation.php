@@ -49,6 +49,9 @@ class Documentation
     /// An email where clients can contact the organization. Must be hosted at the orgUrl domain.
     public ?string $orgOfficialEmail = null;
 
+    /// An email that users can use to request support regarding the organizations Stellar assets or applications.
+    public ?string $orgSupportEmail = null;
+
     /// Name of the authority or agency that licensed the organization, if applicable.
     public ?string $orgLicensingAuthority = null;
 
