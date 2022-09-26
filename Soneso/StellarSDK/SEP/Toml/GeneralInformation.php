@@ -34,7 +34,7 @@ class GeneralInformation
     /// The endpoint used for SEP-10 Web Authentication.
     public ?string $webAuthEndpoint = null;
 
-    /// The signing key is used for SEP-3 Compliance Protocol and SEP-10 Authentication Protocol.
+    /// The signing key is used for SEP-3 Compliance Protocol (deprecated) and SEP-10 Authentication Protocol.
     public ?string $signingKey = null;
 
     /// Location of public-facing Horizon instance (if one is offered).
@@ -45,4 +45,10 @@ class GeneralInformation
 
     /// The signing key is used for SEP-7 delegated signing.
     public ?string $uriRequestSigningKey = null;
+
+    /// The server used for receiving SEP-31 direct fiat-to-fiat payments. Requires SEP-12 and hence a KYC_SERVER TOML attribute.
+    public ?string $directPaymentServer = null;
+
+    /// The server used for receiving SEP-38 requests.
+    public ?string $anchorQuoteServer = null;
 }

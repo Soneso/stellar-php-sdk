@@ -13,6 +13,8 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Yosymfony\Toml\Toml;
 
+/// see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md
+/// Supported version: 2.5.0
 class StellarToml
 {
     private ?GeneralInformation $generalInformation = null;
@@ -61,6 +63,12 @@ class StellarToml
         if (isset($object->URI_REQUEST_SIGNING_KEY)) {
             $this->generalInformation->uriRequestSigningKey = $object->URI_REQUEST_SIGNING_KEY;
         }
+        if (isset($object->DIRECT_PAYMENT_SERVER)) {
+            $this->generalInformation->directPaymentServer = $object->DIRECT_PAYMENT_SERVER;
+        }
+        if (isset($object->ANCHOR_QUOTE_SERVER)) {
+            $this->generalInformation->anchorQuoteServer = $object->ANCHOR_QUOTE_SERVER;
+        }
 
         if (isset($object->DOCUMENTATION)) {
             $this->documentation = new Documentation();
@@ -103,6 +111,9 @@ class StellarToml
             }
             if (array_key_exists("ORG_OFFICIAL_EMAIL", $documentationArr)) {
                 $this->documentation->orgOfficialEmail = $documentationArr["ORG_OFFICIAL_EMAIL"];
+            }
+            if (array_key_exists("ORG_SUPPORT_EMAIL", $documentationArr)) {
+                $this->documentation->orgSupportEmail = $documentationArr["ORG_SUPPORT_EMAIL"];
             }
             if (array_key_exists("ORG_LICENSING_AUTHORITY", $documentationArr)) {
                 $this->documentation->orgLicensingAuthority = $documentationArr["ORG_LICENSING_AUTHORITY"];
