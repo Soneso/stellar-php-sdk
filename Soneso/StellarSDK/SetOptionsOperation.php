@@ -178,16 +178,16 @@ class SetOptionsOperation extends AbstractOperation
         if ($this->setFlags) {
             $result->setSetFlags($this->setFlags);
         }
-        if ($this->masterKeyWeight != null) {
+        if ($this->masterKeyWeight !== null) {
             $result->setMasterWeight($this->masterKeyWeight);
         }
-        if ($this->lowThreshold != null) {
+        if ($this->lowThreshold !== null) {
             $result->setLowThreshold($this->lowThreshold);
         }
-        if ($this->mediumThreshold != null) {
+        if ($this->mediumThreshold !== null) {
             $result->setMedThreshold($this->mediumThreshold);
         }
-        if ($this->highThreshold != null) {
+        if ($this->highThreshold !== null) {
             $result->setHighThreshold($this->highThreshold);
         }
         if ($this->homeDomain) {

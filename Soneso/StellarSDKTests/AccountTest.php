@@ -275,15 +275,13 @@ final class AccountTest extends TestCase
         $accountId = $keyPairA->getAccountId();
         FriendBot::fundTestAccount($accountId);
         $accountA = $sdk->requestAccount($accountId);
-        $seqNr = $accountA->getSequenceNumber();
 
-        $newHomeDomain = "www" . rand(1, 10000) . ".com";
-
+        $zero = 0;
         $setOptionsOperation = (new SetOptionsOperationBuilder())
-            ->setHighThreshold(0)
-            ->setMediumThreshold(0)
-            ->setLowThreshold(0)
-            ->setMasterKeyWeight(0)
+            ->setHighThreshold($zero)
+            ->setMediumThreshold($zero)
+            ->setLowThreshold($zero)
+            ->setMasterKeyWeight($zero)
             ->build();
 
         self::assertEquals(0, $setOptionsOperation->getMasterKeyWeight());
