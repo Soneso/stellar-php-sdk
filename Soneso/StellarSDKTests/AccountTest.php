@@ -275,7 +275,7 @@ final class AccountTest extends TestCase
         $accountId = $keyPairA->getAccountId();
         FriendBot::fundTestAccount($accountId);
         $accountA = $sdk->requestAccount($accountId);
-
+        
         $zero = 0;
         $setOptionsOperation = (new SetOptionsOperationBuilder())
             ->setHighThreshold($zero)
@@ -284,10 +284,10 @@ final class AccountTest extends TestCase
             ->setMasterKeyWeight($zero)
             ->build();
 
-        self::assertEquals(0, $setOptionsOperation->getMasterKeyWeight());
-        self::assertEquals(0, $setOptionsOperation->getMediumThreshold());
-        self::assertEquals(0, $setOptionsOperation->getLowThreshold());
-        self::assertEquals(0, $setOptionsOperation->getHighThreshold());
+        self::assertSame(0, $setOptionsOperation->getMasterKeyWeight());
+        self::assertSame(0, $setOptionsOperation->getMediumThreshold());
+        self::assertSame(0, $setOptionsOperation->getLowThreshold());
+        self::assertSame(0, $setOptionsOperation->getHighThreshold());
 
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($setOptionsOperation)
