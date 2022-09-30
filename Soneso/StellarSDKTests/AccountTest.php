@@ -266,5 +266,39 @@ final class AccountTest extends TestCase
         $muxAccount = new MuxedAccount($accountId, $id);
         $this->assertEquals($muxAccountId, $muxAccount->getAccountId());
     }
+
+    public function testIssue15(): void
+    {
+        $sdk = StellarSDK::getTestNetInstance();
+
+        $keyPairA = KeyPair::random();
+        $accountId = $keyPairA->getAccountId();
+        FriendBot::fundTestAccount($accountId);
+        $accountA = $sdk->requestAccount($accountId);
+        $seqNr = $accountA->getSequenceNumber();
+
+        $newHomeDomain = "www" . rand(1, 10000) . ".com";
+
+        $setOptionsOperation = (new SetOptionsOperationBuilder())
+            ->setHighThreshold(0)
+            ->setMediumThreshold(0)
+            ->setLowThreshold(0)
+            ->setMasterKeyWeight(0)
+            ->build();
+
+        self::assertEquals(0, $setOptionsOperation->getMasterKeyWeight());
+        self::assertEquals(0, $setOptionsOperation->getMediumThreshold());
+        self::assertEquals(0, $setOptionsOperation->getLowThreshold());
+        self::assertEquals(0, $setOptionsOperation->getHighThreshold());
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($setOptionsOperation)
+            ->build();
+
+        $transaction->sign($keyPairA, Network::testnet());
+
+        $response = $sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+    }
 }
 
