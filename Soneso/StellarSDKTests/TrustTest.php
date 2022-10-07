@@ -295,4 +295,20 @@ class TrustTest  extends TestCase
         $this->assertTrue($ex); // not authorized.
 
     }
+
+    public function testIssue16(): void
+    {
+        $envelop = 'AAAAAgAAAAB+1X4E8MAjncM+MMh+9sbJsyh+VzCr8wxTFJ6hA+aNXQAAAGQAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAAB+1X4E8MAjncM+MMh+9sbJsyh+VzCr8wxTFJ6hA+aNXQAAAAJBQUFBQTAwMAAAAAAAAAAAftV+BPDAI53DPjDIfvbGybMoflcwq/MMUxSeoQPmjV0AAASMJzlQAAAAAAAAAAAA';
+
+        $transaction = \Soneso\StellarSDK\Transaction::fromEnvelopeBase64XdrString($envelop);
+
+        $operations = $transaction->getOperations();
+
+        $paymentOp = $operations[0];
+
+        $asset = $paymentOp->getAsset();
+
+        $this->assertSame('AAAAA000', $asset->getCode());
+
+    }
 }

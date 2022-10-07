@@ -112,7 +112,7 @@ class XdrDecoder
         $bytes = static::opaqueFixed($xdr, $length);
         
         // remove trailing nulls
-        return strval(rtrim($bytes, "\0x00"));
+        return strval(rtrim($bytes, "\x00"));
     }
 
     /**
