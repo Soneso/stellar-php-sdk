@@ -46,7 +46,7 @@ use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 class StellarSDK
 {
     
-    public const VERSION_NR = "1.0.4";
+    public const VERSION_NR = "1.0.5";
     public static string $PUBLIC_NET_HORIZON_URL = "https://horizon.stellar.org";
     public static string $TEST_NET_HORIZON_URL = "https://horizon-testnet.stellar.org";
     
