@@ -253,7 +253,10 @@ class TxRep
         $sourceAccount = Account::fromAccountId($sourceAccountId, $sequenceNumber->subtract(new BigInteger(1)));
         $txBuilder = new TransactionBuilder($sourceAccount);
 
-        $txBuilder->setPreconditions(self::parsePreconditions($map,$prefix));
+        $preconditions  = self::parsePreconditions($map,$prefix);
+        if ($preconditions != null) {
+            $txBuilder->setPreconditions($preconditions);
+        }
 
         $memoType = self::getClearValue($prefix.'memo.type', $map);
         if (!$memoType) {
@@ -471,6 +474,9 @@ class TxRep
             }
             $cond->setExtraSigners($extraSigners);
             return $cond;
+        }
+        else if ($preonditionsType == "PRECOND_NONE") {
+            return null;
         }
         $cond->setTimeBounds(self::parseTimeBounds($map, $txPrefix));
         return $cond;
