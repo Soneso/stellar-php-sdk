@@ -168,8 +168,7 @@ class WebAuth
             throw new ChallengeValidationError("Invalid transaction type");
         }
         $txHash = AbstractTransaction::fromEnvelopeXdr($envelopeXdr)->hash($this->network);
-        $signatures = array();
-        array_push($signatures, $envelopeXdr->getV1()->getSignatures());
+        $signatures = $envelopeXdr->getV1()->getSignatures();
         foreach ($signers as $signer) {
             if ($signer instanceof KeyPair) {
                 $signature = $signer->signDecorated($txHash);
