@@ -209,4 +209,12 @@ class Transaction extends AbstractTransaction
     public static function builder(TransactionBuilderAccount $sourceAccount) : TransactionBuilder{
         return new TransactionBuilder($sourceAccount);
     }
+
+    public function setFootprint(Footprint $footprint) {
+        foreach ($this->operations as $operation) {
+            if ($operation instanceof InvokeHostFunctionOperation) {
+                $operation->footprint = $footprint;
+            }
+        }
+    }
 }

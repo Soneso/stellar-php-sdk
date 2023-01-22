@@ -164,6 +164,7 @@ class OperationResponse extends Response
                 OperationType::SET_TRUSTLINE_FLAGS => SetTrustlineFlagsOperationResponse::fromJson($jsonData),
                 OperationType::LIQUIDITY_POOL_DEPOSIT => LiquidityPoolDepositOperationResponse::fromJson($jsonData),
                 OperationType::LIQUIDITY_POOL_WITHDRAW => LiquidityPoolWithdrawOperationResponse::fromJson($jsonData),
+                OperationType::INVOKE_HOST_FUNCTION => InvokeHostFunctionOperationResponse::fromJson($jsonData),
                 default => throw new \InvalidArgumentException(sprintf("Unknown operation type: %s", $operationType)),
             };
         } else {

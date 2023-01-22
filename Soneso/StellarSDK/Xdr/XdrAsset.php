@@ -8,8 +8,8 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrAsset
 {
     protected XdrAssetType $type;
-    private ?XdrAssetAlphaNum4 $alphaNum4;
-    private ?XdrAssetAlphaNum12 $alphaNum12;
+    private ?XdrAssetAlphaNum4 $alphaNum4 = null;
+    private ?XdrAssetAlphaNum12 $alphaNum12 = null;
 
     public function __construct(XdrAssetType $type)  {
         $this->type = $type;

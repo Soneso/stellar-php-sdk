@@ -12,7 +12,6 @@ use InvalidArgumentException;
 use ParagonIE\Sodium\Core\Ed25519;
 use Soneso\StellarSDK\SignedPayloadSigner;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
-use Soneso\StellarSDK\Xdr\XdrDataValue;
 use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use function preg_replace;
 

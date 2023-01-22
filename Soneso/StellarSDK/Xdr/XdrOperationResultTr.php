@@ -32,6 +32,7 @@ class XdrOperationResultTr
     private ?XdrSetTrustLineFlagsResult $setTrustLineFlagsResult = null;
     private ?XdrLiquidityPoolDepositResult $liquidityPoolDepositResult= null;
     private ?XdrLiquidityPoolWithdrawResult $liquidityPoolWithdrawResult = null;
+    private ?XdrInvokeHostFunctionResult $invokeHostFunctionResult = null;
 
     /**
      * @return XdrOperationType
@@ -225,6 +226,23 @@ class XdrOperationResultTr
         return $this->liquidityPoolWithdrawResult;
     }
 
+    /**
+     * @return XdrInvokeHostFunctionResult|null
+     */
+    public function getInvokeHostFunctionResult(): ?XdrInvokeHostFunctionResult
+    {
+        return $this->invokeHostFunctionResult;
+    }
+
+    /**
+     * @param XdrInvokeHostFunctionResult|null $invokeHostFunctionResult
+     */
+    public function setInvokeHostFunctionResult(?XdrInvokeHostFunctionResult $invokeHostFunctionResult): void
+    {
+        $this->invokeHostFunctionResult = $invokeHostFunctionResult;
+    }
+
+
 
     public static function decode(XdrBuffer $xdr) : XdrOperationResultTr {
         $type = XdrOperationType::decode($xdr);
@@ -300,6 +318,9 @@ class XdrOperationResultTr
                 break;
             case XdrOperationType::LIQUIDITY_POOL_WITHDRAW:
                 $result->liquidityPoolWithdrawResult = XdrLiquidityPoolWithdrawResult::decode($xdr);
+                break;
+            case XdrOperationType::INVOKE_HOST_FUNCTION:
+                $result->invokeHostFunctionResult = XdrInvokeHostFunctionResult::decode($xdr);
                 break;
         }
         return $result;

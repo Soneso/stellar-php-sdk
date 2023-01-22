@@ -34,6 +34,7 @@ class XdrOperationType
     const SET_TRUST_LINE_FLAGS = 21;
     const LIQUIDITY_POOL_DEPOSIT = 22;
     const LIQUIDITY_POOL_WITHDRAW = 23;
+    const INVOKE_HOST_FUNCTION = 24;
 
     public function __construct(int $value) {
         $this->value = $value;

@@ -32,4 +32,5 @@ class OperationType
     public const SET_TRUSTLINE_FLAGS = 21;
     public const LIQUIDITY_POOL_DEPOSIT = 22;
     public const LIQUIDITY_POOL_WITHDRAW = 23;
+    public const INVOKE_HOST_FUNCTION = 24;
 }

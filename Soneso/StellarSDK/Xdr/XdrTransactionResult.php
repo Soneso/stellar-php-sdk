@@ -62,6 +62,12 @@ class XdrTransactionResult
         $this->ext = $ext;
     }
 
+    public function encode(): string {
+        $bytes = XdrEncoder::bigInteger64($this->feeCharged);
+        $bytes .= $this->result->encode();
+        $bytes .= $this->ext->encode();
+        return $bytes;
+    }
 
     /**
      * @param XdrBuffer $xdr
@@ -74,5 +80,11 @@ class XdrTransactionResult
         $result->result = XdrTransactionResultResult::decode($xdr);
         $result->ext = XdrTransactionResultExt::decode($xdr);
         return $result;
+    }
+
+    public static function fromBase64Xdr(String $base64Xdr) : XdrTransactionResult {
+        $xdr = base64_decode($base64Xdr);
+        $xdrBuffer = new XdrBuffer($xdr);
+        return XdrTransactionResult::decode($xdrBuffer);
     }
 }

@@ -8,16 +8,91 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrLedgerKey
 {
-    private XdrLedgerEntryType $type;
-    private ?XdrLedgerKeyAccount $account = null;
-    private ?XdrLedgerKeyTrustLine $trustLine = null;
-    private ?XdrLedgerKeyOffer $offer = null;
-    private ?XdrLedgerKeyData $data = null;
-    private ?XdrClaimableBalanceID $balanceID = null;
-    private ?string $liquidityPoolID = null;
+    public XdrLedgerEntryType $type;
+    public ?XdrLedgerKeyAccount $account = null;
+    public ?XdrLedgerKeyTrustLine $trustLine = null;
+    public ?XdrLedgerKeyOffer $offer = null;
+    public ?XdrLedgerKeyData $data = null;
+    public ?XdrClaimableBalanceID $balanceID = null;
+    public ?string $liquidityPoolID = null;
+    public ?string $contractID = null;
+    public ?XdrSCVal $contractDataKey = null;
+    public ?string $contractCodeHash = null;
+    public ?XdrConfigSettingID $configSetting = null;
+
 
     public function __construct(XdrLedgerEntryType $type) {
         $this->type = $type;
+    }
+
+    public function encode(): string {
+        $bytes = $this->type->encode();
+        $bytes .= match ($this->type->getValue()) {
+            XdrLedgerEntryType::ACCOUNT => $this->account->encode(),
+            XdrLedgerEntryType::TRUSTLINE => $this->trustLine->encode(),
+            XdrLedgerEntryType::OFFER => $this->offer->encode(),
+            XdrLedgerEntryType::DATA => $this->data->encode(),
+            XdrLedgerEntryType::CLAIMABLE_BALANCE => $this->balanceID->encode(),
+            XdrLedgerEntryType::LIQUIDITY_POOL => XdrEncoder::string($this->liquidityPoolID, 64),
+            XdrLedgerEntryType::CONTRACT_DATA => $this->encodeContractData(),
+            XdrLedgerEntryType::CONTRACT_CODE => XdrEncoder::opaqueFixed($this->contractCodeHash, 32),
+            XdrLedgerEntryType::CONFIG_SETTING => $this->configSetting->encode(),
+        };
+        return $bytes;
+    }
+
+    public static function decode(XdrBuffer $xdr) : XdrLedgerKey {
+        $value = $xdr->readInteger32();
+        $type = new XdrLedgerEntryType($value);
+        $result = new XdrLedgerKey($type);
+        switch ($type->getValue()) {
+            case XdrLedgerEntryType::ACCOUNT:
+                $result->account = XdrLedgerKeyAccount::decode($xdr);
+                break;
+            case XdrLedgerEntryType::TRUSTLINE:
+                $result->trustLine = XdrLedgerKeyTrustLine::decode($xdr);
+                break;
+            case XdrLedgerEntryType::OFFER:
+                $result->offer = XdrLedgerKeyOffer::decode($xdr);
+                break;
+            case XdrLedgerEntryType::DATA:
+                $result->data = XdrLedgerKeyData::decode($xdr);
+                break;
+            case XdrLedgerEntryType::CLAIMABLE_BALANCE:
+                $result->balanceID = XdrClaimableBalanceID::decode($xdr);
+                break;
+            case XdrLedgerEntryType::LIQUIDITY_POOL:
+                $result->liquidityPoolID = $xdr->readString(64);
+                break;
+            case XdrLedgerEntryType::CONTRACT_DATA:
+                $result->contractID = $xdr->readOpaqueFixed(32);
+                $result->contractDataKey = XdrSCVal::decode($xdr);
+                break;
+            case XdrLedgerEntryType::CONTRACT_CODE:
+                $result->contractCodeHash = $xdr->readOpaqueFixed(32);
+                break;
+            case XdrLedgerEntryType::CONFIG_SETTING:
+                $result->configSetting = XdrConfigSettingID::decode($xdr);
+                break;
+        }
+        return $result;
+    }
+
+    public static function fromBase64Xdr(String $base64Xdr) : XdrLedgerKey {
+        $xdr = base64_decode($base64Xdr);
+        $xdrBuffer = new XdrBuffer($xdr);
+        return XdrLedgerKey::decode($xdrBuffer);
+    }
+
+    public function toBase64Xdr() : String {
+        return base64_encode($this->encode());
+    }
+
+    private function encodeContractData() : string
+    {
+        $bytes = XdrEncoder::opaqueFixed($this->contractID, 32);
+        $bytes .= $this->contractDataKey->encode();
+        return $bytes;
     }
 
     /**
@@ -132,43 +207,68 @@ class XdrLedgerKey
         $this->liquidityPoolID = $liquidityPoolID;
     }
 
-    public function encode(): string {
-        $bytes = $this->type->encode();
-        $bytes .= match ($this->type->getValue()) {
-            XdrLedgerEntryType::ACCOUNT => $this->account->encode(),
-            XdrLedgerEntryType::TRUSTLINE => $this->trustLine->encode(),
-            XdrLedgerEntryType::OFFER => $this->offer->encode(),
-            XdrLedgerEntryType::DATA => $this->data->encode(),
-            XdrLedgerEntryType::CLAIMABLE_BALANCE => $this->balanceID->encode(),
-            XdrLedgerEntryType::LIQUIDITY_POOL => XdrEncoder::string($this->liquidityPoolID, 64),
-        };
-        return $bytes;
+    /**
+     * @return string|null
+     */
+    public function getContractID(): ?string
+    {
+        return $this->contractID;
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrLedgerKey {
-        $value = $xdr->readInteger32();
-        $type = new XdrLedgerEntryType($value);
-        $result = new XdrLedgerKey($type);
-        switch ($type->getValue()) {
-            case XdrLedgerEntryType::ACCOUNT:
-                $result->account = XdrLedgerKeyAccount::decode($xdr);
-                break;
-            case XdrLedgerEntryType::TRUSTLINE:
-                $result->trustLine = XdrLedgerKeyTrustLine::decode($xdr);
-                break;
-            case XdrLedgerEntryType::OFFER:
-                $result->offer = XdrLedgerKeyOffer::decode($xdr);
-                break;
-            case XdrLedgerEntryType::DATA:
-                $result->data = XdrLedgerKeyData::decode($xdr);
-                break;
-            case XdrLedgerEntryType::CLAIMABLE_BALANCE:
-                $result->balanceID = XdrClaimableBalanceID::decode($xdr);
-                break;
-            case XdrLedgerEntryType::LIQUIDITY_POOL:
-                $result->liquidityPoolID = $xdr->readString(64);
-                break;
-        }
-        return $result;
+    /**
+     * @param string|null $contractID
+     */
+    public function setContractID(?string $contractID): void
+    {
+        $this->contractID = $contractID;
     }
+
+    /**
+     * @return XdrSCVal|null
+     */
+    public function getContractDataKey(): ?XdrSCVal
+    {
+        return $this->contractDataKey;
+    }
+
+    /**
+     * @param XdrSCVal|null $contractDataKey
+     */
+    public function setContractDataKey(?XdrSCVal $contractDataKey): void
+    {
+        $this->contractDataKey = $contractDataKey;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getContractCodeHash(): ?string
+    {
+        return $this->contractCodeHash;
+    }
+
+    /**
+     * @param string|null $contractCodeHash
+     */
+    public function setContractCodeHash(?string $contractCodeHash): void
+    {
+        $this->contractCodeHash = $contractCodeHash;
+    }
+
+    /**
+     * @return XdrConfigSettingID|null
+     */
+    public function getConfigSetting(): ?XdrConfigSettingID
+    {
+        return $this->configSetting;
+    }
+
+    /**
+     * @param XdrConfigSettingID|null $configSetting
+     */
+    public function setConfigSetting(?XdrConfigSettingID $configSetting): void
+    {
+        $this->configSetting = $configSetting;
+    }
+
 }

@@ -1,0 +1,89 @@
+<?php declare(strict_types=1);
+
+// Copyright 2023 The Stellar PHP SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+namespace Soneso\StellarSDK\Xdr;
+
+class XdrAccountEntryV3
+{
+    public int $seqLedger; //uint32
+    public int $seqTime; // uint64
+    public XdrExtensionPoint $ext;
+
+    /**
+     * @param int $seqLedger
+     * @param int $seqTime
+     * @param XdrExtensionPoint $ext
+     */
+    public function __construct(int $seqLedger, int $seqTime, XdrExtensionPoint $ext)
+    {
+        $this->seqLedger = $seqLedger;
+        $this->seqTime = $seqTime;
+        $this->ext = $ext;
+    }
+
+
+    public function encode(): string {
+        $bytes = XdrEncoder::unsignedInteger32($this->seqLedger);
+        $bytes .= XdrEncoder::integer64($this->seqTime);
+        $bytes .= $this->ext->encode();
+        return $bytes;
+    }
+
+    public static function decode(XdrBuffer $xdr):  XdrAccountEntryV3 {
+        $seqLedger = $xdr->readUnsignedInteger32();
+        $seqTime = $xdr->readInteger64();
+        $ext = XdrExtensionPoint::decode($xdr);
+        return new XdrAccountEntryV3($seqLedger, $seqTime, $ext);
+    }
+
+    /**
+     * @return int
+     */
+    public function getSeqLedger(): int
+    {
+        return $this->seqLedger;
+    }
+
+    /**
+     * @param int $seqLedger
+     */
+    public function setSeqLedger(int $seqLedger): void
+    {
+        $this->seqLedger = $seqLedger;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSeqTime(): int
+    {
+        return $this->seqTime;
+    }
+
+    /**
+     * @param int $seqTime
+     */
+    public function setSeqTime(int $seqTime): void
+    {
+        $this->seqTime = $seqTime;
+    }
+
+    /**
+     * @return XdrExtensionPoint
+     */
+    public function getExt(): XdrExtensionPoint
+    {
+        return $this->ext;
+    }
+
+    /**
+     * @param XdrExtensionPoint $ext
+     */
+    public function setExt(XdrExtensionPoint $ext): void
+    {
+        $this->ext = $ext;
+    }
+}

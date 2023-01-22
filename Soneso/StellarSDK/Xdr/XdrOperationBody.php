@@ -31,6 +31,7 @@ class XdrOperationBody
     private ?XdrSetTrustLineFlagsOperation $setTrustLineFlagsOperation = null;
     private ?XdrLiquidityPoolDepositOperation $liquidityPoolDepositOperation = null;
     private ?XdrLiquidityPoolWithdrawOperation $liquidityPoolWithdrawOperation = null;
+    private ?XdrInvokeHostFunctionOperation $invokeHostFunctionOperation = null;
 
     public function __construct(XdrOperationType $type) {
         $this->type = $type;
@@ -396,6 +397,23 @@ class XdrOperationBody
         $this->liquidityPoolWithdrawOperation = $liquidityPoolWithdrawOperation;
     }
 
+    /**
+     * @return XdrInvokeHostFunctionOperation|null
+     */
+    public function getInvokeHostFunctionOperation(): ?XdrInvokeHostFunctionOperation
+    {
+        return $this->invokeHostFunctionOperation;
+    }
+
+    /**
+     * @param XdrInvokeHostFunctionOperation|null $invokeHostFunctionOperation
+     */
+    public function setInvokeHostFunctionOperation(?XdrInvokeHostFunctionOperation $invokeHostFunctionOperation): void
+    {
+        $this->invokeHostFunctionOperation = $invokeHostFunctionOperation;
+    }
+
+
     public function encode() : string {
         $bytes = $this->type->encode();
         $bytes .= match ($this->type->getValue()) {
@@ -421,7 +439,8 @@ class XdrOperationBody
             XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE => $this->clawbackClaimableBalanceOperation->encode() ?? "",
             XdrOperationType::SET_TRUST_LINE_FLAGS => $this->setTrustLineFlagsOperation->encode() ?? "",
             XdrOperationType::LIQUIDITY_POOL_DEPOSIT => $this->liquidityPoolDepositOperation->encode() ?? "",
-            XdrOperationType::LIQUIDITY_POOL_WITHDRAW => $this->liquidityPoolWithdrawOperation->encode() ?? ""
+            XdrOperationType::LIQUIDITY_POOL_WITHDRAW => $this->liquidityPoolWithdrawOperation->encode() ?? "",
+            XdrOperationType::INVOKE_HOST_FUNCTION => $this->invokeHostFunctionOperation->encode() ?? ""
         };
         return $bytes;
     }
@@ -497,6 +516,9 @@ class XdrOperationBody
                 break;
             case XdrOperationType::LIQUIDITY_POOL_WITHDRAW:
                 $result->setLiquidityPoolWithdrawOperation(XdrLiquidityPoolWithdrawOperation::decode($xdr));
+                break;
+            case XdrOperationType::INVOKE_HOST_FUNCTION:
+                $result->setInvokeHostFunctionOperation(XdrInvokeHostFunctionOperation::decode($xdr));
                 break;
         }
         return $result;

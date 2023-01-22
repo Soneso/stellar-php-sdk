@@ -83,10 +83,20 @@ abstract class AbstractOperation
             XdrOperationType::SET_TRUST_LINE_FLAGS => self::setTrustlineFlags($body),
             XdrOperationType::LIQUIDITY_POOL_DEPOSIT => self::liquidityPoolDeposit($body),
             XdrOperationType::LIQUIDITY_POOL_WITHDRAW => self::liquidityPoolWithdraw($body),
+            XdrOperationType::INVOKE_HOST_FUNCTION => self::invokeHostFunction($body),
             default => throw new InvalidArgumentException(sprintf("Unknown operation type: %s", $type))
         };
         $result->setSourceAccount($sourceAccount);
         return $result;
+    }
+
+    private static function invokeHostFunction(XdrOperationBody $body) : InvokeHostFunctionOperation {
+        $op = $body->getInvokeHostFunctionOperation();
+        if ($op != null) {
+            return InvokeHostFunctionOperation::fromXdrOperation($op);
+        } else {
+            throw new InvalidArgumentException("missing invoke host function operation in xdr operation body");
+        }
     }
 
     private static function liquidityPoolWithdraw(XdrOperationBody $body) : LiquidityPoolWithdrawOperation {

@@ -30,4 +30,8 @@ class Network
     public static function testnet() : Network {
         return new Network("Test SDF Network ; September 2015");
     }
+
+    public static function futurenet() : Network {
+        return new Network("Test SDF Future Network ; October 2022");
+    }
 }

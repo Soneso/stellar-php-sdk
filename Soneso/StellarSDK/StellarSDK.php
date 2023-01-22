@@ -49,9 +49,11 @@ class StellarSDK
     public const VERSION_NR = "1.0.6";
     public static string $PUBLIC_NET_HORIZON_URL = "https://horizon.stellar.org";
     public static string $TEST_NET_HORIZON_URL = "https://horizon-testnet.stellar.org";
+    public static string $FUTURE_NET_HORIZON_URL = "https://horizon-futurenet.stellar.org";
     
     private static ?StellarSDK $publicNetInstance = null;
     private static ?StellarSDK $testnetInstance = null;
+    private static ?StellarSDK $futurenetInstance = null;
     
     private string $serverUri;
     private Client $httpClient;
@@ -70,6 +72,14 @@ class StellarSDK
             self::$testnetInstance = new StellarSDK(self::$TEST_NET_HORIZON_URL);
         }
         return self::$testnetInstance;
+    }
+
+    public static function getFutureNetInstance() : ?StellarSDK
+    {
+        if (!self::$futurenetInstance) {
+            self::$futurenetInstance = new StellarSDK(self::$FUTURE_NET_HORIZON_URL);
+        }
+        return self::$futurenetInstance;
     }
     
     public function __construct(string $uri)

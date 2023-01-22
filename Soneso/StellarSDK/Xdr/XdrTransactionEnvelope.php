@@ -108,4 +108,8 @@ class XdrTransactionEnvelope
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrTransactionEnvelope::decode($xdrBuffer);
     }
+
+    public function toBase64Xdr() : String {
+        return base64_encode($this->encode());
+    }
 }
