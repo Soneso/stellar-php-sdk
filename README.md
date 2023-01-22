@@ -1,7 +1,7 @@
 
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
-![v1.0.6](https://img.shields.io/badge/v1.0.6-green.svg)
+![v1.1.0](https://img.shields.io/badge/v1.1.0-green.svg)
 
 The Soneso open source Stellar SDK for PHP provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
@@ -225,3 +225,7 @@ More examples can be found in the [tests](https://github.com/Soneso/stellar-php-
 - [SEP-0012: KYC API](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
 - [SEP-0023: Strkeys](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
 - [SEP-0029: Account Memo Requirements](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
+
+### Soroban support
+
+This SDK provides experimental [support for Soroban](https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md). 
