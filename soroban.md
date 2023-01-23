@@ -171,6 +171,7 @@ $status = $statusResponse->status;
 
 if (GetTransactionStatusResponse::STATUS_SUCCESS == $status) {
   // contract successfully deployed!
+  $contractId = $statusResponse->getContractId();
 }
 ```
 
