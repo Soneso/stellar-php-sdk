@@ -26,6 +26,12 @@ class XdrEndSponsoringFutureReservesResult
         $this->resultCode = $resultCode;
     }
 
+    public function encode(): string
+    {
+        return $this->resultCode->encode();
+    }
+
+
     public static function decode(XdrBuffer $xdr):XdrEndSponsoringFutureReservesResult {
         $result = new XdrEndSponsoringFutureReservesResult();
         $resultCode = XdrEndSponsoringFutureReservesResultCode::decode($xdr);

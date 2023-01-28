@@ -26,6 +26,11 @@ class XdrLiquidityPoolDepositResult
         $this->resultCode = $resultCode;
     }
 
+    public function encode(): string
+    {
+        return $this->resultCode->encode();
+    }
+
     public static function decode(XdrBuffer $xdr):XdrLiquidityPoolDepositResult {
         $result = new XdrLiquidityPoolDepositResult();
         $resultCode = XdrLiquidityPoolDepositResultCode::decode($xdr);

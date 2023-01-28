@@ -16,6 +16,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class FeeBumpTransactionTest extends TestCase
 {
@@ -46,6 +47,13 @@ class FeeBumpTransactionTest extends TestCase
         $response = $sdk->submitTransaction($feeBump);
         $this->assertTrue($response->isSuccessful());
 
+        // check decoding & encoding
+        $meta = $response->getMetaXdr();
+        $this->assertEquals($response->getMetaXdrBase64(), $meta->toBase64Xdr());
+        $envelopeBase64 = $response->getEnvelopeXdrBase64();
+        $this->assertEquals($envelopeBase64, $feeBump->toEnvelopeXdrBase64());
+        $result = $response->getResultXdr();
+        $this->assertEquals($response->getResultXdrBase64(), $result->toBase64Xdr());
 
         $found = false;
         $destinationAccount = $sdk->requestAccount($destinationId);
@@ -98,6 +106,13 @@ class FeeBumpTransactionTest extends TestCase
         $response = $sdk->submitTransaction($feeBump);
         $this->assertTrue($response->isSuccessful());
 
+        // check decoding & encoding
+        $meta = $response->getMetaXdr();
+        $this->assertEquals($response->getMetaXdrBase64(), $meta->toBase64Xdr());
+        $envelopeBase64 = $response->getEnvelopeXdrBase64();
+        $this->assertEquals($envelopeBase64, $feeBump->toEnvelopeXdrBase64());
+        $result = $response->getResultXdr();
+        $this->assertEquals($response->getResultXdrBase64(), $result->toBase64Xdr());
 
         $found = false;
         $destinationAccount = $sdk->requestAccount($destinationId);

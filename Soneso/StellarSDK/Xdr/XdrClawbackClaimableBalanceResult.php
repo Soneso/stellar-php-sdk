@@ -22,6 +22,11 @@ class XdrClawbackClaimableBalanceResult
         return $this->resultCode;
     }
 
+    public function encode(): string
+    {
+        return $this->resultCode->encode();
+    }
+
     public static function decode(XdrBuffer $xdr):XdrClawbackClaimableBalanceResult {
         $resultCode = XdrClawbackClaimableBalanceResultCode::decode($xdr);
         return new XdrClawbackClaimableBalanceResult($resultCode);

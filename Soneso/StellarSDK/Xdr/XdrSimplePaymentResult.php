@@ -38,6 +38,13 @@ class XdrSimplePaymentResult
         return $this->amount;
     }
 
+    public function encode(): string {
+        $bytes = $this->destination->encode();
+        $bytes .= $this->asset->encode();
+        $bytes .= XdrEncoder::bigInteger64($this->amount);
+        return $bytes;
+    }
+
     public static function decode(XdrBuffer $xdr) : XdrSimplePaymentResult {
 
         $result = new XdrSimplePaymentResult();

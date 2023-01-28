@@ -27,6 +27,12 @@ class XdrAllowTrustResult
         $this->resultCode = $resultCode;
     }
 
+
+    public function encode(): string
+    {
+        return $this->resultCode->encode();
+    }
+
     public static function decode(XdrBuffer $xdr):XdrAllowTrustResult {
         $result = new XdrAllowTrustResult();
         $resultCode = XdrAllowTrustResultCode::decode($xdr);

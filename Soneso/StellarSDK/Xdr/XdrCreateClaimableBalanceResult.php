@@ -8,8 +8,8 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrCreateClaimableBalanceResult
 {
-    private XdrCreateClaimableBalanceResultCode $code;
-    private ?XdrClaimableBalanceID $balanceID = null;
+    public XdrCreateClaimableBalanceResultCode $code;
+    public ?XdrClaimableBalanceID $balanceID = null;
 
     /**
      * @return XdrCreateClaimableBalanceResultCode
@@ -27,9 +27,19 @@ class XdrCreateClaimableBalanceResult
         return $this->balanceID;
     }
 
+    public function encode(): string
+    {
+        $bytes = $this->code->encode();
+        if ($this->code->getValue() == XdrCreateClaimableBalanceResultCode::SUCCESS) {
+            $bytes .= $this->balanceID->encode();
+        }
+        return $bytes;
+    }
+
     public static function decode(XdrBuffer $xdr):XdrCreateClaimableBalanceResult {
         $result = new XdrCreateClaimableBalanceResult();
         $resultCode = XdrCreateClaimableBalanceResultCode::decode($xdr);
+        $result->code = $resultCode;
         if ($resultCode->getValue() == XdrCreateClaimableBalanceResultCode::SUCCESS) {
             $result->balanceID = XdrClaimableBalanceID::decode($xdr);
         }

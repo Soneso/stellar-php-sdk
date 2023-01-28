@@ -45,6 +45,14 @@ class XdrOperationResult
         $this->resultTr = $resultTr;
     }
 
+    public function encode(): string {
+        $bytes = $this->resultCode->encode();
+        if ($this->resultTr != null) {
+            $bytes .= $this->resultTr->encode();
+        }
+        return $bytes;
+    }
+
     public static function decode(XdrBuffer $xdr) : XdrOperationResult {
         $code = XdrOperationResultCode::decode($xdr);
         $resultTr = match ($code->getValue()) {

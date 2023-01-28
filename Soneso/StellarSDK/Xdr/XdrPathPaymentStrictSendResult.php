@@ -37,6 +37,16 @@ class XdrPathPaymentStrictSendResult
         return $this->noIssuer;
     }
 
+    public function encode(): string {
+        $bytes = $this->code->encode();
+        if ($this->success != null) {
+            $bytes .= $this->success->encode();
+        } else if ($this->noIssuer != null) {
+            $bytes .= $this->noIssuer->encode();
+        }
+        return $bytes;
+    }
+
     public static function decode(XdrBuffer $xdr) : XdrPathPaymentStrictSendResult {
         $result = new XdrPathPaymentStrictSendResult();
         $result->code = XdrPathPaymentStrictSendResultCode::decode($xdr);

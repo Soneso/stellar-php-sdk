@@ -78,6 +78,10 @@ class XdrTransactionMeta
         return XdrTransactionMeta::decode($xdrBuffer);
     }
 
+    public function toBase64Xdr() : String {
+        return base64_encode($this->encode());
+    }
+
     /**
      * @return int
      */

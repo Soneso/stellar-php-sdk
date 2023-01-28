@@ -8,35 +8,37 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrAccountEntryV3
 {
+    public XdrExtensionPoint $ext;
     public int $seqLedger; //uint32
     public int $seqTime; // uint64
-    public XdrExtensionPoint $ext;
+
 
     /**
      * @param int $seqLedger
      * @param int $seqTime
      * @param XdrExtensionPoint $ext
      */
-    public function __construct(int $seqLedger, int $seqTime, XdrExtensionPoint $ext)
+    public function __construct(XdrExtensionPoint $ext, int $seqLedger, int $seqTime)
     {
+        $this->ext = $ext;
         $this->seqLedger = $seqLedger;
         $this->seqTime = $seqTime;
-        $this->ext = $ext;
     }
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::unsignedInteger32($this->seqLedger);
+        $bytes = $this->ext->encode();
+        $bytes .= XdrEncoder::unsignedInteger32($this->seqLedger);
         $bytes .= XdrEncoder::integer64($this->seqTime);
-        $bytes .= $this->ext->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr):  XdrAccountEntryV3 {
+        $ext = XdrExtensionPoint::decode($xdr);
         $seqLedger = $xdr->readUnsignedInteger32();
         $seqTime = $xdr->readInteger64();
-        $ext = XdrExtensionPoint::decode($xdr);
-        return new XdrAccountEntryV3($seqLedger, $seqTime, $ext);
+
+        return new XdrAccountEntryV3($ext, $seqLedger, $seqTime);
     }
 
     /**

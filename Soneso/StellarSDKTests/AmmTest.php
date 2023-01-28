@@ -29,6 +29,7 @@ use Soneso\StellarSDK\Responses\Operations\LiquidityPoolWithdrawOperationRespons
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class AmmTest extends TestCase
 {
@@ -77,6 +78,7 @@ class AmmTest extends TestCase
         $transaction->sign($assetBIssueAccountKeyPair, Network::testnet());
 
         $response = $sdk->submitTransaction($transaction);
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
         $this->assertTrue($response->isSuccessful());
 
         // TEST CREATE POOL SHARE TRUSTLINE NON NATIVE
@@ -89,6 +91,7 @@ class AmmTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $requestBuilder = $sdk->liquidityPools()->forReserves(Asset::canonicalForm($assetA),
             Asset::canonicalForm($assetB))->limit(4)->order("asc");
@@ -106,6 +109,7 @@ class AmmTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
         $requestBuilder = $sdk->liquidityPools()->forReserves(Asset::canonicalForm($assetNative),
             Asset::canonicalForm($assetB))->limit(4)->order("asc");
         $response = $requestBuilder->execute();
@@ -122,6 +126,7 @@ class AmmTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // TEST DEPOSIT NATIVE
         $op = (new LiquidityPoolDepositOperationBuilder($nativeLiquidityPoolId,"250.0","250.0",
@@ -141,6 +146,7 @@ class AmmTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // TEST WITHDRAW  NATIVE
         $op = (new LiquidityPoolWithdrawOperationBuilder($nativeLiquidityPoolId, "1", "1","1"))->build();
@@ -150,6 +156,7 @@ class AmmTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // QUERY TESTING
 
@@ -222,6 +229,7 @@ class AmmTest extends TestCase
         $transaction->sign($accXKp, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $requestBuilder = $sdk->trades()->forLiquidityPool($nonNativeLiquidityPoolId)->order("asc");
         $response = $requestBuilder->execute();

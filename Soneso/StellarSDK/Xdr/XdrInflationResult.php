@@ -32,6 +32,19 @@ class XdrInflationResult
         return $this->payouts;
     }
 
+    public function encode(): string
+    {
+        $bytes = $this->code->encode();
+        if ($this->code->getValue() == XdrInflationResultCode::SUCCESS) {
+            $bytes .= XdrEncoder::integer32(count($this->payouts));
+            foreach($this->payouts as $val) {
+                if ($val instanceof XdrInflationPayout) {
+                    $bytes .= $val->encode();
+                }
+            }
+        }
+        return $bytes;
+    }
 
     public static function decode(XdrBuffer $xdr) : XdrInflationResult {
         $code = XdrInflationResultCode::decode($xdr);

@@ -22,6 +22,11 @@ class XdrClawbackResult
         return $this->resultCode;
     }
 
+    public function encode(): string
+    {
+        return $this->resultCode->encode();
+    }
+
     public static function decode(XdrBuffer $xdr):XdrClawbackResult {
         $resultCode = XdrClawbackResultCode::decode($xdr);
         return new XdrClawbackResult($resultCode);

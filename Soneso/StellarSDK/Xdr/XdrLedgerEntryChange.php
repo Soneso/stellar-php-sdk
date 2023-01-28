@@ -12,7 +12,7 @@ class XdrLedgerEntryChange
     public XdrLedgerEntryChangeType $type;
     public ?XdrLedgerEntry $created = null;
     public ?XdrLedgerEntry $updated = null;
-    public ?XdrLedgerEntry $removed = null;
+    public ?XdrLedgerKey $removed = null;
     public ?XdrLedgerEntry $state = null;
 
     /**
@@ -54,7 +54,7 @@ class XdrLedgerEntryChange
                 $result->updated = XdrLedgerEntry::decode($xdr);
                 break;
             case XdrLedgerEntryChangeType::LEDGER_ENTRY_REMOVED:
-                $result->removed = XdrLedgerEntry::decode($xdr);
+                $result->removed = XdrLedgerKey::decode($xdr);
                 break;
             case XdrLedgerEntryChangeType::LEDGER_ENTRY_STATE:
                 $result->state = XdrLedgerEntry::decode($xdr);
@@ -112,20 +112,21 @@ class XdrLedgerEntryChange
     }
 
     /**
-     * @return XdrLedgerEntry|null
+     * @return XdrLedgerKey|null
      */
-    public function getRemoved(): ?XdrLedgerEntry
+    public function getRemoved(): ?XdrLedgerKey
     {
         return $this->removed;
     }
 
     /**
-     * @param XdrLedgerEntry|null $removed
+     * @param XdrLedgerKey|null $removed
      */
-    public function setRemoved(?XdrLedgerEntry $removed): void
+    public function setRemoved(?XdrLedgerKey $removed): void
     {
         $this->removed = $removed;
     }
+
 
     /**
      * @return XdrLedgerEntry|null

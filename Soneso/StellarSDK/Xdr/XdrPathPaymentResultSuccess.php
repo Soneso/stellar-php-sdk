@@ -27,6 +27,17 @@ class XdrPathPaymentResultSuccess
         return $this->last;
     }
 
+    public function encode(): string {
+        $bytes = XdrEncoder::integer32(count($this->offers));
+        foreach($this->offers as $val) {
+            if ($val instanceof XdrClaimAtom) {
+                $bytes .= $val->encode();
+            }
+        }
+        $bytes .= $this->last->encode();
+        return $bytes;
+    }
+
     public static function decode(XdrBuffer $xdr) : XdrPathPaymentResultSuccess {
 
         $result = new XdrPathPaymentResultSuccess();

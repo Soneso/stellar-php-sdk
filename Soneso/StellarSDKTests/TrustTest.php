@@ -22,6 +22,7 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class TrustTest  extends TestCase
 {
@@ -48,6 +49,7 @@ class TrustTest  extends TestCase
         $transaction->sign($issuerKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $astroDollar = new AssetTypeCreditAlphanum12("ASTRO", $issuerAccountId);
 
@@ -60,6 +62,7 @@ class TrustTest  extends TestCase
         $transaction->sign($trustorKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $trustorAccount = $sdk->requestAccount($trustorAccountId);
         $found = false;
@@ -80,6 +83,7 @@ class TrustTest  extends TestCase
         $transaction->sign($trustorKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $trustorAccount = $sdk->requestAccount($trustorAccountId);
         $found = false;
@@ -101,6 +105,7 @@ class TrustTest  extends TestCase
         $transaction->sign($trustorKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $trustorAccount = $sdk->requestAccount($trustorAccountId);
         $found = false;
@@ -135,6 +140,7 @@ class TrustTest  extends TestCase
         $transaction->sign($issuerKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $sop = (new SetOptionsOperationBuilder())->setSetFlags(3)->build();
         $transaction = (new TransactionBuilder($issuerAccount))
@@ -144,6 +150,7 @@ class TrustTest  extends TestCase
         $transaction->sign($issuerKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $issuerAccount = $sdk->requestAccount($issuerAccountId);
         print($issuerAccountId);
@@ -162,6 +169,7 @@ class TrustTest  extends TestCase
         $transaction->sign($trustorKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $trustorAccount = $sdk->requestAccount($trustorAccountId);
         $found = false;
@@ -193,6 +201,7 @@ class TrustTest  extends TestCase
         $transaction->sign($issuerKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $paymentOperation = (new PaymentOperationBuilder($trustorAccountId, $astroDollar, "100"))->build();
         $transaction = (new TransactionBuilder($issuerAccount))
@@ -203,6 +212,7 @@ class TrustTest  extends TestCase
         try {
             $response = $sdk->submitTransaction($transaction);
             $this->assertTrue($response->isSuccessful());
+            TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
         } catch (HorizonRequestException $e) {
             $ex = true;
         }
@@ -217,6 +227,7 @@ class TrustTest  extends TestCase
         $transaction->sign($trustorKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $requestBuilder = $sdk->offers()->forAccount($trustorAccountId);
         $response = $requestBuilder->execute();
@@ -232,6 +243,7 @@ class TrustTest  extends TestCase
         $transaction->sign($issuerKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $requestBuilder = $sdk->offers()->forAccount($trustorAccountId);
         $response = $requestBuilder->execute();
@@ -255,6 +267,7 @@ class TrustTest  extends TestCase
         $transaction->sign($issuerKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $cpso = (new CreatePassiveSellOfferOperationBuilder($astroDollar, Asset::native(), $amountSelling, Price::fromString($price)))->build();
         $transaction = (new TransactionBuilder($trustorAccount))
@@ -263,6 +276,7 @@ class TrustTest  extends TestCase
         $transaction->sign($trustorKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $requestBuilder = $sdk->offers()->forAccount($trustorAccountId);
         $response = $requestBuilder->execute();
@@ -276,6 +290,7 @@ class TrustTest  extends TestCase
         $transaction->sign($issuerKeyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $requestBuilder = $sdk->offers()->forAccount($trustorAccountId);
         $response = $requestBuilder->execute();

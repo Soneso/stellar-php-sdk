@@ -16,6 +16,24 @@ class XdrTransactionMetaV3
     public XdrTransactionResult $txResult;
     public array $hashes;
 
+    /**
+     * @param array $txChangesBefore
+     * @param array $operations
+     * @param array $txChangesAfter
+     * @param array $events
+     * @param XdrTransactionResult $txResult
+     * @param array $hashes
+     */
+    public function __construct(array $txChangesBefore, array $operations, array $txChangesAfter, array $events, XdrTransactionResult $txResult, array $hashes)
+    {
+        $this->txChangesBefore = $txChangesBefore;
+        $this->operations = $operations;
+        $this->txChangesAfter = $txChangesAfter;
+        $this->events = $events;
+        $this->txResult = $txResult;
+        $this->hashes = $hashes;
+    }
+
     public function encode(): string {
         $bytes = XdrEncoder::integer32(count($this->txChangesBefore));
         foreach($this->txChangesBefore as $val) {
@@ -41,7 +59,9 @@ class XdrTransactionMetaV3
                 $bytes .= $val->encode();
             }
         }
-        $bytes .= XdrEncoder::integer32(count($this->hashes));
+
+        $bytes .= $this->txResult->encode();
+
         foreach($this->hashes as $val) {
             $bytes .= XdrEncoder::opaqueFixed($val, 32);
         }
@@ -65,9 +85,9 @@ class XdrTransactionMetaV3
             array_push($txChangesAfter, XdrLedgerEntryChange::decode($xdr));
         }
         $valCount = $xdr->readInteger32();
-        $evens = array();
+        $events = array();
         for ($i = 0; $i < $valCount; $i++) {
-            array_push($evens, XdrOperationEvents::decode($xdr));
+            array_push($events, XdrOperationEvents::decode($xdr));
         }
         $txResult = XdrTransactionResult::decode($xdr);
 
@@ -78,7 +98,7 @@ class XdrTransactionMetaV3
             array_push($hashes, $hash);
         }
 
-        return new XdrTransactionMetaV3($txChangesBefore, $operations, $txChangesAfter, $txResult, $hashes);
+        return new XdrTransactionMetaV3($txChangesBefore, $operations, $txChangesAfter, $events, $txResult, $hashes);
     }
 
     /**

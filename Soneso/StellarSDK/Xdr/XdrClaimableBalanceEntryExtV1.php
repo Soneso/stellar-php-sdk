@@ -6,37 +6,32 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrClaimableBalanceEntryExt
+class XdrClaimableBalanceEntryExtV1
 {
     public int $discriminant;
-    public ?XdrClaimableBalanceEntryExtV1 $v1 = null;
+    public int $flags;
 
     /**
      * @param int $discriminant
-     * @param XdrClaimableBalanceEntryExtV1|null $v1
+     * @param int $flags
      */
-    public function __construct(int $discriminant, ?XdrClaimableBalanceEntryExtV1 $v1)
+    public function __construct(int $discriminant, int $flags)
     {
         $this->discriminant = $discriminant;
-        $this->v1 = $v1;
+        $this->flags = $flags;
     }
 
 
     public function encode() : string {
         $bytes = XdrEncoder::integer32($this->discriminant);
-        if ($this->v1 != null) {
-            $bytes .= $this->v1->encode();
-        }
+        $bytes .= XdrEncoder::unsignedInteger32($this->flags);
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrClaimableBalanceEntryExt {
+    public static function decode(XdrBuffer $xdr) : XdrClaimableBalanceEntryExtV1 {
         $v = $xdr->readInteger32();
-        $flags = null;
-        if ($v == 1) {
-            $flags = XdrClaimableBalanceEntryExtV1::decode($xdr);
-        }
-        return new XdrClaimableBalanceEntryExt($v, $flags);
+        $flags = $xdr->readUnsignedInteger32();
+        return new XdrClaimableBalanceEntryExtV1($v, $flags);
     }
 
     /**
@@ -53,5 +48,21 @@ class XdrClaimableBalanceEntryExt
     public function setDiscriminant(int $discriminant): void
     {
         $this->discriminant = $discriminant;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFlags(): int
+    {
+        return $this->flags;
+    }
+
+    /**
+     * @param int $flags
+     */
+    public function setFlags(int $flags): void
+    {
+        $this->flags = $flags;
     }
 }

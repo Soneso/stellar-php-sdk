@@ -111,7 +111,7 @@ class SorobanTest extends TestCase
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
-        // todo encoding meta.
+        $this->assertEquals($meta, $metaXdr->toBase64Xdr());
 
         // check horizon operation response
         $operationsResponse = $sdk->operations()->forTransaction($sendResponse->transactionId)->limit(10)->order("desc")->execute();
@@ -265,6 +265,7 @@ class SorobanTest extends TestCase
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+        $this->assertEquals($meta, $metaXdr->toBase64Xdr());
 
         // check horizon operation response
         $operationsResponse = $sdk->operations()->forTransaction($sendResponse->transactionId)->limit(10)->order("desc")->execute();
@@ -333,6 +334,7 @@ class SorobanTest extends TestCase
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+        $this->assertEquals($meta, $metaXdr->toBase64Xdr());
 
         // check horizon operation response
         $operationsResponse = $sdk->operations()->forTransaction($sendResponse->transactionId)->limit(10)->order("desc")->execute();
@@ -412,6 +414,7 @@ class SorobanTest extends TestCase
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+        $this->assertEquals($meta, $metaXdr->toBase64Xdr());
 
         // check horizon operation response
         $operationsResponse = $sdk->operations()->forTransaction($sendResponse->transactionId)->limit(10)->order("desc")->execute();

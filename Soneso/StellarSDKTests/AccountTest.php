@@ -20,13 +20,16 @@ use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
+use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 
 final class AccountTest extends TestCase
 {
@@ -76,8 +79,11 @@ final class AccountTest extends TestCase
             ->build();
 
         $transaction->sign($keyPairA, Network::testnet());
-
         $response = $sdk->submitTransaction($transaction);
+
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
+
+
         $this->assertTrue($response->isSuccessful());
 
         $accountA = $sdk->requestAccount($accountId);
@@ -126,6 +132,8 @@ final class AccountTest extends TestCase
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
+
         $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountCId);
 
         $changeTrustOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))->build();
@@ -135,6 +143,14 @@ final class AccountTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+
+        // check decoding & encoding
+        $meta = $response->getMetaXdr();
+        $this->assertEquals($meta->toBase64Xdr(), $response->getMetaXdrBase64());
+        $envelopeBase64 = $response->getEnvelopeXdrBase64();
+        $this->assertEquals($envelopeBase64, $transaction->toEnvelopeXdrBase64());
+        $result = $response->getResultXdr();
+        $this->assertEquals($result->toBase64Xdr(), $response->getResultXdrBase64());
 
         // Find account for asset
         $response = $sdk->accounts()->forAsset($iomAsset)->execute();
@@ -166,6 +182,8 @@ final class AccountTest extends TestCase
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
+
         $this->assertFalse($sdk->accountExists($accountYId));
     }
 
@@ -193,6 +211,8 @@ final class AccountTest extends TestCase
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
+
         $this->assertFalse($sdk->accountExists($accountYId));
     }
 
@@ -214,6 +234,7 @@ final class AccountTest extends TestCase
         $transaction->sign($keyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $account = $sdk->requestAccount($acountId);
         $this->assertEquals($bumpTo, $account->getSequenceNumber());
@@ -237,6 +258,7 @@ final class AccountTest extends TestCase
         $transaction->sign($keyPair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $account = $sdk->requestAccount($acountId);
         $this->assertTrue($account->getData()->get($key) === $value);

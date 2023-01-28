@@ -26,7 +26,7 @@ class XdrInvokeHostFunctionResult
 
         switch ($this->type->value) {
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS:
-                $bytes = $this->success->encode();
+                $bytes .= $this->success->encode();
                 break;
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED:
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED:

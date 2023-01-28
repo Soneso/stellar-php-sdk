@@ -18,6 +18,7 @@ use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class TradesTest extends TestCase
 {
@@ -37,6 +38,7 @@ class TradesTest extends TestCase
         $transaction->sign($buyerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $assetCode = "ASTRO";
         $astroDollar = Asset::createNonNativeAsset($assetCode, $issuerId);
@@ -45,6 +47,7 @@ class TradesTest extends TestCase
         $transaction->sign($buyerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $amountBuying = "100";
         $price = "0.5";
@@ -54,6 +57,7 @@ class TradesTest extends TestCase
         $transaction->sign($buyerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $offers = $sdk->offers()->forAccount($buyerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
@@ -82,6 +86,7 @@ class TradesTest extends TestCase
         $transaction->sign($buyerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $offers = $sdk->offers()->forAccount($buyerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
@@ -108,6 +113,8 @@ class TradesTest extends TestCase
         $transaction->sign($buyerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
+
         $offers = $sdk->offers()->forAccount($buyerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 0);
         $orderBook = $sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
@@ -131,6 +138,7 @@ class TradesTest extends TestCase
         $transaction->sign($sellerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $assetCode = "MOON";
         $moonDollar = Asset::createNonNativeAsset($assetCode, $issuerId);
@@ -139,6 +147,7 @@ class TradesTest extends TestCase
         $transaction->sign($sellerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $issuerAccount = $sdk->requestAccount($issuerId);
         $paymentOperation = (new PaymentOperationBuilder($sellerId, $moonDollar,"10000"))->build();
@@ -146,6 +155,7 @@ class TradesTest extends TestCase
         $transaction->sign($issuerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $amountSelling = "100";
         $price = "0.5";
@@ -155,6 +165,7 @@ class TradesTest extends TestCase
         $transaction->sign($sellerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $offers = $sdk->offers()->forAccount($sellerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
@@ -185,6 +196,7 @@ class TradesTest extends TestCase
         $transaction->sign($sellerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $offers = $sdk->offers()->forAccount($sellerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
@@ -205,6 +217,7 @@ class TradesTest extends TestCase
         $transaction->sign($sellerKeypair, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $offers = $sdk->offers()->forAccount($sellerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 0);

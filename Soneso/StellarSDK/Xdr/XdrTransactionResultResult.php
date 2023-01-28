@@ -8,8 +8,52 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrTransactionResultResult
 {
-    private XdrTransactionResultCode $resultCode;
-    private array $operations = array();
+    public XdrTransactionResultCode $resultCode;
+    public ?array $results = null;
+    public ?XdrInnerTransactionResultPair $innerResultPair = null;
+
+    public function encode(): string {
+        $bytes = $this->resultCode->encode();
+        switch ($this->resultCode->getValue()) {
+            case XdrTransactionResultCode::SUCCESS:
+            case XdrTransactionResultCode::FAILED:
+                $bytes .= XdrEncoder::integer32(count($this->results));
+                foreach($this->results as $operation) {
+                    if ($operation instanceof XdrOperationResult) {
+                        $bytes .= $operation->encode();
+                    }
+                }
+                break;
+            case XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS:
+            case XdrTransactionResultCode::FEE_BUMP_INNER_FAILED:
+                $bytes .= $this->innerResultPair->encode();
+                break;
+        }
+        return $bytes;
+    }
+
+    public static function decode(XdrBuffer $xdr) : XdrTransactionResultResult {
+        $result = new XdrTransactionResultResult();
+        $code = XdrTransactionResultCode::decode($xdr);
+        $result->resultCode = $code;
+
+        switch($code->getValue()) {
+            case XdrTransactionResultCode::SUCCESS:
+            case XdrTransactionResultCode::FAILED:
+                $size = $xdr->readInteger32();
+                $results = array();
+                for($i = 0; $i <$size; $i++) {
+                    array_push($results, XdrOperationResult::decode($xdr));
+                }
+                $result->results = $results;
+                break;
+            case XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS:
+            case XdrTransactionResultCode::FEE_BUMP_INNER_FAILED:
+                $result->innerResultPair = XdrInnerTransactionResultPair::decode($xdr);
+                break;
+        }
+        return $result;
+    }
 
     /**
      * @return XdrTransactionResultCode
@@ -28,37 +72,35 @@ class XdrTransactionResultResult
     }
 
     /**
-     * @return array
+     * @return array|null
      */
-    public function getOperations(): array
+    public function getResults(): ?array
     {
-        return $this->operations;
+        return $this->results;
     }
 
     /**
-     * @param array $operations
+     * @param array|null $results
      */
-    public function setOperations(array $operations): void
+    public function setResults(?array $results): void
     {
-        $this->operations = $operations;
+        $this->results = $results;
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrTransactionResultResult {
-        $code = XdrTransactionResultCode::decode($xdr);
-        $operations = array();
-        switch($code->getValue()) {
-            case XdrTransactionResultCode::SUCCESS:
-            case XdrTransactionResultCode::FAILED:
-                $size = $xdr->readInteger32();
-                for($i = 0; $i <$size; $i++) {
-                    array_push($operations, XdrOperationResult::decode($xdr));
-                }
-                break;
-        }
-        $result = new XdrTransactionResultResult();
-        $result->setResultCode($code);
-        $result->setOperations($operations);
-        return $result;
+    /**
+     * @return XdrInnerTransactionResultPair|null
+     */
+    public function getInnerResultPair(): ?XdrInnerTransactionResultPair
+    {
+        return $this->innerResultPair;
+    }
+
+    /**
+     * @param XdrInnerTransactionResultPair|null $innerResultPair
+     */
+    public function setInnerResultPair(?XdrInnerTransactionResultPair $innerResultPair): void
+    {
+        $this->innerResultPair = $innerResultPair;
     }
 
 }

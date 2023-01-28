@@ -37,10 +37,11 @@ class XdrClaimableBalanceEntry
         $bytes = $this->accountID->encode();
         $bytes .= XdrEncoder::integer32(count($this->claimants));
         foreach($this->claimants as $val) {
-            $bytes .= $val->encode;
+            $bytes .= $val->encode();
         }
         $bytes .= $this->asset->encode();
-        XdrEncoder::bigInteger64($this->amount);
+        $bytes .= XdrEncoder::bigInteger64($this->amount);
+        $bytes .= $this->ext->encode();
         return $bytes;
     }
 

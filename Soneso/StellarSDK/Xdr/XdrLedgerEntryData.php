@@ -70,13 +70,13 @@ class XdrLedgerEntryData
                 $result->account = XdrAccountEntry::decode($xdr);
                 break;
             case XdrLedgerEntryType::TRUSTLINE:
-                $result->trustLine = XdrTrustLineEntry::decode($xdr);
+                $result->trustline = XdrTrustLineEntry::decode($xdr);
                 break;
             case XdrLedgerEntryType::OFFER:
                 $result->offer = XdrOfferEntry::decode($xdr);
                 break;
             case XdrLedgerEntryType::DATA:
-                $$result->data = XdrDataEntry::decode($xdr);
+                $result->data = XdrDataEntry::decode($xdr);
                 break;
             case XdrLedgerEntryType::CLAIMABLE_BALANCE:
                 $result->claimableBalance = XdrClaimableBalanceEntry::decode($xdr);

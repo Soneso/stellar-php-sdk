@@ -64,7 +64,7 @@ class XdrAccountEntry
         $bytes .= XdrEncoder::opaqueFixed($this->thresholds,4,true);
         $bytes .= XdrEncoder::integer32(count($this->signers));
         foreach($this->signers as $val) {
-            $bytes .= $val->encode;
+            $bytes .= $val->encode();
         }
         $bytes .= $this->ext->encode();
         return $bytes;
