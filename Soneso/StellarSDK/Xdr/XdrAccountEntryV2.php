@@ -36,7 +36,7 @@ class XdrAccountEntryV2
         foreach($this->signerSponsoringIDs as $val) {
             if($val != null) {
                 $bytes .= XdrEncoder::integer32(1);
-                $val->encode();
+                $bytes .= $val->encode();
             } else {
                 $bytes .= XdrEncoder::integer32(0);
             }

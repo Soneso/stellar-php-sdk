@@ -22,6 +22,11 @@ class XdrManageDataResult
         return $this->code;
     }
 
+    public function encode(): string
+    {
+        return $this->code->encode();
+    }
+
     public static function decode(XdrBuffer $xdr) : XdrManageDataResult
     {
         $code = XdrManageDataResultCode::decode($xdr);

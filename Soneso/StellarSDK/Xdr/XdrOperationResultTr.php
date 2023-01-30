@@ -242,7 +242,59 @@ class XdrOperationResultTr
         $this->invokeHostFunctionResult = $invokeHostFunctionResult;
     }
 
-
+    public function encode(): string {
+        $bytes = $this->type->encode();
+        if ($this->createAccountResult != null) {
+            $bytes .= $this->createAccountResult->encode();
+        } else if ($this->paymentResult != null) {
+            $bytes .= $this->paymentResult->encode();
+        } else if ($this->pathPaymentStrictReceiveResult != null) {
+            $bytes .= $this->pathPaymentStrictReceiveResult->encode();
+        } else if ($this->pathPaymentStrictSendResult != null) {
+            $bytes .= $this->pathPaymentStrictSendResult->encode();
+        } else if ($this->createPassiveSellOfferResult != null) {
+            $bytes .= $this->createPassiveSellOfferResult->encode();
+        } else if ($this->setOptionsResult != null) {
+            $bytes .= $this->setOptionsResult->encode();
+        } else if ($this->changeTrustResult != null) {
+            $bytes .= $this->changeTrustResult->encode();
+        } else if ($this->allowTrustResult != null) {
+            $bytes .= $this->allowTrustResult->encode();
+        } else if ($this->bumpSequenceResult != null) {
+            $bytes .= $this->bumpSequenceResult->encode();
+        } else if ($this->accountMergeResult != null) {
+            $bytes .= $this->accountMergeResult->encode();
+        } else if ($this->inflationResult != null) {
+            $bytes .= $this->inflationResult->encode();
+        } else if ($this->manageDataResult != null) {
+            $bytes .= $this->manageDataResult->encode();
+        } else if ($this->manageOfferResult != null) {
+            $bytes .= $this->manageOfferResult->encode();
+        } else if ($this->createClaimableBalanceResult != null) {
+            $bytes .= $this->createClaimableBalanceResult->encode();
+        } else if ($this->claimClaimableBalanceResult != null) {
+            $bytes .= $this->claimClaimableBalanceResult->encode();
+        } else if ($this->beginSponsoringFutureReservesResult != null) {
+            $bytes .= $this->beginSponsoringFutureReservesResult->encode();
+        } else if ($this->endSponsoringFutureReservesResult != null) {
+            $bytes .= $this->endSponsoringFutureReservesResult->encode();
+        } else if ($this->revokeSponsorshipResult != null) {
+            $bytes .= $this->revokeSponsorshipResult->encode();
+        } else if ($this->clawbackResult != null) {
+            $bytes .= $this->clawbackResult->encode();
+        } else if ($this->clawbackClaimableBalanceResult != null) {
+            $bytes .= $this->clawbackClaimableBalanceResult->encode();
+        } else if ($this->setTrustLineFlagsResult != null) {
+            $bytes .= $this->setTrustLineFlagsResult->encode();
+        } else if ($this->liquidityPoolDepositResult != null) {
+            $bytes .= $this->liquidityPoolDepositResult->encode();
+        } else if ($this->liquidityPoolWithdrawResult != null) {
+            $bytes .= $this->liquidityPoolWithdrawResult->encode();
+        }  else if ($this->invokeHostFunctionResult != null) {
+            $bytes .= $this->invokeHostFunctionResult->encode();
+        }
+        return $bytes;
+    }
 
     public static function decode(XdrBuffer $xdr) : XdrOperationResultTr {
         $type = XdrOperationType::decode($xdr);

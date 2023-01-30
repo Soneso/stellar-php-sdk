@@ -37,16 +37,16 @@ class XdrAccountEntryV1Ext
 
     public static function decode(XdrBuffer $xdr) : XdrAccountEntryV1Ext {
         $v = $xdr->readInteger32();
-        $v1 = null;
+        $v2 = null;
         switch ($v) {
             case 0:
                 break;
             case 2:
-                $v1 = XdrAccountEntryV2::decode($xdr);
+                $v2 = XdrAccountEntryV2::decode($xdr);
                 break;
 
         }
-        return new XdrAccountEntryV1Ext($v,$v1);
+        return new XdrAccountEntryV1Ext($v,$v2);
     }
 
     /**

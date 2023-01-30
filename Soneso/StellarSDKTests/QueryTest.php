@@ -27,6 +27,7 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class QueryTest extends TestCase
 {
@@ -66,8 +67,9 @@ class QueryTest extends TestCase
         foreach ($testKeyPairs as $kp) {
             $transaction->sign($kp, Network::testnet());
         }
-        $response = $sdk->submitTransaction($transaction);
-        $this->assertTrue($response->isSuccessful());
+        $submitResponse = $sdk->submitTransaction($transaction);
+        $this->assertTrue($submitResponse->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
         $requestBuilder = $sdk->accounts()->forSigner($accountId);
         $response = $requestBuilder->execute();
@@ -88,8 +90,9 @@ class QueryTest extends TestCase
 
         $transaction = $transactionBuilder->build();
         $transaction->sign($accountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
-        $this->assertTrue($response->isSuccessful());
+        $submitResponse = $sdk->submitTransaction($transaction);
+        $this->assertTrue($submitResponse->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
         $requestBuilder = $sdk->accounts()->forAsset($astroDollar);
         $response = $requestBuilder->execute();
@@ -180,13 +183,17 @@ class QueryTest extends TestCase
         $createAccount = (new CreateAccountOperationBuilder($issuerAccountId, "100"))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($createAccount)->build();
         $transaction->sign($buyerKp, Network::testnet());
-        $this->assertTrue($sdk->submitTransaction($transaction)->isSuccessful());
+        $submitResponse = $sdk->submitTransaction($transaction);
+        $this->assertTrue($submitResponse->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
         $astroDollar = new AssetTypeCreditAlphanum12("ASTRO", $issuerAccountId);
         $ctob = (new ChangeTrustOperationBuilder($astroDollar, "10000"))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ctob)->build();
         $transaction->sign($buyerKp, Network::testnet());
-        $this->assertTrue($sdk->submitTransaction($transaction)->isSuccessful());
+        $submitResponse = $sdk->submitTransaction($transaction);
+        $this->assertTrue($submitResponse->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
         $amountBuying = "100";
         $price = "0.5";
@@ -194,7 +201,9 @@ class QueryTest extends TestCase
         $ms = (new ManageBuyOfferOperationBuilder(Asset::native(),$astroDollar, $amountBuying, $price))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ms)->build();
         $transaction->sign($buyerKp, Network::testnet());
-        $this->assertTrue($sdk->submitTransaction($transaction)->isSuccessful());
+        $submitResponse = $sdk->submitTransaction($transaction);
+        $this->assertTrue($submitResponse->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
         $response = $sdk->offers()->forAccount($buyerAccountId)->execute();
         $this->assertTrue($response->getOffers()->count() == 1);

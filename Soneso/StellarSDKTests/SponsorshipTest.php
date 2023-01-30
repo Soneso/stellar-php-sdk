@@ -28,6 +28,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
+use Soneso\StellarSDKTests\TestUtils;
 
 class SponsorshipTest extends TestCase
 {
@@ -65,6 +66,7 @@ class SponsorshipTest extends TestCase
         $revokeDataSpBuilder = (new RevokeSponsorshipOperationBuilder())->revokeDataSponsorship($accountAId, $dataName);
         $revokeTrustlineSpBuilder = (new RevokeSponsorshipOperationBuilder())->revokeTrustlineSponsorship($accountAId, $richAsset);
         $revokeSignerSpBuilder = (new RevokeSponsorshipOperationBuilder())->revokeEd25519Signer($accountAId, $masterAccountId);
+
         $masterAccount = $sdk->requestAccount($masterAccountId);
         $transaction = (new TransactionBuilder($masterAccount))
             ->addOperation($beginSponsoringBuilder->build())
@@ -87,5 +89,6 @@ class SponsorshipTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
     }
 }

@@ -27,6 +27,11 @@ class XdrBumpSequenceResult
         $this->resultCode = $resultCode;
     }
 
+    public function encode(): string
+    {
+        return $this->resultCode->encode();
+    }
+
     public static function decode(XdrBuffer $xdr):XdrBumpSequenceResult {
         $result = new XdrBumpSequenceResult();
         $resultCode = XdrBumpSequenceResultCode::decode($xdr);

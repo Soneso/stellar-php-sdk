@@ -7,10 +7,13 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use phpseclib3\Math\BigInteger;
+
 class XdrAccountMergeResult
 {
 
-    private XdrAccountMergeResultCode $resultCode;
+    public XdrAccountMergeResultCode $resultCode;
+    public ?BigInteger $sourceAccountBalance = null;
 
     /**
      * @return XdrAccountMergeResultCode
@@ -28,10 +31,22 @@ class XdrAccountMergeResult
         $this->resultCode = $resultCode;
     }
 
+    public function encode(): string
+    {
+        $bytes = $this->resultCode->encode();
+        if ($this->sourceAccountBalance != null) {
+            $bytes .= XdrEncoder::bigInteger64($this->sourceAccountBalance);
+        }
+        return $bytes;
+    }
+
     public static function decode(XdrBuffer $xdr):XdrAccountMergeResult {
         $result = new XdrAccountMergeResult();
         $resultCode = XdrAccountMergeResultCode::decode($xdr);
         $result->resultCode = $resultCode;
+        if ($result->resultCode->getValue() == XdrAccountMergeResultCode::SUCCESS) {
+            $result->sourceAccountBalance = $xdr->readBigInteger64();
+        }
         return $result;
     }
 }

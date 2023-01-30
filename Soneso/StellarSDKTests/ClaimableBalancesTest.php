@@ -17,6 +17,7 @@ use Soneso\StellarSDK\Responses\Effects\ClaimableBalanceCreatedEffectResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class ClaimableBalancesTest extends TestCase
 {
@@ -54,6 +55,7 @@ class ClaimableBalancesTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $requestBuilder = $sdk->effects()->forAccount($sourceAccountId)->limit(5)->order("desc");
         $response = $requestBuilder->execute();
@@ -67,7 +69,7 @@ class ClaimableBalancesTest extends TestCase
             }
         }
         $this->assertNotEquals("", $bId);
-        print($bId);
+        print($bId . PHP_EOL);
         $requestBuilder = $sdk->claimableBalances()->forClaimant($fistClaimantId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getClaimableBalances()->count() > 0);
@@ -84,5 +86,6 @@ class ClaimableBalancesTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
     }
 }

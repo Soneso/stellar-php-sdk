@@ -163,7 +163,7 @@ class XdrOfferEntry
     public static function decode(XdrBuffer $xdr) : XdrOfferEntry {
         $decoded = new XdrOfferEntry();
         $decoded->sellerID = XdrAccountID::decode($xdr);
-        $decoded->offerId = $xdr->readUnsignedInteger32();
+        $decoded->offerId = $xdr->readUnsignedInteger64();
         $decoded->selling = XdrAsset::decode($xdr);
         $decoded->buying = XdrAsset::decode($xdr);
         $decoded->amount = $xdr->readBigInteger64();

@@ -31,6 +31,7 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\TransactionPreconditions;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class PaymentsTest extends TestCase
 {
@@ -51,6 +52,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // send 100 XLM payment form A to C
         $paymentOperation = (new PaymentOperationBuilder($accountCId, Asset::native(), "100"))->build();
@@ -58,6 +60,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountC = $sdk->requestAccount($accountCId);
@@ -97,6 +100,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $precond = new TransactionPreconditions();
         $testTb = new TimeBounds((new DateTime)->setTimestamp(1652110741), (new DateTime)->setTimestamp(1752110741));
@@ -115,9 +119,10 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $txHash = $response->getHash();
-        print($txHash);
+        //print($txHash);
         $trans = $sdk->requestTransaction($txHash);
         $this->assertNotNull($trans->getPreconditions());
         $conds = $trans->getPreconditions();
@@ -173,6 +178,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // send 100 XLM payment form A to C
         $muxedSource = new MuxedAccount($accountAId, 1909291282);
@@ -186,6 +192,7 @@ class PaymentsTest extends TestCase
         $response = $sdk->submitTransaction($transaction);
         $transactionHash = $response->getHash();
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountC = $sdk->requestAccount($accountCId);
@@ -245,6 +252,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountC = $sdk->requestAccount($accountCId);
@@ -289,6 +297,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountAId);
         $changeTrustBOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
@@ -304,6 +313,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // send 100 IOM non native payment from A to C
         $paymentOperation = (new PaymentOperationBuilder($accountCId, $iomAsset, "100"))->build();
@@ -313,6 +323,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountC = $sdk->requestAccount($accountCId);
@@ -333,6 +344,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountB = $sdk->requestAccount($accountBId);
@@ -374,6 +386,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $iomAsset = new AssetTypeCreditAlphanum4("IOM", $accountAId);
         $changeTrustBOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
@@ -389,6 +402,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // send 100 IOM non native payment from A to C
         $paymentOperation = (PaymentOperationBuilder::forMuxedDestinationAccount($muxedCAccount, $iomAsset, "100"))->build();
@@ -398,6 +412,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountC = $sdk->requestAccount($accountCId);
@@ -419,6 +434,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountB = $sdk->requestAccount($accountBId);
@@ -476,6 +492,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $transaction = (new TransactionBuilder($accountB))
             ->addOperation($ctIOMOp->build())
@@ -490,11 +507,13 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairD, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $transaction = (new TransactionBuilder($accountE))->addOperation($ctMOONOp->build())->build();
         $transaction->sign($keyPairE, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation((new PaymentOperationBuilder($accountCId, $iomAsset, "100"))->build())
@@ -505,18 +524,21 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $sellOfferOp = (new ManageSellOfferOperationBuilder($ecoAsset, $iomAsset, "100", "0.5"))->build();
         $transaction = (new TransactionBuilder($accountB))->addOperation($sellOfferOp)->build();
         $transaction->sign($keyPairB, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $sellOfferOp = (new ManageSellOfferOperationBuilder($moonAsset, $ecoAsset, "100", "0.5"))->build();
         $transaction = (new TransactionBuilder($accountD))->addOperation($sellOfferOp)->build();
         $transaction->sign($keyPairD, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $destinationAssets = [$moonAsset];
         $exceptionThrown = false;
@@ -567,6 +589,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountE = $sdk->requestAccount($accountEId);
@@ -629,6 +652,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountE = $sdk->requestAccount($accountEId);
@@ -670,6 +694,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $accountB = $sdk->requestAccount($accountBId);
         $accountC = $sdk->requestAccount($accountCId);
@@ -685,6 +710,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $transaction = (new TransactionBuilder($accountB))
             ->addOperation($ctIOMOp->build())
@@ -692,6 +718,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairB, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $transaction = (new TransactionBuilder($accountD))
             ->addOperation($ctECOOp->build())->build();
@@ -708,6 +735,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairA, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $sellOfferOp = (new ManageSellOfferOperationBuilder($ecoAsset, $iomAsset, "30", "0.5"))
             ->setMuxedSourceAccount($muxedBAccount)->build();
@@ -715,7 +743,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairB, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
-
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $strictSendOp = (PathPaymentStrictSendOperationBuilder::forMuxedDestinationAccount($iomAsset, "10", $muxedDAccount, $ecoAsset, "18"))
             ->setMuxedSourceAccount($muxedCAccount)
@@ -724,6 +752,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountD = $sdk->requestAccount($accountDId);
@@ -743,6 +772,7 @@ class PaymentsTest extends TestCase
         $transaction->sign($keyPairC, Network::testnet());
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $found = false;
         $accountD = $sdk->requestAccount($accountDId);

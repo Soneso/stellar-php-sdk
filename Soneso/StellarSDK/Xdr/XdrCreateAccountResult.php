@@ -26,6 +26,10 @@ class XdrCreateAccountResult
         $this->resultCode = $resultCode;
     }
 
+    public function encode(): string {
+        return $this->resultCode->encode();
+    }
+
     public static function decode(XdrBuffer $xdr):XdrCreateAccountResult {
         $result = new XdrCreateAccountResult();
         $resultCode = XdrOperationResultCode::decode($xdr);
