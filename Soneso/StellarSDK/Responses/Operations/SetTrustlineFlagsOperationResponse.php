@@ -96,28 +96,28 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
         if (isset($json['set_flags'])) {
             $this->setFlags = array();
             foreach ($json['set_flags'] as $value) {
-                $this->setFlags->add($value);
+                array_push($this->setFlags, $value);
             }
         }
 
         if (isset($json['set_flags_s'])) {
             $this->setFlagsS = array();
             foreach ($json['set_flags_s'] as $value) {
-                $this->setFlagsS->add($value);
+                array_push($this->setFlagsS, $value);
             }
         }
 
         if (isset($json['clear_flags'])) {
             $this->clearFlags = array();
             foreach ($json['clear_flags'] as $value) {
-                $this->clearFlags->add($value);
+                array_push($this->clearFlags, $value);
             }
         }
 
         if (isset($json['clear_flags_s'])) {
             $this->clearFlagsS = array();
             foreach ($json['clear_flags_s'] as $value) {
-                $this->clearFlagsS->add($value);
+                array_push($this->clearFlagsS, $value);
             }
         }
 

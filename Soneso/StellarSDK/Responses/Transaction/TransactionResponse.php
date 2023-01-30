@@ -10,7 +10,9 @@ namespace Soneso\StellarSDK\Responses\Transaction;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\Responses\Response;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryChange;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 
 class TransactionResponse extends Response
@@ -19,8 +21,8 @@ class TransactionResponse extends Response
     private string $pagingToken;
     private bool $successful;
     private string $hash;
-    private int $ledger; // todo bigint
-    private string $createdAt; // todo date
+    private int $ledger;
+    private string $createdAt;
     private string $sourceAccount;
     private ?string $sourceAccountMuxed = null;
     private ?string $sourceAccountMuxedId = null;
@@ -32,11 +34,15 @@ class TransactionResponse extends Response
     private ?string $maxFee = null;
     private int $operationCount;
     private Memo $memo;
+    private string $envelopeXdrBase64;
     private XdrTransactionEnvelope $envelopeXdr;
+    private string $resultXdrBase64;
     private XdrTransactionResult $resultXdr;
-    private string $resultMetaXdr; // todo resolve
-    private ?string $feeMetaXdr = null; // todo resolve
-    private ?string $validAfter = null; // todo date
+    private string $resultMetaXdrBase64;
+    private XdrTransactionMeta $resultMetaXdr;
+    private ?string $feeMetaXdrBase64 = null; // todo resolve
+    private ?array $feeMetaXdr = null; //
+    private ?string $validAfter = null; // [XdrLedgerEntryChange]
     private TransactionSignaturesResponse $signatures;
     private ?FeeBumpTransactionResponse $feeBumpTransactionResponse = null;
     private ?InnerTransactionResponse $innerTransactionResponse = null;
@@ -196,9 +202,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * @return XdrTransactionMeta
      */
-    public function getResultMetaXdr(): string
+    public function getResultMetaXdr(): XdrTransactionMeta
     {
         return $this->resultMetaXdr;
     }
@@ -206,7 +212,15 @@ class TransactionResponse extends Response
     /**
      * @return string|null
      */
-    public function getFeeMetaXdr(): ?string
+    public function getFeeMetaXdrBase64(): ?string
+    {
+        return $this->feeMetaXdrBase64;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getFeeMetaXdr(): ?array
     {
         return $this->feeMetaXdr;
     }
@@ -259,6 +273,30 @@ class TransactionResponse extends Response
         return $this->preconditions;
     }
 
+    /**
+     * @return string
+     */
+    public function getEnvelopeXdrBase64(): string
+    {
+        return $this->envelopeXdrBase64;
+    }
+
+    /**
+     * @return string
+     */
+    public function getResultXdrBase64(): string
+    {
+        return $this->resultXdrBase64;
+    }
+
+    /**
+     * @return string
+     */
+    public function getResultMetaXdrBase64(): string
+    {
+        return $this->resultMetaXdrBase64;
+    }
+
 
     protected function loadFromJson(array $json) : void {
 
@@ -279,17 +317,27 @@ class TransactionResponse extends Response
         if (isset($json['max_fee'])) $this->maxFee = $json['max_fee'];
         if (isset($json['operation_count'])) $this->operationCount = $json['operation_count'];
         if (isset($json['envelope_xdr'])) {
-            $res = base64_decode($json['envelope_xdr']);
-            $xdr = new XdrBuffer($res);
-            $this->envelopeXdr = XdrTransactionEnvelope::decode($xdr);
+            $this->envelopeXdrBase64 = $json['envelope_xdr'];
+            $this->envelopeXdr = XdrTransactionEnvelope::fromEnvelopeBase64XdrString($this->envelopeXdrBase64);
         }
         if (isset($json['result_xdr'])){
-            $res = base64_decode($json['result_xdr']);
-            $xdr = new XdrBuffer($res);
-            $this->resultXdr = XdrTransactionResult::decode($xdr);
+            $this->resultXdrBase64 = $json['result_xdr'];
+            $this->resultXdr = XdrTransactionResult::fromBase64Xdr($this->resultXdrBase64);
         }
-        if (isset($json['result_meta_xdr'])) $this->resultMetaXdr = $json['result_meta_xdr'];
-        if (isset($json['fee_meta_xdr'])) $this->feeMetaXdr = $json['fee_meta_xdr'];
+        if (isset($json['result_meta_xdr'])) {
+            $this->resultMetaXdrBase64 = $json['result_meta_xdr'];
+            $this->resultMetaXdr = XdrTransactionMeta::fromBase64Xdr($this->resultMetaXdrBase64);
+        }
+        if (isset($json['fee_meta_xdr'])) {
+            $this->feeMetaXdrBase64 = $json['fee_meta_xdr'];
+            $xdr = base64_decode($this->feeMetaXdrBase64);
+            $xdrBuffer = new XdrBuffer($xdr);
+            $this->feeMetaXdr = array();
+            $valCount = $xdrBuffer->readInteger32();
+            for ($i = 0; $i < $valCount; $i++) {
+                array_push($this->feeMetaXdr, XdrLedgerEntryChange::decode($xdrBuffer));
+            }
+        }
         if (isset($json['valid_after'])) $this->validAfter = $json['valid_after'];
 
         if (isset($json['memo_type'])) {

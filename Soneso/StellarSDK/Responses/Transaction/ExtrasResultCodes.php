@@ -31,7 +31,7 @@ class ExtrasResultCodes
         if (isset($json['transaction'])) $this->transactionResultCode = $json['transaction'];
         if (isset($json['operations'])) {
             foreach ($json['operations'] as $code) {
-                $this->operationsResultCodes->add($code);
+                array_push($this->operationsResultCodes, $code);
             }
         }
     }

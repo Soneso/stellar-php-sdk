@@ -107,7 +107,7 @@ class SorobanTest extends TestCase
         $transactionResponse = $sdk->requestTransaction($sendResponse->transactionId);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
         $this->assertEquals($transctionEnvelopeXdr, $transactionResponse->getEnvelopeXdr()->toBase64Xdr());
-        $meta = $transactionResponse->getResultMetaXdr();
+        $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
@@ -167,7 +167,7 @@ class SorobanTest extends TestCase
         $transactionResponse = $sdk->requestTransaction($sendResponse->transactionId);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
         $this->assertEquals($transctionEnvelopeXdr, $transactionResponse->getEnvelopeXdr()->toBase64Xdr());
-        $meta = $transactionResponse->getResultMetaXdr();
+        $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
@@ -261,7 +261,7 @@ class SorobanTest extends TestCase
         $transactionResponse = $sdk->requestTransaction($sendResponse->transactionId);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
         $this->assertEquals($transctionEnvelopeXdr, $transactionResponse->getEnvelopeXdr()->toBase64Xdr());
-        $meta = $transactionResponse->getResultMetaXdr();
+        $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
@@ -330,7 +330,7 @@ class SorobanTest extends TestCase
         $transactionResponse = $sdk->requestTransaction($sendResponse->transactionId);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
         $this->assertEquals($transctionEnvelopeXdr, $transactionResponse->getEnvelopeXdr()->toBase64Xdr());
-        $meta = $transactionResponse->getResultMetaXdr();
+        $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
@@ -410,7 +410,7 @@ class SorobanTest extends TestCase
         $transactionResponse = $sdk->requestTransaction($sendResponse->transactionId);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
         $this->assertEquals($transctionEnvelopeXdr, $transactionResponse->getEnvelopeXdr()->toBase64Xdr());
-        $meta = $transactionResponse->getResultMetaXdr();
+        $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
         $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);

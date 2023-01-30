@@ -144,13 +144,7 @@ final class AccountTest extends TestCase
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
-        // check decoding & encoding
-        $meta = $response->getMetaXdr();
-        $this->assertEquals($meta->toBase64Xdr(), $response->getMetaXdrBase64());
-        $envelopeBase64 = $response->getEnvelopeXdrBase64();
-        $this->assertEquals($envelopeBase64, $transaction->toEnvelopeXdrBase64());
-        $result = $response->getResultXdr();
-        $this->assertEquals($result->toBase64Xdr(), $response->getResultXdrBase64());
+        TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // Find account for asset
         $response = $sdk->accounts()->forAsset($iomAsset)->execute();

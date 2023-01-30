@@ -47,13 +47,7 @@ class FeeBumpTransactionTest extends TestCase
         $response = $sdk->submitTransaction($feeBump);
         $this->assertTrue($response->isSuccessful());
 
-        // check decoding & encoding
-        $meta = $response->getMetaXdr();
-        $this->assertEquals($response->getMetaXdrBase64(), $meta->toBase64Xdr());
-        $envelopeBase64 = $response->getEnvelopeXdrBase64();
-        $this->assertEquals($envelopeBase64, $feeBump->toEnvelopeXdrBase64());
-        $result = $response->getResultXdr();
-        $this->assertEquals($response->getResultXdrBase64(), $result->toBase64Xdr());
+        TestUtils::resultDeAndEncodingTest($this, $feeBump, $response);
 
         $found = false;
         $destinationAccount = $sdk->requestAccount($destinationId);
@@ -106,13 +100,7 @@ class FeeBumpTransactionTest extends TestCase
         $response = $sdk->submitTransaction($feeBump);
         $this->assertTrue($response->isSuccessful());
 
-        // check decoding & encoding
-        $meta = $response->getMetaXdr();
-        $this->assertEquals($response->getMetaXdrBase64(), $meta->toBase64Xdr());
-        $envelopeBase64 = $response->getEnvelopeXdrBase64();
-        $this->assertEquals($envelopeBase64, $feeBump->toEnvelopeXdrBase64());
-        $result = $response->getResultXdr();
-        $this->assertEquals($response->getResultXdrBase64(), $result->toBase64Xdr());
+        TestUtils::resultDeAndEncodingTest($this, $feeBump, $response);
 
         $found = false;
         $destinationAccount = $sdk->requestAccount($destinationId);
