@@ -71,6 +71,14 @@ class TradesTest extends TestCase
             $offerId = $offer->getOfferId();
             break;
         }
+        $offerId2 = "";
+        $offers = $sdk->offers()->forBuyingAsset($astroDollar)->execute()->getOffers();
+        foreach ($offers as $offer) {
+            $offerId2 = $offer->getOfferId();
+            break;
+        }
+        $this->assertNotEquals("", $offerId);
+        $this->assertEquals($offerId, $offerId2);
 
         $orderBook = $sdk->orderBook()->forBuyingAsset(Asset::native())->forSellingAsset($astroDollar)->limit(1)->execute();
         $offerAmount = $orderBook->getBids()->toArray()[0]->getAmount();
@@ -180,12 +188,21 @@ class TradesTest extends TestCase
             $offerId = $offer->getOfferId();
             break;
         }
+        $offers = $sdk->offers()->forSellingAsset($moonDollar)->execute()->getOffers();
+        $offerId2 = "";
+        foreach ($offers as $offer) {
+            $offerId2 = $offer->getOfferId();
+            break;
+        }
+        $this->assertNotEquals("", $offerId);
+        $this->assertEquals($offerId, $offerId2);
 
         $orderBook = $sdk->orderBook()->forBuyingAsset(Asset::native())->forSellingAsset($moonDollar)->limit(1)->execute();
         $offerAmount = $orderBook->getAsks()->toArray()[0]->getAmount();
         $offerPrice= $orderBook->getAsks()->toArray()[0]->getPrice();
         $this->assertTrue($offerAmount == $amountSelling);
         $this->assertTrue($offerPrice == $price);
+
 
         // update offer
         $amountSelling = "150";

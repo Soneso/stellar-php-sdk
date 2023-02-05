@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Offers\OfferResponse;
 use Soneso\StellarSDK\Responses\Offers\OffersPageResponse;
@@ -16,10 +17,13 @@ use Soneso\StellarSDK\Responses\Offers\OffersPageResponse;
 class OffersRequestBuilder  extends RequestBuilder
 {
     private const SPONSOR_PARAMETER_NAME = "sponsor";
-    private const SELLING_ASSET_PARAMETER_NAME = "selling";
-    private const BUYING_ASSET_PARAMETER_NAME = "buying";
     private const SELLER_PARAMETER_NAME = "seller";
-
+    private const BUYING_ASSET_TYPE_PARAMETER_NAME = "buying_asset_type";
+    private const BUYING_ASSET_CODE_PARAMETER_NAME = "buying_asset_code";
+    private const BUYING_ASSET_ISSUER_PARAMETER_NAME = "buying_asset_issuer";
+    private const SELLING_ASSET_TYPE_PARAMETER_NAME = "selling_asset_type";
+    private const SELLING_ASSET_CODE_PARAMETER_NAME = "selling_asset_code";
+    private const SELLING_ASSET_ISSUER_PARAMETER_NAME = "selling_asset_issuer";
 
     public function __construct(Client $httpClient)
     {
@@ -75,7 +79,11 @@ class OffersRequestBuilder  extends RequestBuilder
      * @return OffersRequestBuilder current instance
      */
     public function forSellingAsset(Asset $asset) : OffersRequestBuilder {
-        $this->queryParameters[OffersRequestBuilder::SELLING_ASSET_PARAMETER_NAME] = Asset::canonicalForm($asset);
+        $this->queryParameters[OffersRequestBuilder::SELLING_ASSET_TYPE_PARAMETER_NAME] = $asset->getType();
+        if ($asset instanceof AssetTypeCreditAlphanum) {
+            $this->queryParameters[OffersRequestBuilder::SELLING_ASSET_CODE_PARAMETER_NAME] = $asset->getCode();
+            $this->queryParameters[OffersRequestBuilder::SELLING_ASSET_ISSUER_PARAMETER_NAME] = $asset->getIssuer();
+        }
         return $this;
     }
 
@@ -86,7 +94,11 @@ class OffersRequestBuilder  extends RequestBuilder
      * @return OffersRequestBuilder current instance
      */
     public function forBuyingAsset(Asset $asset) : OffersRequestBuilder {
-        $this->queryParameters[OffersRequestBuilder::BUYING_ASSET_PARAMETER_NAME] = Asset::canonicalForm($asset);
+        $this->queryParameters[OffersRequestBuilder::BUYING_ASSET_TYPE_PARAMETER_NAME] = $asset->getType();
+        if ($asset instanceof AssetTypeCreditAlphanum) {
+            $this->queryParameters[OffersRequestBuilder::BUYING_ASSET_CODE_PARAMETER_NAME] = $asset->getCode();
+            $this->queryParameters[OffersRequestBuilder::BUYING_ASSET_ISSUER_PARAMETER_NAME] = $asset->getIssuer();
+        }
         return $this;
     }
     /**

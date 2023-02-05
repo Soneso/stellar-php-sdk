@@ -217,6 +217,11 @@ class QueryTest extends TestCase
         $this->assertTrue($r == intval($amountBuying));
         $this->assertTrue($offer->getSeller() == $buyerAccountId);
 
+        $offers = $sdk->offers()->forBuyingAsset($astroDollar)->execute()->getOffers();
+        $this->assertTrue($offers->count() == 1);
+        $offer2 = $response->getOffers()->toArray()[0];
+        $this->assertEquals($offer->getOfferId(), $offer2->getOfferId());
+
         $response = $sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
         $offerAmount = floatval($response->getAsks()->toArray()[0]->getAmount());
         $offerPrice = floatval($response->getAsks()->toArray()[0]->getPrice());
