@@ -18,6 +18,7 @@ class XdrSCStatus
     public ?XdrSCHostContextErrorCode $contextCode = null;
     public ?XdrSCVmErrorCode $vmCode = null;
     public ?int $contractCode = null;
+    public ?XdrSCHostAuthErrorCode $authCode = null;
 
     /**
      * @param XdrSCStatusType $type
@@ -57,6 +58,9 @@ class XdrSCStatus
             case XdrSCStatusType::SST_CONTRACT_ERROR:
                 $bytes .= XdrEncoder::unsignedInteger32($this->contractCode);
                 break;
+            case XdrSCStatusType::SST_HOST_AUTH_ERROR:
+                $bytes .= $this->authCode->encode();
+                break;
         }
         return $bytes;
     }
@@ -89,6 +93,9 @@ class XdrSCStatus
                 break;
             case XdrSCStatusType::SST_CONTRACT_ERROR:
                 $result->contractCode = $xdr->readUnsignedInteger32();
+                break;
+            case XdrSCStatusType::SST_HOST_AUTH_ERROR:
+                $result->authCode = XdrSCHostAuthErrorCode::decode($xdr);
                 break;
         }
         return $result;
@@ -236,6 +243,22 @@ class XdrSCStatus
     public function setContractCode(?int $contractCode): void
     {
         $this->contractCode = $contractCode;
+    }
+
+    /**
+     * @return XdrSCHostAuthErrorCode|null
+     */
+    public function getAuthCode(): ?XdrSCHostAuthErrorCode
+    {
+        return $this->authCode;
+    }
+
+    /**
+     * @param XdrSCHostAuthErrorCode|null $authCode
+     */
+    public function setAuthCode(?XdrSCHostAuthErrorCode $authCode): void
+    {
+        $this->authCode = $authCode;
     }
 
 }

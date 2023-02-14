@@ -10,8 +10,8 @@ class XdrSCUnknownErrorCode
 {
     public int $value;
 
-    const HOST_STORAGE_UNKNOWN_ERROR = 0;
-    const HOST_STORAGE_EXPECT_CONTRACT_DATA = 1;
+    const UNKNOWN_ERROR_GENERAL = 0;
+    const UNKNOWN_ERROR_XDR = 1;
 
     public function __construct(int $value)
     {

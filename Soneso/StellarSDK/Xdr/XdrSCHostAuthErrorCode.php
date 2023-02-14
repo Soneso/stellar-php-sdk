@@ -6,20 +6,15 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrSCStatusType
+class XdrSCHostAuthErrorCode
 {
     public int $value;
 
-    const SST_OK = 0;
-    const SST_UNKNOWN_ERROR = 1;
-    const SST_HOST_VALUE_ERROR = 2;
-    const SST_HOST_OBJECT_ERROR = 3;
-    const SST_HOST_FUNCTION_ERROR = 4;
-    const SST_HOST_STORAGE_ERROR = 5;
-    const SST_HOST_CONTEXT_ERROR = 6;
-    const SST_VM_ERROR = 7;
-    const SST_CONTRACT_ERROR = 8;
-    const SST_HOST_AUTH_ERROR = 9;
+    const HOST_AUTH_UNKNOWN_ERROR = 0;
+    const HOST_AUTH_NONCE_ERROR = 1;
+    const HOST_AUTH_DUPLICATE_AUTHORIZATION = 2;
+    const HOST_AUTH_NOT_AUTHORIZED = 3;
+
 
     public function __construct(int $value)
     {
@@ -39,9 +34,9 @@ class XdrSCStatusType
         return XdrEncoder::integer32($this->value);
     }
 
-    public static function decode(XdrBuffer $xdr): XdrSCStatusType
+    public static function decode(XdrBuffer $xdr): XdrSCHostAuthErrorCode
     {
         $value = $xdr->readInteger32();
-        return new XdrSCStatusType($value);
+        return new XdrSCHostAuthErrorCode($value);
     }
 }

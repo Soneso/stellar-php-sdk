@@ -72,11 +72,10 @@ class InvokeHostFunctionOperationBuilder
         return $builder;
     }
 
-    public static function forDeploySACWithAsset(Asset $asset, ?string $salt = null, ?Footprint $footprint = null) : InvokeHostFunctionOperationBuilder {
+    public static function forDeploySACWithAsset(Asset $asset, ?Footprint $footprint = null) : InvokeHostFunctionOperationBuilder {
         $type = new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT);
         $builder = new InvokeHostFunctionOperationBuilder($type);
         $builder->asset = $asset;
-        $builder->salt = $salt;
         $builder->footprint = $footprint;
         return $builder;
     }

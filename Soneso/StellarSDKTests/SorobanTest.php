@@ -53,7 +53,6 @@ class SorobanTest extends TestCase
         FuturenetFriendBot::fundTestAccount($accountAId);
 
         $getAccountResponse = $server->getAccount($accountAId);
-        print("Sequence: ".$getAccountResponse->sequence);
         $this->assertEquals($accountAId, $getAccountResponse->id);
         $this->assertNotNull($getAccountResponse->sequence);
 

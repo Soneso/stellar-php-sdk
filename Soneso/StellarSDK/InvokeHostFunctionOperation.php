@@ -57,6 +57,14 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
+     * @return XdrHostFunctionType
+     */
+    public function getFunctionType(): XdrHostFunctionType
+    {
+        return $this->functionType;
+    }
+
+    /**
      * @throws Exception
      */
     public static function fromXdrOperation(XdrInvokeHostFunctionOperation $xdrOp): InvokeHostFunctionOperation {
