@@ -22,14 +22,15 @@ class CreateContractOp extends InvokeHostFunctionOperation
      * @param string $wasmId
      * @param string $salt
      * @param Footprint|null $footprint
+     * @param array|null $auth
      * @param MuxedAccount|null $sourceAccount
      */
-    public function __construct(string $wasmId, string $salt, ?Footprint $footprint = null, ?MuxedAccount $sourceAccount = null)
+    public function __construct(string $wasmId, string $salt, ?Footprint $footprint = null, ?array $auth = array(), ?MuxedAccount $sourceAccount = null)
     {
         $this->wasmId = $wasmId;
         $this->salt = $salt;
         $this->footprint = $footprint;
-        parent::__construct(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT), $footprint, $sourceAccount);
+        parent::__construct(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT), $footprint, $auth, $sourceAccount);
     }
 
     /**
@@ -38,7 +39,7 @@ class CreateContractOp extends InvokeHostFunctionOperation
     public function toOperationBody(): XdrOperationBody
     {
         $hostFunction = XdrHostFunction::forCreatingContract($this->wasmId, $this->salt);
-        $hostFunctionOp = new XdrInvokeHostFunctionOperation($hostFunction, $this->getXdrFootprint());
+        $hostFunctionOp = new XdrInvokeHostFunctionOperation($hostFunction, $this->getXdrFootprint(), $this->auth);
         $type = new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION);
         $result = new XdrOperationBody($type);
         $result->setInvokeHostFunctionOperation($hostFunctionOp);

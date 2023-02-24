@@ -4,8 +4,10 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-namespace Soneso\StellarSDK\Soroban;
+namespace Soneso\StellarSDK\Soroban\Responses;
 
+
+use Soneso\StellarSDK\Footprint;
 
 /**
  * Used as a part of get transaction status and send transaction.
@@ -16,7 +18,9 @@ class TransactionStatusResult
     public string $xdr;
 
     protected function loadFromJson(array $json) : void {
-        if (isset($json['xdr'])) $this->xdr = $json['xdr'];
+        if (isset($json['xdr'])) {
+            $this->xdr = $json['xdr'];
+        }
     }
 
     public static function fromJson(array $json) : TransactionStatusResult {
@@ -40,5 +44,4 @@ class TransactionStatusResult
     {
         $this->xdr = $xdr;
     }
-
 }

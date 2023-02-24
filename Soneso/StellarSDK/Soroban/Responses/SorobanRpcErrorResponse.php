@@ -4,7 +4,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-namespace Soneso\StellarSDK\Soroban;
+namespace Soneso\StellarSDK\Soroban\Responses;
 
 /*
  * Holds error response info if no result is provided.

@@ -9,69 +9,91 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrSCSpecUDTUnionCaseV0
 {
 
-    public array $name;
-    public XdrSCSpecTypeDef $type;
+    public XdrSCSpecUDTUnionCaseV0Kind $kind;
+    public ?XdrSCSpecUDTUnionCaseVoidV0 $voidCase = null;
+    public ?XdrSCSpecUDTUnionCaseTupleV0 $tupleCase = null;
 
     /**
-     * @param array $name
-     * @param XdrSCSpecTypeDef $type
+     * @param XdrSCSpecUDTUnionCaseV0Kind $kind
      */
-    public function __construct(array $name, XdrSCSpecTypeDef $type)
+    public function __construct(XdrSCSpecUDTUnionCaseV0Kind $kind)
     {
-        $this->name = $name;
-        $this->type = $type;
+        $this->kind = $kind;
     }
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::integer32(count($this->name));
-        foreach($this->name as $val) {
-            $bytes .= XdrEncoder::string($val);
+        $bytes = $this->kind->encode();
+
+        switch ($this->kind->value) {
+            case XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_VOID_V0:
+                $bytes .= $this->voidCase->encode();
+                break;
+            case XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_TUPLE_V0:
+                $bytes .= $this->tupleCase->encode();
+                break;
         }
-        $bytes .= $this->type->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTUnionCaseV0 {
-        $valCount = $xdr->readInteger32();
-        $arr = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($arr, $xdr->readString());
+        $result = new XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind::decode($xdr));
+        switch ($result->kind->getValue()) {
+            case XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_VOID_V0:
+                $result->voidCase = XdrSCSpecUDTUnionCaseVoidV0::decode($xdr);
+                break;
+            case XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_TUPLE_V0:
+                $result->tupleCase = XdrSCSpecUDTUnionCaseTupleV0::decode($xdr);
+                break;
         }
-        $type = XdrSCSpecTypeDef::decode($xdr);
-
-        return new XdrSCSpecUDTUnionCaseV0($arr, $type);
+        return $result;
     }
 
     /**
-     * @return array
+     * @return XdrSCSpecUDTUnionCaseV0Kind
      */
-    public function getName(): array
+    public function getKind(): XdrSCSpecUDTUnionCaseV0Kind
     {
-        return $this->name;
+        return $this->kind;
     }
 
     /**
-     * @param array $name
+     * @param XdrSCSpecUDTUnionCaseV0Kind $kind
      */
-    public function setName(array $name): void
+    public function setKind(XdrSCSpecUDTUnionCaseV0Kind $kind): void
     {
-        $this->name = $name;
+        $this->kind = $kind;
     }
 
     /**
-     * @return XdrSCSpecTypeDef
+     * @return XdrSCSpecUDTUnionCaseVoidV0|null
      */
-    public function getType(): XdrSCSpecTypeDef
+    public function getVoidCase(): ?XdrSCSpecUDTUnionCaseVoidV0
     {
-        return $this->type;
+        return $this->voidCase;
     }
 
     /**
-     * @param XdrSCSpecTypeDef $type
+     * @param XdrSCSpecUDTUnionCaseVoidV0|null $voidCase
      */
-    public function setType(XdrSCSpecTypeDef $type): void
+    public function setVoidCase(?XdrSCSpecUDTUnionCaseVoidV0 $voidCase): void
     {
-        $this->type = $type;
+        $this->voidCase = $voidCase;
+    }
+
+    /**
+     * @return XdrSCSpecUDTUnionCaseTupleV0|null
+     */
+    public function getTupleCase(): ?XdrSCSpecUDTUnionCaseTupleV0
+    {
+        return $this->tupleCase;
+    }
+
+    /**
+     * @param XdrSCSpecUDTUnionCaseTupleV0|null $tupleCase
+     */
+    public function setTupleCase(?XdrSCSpecUDTUnionCaseTupleV0 $tupleCase): void
+    {
+        $this->tupleCase = $tupleCase;
     }
 }

@@ -6,23 +6,19 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrSCSpecUDTErrorEnumCaseV0
+class XdrSCSpecUDTUnionCaseVoidV0
 {
-
     public string $doc;
-    public array $name; // [string]
-    public int $value;
+    public array $name;
 
     /**
      * @param string $doc
      * @param array $name
-     * @param int $value
      */
-    public function __construct(string $doc, array $name, int $value)
+    public function __construct(string $doc, array $name)
     {
         $this->doc = $doc;
         $this->name = $name;
-        $this->value = $value;
     }
 
 
@@ -32,20 +28,18 @@ class XdrSCSpecUDTErrorEnumCaseV0
         foreach($this->name as $val) {
             $bytes .= XdrEncoder::string($val);
         }
-        $bytes .= XdrEncoder::unsignedInteger32($this->value);
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTErrorEnumCaseV0 {
+    public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTUnionCaseVoidV0 {
         $doc = $xdr->readString();
         $valCount = $xdr->readInteger32();
         $arr = array();
         for ($i = 0; $i < $valCount; $i++) {
             array_push($arr, $xdr->readString());
         }
-        $value = $xdr->readUnsignedInteger32();
 
-        return new XdrSCSpecUDTErrorEnumCaseV0($doc, $arr, $value);
+        return new XdrSCSpecUDTUnionCaseVoidV0($doc, $arr);
     }
 
     /**
@@ -65,7 +59,7 @@ class XdrSCSpecUDTErrorEnumCaseV0
     }
 
     /**
-     * @return array [string]
+     * @return array
      */
     public function getName(): array
     {
@@ -73,26 +67,10 @@ class XdrSCSpecUDTErrorEnumCaseV0
     }
 
     /**
-     * @param array $name [string]
+     * @param array $name
      */
     public function setName(array $name): void
     {
         $this->name = $name;
-    }
-
-    /**
-     * @return int
-     */
-    public function getValue(): int
-    {
-        return $this->value;
-    }
-
-    /**
-     * @param int $value
-     */
-    public function setValue(int $value): void
-    {
-        $this->value = $value;
     }
 }

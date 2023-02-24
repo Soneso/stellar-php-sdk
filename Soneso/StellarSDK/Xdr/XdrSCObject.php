@@ -18,7 +18,8 @@ class XdrSCObject
     public ?XdrInt128Parts $i128 = null;
     public ?XdrDataValueMandatory $bin = null;
     public ?XdrSCContractCode $contractCode = null;
-    public ?XdrAccountID $accountID = null;
+    public ?XdrSCAddress $address = null;
+    public ?XdrSCAddress $nonceAddress = null;
 
     /**
      * @param XdrSCObjectType $type
@@ -66,8 +67,11 @@ class XdrSCObject
             case XdrSCObjectType::SCO_CONTRACT_CODE:
                 $bytes .= $this->contractCode->encode();
                 break;
-            case XdrSCObjectType::SCO_ACCOUNT_ID:
-                $bytes .= $this->accountID->encode();
+            case XdrSCObjectType::SCO_ADDRESS:
+                $bytes .= $this->address->encode();
+                break;
+            case XdrSCObjectType::SCO_NONCE_KEY:
+                $bytes .= $this->nonceAddress->encode();
                 break;
         }
         return $bytes;
@@ -110,8 +114,11 @@ class XdrSCObject
             case XdrSCObjectType::SCO_CONTRACT_CODE:
                 $result->contractCode = XdrSCContractCode::decode($xdr);
                 break;
-            case XdrSCObjectType::SCO_ACCOUNT_ID:
-                $result->accountID = XdrAccountID::decode($xdr);
+            case XdrSCObjectType::SCO_ADDRESS:
+                $result->address = XdrSCAddress::decode($xdr);
+                break;
+            case XdrSCObjectType::SCO_NONCE_KEY:
+                $result->nonceAddress = XdrSCAddress::decode($xdr);
                 break;
         }
         return $result;
@@ -167,9 +174,15 @@ class XdrSCObject
         return $result;
     }
 
-    public static function forAccountId(XdrAccountID $value) : XdrSCObject {
-        $result = new XdrSCObject(XdrSCObjectType::ACCOUNT_ID());
-        $result->accountID = $value;
+    public static function forAddress(XdrSCAddress $value) : XdrSCObject {
+        $result = new XdrSCObject(XdrSCObjectType::ADDRESS());
+        $result->address = $value;
+        return $result;
+    }
+
+    public static function forNonceKey(XdrSCAddress $value) : XdrSCObject {
+        $result = new XdrSCObject(XdrSCObjectType::NONCE_KEY());
+        $result->nonceAddress = $value;
         return $result;
     }
 
@@ -346,18 +359,35 @@ class XdrSCObject
     }
 
     /**
-     * @return XdrAccountID|null
+     * @return XdrSCAddress|null
      */
-    public function getAccountID(): ?XdrAccountID
+    public function getAddress(): ?XdrSCAddress
     {
-        return $this->accountID;
+        return $this->address;
     }
 
     /**
-     * @param XdrAccountID|null $accountID
+     * @param XdrSCAddress|null $address
      */
-    public function setAccountID(?XdrAccountID $accountID): void
+    public function setAddress(?XdrSCAddress $address): void
     {
-        $this->accountID = $accountID;
+        $this->address = $address;
     }
+
+    /**
+     * @return XdrSCAddress|null
+     */
+    public function getNonceAddress(): ?XdrSCAddress
+    {
+        return $this->nonceAddress;
+    }
+
+    /**
+     * @param XdrSCAddress|null $nonceAddress
+     */
+    public function setNonceAddress(?XdrSCAddress $nonceAddress): void
+    {
+        $this->nonceAddress = $nonceAddress;
+    }
+
 }

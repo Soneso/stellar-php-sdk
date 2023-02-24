@@ -46,7 +46,7 @@ class XdrSCSpecTypeDef
             case XdrSCSpecType::SC_SPEC_TYPE_STATUS:
             case XdrSCSpecType::SC_SPEC_TYPE_BYTES:
             case XdrSCSpecType::SC_SPEC_TYPE_INVOKER:
-            case XdrSCSpecType::SC_SPEC_TYPE_ACCOUNT_ID:
+            case XdrSCSpecType::SC_SPEC_TYPE_ADDRESS:
                 break;
             case XdrSCSpecType::SC_SPEC_TYPE_OPTION:
                 $bytes .= $this->option->encode();
@@ -92,7 +92,7 @@ class XdrSCSpecTypeDef
             case XdrSCSpecType::SC_SPEC_TYPE_STATUS:
             case XdrSCSpecType::SC_SPEC_TYPE_BYTES:
             case XdrSCSpecType::SC_SPEC_TYPE_INVOKER:
-            case XdrSCSpecType::SC_SPEC_TYPE_ACCOUNT_ID:
+            case XdrSCSpecType::SC_SPEC_TYPE_ADDRESS:
                 break;
             case XdrSCSpecType::SC_SPEC_TYPE_OPTION:
                 $result->option = XdrSCSpecTypeOption::decode($xdr);

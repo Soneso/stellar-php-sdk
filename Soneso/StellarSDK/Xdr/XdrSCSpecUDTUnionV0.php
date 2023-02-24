@@ -9,17 +9,20 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrSCSpecUDTUnionV0
 {
 
+    public string $doc;
     public array $lib; // [String]
     public array $name; // [String]
     public array $cases; // [XdrSCSpecUDTUnionCaseV0]
 
     /**
-     * @param array $lib [string]
-     * @param array $name [string]
-     * @param array $cases [XdrSCSpecUDTUnionCaseV0]
+     * @param string $doc
+     * @param array $lib
+     * @param array $name
+     * @param array $cases
      */
-    public function __construct(array $lib, array $name, array $cases)
+    public function __construct(string $doc, array $lib, array $name, array $cases)
     {
+        $this->doc = $doc;
         $this->lib = $lib;
         $this->name = $name;
         $this->cases = $cases;
@@ -27,7 +30,8 @@ class XdrSCSpecUDTUnionV0
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::integer32(count($this->lib));
+        $bytes = XdrEncoder::string($this->doc);
+        $bytes .= XdrEncoder::integer32(count($this->lib));
         foreach($this->lib as $val) {
             $bytes .= XdrEncoder::string($val);
         }
@@ -43,6 +47,7 @@ class XdrSCSpecUDTUnionV0
     }
 
     public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTUnionV0 {
+        $doc = $xdr->readString();
         $valCount = $xdr->readInteger32();
         $libArr = array();
         for ($i = 0; $i < $valCount; $i++) {
@@ -59,7 +64,23 @@ class XdrSCSpecUDTUnionV0
             array_push($casesArr, XdrSCSpecUDTUnionCaseV0::decode($xdr));
         }
 
-        return new XdrSCSpecUDTUnionV0($libArr, $nameArr, $casesArr);
+        return new XdrSCSpecUDTUnionV0($doc, $libArr, $nameArr, $casesArr);
+    }
+
+    /**
+     * @return string
+     */
+    public function getDoc(): string
+    {
+        return $this->doc;
+    }
+
+    /**
+     * @param string $doc
+     */
+    public function setDoc(string $doc): void
+    {
+        $this->doc = $doc;
     }
 
     /**

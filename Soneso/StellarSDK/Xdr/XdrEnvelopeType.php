@@ -24,6 +24,7 @@ class XdrEnvelopeType
     const ENVELOPE_TYPE_CONTRACT_ID_FROM_ASSET = 10;
     const ENVELOPE_TYPE_CONTRACT_ID_FROM_SOURCE_ACCOUNT = 11;
     const ENVELOPE_TYPE_CREATE_CONTRACT_ARGS = 12;
+    const ENVELOPE_TYPE_CONTRACT_AUTH = 13;
 
     public function __construct(int $value) {
         $this->value = $value;

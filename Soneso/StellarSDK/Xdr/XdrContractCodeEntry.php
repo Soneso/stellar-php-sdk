@@ -28,7 +28,7 @@ class XdrContractCodeEntry
 
     public function encode(): string {
         $bytes = $this->ext->encode();
-        $bytes .= XdrEncoder::opaqueFixed($this->contractID,32);
+        $bytes .= XdrEncoder::opaqueFixed($this->cHash,32);
         $bytes .= $this->code->encode();
         return $bytes;
     }

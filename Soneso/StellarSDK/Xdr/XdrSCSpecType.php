@@ -25,7 +25,7 @@ class XdrSCSpecType
     const SC_SPEC_TYPE_STATUS = 10;
     const SC_SPEC_TYPE_BYTES = 11;
     const SC_SPEC_TYPE_INVOKER = 12;
-    const SC_SPEC_TYPE_ACCOUNT_ID = 13;
+    const SC_SPEC_TYPE_ADDRESS = 13;
 
     // Types with parameters.
     const SC_SPEC_TYPE_OPTION = 1000;

@@ -8,23 +8,26 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrSCSpecUDTStructFieldV0
 {
-
+    public string $doc;
     public array $name;
     public XdrSCSpecTypeDef $type;
 
     /**
+     * @param string $doc
      * @param array $name
      * @param XdrSCSpecTypeDef $type
      */
-    public function __construct(array $name, XdrSCSpecTypeDef $type)
+    public function __construct(string $doc, array $name, XdrSCSpecTypeDef $type)
     {
+        $this->doc = $doc;
         $this->name = $name;
         $this->type = $type;
     }
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::integer32(count($this->name));
+        $bytes = XdrEncoder::string($this->doc);
+        $bytes .= XdrEncoder::integer32(count($this->name));
         foreach($this->name as $val) {
             $bytes .= XdrEncoder::string($val);
         }
@@ -33,6 +36,7 @@ class XdrSCSpecUDTStructFieldV0
     }
 
     public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTStructFieldV0 {
+        $doc = $xdr->readString();
         $valCount = $xdr->readInteger32();
         $arr = array();
         for ($i = 0; $i < $valCount; $i++) {
@@ -40,7 +44,23 @@ class XdrSCSpecUDTStructFieldV0
         }
         $type = XdrSCSpecTypeDef::decode($xdr);
 
-        return new XdrSCSpecUDTStructFieldV0($arr, $type);
+        return new XdrSCSpecUDTStructFieldV0($doc, $arr, $type);
+    }
+
+    /**
+     * @return string
+     */
+    public function getDoc(): string
+    {
+        return $this->doc;
+    }
+
+    /**
+     * @param string $doc
+     */
+    public function setDoc(string $doc): void
+    {
+        $this->doc = $doc;
     }
 
     /**

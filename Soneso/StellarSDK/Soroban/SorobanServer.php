@@ -11,6 +11,16 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Requests\RequestBuilder;
+use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
+use Soneso\StellarSDK\Soroban\Responses\GetAccountResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetLedgerEntryResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetNetworkResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetTransactionStatusResponse;
+use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
+use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
+use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
 use Soneso\StellarSDK\Transaction;
 
 /// This class helps you to connect to a local or remote soroban rpc server
@@ -23,11 +33,13 @@ class SorobanServer
     private Client $httpClient;
 
     private const GET_HEALTH = "getHealth";
+    private const GET_NETWORK = "getNetwork";
     private const GET_ACCOUNT = "getAccount";
     private const SIMULATE_TRANSACTION = "simulateTransaction";
     private const SEND_TRANSACTION = "sendTransaction";
     private const GET_TRANSACTION_STATUS = "getTransactionStatus";
     private const GET_LEDGER_ENTRY = "getLedgerEntry";
+    private const GET_EVENTS = "getEvents";
 
     public bool $enableLogging = false;
     public bool $acknowledgeExperimental = false;
@@ -62,6 +74,21 @@ class SorobanServer
         }
         $body = $this->prepareRequest(self::GET_HEALTH);
         return $this->request($body, self::GET_HEALTH);
+    }
+
+
+    /**
+     * Fetch information about the network.
+     * @return GetNetworkResponse
+     * @throws GuzzleException
+     */
+    public function getNetwork() : GetNetworkResponse {
+        if (!$this->acknowledgeExperimental) {
+            $this->printExperimentalFlagErr();
+            return GetNetworkResponse::fromJson($this->experimentErr);
+        }
+        $body = $this->prepareRequest(self::GET_NETWORK);
+        return $this->request($body, self::GET_NETWORK);
     }
 
     /**
@@ -144,6 +171,16 @@ class SorobanServer
         return $this->request($body, self::GET_LEDGER_ENTRY);
     }
 
+    public function getEvents(GetEventsRequest $request) : GetEventsResponse {
+        if (!$this->acknowledgeExperimental) {
+            $this->printExperimentalFlagErr();
+            return GetEventsResponse::fromJson($this->experimentErr);
+        }
+        $body = $this->prepareRequest(self::GET_EVENTS, $request->getRequestParams());
+        print($body . PHP_EOL);
+        return $this->request($body, self::GET_EVENTS);
+    }
+
     /**
      * Sends request to remote Soroban RPC Server.
      * @param string $body jsonrpc 2.0 body
@@ -184,11 +221,13 @@ class SorobanServer
 
         $rpcResponse = match ($requestType) {
             self::GET_HEALTH => GetHealthResponse::fromJson($jsonData),
+            self::GET_NETWORK => GetNetworkResponse::fromJson($jsonData),
             self::GET_ACCOUNT => GetAccountResponse::fromJson($jsonData),
             self::SIMULATE_TRANSACTION => SimulateTransactionResponse::fromJson($jsonData),
             self::SEND_TRANSACTION => SendTransactionResponse::fromJson($jsonData),
             self::GET_TRANSACTION_STATUS => GetTransactionStatusResponse::fromJson($jsonData),
             self::GET_LEDGER_ENTRY => GetLedgerEntryResponse::fromJson($jsonData),
+            self::GET_EVENTS => GetEventsResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };
 

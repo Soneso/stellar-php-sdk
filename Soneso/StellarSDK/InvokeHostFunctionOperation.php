@@ -19,16 +19,18 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
 {
     public XdrHostFunctionType $functionType;
     public ?Footprint $footprint = null;
+    public array $auth;
 
     /**
      * @param XdrHostFunctionType $functionType
      * @param Footprint|null $footprint
      * @param MuxedAccount|null $sourceAccount
      */
-    public function __construct(XdrHostFunctionType $functionType, ?Footprint $footprint = null, ?MuxedAccount $sourceAccount = null)
+    public function __construct(XdrHostFunctionType $functionType, ?Footprint $footprint = null, ?array $auth = array(), ?MuxedAccount $sourceAccount = null)
     {
         $this->functionType = $functionType;
         $this->footprint = $footprint;
+        $this->auth = $auth;
         $this->setSourceAccount($sourceAccount);
     }
 
@@ -65,6 +67,24 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
+     * @return array|null
+     */
+    public function getAuth(): ?array
+    {
+        return $this->auth;
+    }
+
+    /**
+     * @param array|null $auth
+     */
+    public function setAuth(?array $auth): void
+    {
+        $this->auth = $auth;
+    }
+
+
+
+    /**
      * @throws Exception
      */
     public static function fromXdrOperation(XdrInvokeHostFunctionOperation $xdrOp): InvokeHostFunctionOperation {
@@ -72,9 +92,9 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         $hostFunction = $xdrOp->function;
         switch ($hostFunction->type->value) {
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                return InvokeHostFunctionOperation::fromInvokeContractHostFunction($hostFunction, $footprint);
+                return InvokeHostFunctionOperation::fromInvokeContractHostFunction($hostFunction, $footprint, $xdrOp->auth);
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE:
-                return InvokeHostFunctionOperation::fromInstallContractCodeHostFunction($hostFunction, $footprint);
+                return InvokeHostFunctionOperation::fromInstallContractCodeHostFunction($hostFunction, $footprint, $xdrOp->auth);
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
                 if($hostFunction->createContractArgs == null) {
                     throw new Exception("invalid argument");
@@ -83,18 +103,25 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
                 $sourceTypeValue = $hostFunction->createContractArgs->source->type->value;
                 if ($contractIdTypeVal == XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT) {
                     if ($sourceTypeValue == XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF) {
-                        return InvokeHostFunctionOperation::fromCreateContractHostFunction($hostFunction, $footprint);
+                        return InvokeHostFunctionOperation::fromCreateContractHostFunction($hostFunction, $footprint, $xdrOp->auth);
                     } else if ($sourceTypeValue == XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN){
-                        return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithSourceAccount($hostFunction, $footprint);
+                        return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithSourceAccount($hostFunction, $footprint, $xdrOp->auth);
                     }
                 } else if ($contractIdTypeVal == XdrContractIDType::CONTRACT_ID_FROM_ASSET) {
-                    return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithAsset($hostFunction, $footprint);
+                    return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithAsset($hostFunction, $footprint, $xdrOp->auth);
                 }
         }
         throw new Exception("unknown function type");
     }
 
-    private static function fromDeployCreateTokenContractWithAsset(XdrHostFunction $hostFunction, Footprint $footprint) : DeploySACWithAssetOp {
+    /**
+     * @param XdrHostFunction $hostFunction
+     * @param Footprint $footprint
+     * @param array|null $auth
+     * @return DeploySACWithAssetOp
+     * @throws Exception
+     */
+    private static function fromDeployCreateTokenContractWithAsset(XdrHostFunction $hostFunction, Footprint $footprint, ?array $auth = array()) : DeploySACWithAssetOp {
         if ($hostFunction->type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT
             || $hostFunction->createContractArgs == null
             || $hostFunction->createContractArgs->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_ASSET
@@ -103,10 +130,17 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
             throw new Exception("invalid argument");
         }
         $asset = Asset::fromXdr($hostFunction->createContractArgs->contractID->asset);
-        return new DeploySACWithAssetOp($asset,$footprint,null);
+        return new DeploySACWithAssetOp($asset,$footprint, $auth);
     }
 
-    private static function fromDeployCreateTokenContractWithSourceAccount(XdrHostFunction $hostFunction, Footprint $footprint) : DeploySACWithSourceAccountOp {
+    /**
+     * @param XdrHostFunction $hostFunction
+     * @param Footprint $footprint
+     * @param array|null $auth
+     * @return DeploySACWithSourceAccountOp
+     * @throws Exception
+     */
+    private static function fromDeployCreateTokenContractWithSourceAccount(XdrHostFunction $hostFunction, Footprint $footprint, ?array $auth = array()) : DeploySACWithSourceAccountOp {
         if ($hostFunction->type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT
             || $hostFunction->createContractArgs == null
             || $hostFunction->createContractArgs->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT
@@ -114,10 +148,17 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         {
             throw new Exception("invalid argument");
         }
-        return new DeploySACWithSourceAccountOp($hostFunction->createContractArgs->contractID->salt,$footprint,null);
+        return new DeploySACWithSourceAccountOp($hostFunction->createContractArgs->contractID->salt,$footprint, $auth);
     }
 
-    private static function fromCreateContractHostFunction(XdrHostFunction $hostFunction, Footprint $footprint) : CreateContractOp {
+    /**
+     * @param XdrHostFunction $hostFunction
+     * @param Footprint $footprint
+     * @param array|null $auth
+     * @return CreateContractOp
+     * @throws Exception
+     */
+    private static function fromCreateContractHostFunction(XdrHostFunction $hostFunction, Footprint $footprint, ?array $auth = array()) : CreateContractOp {
         if ($hostFunction->type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT
             || $hostFunction->createContractArgs == null
             || $hostFunction->createContractArgs->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT
@@ -130,10 +171,17 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         if($wasmId == null) {
             throw new Exception("invalid argument");
         }
-        return new CreateContractOp($wasmId,$hostFunction->createContractArgs->contractID->salt,$footprint,null);
+        return new CreateContractOp($wasmId,$hostFunction->createContractArgs->contractID->salt, $footprint, $auth);
     }
 
-    private static function fromInstallContractCodeHostFunction(XdrHostFunction $hostFunction, Footprint $footprint) : InstallContractCodeOp {
+    /**
+     * @param XdrHostFunction $hostFunction
+     * @param Footprint $footprint
+     * @param array|null $auth
+     * @return InstallContractCodeOp
+     * @throws Exception
+     */
+    private static function fromInstallContractCodeHostFunction(XdrHostFunction $hostFunction, Footprint $footprint, ?array $auth = array()) : InstallContractCodeOp {
         if ($hostFunction->type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE
             || $hostFunction->installContractCodeArgs == null) {
             throw new Exception("invalid argument");
@@ -143,16 +191,17 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         if($contractCode == null) {
             throw new Exception("invalid argument");
         }
-        return new InstallContractCodeOp($contractCode, $footprint,null);
+        return new InstallContractCodeOp($contractCode, $footprint, $auth);
     }
 
     /**
      * @param XdrHostFunction $hostFunction
      * @param Footprint $footprint
+     * @param array|null $auth
      * @return InvokeContractOp
      * @throws Exception
      */
-    private static function fromInvokeContractHostFunction(XdrHostFunction $hostFunction, Footprint $footprint) : InvokeContractOp {
+    private static function fromInvokeContractHostFunction(XdrHostFunction $hostFunction, Footprint $footprint, ?array $auth = array()) : InvokeContractOp {
         if ($hostFunction->type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT
             || $hostFunction->invokeArgs == null || count($hostFunction->invokeArgs) < 2) {
             throw new Exception("invalid argument");
@@ -174,6 +223,6 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         if($contractId == null | $functionName == null) {
             throw new Exception("invalid argument");
         }
-        return new InvokeContractOp($contractId,$functionName, $args, $footprint, null);
+        return new InvokeContractOp($contractId,$functionName, $args, $footprint, $auth);
     }
 }

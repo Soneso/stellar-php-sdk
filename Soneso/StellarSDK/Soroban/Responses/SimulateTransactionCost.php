@@ -4,12 +4,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-namespace Soneso\StellarSDK\Soroban;
+namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  *  Holds information about the fees expected, instructions used, etc.
  */
-class Cost
+class SimulateTransactionCost
 {
     /// Stringified-number of the total cpu instructions consumed by this transaction
     public string $cpuInsns;
@@ -22,8 +22,8 @@ class Cost
         $this->memBytes = $json['memBytes'];
     }
 
-    public static function fromJson(array $json) : Cost {
-        $result = new Cost();
+    public static function fromJson(array $json) : SimulateTransactionCost {
+        $result = new SimulateTransactionCost();
         $result->loadFromJson($json);
         return $result;
     }

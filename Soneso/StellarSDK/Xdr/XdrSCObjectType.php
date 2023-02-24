@@ -18,7 +18,8 @@ class XdrSCObjectType
     const SCO_I128 = 5;
     const SCO_BYTES = 6;
     const SCO_CONTRACT_CODE = 7;
-    const SCO_ACCOUNT_ID = 8;
+    const SCO_ADDRESS = 8;
+    const SCO_NONCE_KEY = 9;
 
     public function __construct(int $value)
     {
@@ -76,7 +77,11 @@ class XdrSCObjectType
         return new XdrSCObjectType(XdrSCObjectType::SCO_CONTRACT_CODE);
     }
 
-    public static function ACCOUNT_ID() :  XdrSCObjectType {
-        return new XdrSCObjectType(XdrSCObjectType::SCO_ACCOUNT_ID);
+    public static function ADDRESS() :  XdrSCObjectType {
+        return new XdrSCObjectType(XdrSCObjectType::SCO_ADDRESS);
+    }
+
+    public static function NONCE_KEY() :  XdrSCObjectType {
+        return new XdrSCObjectType(XdrSCObjectType::SCO_NONCE_KEY);
     }
 }

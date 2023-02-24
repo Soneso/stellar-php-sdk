@@ -6,23 +6,23 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrSCSpecUDTErrorEnumCaseV0
+class XdrSCSpecUDTUnionCaseTupleV0
 {
 
     public string $doc;
-    public array $name; // [string]
-    public int $value;
+    public array $name;
+    public array $type; // [XdrSCSpecTypeDef]
 
     /**
      * @param string $doc
      * @param array $name
-     * @param int $value
+     * @param array $type
      */
-    public function __construct(string $doc, array $name, int $value)
+    public function __construct(string $doc, array $name, array $type)
     {
         $this->doc = $doc;
         $this->name = $name;
-        $this->value = $value;
+        $this->type = $type;
     }
 
 
@@ -32,20 +32,30 @@ class XdrSCSpecUDTErrorEnumCaseV0
         foreach($this->name as $val) {
             $bytes .= XdrEncoder::string($val);
         }
-        $bytes .= XdrEncoder::unsignedInteger32($this->value);
+        $bytes .= XdrEncoder::integer32(count($this->type));
+        foreach($this->type as $val) {
+            if ($val instanceof XdrSCSpecTypeDef) {
+                $bytes .= $val->encode();
+            }
+
+        }
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTErrorEnumCaseV0 {
+    public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTUnionCaseTupleV0 {
         $doc = $xdr->readString();
         $valCount = $xdr->readInteger32();
-        $arr = array();
+        $nameArr = array();
         for ($i = 0; $i < $valCount; $i++) {
-            array_push($arr, $xdr->readString());
+            array_push($nameArr, $xdr->readString());
         }
-        $value = $xdr->readUnsignedInteger32();
+        $valCount = $xdr->readInteger32();
+        $typeArr = array();
+        for ($i = 0; $i < $valCount; $i++) {
+            array_push($typeArr, XdrSCSpecTypeDef::decode($xdr));
+        }
 
-        return new XdrSCSpecUDTErrorEnumCaseV0($doc, $arr, $value);
+        return new XdrSCSpecUDTUnionCaseTupleV0($doc, $nameArr, $typeArr);
     }
 
     /**
@@ -65,7 +75,7 @@ class XdrSCSpecUDTErrorEnumCaseV0
     }
 
     /**
-     * @return array [string]
+     * @return array
      */
     public function getName(): array
     {
@@ -73,7 +83,7 @@ class XdrSCSpecUDTErrorEnumCaseV0
     }
 
     /**
-     * @param array $name [string]
+     * @param array $name
      */
     public function setName(array $name): void
     {
@@ -81,18 +91,18 @@ class XdrSCSpecUDTErrorEnumCaseV0
     }
 
     /**
-     * @return int
+     * @return array
      */
-    public function getValue(): int
+    public function getType(): array
     {
-        return $this->value;
+        return $this->type;
     }
 
     /**
-     * @param int $value
+     * @param array $type
      */
-    public function setValue(int $value): void
+    public function setType(array $type): void
     {
-        $this->value = $value;
+        $this->type = $type;
     }
 }

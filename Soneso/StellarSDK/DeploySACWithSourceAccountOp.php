@@ -20,13 +20,14 @@ class DeploySACWithSourceAccountOp extends InvokeHostFunctionOperation
     /**
      * @param string $salt
      * @param Footprint|null $footprint
+     * @param array|null $auth
      * @param MuxedAccount|null $sourceAccount
      */
-    public function __construct(string $salt, ?Footprint $footprint = null, ?MuxedAccount $sourceAccount = null)
+    public function __construct(string $salt, ?Footprint $footprint = null, ?array $auth = array(), ?MuxedAccount $sourceAccount = null)
     {
         $this->salt = $salt;
         $this->footprint = $footprint;
-        parent::__construct(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT), $footprint, $sourceAccount);
+        parent::__construct(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT), $footprint, $auth, $sourceAccount);
     }
 
 
@@ -36,7 +37,7 @@ class DeploySACWithSourceAccountOp extends InvokeHostFunctionOperation
     public function toOperationBody(): XdrOperationBody
     {
         $hostFunction = XdrHostFunction::forDeploySACWithSourceAccount($this->salt);
-        $hostFunctionOp = new XdrInvokeHostFunctionOperation($hostFunction, $this->getXdrFootprint());
+        $hostFunctionOp = new XdrInvokeHostFunctionOperation($hostFunction, $this->getXdrFootprint(), $this->auth);
         $type = new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION);
         $result = new XdrOperationBody($type);
         $result->setInvokeHostFunctionOperation($hostFunctionOp);

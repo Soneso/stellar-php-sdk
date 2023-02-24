@@ -11,26 +11,41 @@ class XdrInvokeHostFunctionOperation
 
     public XdrHostFunction $function;
     public XdrLedgerFootprint $footprint;
+    public array $auth; // [XdrContractAuth]
 
     /**
      * @param XdrHostFunction $function
      * @param XdrLedgerFootprint $footprint
      */
-    public function __construct(XdrHostFunction $function, XdrLedgerFootprint $footprint)
+    public function __construct(XdrHostFunction $function, XdrLedgerFootprint $footprint, array $auth)
     {
         $this->function = $function;
         $this->footprint = $footprint;
+        $this->auth = $auth;
     }
 
 
     public function encode(): string {
         $bytes = $this->function->encode();
         $bytes .= $this->footprint->encode();
+        $bytes .= XdrEncoder::integer32(count($this->auth));
+        foreach($this->auth as $val) {
+            if ($val instanceof XdrContractAuth) {
+                $bytes .= $val->encode();
+            }
+        }
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr):  XdrInvokeHostFunctionOperation {
-        return new XdrInvokeHostFunctionOperation(XdrHostFunction::decode($xdr), XdrLedgerFootprint::decode($xdr));
+        $hf = XdrHostFunction::decode($xdr);
+        $fp = XdrLedgerFootprint::decode($xdr);
+        $valCount = $xdr->readInteger32();
+        $auth = array();
+        for ($i = 0; $i < $valCount; $i++) {
+            array_push($auth, XdrContractAuth::decode($xdr));
+        }
+        return new XdrInvokeHostFunctionOperation($hf, $fp, $auth);
     }
 
     /**
@@ -64,4 +79,22 @@ class XdrInvokeHostFunctionOperation
     {
         $this->footprint = $footprint;
     }
+
+    /**
+     * @return array
+     */
+    public function getAuth(): array
+    {
+        return $this->auth;
+    }
+
+    /**
+     * @param array $auth
+     */
+    public function setAuth(array $auth): void
+    {
+        $this->auth = $auth;
+    }
+
+
 }

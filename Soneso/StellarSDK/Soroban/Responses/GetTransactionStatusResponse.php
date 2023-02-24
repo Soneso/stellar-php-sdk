@@ -4,7 +4,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-namespace Soneso\StellarSDK\Soroban;
+namespace Soneso\StellarSDK\Soroban\Responses;
 
 use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -25,9 +25,6 @@ class GetTransactionStatusResponse extends SorobanRpcResponse
     /// The current status of the transaction by hash, one of: pending, success, error
     public ?string $status = null;
 
-    /// (optional) Will be present on completed successful transactions.
-    public ?TransactionStatusResults $results = null;
-
     /// (optional) A base64 encoded string of the raw TransactionEnvelope XDR struct for this transaction.
     public ?string $envelopeXdr = null;
 
@@ -36,6 +33,8 @@ class GetTransactionStatusResponse extends SorobanRpcResponse
 
     /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
     public ?string $resultMetaXdr = null;
+
+    public ?TransactionStatusResults $results = null;
 
     /// (optional) Will be present on failed transactions.
     public ?TransactionStatusError $resultError = null;
@@ -147,7 +146,7 @@ class GetTransactionStatusResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return TransactionStatusResults|null (optional) Will be present on completed successful transactions.
+     * @return TransactionStatusResults|null
      */
     public function getResults(): ?TransactionStatusResults
     {
@@ -161,6 +160,7 @@ class GetTransactionStatusResponse extends SorobanRpcResponse
     {
         $this->results = $results;
     }
+
 
     /**
      * @return string|null (optional) A base64 encoded string of the raw TransactionEnvelope

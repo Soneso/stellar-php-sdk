@@ -4,22 +4,22 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-namespace Soneso\StellarSDK\Soroban;
+namespace Soneso\StellarSDK\Soroban\Requests;
 
-class TransactionStatusResults extends \IteratorIterator
+class SegmentFilters extends \IteratorIterator
 {
 
-    public function __construct(TransactionStatusResult ...$responses)
+    public function __construct(SegmentFilter ...$responses)
     {
         parent::__construct(new \ArrayIterator($responses));
     }
 
-    public function current(): TransactionStatusResult
+    public function current(): SegmentFilter
     {
         return parent::current();
     }
 
-    public function add(TransactionStatusResult $response)
+    public function add(SegmentFilter $response)
     {
         $this->getInnerIterator()->append($response);
     }

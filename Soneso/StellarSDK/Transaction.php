@@ -11,6 +11,8 @@ use Exception;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
+use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResult;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
@@ -210,10 +212,16 @@ class Transaction extends AbstractTransaction
         return new TransactionBuilder($sourceAccount);
     }
 
-    public function setFootprint(Footprint $footprint) {
-        foreach ($this->operations as $operation) {
-            if ($operation instanceof InvokeHostFunctionOperation) {
-                $operation->footprint = $footprint;
+    public function setDataFromSimulation(SimulateTransactionResponse $response) {
+        $results = $response->getResults();
+        if ($results != null && $results->count() == 1) {
+            $result = $results->toArray()[0];
+            if ($result instanceof SimulateTransactionResult) {
+                foreach ($this->operations as $operation) {
+                    if ($operation instanceof InvokeHostFunctionOperation) {
+                        $operation->footprint = $result->footprint;
+                    }
+                }
             }
         }
     }
