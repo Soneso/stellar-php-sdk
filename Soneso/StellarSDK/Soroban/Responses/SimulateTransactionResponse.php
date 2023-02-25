@@ -52,6 +52,17 @@ class SimulateTransactionResponse extends SorobanRpcResponse
         return $result;
     }
 
+    public function getFootprint() : ?Footprint {
+        $results = $this->results;
+        if ($results!= null && $results->count() == 1) {
+            $result = $results->toArray()[0];
+            if ($result instanceof SimulateTransactionResult) {
+                return $result->footprint;
+            }
+        }
+        return null;
+    }
+
     /**
      * @return string Stringified-number of the current latest ledger observed by the node when this response was generated.
      */

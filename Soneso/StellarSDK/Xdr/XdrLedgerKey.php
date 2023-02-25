@@ -15,7 +15,7 @@ class XdrLedgerKey
     public ?XdrLedgerKeyData $data = null;
     public ?XdrClaimableBalanceID $balanceID = null;
     public ?string $liquidityPoolID = null;
-    public ?string $contractID = null;
+    public ?string $contractID = null; // hex
     public ?XdrSCVal $contractDataKey = null;
     public ?string $contractCodeHash = null;
     public ?XdrConfigSettingID $configSetting = null;
@@ -65,7 +65,7 @@ class XdrLedgerKey
                 $result->liquidityPoolID = $xdr->readString(64);
                 break;
             case XdrLedgerEntryType::CONTRACT_DATA:
-                $result->contractID = $xdr->readOpaqueFixed(32);
+                $result->contractID = bin2hex($xdr->readOpaqueFixed(32));
                 $result->contractDataKey = XdrSCVal::decode($xdr);
                 break;
             case XdrLedgerEntryType::CONTRACT_CODE:
@@ -90,7 +90,7 @@ class XdrLedgerKey
 
     private function encodeContractData() : string
     {
-        $bytes = XdrEncoder::opaqueFixed($this->contractID, 32);
+        $bytes = XdrEncoder::opaqueFixed(hex2bin($this->contractID), 32);
         $bytes .= $this->contractDataKey->encode();
         return $bytes;
     }

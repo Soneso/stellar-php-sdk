@@ -22,6 +22,10 @@ use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
 use Soneso\StellarSDK\Transaction;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
+use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrSCObject;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /// This class helps you to connect to a local or remote soroban rpc server
 /// and send requests to the server. It parses the results and provides
@@ -179,6 +183,40 @@ class SorobanServer
         $body = $this->prepareRequest(self::GET_EVENTS, $request->getRequestParams());
         print($body . PHP_EOL);
         return $this->request($body, self::GET_EVENTS);
+    }
+
+    /**
+     * Loads nonce from ledger entry if available, otherwise returns 0
+     * @param string $accountId the account Id to load the nonce for.
+     * @param string $contractId the contract Id to load the nonce for.
+     * @return int the nonce if found otherwise 0.
+     * @throws GuzzleException
+     */
+    public function getNonce(string $accountId, string $contractId) : int {
+
+        $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
+        $ledgerKey->contractID = $contractId;
+        $address = new Address(Address::TYPE_ACCOUNT, accountId: $accountId);
+        $scoNonceKeyObj = XdrSCObject::forNonceKey($address->toXdr());
+        $scoNonceKeyVal = XdrSCVal::fromObject($scoNonceKeyObj);
+        $ledgerKey->contractDataKey = $scoNonceKeyVal;
+        $response = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
+        if ($response->error == null) {
+            $entryDataXdr = $response->getLedgerEntryDataXdr();
+            if ($entryDataXdr != null) {
+                $contractDataEntry = $entryDataXdr->getContractData();
+                if ($contractDataEntry != null) {
+                    $obj = $contractDataEntry->val->obj;
+                    if ($obj != null) {
+                        $nonce = $obj->u64;
+                        if ($nonce !== null) {
+                            return $nonce;
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     /**

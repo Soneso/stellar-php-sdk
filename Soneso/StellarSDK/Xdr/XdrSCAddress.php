@@ -10,8 +10,8 @@ class XdrSCAddress
 {
 
     public XdrSCAddressType $type;
-    public ?XdrAccountID $accountID = null;
-    public ?string $contractID; // hash
+    public ?XdrAccountID $accountId = null;
+    public ?string $contractId; // hex
 
     /**
      * @param XdrSCAddressType $type
@@ -26,10 +26,10 @@ class XdrSCAddress
 
         switch ($this->type->value) {
             case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
-                $bytes .= $this->accountID->encode();
+                $bytes .= $this->accountId->encode();
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $bytes .= XdrEncoder::opaqueFixed($this->contractID,32);
+                $bytes .= XdrEncoder::opaqueFixed(hex2bin($this->contractId),32);
                 break;
         }
         return $bytes;
@@ -39,10 +39,10 @@ class XdrSCAddress
         $result = new XdrSCAddress(XdrSCAddressType::decode($xdr));
         switch ($result->type->value) {
             case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
-                $result->accountID = XdrAccountID::decode($xdr);
+                $result->accountId = XdrAccountID::decode($xdr);
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $contractID = $xdr->readOpaqueFixed(32);
+                $result->contractId = bin2hex($xdr->readOpaqueFixed(32));
                 break;
         }
         return $result;
@@ -67,33 +67,33 @@ class XdrSCAddress
     /**
      * @return XdrAccountID|null
      */
-    public function getAccountID(): ?XdrAccountID
+    public function getAccountId(): ?XdrAccountID
     {
-        return $this->accountID;
+        return $this->accountId;
     }
 
     /**
-     * @param XdrAccountID|null $accountID
+     * @param XdrAccountID|null $accountId
      */
-    public function setAccountID(?XdrAccountID $accountID): void
+    public function setAccountId(?XdrAccountID $accountId): void
     {
-        $this->accountID = $accountID;
+        $this->accountId = $accountId;
     }
 
     /**
      * @return string|null
      */
-    public function getContractID(): ?string
+    public function getContractId(): ?string
     {
-        return $this->contractID;
+        return $this->contractId;
     }
 
     /**
-     * @param string|null $contractID
+     * @param string|null $contractId
      */
-    public function setContractID(?string $contractID): void
+    public function setContractId(?string $contractId): void
     {
-        $this->contractID = $contractID;
+        $this->contractId = $contractId;
     }
 
 }

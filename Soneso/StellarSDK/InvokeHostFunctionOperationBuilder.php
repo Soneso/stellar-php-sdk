@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use Soneso\StellarSDK\Soroban\ContractAuth;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 
 class InvokeHostFunctionOperationBuilder
@@ -106,6 +107,19 @@ class InvokeHostFunctionOperationBuilder
         return $this;
     }
 
+    private static function convertToXdrAuth(?array $auth) : array {
+        if ($auth == null) {
+            return array();
+        }
+
+        $result = array();
+        foreach ($auth as $val) {
+            if ($val instanceof ContractAuth) {
+                array_push($result , $val->toXdr());
+            }
+        }
+        return $result;
+    }
 
     /**
      * @throws Exception if the host function type is unknown or not implemented
@@ -114,16 +128,16 @@ class InvokeHostFunctionOperationBuilder
 
         switch ($this->hostFunctionType->value) {
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                return new InvokeContractOp($this->contractID, $this->functionName, $this->arguments, $this->footprint, $this->auth, $this->sourceAccount);
+                return new InvokeContractOp($this->contractID, $this->functionName, $this->arguments, $this->footprint, self::convertToXdrAuth($this->auth), $this->sourceAccount);
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE:
-                return new InstallContractCodeOp($this->contractCodeBytes, $this->footprint, $this->auth,$this->sourceAccount);
+                return new InstallContractCodeOp($this->contractCodeBytes, $this->footprint, self::convertToXdrAuth($this->auth), $this->sourceAccount);
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
                 if($this->wasmId != null) {
-                    return new CreateContractOp($this->wasmId, $this->salt, $this->footprint, $this->auth,$this->sourceAccount);
+                    return new CreateContractOp($this->wasmId, $this->salt, $this->footprint, self::convertToXdrAuth($this->auth), $this->sourceAccount);
                 } else if($this->asset != null) {
-                    return new DeploySACWithAssetOp($this->asset, $this->footprint, $this->auth,$this->sourceAccount);
+                    return new DeploySACWithAssetOp($this->asset, $this->footprint, self::convertToXdrAuth($this->auth), $this->sourceAccount);
                 } else {
-                    return new DeploySACWithSourceAccountOp($this->salt, $this->footprint, $this->auth,$this->sourceAccount);
+                    return new DeploySACWithSourceAccountOp($this->salt, $this->footprint, self::convertToXdrAuth($this->auth), $this->sourceAccount);
                 }
             default:
                 throw new Exception('unknown host function type: ' . $this->hostFunctionType->value);

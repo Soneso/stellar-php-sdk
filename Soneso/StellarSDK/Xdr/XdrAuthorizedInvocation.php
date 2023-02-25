@@ -9,27 +9,27 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrAuthorizedInvocation
 {
 
-    public string $contractID; // hash
+    public string $contractId; // hex
     public string $functionName;
     public array $args; // [XdrSCVal]
     public array $subInvocations; // [XdrAuthorizedInvocation]
 
     /**
-     * @param string $contractID
+     * @param string $contractId
      * @param string $functionName
      * @param array $args
      * @param array $subInvocations
      */
-    public function __construct(string $contractID, string $functionName, array $args, array $subInvocations)
+    public function __construct(string $contractId, string $functionName, array $args, array $subInvocations)
     {
-        $this->contractID = $contractID;
+        $this->contractId = $contractId;
         $this->functionName = $functionName;
         $this->args = $args;
         $this->subInvocations = $subInvocations;
     }
 
     public function encode(): string {
-        $bytes = XdrEncoder::opaqueFixed($this->contractID,32);
+        $bytes = XdrEncoder::opaqueFixed(hex2bin($this->contractId),32);
         $bytes .= XdrEncoder::string($this->functionName);
         $bytes .= XdrEncoder::integer32(count($this->args));
         foreach($this->args as $val) {
@@ -47,7 +47,7 @@ class XdrAuthorizedInvocation
     }
 
     public static function decode(XdrBuffer $xdr) : XdrAuthorizedInvocation {
-        $contractID = $xdr->readOpaqueFixed(32);
+        $contractID = bin2hex($xdr->readOpaqueFixed(32));
         $functionName = $xdr->readString();
         $valCount = $xdr->readInteger32();
         $args = array();
@@ -65,17 +65,17 @@ class XdrAuthorizedInvocation
     /**
      * @return string
      */
-    public function getContractID(): string
+    public function getContractId(): string
     {
-        return $this->contractID;
+        return $this->contractId;
     }
 
     /**
-     * @param string $contractID
+     * @param string $contractId
      */
-    public function setContractID(string $contractID): void
+    public function setContractId(string $contractId): void
     {
-        $this->contractID = $contractID;
+        $this->contractId = $contractId;
     }
 
     /**

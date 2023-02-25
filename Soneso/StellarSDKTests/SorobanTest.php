@@ -21,9 +21,6 @@ use Soneso\StellarSDK\Soroban\Responses\GetTransactionStatusResponse;
 use Soneso\StellarSDK\Soroban\Requests\EventFilter;
 use Soneso\StellarSDK\Soroban\Requests\EventFilters;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
-use Soneso\StellarSDK\Soroban\Requests\SegmentFilter;
-use Soneso\StellarSDK\Soroban\Requests\SegmentFilters;
-use Soneso\StellarSDK\Soroban\Requests\SegmentFiltersList;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
@@ -88,13 +85,12 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
-        $simResult = $simulateResponse->results->toArray()[0];
-        $this->assertNotNull($simResult->footprint);
+        $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
         $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
 
         // set the footprint and sign
-        $transaction->setDataFromSimulation($simulateResponse);
+        $transaction->setFootprint($simulateResponse->getFootprint());
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -133,7 +129,7 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simResult->footprint->toBase64Xdr());
+            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
         } else {
             $this->fail();
         }
@@ -152,13 +148,12 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
-        $simResult = $simulateResponse->results->toArray()[0];
-        $this->assertNotNull($simResult->footprint);
+        $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
         $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
 
         // set the footprint and sign
-        $transaction->setDataFromSimulation($simulateResponse);
+        $transaction->setFootprint($simulateResponse->getFootprint());
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -193,13 +188,13 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simResult->footprint->toBase64Xdr());
+            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
         } else {
             $this->fail();
         }
 
         // test get ledger entry
-        $footprint = $simResult->footprint;
+        $footprint = $simulateResponse->getFootprint();
         $contractCodeKey = $footprint->getContractCodeLedgerKey();
         $this->assertNotNull($contractCodeKey);
         $contractDataKey = $footprint->getContractDataLedgerKey();
@@ -233,13 +228,12 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
-        $simResult = $simulateResponse->results->toArray()[0];
-        $this->assertNotNull($simResult->footprint);
+        $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
         $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
 
         // set the footprint and sign
-        $transaction->setDataFromSimulation($simulateResponse);
+        $transaction->setFootprint($simulateResponse->getFootprint());
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -289,7 +283,7 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simResult->footprint->toBase64Xdr());
+            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
             $this->assertNotNull($firstOp->getParameters());
             $this->assertEquals(3, $firstOp->getParameters()->count());
             foreach ($firstOp->getParameters() as $parameter) {
@@ -316,13 +310,12 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
-        $simResult = $simulateResponse->results->toArray()[0];
-        $this->assertNotNull($simResult->footprint);
+        $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
         $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
 
         // set the footprint and sign
-        $transaction->setDataFromSimulation($simulateResponse);
+        $transaction->setFootprint($simulateResponse->getFootprint());
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -359,7 +352,7 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simResult->footprint->toBase64Xdr());
+            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
         } else {
             $this->fail();
         }
@@ -399,13 +392,12 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
-        $simResult = $simulateResponse->results->toArray()[0];
-        $this->assertNotNull($simResult->footprint);
+        $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
         $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
 
         // set the footprint and sign
-        $transaction->setDataFromSimulation($simulateResponse);
+        $transaction->setFootprint($simulateResponse->getFootprint());
         $transaction->sign($accountBKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -442,7 +434,7 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simResult->footprint->toBase64Xdr());
+            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
         } else {
             $this->fail();
         }

@@ -7,6 +7,8 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use Soneso\StellarSDK\Soroban\ContractAuth;
+use Soneso\StellarSDK\Xdr\XdrContractAuth;
 use Soneso\StellarSDK\Xdr\XdrContractIDType;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
@@ -19,7 +21,7 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
 {
     public XdrHostFunctionType $functionType;
     public ?Footprint $footprint = null;
-    public array $auth;
+    public array $auth; // array containing ContractAuth objects.
 
     /**
      * @param XdrHostFunctionType $functionType
@@ -83,6 +85,15 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
     }
 
 
+    private static function convertFromXdrAuth(array $xdrAuth) : array {
+        $result = array();
+        foreach ($xdrAuth as $xdr) {
+            if ($xdr instanceof XdrContractAuth) {
+                array_push($result , ContractAuth::fromXdr($xdr));
+            }
+        }
+        return $result;
+    }
 
     /**
      * @throws Exception
@@ -92,9 +103,9 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         $hostFunction = $xdrOp->function;
         switch ($hostFunction->type->value) {
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                return InvokeHostFunctionOperation::fromInvokeContractHostFunction($hostFunction, $footprint, $xdrOp->auth);
+                return InvokeHostFunctionOperation::fromInvokeContractHostFunction($hostFunction, $footprint, self::convertFromXdrAuth($xdrOp->auth));
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE:
-                return InvokeHostFunctionOperation::fromInstallContractCodeHostFunction($hostFunction, $footprint, $xdrOp->auth);
+                return InvokeHostFunctionOperation::fromInstallContractCodeHostFunction($hostFunction, $footprint, self::convertFromXdrAuth($xdrOp->auth));
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
                 if($hostFunction->createContractArgs == null) {
                     throw new Exception("invalid argument");
@@ -103,12 +114,12 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
                 $sourceTypeValue = $hostFunction->createContractArgs->source->type->value;
                 if ($contractIdTypeVal == XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT) {
                     if ($sourceTypeValue == XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF) {
-                        return InvokeHostFunctionOperation::fromCreateContractHostFunction($hostFunction, $footprint, $xdrOp->auth);
+                        return InvokeHostFunctionOperation::fromCreateContractHostFunction($hostFunction, $footprint, self::convertFromXdrAuth($xdrOp->auth));
                     } else if ($sourceTypeValue == XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN){
-                        return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithSourceAccount($hostFunction, $footprint, $xdrOp->auth);
+                        return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithSourceAccount($hostFunction, $footprint, self::convertFromXdrAuth($xdrOp->auth));
                     }
                 } else if ($contractIdTypeVal == XdrContractIDType::CONTRACT_ID_FROM_ASSET) {
-                    return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithAsset($hostFunction, $footprint, $xdrOp->auth);
+                    return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithAsset($hostFunction, $footprint, self::convertFromXdrAuth($xdrOp->auth));
                 }
         }
         throw new Exception("unknown function type");

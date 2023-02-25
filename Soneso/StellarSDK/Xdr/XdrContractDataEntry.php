@@ -8,7 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrContractDataEntry
 {
-    public string $contractID; // hash
+    public string $contractID; // hex
     public XdrSCVal $key;
     public XdrSCVal $val;
 
@@ -26,14 +26,14 @@ class XdrContractDataEntry
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::opaqueFixed($this->contractID,32);
+        $bytes = XdrEncoder::opaqueFixed(hex2bin($this->contractID),32);
         $bytes .= $this->key->encode();
         $bytes .= $this->val->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrContractDataEntry {
-        $contractID = $xdr->readOpaqueFixed(32);
+        $contractID = bin2hex($xdr->readOpaqueFixed(32));
 
         $key = XdrSCVal::decode($xdr);
         $val = XdrSCVal::decode($xdr);
