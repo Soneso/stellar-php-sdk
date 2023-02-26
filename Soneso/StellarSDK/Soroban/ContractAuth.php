@@ -83,22 +83,21 @@ class ContractAuth
         $address = null;
         $nonce = null;
         if ($xdr->addressWithNonce != null) {
-            $address = $xdr->addressWithNonce->address;
+            $address = Address::fromXdr($xdr->addressWithNonce->address);
             $nonce = $xdr->addressWithNonce->nonce;
         }
         $rootInvocation = $xdr->rootInvocation;
-        $sigArgs = array(); // See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
-        if (count($xdr->signatureArgs) > 0) {
-            $first = $xdr->signatureArgs[0];
-            if (is_array($first) && count($first) > 0) {
-                $obj = $first[0];
-                if ($obj instanceof XdrSCObject && $obj->vec != null) {
-                    $sigArgs = $obj->vec;
-                }
+        $xdrArgs = $xdr->signatureArgs;
+        $sigArgs = array();
+        if(count($xdrArgs) > 0) { // See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
+            $val = $xdrArgs[0];
+            if ($val instanceof XdrSCVal && $val->obj != null && $val->obj->vec != null) {
+                $sigArgs = $val->obj->vec;
             }
         }
+
         return new ContractAuth(AuthorizedInvocation::fromXdr($rootInvocation),
-            $sigArgs, Address::fromXdr($address),$nonce);
+            $sigArgs, $address ,$nonce);
     }
 
 }

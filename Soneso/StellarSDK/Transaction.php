@@ -11,6 +11,7 @@ use Exception;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Soroban\Footprint;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;

@@ -47,7 +47,7 @@ use Soneso\StellarSDK\EndSponsoringFutureReservesOperation;
 use Soneso\StellarSDK\EndSponsoringFutureReservesOperationBuilder;
 use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
-use Soneso\StellarSDK\Footprint;
+use Soneso\StellarSDK\Soroban\Footprint;
 use Soneso\StellarSDK\InstallContractCodeOp;
 use Soneso\StellarSDK\InvokeContractOp;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;

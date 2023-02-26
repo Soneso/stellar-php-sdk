@@ -95,6 +95,4 @@ class XdrInvokeHostFunctionOperation
     {
         $this->auth = $auth;
     }
-
-
 }

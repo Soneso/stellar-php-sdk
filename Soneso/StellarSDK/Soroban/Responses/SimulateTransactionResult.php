@@ -7,7 +7,9 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 
-use Soneso\StellarSDK\Footprint;
+
+use Soneso\StellarSDK\Soroban\Footprint;
+use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 
 /**
  * Used as a part of simulate transaction
@@ -20,7 +22,8 @@ class SimulateTransactionResult
     /// Footprint containing the ledger keys expected to be written by this transaction
     public ?Footprint $footprint = null;
 
-    public ?array $auth = null;
+    /// List of base64 encoded XdrLedgerFootprint related the authorizations needed.
+    public ?array $auth = null; //[string xdr]
 
     protected function loadFromJson(array $json) : void {
         if (isset($json['xdr'])) {
@@ -30,6 +33,7 @@ class SimulateTransactionResult
         if (isset($json['auth'])) {
             $this->auth = array();
             foreach ($json['auth'] as $jsonValue) {
+                //$nextFootprint = new Footprint(XdrLedgerFootprint::fromBase64Xdr($jsonValue));
                 array_push($this->auth, $jsonValue);
             }
         }

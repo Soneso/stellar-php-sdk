@@ -7,8 +7,6 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 
-use Soneso\StellarSDK\Footprint;
-
 /**
  * Used as a part of get transaction status and send transaction.
  */

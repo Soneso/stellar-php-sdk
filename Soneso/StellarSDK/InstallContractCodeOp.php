@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK;
 
+use Soneso\StellarSDK\Soroban\Footprint;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOperation;
@@ -32,7 +33,7 @@ class InstallContractCodeOp extends InvokeHostFunctionOperation
     {
 
         $hostFunction = XdrHostFunction::forInstallingContract($this->contractCodeBytes);
-        $hostFunctionOp = new XdrInvokeHostFunctionOperation($hostFunction, $this->getXdrFootprint(), $this->auth);
+        $hostFunctionOp = new XdrInvokeHostFunctionOperation($hostFunction, $this->getXdrFootprint(), self::convertToXdrAuth($this->auth));
         $type = new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION);
         $result = new XdrOperationBody($type);
         $result->setInvokeHostFunctionOperation($hostFunctionOp);

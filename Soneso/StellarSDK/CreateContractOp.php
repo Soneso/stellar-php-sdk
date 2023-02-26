@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use Soneso\StellarSDK\Soroban\Footprint;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOperation;
@@ -39,7 +40,7 @@ class CreateContractOp extends InvokeHostFunctionOperation
     public function toOperationBody(): XdrOperationBody
     {
         $hostFunction = XdrHostFunction::forCreatingContract($this->wasmId, $this->salt);
-        $hostFunctionOp = new XdrInvokeHostFunctionOperation($hostFunction, $this->getXdrFootprint(), $this->auth);
+        $hostFunctionOp = new XdrInvokeHostFunctionOperation($hostFunction, $this->getXdrFootprint(), self::convertToXdrAuth($this->auth));
         $type = new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION);
         $result = new XdrOperationBody($type);
         $result->setInvokeHostFunctionOperation($hostFunctionOp);

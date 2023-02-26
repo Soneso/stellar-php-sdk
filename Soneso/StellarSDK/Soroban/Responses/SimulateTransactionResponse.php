@@ -6,16 +6,13 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
-use Soneso\StellarSDK\Footprint;
+use Soneso\StellarSDK\Soroban\Footprint;
 
 /**
  * Response that will be received when submitting a trial contract invocation.
  */
 class SimulateTransactionResponse extends SorobanRpcResponse
 {
-
-    /// Footprint containing the ledger keys expected to be written by this transaction
-    public ?Footprint $footprint = null;
 
     /// Stringified-number of the current latest ledger observed by the node when this response was generated.
     public string $latestLedger;
@@ -58,6 +55,17 @@ class SimulateTransactionResponse extends SorobanRpcResponse
             $result = $results->toArray()[0];
             if ($result instanceof SimulateTransactionResult) {
                 return $result->footprint;
+            }
+        }
+        return null;
+    }
+
+    public function getAuth() : ?array {
+        $results = $this->results;
+        if ($results!= null && $results->count() == 1) {
+            $result = $results->toArray()[0];
+            if ($result instanceof SimulateTransactionResult) {
+                return $result->auth;
             }
         }
         return null;

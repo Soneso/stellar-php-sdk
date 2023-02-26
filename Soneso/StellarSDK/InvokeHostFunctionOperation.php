@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK;
 
 use Exception;
 use Soneso\StellarSDK\Soroban\ContractAuth;
+use Soneso\StellarSDK\Soroban\Footprint;
 use Soneso\StellarSDK\Xdr\XdrContractAuth;
 use Soneso\StellarSDK\Xdr\XdrContractIDType;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
@@ -90,6 +91,20 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         foreach ($xdrAuth as $xdr) {
             if ($xdr instanceof XdrContractAuth) {
                 array_push($result , ContractAuth::fromXdr($xdr));
+            }
+        }
+        return $result;
+    }
+
+    protected static function convertToXdrAuth(?array $auth) : array {
+        if ($auth == null) {
+            return array();
+        }
+
+        $result = array();
+        foreach ($auth as $val) {
+            if ($val instanceof ContractAuth) {
+                array_push($result , $val->toXdr());
             }
         }
         return $result;
