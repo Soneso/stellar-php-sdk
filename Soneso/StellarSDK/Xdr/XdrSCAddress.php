@@ -48,6 +48,18 @@ class XdrSCAddress
         return $result;
     }
 
+    public static function forAccountId(string $accountId) : XdrSCAddress {
+        $res = new XdrSCAddress(XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT());
+        $res->accountId = XdrAccountID::fromAccountId($accountId);
+        return $res;
+    }
+
+    public static function forContractId(string $contractId) : XdrSCAddress {
+        $res = new XdrSCAddress(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT());
+        $res->contractId = $contractId;
+        return $res;
+    }
+
     /**
      * @return XdrSCAddressType
      */

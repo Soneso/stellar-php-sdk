@@ -47,6 +47,9 @@ use Soneso\StellarSDK\EndSponsoringFutureReservesOperation;
 use Soneso\StellarSDK\EndSponsoringFutureReservesOperationBuilder;
 use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\AuthorizedInvocation;
+use Soneso\StellarSDK\Soroban\ContractAuth;
 use Soneso\StellarSDK\Soroban\Footprint;
 use Soneso\StellarSDK\InstallContractCodeOp;
 use Soneso\StellarSDK\InvokeContractOp;
@@ -84,9 +87,12 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\TransactionPreconditions;
 use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
+use Soneso\StellarSDK\Xdr\XdrAddressWithNonce;
+use Soneso\StellarSDK\Xdr\XdrAuthorizedInvocation;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
+use Soneso\StellarSDK\Xdr\XdrContractAuth;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
@@ -94,7 +100,10 @@ use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
+use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCContractCode;
 use Soneso\StellarSDK\Xdr\XdrSCContractCodeType;
 use Soneso\StellarSDK\Xdr\XdrSCHostAuthErrorCode;
@@ -655,9 +664,11 @@ class TxRep
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'function.installContractCodeArgs.code');
             }
             $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
-            return InvokeHostFunctionOperationBuilder::forInstallingContractCode(hex2bin($code), $footprint)->build();
+            $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
+            return InvokeHostFunctionOperationBuilder::forInstallingContractCode(hex2bin($code), $footprint, $auth)->build();
         } else if ('HOST_FUNCTION_TYPE_INVOKE_CONTRACT' == $hostFunctionType) {
             $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
+            $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
             $argsLen = self::getClearValue($opPrefix . 'function.invokeArgs.len', $map);
             if ($argsLen == null) {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeArgs.len');
@@ -675,11 +686,13 @@ class TxRep
             }
             $arguments = array();
             for ($i = 2; $i < (int)$argsLen; $i++) {
-                $arguments += [self::getScVal($opPrefix . 'function.invokeArgs[' . strval($i) . '].', $map)];
+                $next = self::getScVal($opPrefix . 'function.invokeArgs[' . strval($i) . '].', $map);
+                array_push($arguments, $next);
             }
-            return InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,$fnName, $arguments,$footprint)->build();
+            return InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,$fnName, $arguments,$footprint, $auth)->build();
         } else if ('HOST_FUNCTION_TYPE_CREATE_CONTRACT' == $hostFunctionType) {
             $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
+            $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
             $contractCodeType = self::getClearValue($opPrefix . 'function.createContractArgs.source.type', $map);
             if (!$contractCodeType) {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.source.type');
@@ -700,14 +713,14 @@ class TxRep
                 if (!$salt) {
                     throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.contractID.salt');
                 }
-                return InvokeHostFunctionOperationBuilder::forCreatingContract($wasmId, hex2bin($salt), $footprint)->build();
+                return InvokeHostFunctionOperationBuilder::forCreatingContract($wasmId, hex2bin($salt), $footprint, $auth)->build();
             } else if ('SCCONTRACT_CODE_TOKEN' == $contractCodeType) {
                 if ('CONTRACT_ID_FROM_SOURCE_ACCOUNT' == $contractIDType) {
                     $salt = self::getClearValue($opPrefix . 'function.createContractArgs.contractID.salt', $map);
                     if (!$salt) {
                         throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.contractID.salt');
                     }
-                    return InvokeHostFunctionOperationBuilder::forDeploySACWithSourceAccount(hex2bin($salt), $footprint)->build();
+                    return InvokeHostFunctionOperationBuilder::forDeploySACWithSourceAccount(hex2bin($salt), $footprint, $auth)->build();
                 } else if ('CONTRACT_ID_FROM_ASSET' == $contractIDType) {
                     $assetStr = self::getClearValue($opPrefix . 'function.createContractArgs.contractID.asset', $map);
                     if (!$assetStr) {
@@ -717,7 +730,7 @@ class TxRep
                     if (!$asset) {
                         throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.createContractArgs.contractID.asset');
                     }
-                    return InvokeHostFunctionOperationBuilder::forDeploySACWithAsset($asset, $footprint)->build();
+                    return InvokeHostFunctionOperationBuilder::forDeploySACWithAsset($asset, $footprint, $auth)->build();
                 } else {
                     throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.createContractArgs.contractID.type ' . $contractIDType);
                 }
@@ -728,6 +741,116 @@ class TxRep
         } else {
             throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.type '. $hostFunctionType);
         }
+    }
+
+    private static function getInvokeHostFunctionOpAuth($prefix, array $map) : array {
+        $auth = array();
+        $authLenStr = self::getClearValue($prefix . 'auth.len', $map);
+        if ($authLenStr == null) {
+            throw new InvalidArgumentException('missing ' . $prefix . 'auth.len');
+        }
+        if (!is_numeric($authLenStr)) {
+            throw new InvalidArgumentException('invalid '. $prefix . 'auth.len');
+        }
+        $authLen = (int)$authLenStr;
+        for ($i = 0; $i < $authLen; $i++) {
+            $next = self::getContractAuth($prefix . 'auth['.$i.'].', $map);
+            array_push($auth, $next);
+        }
+        return $auth;
+    }
+
+    private static function getContractAuth($prefix, array $map) : ContractAuth {
+        $addressWithNonce = null;
+        $present = self::getClearValue($prefix . 'addressWithNonce._present', $map);
+        if ($present == null) {
+            throw new InvalidArgumentException('missing ' . $prefix . 'addressWithNonce._present');
+        }
+        if ('true' == $present) {
+            $addressWithNonce = self::getAddressWithNonce($prefix . 'addressWithNonce.', $map);
+        }
+        $rootInvocation = self::getAuthorizedInvocation($prefix . 'rootInvocation.', $map);
+        $args = array();
+        $argsLenStr = self::getClearValue($prefix . 'signatureArgs.len', $map);
+        if ($argsLenStr == null) {
+            throw new InvalidArgumentException('missing ' . $prefix . 'signatureArgs.len');
+        }
+        if (!is_numeric($argsLenStr)) {
+            throw new InvalidArgumentException('invalid '. $prefix . 'signatureArgs.len');
+        }
+        $argsLen = (int)$argsLenStr;
+        for ($i = 0; $i < $argsLen; $i++) {
+            $next = self::getScVal($prefix . 'signatureArgs['.$i.'].', $map);
+            array_push($args, $next);
+        }
+        // HACK: See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
+        $sigArgs = array();
+        if(count($args) > 0) {
+            $val = $args[0];
+            if ($val instanceof XdrSCVal && $val->obj != null && $val->obj->vec != null) {
+                $sigArgs = $val->obj->vec;
+            }
+        }
+        $address = null;
+        $nonce = null;
+        if($addressWithNonce != null) {
+            $address = Address::fromXdr($addressWithNonce->address);
+            $nonce = $addressWithNonce->nonce;
+        }
+        return new ContractAuth($rootInvocation,$sigArgs,$address, $nonce);
+    }
+
+    private static function getAuthorizedInvocation($prefix, array $map) : AuthorizedInvocation {
+        $contractId = self::getClearValue($prefix . 'contractID', $map);
+        if ($contractId == null) {
+            throw new InvalidArgumentException('missing ' . $prefix . 'contractID');
+        }
+        $functionName = self::getClearValue($prefix . 'functionName', $map);
+        if ($functionName == null) {
+            throw new InvalidArgumentException('missing ' . $prefix . 'functionName');
+        }
+
+        $args = array();
+        $argsLenStr = self::getClearValue($prefix . 'args.len', $map);
+        if ($argsLenStr == null) {
+            throw new InvalidArgumentException('missing ' . $prefix . 'args.len');
+        }
+        if (!is_numeric($argsLenStr)) {
+            throw new InvalidArgumentException('invalid '. $prefix . 'args.len');
+        }
+        $argsLen = (int)$argsLenStr;
+        for ($i = 0; $i < $argsLen; $i++) {
+            $next = self::getScVal($prefix . 'args['.$i.'].', $map);
+            array_push($args, $next);
+        }
+
+        $subs = array();
+        $subsLenStr = self::getClearValue($prefix . 'subInvocations.len', $map);
+        if ($subsLenStr == null) {
+            throw new InvalidArgumentException('missing ' . $prefix . 'subInvocations.len');
+        }
+        if (!is_numeric($subsLenStr)) {
+            throw new InvalidArgumentException('invalid '. $prefix . 'subInvocations.len');
+        }
+        $subsLen = (int)$subsLenStr;
+        for ($i = 0; $i < $subsLen; $i++) {
+            $next = self::getAuthorizedInvocation($prefix . 'subInvocations['.$i.'].', $map);
+            array_push($subs, $next);
+        }
+        return new AuthorizedInvocation($contractId,$functionName,$args,$subs);
+    }
+
+    private static function getAddressWithNonce($prefix, array $map) : XdrAddressWithNonce {
+        $address =  self::getSCAddress($prefix . 'address.', $map);
+        $nonceStr = self::getClearValue($prefix . 'nonce', $map);
+        if ($nonceStr == null) {
+            throw new InvalidArgumentException('missing ' . $prefix . 'nonce');
+        }
+        if (!is_numeric($nonceStr)) {
+            throw new InvalidArgumentException('invalid '. $prefix . 'nonce');
+        }
+        $nonce = (int)$nonceStr;
+        return new XdrAddressWithNonce($address, $nonce);
     }
 
     private static function getInvokeHostFunctionOpFootprint($prefix, array $map) : Footprint {
@@ -766,13 +889,22 @@ class TxRep
         if (!$type) {
             throw new InvalidArgumentException('missing ' . $prefix . 'type');
         }
-        if ('CONTRACT_DATA' == $type) {
-            $contractIDHash = self::getClearValue($prefix . 'contractData.contractID', $map);
-            if (!$contractIDHash) {
+        if ('ACCOUNT' == $type) {
+            $accountID = self::getClearValue($prefix . 'account.accountID', $map);
+            if (!$accountID) {
+                throw new InvalidArgumentException('missing ' . $prefix . 'account.accountID');
+            }
+            $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
+            $ledgerKey->account = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId($accountID));
+            return $ledgerKey;
+        }
+        else if ('CONTRACT_DATA' == $type) {
+            $contractID = self::getClearValue($prefix . 'contractData.contractID', $map);
+            if (!$contractID) {
                 throw new InvalidArgumentException('missing ' . $prefix . 'contractData.contractID');
             }
             $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
-            $ledgerKey->contractID = hex2bin($contractIDHash);
+            $ledgerKey->contractID = $contractID;
             $ledgerKey->contractDataKey = self::getScVal($prefix . 'contractData.key.', $map);
             return $ledgerKey;
         } else if ('CONTRACT_CODE' == $type) {
@@ -1148,14 +1280,33 @@ class TxRep
             } else {
                 throw new InvalidArgumentException('unknown ' . $prefix . 'contractCode.type ' . $ccType);
             }
-        } else if ('SCO_ACCOUNT_ID' == $objType) {
-            $accountId = self::getClearValue($prefix . 'accountId', $map);
-            if ($accountId == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'accountId');
-            }
-            return XdrSCObject::forAccountId(XdrAccountID::fromAccountId($accountId));
+        } else if ('SCO_ADDRESS' == $objType) {
+            $address = self::getSCAddress($prefix . 'address.', $map);
+            return XdrSCObject::forAddress($address);
+        } else if ('SCO_NONCE_KEY' == $objType) {
+            $address = self::getSCAddress($prefix . 'nonceAddress.', $map);
+            return XdrSCObject::forNonceKey($address);
         } else {
             throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $objType);
+        }
+    }
+
+    private static function getSCAddress($prefix, array $map) : XdrSCAddress {
+        $type = self::getClearValue($prefix . 'type', $map);
+        if ("SC_ADDRESS_TYPE_ACCOUNT" == $type) {
+            $accId = self::getClearValue($prefix . 'accountId', $map);
+            if ($accId == null) {
+                throw new InvalidArgumentException('missing ' . $prefix . 'accountId');
+            }
+            return XdrSCAddress::forAccountId($accId);
+        } else if ("SC_ADDRESS_TYPE_CONTRACT" == $type) {
+            $contractId = self::getClearValue($prefix . 'contractId', $map);
+            if ($contractId == null) {
+                throw new InvalidArgumentException('missing ' . $prefix . 'contractId');
+            }
+            return XdrSCAddress::forContractId($contractId);
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
         }
     }
 
@@ -1169,7 +1320,8 @@ class TxRep
             throw new InvalidArgumentException('invalid ' . $prefix . 'vec.len ' . $len);
         }
         for ($i = 0; $i < (int)$len; $i++) {
-            $vec += [self::getScVal($prefix . 'vec['.strval($i).'].', $map)];
+            $val = self::getScVal($prefix . 'vec['.strval($i).'].', $map);
+            array_push($vec, $val);
         }
         return $vec;
     }
@@ -1186,7 +1338,8 @@ class TxRep
         for ($i = 0; $i < (int)$len; $i++) {
             $key = self::getScVal($prefix . 'map['.strval($i).'].key.', $map);
             $value = self::getScVal($prefix . 'map['.strval($i).'].val.', $map);
-            $result += [new XdrSCMapEntry($key, $value)];
+            $entry = new XdrSCMapEntry($key, $value);
+            array_push($result, $entry);
         }
         return $result;
     }
@@ -2823,7 +2976,75 @@ class TxRep
                     $index++;
                 }
             }
+
+            $authArr = $operation->auth;
+            $lines += [$prefix.'auth.len' => strval(count($authArr))];
+            $index = 0;
+            foreach ($authArr as $auth) {
+                if($auth instanceof ContractAuth) {
+                    $lines = array_merge($lines, self::getContractAuthTx($prefix.'auth['.$index.'].', $auth->toXdr()));
+                    $index++;
+                }
+            }
+
         }
+        return $lines;
+    }
+
+    private static function getContractAuthTx(string $prefix, XdrContractAuth $auth) : array {
+        $lines = array();
+        if ($auth->addressWithNonce == null) {
+            $lines += [$prefix.'addressWithNonce._present' => 'false'];
+        } else {
+            $lines += [$prefix.'addressWithNonce._present' => 'true'];
+            $lines = array_merge($lines, self::getAddressWithNonceTx($prefix.'addressWithNonce.', $auth->addressWithNonce));
+        }
+
+        $lines = array_merge($lines, self::getAuthorizedInvocationTx($prefix.'rootInvocation.', $auth->rootInvocation));
+
+        $argsArr = $auth->signatureArgs;
+        $lines += [$prefix.'signatureArgs.len' => strval(count($argsArr))];
+        $index = 0;
+        foreach ($argsArr as $val) {
+            if($val instanceof XdrSCVal) {
+                $lines = array_merge($lines, self::getScValTx($prefix.'signatureArgs['.$index.'].', $val));
+                $index++;
+            }
+        }
+        return $lines;
+    }
+
+    private static function getAuthorizedInvocationTx(string $prefix, XdrAuthorizedInvocation $auth) : array {
+        $lines = array();
+        $lines += [$prefix.'contractID' => $auth->contractId];
+        $lines += [$prefix.'functionName' => $auth->functionName];
+
+        $argsArr = $auth->args;
+        $lines += [$prefix.'args.len' => strval(count($argsArr))];
+        $index = 0;
+        foreach ($argsArr as $val) {
+            if($val instanceof XdrSCVal) {
+                $lines = array_merge($lines, self::getScValTx($prefix.'args['.$index.'].', $val));
+                $index++;
+            }
+        }
+
+        $subsArr = $auth->subInvocations;
+        $lines += [$prefix.'subInvocations.len' => strval(count($subsArr))];
+        $index = 0;
+        foreach ($subsArr as $val) {
+            if($val instanceof XdrAuthorizedInvocation) {
+                $lines = array_merge($lines, self::getAuthorizedInvocationTx($prefix.'subInvocations['.$index.'].', $val));
+                $index++;
+            }
+        }
+        return $lines;
+    }
+
+    private static function getAddressWithNonceTx(string $prefix, XdrAddressWithNonce $addressWithNonce) : array {
+        $lines = array();
+        $lines = array_merge($lines, self::getSCAddressTx($prefix.'address.', $addressWithNonce->address));
+        $lines += [$prefix.'nonce' => $addressWithNonce->nonce];
         return $lines;
     }
 
@@ -2831,9 +3052,13 @@ class TxRep
         $lines = array();
         $type = $key->getType()->getValue();
         switch ($type) {
+            case XdrLedgerEntryType::ACCOUNT:
+                $lines += [$prefix . 'type' => 'ACCOUNT'];
+                $lines += [$prefix . 'account.accountID' => $key->account->getAccountID()->getAccountId()];
+                break;
             case XdrLedgerEntryType::CONTRACT_DATA:
                 $lines += [$prefix . 'type' => 'CONTRACT_DATA'];
-                $lines += [$prefix . 'contractData.contractID' => bin2hex($key->contractID)];
+                $lines += [$prefix . 'contractData.contractID' => $key->contractID];
                 $lines = array_merge($lines, self::getScValTx($prefix.'contractData.key.', $key->contractDataKey));
                 break;
             case XdrLedgerEntryType::CONTRACT_CODE:
@@ -2945,9 +3170,14 @@ class TxRep
                                     $lines += [$prefix.'obj.contractCode.type' => 'SCCONTRACT_CODE_TOKEN'];
                             }
                             break;
-                        case XdrSCObjectType::SCO_ACCOUNT_ID:
-                            $lines += [$prefix.'obj.type' => 'SCO_ACCOUNT_ID'];
-                            $lines += [$prefix.'obj.accountId' => $val->obj->accountID->getAccountId()];
+                        case XdrSCObjectType::SCO_ADDRESS:
+                            $lines += [$prefix.'obj.type' => 'SCO_ADDRESS'];
+                            $lines = array_merge($lines, self::getSCAddressTx($prefix.'obj.address.', $val->obj->address));
+                            break;
+                        case XdrSCObjectType::SCO_NONCE_KEY:
+                            $lines += [$prefix.'obj.type' => 'SCO_NONCE_KEY'];
+                            $lines = array_merge($lines, self::getSCAddressTx($prefix.'obj.nonceAddress.', $val->obj->nonceAddress));
+                            break;
                     }
                 }
                 break;
@@ -3184,6 +3414,22 @@ class TxRep
                         break;
                 }
 
+        }
+        return $lines;
+    }
+
+    private static function getSCAddressTx(string $prefix, XdrSCAddress $address) : array {
+        $type = $address->getType()->getValue();
+        $lines = array();
+        switch ($type) {
+            case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
+                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_ACCOUNT'];
+                $lines += [$prefix . 'accountId' => $address->getAccountId()->getAccountId()];
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_CONTRACT'];
+                $lines += [$prefix . 'contractId' => $address->getContractId()];
+                break;
         }
         return $lines;
     }

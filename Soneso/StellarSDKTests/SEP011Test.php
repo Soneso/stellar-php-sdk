@@ -878,25 +878,26 @@ signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd8
 
     public function testSorobanInstallContractCode() : void {
         $txrep = 'type: ENVELOPE_TYPE_TX
-tx.sourceAccount: GBRMOPMN6AT6MOW2TJGLHK2SA73K3JKSGRKZ3U5ET6VWNNSPF5ZYANRI
+tx.sourceAccount: GAI4D5HAVLV4I3TJQ6IQJIDV53BC7UAQYPYVMTE4L6Y3VJ4I2OY3XI5T
 tx.fee: 100
-tx.seqNum: 2468657007427585
+tx.seqNum: 699950820229121
 tx.cond.type: PRECOND_NONE
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
 tx.operations[0].sourceAccount._present: false
 tx.operations[0].body.type: INVOKE_HOST_FUNCTION
 tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE
-tx.operations[0].body.invokeHostFunctionOp.function.installContractCodeArgs.code: 0061736d0100000001150460017e017e60027e7e017e60027f7e017e6000000219040178013900000176015f00000176013400010176013600010304030200030503010001060b027f0141000b7f0141000b071d030568656c6c6f0005066d656d6f727902000873646b737461727400060c01060a9004033900200041ff0171410849200142808080808080808010547145044041064208100410001a0b200041017441ff0171ad2001420486844201840bc10302067f027e410242001004100121082300220441046a2201411c6a22053f002203411074410f6a41707122064b04402003200520066b41ffff036a4180807c714110762206200320064a1b40004100480440200640004100480440000b0b0b200524002004411c360200200141046b22034100360204200341003602082003410336020c200341083602102001420037031020012008370310419c09280200410176410a4b044041064208100410001a0b03402002419c092802004101764804402002419c092802004101764f047f417f05200241017441a0096a2f01000b220341fa004c200341304e7104402007420686210842002107200341ff017141df004604404201210705200341ff0171220441394d200441304f710440200341ff0171ad422e7d210705200341ff0171220441da004d200441c1004f710440200341ff0171ad42357d210705200341ff0171220441fa004d200441e1004f710440200341ff0171ad423b7d21070541064208100410001a0b0b0b0b200720088421070541064208100410001a0b200241016a21020c010b0b41042007100421072001200129031020071002370310200120012903102000100337031020012903100b1100230104400f0b4101240141ac0924000b0b8d010600418c080b013c004198080b2f010000002800000041006c006c006f0063006100740069006f006e00200074006f006f0020006c00610072006700650041cc080b013c0041d8080b25010000001e0000007e006c00690062002f00720074002f0073007400750062002e0074007300418c090b011c004198090b11010000000a000000480065006c006c006f001e11636f6e7472616374656e766d657461763000000000000000000000001b00370e636f6e7472616374737065637630000000000000000568656c6c6f0000000000000100000002746f0000000000080000000100000000
+tx.operations[0].body.invokeHostFunctionOp.function.installContractCodeArgs.code: 0061736d0100000001150460017e017e60027e7e017e60027f7e017e6000000219040178013800000176015f00000176013400010176013600010304030200030503010001060b027f0141000b7f0141000b071d030568656c6c6f0005066d656d6f727902000873646b737461727400060c01060a9004033900200041ff0171410849200142808080808080808010547145044041064208100410001a0b200041017441ff0171ad2001420486844201840bc10302067f027e410242001004100121082300220441046a2201411c6a22053f002203411074410f6a41707122064b04402003200520066b41ffff036a4180807c714110762206200320064a1b40004100480440200640004100480440000b0b0b200524002004411c360200200141046b22034100360204200341003602082003410336020c200341083602102001420037031020012008370310419c09280200410176410a4b044041064208100410001a0b03402002419c092802004101764804402002419c092802004101764f047f417f05200241017441a0096a2f01000b220341fa004c200341304e7104402007420686210842002107200341ff017141df004604404201210705200341ff0171220441394d200441304f710440200341ff0171ad422e7d210705200341ff0171220441da004d200441c1004f710440200341ff0171ad42357d210705200341ff0171220441fa004d200441e1004f710440200341ff0171ad423b7d21070541064208100410001a0b0b0b0b200720088421070541064208100410001a0b200241016a21020c010b0b41042007100421072001200129031020071002370310200120012903102000100337031020012903100b1100230104400f0b4101240141ac0924000b0b8d010600418c080b013c004198080b2f010000002800000041006c006c006f0063006100740069006f006e00200074006f006f0020006c00610072006700650041cc080b013c0041d8080b25010000001e0000007e006c00690062002f00720074002f0073007400750062002e0074007300418c090b011c004198090b11010000000a000000480065006c006c006f001e11636f6e7472616374656e766d657461763000000000000000000000001d00430e636f6e747261637473706563763000000000000000000000000568656c6c6f000000000000010000000000000002746f00000000000800000001000003ea00000008
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 1
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_CODE
-tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractCode.hash: 2a146935481b243ba90218ee28a43d0c8538debbbd733213df90394c6a6d67b4
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractCode.hash: e811e15852de29ad91753af97e6ead60d953f76e7eb2644aa09938c82d080199
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 0
+tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 tx.ext.v: 0
 signatures.len: 1
-signatures[0].hint: 4f2f7380
-signatures[0].signature: c2887fa3cafbc29597e1341a0a528584728f6e5eacb6da0aba6733e26b0f7a65e358ac8a614d25c0f70af790334dc8253f82bc19085848ccee935935bdcfef09';
-        $expected = "AAAAAgAAAABixz2N8CfmOtqaTLOrUgf2raVSNFWd06Sfq2a2Ty9zgAAAAGQACMU7AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAgAAA3AAYXNtAQAAAAEVBGABfgF+YAJ+fgF+YAJ/fgF+YAAAAhkEAXgBOQAAAXYBXwAAAXYBNAABAXYBNgABAwQDAgADBQMBAAEGCwJ/AUEAC38BQQALBx0DBWhlbGxvAAUGbWVtb3J5AgAIc2Rrc3RhcnQABgwBBgqQBAM5ACAAQf8BcUEISSABQoCAgICAgICAEFRxRQRAQQZCCBAEEAAaCyAAQQF0Qf8Bca0gAUIEhoRCAYQLwQMCBn8CfkECQgAQBBABIQgjACIEQQRqIgFBHGoiBT8AIgNBEHRBD2pBcHEiBksEQCADIAUgBmtB//8DakGAgHxxQRB2IgYgAyAGShtAAEEASARAIAZAAEEASARAAAsLCyAFJAAgBEEcNgIAIAFBBGsiA0EANgIEIANBADYCCCADQQM2AgwgA0EINgIQIAFCADcDECABIAg3AxBBnAkoAgBBAXZBCksEQEEGQggQBBAAGgsDQCACQZwJKAIAQQF2SARAIAJBnAkoAgBBAXZPBH9BfwUgAkEBdEGgCWovAQALIgNB+gBMIANBME5xBEAgB0IGhiEIQgAhByADQf8BcUHfAEYEQEIBIQcFIANB/wFxIgRBOU0gBEEwT3EEQCADQf8Bca1CLn0hBwUgA0H/AXEiBEHaAE0gBEHBAE9xBEAgA0H/AXGtQjV9IQcFIANB/wFxIgRB+gBNIARB4QBPcQRAIANB/wFxrUI7fSEHBUEGQggQBBAAGgsLCwsgByAIhCEHBUEGQggQBBAAGgsgAkEBaiECDAELC0EEIAcQBCEHIAEgASkDECAHEAI3AxAgASABKQMQIAAQAzcDECABKQMQCxEAIwEEQA8LQQEkAUGsCSQACwuNAQYAQYwICwE8AEGYCAsvAQAAACgAAABBAGwAbABvAGMAYQB0AGkAbwBuACAAdABvAG8AIABsAGEAcgBnAGUAQcwICwE8AEHYCAslAQAAAB4AAAB+AGwAaQBiAC8AcgB0AC8AcwB0AHUAYgAuAHQAcwBBjAkLARwAQZgJCxEBAAAACgAAAEgAZQBsAGwAbwAeEWNvbnRyYWN0ZW52bWV0YXYwAAAAAAAAAAAAAAAbADcOY29udHJhY3RzcGVjdjAAAAAAAAAABWhlbGxvAAAAAAAAAQAAAAJ0bwAAAAAACAAAAAEAAAAAAAAAAQAAAAcqFGk1SBskO6kCGO4opD0MhTjeu71zMhPfkDlMam1ntAAAAAAAAAAAAAAAAU8vc4AAAABAwoh/o8r7wpWX4TQaClKFhHKPbl6sttoKumcz4msPemXjWKyKYU0lwPcK95AzTcglP4K8GQhYSMzuk1k1vc/vCQ==";
+signatures[0].hint: 88d3b1bb
+signatures[0].signature: d7df4d986b844dfc760496e0e9d104c67211ff92961164caad7d59c449278480b25d69458e805787c12cd74bab7386f7c249be76def42c3f7c2c230531554b0b';
+        $expected = "AAAAAgAAAAARwfTgquvEbmmHkQSgde7CL9AQw/FWTJxfsbqniNOxuwAAAGQAAnyaAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAgAAA3wAYXNtAQAAAAEVBGABfgF+YAJ+fgF+YAJ/fgF+YAAAAhkEAXgBOAAAAXYBXwAAAXYBNAABAXYBNgABAwQDAgADBQMBAAEGCwJ/AUEAC38BQQALBx0DBWhlbGxvAAUGbWVtb3J5AgAIc2Rrc3RhcnQABgwBBgqQBAM5ACAAQf8BcUEISSABQoCAgICAgICAEFRxRQRAQQZCCBAEEAAaCyAAQQF0Qf8Bca0gAUIEhoRCAYQLwQMCBn8CfkECQgAQBBABIQgjACIEQQRqIgFBHGoiBT8AIgNBEHRBD2pBcHEiBksEQCADIAUgBmtB//8DakGAgHxxQRB2IgYgAyAGShtAAEEASARAIAZAAEEASARAAAsLCyAFJAAgBEEcNgIAIAFBBGsiA0EANgIEIANBADYCCCADQQM2AgwgA0EINgIQIAFCADcDECABIAg3AxBBnAkoAgBBAXZBCksEQEEGQggQBBAAGgsDQCACQZwJKAIAQQF2SARAIAJBnAkoAgBBAXZPBH9BfwUgAkEBdEGgCWovAQALIgNB+gBMIANBME5xBEAgB0IGhiEIQgAhByADQf8BcUHfAEYEQEIBIQcFIANB/wFxIgRBOU0gBEEwT3EEQCADQf8Bca1CLn0hBwUgA0H/AXEiBEHaAE0gBEHBAE9xBEAgA0H/AXGtQjV9IQcFIANB/wFxIgRB+gBNIARB4QBPcQRAIANB/wFxrUI7fSEHBUEGQggQBBAAGgsLCwsgByAIhCEHBUEGQggQBBAAGgsgAkEBaiECDAELC0EEIAcQBCEHIAEgASkDECAHEAI3AxAgASABKQMQIAAQAzcDECABKQMQCxEAIwEEQA8LQQEkAUGsCSQACwuNAQYAQYwICwE8AEGYCAsvAQAAACgAAABBAGwAbABvAGMAYQB0AGkAbwBuACAAdABvAG8AIABsAGEAcgBnAGUAQcwICwE8AEHYCAslAQAAAB4AAAB+AGwAaQBiAC8AcgB0AC8AcwB0AHUAYgAuAHQAcwBBjAkLARwAQZgJCxEBAAAACgAAAEgAZQBsAGwAbwAeEWNvbnRyYWN0ZW52bWV0YXYwAAAAAAAAAAAAAAAdAEMOY29udHJhY3RzcGVjdjAAAAAAAAAAAAAAAAVoZWxsbwAAAAAAAAEAAAAAAAAAAnRvAAAAAAAIAAAAAQAAA+oAAAAIAAAAAQAAAAfoEeFYUt4prZF1Ovl+bq1g2VP3bn6yZEqgmTjILQgBmQAAAAAAAAAAAAAAAAAAAAGI07G7AAAAQNffTZhrhE38dgSW4OnRBMZyEf+SlhFkyq19WcRJJ4SAsl1pRY6AV4fBLNdLq3OG98JJvnbe9Cw/fCwjBTFVSws=";
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
@@ -907,9 +908,9 @@ signatures[0].signature: c2887fa3cafbc29597e1341a0a528584728f6e5eacb6da0aba6733e
 
     public function testSorobanCreateContract() : void {
         $txrep = 'type: ENVELOPE_TYPE_TX
-tx.sourceAccount: GBRMOPMN6AT6MOW2TJGLHK2SA73K3JKSGRKZ3U5ET6VWNNSPF5ZYANRI
+tx.sourceAccount: GCX3VZJFJTICKE7OJ6I2H5FQQ3UKRM4F55UCCVDPSJQEQOXZB7YRWEIM
 tx.fee: 100
-tx.seqNum: 2468657007427586
+tx.seqNum: 700225698136066
 tx.cond.type: PRECOND_NONE
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
@@ -917,22 +918,23 @@ tx.operations[0].sourceAccount._present: false
 tx.operations[0].body.type: INVOKE_HOST_FUNCTION
 tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
 tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_WASM_REF
-tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.wasm_id: 2a146935481b243ba90218ee28a43d0c8538debbbd733213df90394c6a6d67b4
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.wasm_id: e811e15852de29ad91753af97e6ead60d953f76e7eb2644aa09938c82d080199
 tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_SOURCE_ACCOUNT
-tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.salt: 0609eaad2a2ec802062335628211174fb15d2f385fbff0486fa1ca4f57d69bf1
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.salt: 697552b02c33739d0000799bb9ed9955ab849d58b575406461673b9f544f9437
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 1
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_CODE
-tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractCode.hash: 2a146935481b243ba90218ee28a43d0c8538debbbd733213df90394c6a6d67b4
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractCode.hash: e811e15852de29ad91753af97e6ead60d953f76e7eb2644aa09938c82d080199
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 1
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
-tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 9df0aa24237452f055093f35d3b688a67b5e2bc89223e0ad18dad67fa3cbe149
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 1a1e28893379dcf707d921ba300402d6976b15283a1e8b71df5d89e445d5d6df
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 tx.ext.v: 0
 signatures.len: 1
-signatures[0].hint: 4f2f7380
-signatures[0].signature: 2129e1caace09d1b11f7552d4c48132a2a96f3641e1e0c1ed45d067b549b7e9613867a527942eb59ae763dd3684494ee8141362ae189d51c54037e8eea33290a';
-        $expected = "AAAAAgAAAABixz2N8CfmOtqaTLOrUgf2raVSNFWd06Sfq2a2Ty9zgAAAAGQACMU7AAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAAGCeqtKi7IAgYjNWKCERdPsV0vOF+/8EhvocpPV9ab8QAAAAAqFGk1SBskO6kCGO4opD0MhTjeu71zMhPfkDlMam1ntAAAAAEAAAAHKhRpNUgbJDupAhjuKKQ9DIU43ru9czIT35A5TGptZ7QAAAABAAAABp3wqiQjdFLwVQk/NdO2iKZ7XivIkiPgrRja1n+jy+FJAAAAAwAAAAMAAAAAAAAAAU8vc4AAAABAISnhyqzgnRsR91UtTEgTKiqW82QeHgwe1F0Ge1SbfpYThnpSeULrWa52PdNoRJTugUE2KuGJ1RxUA36O6jMpCg==";
+signatures[0].hint: f90ff11b
+signatures[0].signature: 999896922fd58755609c40fb640e472b746fec02c8ad088ac1c831743655dc5827922ea1eb52d6192360bfbc87da75162e21d366527f2289528269aea6a74b04';
+        $expected = "AAAAAgAAAACvuuUlTNAlE+5PkaP0sIboqLOF72ghVG+SYEg6+Q/xGwAAAGQAAnzaAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAABpdVKwLDNznQAAeZu57ZlVq4SdWLV1QGRhZzufVE+UNwAAAADoEeFYUt4prZF1Ovl+bq1g2VP3bn6yZEqgmTjILQgBmQAAAAEAAAAH6BHhWFLeKa2RdTr5fm6tYNlT925+smRKoJk4yC0IAZkAAAABAAAABhoeKIkzedz3B9khujAEAtaXaxUoOh6Lcd9dieRF1dbfAAAAAwAAAAMAAAAAAAAAAAAAAAH5D/EbAAAAQJmYlpIv1YdVYJxA+2QORyt0b+wCyK0IisHIMXQ2VdxYJ5IuoetS1hkjYL+8h9p1Fi4h02ZSfyKJUoJprqanSwQ=";
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
@@ -942,9 +944,9 @@ signatures[0].signature: 2129e1caace09d1b11f7552d4c48132a2a96f3641e1e0c1ed45d067
 
     public function testSorobanInvokeContract() : void {
         $txrep = 'type: ENVELOPE_TYPE_TX
-tx.sourceAccount: GBRMOPMN6AT6MOW2TJGLHK2SA73K3JKSGRKZ3U5ET6VWNNSPF5ZYANRI
+tx.sourceAccount: GAQT2VKQOKFT25Y76MNVTUQGAW5FGMDUTEYRKRSN4T6R6Q3P4ODUABRL
 tx.fee: 100
-tx.seqNum: 2468657007427587
+tx.seqNum: 700444741468163
 tx.cond.type: PRECOND_NONE
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
@@ -954,24 +956,25 @@ tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INV
 tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs.len: 3
 tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].type: SCV_OBJECT
 tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.type: SCO_BYTES
-tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: 9df0aa24237452f055093f35d3b688a67b5e2bc89223e0ad18dad67fa3cbe149
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: f7e6d29ebdbc115cbb06b9f144e557aff277ad5befb008bc9459a10bb134c479
 tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].type: SCV_SYMBOL
 tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].sym: hello
 tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].type: SCV_SYMBOL
 tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].sym: friend
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 2
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_DATA
-tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.contractID: 9df0aa24237452f055093f35d3b688a67b5e2bc89223e0ad18dad67fa3cbe149
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.contractID: f7e6d29ebdbc115cbb06b9f144e557aff277ad5befb008bc9459a10bb134c479
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.type: SCV_STATIC
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].type: CONTRACT_CODE
-tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractCode.hash: 2a146935481b243ba90218ee28a43d0c8538debbbd733213df90394c6a6d67b4
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractCode.hash: e811e15852de29ad91753af97e6ead60d953f76e7eb2644aa09938c82d080199
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 0
+tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 tx.ext.v: 0
 signatures.len: 1
-signatures[0].hint: 4f2f7380
-signatures[0].signature: 7c974a3fd94725ef96f244836701abcecb3d84971a12d1428b5ee2c127ccdb61012c8be5bb82216ebcde47f6452828506b1fe1c4327b8e356f253213f3505907';
-        $expected = "AAAAAgAAAABixz2N8CfmOtqaTLOrUgf2raVSNFWd06Sfq2a2Ty9zgAAAAGQACMU7AAAAAwAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAMAAAAEAAAAAQAAAAYAAAAgnfCqJCN0UvBVCT8107aIpnteK8iSI+CtGNrWf6PL4UkAAAAFAAAABWhlbGxvAAAAAAAABQAAAAZmcmllbmQAAAAAAAIAAAAGnfCqJCN0UvBVCT8107aIpnteK8iSI+CtGNrWf6PL4UkAAAADAAAAAwAAAAcqFGk1SBskO6kCGO4opD0MhTjeu71zMhPfkDlMam1ntAAAAAAAAAAAAAAAAU8vc4AAAABAfJdKP9lHJe+W8kSDZwGrzss9hJcaEtFCi17iwSfM22EBLIvlu4IhbrzeR/ZFKChQax/hxDJ7jjVvJTIT81BZBw==";
+signatures[0].hint: 6fe38740
+signatures[0].signature: c5c8d1975454d00bb8610bd8d3b6880b82bf11e1f6f43e7d7339275bba88f4ec37673b58802f4298ec5c2bf89e36224f1b4ac21adef5d1486147def4b147b90e';
+        $expected = "AAAAAgAAAAAhPVVQcos9dx/zG1nSBgW6UzB0mTEVRk3k/R9Db+OHQAAAAGQAAn0NAAAAAwAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAMAAAAEAAAAAQAAAAYAAAAg9+bSnr28EVy7BrnxROVXr/J3rVvvsAi8lFmhC7E0xHkAAAAFAAAABWhlbGxvAAAAAAAABQAAAAZmcmllbmQAAAAAAAIAAAAG9+bSnr28EVy7BrnxROVXr/J3rVvvsAi8lFmhC7E0xHkAAAADAAAAAwAAAAfoEeFYUt4prZF1Ovl+bq1g2VP3bn6yZEqgmTjILQgBmQAAAAAAAAAAAAAAAAAAAAFv44dAAAAAQMXI0ZdUVNALuGEL2NO2iAuCvxHh9vQ+fXM5J1u6iPTsN2c7WIAvQpjsXCv4njYiTxtKwhre9dFIYUfe9LFHuQ4=";
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
@@ -981,9 +984,9 @@ signatures[0].signature: 7c974a3fd94725ef96f244836701abcecb3d84971a12d1428b5ee2c
 
     public function testSorobanDeploySACSrcAcc() : void {
         $txrep = 'type: ENVELOPE_TYPE_TX
-tx.sourceAccount: GC6UQJT35QNGSLOKFOGILLZ27QXVC23XCYYI5NZDUHWYNLGUEJZ3FTMZ
+tx.sourceAccount: GAHNCPKG2JV7BOIFVANQYSPQMBEAXOY43HWQKQRKXY5F4Q6BDC3X2DXU
 tx.fee: 100
-tx.seqNum: 2468794446381060
+tx.seqNum: 701235015450628
 tx.cond.type: PRECOND_NONE
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
@@ -992,18 +995,19 @@ tx.operations[0].body.type: INVOKE_HOST_FUNCTION
 tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
 tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_TOKEN
 tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_SOURCE_ACCOUNT
-tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.salt: 3efab88e0e7f359cc50298a516621b531e747a8c6028c9b057d9323c01fb4e4a
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.salt: 9566851518a113fc7adedf5a4e27f0c04e4141f74ebac59598077500cf812544
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 0
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 1
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
-tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 81c1644678aa7b404aae784b6a079ab745443c6e504113a311789b7ec54b8722
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 977fe6300294de0e53ef9bca220e625102fff523c35ea865bb79b764453be4b4
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 tx.ext.v: 0
 signatures.len: 1
-signatures[0].hint: d42273b2
-signatures[0].signature: 6ae8d4a185460b295f5aff561da88c5d9e3c2d0147ab777ef5f9309eeeef9a28e195709e82d44af1234fb7f3721b5bb3656fa5b195fa18b959b989047ef6f604';
-        $expected = "AAAAAgAAAAC9SCZ77BppLcorjIWvOvwvUWt3FjCOtyOh7Yas1CJzsgAAAGQACMVbAAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAA++riODn81nMUCmKUWYhtTHnR6jGAoybBX2TI8AftOSgAAAAEAAAAAAAAAAQAAAAaBwWRGeKp7QEqueEtqB5q3RUQ8blBBE6MReJt+xUuHIgAAAAMAAAADAAAAAAAAAAHUInOyAAAAQGro1KGFRgspX1r/Vh2ojF2ePC0BR6t3fvX5MJ7u75oo4ZVwnoLUSvEjT7fzchtbs2VvpbGV+hi5WbmJBH729gQ=";
+signatures[0].hint: c118b77d
+signatures[0].signature: 403c2f3696f7df6400d1d087f55cd343015bf1bfa9bb95ae47b9ac6a160a3eaa152a83f615fe27f63cb94ccb77d12e5ecaf71500f6c7685fce44ef279c59fb03';
+        $expected = "AAAAAgAAAAAO0T1G0mvwuQWoGwxJ8GBIC7sc2e0FQiq+Ol5DwRi3fQAAAGQAAn3FAAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAACVZoUVGKET/Hre31pOJ/DATkFB9066xZWYB3UAz4ElRAAAAAEAAAAAAAAAAQAAAAaXf+YwApTeDlPvm8oiDmJRAv/1I8NeqGW7ebdkRTvktAAAAAMAAAADAAAAAAAAAAAAAAABwRi3fQAAAEBAPC82lvffZADR0If1XNNDAVvxv6m7la5HuaxqFgo+qhUqg/YV/if2PLlMy3fRLl7K9xUA9sdoX85E7yecWfsD";
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
@@ -1013,9 +1017,9 @@ signatures[0].signature: 6ae8d4a185460b295f5aff561da88c5d9e3c2d0147ab777ef5f9309
 
     public function testSorobanDeploySACAsset() : void {
         $txrep = 'type: ENVELOPE_TYPE_TX
-tx.sourceAccount: GAHAUKVWCNB6VVFBTM4DJX6GVJV3XM7OUGIY4X7PP4UJFL3TGB7SOGSU
+tx.sourceAccount: GBVB7WYKS7FNHYS6SU2XBNL3JTI57BWYHLRYNR65TNDAUIDCVPC5QODD
 tx.fee: 100
-tx.seqNum: 2468815921217538
+tx.seqNum: 701415404077058
 tx.cond.type: PRECOND_NONE
 tx.memo.type: MEMO_NONE
 tx.operations.len: 1
@@ -1024,15 +1028,15 @@ tx.operations[0].body.type: INVOKE_HOST_FUNCTION
 tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
 tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_TOKEN
 tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_ASSET
-tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.asset: IOM:GC6UQJT35QNGSLOKFOGILLZ27QXVC23XCYYI5NZDUHWYNLGUEJZ3FTMZ
+tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.asset: IOM:GBD6JRML66ATNIZV6SW3YAN2JIZO7BUU7JRYZP3KXQ6UWVOCNWTQXFZE
 tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 0
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 3
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
-tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 5933983188546e84c5acc1732875a4c7c4b9c21bbe8467e519ca6aac6ea86f61
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: df908b9ccc3102bcc8a2b1f03cf0b6a57697931362793bb332cdc729e975410f
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].type: CONTRACT_DATA
-tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.contractID: 5933983188546e84c5acc1732875a4c7c4b9c21bbe8467e519ca6aac6ea86f61
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.contractID: df908b9ccc3102bcc8a2b1f03cf0b6a57697931362793bb332cdc729e975410f
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.type: SCV_OBJECT
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj._present: true
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.type: SCO_VEC
@@ -1040,18 +1044,192 @@ tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.k
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.vec[0].type: SCV_SYMBOL
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.vec[0].sym: Admin
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].type: CONTRACT_DATA
-tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.contractID: 5933983188546e84c5acc1732875a4c7c4b9c21bbe8467e519ca6aac6ea86f61
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.contractID: df908b9ccc3102bcc8a2b1f03cf0b6a57697931362793bb332cdc729e975410f
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.type: SCV_OBJECT
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj._present: true
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.type: SCO_VEC
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec.len: 1
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec[0].type: SCV_SYMBOL
 tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec[0].sym: Metadata
+tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 tx.ext.v: 0
 signatures.len: 1
-signatures[0].hint: 73307f27
-signatures[0].signature: 99d609d709e4ea992a5a327cc94ededd4adc8340dab058520b20e352c2f8ef24a5c5b1134a74a77bc72cf1a1f0b828538003b55f58dfcc190ae7c1c5e3e73a01';
-        $expected = "AAAAAgAAAAAOCiq2E0Pq1KGbODTfxqpru7PuoZGOX+9/KJKvczB/JwAAAGQACMVgAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAIAAAABSU9NAAAAAAC9SCZ77BppLcorjIWvOvwvUWt3FjCOtyOh7Yas1CJzsgAAAAEAAAAAAAAAAwAAAAZZM5gxiFRuhMWswXModaTHxLnCG76EZ+UZymqsbqhvYQAAAAMAAAADAAAABlkzmDGIVG6ExazBcyh1pMfEucIbvoRn5RnKaqxuqG9hAAAABAAAAAEAAAAAAAAAAQAAAAUAAAAFQWRtaW4AAAAAAAAGWTOYMYhUboTFrMFzKHWkx8S5whu+hGflGcpqrG6ob2EAAAAEAAAAAQAAAAAAAAABAAAABQAAAAhNZXRhZGF0YQAAAAAAAAABczB/JwAAAECZ1gnXCeTqmSpaMnzJTt7dStyDQNqwWFILIONSwvjvJKXFsRNKdKd7xyzxofC4KFOAA7VfWN/MGQrnwcXj5zoB";
+signatures[0].hint: 62abc5d8
+signatures[0].signature: 60965ae1b766081a6439f54c6e167284ced64f2a555bc0ee3894bd6e894a443941ad04bfb7678375f8a34932581bc6c267a5af7562e1de9d34a2577a05a99103';
+        $expected = "AAAAAgAAAABqH9sKl8rT4l6VNXC1e0zR34bYOuOGx92bRgogYqvF2AAAAGQAAn3vAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAIAAAABSU9NAAAAAABH5MWL94E2ozX0rbwBukoy74aU+mOMv2q8PUtVwm2nCwAAAAEAAAAAAAAAAwAAAAbfkIuczDECvMiisfA88LaldpeTE2J5O7Myzccp6XVBDwAAAAMAAAADAAAABt+Qi5zMMQK8yKKx8DzwtqV2l5MTYnk7szLNxynpdUEPAAAABAAAAAEAAAAAAAAAAQAAAAUAAAAFQWRtaW4AAAAAAAAG35CLnMwxArzIorHwPPC2pXaXkxNieTuzMs3HKel1QQ8AAAAEAAAAAQAAAAAAAAABAAAABQAAAAhNZXRhZGF0YQAAAAAAAAAAAAAAAWKrxdgAAABAYJZa4bdmCBpkOfVMbhZyhM7WTypVW8DuOJS9bolKRDlBrQS/t2eDdfijSTJYG8bCZ6WvdWLh3p00old6BamRAw==";
+        $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
+        self::assertEquals($expected,$xdr);
+        $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
+        print($txRepRes);
+        self::assertEquals($txRepRes,$txrep);
+    }
+
+    public function testSorobanInvokeAuth1() : void {
+
+    /*
+        $xdr = "AAAAAgAAAADxVxDnuP5WzwKFPK0l/RPQNgv+5+K7Ubd/3TkrAleRxwAAAGQAAoK6AAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAQAAAAEAAAAAQAAAAYAAAAgrOQKGU9voXVl3Zb3fVwBjHzZWnGp+/Bn2/nKc0iAWXoAAAAFAAAABGF1dGgAAAAEAAAAAQAAAAgAAAAAAAAAAPFXEOe4/lbPAoU8rSX9E9A2C/7n4rtRt3/dOSsCV5HHAAAAAQAAAAUAAAACAAAABqzkChlPb6F1Zd2W931cAYx82VpxqfvwZ9v5ynNIgFl6AAAAAwAAAAMAAAAHnwvDaWeAeZSR8/HvfY1snrSsCeTX5U5iOrkvG3Z8Q4kAAAABAAAABqzkChlPb6F1Zd2W931cAYx82VpxqfvwZ9v5ynNIgFl6AAAABAAAAAEAAAAIAAAAAAAAAADxVxDnuP5WzwKFPK0l/RPQNgv+5+K7Ubd/3TkrAleRxwAAAAEAAAAArOQKGU9voXVl3Zb3fVwBjHzZWnGp+/Bn2/nKc0iAWXoAAAAEYXV0aAAAAAIAAAAEAAAAAQAAAAgAAAAAAAAAAPFXEOe4/lbPAoU8rSX9E9A2C/7n4rtRt3/dOSsCV5HHAAAAAQAAAAUAAAAAAAAAAAAAAAAAAAABAleRxwAAAEDbfM1QtqeRRm/bvp6PynmZQJrGSxgUk6yJYCkXKjgZ1Gg5yzwYOfDpStzI9mZCK4KoK+mqhsKGmgK6GWdRAKYJ";
+        $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
+        print($txRepRes);
+        self::assertNotNull($txRepRes);
+
+*/
+
+        $txrep = 'type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GAY5EPJ3N5KL4QHXADD2W6B574IIU5DZWRY63TTRCGHJBNNYUVVQZ3MR
+tx.fee: 100
+tx.seqNum: 701591497736195
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INVOKE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs.len: 4
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.type: SCO_BYTES
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].sym: auth
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.type: SCO_ADDRESS
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].type: SCV_U32
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].u32: 3
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 3
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].account.accountID: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.contractID: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.key.type: SCV_STATIC
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].type: CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractCode.hash: 9f0bc3696780799491f3f1ef7d8d6c9eb4ac09e4d7e54e623ab92f1b767c4389
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 2
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.type: SCO_ADDRESS
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.address.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.contractID: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.type: SCO_NONCE_KEY
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.nonceAddress.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.nonceAddress.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+tx.operations[0].body.invokeHostFunctionOp.auth.len: 1
+tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.address.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.address.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.nonce: 0
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.contractID: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.functionName: auth
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args.len: 2
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.type: SCO_ADDRESS
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.address.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].type: SCV_U32
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].u32: 3
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations.len: 0
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs.len: 1
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.type: SCO_VEC
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec.len: 1
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.type: SCO_MAP
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map.len: 2
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].key.type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].key.sym: public_key
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].val.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].val.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].val.obj.type: SCO_BYTES
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].val.obj.bin: c93449b483f7b06cddfb940dd1745abd5acfc8c042b4d2572e617d5b781282cf
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].key.type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].key.sym: signature
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].val.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].val.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].val.obj.type: SCO_BYTES
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].val.obj.bin: 0b8e45e4ce3a350696d0ec24c8dfd4f1835f0fb640029aa1b009e46041fc331f9ec4d27266b3141d2ca283db6887f4ebb68531d343d4e044f9bb9e2751268904
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: b8a56b0c
+signatures[0].signature: 9a766e5916a608dcc2b17c32a00a51a5bae3c062cf3c6a95eeeab95049888193f4a46f5ad6e2124c2bf3439188678122f1427badf688131e773cdaa45c3b9109';
+        $expected = "AAAAAgAAAAAx0j07b1S+QPcAx6t4Pf8QinR5tHHtznERjpC1uKVrDAAAAGQAAn4YAAAAAwAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAQAAAAEAAAAAQAAAAYAAAAgapZLmW0gCmSXLTUSmrvuWxckreEpdN/mZNQzRm9NAfkAAAAFAAAABGF1dGgAAAAEAAAAAQAAAAgAAAAAAAAAAMk0SbSD97Bs3fuUDdF0Wr1az8jAQrTSVy5hfVt4EoLPAAAAAQAAAAMAAAADAAAAAAAAAADJNEm0g/ewbN37lA3RdFq9Ws/IwEK00lcuYX1beBKCzwAAAAZqlkuZbSAKZJctNRKau+5bFySt4Sl03+Zk1DNGb00B+QAAAAMAAAADAAAAB58Lw2lngHmUkfPx732NbJ60rAnk1+VOYjq5Lxt2fEOJAAAAAgAAAAZqlkuZbSAKZJctNRKau+5bFySt4Sl03+Zk1DNGb00B+QAAAAQAAAABAAAACAAAAAAAAAAAyTRJtIP3sGzd+5QN0XRavVrPyMBCtNJXLmF9W3gSgs8AAAAGapZLmW0gCmSXLTUSmrvuWxckreEpdN/mZNQzRm9NAfkAAAAEAAAAAQAAAAkAAAAAAAAAAMk0SbSD97Bs3fuUDdF0Wr1az8jAQrTSVy5hfVt4EoLPAAAAAQAAAAEAAAAAAAAAAMk0SbSD97Bs3fuUDdF0Wr1az8jAQrTSVy5hfVt4EoLPAAAAAAAAAABqlkuZbSAKZJctNRKau+5bFySt4Sl03+Zk1DNGb00B+QAAAARhdXRoAAAAAgAAAAQAAAABAAAACAAAAAAAAAAAyTRJtIP3sGzd+5QN0XRavVrPyMBCtNJXLmF9W3gSgs8AAAABAAAAAwAAAAAAAAABAAAABAAAAAEAAAAAAAAAAQAAAAQAAAABAAAAAQAAAAIAAAAFAAAACnB1YmxpY19rZXkAAAAAAAQAAAABAAAABgAAACDJNEm0g/ewbN37lA3RdFq9Ws/IwEK00lcuYX1beBKCzwAAAAUAAAAJc2lnbmF0dXJlAAAAAAAABAAAAAEAAAAGAAAAQAuOReTOOjUGltDsJMjf1PGDXw+2QAKaobAJ5GBB/DMfnsTScmazFB0sooPbaIf067aFMdND1OBE+bueJ1EmiQQAAAAAAAAAAbilawwAAABAmnZuWRamCNzCsXwyoApRpbrjwGLPPGqV7uq5UEmIgZP0pG9a1uISTCvzQ5GIZ4Ei8UJ7rfaIEx53PNqkXDuRCQ==";
+        print($txrep . PHP_EOL);
+        $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
+        self::assertEquals($expected,$xdr);
+        $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
+        print($txRepRes);
+        self::assertEquals($txRepRes,$txrep);
+    }
+
+    public function testSorobanInvokeAuth2() : void {
+        $txrep = 'type: ENVELOPE_TYPE_TX
+tx.sourceAccount: GDYVOEHHXD7FNTYCQU6K2JP5CPIDMC7647RLWUNXP7OTSKYCK6I4ORZD
+tx.fee: 100
+tx.seqNum: 706685328949252
+tx.cond.type: PRECOND_NONE
+tx.memo.type: MEMO_NONE
+tx.operations.len: 1
+tx.operations[0].sourceAccount._present: false
+tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INVOKE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs.len: 4
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.type: SCO_BYTES
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: ace40a194f6fa17565dd96f77d5c018c7cd95a71a9fbf067dbf9ca734880597a
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].sym: auth
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.type: SCO_ADDRESS
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.accountId: GDYVOEHHXD7FNTYCQU6K2JP5CPIDMC7647RLWUNXP7OTSKYCK6I4ORZD
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].type: SCV_U32
+tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].u32: 5
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 2
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.contractID: ace40a194f6fa17565dd96f77d5c018c7cd95a71a9fbf067dbf9ca734880597a
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.type: SCV_STATIC
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].type: CONTRACT_CODE
+tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractCode.hash: 9f0bc3696780799491f3f1ef7d8d6c9eb4ac09e4d7e54e623ab92f1b767c4389
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 1
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: ace40a194f6fa17565dd96f77d5c018c7cd95a71a9fbf067dbf9ca734880597a
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.type: SCO_ADDRESS
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.address.accountId: GDYVOEHHXD7FNTYCQU6K2JP5CPIDMC7647RLWUNXP7OTSKYCK6I4ORZD
+tx.operations[0].body.invokeHostFunctionOp.auth.len: 1
+tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce._present: false
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.contractID: ace40a194f6fa17565dd96f77d5c018c7cd95a71a9fbf067dbf9ca734880597a
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.functionName: auth
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args.len: 2
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.type: SCO_ADDRESS
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.address.accountId: GDYVOEHHXD7FNTYCQU6K2JP5CPIDMC7647RLWUNXP7OTSKYCK6I4ORZD
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].type: SCV_U32
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].u32: 5
+tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations.len: 0
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs.len: 0
+tx.ext.v: 0
+signatures.len: 1
+signatures[0].hint: 025791c7
+signatures[0].signature: db7ccd50b6a791466fdbbe9e8fca7999409ac64b181493ac896029172a3819d46839cb3c1839f0e94adcc8f666422b82a82be9aa86c2869a02ba19675100a609';
+        $expected = "AAAAAgAAAADxVxDnuP5WzwKFPK0l/RPQNgv+5+K7Ubd/3TkrAleRxwAAAGQAAoK6AAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAQAAAAEAAAAAQAAAAYAAAAgrOQKGU9voXVl3Zb3fVwBjHzZWnGp+/Bn2/nKc0iAWXoAAAAFAAAABGF1dGgAAAAEAAAAAQAAAAgAAAAAAAAAAPFXEOe4/lbPAoU8rSX9E9A2C/7n4rtRt3/dOSsCV5HHAAAAAQAAAAUAAAACAAAABqzkChlPb6F1Zd2W931cAYx82VpxqfvwZ9v5ynNIgFl6AAAAAwAAAAMAAAAHnwvDaWeAeZSR8/HvfY1snrSsCeTX5U5iOrkvG3Z8Q4kAAAABAAAABqzkChlPb6F1Zd2W931cAYx82VpxqfvwZ9v5ynNIgFl6AAAABAAAAAEAAAAIAAAAAAAAAADxVxDnuP5WzwKFPK0l/RPQNgv+5+K7Ubd/3TkrAleRxwAAAAEAAAAArOQKGU9voXVl3Zb3fVwBjHzZWnGp+/Bn2/nKc0iAWXoAAAAEYXV0aAAAAAIAAAAEAAAAAQAAAAgAAAAAAAAAAPFXEOe4/lbPAoU8rSX9E9A2C/7n4rtRt3/dOSsCV5HHAAAAAQAAAAUAAAAAAAAAAAAAAAAAAAABAleRxwAAAEDbfM1QtqeRRm/bvp6PynmZQJrGSxgUk6yJYCkXKjgZ1Gg5yzwYOfDpStzI9mZCK4KoK+mqhsKGmgK6GWdRAKYJ";
+        print($txrep . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
