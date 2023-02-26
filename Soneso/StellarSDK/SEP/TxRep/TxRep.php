@@ -783,21 +783,14 @@ class TxRep
             $next = self::getScVal($prefix . 'signatureArgs['.$i.'].', $map);
             array_push($args, $next);
         }
-        // HACK: See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
-        $sigArgs = array();
-        if(count($args) > 0) {
-            $val = $args[0];
-            if ($val instanceof XdrSCVal && $val->obj != null && $val->obj->vec != null) {
-                $sigArgs = $val->obj->vec;
-            }
-        }
+
         $address = null;
         $nonce = null;
         if($addressWithNonce != null) {
             $address = Address::fromXdr($addressWithNonce->address);
             $nonce = $addressWithNonce->nonce;
         }
-        return new ContractAuth($rootInvocation,$sigArgs,$address, $nonce);
+        return new ContractAuth($rootInvocation, $args, $address, $nonce);
     }
 
     private static function getAuthorizedInvocation($prefix, array $map) : AuthorizedInvocation {
@@ -3002,7 +2995,21 @@ class TxRep
 
         $lines = array_merge($lines, self::getAuthorizedInvocationTx($prefix.'rootInvocation.', $auth->rootInvocation));
 
-        $argsArr = $auth->signatureArgs;
+        $argsArr = array();
+        // PATCH START : See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
+        $argsPatched = $auth->signatureArgs;
+        if (count($argsPatched) == 1) {
+            $innerVal = $argsPatched[0];
+            if ($innerVal instanceof XdrSCVal && $innerVal->obj != null) {
+                $innerObj = $innerVal->obj;
+                if ($innerObj->vec != null) {
+                    $argsArr = $innerObj->vec;
+                }
+            }
+        }
+        // PATCH END
+        //$argsArr = $auth->signatureArgs;
+
         $lines += [$prefix.'signatureArgs.len' => strval(count($argsArr))];
         $index = 0;
         foreach ($argsArr as $val) {

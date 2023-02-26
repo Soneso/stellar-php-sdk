@@ -1065,15 +1065,6 @@ signatures[0].signature: 60965ae1b766081a6439f54c6e167284ced64f2a555bc0ee3894bd6
     }
 
     public function testSorobanInvokeAuth1() : void {
-
-    /*
-        $xdr = "AAAAAgAAAADxVxDnuP5WzwKFPK0l/RPQNgv+5+K7Ubd/3TkrAleRxwAAAGQAAoK6AAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAQAAAAEAAAAAQAAAAYAAAAgrOQKGU9voXVl3Zb3fVwBjHzZWnGp+/Bn2/nKc0iAWXoAAAAFAAAABGF1dGgAAAAEAAAAAQAAAAgAAAAAAAAAAPFXEOe4/lbPAoU8rSX9E9A2C/7n4rtRt3/dOSsCV5HHAAAAAQAAAAUAAAACAAAABqzkChlPb6F1Zd2W931cAYx82VpxqfvwZ9v5ynNIgFl6AAAAAwAAAAMAAAAHnwvDaWeAeZSR8/HvfY1snrSsCeTX5U5iOrkvG3Z8Q4kAAAABAAAABqzkChlPb6F1Zd2W931cAYx82VpxqfvwZ9v5ynNIgFl6AAAABAAAAAEAAAAIAAAAAAAAAADxVxDnuP5WzwKFPK0l/RPQNgv+5+K7Ubd/3TkrAleRxwAAAAEAAAAArOQKGU9voXVl3Zb3fVwBjHzZWnGp+/Bn2/nKc0iAWXoAAAAEYXV0aAAAAAIAAAAEAAAAAQAAAAgAAAAAAAAAAPFXEOe4/lbPAoU8rSX9E9A2C/7n4rtRt3/dOSsCV5HHAAAAAQAAAAUAAAAAAAAAAAAAAAAAAAABAleRxwAAAEDbfM1QtqeRRm/bvp6PynmZQJrGSxgUk6yJYCkXKjgZ1Gg5yzwYOfDpStzI9mZCK4KoK+mqhsKGmgK6GWdRAKYJ";
-        $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
-        self::assertNotNull($txRepRes);
-
-*/
-
         $txrep = 'type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GAY5EPJ3N5KL4QHXADD2W6B574IIU5DZWRY63TTRCGHJBNNYUVVQZ3MR
 tx.fee: 100
@@ -1140,24 +1131,20 @@ tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations
 tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs.len: 1
 tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].type: SCV_OBJECT
 tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj._present: true
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.type: SCO_VEC
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec.len: 1
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].type: SCV_OBJECT
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj._present: true
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.type: SCO_MAP
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map.len: 2
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].key.type: SCV_SYMBOL
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].key.sym: public_key
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].val.type: SCV_OBJECT
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].val.obj._present: true
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].val.obj.type: SCO_BYTES
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[0].val.obj.bin: c93449b483f7b06cddfb940dd1745abd5acfc8c042b4d2572e617d5b781282cf
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].key.type: SCV_SYMBOL
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].key.sym: signature
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].val.type: SCV_OBJECT
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].val.obj._present: true
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].val.obj.type: SCO_BYTES
-tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.vec[0].obj.map[1].val.obj.bin: 0b8e45e4ce3a350696d0ec24c8dfd4f1835f0fb640029aa1b009e46041fc331f9ec4d27266b3141d2ca283db6887f4ebb68531d343d4e044f9bb9e2751268904
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.type: SCO_MAP
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map.len: 2
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].key.type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].key.sym: public_key
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj.type: SCO_BYTES
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj.bin: c93449b483f7b06cddfb940dd1745abd5acfc8c042b4d2572e617d5b781282cf
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].key.type: SCV_SYMBOL
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].key.sym: signature
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.type: SCV_OBJECT
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj._present: true
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj.type: SCO_BYTES
+tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj.bin: 0b8e45e4ce3a350696d0ec24c8dfd4f1835f0fb640029aa1b009e46041fc331f9ec4d27266b3141d2ca283db6887f4ebb68531d343d4e044f9bb9e2751268904
 tx.ext.v: 0
 signatures.len: 1
 signatures[0].hint: b8a56b0c
