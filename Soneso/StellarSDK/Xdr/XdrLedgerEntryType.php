@@ -45,6 +45,10 @@ class XdrLedgerEntryType
         return new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT);
     }
 
+    public static function TRUSTLINE() : XdrLedgerEntryType {
+        return new XdrLedgerEntryType(XdrLedgerEntryType::TRUSTLINE);
+    }
+
     public static function OFFER() : XdrLedgerEntryType {
         return new XdrLedgerEntryType(XdrLedgerEntryType::OFFER);
     }

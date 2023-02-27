@@ -101,6 +101,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyTrustLine;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
@@ -889,6 +890,23 @@ class TxRep
             }
             $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
             $ledgerKey->account = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId($accountID));
+            return $ledgerKey;
+        }
+        else if ('TRUSTLINE' == $type) {
+            $accountID = self::getClearValue($prefix . 'trustLine.accountID', $map);
+            if (!$accountID) {
+                throw new InvalidArgumentException('missing ' . $prefix . 'trustLine.accountID');
+            }
+            $assetStr = self::getClearValue($prefix . 'trustLine.asset', $map);
+            if (!$assetStr) {
+                throw new InvalidArgumentException('missing ' . $prefix . 'trustLine.asset');
+            }
+            $asset = Asset::createFromCanonicalForm($assetStr);
+            if (!$asset) {
+                throw new InvalidArgumentException('invalid ' . $prefix . 'trustLine.asset');
+            }
+            $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::TRUSTLINE());
+            $ledgerKey->trustLine = new XdrLedgerKeyTrustLine(XdrAccountID::fromAccountId($accountID), $asset->toXdrTrustlineAsset());
             return $ledgerKey;
         }
         else if ('CONTRACT_DATA' == $type) {
@@ -3062,6 +3080,11 @@ class TxRep
             case XdrLedgerEntryType::ACCOUNT:
                 $lines += [$prefix . 'type' => 'ACCOUNT'];
                 $lines += [$prefix . 'account.accountID' => $key->account->getAccountID()->getAccountId()];
+                break;
+            case XdrLedgerEntryType::TRUSTLINE:
+                $lines += [$prefix . 'type' => 'TRUSTLINE'];
+                $lines += [$prefix . 'trustLine.accountID' => $key->trustLine->getAccountID()->getAccountId()];
+                $lines += [$prefix . 'trustLine.asset' => self::encodeAsset(Asset::fromXdr($key->getTrustline()->getAsset()))];
                 break;
             case XdrLedgerEntryType::CONTRACT_DATA:
                 $lines += [$prefix . 'type' => 'CONTRACT_DATA'];

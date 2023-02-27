@@ -16,6 +16,9 @@ use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Responses\Operations\InvokeHostFunctionOperationResponse;
+use Soneso\StellarSDK\Soroban\Requests\SegmentFilter;
+use Soneso\StellarSDK\Soroban\Requests\SegmentFilters;
+use Soneso\StellarSDK\Soroban\Requests\SegmentFiltersList;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionStatusResponse;
 use Soneso\StellarSDK\Soroban\Requests\EventFilter;
@@ -462,25 +465,128 @@ class SorobanTest extends TestCase
 
     public function testSorobanEvents(): void
     {
+
         $server = new SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
         $server->enableLogging = true;
         $server->acknowledgeExperimental = true;
+        $sdk = StellarSDK::getFutureNetInstance();
 
-        $startLedger = "125000";
-        $endLedger = "132000";
+        $accountAKeyPair = KeyPair::random();
+        $accountAId = $accountAKeyPair->getAccountId();
+
+        // get health
+        $getHealthResponse = $server->getHealth();
+        $this->assertEquals(GetHealthResponse::HEALTHY, $getHealthResponse->status);
+
+        FuturenetFriendBot::fundTestAccount($accountAId);
+        sleep(5);
+
+        $getAccountResponse = $server->getAccount($accountAId);
+        $this->assertEquals($accountAId, $getAccountResponse->id);
+
+        // install contract
+        $contractCode = file_get_contents('./wasm/event.wasm', false);
+        $installContractOp = InvokeHostFunctionOperationBuilder::
+        forInstallingContractCode($contractCode)->build();
+
+        $transaction = (new TransactionBuilder($getAccountResponse))
+            ->addOperation($installContractOp)->build();
+
+        // simulate first to get the footprint
+        $simulateResponse = $server->simulateTransaction($transaction);
+
+        $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
+
+        // set the footprint and sign
+        $transaction->setFootprint($simulateResponse->getFootprint());
+        $transaction->sign($accountAKeyPair, Network::futurenet());
+
+        // send the transaction
+        $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNull($sendResponse->error);
+        $this->assertNull($sendResponse->resultError);
+
+        // poll until status is success or error
+        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
+        $this->assertNotNull($statusResponse);
+        $wasmId = $statusResponse->getWasmId();
+        $this->assertNotNull($wasmId);
+
+        // create contract
+        $createContractOp = InvokeHostFunctionOperationBuilder::forCreatingContract($wasmId)->build();
+        $accountA = $server->getAccount($accountAId);
+
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($createContractOp)->build();
+
+        // simulate first to get the footprint
+        $simulateResponse = $server->simulateTransaction($transaction);
+
+        $this->assertNull($simulateResponse->error);
+        $this->assertNotNull($simulateResponse->results);
+        $this->assertNotNull($simulateResponse->getFootprint());
+
+        // set the footprint and sign
+        $transaction->setFootprint($simulateResponse->getFootprint());
+        $transaction->sign($accountAKeyPair, Network::futurenet());
+
+        // send the transaction
+        $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNull($sendResponse->error);
+        $this->assertNull($sendResponse->resultError);
+
+        // poll until status is success or error
+        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
+        $this->assertNotNull($statusResponse);
+        $contractId = $statusResponse->getContractId();
+        $this->assertNotNull($contractId);
+
+        // invoke
+
+        $fnName = "events";
+        $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($contractId, $fnName)->build();
+
+        // simulate first to obtain the footprint
+        $accountA = $server->getAccount($accountAId);
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($invokeContractOp)->build();
+
+        // simulate first to get the footprint
+        $simulateResponse = $server->simulateTransaction($transaction);
+
+        $this->assertNull($simulateResponse->error);
+        $this->assertNotNull($simulateResponse->results);
+
+        // set the footprint and sign
+        $transaction->setFootprint($simulateResponse->getFootprint());
+        $transaction->sign($accountAKeyPair, Network::futurenet());
+
+        // send the transaction
+        $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNull($sendResponse->error);
+        $this->assertNull($sendResponse->resultError);
+
+        // poll until status is success or error
+        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
+        $this->assertNotNull($statusResponse);
+        $this->assertNotNull($statusResponse->results);
+
+        $transactionResponse = $sdk->requestTransaction($sendResponse->transactionId);
+        $this->assertEquals(1, $transactionResponse->getOperationCount());
+
+        // get events
+        $ledger = $transactionResponse->getLedger();
+        $startLedger = strval($ledger);
+        $endLedger = strval($ledger);
+
+        $eventFilter = new EventFilter("contract", [$contractId]);
         $eventFilters = new EventFilters();
-        $contractIds = ["d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813"];
-        /*$segmentFilter1 = new SegmentFilter("*");
-        $segmentFilter2 = new SegmentFilter(scval:[XdrSCVal::fromBase64Xdr("AAAABAAAAAEAAAAFAAAAADuaygAAAAAAAAAAAA==")]);
-        $segmentFilters = new SegmentFilters();
-        $segmentFilters->add($segmentFilter1);
-        $segmentFilters->add($segmentFilter2);
-        $segmentFiltersList = new SegmentFiltersList();
-        $segmentFiltersList->add($segmentFilters);*/
-        $eventFilter1 = new EventFilter("contract", $contractIds); // TODO: find out why segment filters are not working
-        $eventFilters->add($eventFilter1);
+        $eventFilters->add($eventFilter);
+
         $request = new GetEventsRequest($startLedger, $endLedger, $eventFilters);
         $response = $server->getEvents($request);
-        $this->assertGreaterThan(1, count($response->events));
+        $this->assertGreaterThan(0, count($response->events));
+
     }
 }
