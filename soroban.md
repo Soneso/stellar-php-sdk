@@ -24,7 +24,7 @@ The Soroban-RPC API is described in this early stage [design document](https://d
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```php
-$server = new SorobanServer("https://futurenet.sorobandev.com/soroban/rpc");
+$server = new SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
 ```
 
 Set the experimental flag to true. Otherwise it will not work.
@@ -319,9 +319,60 @@ $operation = InvokeHostFunctionOperationBuilder::
     forDeploySACWithAsset($asset)->build();
 ```
 
+#### Soroban Authorization
+
+The PHP SDK provides support for the [Soroban Authorization Framework](https://soroban.stellar.org/docs/learn/authorization).
+
+For this purpose, it offers the `Address`, `AuthorizedInvocation` and `ContractAuth` classes as well as helper functions like `getNonce(...)`.
+
+Here is a code fragment showing how they can be used:
+
+```php
+$invokerAddress = Address::fromAccountId($invokerId);
+$nonce = $server->getNonce($invokerId, $contractId);
+
+$functionName = "auth";
+$args = [$invokerAddress->toXdrSCVal(), XdrSCVal::fromU32(3)];
+
+$authInvocation = new AuthorizedInvocation($contractId, $functionName, args: $args);
+
+$contractAuth = new ContractAuth($authInvocation, address: $invokerAddress, nonce: $nonce);
+$contractAuth->sign($invokerKeyPair, Network::futurenet());
+
+$invokeOp = InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,
+    $functionName, $args, auth: [$contractAuth])->build();
+
+// simulate first to obtain the footprint
+$submitterAccount = $server->getAccount($submitterId);
+$transaction = (new TransactionBuilder($submitterAccount))
+    ->addOperation($invokeOp)->build();
+
+$simulateResponse = $server->simulateTransaction($transaction);
+```
+
+The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code).
+
+Other examples like [php atomic swap](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php#L374) can be found in the Soroban auth test cases of the SDK.
+
+#### Get Events
+
+The Soroban-RPC server provides the possibility to request contract events. 
+
+You can use the PHP SDK to request events like this:
+
+```php
+$eventFilter = new EventFilter("contract", [$contractId]);
+$eventFilters = new EventFilters();
+$eventFilters->add($eventFilter);
+
+$request = new GetEventsRequest($startLedger, $endLedger, $eventFilters);
+$response = $server->getEvents($request);
+```
+Find the complete code [here](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanTest.php#L579).
+
 #### Hints and Tips
 
-You can find the working code and more in the [Soroban Test Cases](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/SorobanTest.php) of the PHP SDK. The Hello Word Contract wasm byte-code file can be found in the [test/wasm](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/wasm/) folder.
+You can find the working code and more in the [Soroban Test Cases](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/SorobanTest.php) and [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php#L30) of the PHP SDK. The wasm byte-code files can be found in the [test/wasm](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/wasm/) folder.
 
 Because Soroban and the PHP SDK support for Soroban are in development, errors may occur. For a better understanding of an error you can enable the ```SorobanServer``` logging:
 
