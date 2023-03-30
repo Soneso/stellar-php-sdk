@@ -22,8 +22,6 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
-use Soneso\StellarSDK\Xdr\XdrInt128Parts;
-use Soneso\StellarSDK\Xdr\XdrSCObject;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 
@@ -371,116 +369,6 @@ class SorobanAuthTest extends TestCase
         return $statusResponse;
     }
 
-    public function testAtomicSwap() {
-        // See https://soroban.stellar.org/docs/how-to-guides/atomic-swap
-        // https://soroban.stellar.org/docs/learn/authorization
-        // https://github.com/StellarCN/py-stellar-base/blob/soroban/examples/soroban_auth_atomic_swap.py
-
-        $server = new SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
-        $server->enableLogging = true;
-        $server->acknowledgeExperimental = true;
-
-        $submitterKp = KeyPair::fromSeed("SBPTTA3D3QYQ6E2GSACAZDUFH2UILBNG3EBJCK3NNP7BE4O757KGZUGA");
-        $submitterAccountId = $submitterKp->getAccountId();
-        // GAERW3OYAVYMZMPMVKHSCDS4ORFPLT5Z3YXA4VM3BVYEA2W7CG3V6YYB
-
-        $aliceKp = KeyPair::fromSeed("SAAPYAPTTRZMCUZFPG3G66V4ZMHTK4TWA6NS7U4F7Z3IMUD52EK4DDEV");
-        $aliceAccountId = $aliceKp->getAccountId();
-        // GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54
-
-        $bobKp = KeyPair::fromSeed("SAEZSI6DY7AXJFIYA4PM6SIBNEYYXIEM2MSOTHFGKHDW32MBQ7KVO6EN");
-        $bobAccountId = $bobKp->getAccountId();
-        // GBMLPRFCZDZJPKUPHUSHCKA737GOZL7ERZLGGMJ6YGHBFJZ6ZKMKCZTM
-
-        $atomicSwapContractId = "828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c";
-        $nativeTokenContractId = "d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813";
-        $catTokenContractId = "8dc97b166bd98c755b0e881ee9bd6d0b45e797ec73671f30e026f14a0f1cce67";
-
-        $addressAlice = Address::fromAccountId($aliceAccountId)->toXdrSCVal();
-        $addressBob = Address::fromAccountId($bobAccountId)->toXdrSCVal();
-        $addressSwapContract = Address::fromContractId($atomicSwapContractId)->toXdrSCVal();
-
-        $tokenABytes = XdrSCVal::fromObject(XdrSCObject::forBytes(hex2bin($nativeTokenContractId)));
-        $tokenBBytes = XdrSCVal::fromObject(XdrSCObject::forBytes(hex2bin($catTokenContractId)));
-
-        $amountA = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts(1000,0)));
-        $minBForA = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts(4500,0)));
-
-        $amountB = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts(5000,0)));
-        $minAForB = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts(950,0)));
-
-
-        $swapFunctionName = "swap";
-        $incrAllowFunctionName = "incr_allow";
-
-        $aliceSubAuthArgs = [$addressAlice, $addressSwapContract, $amountA];
-        $aliceSubAuthInvocation = new AuthorizedInvocation($nativeTokenContractId,$incrAllowFunctionName, $aliceSubAuthArgs);
-        $aliceRootAuthArgs = [$tokenABytes, $tokenBBytes, $amountA, $minBForA];
-        $aliceRootInvocation = new AuthorizedInvocation($atomicSwapContractId, $swapFunctionName, $aliceRootAuthArgs, [$aliceSubAuthInvocation]);
-
-        $bobSubAuthArgs = [$addressBob, $addressSwapContract, $amountB];
-        $bobSubAutInvocation = new AuthorizedInvocation($catTokenContractId,$incrAllowFunctionName, $bobSubAuthArgs);
-        $bobRootAuthArgs = [$tokenBBytes, $tokenABytes, $amountB, $minAForB];
-        $bobRootInvocation = new AuthorizedInvocation($atomicSwapContractId, $swapFunctionName, $bobRootAuthArgs, [$bobSubAutInvocation]);
-
-        $aliceNonce = $server->getNonce($aliceAccountId, $atomicSwapContractId);
-        $aliceContractAuth = new ContractAuth($aliceRootInvocation, address: Address::fromAccountId($aliceAccountId), nonce: $aliceNonce);
-        $aliceContractAuth->sign($aliceKp, Network::futurenet());
-
-        $bobNonce = $server->getNonce($bobAccountId, $atomicSwapContractId);
-        $bobContractAuth = new ContractAuth($bobRootInvocation, address: Address::fromAccountId($bobAccountId), nonce: $bobNonce);
-        $bobContractAuth->sign($bobKp, Network::futurenet());
-
-        $invokeArgs = [
-            $addressAlice,
-            $addressBob,
-            $tokenABytes,
-            $tokenBBytes,
-            $amountA,
-            $minBForA,
-            $amountB,
-            $minAForB
-        ];
-
-        $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($atomicSwapContractId,
-            $swapFunctionName, $invokeArgs, auth: [$aliceContractAuth, $bobContractAuth])->build();
-
-        $source = $server->getAccount($submitterAccountId);
-
-        // simulate first to obtain the footprint
-
-        $transaction = (new TransactionBuilder($source))
-            ->addOperation($invokeContractOp)->build();
-
-        // simulate first to get the footprint
-        $simulateResponse = $server->simulateTransaction($transaction);
-
-        $this->assertNull($simulateResponse->error);
-        $this->assertNotNull($simulateResponse->results);
-
-        $authResult = $simulateResponse->getAuth();
-        $this->assertNotNull($authResult);
-
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
-        $transaction->sign($submitterKp, Network::futurenet());
-
-        // check transaction xdr encoding back and forth
-        $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
-        $this->assertEquals($transctionEnvelopeXdr, Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
-
-        // send the transaction
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNull($sendResponse->error);
-        $this->assertNull($sendResponse->resultError);
-
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
-        $this->assertNotNull($statusResponse);
-        $this->assertNotNull($statusResponse->results);
-        print("Result " . $statusResponse->results->toArray()[0]->xdr);
-    }
-
     public function testAuthNotDecodable () {
 
         $server = new SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
@@ -546,5 +434,4 @@ class SorobanAuthTest extends TestCase
             }
         }
     }
-
 }

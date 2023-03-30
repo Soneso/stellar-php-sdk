@@ -18,7 +18,8 @@ class XdrBuffer
 
     protected string $xdrBytes;
     protected int $position; // Current position within the bytes
-    
+    protected int $size;
+
     public function __construct(string $xdrBytes)
     {
         $this->xdrBytes = $xdrBytes;

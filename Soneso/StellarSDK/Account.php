@@ -17,7 +17,7 @@ class Account implements TransactionBuilderAccount
     private MuxedAccount $muxedAccount;
 
     public function __construct(string $accountId, BigInteger $sequenceNumber, ?int $muxedAccountMed25519Id = null) {
-        $this->$accountId = $accountId;
+        $this->accountId = $accountId;
         $this->sequenceNumber = $sequenceNumber;
         $this->muxedAccount = new MuxedAccount($accountId,$muxedAccountMed25519Id);
     }

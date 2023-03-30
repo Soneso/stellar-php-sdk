@@ -352,7 +352,9 @@ $simulateResponse = $server->simulateTransaction($transaction);
 
 The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code).
 
-Other examples like [php atomic swap](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php#L374) can be found in the Soroban auth test cases of the SDK.
+Other auth examples can be found in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) of the SDK.
+
+An advanced auth example can be found in the [atomic swap](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAtomicSwapTest.php) test.
 
 #### Get Events
 

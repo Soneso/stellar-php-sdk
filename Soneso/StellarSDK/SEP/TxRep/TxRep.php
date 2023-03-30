@@ -3024,6 +3024,9 @@ class TxRep
                     $argsArr = $innerObj->vec;
                 }
             }
+            else {
+                $argsArr = $auth->signatureArgs;
+            }
         }
         // PATCH END
         //$argsArr = $auth->signatureArgs;

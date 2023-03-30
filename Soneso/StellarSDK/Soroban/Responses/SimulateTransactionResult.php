@@ -33,7 +33,6 @@ class SimulateTransactionResult
         if (isset($json['auth'])) {
             $this->auth = array();
             foreach ($json['auth'] as $jsonValue) {
-                //$nextFootprint = new Footprint(XdrLedgerFootprint::fromBase64Xdr($jsonValue));
                 array_push($this->auth, $jsonValue);
             }
         }
