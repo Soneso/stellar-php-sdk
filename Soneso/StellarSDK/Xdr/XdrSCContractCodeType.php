@@ -18,6 +18,14 @@ class XdrSCContractCodeType
         $this->value = $value;
     }
 
+    public static function WASM_REF() :  XdrSCContractCodeType {
+        return new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF);
+    }
+
+    public static function TOKEN() :  XdrSCContractCodeType {
+        return new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN);
+    }
+
     /**
      * @return int
      */

@@ -21,6 +21,22 @@ class XdrSCHostAuthErrorCode
         $this->value = $value;
     }
 
+    public static function UNKNOWN_ERROR() : XdrSCHostAuthErrorCode {
+        return new XdrSCHostAuthErrorCode(XdrSCHostAuthErrorCode::HOST_AUTH_UNKNOWN_ERROR);
+    }
+
+    public static function NONCE_ERROR() : XdrSCHostAuthErrorCode {
+        return new XdrSCHostAuthErrorCode(XdrSCHostAuthErrorCode::HOST_AUTH_NONCE_ERROR);
+    }
+
+    public static function DUPLICATE_AUTHORIZATION() : XdrSCHostAuthErrorCode {
+        return new XdrSCHostAuthErrorCode(XdrSCHostAuthErrorCode::HOST_AUTH_DUPLICATE_AUTHORIZATION);
+    }
+
+    public static function NOT_AUTHORIZED() : XdrSCHostAuthErrorCode {
+        return new XdrSCHostAuthErrorCode(XdrSCHostAuthErrorCode::HOST_AUTH_NOT_AUTHORIZED);
+    }
+
     /**
      * @return int
      */

@@ -36,4 +36,12 @@ class XdrSCUnknownErrorCode
         $value = $xdr->readInteger32();
         return new XdrSCUnknownErrorCode($value);
     }
+
+    public static function GENERAL() : XdrSCUnknownErrorCode {
+        return new XdrSCUnknownErrorCode(XdrSCUnknownErrorCode::UNKNOWN_ERROR_GENERAL);
+    }
+
+    public static function XDR() : XdrSCUnknownErrorCode {
+        return new XdrSCUnknownErrorCode(XdrSCUnknownErrorCode::UNKNOWN_ERROR_XDR);
+    }
 }

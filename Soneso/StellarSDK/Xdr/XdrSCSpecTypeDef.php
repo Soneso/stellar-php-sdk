@@ -29,6 +29,106 @@ class XdrSCSpecTypeDef
     }
 
 
+    public static function fromOption(XdrSCSpecTypeOption $option) : XdrSCSpecTypeDef {
+        $result = new XdrSCSpecTypeDef(XdrSCSpecType::OPTION());
+        $result->option = $option;
+        return $result;
+    }
+
+    public static function fromResult(XdrSCSpecTypeResult $result) : XdrSCSpecTypeDef {
+        $res = new XdrSCSpecTypeDef(XdrSCSpecType::RESULT());
+        $res->result = $result;
+        return $res;
+    }
+
+    public static function fromVec(XdrSCSpecTypeVec $vec) : XdrSCSpecTypeDef {
+        $result = new XdrSCSpecTypeDef(XdrSCSpecType::VEC());
+        $result->vec = $vec;
+        return $result;
+    }
+
+    public static function fromMap(XdrSCSpecTypeMap $map) : XdrSCSpecTypeDef {
+        $result = new XdrSCSpecTypeDef(XdrSCSpecType::MAP());
+        $result->map = $map;
+        return $result;
+    }
+
+    public static function fromSet(XdrSCSpecTypeSet $set) : XdrSCSpecTypeDef {
+        $result = new XdrSCSpecTypeDef(XdrSCSpecType::SET());
+        $result->set = $set;
+        return $result;
+    }
+
+    public static function fromTuple(XdrSCSpecTypeTuple $tuple) : XdrSCSpecTypeDef {
+        $result = new XdrSCSpecTypeDef(XdrSCSpecType::TUPLE());
+        $result->tuple = $tuple;
+        return $result;
+    }
+
+    public static function fromBytesN(XdrSCSpecTypeBytesN $bytesN) : XdrSCSpecTypeDef {
+        $result = new XdrSCSpecTypeDef(XdrSCSpecType::BYTES_N());
+        $result->bytesN = $bytesN;
+        return $result;
+    }
+
+    public static function fromUDT(XdrSCSpecTypeUDT $udt) : XdrSCSpecTypeDef {
+        $result = new XdrSCSpecTypeDef(XdrSCSpecType::UDT());
+        $result->udt = $udt;
+        return $result;
+    }
+
+    public static function U32() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::U32());
+    }
+
+    public static function I32() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::I32());
+    }
+
+    public static function U64() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::U64());
+    }
+
+    public static function I64() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::I64());
+    }
+
+    public static function U128() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::U128());
+    }
+
+    public static function I128() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::I128());
+    }
+
+    public static function BOOL() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::BOOL());
+    }
+
+    public static function SYMBOL() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::SYMBOL());
+    }
+
+    public static function BITSET() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::BITSET());
+    }
+
+    public static function STATUS() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::STATUS());
+    }
+
+    public static function BYTES() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::BYTES());
+    }
+
+    public static function INVOKER() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::INVOKER());
+    }
+
+    public static function ADDRESS() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::ADDRESS());
+    }
+
     public function encode(): string {
         $bytes = $this->type->encode();
 

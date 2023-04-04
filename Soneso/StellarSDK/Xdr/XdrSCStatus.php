@@ -28,6 +28,64 @@ class XdrSCStatus
         $this->type = $type;
     }
 
+    public static function ok() : XdrSCStatus {
+        return new XdrSCStatus(XdrSCStatusType::OK());
+    }
+
+    public static function fromUnknownErrorCode(XdrSCUnknownErrorCode $unknownErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::UNKNOWN_ERROR());
+        $result->unknownCode = $unknownErrorCode;
+        return $result;
+    }
+
+    public static function fromHostValErrorCode(XdrSCHostValErrorCode $hostValErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::HOST_VALUE_ERROR());
+        $result->valCode = $hostValErrorCode;
+        return $result;
+    }
+
+    public static function fromHostObjErrorCode(XdrSCHostObjErrorCode $hostObjErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::HOST_OBJECT_ERROR());
+        $result->objCode = $hostObjErrorCode;
+        return $result;
+    }
+
+    public static function fromHostFnErrorCode(XdrSCHostFnErrorCode $hostFnErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::HOST_FUNCTION_ERROR());
+        $result->fnCode = $hostFnErrorCode;
+        return $result;
+    }
+
+    public static function fromHostStorageErrorCode(XdrSCHostStorageErrorCode $hostStorageErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::HOST_STORAGE_ERROR());
+        $result->storageCode = $hostStorageErrorCode;
+        return $result;
+    }
+
+    public static function fromHostContextErrorCode(XdrSCHostContextErrorCode $hostContextErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::HOST_CONTEXT_ERROR());
+        $result->contextCode = $hostContextErrorCode;
+        return $result;
+    }
+
+    public static function fromVMErrorCode(XdrSCVmErrorCode $vmErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::VM_ERROR());
+        $result->vmCode = $vmErrorCode;
+        return $result;
+    }
+
+    public static function fromContractErrorCode(int $contractErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::CONTRACT_ERROR());
+        $result->contractCode = $contractErrorCode;
+        return $result;
+    }
+
+    public static function fromHostAuthErrorCode(XdrSCHostAuthErrorCode $authErrorCode) : XdrSCStatus {
+        $result = new XdrSCStatus(XdrSCStatusType::HOST_AUTH_ERROR());
+        $result->authCode = $authErrorCode;
+        return $result;
+    }
+
     public function encode(): string {
         $bytes = $this->type->encode();
 

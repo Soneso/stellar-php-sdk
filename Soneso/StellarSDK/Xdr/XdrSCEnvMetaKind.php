@@ -17,6 +17,10 @@ class XdrSCEnvMetaKind
         $this->value = $value;
     }
 
+    public static function INTERFACE_VERSION() :  XdrSCEnvMetaKind {
+        return new XdrSCEnvMetaKind(XdrSCEnvMetaKind::SC_ENV_META_KIND_INTERFACE_VERSION);
+    }
+
     /**
      * @return int
      */

@@ -28,6 +28,54 @@ class XdrSCHostValErrorCode
         $this->value = $value;
     }
 
+    public static function UNKNOWN_ERROR() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_UNKNOWN_ERROR);
+    }
+
+    public static function RESERVED_TAG_VALUE() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_RESERVED_TAG_VALUE);
+    }
+
+    public static function UNEXPECTED_VAL_TYPE() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_UNEXPECTED_VAL_TYPE);
+    }
+
+    public static function U63_OUT_OF_RANGE() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_U63_OUT_OF_RANGE);
+    }
+
+    public static function U32_OUT_OF_RANGE() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_U32_OUT_OF_RANGE);
+    }
+
+    public static function STATIC_UNKNOWN() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_STATIC_UNKNOWN);
+    }
+
+    public static function MISSING_OBJECT() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_MISSING_OBJECT);
+    }
+
+    public static function SYMBOL_TOO_LONG() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_TOO_LONG);
+    }
+
+    public static function SYMBOL_BAD_CHAR() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_BAD_CHAR);
+    }
+
+    public static function SYMBOL_CONTAINS_NON_UTF8() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8);
+    }
+
+    public static function BITSET_TOO_MANY_BITS() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_BITSET_TOO_MANY_BITS);
+    }
+
+    public static function STATUS_UNKNOWN() : XdrSCHostValErrorCode {
+        return new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_STATUS_UNKNOWN);
+    }
+
     /**
      * @return int
      */

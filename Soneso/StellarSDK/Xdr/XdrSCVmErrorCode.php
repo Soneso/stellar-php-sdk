@@ -35,6 +35,82 @@ class XdrSCVmErrorCode
         $this->value = $value;
     }
 
+    public static function UNKNOWN() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_UNKNOWN);
+    }
+
+    public static function VALIDATION() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_VALIDATION);
+    }
+
+    public static function INSTANTIATION() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_INSTANTIATION);
+    }
+
+    public static function FUNCTION() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_FUNCTION);
+    }
+
+    public static function TABLE() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TABLE);
+    }
+
+    public static function MEMORY() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_MEMORY);
+    }
+
+    public static function GLOBAL() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_GLOBAL);
+    }
+
+    public static function VALUE() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_VALUE);
+    }
+
+    public static function TRAP_UNREACHABLE() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_UNREACHABLE);
+    }
+
+    public static function TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS);
+    }
+
+    public static function TRAP_TABLE_ACCESS_OUT_OF_BOUNDS() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS);
+    }
+
+    public static function TRAP_ELEM_UNINITIALIZED() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_ELEM_UNINITIALIZED);
+    }
+
+    public static function TRAP_DIVISION_BY_ZERO() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_DIVISION_BY_ZERO);
+    }
+
+    public static function TRAP_INTEGER_OVERFLOW() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_INTEGER_OVERFLOW);
+    }
+
+    public static function TRAP_INVALID_CONVERSION_TO_INT() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_INVALID_CONVERSION_TO_INT);
+    }
+
+    public static function TRAP_STACK_OVERFLOW() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_STACK_OVERFLOW);
+    }
+
+    public static function TRAP_UNEXPECTED_SIGNATURE() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_UNEXPECTED_SIGNATURE);
+    }
+
+    public static function TRAP_MEM_LIMIT_EXCEEDED() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_MEM_LIMIT_EXCEEDED);
+    }
+
+    public static function TRAP_CPU_LIMIT_EXCEEDED() : XdrSCVmErrorCode {
+        return new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_CPU_LIMIT_EXCEEDED);
+    }
+
     /**
      * @return int
      */

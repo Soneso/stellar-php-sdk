@@ -21,6 +21,25 @@ class XdrSCHostFnErrorCode
         $this->value = $value;
     }
 
+    public static function UNKNOWN_ERROR() : XdrSCHostFnErrorCode {
+        return new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_UNKNOWN_ERROR);
+    }
+
+    public static function UNEXPECTED_HOST_FUNCTION_ACTION() : XdrSCHostFnErrorCode {
+        return new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION);
+    }
+
+    public static function INPUT_ARGS_WRONG_LENGTH() : XdrSCHostFnErrorCode {
+        return new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_WRONG_LENGTH);
+    }
+
+    public static function INPUT_ARGS_WRONG_TYPE() : XdrSCHostFnErrorCode {
+        return new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_WRONG_TYPE);
+    }
+
+    public static function INPUT_ARGS_INVALID() : XdrSCHostFnErrorCode {
+        return new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_INVALID);
+    }
     /**
      * @return int
      */

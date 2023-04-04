@@ -18,6 +18,14 @@ class XdrSCHostContextErrorCode
         $this->value = $value;
     }
 
+    public static function UNKNOWN_ERROR() : XdrSCHostContextErrorCode {
+        return new XdrSCHostContextErrorCode(XdrSCHostContextErrorCode::HOST_CONTEXT_UNKNOWN_ERROR);
+    }
+
+    public static function NO_CONTRACT_RUNNING() : XdrSCHostContextErrorCode {
+        return new XdrSCHostContextErrorCode(XdrSCHostContextErrorCode::HOST_CONTEXT_NO_CONTRACT_RUNNING);
+    }
+
     /**
      * @return int
      */

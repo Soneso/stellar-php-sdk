@@ -20,6 +20,12 @@ class XdrSCEnvMetaEntry
         $this->type = $type;
     }
 
+    public static function forInterfaceVersion(int $interfaceVersion) : XdrSCEnvMetaEntry {
+        $result = new XdrSCEnvMetaEntry(XdrSCEnvMetaKind::INTERFACE_VERSION());
+        $result->interfaceVersion = $interfaceVersion;
+        return $result;
+    }
+
     public function encode(): string {
         $bytes = $this->type->encode();
 

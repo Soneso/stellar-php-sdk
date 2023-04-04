@@ -131,8 +131,12 @@ class XdrSCVal
         return $this->obj?->contractCode;
     }
 
-    public function getAccountID() : ?XdrAccountID {
-        return $this->obj?->accountID;
+    public function getAddress() : ?XdrSCAddress {
+        return $this->obj?->address;
+    }
+
+    public function getNonceAddress() : ?XdrSCAddress {
+        return $this->obj?->nonceAddress;
     }
 
     public static function fromU63(int $u63) : XdrSCVal {
@@ -159,9 +163,93 @@ class XdrSCVal
         return $result;
     }
 
+    public static function forTrue() : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::STATIC());
+        $result->ic = XdrSCStatic::TRUE();
+        return $result;
+    }
+
+    public static function forFalse() : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::STATIC());
+        $result->ic = XdrSCStatic::FALSE();
+        return $result;
+    }
+
+    public static function forVoid() : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::STATIC());
+        $result->ic = XdrSCStatic::VOID();
+        return $result;
+    }
+
+    public static function forLedgerKeyContractCode() : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::STATIC());
+        $result->ic = XdrSCStatic::LEDGER_KEY_CONTRACT_CODE();
+        return $result;
+    }
+
     public static function fromObject(XdrSCObject $object) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::OBJECT());
         $result->obj = $object;
+        return $result;
+    }
+
+    public static function forVec(array $vec) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forVec($vec);
+        return $result;
+    }
+
+    public static function forMap(array $map) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forMap($map);
+        return $result;
+    }
+
+    public static function forU64(int $u64) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forU64($u64);
+        return $result;
+    }
+
+    public static function forI64(int $i64) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forI64($i64);
+        return $result;
+    }
+
+    public static function forU128(XdrInt128Parts $value) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forU128($value);
+        return $result;
+    }
+
+    public static function forI128(XdrInt128Parts $value) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forI128($value);
+        return $result;
+    }
+
+    public static function forBytes(string $bytes) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forBytes($bytes);
+        return $result;
+    }
+
+    public static function forContractCode(XdrSCContractCode $value) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forContractCode($value);
+        return $result;
+    }
+
+    public static function forAddress(XdrSCAddress $value) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forAddress($value);
+        return $result;
+    }
+
+    public static function forNonceKey(XdrSCAddress $value) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::OBJECT());
+        $result->obj = XdrSCObject::forNonceKey($value);
         return $result;
     }
 
@@ -180,6 +268,12 @@ class XdrSCVal
     public static function fromStatus(XdrSCStatus $status) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::STATUS());
         $result->status = $status;
+        return $result;
+    }
+
+    public static function forStatusOk() : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::STATUS());
+        $result->status = XdrSCStatus::ok();
         return $result;
     }
 

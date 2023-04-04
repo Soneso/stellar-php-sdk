@@ -20,6 +20,15 @@ class XdrSCContractCode
         $this->type = $type;
     }
 
+    public static function forWasmId(string $wasmIdHex) : XdrSCContractCode {
+        $result = new XdrSCContractCode(XdrSCContractCodeType::WASM_REF());
+        $result->wasmIdHex = $wasmIdHex;
+        return $result;
+    }
+
+    public static function forToken() : XdrSCContractCode {
+        return new XdrSCContractCode(XdrSCContractCodeType::TOKEN());
+    }
 
     public function encode(): string {
         $bytes = $this->type->encode();

@@ -18,6 +18,14 @@ class XdrContractEventType
         $this->value = $value;
     }
 
+    public static function SYSTEM() :  XdrContractEventType {
+        return new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM);
+    }
+
+    public static function CONTRACT() :  XdrContractEventType {
+        return new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_CONTRACT);
+    }
+
     /**
      * @return int
      */

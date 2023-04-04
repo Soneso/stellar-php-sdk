@@ -38,4 +38,20 @@ class XdrSCStatic
         $value = $xdr->readInteger32();
         return new XdrSCStatic($value);
     }
+
+    public static function TRUE() : XdrSCStatic {
+        return new XdrSCStatic(XdrSCStatic::SCS_TRUE);
+    }
+
+    public static function FALSE() : XdrSCStatic {
+        return new XdrSCStatic(XdrSCStatic::SCS_FALSE);
+    }
+
+    public static function VOID() : XdrSCStatic {
+        return new XdrSCStatic(XdrSCStatic::SCS_VOID);
+    }
+
+    public static function LEDGER_KEY_CONTRACT_CODE() : XdrSCStatic {
+        return new XdrSCStatic(XdrSCStatic::SCS_LEDGER_KEY_CONTRACT_CODE);
+    }
 }

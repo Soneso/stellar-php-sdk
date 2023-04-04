@@ -19,6 +19,18 @@ class XdrContractIDType
         $this->value = $value;
     }
 
+    public static function SOURCE_ACCOUNT() :  XdrContractIDType {
+        return new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT);
+    }
+
+    public static function ED25519_PUBLIC_KEY() :  XdrContractIDType {
+        return new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_ED25519_PUBLIC_KEY);
+    }
+
+    public static function ASSET() :  XdrContractIDType {
+        return new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_ASSET);
+    }
+
     /**
      * @return int
      */

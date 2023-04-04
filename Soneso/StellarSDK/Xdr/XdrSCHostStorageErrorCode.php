@@ -22,6 +22,30 @@ class XdrSCHostStorageErrorCode
         $this->value = $value;
     }
 
+    public static function UNKNOWN_ERROR() : XdrSCHostStorageErrorCode {
+        return new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_UNKNOWN_ERROR);
+    }
+
+    public static function EXPECT_CONTRACT_DATA() : XdrSCHostStorageErrorCode {
+        return new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_EXPECT_CONTRACT_DATA);
+    }
+
+    public static function READWRITE_ACCESS_TO_READONLY_ENTRY() : XdrSCHostStorageErrorCode {
+        return new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY);
+    }
+
+    public static function ACCESS_TO_UNKNOWN_ENTRY() : XdrSCHostStorageErrorCode {
+        return new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY);
+    }
+
+    public static function MISSING_KEY_IN_GET() : XdrSCHostStorageErrorCode {
+        return new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_MISSING_KEY_IN_GET);
+    }
+
+    public static function GET_ON_DELETED_KEY() : XdrSCHostStorageErrorCode {
+        return new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_GET_ON_DELETED_KEY);
+    }
+
     /**
      * @return int
      */

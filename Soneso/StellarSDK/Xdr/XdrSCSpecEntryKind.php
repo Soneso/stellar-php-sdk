@@ -21,6 +21,26 @@ class XdrSCSpecEntryKind
         $this->value = $value;
     }
 
+    public static function FUNCTION_V0() :  XdrSCSpecEntryKind {
+        return new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_FUNCTION_V0);
+    }
+
+    public static function UDT_STRUCT_V0() :  XdrSCSpecEntryKind {
+        return new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0);
+    }
+
+    public static function UDT_UNION_V0() :  XdrSCSpecEntryKind {
+        return new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0);
+    }
+
+    public static function UDT_ENUM_V0() :  XdrSCSpecEntryKind {
+        return new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0);
+    }
+
+    public static function UDT_ERROR_ENUM_V0 () :  XdrSCSpecEntryKind {
+        return new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0);
+    }
+
     /**
      * @return int
      */
