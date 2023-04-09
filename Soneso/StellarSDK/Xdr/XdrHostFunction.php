@@ -83,7 +83,7 @@ class XdrHostFunction
         $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
         $cId = new XdrContractID(new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT));
         $cId->salt = $salt;
-        $cCode = new XdrSCContractCode(new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF));
+        $cCode = new XdrSCContractExecutable(XdrSCContractExecutableType::WASM_REF());
         $cCode->wasmIdHex = $wasmIdHex;
         $result->createContractArgs = new XdrCreateContractArgs($cId, $cCode);
         return $result;
@@ -93,7 +93,7 @@ class XdrHostFunction
         $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
         $cId = new XdrContractID(new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT));
         $cId->salt = $salt;
-        $cCode = new XdrSCContractCode(new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN));
+        $cCode = new XdrSCContractExecutable(XdrSCContractExecutableType::TOKEN());
         $result->createContractArgs = new XdrCreateContractArgs($cId, $cCode);
         return $result;
     }
@@ -102,7 +102,7 @@ class XdrHostFunction
         $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
         $cId = new XdrContractID(new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_ASSET));
         $cId->asset = $asset;
-        $cCode = new XdrSCContractCode(new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN));
+        $cCode = new XdrSCContractExecutable(XdrSCContractExecutableType::TOKEN());
         $result->createContractArgs = new XdrCreateContractArgs($cId, $cCode);
         return $result;
     }

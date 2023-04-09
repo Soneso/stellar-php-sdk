@@ -12,7 +12,6 @@ use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
-use Soneso\StellarSDK\Xdr\XdrSCObject;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 class InvokeContractOp extends InvokeHostFunctionOperation
@@ -42,13 +41,11 @@ class InvokeContractOp extends InvokeHostFunctionOperation
         $invokeArgs = array();
 
         // contractID
-
-        $contractIDObject = XdrSCObject::fromContractId($this->contractId);
-        $contractIDVal = XdrSCVal::fromObject($contractIDObject);
+        $contractIDVal = XdrSCVal::forContractId($this->contractId);
         array_push($invokeArgs, $contractIDVal);
 
         // function name
-        $functionNameVal = XdrSCVal::fromSymbol($this->functionName);
+        $functionNameVal = XdrSCVal::forSymbol($this->functionName);
         array_push($invokeArgs, $functionNameVal);
 
         // arguments if any

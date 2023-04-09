@@ -15,16 +15,17 @@ use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
 use Soneso\StellarSDK\Soroban\Responses\GetAccountResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLedgerEntryResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetNetworkResponse;
-use Soneso\StellarSDK\Soroban\Responses\GetTransactionStatusResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
-use Soneso\StellarSDK\Xdr\XdrSCObject;
+use Soneso\StellarSDK\Xdr\XdrSCNonceKey;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /// This class helps you to connect to a local or remote soroban rpc server
@@ -41,8 +42,9 @@ class SorobanServer
     private const GET_ACCOUNT = "getAccount";
     private const SIMULATE_TRANSACTION = "simulateTransaction";
     private const SEND_TRANSACTION = "sendTransaction";
-    private const GET_TRANSACTION_STATUS = "getTransactionStatus";
+    private const GET_TRANSACTION = "getTransaction";
     private const GET_LEDGER_ENTRY = "getLedgerEntry";
+    private const GET_LATEST_LEDGER = "getLatestLedger";
     private const GET_EVENTS = "getEvents";
 
     public bool $enableLogging = false;
@@ -95,21 +97,17 @@ class SorobanServer
         return $this->request($body, self::GET_NETWORK);
     }
 
-    /**
-     * Fetch a minimal set of current info about a stellar account.
-     * @param string $accountId to get data for.
-     * @return GetAccountResponse response.
-     * @throws GuzzleException
-     */
-    public function getAccount(string $accountId) : GetAccountResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return GetAccountResponse::fromJson($this->experimentErr);
+    /* // This has been removed from the rpc api.
+        // one can use $account = $sdk->requestAccount($accountId); instead.
+        public function getAccount(string $accountId) : GetAccountResponse {
+            if (!$this->acknowledgeExperimental) {
+                $this->printExperimentalFlagErr();
+                return GetAccountResponse::fromJson($this->experimentErr);
+            }
+            $body = $this->prepareRequest(self::GET_ACCOUNT, [$accountId]);
+            return $this->request($body, self::GET_ACCOUNT);
         }
-        $body = $this->prepareRequest(self::GET_ACCOUNT, [$accountId]);
-        return $this->request($body, self::GET_ACCOUNT);
-    }
-
+    */
     /**
      * Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
      * @param Transaction $transaction to submit.
@@ -145,16 +143,16 @@ class SorobanServer
     /**
      * Clients will poll this to tell when the transaction has been completed.
      * @param String $transactionId of the transaction to be checked.
-     * @return GetTransactionStatusResponse response.
+     * @return GetTransactionResponse response.
      * @throws GuzzleException
      */
-    public function getTransactionStatus(String $transactionId) : GetTransactionStatusResponse {
+    public function getTransaction(String $transactionId) : GetTransactionResponse {
         if (!$this->acknowledgeExperimental) {
             $this->printExperimentalFlagErr();
-            return GetTransactionStatusResponse::fromJson($this->experimentErr);
+            return GetTransactionResponse::fromJson($this->experimentErr);
         }
-        $body = $this->prepareRequest(self::GET_TRANSACTION_STATUS, [$transactionId]);
-        return $this->request($body, self::GET_TRANSACTION_STATUS);
+        $body = $this->prepareRequest(self::GET_TRANSACTION, [$transactionId]);
+        return $this->request($body, self::GET_TRANSACTION);
     }
 
     /**
@@ -173,6 +171,15 @@ class SorobanServer
         }
         $body = $this->prepareRequest(self::GET_LEDGER_ENTRY, [$base64EncodedKey]);
         return $this->request($body, self::GET_LEDGER_ENTRY);
+    }
+
+    public function getLatestLedger() : GetLatestLedgerResponse {
+        if (!$this->acknowledgeExperimental) {
+            $this->printExperimentalFlagErr();
+            return GetLatestLedgerResponse::fromJson($this->experimentErr);
+        }
+        $body = $this->prepareRequest(self::GET_LATEST_LEDGER);
+        return $this->request($body, self::GET_LATEST_LEDGER);
     }
 
     public function getEvents(GetEventsRequest $request) : GetEventsResponse {
@@ -197,8 +204,7 @@ class SorobanServer
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
         $ledgerKey->contractID = $contractId;
         $address = new Address(Address::TYPE_ACCOUNT, accountId: $accountId);
-        $scoNonceKeyObj = XdrSCObject::forNonceKey($address->toXdr());
-        $scoNonceKeyVal = XdrSCVal::fromObject($scoNonceKeyObj);
+        $scoNonceKeyVal = XdrSCVal::forNonceKeyWithAddress($address->toXdr());
         $ledgerKey->contractDataKey = $scoNonceKeyVal;
         $response = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
         if ($response->error == null) {
@@ -206,12 +212,9 @@ class SorobanServer
             if ($entryDataXdr != null) {
                 $contractDataEntry = $entryDataXdr->getContractData();
                 if ($contractDataEntry != null) {
-                    $obj = $contractDataEntry->val->obj;
-                    if ($obj != null) {
-                        $nonce = $obj->u64;
-                        if ($nonce !== null) {
-                            return $nonce;
-                        }
+                    $nonce = $contractDataEntry->val->u64;
+                    if ($nonce !== null) {
+                        return $nonce;
                     }
                 }
             }
@@ -263,8 +266,9 @@ class SorobanServer
             self::GET_ACCOUNT => GetAccountResponse::fromJson($jsonData),
             self::SIMULATE_TRANSACTION => SimulateTransactionResponse::fromJson($jsonData),
             self::SEND_TRANSACTION => SendTransactionResponse::fromJson($jsonData),
-            self::GET_TRANSACTION_STATUS => GetTransactionStatusResponse::fromJson($jsonData),
+            self::GET_TRANSACTION => GetTransactionResponse::fromJson($jsonData),
             self::GET_LEDGER_ENTRY => GetLedgerEntryResponse::fromJson($jsonData),
+            self::GET_LATEST_LEDGER => GetLatestLedgerResponse::fromJson($jsonData),
             self::GET_EVENTS => GetEventsResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };

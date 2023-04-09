@@ -13,15 +13,16 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\AuthorizedInvocation;
 use Soneso\StellarSDK\Soroban\ContractAuth;
-use Soneso\StellarSDK\Soroban\Responses\GetTransactionStatusResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
+use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
-use Soneso\StellarSDK\Xdr\XdrSCObject;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 
 class SorobanAtomicSwapTest extends TestCase
 {
@@ -31,7 +32,7 @@ class SorobanAtomicSwapTest extends TestCase
         // https://soroban.stellar.org/docs/learn/authorization
         // https://github.com/StellarCN/py-stellar-base/blob/soroban/examples/soroban_auth_atomic_swap.py
 
-        $server = new SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
+        $server = new SorobanServer("https://rpc-futurenet.stellar.org:443");
         $server->enableLogging = true;
         $server->acknowledgeExperimental = true;
 
@@ -71,14 +72,14 @@ class SorobanAtomicSwapTest extends TestCase
         $addressBob = Address::fromAccountId($bobId)->toXdrSCVal();
         $addressSwapContract = Address::fromContractId($atomicSwapContractId)->toXdrSCVal();
 
-        $tokenABytes = XdrSCVal::fromObject(XdrSCObject::forBytes(hex2bin($tokenAContractId)));
-        $tokenBBytes = XdrSCVal::fromObject(XdrSCObject::forBytes(hex2bin($tokenBContractId)));
+        $tokenABytes = XdrSCVal::forBytes(hex2bin($tokenAContractId));
+        $tokenBBytes = XdrSCVal::forBytes(hex2bin($tokenBContractId));
 
-        $amountA = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts(1000,0)));
-        $minBForA = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts(4500,0)));
+        $amountA = XdrSCVal::forI128(new XdrInt128Parts(1000,0));
+        $minBForA = XdrSCVal::forI128(new XdrInt128Parts(4500,0));
 
-        $amountB = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts(5000,0)));
-        $minAForB = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts(950,0)));
+        $amountB = XdrSCVal::forI128(new XdrInt128Parts(5000,0));
+        $minAForB = XdrSCVal::forI128(new XdrInt128Parts(950,0));
 
 
         $swapFunctionName = "swap";
@@ -116,7 +117,7 @@ class SorobanAtomicSwapTest extends TestCase
         $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($atomicSwapContractId,
             $swapFunctionName, $invokeArgs, auth: [$aliceContractAuth, $bobContractAuth])->build();
 
-        $source = $server->getAccount($adminId);
+        $source = $sdk->requestAccount($adminId);
 
         // simulate first to obtain the footprint
 
@@ -143,19 +144,21 @@ class SorobanAtomicSwapTest extends TestCase
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
         $this->assertNull($sendResponse->error);
-        $this->assertNull($sendResponse->resultError);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
 
         // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
-        $this->assertEquals(GetTransactionStatusResponse::STATUS_SUCCESS, $statusResponse->status);
-        $this->assertNotNull($statusResponse->results);
-        print("Result " . $statusResponse->results->toArray()[0]->xdr);
+        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
+        $this->assertNotNull($statusResponse->getResultValue());
+        $result = $statusResponse->getResultValue();
+        $this->assertEquals(XdrSCValType::SCV_VOID, $result->type->value);
     }
 
     private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : String {
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
-        $account = $server->getAccount($submitterId);
+        $account = $sdk->requestAccount($submitterId);
 
         // install contract
         $contractCode = file_get_contents($pathToCode, false);
@@ -173,16 +176,17 @@ class SorobanAtomicSwapTest extends TestCase
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
 
         // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
         $wasmId = $statusResponse->getWasmId();
         $this->assertNotNull($wasmId);
 
         // create contract
         $createContractOp = InvokeHostFunctionOperationBuilder::forCreatingContract($wasmId)->build();
-        $account = $server->getAccount($submitterId);
+        $account = $sdk->requestAccount($submitterId);
 
         $transaction = (new TransactionBuilder($account))->addOperation($createContractOp)->build();
 
@@ -195,9 +199,10 @@ class SorobanAtomicSwapTest extends TestCase
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
 
         // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
         $contractId = $statusResponse->getContractId();
         $this->assertNotNull($contractId);
@@ -208,19 +213,20 @@ class SorobanAtomicSwapTest extends TestCase
     {
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
         // reload account for sequence number
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
-        $account = $server->getAccount($submitterId);
+        $account = $sdk->requestAccount($submitterId);
 
         $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
         $functionName = "initialize";
 
         $tokenNameHex = pack("H*", bin2hex($name));
-        $tokenName = XdrSCVal::fromObject(XdrSCObject::forBytes($tokenNameHex));
+        $tokenName = XdrSCVal::forBytes($tokenNameHex);
 
         $symbolHex = pack("H*", bin2hex($symbol));
-        $tokenSymbol = XdrSCVal::fromObject(XdrSCObject::forBytes($symbolHex));
+        $tokenSymbol = XdrSCVal::forBytes($symbolHex);
 
-        $args = [$adminAddress, XdrSCVal::fromU32(8), $tokenName, $tokenSymbol];
+        $args = [$adminAddress, XdrSCVal::forU32(8), $tokenName, $tokenSymbol];
         $rootInvocation = new AuthorizedInvocation($contractId, $functionName, $args);
         $contractAuth = new ContractAuth($rootInvocation);
 
@@ -241,22 +247,24 @@ class SorobanAtomicSwapTest extends TestCase
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
 
         // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
-        $this->assertEquals(GetTransactionStatusResponse::STATUS_SUCCESS, $statusResponse->status);
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
+        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
     private function mint(SorobanServer $server, Keypair $submitterKp, String $contractId, String $toAccountId, int $amount) : void
     {
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
         // reload account for sequence number
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
-        $account = $server->getAccount($submitterId);
+        $account = $sdk->requestAccount($submitterId);
 
         $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
         $toAddress = Address::fromAccountId($toAccountId)->toXdrSCVal();
-        $amountValue = XdrSCVal::fromObject(XdrSCObject::forI128(new XdrInt128Parts($amount,0)));
+        $amountValue = XdrSCVal::forI128(new XdrInt128Parts($amount,0));
         $functionName = "mint";
 
         $args = [$adminAddress, $toAddress, $amountValue];
@@ -279,18 +287,20 @@ class SorobanAtomicSwapTest extends TestCase
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
 
         // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
-        $this->assertEquals(GetTransactionStatusResponse::STATUS_SUCCESS, $statusResponse->status);
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
+        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
     private function balance(SorobanServer $server, Keypair $submitterKp, String $contractId, String $accountId) : int
     {
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
         // reload account for sequence number
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
-        $account = $server->getAccount($submitterId);
+        $account = $sdk->requestAccount($submitterId);
 
         $address = Address::fromAccountId($accountId)->toXdrSCVal();
         $functionName = "balance";
@@ -312,32 +322,35 @@ class SorobanAtomicSwapTest extends TestCase
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
 
         // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->transactionId);
-        $this->assertEquals(GetTransactionStatusResponse::STATUS_SUCCESS, $statusResponse->status);
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
+        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
         $this->assertNotNull($statusResponse->getResultValue());
         $resultVal = $statusResponse->getResultValue();
         $this->assertNotNull($resultVal->getI128());
         return $resultVal->getI128()->lo;
     }
 
-    private function pollStatus(SorobanServer $server, String $transactionId) : ?GetTransactionStatusResponse {
+    private function pollStatus(SorobanServer $server, string $transactionId) : ?GetTransactionResponse {
         $statusResponse = null;
-        $status = GetTransactionStatusResponse::STATUS_PENDING;
-        while ($status == GetTransactionStatusResponse::STATUS_PENDING) {
+        $status = GetTransactionResponse::STATUS_NOT_FOUND;
+        $count = 15;
+        while ($status == GetTransactionResponse::STATUS_NOT_FOUND) {
             sleep(3);
-            $statusResponse = $server->getTransactionStatus($transactionId);
+            $statusResponse = $server->getTransaction($transactionId);
             $this->assertNull($statusResponse->error);
-            $this->assertNotNull($statusResponse->id);
             $this->assertNotNull($statusResponse->status);
             $status = $statusResponse->status;
-            if ($status == GetTransactionStatusResponse::STATUS_ERROR) {
-                $this->assertNotNull($statusResponse->resultError);
-                print($statusResponse->resultError->message . PHP_EOL);
-            } else if ($status == GetTransactionStatusResponse::STATUS_SUCCESS) {
-                $this->assertNotNull($statusResponse->results);
+            if ($status == GetTransactionResponse::STATUS_FAILED) {
+                $this->assertNotNull($statusResponse->resultXdr);
+            } else if ($status == GetTransactionResponse::STATUS_SUCCESS) {
+                $this->assertNotNull($statusResponse->resultXdr);
+                $this->assertNotNull($statusResponse->resultMetaXdr);
             }
+            $count -= 1;
+            $this->assertGreaterThan(0, $count);
         }
         return $statusResponse;
     }

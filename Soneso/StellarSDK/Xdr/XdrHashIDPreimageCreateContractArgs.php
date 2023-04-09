@@ -10,15 +10,15 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrHashIDPreimageCreateContractArgs
 {
     public string $networkID; // hash
-    public XdrSCContractCode $source;
+    public XdrSCContractExecutable $source;
     public string $salt; // uint256
 
     /**
      * @param string $networkID
-     * @param XdrSCContractCode $source
+     * @param XdrSCContractExecutable $source
      * @param string $salt
      */
-    public function __construct(string $networkID, XdrSCContractCode $source, string $salt)
+    public function __construct(string $networkID, XdrSCContractExecutable $source, string $salt)
     {
         $this->networkID = $networkID;
         $this->source = $source;
@@ -35,7 +35,7 @@ class XdrHashIDPreimageCreateContractArgs
 
     public static function decode(XdrBuffer $xdr) : XdrHashIDPreimageCreateContractArgs {
         $networkID = $xdr->readOpaqueFixed(32);
-        $source = XdrSCContractCode::decode($xdr);
+        $source = XdrSCContractExecutable::decode($xdr);
         $salt = $xdr->readUnsignedInteger256();
         return new XdrHashIDPreimageCreateContractArgs($networkID, $source, $salt);
     }
@@ -57,17 +57,17 @@ class XdrHashIDPreimageCreateContractArgs
     }
 
     /**
-     * @return XdrSCContractCode
+     * @return XdrSCContractExecutable
      */
-    public function getSource(): XdrSCContractCode
+    public function getSource(): XdrSCContractExecutable
     {
         return $this->source;
     }
 
     /**
-     * @param XdrSCContractCode $source
+     * @param XdrSCContractExecutable $source
      */
-    public function setSource(XdrSCContractCode $source): void
+    public function setSource(XdrSCContractExecutable $source): void
     {
         $this->source = $source;
     }

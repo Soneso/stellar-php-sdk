@@ -9,28 +9,47 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 /**
  * Response when submitting a real transaction to the stellar
  * network by using the soroban rpc server.
+ * See: https://soroban.stellar.org/api/methods/sendTransaction
  */
 class SendTransactionResponse extends SorobanRpcResponse
 {
 
-    /// The transaction hash (in an hex-encoded string), and the initial
-    /// transaction status, ("pending" or something)
-    public ?string $transactionId = null;
+    /// The transaction has been accepted by stellar-core.
+    public const STATUS_PENDING = "PENDING";
 
-    /// The current status of the transaction by hash, one of: pending, success, error
+    /// The transaction has already been submitted to stellar-core.
+    public const STATUS_DUPLICATE = "DUPLICATE";
+
+    /// The transaction was not included in the previous 4 ledgers and is banned from the next few ledgers.
+    public const STATUS_TRY_AGAIN_LATER = "TRY_AGAIN_LATER";
+
+    /// An error occurred from submitting the transaction to stellar-core.
+    public const STATUS_ERROR = "ERROR";
+
+    /// The transaction hash (in an hex-encoded string)
+    public ?string $hash = null;
+
+    /// The current status of the transaction by hash, one of: PENDING, DUPLICATE, TRY_AGAIN_LATER, ERROR
     public ?string $status = null;
 
-    /// (optional) If the transaction was rejected immediately,
-    /// this will be an error object.
-    public ?TransactionStatusError $resultError = null;
+    /// The latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
+    public ?string $latestLedger = null;
+
+    /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
+    public ?string $latestLedgerCloseTime = null;
+
+    /// (optional) If the transaction status is ERROR, this will be a base64 encoded string of the raw TransactionResult XDR (XdrTransactionResult) struct containing details on why stellar-core rejected the transaction.
+    public ?string $errorResultXdr = null;
 
     public static function fromJson(array $json) : SendTransactionResponse {
         $result = new SendTransactionResponse($json);
         if (isset($json['result'])) {
-            $result->transactionId = $json['result']['id'];
+            $result->hash = $json['result']['hash'];
             $result->status = $json['result']['status'];
-            if (isset($json['result']['error'])) {
-                $result->resultError = TransactionStatusError::fromJson($json['result']['error']);
+            $result->latestLedger = $json['result']['latestLedger'];
+            $result->latestLedgerCloseTime = $json['result']['latestLedgerCloseTime'];
+            if (isset($json['result']['errorResultXdr'])) {
+                $result->errorResultXdr = $json['result']['errorResultXdr'];
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -39,24 +58,15 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null The transaction hash (in an hex-encoded string),
-     * and the initial network by using the soroban rpc server.
+     * @return string|null
      */
-    public function getTransactionId(): ?string
+    public function getHash(): ?string
     {
-        return $this->transactionId;
+        return $this->hash;
     }
 
     /**
-     * @param string|null $transactionId
-     */
-    public function setTransactionId(?string $transactionId): void
-    {
-        $this->transactionId = $transactionId;
-    }
-
-    /**
-     * @return string|null The current status of the transaction by hash, one of: pending, success, error
+     * @return string|null
      */
     public function getStatus(): ?string
     {
@@ -64,28 +74,27 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param string|null $status
+     * @return string|null
      */
-    public function setStatus(?string $status): void
+    public function getLatestLedger(): ?string
     {
-        $this->status = $status;
+        return $this->latestLedger;
     }
 
     /**
-     * @return TransactionStatusError|null (optional) If the transaction was rejected immediately,
-     * this will be an error object.
+     * @return string|null
      */
-    public function getResultError(): ?TransactionStatusError
+    public function getLatestLedgerCloseTime(): ?string
     {
-        return $this->resultError;
+        return $this->latestLedgerCloseTime;
     }
 
     /**
-     * @param TransactionStatusError|null $resultError
+     * @return string|null
      */
-    public function setResultError(?TransactionStatusError $resultError): void
+    public function getErrorResultXdr(): ?string
     {
-        $this->resultError = $resultError;
+        return $this->errorResultXdr;
     }
 
 }

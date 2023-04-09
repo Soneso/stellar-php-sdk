@@ -6,18 +6,32 @@
 
 namespace Soneso\StellarSDK\Soroban\Requests;
 
+/**
+ * Event filter for the getEvents request.
+ * See: https://soroban.stellar.org/api/methods/getEvents
+ */
 class EventFilter
 {
+    /// (optional) A comma separated list of event types (system, contract, or diagnostic)
+    /// used to filter events. If omitted, all event types are included.
     public ?string $type = null;
+
+    /// (optional) List of contract ids to query for events.
+    /// If omitted, return events for all contracts.
+    /// Maximum 5 contract IDs are allowed per request.
     public ?array $contractIds = null;
-    public ?SegmentFiltersList $topics = null;
+
+    /// (optional) List of topic filters. If omitted, query for all events.
+    /// If multiple filters are specified, events will be included if they match any of the filters.
+    /// Maximum 5 filters are allowed per request.
+    public ?TopicFilters $topics = null;
 
     /**
      * @param string|null $type
      * @param array|null $contractIds
-     * @param SegmentFiltersList|null $topics
+     * @param TopicFilters|null $topics
      */
-    public function __construct(?string $type = null, ?array $contractIds = null, ?SegmentFiltersList $topics = null)
+    public function __construct(?string $type = null, ?array $contractIds = null, ?TopicFilters $topics = null)
     {
         $this->type = $type;
         $this->contractIds = $contractIds;
@@ -40,11 +54,7 @@ class EventFilter
         if ($this->topics != null) {
             $topicsParams = array();
             foreach ($this->topics as $topic) {
-                $tParams = array();
-                foreach ($topic as $filter) {
-                    array_push($tParams, $filter->getRequestParams());
-                }
-                array_push($topicsParams, $tParams);
+                array_push($topicsParams, $topic->getRequestParams());
             }
             $params['topics'] = $topicsParams;
         }
@@ -61,14 +71,6 @@ class EventFilter
     }
 
     /**
-     * @param string|null $type
-     */
-    public function setType(?string $type): void
-    {
-        $this->type = $type;
-    }
-
-    /**
      * @return array|null
      */
     public function getContractIds(): ?array
@@ -77,27 +79,11 @@ class EventFilter
     }
 
     /**
-     * @param array|null $contractIds
+     * @return TopicFilters|null
      */
-    public function setContractIds(?array $contractIds): void
-    {
-        $this->contractIds = $contractIds;
-    }
-
-    /**
-     * @return SegmentFiltersList|null
-     */
-    public function getTopics(): ?SegmentFiltersList
+    public function getTopics(): ?TopicFilters
     {
         return $this->topics;
-    }
-
-    /**
-     * @param SegmentFiltersList|null $topics
-     */
-    public function setTopics(?SegmentFiltersList $topics): void
-    {
-        $this->topics = $topics;
     }
 
 }

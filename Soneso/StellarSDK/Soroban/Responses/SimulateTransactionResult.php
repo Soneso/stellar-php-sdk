@@ -13,17 +13,21 @@ use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 
 /**
  * Used as a part of simulate transaction
+ * See: https://soroban.stellar.org/api/methods/simulateTransaction
  */
 class SimulateTransactionResult
 {
-    /// xdr-encoded return value of the contract call
-    public string $xdr;
+    /// (optional) Only present on success. xdr-encoded return value of the contract call operation.
+    public ?string $xdr;
 
-    /// Footprint containing the ledger keys expected to be written by this transaction
+    ///  The contract data ledger keys which were accessed when simulating this operation.
     public ?Footprint $footprint = null;
 
-    /// List of base64 encoded XdrLedgerFootprint related the authorizations needed.
+    /// Per-address authorizations recorded when simulating this operation. (an array of serialized base64 strings of [XdrContractAuth])
     public ?array $auth = null; //[string xdr]
+
+    /// Events emitted during the contract invocation. (an array of serialized base64 strings of [XdrDiagnosticEvent])
+    public ?array $events = null; //[string xdr]
 
     protected function loadFromJson(array $json) : void {
         if (isset($json['xdr'])) {
@@ -34,6 +38,13 @@ class SimulateTransactionResult
             $this->auth = array();
             foreach ($json['auth'] as $jsonValue) {
                 array_push($this->auth, $jsonValue);
+            }
+        }
+
+        if (isset($json['events'])) {
+            $this->events = array();
+            foreach ($json['events'] as $jsonValue) {
+                array_push($this->events, $jsonValue);
             }
         }
 
@@ -49,19 +60,11 @@ class SimulateTransactionResult
     }
 
     /**
-     * @return string xdr-encoded return value of the contract call.
+     * @return string|null
      */
-    public function getXdr(): string
+    public function getXdr(): ?string
     {
         return $this->xdr;
-    }
-
-    /**
-     * @param string $xdr
-     */
-    public function setXdr(string $xdr): void
-    {
-        $this->xdr = $xdr;
     }
 
     /**
@@ -73,14 +76,6 @@ class SimulateTransactionResult
     }
 
     /**
-     * @param Footprint|null $footprint
-     */
-    public function setFootprint(?Footprint $footprint): void
-    {
-        $this->footprint = $footprint;
-    }
-
-    /**
      * @return array|null
      */
     public function getAuth(): ?array
@@ -89,11 +84,12 @@ class SimulateTransactionResult
     }
 
     /**
-     * @param array|null $auth
+     * @return array|null
      */
-    public function setAuth(?array $auth): void
+    public function getEvents(): ?array
     {
-        $this->auth = $auth;
+        return $this->events;
     }
+
 
 }

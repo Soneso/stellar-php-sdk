@@ -6,31 +6,42 @@
 
 namespace Soneso\StellarSDK\Soroban\Requests;
 
+/**
+ * Used for getEvents()
+ * See: https://soroban.stellar.org/api/methods/getEvents
+ */
 class GetEventsRequest
 {
+
+    /// Stringified ledger sequence number to fetch events after (inclusive).
+    /// The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
+    /// or greater than the latest ledger seen by this node.
+    /// If a cursor is included in the request, startLedger must be omitted.
     public string $startLedger;
-    public string $endLedger;
+
+    /// List of filters for the returned events. Events matching any of the filters are included.
+    /// To match a filter, an event must match both a contractId and a topic.
+    /// Maximum 5 filters are allowed per request.
     public ?EventFilters $filters = null;
+
+    /// Pagination
     public ?PaginationOptions $paginationOptions = null;
 
     /**
      * @param string $startLedger
-     * @param string $endLedger
      * @param EventFilters|null $filters
      * @param PaginationOptions|null $paginationOptions
      */
-    public function __construct(string $startLedger, string $endLedger, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
+    public function __construct(string $startLedger, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
     {
         $this->startLedger = $startLedger;
-        $this->endLedger = $endLedger;
         $this->filters = $filters;
         $this->paginationOptions = $paginationOptions;
     }
 
     public function getRequestParams() : array {
         $params = array(
-            'startLedger' => $this->startLedger,
-            'endLedger' => $this->endLedger
+            'startLedger' => $this->startLedger
         );
 
         if ($this->filters != null) {

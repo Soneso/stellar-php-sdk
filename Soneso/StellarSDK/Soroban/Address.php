@@ -9,7 +9,6 @@ namespace Soneso\StellarSDK\Soroban;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
-use Soneso\StellarSDK\Xdr\XdrSCObject;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
@@ -78,7 +77,7 @@ class Address
     }
 
     public function toXdrSCVal() : XdrSCVal {
-        return XdrSCVal::fromObject(XdrSCObject::forAddress($this->toXdr()));
+        return XdrSCVal::forAddress($this->toXdr());
     }
 
     /**

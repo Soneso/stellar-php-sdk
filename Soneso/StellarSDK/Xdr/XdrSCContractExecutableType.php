@@ -6,24 +6,24 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrSCContractCodeType
+class XdrSCContractExecutableType
 {
     public int $value;
 
-    const SCCONTRACT_CODE_WASM_REF = 0;
-    const SCCONTRACT_CODE_TOKEN = 1;
+    const SCCONTRACT_EXECUTABLE_WASM_REF = 0;
+    const SCCONTRACT_EXECUTABLE_TOKEN = 1;
 
     public function __construct(int $value)
     {
         $this->value = $value;
     }
 
-    public static function WASM_REF() :  XdrSCContractCodeType {
-        return new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF);
+    public static function WASM_REF() :  XdrSCContractExecutableType {
+        return new XdrSCContractExecutableType(XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_WASM_REF);
     }
 
-    public static function TOKEN() :  XdrSCContractCodeType {
-        return new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN);
+    public static function TOKEN() :  XdrSCContractExecutableType {
+        return new XdrSCContractExecutableType(XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN);
     }
 
     /**
@@ -39,9 +39,9 @@ class XdrSCContractCodeType
         return XdrEncoder::integer32($this->value);
     }
 
-    public static function decode(XdrBuffer $xdr): XdrSCContractCodeType
+    public static function decode(XdrBuffer $xdr): XdrSCContractExecutableType
     {
         $value = $xdr->readInteger32();
-        return new XdrSCContractCodeType($value);
+        return new XdrSCContractExecutableType($value);
     }
 }

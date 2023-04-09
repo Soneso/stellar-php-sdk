@@ -10,6 +10,7 @@ use Soneso\StellarSDK\Soroban\Footprint;
 
 /**
  * Response that will be received when submitting a trial contract invocation.
+ * https://soroban.stellar.org/api/methods/simulateTransaction
  */
 class SimulateTransactionResponse extends SorobanRpcResponse
 {

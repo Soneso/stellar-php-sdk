@@ -15,7 +15,7 @@ use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOperation;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
-use Soneso\StellarSDK\Xdr\XdrSCContractCodeType;
+use Soneso\StellarSDK\Xdr\XdrSCContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 abstract class InvokeHostFunctionOperation extends AbstractOperation
@@ -128,9 +128,9 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
                 $contractIdTypeVal = $hostFunction->createContractArgs->contractID->type->value;
                 $sourceTypeValue = $hostFunction->createContractArgs->source->type->value;
                 if ($contractIdTypeVal == XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT) {
-                    if ($sourceTypeValue == XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF) {
+                    if ($sourceTypeValue == XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_WASM_REF) {
                         return InvokeHostFunctionOperation::fromCreateContractHostFunction($hostFunction, $footprint, self::convertFromXdrAuth($xdrOp->auth));
-                    } else if ($sourceTypeValue == XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN){
+                    } else if ($sourceTypeValue == XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN){
                         return InvokeHostFunctionOperation::fromDeployCreateTokenContractWithSourceAccount($hostFunction, $footprint, self::convertFromXdrAuth($xdrOp->auth));
                     }
                 } else if ($contractIdTypeVal == XdrContractIDType::CONTRACT_ID_FROM_ASSET) {
@@ -151,7 +151,7 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         if ($hostFunction->type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT
             || $hostFunction->createContractArgs == null
             || $hostFunction->createContractArgs->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_ASSET
-            ||$hostFunction->createContractArgs->source->type->value != XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN)
+            ||$hostFunction->createContractArgs->source->type->value != XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN)
         {
             throw new Exception("invalid argument");
         }
@@ -170,7 +170,7 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         if ($hostFunction->type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT
             || $hostFunction->createContractArgs == null
             || $hostFunction->createContractArgs->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT
-            ||$hostFunction->createContractArgs->source->type->value != XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN)
+            ||$hostFunction->createContractArgs->source->type->value != XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN)
         {
             throw new Exception("invalid argument");
         }
@@ -188,7 +188,7 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         if ($hostFunction->type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT
             || $hostFunction->createContractArgs == null
             || $hostFunction->createContractArgs->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT
-            ||$hostFunction->createContractArgs->source->type->value != XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF)
+            ||$hostFunction->createContractArgs->source->type->value != XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_WASM_REF)
         {
             throw new Exception("invalid argument");
         }
@@ -237,8 +237,8 @@ abstract class InvokeHostFunctionOperation extends AbstractOperation
         $args = null;
         $contractIdVal = $hostFunction->invokeArgs[0];
         $functionVal = $hostFunction->invokeArgs[1];
-        if ($contractIdVal instanceof XdrSCVal && $contractIdVal->obj != null && $contractIdVal->obj->bin != null ) {
-            $contractId = bin2hex($contractIdVal->obj->bin->getValue());
+        if ($contractIdVal instanceof XdrSCVal && $contractIdVal->bytes != null ) {
+            $contractId = bin2hex($contractIdVal->bytes->getValue());
         }
         if ($functionVal instanceof XdrSCVal && $functionVal->sym != null) {
             $functionName = $functionVal->sym;

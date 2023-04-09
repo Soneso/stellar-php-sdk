@@ -10,6 +10,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 
 /**
  * Response when reading the current values of ledger entries.
+ * https://soroban.stellar.org/api/methods/getLedgerEntry
  */
 class GetLedgerEntryResponse extends SorobanRpcResponse
 {

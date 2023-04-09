@@ -6,6 +6,11 @@
 
 namespace Soneso\StellarSDK\Soroban\Requests;
 
+/**
+ * Part of the getEvents() request
+ * See: https://soroban.stellar.org/api/methods/getEvents
+ * See: https://soroban.stellar.org/api/pagination
+ */
 class PaginationOptions
 {
     public ?string $cursor = null;

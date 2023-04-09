@@ -10,13 +10,13 @@ class XdrCreateContractArgs
 {
 
     public XdrContractID $contractID;
-    public XdrSCContractCode $source;
+    public XdrSCContractExecutable $source;
 
     /**
      * @param XdrContractID $contractID
-     * @param XdrSCContractCode $source
+     * @param XdrSCContractExecutable $source
      */
-    public function __construct(XdrContractID $contractID, XdrSCContractCode $source)
+    public function __construct(XdrContractID $contractID, XdrSCContractExecutable $source)
     {
         $this->contractID = $contractID;
         $this->source = $source;
@@ -30,7 +30,7 @@ class XdrCreateContractArgs
     }
 
     public static function decode(XdrBuffer $xdr):  XdrCreateContractArgs {
-        return new XdrCreateContractArgs(XdrContractID::decode($xdr), XdrSCContractCode::decode($xdr));
+        return new XdrCreateContractArgs(XdrContractID::decode($xdr), XdrSCContractExecutable::decode($xdr));
     }
 
     /**
@@ -50,17 +50,17 @@ class XdrCreateContractArgs
     }
 
     /**
-     * @return XdrSCContractCode
+     * @return XdrSCContractExecutable
      */
-    public function getSource(): XdrSCContractCode
+    public function getSource(): XdrSCContractExecutable
     {
         return $this->source;
     }
 
     /**
-     * @param XdrSCContractCode $source
+     * @param XdrSCContractExecutable $source
      */
-    public function setSource(XdrSCContractCode $source): void
+    public function setSource(XdrSCContractExecutable $source): void
     {
         $this->source = $source;
     }

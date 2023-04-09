@@ -8,7 +8,12 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
-class SegmentFilter
+/**
+ * Part of the getEvents request parameters.
+ * https://soroban.stellar.org/api/methods/getEvents
+ * TODO: update this!
+ */
+class TopicFilter
 {
     public ?string $wildcard = null;
     public ?array $scval = null; // [XdrSCVal]

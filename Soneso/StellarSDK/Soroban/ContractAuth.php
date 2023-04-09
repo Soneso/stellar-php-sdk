@@ -13,7 +13,6 @@ use Soneso\StellarSDK\Xdr\XdrAddressWithNonce;
 use Soneso\StellarSDK\Xdr\XdrContractAuth;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageContractAuth;
-use Soneso\StellarSDK\Xdr\XdrSCObject;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
@@ -72,9 +71,7 @@ class ContractAuth
         }
         $sigArgs = array(); // See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
         if (count($this->signatureArgs) > 0) {
-           $obj = XdrSCObject::forVec($this->signatureArgs);
-           $val = XdrSCVal::fromObject($obj);
-           array_push($sigArgs, $val);
+           array_push($sigArgs, XdrSCVal::forVec($this->signatureArgs));
         }
         return new XdrContractAuth($addressWithNonce,$this->rootInvocation->toXdr(), $sigArgs);
     }
@@ -91,8 +88,8 @@ class ContractAuth
         $sigArgs = array();
         if(count($xdrArgs) > 0) { // See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
             $val = $xdrArgs[0];
-            if ($val instanceof XdrSCVal && $val->obj != null && $val->obj->vec != null) {
-                $sigArgs = $val->obj->vec;
+            if ($val instanceof XdrSCVal && $val->vec != null) {
+                $sigArgs = $val->vec;
             }
         }
 

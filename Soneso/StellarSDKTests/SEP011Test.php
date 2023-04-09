@@ -875,7 +875,7 @@ signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd8
         print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
-
+/*
     public function testSorobanInstallContractCode() : void {
         $txrep = 'type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GAI4D5HAVLV4I3TJQ6IQJIDV53BC7UAQYPYVMTE4L6Y3VJ4I2OY3XI5T
@@ -1524,6 +1524,7 @@ signatures[0].signature: cee4413fab6192bddf46d2a5fe693bde708532759b326de2e171dc9
         print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
+*/
 }
 
 

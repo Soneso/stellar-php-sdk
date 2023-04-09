@@ -6,10 +6,19 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+/**
+ * Response for the getNetwork() request.
+ * See: https://soroban.stellar.org/api/methods/getNetwork
+ */
 class GetNetworkResponse extends SorobanRpcResponse
 {
+    /// (optional)  The URL of this network's "friendbot" faucet.
     public ?string $friendbotUrl = null;
+
+    /// Network passphrase configured.
     public ?string $passphrase = null;
+
+    ///  Protocol version of the latest ledger.
     public ?string $protocolVersion = null;
 
     public static function fromJson(array $json) : GetNetworkResponse {
@@ -39,27 +48,11 @@ class GetNetworkResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param string|null $friendbotUrl
-     */
-    public function setFriendbotUrl(?string $friendbotUrl): void
-    {
-        $this->friendbotUrl = $friendbotUrl;
-    }
-
-    /**
      * @return string|null
      */
     public function getPassphrase(): ?string
     {
         return $this->passphrase;
-    }
-
-    /**
-     * @param string|null $passphrase
-     */
-    public function setPassphrase(?string $passphrase): void
-    {
-        $this->passphrase = $passphrase;
     }
 
     /**
@@ -70,11 +63,4 @@ class GetNetworkResponse extends SorobanRpcResponse
         return $this->protocolVersion;
     }
 
-    /**
-     * @param string|null $protocolVersion
-     */
-    public function setProtocolVersion(?string $protocolVersion): void
-    {
-        $this->protocolVersion = $protocolVersion;
-    }
 }

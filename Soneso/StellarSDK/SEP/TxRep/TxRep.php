@@ -105,8 +105,8 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKeyTrustLine;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
-use Soneso\StellarSDK\Xdr\XdrSCContractCode;
-use Soneso\StellarSDK\Xdr\XdrSCContractCodeType;
+use Soneso\StellarSDK\Xdr\XdrSCContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrSCContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrSCHostAuthErrorCode;
 use Soneso\StellarSDK\Xdr\XdrSCHostContextErrorCode;
 use Soneso\StellarSDK\Xdr\XdrSCHostFnErrorCode;
@@ -114,9 +114,6 @@ use Soneso\StellarSDK\Xdr\XdrSCHostObjErrorCode;
 use Soneso\StellarSDK\Xdr\XdrSCHostStorageErrorCode;
 use Soneso\StellarSDK\Xdr\XdrSCHostValErrorCode;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
-use Soneso\StellarSDK\Xdr\XdrSCObject;
-use Soneso\StellarSDK\Xdr\XdrSCObjectType;
-use Soneso\StellarSDK\Xdr\XdrSCStatic;
 use Soneso\StellarSDK\Xdr\XdrSCStatus;
 use Soneso\StellarSDK\Xdr\XdrSCStatusType;
 use Soneso\StellarSDK\Xdr\XdrSCUnknownErrorCode;
@@ -646,13 +643,13 @@ class TxRep
         } else if ($opType == 'LIQUIDITY_POOL_WITHDRAW') {
             $opPrefix = $prefix.'liquidityPoolWithdrawOp.';
             return self::getLiquidityPoolWithdrawOp($opPrefix, $map, $sourceAccountId);
-        } else if ($opType == 'INVOKE_HOST_FUNCTION') {
+        } /*else if ($opType == 'INVOKE_HOST_FUNCTION') {
             $opPrefix = $prefix.'invokeHostFunctionOp.';
             return self::getInvokeHostFunctionOp($opPrefix, $map, $sourceAccountId);
-        }
+        }*/
         return null;
     }
-
+/*
     private static function getInvokeHostFunctionOp($opPrefix, array $map, ?string $sourceAccountId) : InvokeHostFunctionOperation
     {
         $hostFunctionType = self::getClearValue($opPrefix . 'function.type', $map);
@@ -1282,11 +1279,11 @@ class TxRep
                 if ($wasmId == null) {
                     throw new InvalidArgumentException('missing ' . $prefix . 'contractCode.wasm_id');
                 }
-                $xdr = new XdrSCContractCode(new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF));
+                $xdr = new XdrSCContractExecutable(new XdrSCContractExecutableType(XdrSCContractExecutableType::SCCONTRACT_CODE_WASM_REF));
                 $xdr->wasmIdHex = $wasmId;
                 return XdrSCObject::forContractCode($xdr);
             } else if ('SCCONTRACT_CODE_TOKEN' == $ccType) {
-                $xdr = new XdrSCContractCode(new XdrSCContractCodeType(XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN));
+                $xdr = new XdrSCContractExecutable(new XdrSCContractExecutableType(XdrSCContractExecutableType::SCCONTRACT_CODE_TOKEN));
                 return XdrSCObject::forContractCode($xdr);
             } else {
                 throw new InvalidArgumentException('unknown ' . $prefix . 'contractCode.type ' . $ccType);
@@ -1354,7 +1351,7 @@ class TxRep
         }
         return $result;
     }
-
+*/
     private static function getLiquidityPoolWithdrawOp($opPrefix, array $map, ?string $sourceAccountId) : LiquidityPoolWithdrawOperation
     {
         $liquidityPoolID = self::getClearValue($opPrefix . 'liquidityPoolID', $map);
@@ -2932,7 +2929,7 @@ class TxRep
             $lines += [$prefix.'amount' => self::toAmount($operation->getAmount())];
             $lines += [$prefix.'minAmountA' => self::toAmount($operation->getMinAmountA())];
             $lines += [$prefix.'minAmountB' => self::toAmount($operation->getMinAmountB())];
-        } else if ($operation instanceof InvokeHostFunctionOperation) {
+        } /*else if ($operation instanceof InvokeHostFunctionOperation) {
             $lines += [$prefix.'function.type' => self::txRepInvokeHostFuncType($operation->getFunctionType())];
             if ($operation instanceof  InstallContractCodeOp) {
                 $lines += [$prefix.'function.installContractCodeArgs.code' => bin2hex($operation->contractCodeBytes)];
@@ -2998,10 +2995,10 @@ class TxRep
                 }
             }
 
-        }
+        } */
         return $lines;
     }
-
+    /*
     private static function getContractAuthTx(string $prefix, XdrContractAuth $auth) : array {
         $lines = array();
         if ($auth->addressWithNonce == null) {
@@ -3195,11 +3192,11 @@ class TxRep
                             $lines += [$prefix.'obj.type' => 'SCO_CONTRACT_CODE'];
                             $contractCode = $val->obj->contractCode;
                             switch ($contractCode->type->value) {
-                                case XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF:
+                                case XdrSCContractExecutableType::SCCONTRACT_CODE_WASM_REF:
                                     $lines += [$prefix.'obj.contractCode.type' => 'SCCONTRACT_CODE_WASM_REF'];
                                     $lines += [$prefix.'obj.contractCode.wasm_id' => $contractCode->wasmIdHex];
                                     break;
-                                case XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN:
+                                case XdrSCContractExecutableType::SCCONTRACT_CODE_TOKEN:
                                     $lines += [$prefix.'obj.contractCode.type' => 'SCCONTRACT_CODE_TOKEN'];
                             }
                             break;
@@ -3466,7 +3463,7 @@ class TxRep
         }
         return $lines;
     }
-
+*/
     private static function getPredicateTx(string $prefix, XdrClaimPredicate $predicate) : array {
         $type = $predicate->getType()->getValue();
         $lines = array();

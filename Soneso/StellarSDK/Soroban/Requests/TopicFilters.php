@@ -6,20 +6,20 @@
 
 namespace Soneso\StellarSDK\Soroban\Requests;
 
-class SegmentFilters extends \IteratorIterator
+class TopicFilters extends \IteratorIterator
 {
 
-    public function __construct(SegmentFilter ...$responses)
+    public function __construct(TopicFilter ...$responses)
     {
         parent::__construct(new \ArrayIterator($responses));
     }
 
-    public function current(): SegmentFilter
+    public function current(): TopicFilter
     {
         return parent::current();
     }
 
-    public function add(SegmentFilter $response)
+    public function add(TopicFilter $response)
     {
         $this->getInnerIterator()->append($response);
     }

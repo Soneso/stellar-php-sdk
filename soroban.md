@@ -24,7 +24,7 @@ The Soroban-RPC API is described in this early stage [design document](https://d
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```php
-$server = new SorobanServer("https://horizon-futurenet.stellar.cash/soroban/rpc");
+$server = new SorobanServer("https://rpc-futurenet.stellar.org:443");
 ```
 
 Set the experimental flag to true. Otherwise it will not work.
@@ -53,11 +53,12 @@ $accountId = $accountKeyPair->getAccountId();
 FuturenetFriendBot::fundTestAccount($accountId);
 ```
 
-Next you can fetch current information about your Stellar account using the ```SorobanServer```:
+Next you can fetch current information about your Stellar account using the SDK:
 
 ```php
-$accountResponse = $server->getAccount($accountId);
-print("Sequence: ".$accountResponse->sequence);
+$sdk = StellarSDK::getFutureNetInstance();
+$accountResponse = $sdk->requestAccount($accountId);
+print("Sequence: ".$getAccountResponse->getSequenceNumber());
 ```
 
 
@@ -108,26 +109,26 @@ On success, the response contains the id and status of the transaction:
 
 ```php
 if ($sendResponse->error == null) {
-    print("Transaction Id: ".$sendResponse->transactionId);
-    print("Status: ".$sendResponse->status); // pending
+    print("Transaction Id: ".$sendResponse->hash);
+    print("Status: ".$sendResponse->status); // PENDING
 }
 ```
 
-The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransactionStatus``` request:
+The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransaction``` request:
 
 ```php
 // Fetch transaction status
-$statusResponse = $server->getTransactionStatus($transactionId);
+$transactionResponse = $server->getTransaction($transactionId);
 
-$status = $statusResponse->status;
+$status = $transactionResponse->status;
 
-if (GetTransactionStatusResponse::STATUS_PENDING == $status) {
+if (GetTransactionResponse::STATUS_NOT_FOUND == $status) {
     // try again later ...
-} else if (GetTransactionStatusResponse::STATUS_SUCCESS == $status) {
+} else if (GetTransactionResponse::STATUS_SUCCESS == $status) {
     // continue with creating the contract ...
-    $contractWasmId = $statusResponse->getWasmId();
+    $contractWasmId = $transactionResponse->getWasmId();
     // ...
-} else if (GetTransactionStatusResponse::STATUS_ERROR == $status) {
+} else if (GetTransactionResponse::STATUS_FAILED == $status) {
     // handle error ...
 }
 ```
@@ -156,7 +157,7 @@ $transaction->sign($accountKeyPair, Network::futurenet());
 $sendResponse = $server->sendTransaction($transaction);
 
 if ($sendResponse->error == null) {
-    print("Transaction Id :".$sendResponse->transactionId);
+    print("Transaction Id :".$sendResponse->hash);
     print("Status: ".$sendResponse->status); // pending
 }
 ```
@@ -165,11 +166,11 @@ As you can see, we use the ```wasmId``` to create the operation and the transact
 
 ```php
 // Fetch transaction status
-$statusResponse = $server->getTransactionStatus($transactionId);
+$transactionResponse = $server->getTransactionStatus($transactionId);
 
-$status = $statusResponse->status;
+$status = $transactionResponse->status;
 
-if (GetTransactionStatusResponse::STATUS_SUCCESS == $status) {
+if (GetTransactionResponse::STATUS_SUCCESS == $status) {
   // contract successfully deployed!
   $contractId = $statusResponse->getContractId();
 }
@@ -198,16 +199,16 @@ First let's have a look to a simple (hello word) contract created with the [Asse
 *Hello Word contract AssemblyScript code:*
 
 ```typescript
-import {SymbolVal, VectorObject, fromSymbolStr} from 'as-soroban-sdk/lib/value';
+import {Symbol, VecObject, fromSmallSymbolStr} from 'as-soroban-sdk/lib/value';
 import {Vec} from 'as-soroban-sdk/lib/vec';
 
-export function hello(to: SymbolVal): VectorObject {
+export function hello(to: Symbol): VecObject {
 
-  let vec = new Vec();
-  vec.pushFront(fromSymbolStr("Hello"));
-  vec.pushBack(to);
-  
-  return vec.getHostObject();
+    let vec = new Vec();
+    vec.pushFront(fromSmallSymbolStr("Hello"));
+    vec.pushBack(to);
+
+    return vec.getHostObject();
 }
 ```
 
@@ -221,7 +222,7 @@ To invoke the contract with the PHP SDK, we first need to build the correspondin
 $method = "hello";
 
 // Prepare the argument (Symbol)
-$argVal = XdrSCVal::fromSymbol("friend");
+$argVal = XdrSCVal::forSymbol("friend");
 
 // Prepare the "invoke" operation
 $operation = InvokeHostFunctionOperationBuilder::
@@ -262,7 +263,7 @@ On success, the response contains the id and status of the transaction:
 
 ```php
 if ($sendResponse->error == null) {
-    print("Transaction Id :".$sendResponse->transactionId);
+    print("Transaction Id :".$sendResponse->hash);
     print("Status: ".$sendResponse->status); // pending
 }
 ```
@@ -271,15 +272,16 @@ The status is ```pending``` because the transaction needs to be processed by the
 
 ```php
 // Fetch transaction status
-$statusResponse = $server->getTransactionStatus($transactionId);
+$transactionResponse = $server->getTransactionStatus($transactionId);
 
-$status = $statusResponse->status;
+$status = $transactionResponse->status;
 
-if (GetTransactionStatusResponse::STATUS_PENDING == $status) {
+if (GetTransactionResponse::STATUS_NOT_FOUND == $status) {
     // try again later ...
-} else if (GetTransactionStatusResponse::STATUS_SUCCESS == $status) {
-    // success ...
-} else if (GetTransactionStatusResponse::STATUS_ERROR == $status) {
+} else if (GetTransactionResponse::STATUS_SUCCESS == $status) {
+    // success
+    // ...
+} else if (GetTransactionResponse::STATUS_FAILED == $status) {
     // handle error ...
 }
 ```
@@ -332,7 +334,7 @@ $invokerAddress = Address::fromAccountId($invokerId);
 $nonce = $server->getNonce($invokerId, $contractId);
 
 $functionName = "auth";
-$args = [$invokerAddress->toXdrSCVal(), XdrSCVal::fromU32(3)];
+$args = [$invokerAddress->toXdrSCVal(), XdrSCVal::forU32(3)];
 
 $authInvocation = new AuthorizedInvocation($contractId, $functionName, args: $args);
 

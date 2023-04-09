@@ -13,19 +13,23 @@ class XdrSCSpecType
     const SC_SPEC_TYPE_VAL = 0;
 
     // Types with no parameters.
-    const SC_SPEC_TYPE_U32 = 1;
-    const SC_SPEC_TYPE_I32 = 2;
-    const SC_SPEC_TYPE_U64 = 3;
-    const SC_SPEC_TYPE_I64 = 4;
-    const SC_SPEC_TYPE_U128 = 5;
-    const SC_SPEC_TYPE_I128 = 6;
-    const SC_SPEC_TYPE_BOOL = 7;
-    const SC_SPEC_TYPE_SYMBOL = 8;
-    const SC_SPEC_TYPE_BITSET = 9;
-    const SC_SPEC_TYPE_STATUS = 10;
-    const SC_SPEC_TYPE_BYTES = 11;
-    const SC_SPEC_TYPE_INVOKER = 12;
-    const SC_SPEC_TYPE_ADDRESS = 13;
+    const SC_SPEC_TYPE_BOOL = 1;
+    const SC_SPEC_TYPE_VOID = 2;
+    const SC_SPEC_TYPE_STATUS = 3;
+    const SC_SPEC_TYPE_U32 = 4;
+    const SC_SPEC_TYPE_I32 = 5;
+    const SC_SPEC_TYPE_U64 = 6;
+    const SC_SPEC_TYPE_I64 = 7;
+    const SC_SPEC_TYPE_TIMEPOINT = 8;
+    const SC_SPEC_TYPE_DURATION = 9;
+    const SC_SPEC_TYPE_U128 = 10;
+    const SC_SPEC_TYPE_I128 = 11;
+    const SC_SPEC_TYPE_U256 = 12;
+    const SC_SPEC_TYPE_I256 = 13;
+    const SC_SPEC_TYPE_BYTES = 14;
+    const SC_SPEC_TYPE_STRING = 16;
+    const SC_SPEC_TYPE_SYMBOL = 17;
+    const SC_SPEC_TYPE_ADDRESS = 19;
 
     // Types with parameters.
     const SC_SPEC_TYPE_OPTION = 1000;
@@ -48,6 +52,18 @@ class XdrSCSpecType
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_VAL);
     }
 
+    public static function BOOL() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_BOOL);
+    }
+
+    public static function VOID() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_VOID);
+    }
+
+    public static function STATUS() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_STATUS);
+    }
+
     public static function U32() :  XdrSCSpecType {
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_U32);
     }
@@ -64,6 +80,14 @@ class XdrSCSpecType
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_I64);
     }
 
+    public static function TIMEPOINT() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_TIMEPOINT);
+    }
+
+    public static function DURATION() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_DURATION);
+    }
+
     public static function I128() :  XdrSCSpecType {
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_I128);
     }
@@ -72,29 +96,26 @@ class XdrSCSpecType
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_U128);
     }
 
-    public static function BOOL() :  XdrSCSpecType {
-        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_BOOL);
+    public static function I256() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_I256);
     }
 
-    public static function SYMBOL() :  XdrSCSpecType {
-        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_SYMBOL);
-    }
-
-    public static function BITSET() :  XdrSCSpecType {
-        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_BITSET);
-    }
-
-    public static function STATUS() :  XdrSCSpecType {
-        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_STATUS);
+    public static function U256() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_U256);
     }
 
     public static function BYTES() :  XdrSCSpecType {
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_BYTES);
     }
 
-    public static function INVOKER() :  XdrSCSpecType {
-        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_INVOKER);
+    public static function STRING() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_STRING);
     }
+
+    public static function SYMBOL() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_SYMBOL);
+    }
+
 
     public static function ADDRESS() :  XdrSCSpecType {
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS);

@@ -6,71 +6,71 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrSCContractCode
+class XdrSCContractExecutable
 {
 
-    public XdrSCContractCodeType $type;
+    public XdrSCContractExecutableType $type;
     public ?string $wasmIdHex = null;
 
     /**
-     * @param XdrSCContractCodeType $type
+     * @param XdrSCContractExecutableType $type
      */
-    public function __construct(XdrSCContractCodeType $type)
+    public function __construct(XdrSCContractExecutableType $type)
     {
         $this->type = $type;
     }
 
-    public static function forWasmId(string $wasmIdHex) : XdrSCContractCode {
-        $result = new XdrSCContractCode(XdrSCContractCodeType::WASM_REF());
+    public static function forWasmId(string $wasmIdHex) : XdrSCContractExecutable {
+        $result = new XdrSCContractExecutable(XdrSCContractExecutableType::WASM_REF());
         $result->wasmIdHex = $wasmIdHex;
         return $result;
     }
 
-    public static function forToken() : XdrSCContractCode {
-        return new XdrSCContractCode(XdrSCContractCodeType::TOKEN());
+    public static function forToken() : XdrSCContractExecutable {
+        return new XdrSCContractExecutable(XdrSCContractExecutableType::TOKEN());
     }
 
     public function encode(): string {
         $bytes = $this->type->encode();
 
         switch ($this->type->value) {
-            case XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF:
+            case XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_WASM_REF:
                 $wasmIdBytes = pack("H*", $this->wasmIdHex);
                 if (strlen($wasmIdBytes) > 32) {
                     $wasmIdBytes = substr($wasmIdBytes, -32);
                 }
                 $bytes .= XdrEncoder::opaqueFixed($wasmIdBytes, 32);
                 break;
-            case XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN:
+            case XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN:
                 break;
         }
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrSCContractCode {
-        $result = new XdrSCContractCode(XdrSCContractCodeType::decode($xdr));
+    public static function decode(XdrBuffer $xdr):  XdrSCContractExecutable {
+        $result = new XdrSCContractExecutable(XdrSCContractExecutableType::decode($xdr));
         switch ($result->getType()->getValue()) {
-            case XdrSCContractCodeType::SCCONTRACT_CODE_WASM_REF:
+            case XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_WASM_REF:
                 $result->wasmIdHex = bin2hex($xdr->readOpaqueFixed(32));
                 break;
-            case XdrSCContractCodeType::SCCONTRACT_CODE_TOKEN:
+            case XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN:
                 break;
         }
         return $result;
     }
 
     /**
-     * @return XdrSCContractCode|XdrSCContractCodeType
+     * @return XdrSCContractExecutable|XdrSCContractExecutableType
      */
-    public function getType(): XdrSCContractCode|XdrSCContractCodeType
+    public function getType(): XdrSCContractExecutable|XdrSCContractExecutableType
     {
         return $this->type;
     }
 
     /**
-     * @param XdrSCContractCode|XdrSCContractCodeType $type
+     * @param XdrSCContractExecutable|XdrSCContractExecutableType $type
      */
-    public function setType(XdrSCContractCode|XdrSCContractCodeType $type): void
+    public function setType(XdrSCContractExecutable|XdrSCContractExecutableType $type): void
     {
         $this->type = $type;
     }

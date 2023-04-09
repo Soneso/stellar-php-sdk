@@ -7,7 +7,6 @@
 namespace Soneso\StellarSDK\Soroban;
 
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
-use Soneso\StellarSDK\Xdr\XdrSCObject;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
@@ -29,12 +28,9 @@ class AccountEd25519Signature
     }
 
     public function toXdrSCVal() : XdrSCVal {
-        $pkBytesObj = XdrSCObject::forBytes($this->publicKey);
-        $sigBytesObj = XdrSCObject::forBytes($this->signatureBytes);
-        $pkMapEntry = new XdrSCMapEntry(XdrSCVal::fromSymbol("public_key"), XdrSCVal::fromObject($pkBytesObj));
-        $sigMapEntry = new XdrSCMapEntry(XdrSCVal::fromSymbol("signature"), XdrSCVal::fromObject($sigBytesObj));
-        $obj = XdrSCObject::forMap([$pkMapEntry, $sigMapEntry]);
-        return XdrSCVal::fromObject($obj);
+        $pkMapEntry = new XdrSCMapEntry(XdrSCVal::forSymbol("public_key"), XdrSCVal::forBytes($this->publicKey));
+        $sigMapEntry = new XdrSCMapEntry(XdrSCVal::forSymbol("signature"), XdrSCVal::forBytes($this->signatureBytes));
+        return XdrSCVal::forMap([$pkMapEntry, $sigMapEntry]);
     }
 
     /**
