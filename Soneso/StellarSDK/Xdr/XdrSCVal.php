@@ -20,8 +20,8 @@ class XdrSCVal
     public ?int $duration = null;
     public ?XdrInt128Parts $u128 = null;
     public ?XdrInt128Parts $i128 = null;
-    private string $u256; //uint256
-    private string $i256; //uint256
+    public ?string $u256 = null; //uint256
+    public ?string $i256 = null; //uint256
     public ?XdrDataValueMandatory $bytes = null;
     public ?String $str = null;
     public ?String $sym = null;
@@ -286,7 +286,7 @@ class XdrSCVal
         return $result;
     }
 
-    public static function for128(XdrInt128Parts $parts) : XdrSCVal {
+    public static function forU128(XdrInt128Parts $parts) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::U128());
         $result->u128 = $parts;
         return $result;
@@ -304,7 +304,7 @@ class XdrSCVal
         return $result;
     }
 
-    public static function for128Parts(int $lo, int $hi) : XdrSCVal {
+    public static function forI128Parts(int $lo, int $hi) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::I128());
         $result->i128 = new XdrInt128Parts($lo, $hi);
         return $result;
