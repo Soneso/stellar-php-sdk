@@ -83,6 +83,22 @@ class StrKey
         return XdrSignedPayload::decode($xdr);
     }
 
+    public static function encodeContractId(string $data) : string {
+        return static::encodeCheck(VersionByte::CONTRACT_ID, $data);
+    }
+
+    public static function encodeContractIdHex(string $contractId) : string {
+        return static::encodeCheck(VersionByte::CONTRACT_ID, hex2bin($contractId));
+    }
+
+    public static function decodeContractId(string $contractId) : string {
+        return static::decodeCheck(VersionByte::CONTRACT_ID, $contractId);
+    }
+
+    public static function decodeContractIdHex(string $contractId) : string {
+        return bin2hex(static::decodeCheck(VersionByte::CONTRACT_ID, $contractId));
+    }
+
     public static function publicKeyFromPrivateKey($privateKey) {
         return Ed25519::publickey_from_secretkey($privateKey);;
     }

@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
@@ -577,5 +578,20 @@ class SorobanTest extends TestCase
         $response = $server->getEvents($request);
         $this->assertGreaterThan(0, count($response->events));
 
+    }
+
+    public function testStrKeyEncoding(): void
+    {
+        $contractIdA = "86efd9a9d6fbf70297294772c9676127e16a23c2141cab3e29be836bb537a9b9";
+        $strEncodedA = "CCDO7WNJ2357OAUXFFDXFSLHMET6C2RDYIKBZKZ6FG7IG25VG6U3SLHT";
+        $strEncodedB = StrKey::encodeContractIdHex($contractIdA);
+        $this->assertEquals($strEncodedA, $strEncodedB);
+
+        $contractIdB = StrKey::decodeContractIdHex($strEncodedB);
+        $this->assertEquals($contractIdA,$contractIdB);
+
+        $strEncodedC = StrKey::encodeContractId(hex2bin($contractIdA));
+        $this->assertEquals($strEncodedA, $strEncodedC);
+        $this->assertEquals($contractIdA , bin2hex(StrKey::decodeContractId($strEncodedC)));
     }
 }

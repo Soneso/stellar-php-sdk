@@ -14,4 +14,5 @@ class VersionByte
     const PRE_AUTH_TX = 19 << 3; // T
     const SHA256_HASH = 23 << 3; //X
     const SIGNED_PAYLOAD = 15 << 3; // P
+    const CONTRACT_ID = 2 << 3; // C
 }
