@@ -71,7 +71,7 @@ class HorizonRequestException extends \ErrorException
         }
 
         if ($e instanceof RequestException && $e->getResponse()) {
-            print($e->getResponse()->getBody()->__toString() . PHP_EOL);
+            // print($e->getResponse()->getBody()->__toString() . PHP_EOL);
             $httpResponse = $e->getResponse();
             $result->statusCode = $httpResponse->getStatusCode();
             $decoded = null;
