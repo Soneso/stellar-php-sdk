@@ -6,7 +6,7 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrInstallContractCodeArgs
+class XdrUploadContractWasmArgs
 {
 
     public XdrDataValueMandatory $code;
@@ -24,8 +24,8 @@ class XdrInstallContractCodeArgs
         return $this->code->encode();
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrInstallContractCodeArgs {
-        return new XdrInstallContractCodeArgs(XdrDataValueMandatory::decode($xdr));
+    public static function decode(XdrBuffer $xdr):  XdrUploadContractWasmArgs {
+        return new XdrUploadContractWasmArgs(XdrDataValueMandatory::decode($xdr));
     }
 
     /**

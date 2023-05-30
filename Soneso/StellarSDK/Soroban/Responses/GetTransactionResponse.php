@@ -124,8 +124,11 @@ class GetTransactionResponse extends SorobanRpcResponse
         if ($results == null || count($results) == 0) {
             return null;
         }
-
-        return $results[0]->getResultTr()?->getInvokeHostFunctionResult()?->success;
+        $successArr = $results[0]->getResultTr()?->getInvokeHostFunctionResult()?->success;
+        if($successArr != null) {
+            return $successArr[0];
+        }
+        return null;
     }
 
     private function getBinHex(): ?string {

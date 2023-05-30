@@ -6,12 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrInt128Parts
+class XdrUInt128Parts
 {
-
-    // Both signed and unsigned 128-bit ints
-    // are transported in a pair of uint64s
-    // to reduce the risk of sign-extension.
     public int $hi;
     public int $lo;
 
@@ -27,13 +23,13 @@ class XdrInt128Parts
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::integer64($this->hi);
+        $bytes = XdrEncoder::unsignedInteger64($this->hi);
         $bytes .= XdrEncoder::unsignedInteger64($this->lo);
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrInt128Parts {
-        return new XdrInt128Parts($xdr->readInteger64(), $xdr->readUnsignedInteger64());
+    public static function decode(XdrBuffer $xdr):  XdrUInt128Parts {
+        return new XdrUInt128Parts($xdr->readUnsignedInteger64(), $xdr->readUnsignedInteger64());
     }
 
     /**

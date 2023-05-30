@@ -16,7 +16,7 @@ class XdrTransaction
     private ?XdrPreconditions $preconditions = null;
     private XdrMemo $memo;
     private array $operations; // [XdrOperation]
-    private XdrTransactionExt $ext;
+    public XdrTransactionExt $ext;
 
     public function __construct(XdrMuxedAccount $sourceAccount, XdrSequenceNumber $sequenceNumber, array $operations, ?int $fee = null, ?XdrMemo $memo = null, ?XdrPreconditions $preconditions = null, ?XdrTransactionExt $ext = null)
     {

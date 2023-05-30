@@ -66,39 +66,37 @@ print("Sequence: ".$getAccountResponse->getSequenceNumber());
 
 If you want to create a smart contract for testing, you can easily build one with our [AssemblyScript Soroban SDK](https://github.com/Soneso/as-soroban-sdk) or with the [official Stellar Rust SDK](https://soroban.stellar.org/docs/examples/hello-world). Here you can find [examples](https://github.com/Soneso/as-soroban-examples) to be build with the AssemblyScript SDK.
 
-There are two main steps involved in the process of deploying a contract. First you need to **install** the **contract code** and then to **create** the **contract**.
+There are two main steps involved in the process of deploying a contract. First you need to **upload** the **contract code** and then to **create** the **contract**.
 
-To **install** the **contract code**, first build a transaction containing the corresponding operation:
+To **upload** the **contract code**, first build a transaction containing the corresponding operation:
 
 ```php
-// Create the operation for installing the contract code (*.wasm file content)
-$operation = InvokeHostFunctionOperationBuilder::
-    forInstallingContractCode($contractCode)->build();
+// Create the operation for uploading the contract code (*.wasm file content)
+$builder = new InvokeHostFunctionOperationBuilder();
+$uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
+$operation = $builder->addFunction($uploadContractHostFunction)->build();
 
 // Build the transaction
 $transaction = (new TransactionBuilder($account))
     ->addOperation($operation)->build();
 ```
 
-Next we need to **simulate** the transaction to obtain the **footprint** needed for final submission:
+Next we need to **simulate** the transaction to obtain the **soroban transaction data** and the **resource fee** needed for final submission:
 
 ```php
 // Simulate first to obtain the footprint
 $simulateResponse = $server->simulateTransaction($transaction);
 
-$footprint = $simulateResponse->footprint;
+$transactionData = $simulateResponse->transactionData;
+$minResourceFee = $simulateResponse->minRessourceFee;
 ```
-On success, one can find the **footprint** in the response. The response also contains other information such as information about the fees expected:
+On success, one can find the **soroban transaction data** and the **minimum resource fee** in the response.
+
+Next we need to set the **soroban transaction data** to our transaction, add the **resource fee** and  **sign** the transaction before sending it to the network using the ```SorobanServer```:
 
 ```php
-print("cpuInsns: ".$simulateResponse->cost->cpuInsns);
-print("memBytes: ".$simulateResponse->cost->memBytes);
-```
-
-Next we need to set the **footprint** to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
-
-```php
-$transaction->setFootprint($simulateResponse->footprint);
+$transaction->setSorobanTransactionData($transactionData);
+$transaction->addRessourceFee($minResourceFee);
 $transaction->sign($accountKeyPair, Network::futurenet());
 
 // send transaction to soroban rpc server
@@ -137,8 +135,9 @@ If the transaction was successful, the status response contains the ```wasmId```
 
 ```php
 // Build the operation for creating the contract
-$operation = InvokeHostFunctionOperationBuilder::
-    forCreatingContract($contractWasmId)->build();
+$createContractHostFunction = new CreateContractHostFunction($wasmId);
+$builder = new InvokeHostFunctionOperationBuilder();
+$operation = $builder->addFunction($createContractHostFunction)->build();
 
 // Build the transaction for creating the contract
 $transaction = (new TransactionBuilder($account))
@@ -147,10 +146,9 @@ $transaction = (new TransactionBuilder($account))
 // First simulate to obtain the footprint
 $simulateResponse = $server->simulateTransaction($transaction);
 
-$footprint = $simulateResponse->footprint;
-
-// Set footprint & sign
-$transaction->setFootprint($footprint);
+// set the transaction data, add fee and sign
+$transaction->setSorobanTransactionData($simulateResponse->transactionData);
+$transaction->addRessourceFee($simulateResponse->minRessourceFee);
 $transaction->sign($accountKeyPair, Network::futurenet());
 
 // Send the transaction to the network.
@@ -162,7 +160,7 @@ if ($sendResponse->error == null) {
 }
 ```
 
-As you can see, we use the ```wasmId``` to create the operation and the transaction for creating the contract. After simulating, we obtain the footprint to be set in the transaction. Next, sign the transaction and send it to the Soroban-RPC Server. The transaction status will be "pending", so we need to wait a bit and poll for the current status:
+As you can see, we use the ```wasmId``` to create the operation and the transaction for creating the contract. After simulating, we obtain the transaction data and resource fee for the transaction. Next, sign the transaction and send it to the Soroban-RPC Server. The transaction status will be "pending", so we need to wait a bit and poll for the current status:
 
 ```php
 // Fetch transaction status
@@ -185,6 +183,7 @@ The Soroban-RPC server also provides the possibility to request values of ledger
 For example, to fetch contract wasm byte-code, use the ContractCode ledger entry key:
 
 ```php
+$footprint = $simulateResponse->footprint;
 $contractCodeKey = $footprint->getContractCodeLedgerKey();
 
 $contractCodeEntryResponse = $server->getLedgerEntry($contractCodeKey);
@@ -225,34 +224,32 @@ $method = "hello";
 $argVal = XdrSCVal::forSymbol("friend");
 
 // Prepare the "invoke" operation
-$operation = InvokeHostFunctionOperationBuilder::
-    forInvokingContract($contractId, $method, [$argVal])->build();
+$invokeContractHostFunction = new InvokeContractHostFunction($contractId, "hello", [$argVal]);
+$builder = new InvokeHostFunctionOperationBuilder();
+$operation = $builder->addFunction($invokeContractHostFunction)->build();
 
 // Build the transaction
 $transaction = (new TransactionBuilder($account))
     ->addOperation($operation)->build();
 ```
 
-Next we need to **simulate** the transaction to obtain the **footprint** needed for final submission:
+Next we need to **simulate** the transaction to obtain the **transaction data** and **resource fee** needed for final submission:
 
 ```php
-// Simulate first to obtain the footprint
+// Simulate first to obtain the transaction data and fee
 $simulateResponse = $server->simulateTransaction($transaction);
 
-$footprint = $simulateResponse->footprint;
+$transactionData = $simulateResponse->transactionData;
+$minResourceFee = $simulateResponse->minRessourceFee;
 ```
-On success, one can find the **footprint** in the response. The response also contains other information such as information about the fees expected:
+On success, one can find the **transaction data** and the **resource fee** in the response. 
+
+Next we need to set the **soroban transaction data** to our transaction, to add the **resource fee** and **sign** the transaction to send it to the network using the ```SorobanServer```:
+
 
 ```php
-print("cpuInsns: ".$simulateResponse->cost->cpuInsns);
-print("memBytes: ".$simulateResponse->cost->memBytes);
-```
-
-Next we need to set the **footprint** to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
-
-```php
-// Set footprint & sign
-$transaction->setFootprint($footprint);
+$transaction->setSorobanTransactionData($transactionData);
+$transaction->addRessourceFee($minResourceFee);
 $transaction->sign($accountKeyPair, Network::futurenet());
 
 // Send the transaction to the network.
@@ -310,15 +307,15 @@ The PHP SDK also provides support for deploying the build-in [Stellar Asset Cont
 1. Deploy SAC with source account:
 
 ```php
-$operation = InvokeHostFunctionOperationBuilder::
-    forDeploySACWithSourceAccount()->build();
+$builder = new InvokeHostFunctionOperationBuilder();
+$operation = $builder->addFunction(new DeploySACWithSourceAccountHostFunction())->build();
 ```
 
 2. Deploy SAC with asset:
 
 ```php
-$operation = InvokeHostFunctionOperationBuilder::
-    forDeploySACWithAsset($asset)->build();
+$builder = new InvokeHostFunctionOperationBuilder();
+$operation = $builder->addFunction(new DeploySACWithAssetHostFunction($iomAsset))->build();
 ```
 
 #### Soroban Authorization
@@ -341,10 +338,12 @@ $authInvocation = new AuthorizedInvocation($contractId, $functionName, args: $ar
 $contractAuth = new ContractAuth($authInvocation, address: $invokerAddress, nonce: $nonce);
 $contractAuth->sign($invokerKeyPair, Network::futurenet());
 
-$invokeOp = InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,
-    $functionName, $args, auth: [$contractAuth])->build();
+$invokeHostFunction = new InvokeContractHostFunction($contractId, $functionName, $args, auth: [$contractAuth]);
 
-// simulate first to obtain the footprint
+$builder = new InvokeHostFunctionOperationBuilder();
+$invokeOp = $builder->addFunction($invokeHostFunction)->build();
+
+// simulate first to obtain the transaction data and resource fee
 $submitterAccount = $server->getAccount($submitterId);
 $transaction = (new TransactionBuilder($submitterAccount))
     ->addOperation($invokeOp)->build();
@@ -352,11 +351,26 @@ $transaction = (new TransactionBuilder($submitterAccount))
 $simulateResponse = $server->simulateTransaction($transaction);
 ```
 
-The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code).
+The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code). In this example the submitter of the transaction is not the same as the "invoker" of the contract function. 
 
-Other auth examples can be found in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) of the SDK.
+One can find another example in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) of the SDK where the submitter and invoker are the same.
 
 An advanced auth example can be found in the [atomic swap](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAtomicSwapTest.php) test.
+
+Hint: Resource fees has been added in the new soroban preview 9 version. The calculation of the minimum resource fee by the simulation (preflight) is not always accurate, because it does not consider signatures. This may result in a failing transaction because of insufficient resources. In this case one can experiment and increase the resources values within the soroban transaction data before signing and submitting the transaction. E.g.:
+
+```php
+$transactionData = $simulateResponse->transactionData;
+$transactionData->resources->instructions += intval($transactionData->resources->instructions / 4);
+$simulateResponse->minRessourceFee += 2800;
+
+// set the transaction data + fee and sign
+$transaction->setSorobanTransactionData($transactionData);
+$transaction->addRessourceFee($simulateResponse->minRessourceFee);
+$transaction->sign($submitterKeyPair, Network::futurenet());
+```
+
+See also: https://discord.com/channels/897514728459468821/1112853306881081354
 
 #### Get Events
 

@@ -9,52 +9,100 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrConfigSettingEntry
 {
-    public XdrConfigSettingEntryExt $ext;
     public XdrConfigSettingID $configSettingID;
-    public XdrConfigSetting $configSetting;
+    public ?int $contractMaxSizeBytes = null;
+    public ?XdrConfigSettingContractComputeV0 $contractCompute = null;
+    public ?XdrConfigSettingContractLedgerCostV0 $contractLedgerCost = null;
+    public ?XdrConfigSettingContractHistoricalDataV0 $contractHistoricalData = null;
+    public ?XdrConfigSettingContractMetaDataV0 $contractMetaData = null;
+    public ?XdrConfigSettingContractBandwidthV0 $contractBandwidth = null;
+    public ?XdrContractCostParams $contractCostParamsCpuInsns = null;
+    public ?XdrContractCostParams $contractCostParamsMemBytes = null;
+    public ?int $contractDataKeySizeBytes = null;
+    public ?int $contractDataEntrySizeBytes = null;
 
     /**
-     * @param XdrConfigSettingEntryExt $ext
      * @param XdrConfigSettingID $configSettingID
-     * @param XdrConfigSetting $configSetting
      */
-    public function __construct(XdrConfigSettingEntryExt $ext, XdrConfigSettingID $configSettingID, XdrConfigSetting $configSetting)
+    public function __construct(XdrConfigSettingID $configSettingID)
     {
-        $this->ext = $ext;
         $this->configSettingID = $configSettingID;
-        $this->configSetting = $configSetting;
     }
 
 
     public function encode(): string {
-        $bytes = $this->ext->encode();
-        $bytes .= $this->configSettingID->encode();
-        $bytes .= $this->configSetting->encode();
+        $bytes = $this->configSettingID->encode();
+        switch ($this->configSettingID->value) {
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
+                $bytes .= XdrEncoder::unsignedInteger32($this->contractMaxSizeBytes);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0:
+                $bytes .= $this->contractCompute->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
+                $bytes .= $this->contractLedgerCost->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
+                $bytes .= $this->contractHistoricalData->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_META_DATA_V0:
+                $bytes .= $this->contractMetaData->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
+                $bytes .= $this->contractBandwidth->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+                $bytes .= $this->contractCostParamsCpuInsns->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
+                $bytes .= $this->contractCostParamsMemBytes->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
+                $bytes .= XdrEncoder::unsignedInteger32($this->contractDataKeySizeBytes);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
+                $bytes .= XdrEncoder::unsignedInteger32($this->contractDataEntrySizeBytes);
+                break;
+        }
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrConfigSettingEntry {
-        $ext = XdrConfigSettingEntryExt::decode($xdr);
-        $configSettingID = XdrConfigSettingID::decode($xdr);
-        $configSetting = XdrConfigSetting::decode($xdr);
-
-        return new XdrConfigSettingEntry($ext, $configSettingID, $configSetting);
-    }
-
-    /**
-     * @return XdrConfigSettingEntryExt
-     */
-    public function getExt(): XdrConfigSettingEntryExt
-    {
-        return $this->ext;
-    }
-
-    /**
-     * @param XdrConfigSettingEntryExt $ext
-     */
-    public function setExt(XdrConfigSettingEntryExt $ext): void
-    {
-        $this->ext = $ext;
+        $v = $xdr->readInteger32();
+        $result = new XdrConfigSettingEntry(new XdrConfigSettingID($v));
+        switch ($v) {
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
+                $result->contractMaxSizeBytes = $xdr->readUnsignedInteger32();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0:
+                $result->contractCompute = XdrConfigSettingContractComputeV0::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
+                $result->contractLedgerCost = XdrConfigSettingContractLedgerCostV0::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
+                $result->contractHistoricalData = XdrConfigSettingContractHistoricalDataV0::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_META_DATA_V0:
+                $result->contractMetaData = XdrConfigSettingContractMetaDataV0::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
+                $result->contractBandwidth = XdrConfigSettingContractBandwidthV0::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+                $result->contractCostParamsCpuInsns = XdrContractCostParams::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
+                $result->contractCostParamsMemBytes = XdrContractCostParams::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
+                $result->contractDataKeySizeBytes = $xdr->readUnsignedInteger32();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
+                $result->contractDataEntrySizeBytes = $xdr->readUnsignedInteger32();
+                break;
+        }
+        return $result;
     }
 
     /**
@@ -74,18 +122,162 @@ class XdrConfigSettingEntry
     }
 
     /**
-     * @return XdrConfigSetting
+     * @return int|null
      */
-    public function getConfigSetting(): XdrConfigSetting
+    public function getContractMaxSizeBytes(): ?int
     {
-        return $this->configSetting;
+        return $this->contractMaxSizeBytes;
     }
 
     /**
-     * @param XdrConfigSetting $configSetting
+     * @param int|null $contractMaxSizeBytes
      */
-    public function setConfigSetting(XdrConfigSetting $configSetting): void
+    public function setContractMaxSizeBytes(?int $contractMaxSizeBytes): void
     {
-        $this->configSetting = $configSetting;
+        $this->contractMaxSizeBytes = $contractMaxSizeBytes;
+    }
+
+    /**
+     * @return XdrConfigSettingContractComputeV0|null
+     */
+    public function getContractCompute(): ?XdrConfigSettingContractComputeV0
+    {
+        return $this->contractCompute;
+    }
+
+    /**
+     * @param XdrConfigSettingContractComputeV0|null $contractCompute
+     */
+    public function setContractCompute(?XdrConfigSettingContractComputeV0 $contractCompute): void
+    {
+        $this->contractCompute = $contractCompute;
+    }
+
+    /**
+     * @return XdrConfigSettingContractLedgerCostV0|null
+     */
+    public function getContractLedgerCost(): ?XdrConfigSettingContractLedgerCostV0
+    {
+        return $this->contractLedgerCost;
+    }
+
+    /**
+     * @param XdrConfigSettingContractLedgerCostV0|null $contractLedgerCost
+     */
+    public function setContractLedgerCost(?XdrConfigSettingContractLedgerCostV0 $contractLedgerCost): void
+    {
+        $this->contractLedgerCost = $contractLedgerCost;
+    }
+
+    /**
+     * @return XdrConfigSettingContractHistoricalDataV0|null
+     */
+    public function getContractHistoricalData(): ?XdrConfigSettingContractHistoricalDataV0
+    {
+        return $this->contractHistoricalData;
+    }
+
+    /**
+     * @param XdrConfigSettingContractHistoricalDataV0|null $contractHistoricalData
+     */
+    public function setContractHistoricalData(?XdrConfigSettingContractHistoricalDataV0 $contractHistoricalData): void
+    {
+        $this->contractHistoricalData = $contractHistoricalData;
+    }
+
+    /**
+     * @return XdrConfigSettingContractMetaDataV0|null
+     */
+    public function getContractMetaData(): ?XdrConfigSettingContractMetaDataV0
+    {
+        return $this->contractMetaData;
+    }
+
+    /**
+     * @param XdrConfigSettingContractMetaDataV0|null $contractMetaData
+     */
+    public function setContractMetaData(?XdrConfigSettingContractMetaDataV0 $contractMetaData): void
+    {
+        $this->contractMetaData = $contractMetaData;
+    }
+
+    /**
+     * @return XdrConfigSettingContractBandwidthV0|null
+     */
+    public function getContractBandwidth(): ?XdrConfigSettingContractBandwidthV0
+    {
+        return $this->contractBandwidth;
+    }
+
+    /**
+     * @param XdrConfigSettingContractBandwidthV0|null $contractBandwidth
+     */
+    public function setContractBandwidth(?XdrConfigSettingContractBandwidthV0 $contractBandwidth): void
+    {
+        $this->contractBandwidth = $contractBandwidth;
+    }
+
+    /**
+     * @return XdrContractCostParams|null
+     */
+    public function getContractCostParamsCpuInsns(): ?XdrContractCostParams
+    {
+        return $this->contractCostParamsCpuInsns;
+    }
+
+    /**
+     * @param XdrContractCostParams|null $contractCostParamsCpuInsns
+     */
+    public function setContractCostParamsCpuInsns(?XdrContractCostParams $contractCostParamsCpuInsns): void
+    {
+        $this->contractCostParamsCpuInsns = $contractCostParamsCpuInsns;
+    }
+
+    /**
+     * @return XdrContractCostParams|null
+     */
+    public function getContractCostParamsMemBytes(): ?XdrContractCostParams
+    {
+        return $this->contractCostParamsMemBytes;
+    }
+
+    /**
+     * @param XdrContractCostParams|null $contractCostParamsMemBytes
+     */
+    public function setContractCostParamsMemBytes(?XdrContractCostParams $contractCostParamsMemBytes): void
+    {
+        $this->contractCostParamsMemBytes = $contractCostParamsMemBytes;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getContractDataKeySizeBytes(): ?int
+    {
+        return $this->contractDataKeySizeBytes;
+    }
+
+    /**
+     * @param int|null $contractDataKeySizeBytes
+     */
+    public function setContractDataKeySizeBytes(?int $contractDataKeySizeBytes): void
+    {
+        $this->contractDataKeySizeBytes = $contractDataKeySizeBytes;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getContractDataEntrySizeBytes(): ?int
+    {
+        return $this->contractDataEntrySizeBytes;
+    }
+
+    /**
+     * @param int|null $contractDataEntrySizeBytes
+     */
+    public function setContractDataEntrySizeBytes(?int $contractDataEntrySizeBytes): void
+    {
+        $this->contractDataEntrySizeBytes = $contractDataEntrySizeBytes;
     }
 }

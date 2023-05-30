@@ -18,10 +18,10 @@ class XdrSCVal
     public ?int $i64 = null;
     public ?int $timepoint= null;
     public ?int $duration = null;
-    public ?XdrInt128Parts $u128 = null;
+    public ?XdrUInt128Parts $u128 = null;
     public ?XdrInt128Parts $i128 = null;
-    public ?string $u256 = null; //uint256
-    public ?string $i256 = null; //uint256
+    public ?XdrUInt256Parts $u256 = null;
+    public ?XdrInt256Parts $i256 = null;
     public ?XdrDataValueMandatory $bytes = null;
     public ?String $str = null;
     public ?String $sym = null;
@@ -78,10 +78,10 @@ class XdrSCVal
                 $bytes .= $this->i128->encode();
                 break;
             case XdrSCValType::SCV_U256:
-                $bytes .= XdrEncoder::unsignedInteger256($this->u256);
+                $bytes .= $this->u256->encode();
                 break;
             case XdrSCValType::SCV_I256:
-                $bytes .= XdrEncoder::unsignedInteger256($this->i256);
+                $bytes .= $this->i256->encode();
                 break;
             case XdrSCValType::SCV_BYTES:
                 $bytes .= $this->bytes->encode();
@@ -162,16 +162,16 @@ class XdrSCVal
                 $result->duration= $xdr->readUnsignedInteger64();
                 break;
             case XdrSCValType::SCV_U128:
-                $result->u128 = XdrInt128Parts::decode($xdr);
+                $result->u128 = XdrUInt128Parts::decode($xdr);
                 break;
             case XdrSCValType::SCV_I128:
                 $result->i128 = XdrInt128Parts::decode($xdr);
                 break;
             case XdrSCValType::SCV_U256:
-                $result->u256 = $xdr->readUnsignedInteger256();
+                $result->u256 = XdrUInt256Parts::decode($xdr);
                 break;
             case XdrSCValType::SCV_I256:
-                $result->i256 = $xdr->readUnsignedInteger256();
+                $result->i256 = XdrInt256Parts::decode($xdr);
                 break;
             case XdrSCValType::SCV_BYTES:
                 $result->bytes = XdrDataValueMandatory::decode($xdr);
@@ -286,15 +286,15 @@ class XdrSCVal
         return $result;
     }
 
-    public static function forU128(XdrInt128Parts $parts) : XdrSCVal {
+    public static function forU128(XdrUInt128Parts $parts) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::U128());
         $result->u128 = $parts;
         return $result;
     }
 
-    public static function forU128Parts(int $lo, int $hi) : XdrSCVal {
+    public static function forU128Parts(int $hi, int $lo) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::U128());
-        $result->u128 = new XdrInt128Parts($lo, $hi);
+        $result->u128 = new XdrUInt128Parts($hi, $lo);
         return $result;
     }
 
@@ -304,21 +304,21 @@ class XdrSCVal
         return $result;
     }
 
-    public static function forI128Parts(int $lo, int $hi) : XdrSCVal {
+    public static function forI128Parts(int $hi, int $lo) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::I128());
-        $result->i128 = new XdrInt128Parts($lo, $hi);
+        $result->i128 = new XdrInt128Parts($hi, $lo);
         return $result;
     }
 
-    public static function forU256(string $u256) : XdrSCVal {
+    public static function forU256(XdrUInt256Parts $parts) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::U256());
-        $result->u256 = $u256;
+        $result->u256 = $parts;
         return $result;
     }
 
-    public static function forI256(string $i256) : XdrSCVal {
+    public static function forI256(XdrInt256Parts $parts) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::I256());
-        $result->i256 = $i256;
+        $result->i256 = $parts;
         return $result;
     }
 
@@ -481,9 +481,9 @@ class XdrSCVal
     }
 
     /**
-     * @return XdrInt128Parts|null
+     * @return XdrUInt128Parts|null
      */
-    public function getU128(): ?XdrInt128Parts
+    public function getU128(): ?XdrUInt128Parts
     {
         return $this->u128;
     }
@@ -497,17 +497,17 @@ class XdrSCVal
     }
 
     /**
-     * @return string
+     * @return XdrUInt256Parts
      */
-    public function getU256(): string
+    public function getU256(): XdrUInt256Parts
     {
         return $this->u256;
     }
 
     /**
-     * @return string
+     * @return XdrInt256Parts
      */
-    public function getI256(): string
+    public function getI256(): XdrInt256Parts
     {
         return $this->i256;
     }

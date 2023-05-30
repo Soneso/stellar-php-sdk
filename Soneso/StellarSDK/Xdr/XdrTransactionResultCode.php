@@ -58,6 +58,15 @@ class XdrTransactionResultCode
     /// Sponsorship not ended.
     const BAD_SPONSORSHIP = -14;
 
+    /// minSeqAge or minSeqLedgerGap conditions not met
+    const BAD_MIN_SEQ_AGE_OR_GAP = -15;
+
+    /// precondition is invalid
+    const MALFORMED = -16;
+
+    /// declared Soroban resource usage exceeds the network limit
+    const SOROBAN_RESOURCE_LIMIT_EXCEEDED = -17;
+
     public function __construct(int $value) {
         $this->value = $value;
     }

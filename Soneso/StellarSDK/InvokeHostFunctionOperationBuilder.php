@@ -7,85 +7,24 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
-use Soneso\StellarSDK\Soroban\ContractAuth;
-use Soneso\StellarSDK\Soroban\Footprint;
-use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 
 class InvokeHostFunctionOperationBuilder
 {
     // common
-    private XdrHostFunctionType $hostFunctionType;
-    private ?Footprint $footprint = null;
-    private ?array $auth = null;
-    private ?MuxedAccount $sourceAccount = null;
-
-    // for invoking contracts
-    private ?string $contractID = null;
-    private ?string $functionName = null;
-    private ?array $arguments = null; // [XdrSCVal]
-
-    // for installing contracts
-    private ?string  $contractCodeBytes = null;// Uint8List
-
-    // for creating contracts
-    private ?string $wasmId = null;
-    private ?string $salt = null;
-    private ?Asset  $asset = null;
+    public array $functions;
+    public ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @param XdrHostFunctionType $hostFunctionType
+     * @param array|null $functions
      */
-    public function __construct(XdrHostFunctionType $hostFunctionType)
+    public function __construct(?array $functions = array())
     {
-        $this->hostFunctionType = $hostFunctionType;
+        $this->functions = $functions;
     }
 
-    public static function forInvokingContract(string $contractID, string $functionName, ?array $functionArguments = null, ?Footprint $footprint = null, ?array $auth = array()) : InvokeHostFunctionOperationBuilder {
-        $type = new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
-        $builder = new InvokeHostFunctionOperationBuilder($type);
-        $builder->contractID = $contractID;
-        $builder->functionName = $functionName;
-        $builder->arguments = $functionArguments;
-        $builder->footprint = $footprint;
-        $builder->auth = $auth;
-        return $builder;
-    }
-
-    public static function forInstallingContractCode(string $contractCodeBytes, ?Footprint $footprint = null, ?array $auth = array()) : InvokeHostFunctionOperationBuilder {
-        $type = new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE);
-        $builder = new InvokeHostFunctionOperationBuilder($type);
-        $builder->contractCodeBytes = $contractCodeBytes;
-        $builder->footprint = $footprint;
-        $builder->auth = $auth;
-        return $builder;
-    }
-
-    public static function forCreatingContract(string $wasmId, ?string $salt = null, ?Footprint $footprint = null, ?array $auth = array()) : InvokeHostFunctionOperationBuilder {
-        $type = new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-        $builder = new InvokeHostFunctionOperationBuilder($type);
-        $builder->wasmId = $wasmId;
-        $builder->salt = $salt != null ? $salt : random_bytes(32);
-        $builder->footprint = $footprint;
-        $builder->auth = $auth;
-        return $builder;
-    }
-
-    public static function forDeploySACWithSourceAccount(?string $salt = null, ?Footprint $footprint = null, ?array $auth = array()) : InvokeHostFunctionOperationBuilder {
-        $type = new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-        $builder = new InvokeHostFunctionOperationBuilder($type);
-        $builder->salt = $salt != null ? $salt : random_bytes(32);
-        $builder->footprint = $footprint;
-        $builder->auth = $auth;
-        return $builder;
-    }
-
-    public static function forDeploySACWithAsset(Asset $asset, ?Footprint $footprint = null, ?array $auth = array()) : InvokeHostFunctionOperationBuilder {
-        $type = new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT);
-        $builder = new InvokeHostFunctionOperationBuilder($type);
-        $builder->asset = $asset;
-        $builder->footprint = $footprint;
-        $builder->auth = $auth;
-        return $builder;
+    public function addFunction(HostFunction $function) : InvokeHostFunctionOperationBuilder {
+        array_push($this->functions, $function);
+        return $this;
     }
 
     public function setSourceAccount(string $accountId) : InvokeHostFunctionOperationBuilder {
@@ -98,36 +37,10 @@ class InvokeHostFunctionOperationBuilder
         return $this;
     }
 
-    public function setFootprint(Footprint $footprint) : InvokeHostFunctionOperationBuilder {
-        $this->footprint = $footprint;
-        return $this;
-    }
-
-    public function setAuth(array $auth) : InvokeHostFunctionOperationBuilder {
-        $this->auth = $auth;
-        return $this;
-    }
-
     /**
      * @throws Exception if the host function type is unknown or not implemented
      */
     public function build(): InvokeHostFunctionOperation {
-
-        switch ($this->hostFunctionType->value) {
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                return new InvokeContractOp($this->contractID, $this->functionName, $this->arguments, $this->footprint, $this->auth, $this->sourceAccount);
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE:
-                return new InstallContractCodeOp($this->contractCodeBytes, $this->footprint, $this->auth, $this->sourceAccount);
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-                if($this->wasmId != null) {
-                    return new CreateContractOp($this->wasmId, $this->salt, $this->footprint, $this->auth, $this->sourceAccount);
-                } else if($this->asset != null) {
-                    return new DeploySACWithAssetOp($this->asset, $this->footprint, $this->auth, $this->sourceAccount);
-                } else {
-                    return new DeploySACWithSourceAccountOp($this->salt, $this->footprint, $this->auth, $this->sourceAccount);
-                }
-            default:
-                throw new Exception('unknown host function type: ' . $this->hostFunctionType->value);
-        }
+        return new InvokeHostFunctionOperation($this->functions, $this->sourceAccount);
     }
 }

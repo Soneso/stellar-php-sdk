@@ -7,24 +7,20 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
-use Soneso\StellarSDK\Responses\HostFunction\ParameterResponse;
-use Soneso\StellarSDK\Responses\HostFunction\ParametersResponse;
+use Soneso\StellarSDK\Responses\HostFunction\HostFunctionResponse;
+use Soneso\StellarSDK\Responses\HostFunction\HostFunctionsResponse;
 
 class InvokeHostFunctionOperationResponse extends OperationResponse
 {
-    private string $function;
-    private string $footprint;
-    private ?ParametersResponse $parameters;
+    private ?HostFunctionsResponse $hostFunctions = null;
 
     protected function loadFromJson(array $json) : void {
 
-        $this->function = $json['function'];
-        $this->footprint = $json['footprint'];
-        if (isset($json['parameters'])) {
-            $this->parameters = new ParametersResponse();
-            foreach ($json['parameters'] as $jsonValue) {
-                $value = ParameterResponse::fromJson($jsonValue);
-                $this->parameters->add($value);
+        if (isset($json['host_functions'])) {
+            $this->hostFunctions = new HostFunctionsResponse();
+            foreach ($json['host_functions'] as $jsonValue) {
+                $value = HostFunctionResponse::fromJson($jsonValue);
+                $this->hostFunctions->add($value);
             }
         }
     }
@@ -36,50 +32,18 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * @return HostFunctionsResponse|null
      */
-    public function getFunction(): string
+    public function getHostFunctions(): ?HostFunctionsResponse
     {
-        return $this->function;
+        return $this->hostFunctions;
     }
 
     /**
-     * @param string $function
+     * @param HostFunctionsResponse|null $hostFunctions
      */
-    public function setFunction(string $function): void
+    public function setHostFunctions(?HostFunctionsResponse $hostFunctions): void
     {
-        $this->function = $function;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFootprint(): string
-    {
-        return $this->footprint;
-    }
-
-    /**
-     * @param string $footprint
-     */
-    public function setFootprint(string $footprint): void
-    {
-        $this->footprint = $footprint;
-    }
-
-    /**
-     * @return ParametersResponse|null
-     */
-    public function getParameters(): ?ParametersResponse
-    {
-        return $this->parameters;
-    }
-
-    /**
-     * @param ParametersResponse|null $parameters
-     */
-    public function setParameters(?ParametersResponse $parameters): void
-    {
-        $this->parameters = $parameters;
+        $this->hostFunctions = $hostFunctions;
     }
 }

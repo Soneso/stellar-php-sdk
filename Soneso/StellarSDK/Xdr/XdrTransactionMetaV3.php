@@ -14,7 +14,8 @@ class XdrTransactionMetaV3
     public array $txChangesAfter; // [XdrLedgerEntryChange]
     public array $events; // [XdrOperationEvents]
     public XdrTransactionResult $txResult;
-    public array $hashes;
+    public array $hashes; // [bytes string]
+    public array $diagnosticEvents; // [XdrOperationDiagnosticEvents]
 
     /**
      * @param array $txChangesBefore
@@ -23,8 +24,9 @@ class XdrTransactionMetaV3
      * @param array $events
      * @param XdrTransactionResult $txResult
      * @param array $hashes
+     * @param array $diagnosticEvents
      */
-    public function __construct(array $txChangesBefore, array $operations, array $txChangesAfter, array $events, XdrTransactionResult $txResult, array $hashes)
+    public function __construct(array $txChangesBefore, array $operations, array $txChangesAfter, array $events, XdrTransactionResult $txResult, array $hashes, array $diagnosticEvents)
     {
         $this->txChangesBefore = $txChangesBefore;
         $this->operations = $operations;
@@ -32,7 +34,9 @@ class XdrTransactionMetaV3
         $this->events = $events;
         $this->txResult = $txResult;
         $this->hashes = $hashes;
+        $this->diagnosticEvents = $diagnosticEvents;
     }
+
 
     public function encode(): string {
         $bytes = XdrEncoder::integer32(count($this->txChangesBefore));
@@ -65,6 +69,14 @@ class XdrTransactionMetaV3
         foreach($this->hashes as $val) {
             $bytes .= XdrEncoder::opaqueFixed($val, 32);
         }
+
+        $bytes .= XdrEncoder::integer32(count($this->diagnosticEvents));
+        foreach($this->diagnosticEvents as $val) {
+            if ($val instanceof XdrOperationDiagnosticEvents) {
+                $bytes .= $val->encode();
+            }
+        }
+
         return $bytes;
     }
 
@@ -98,7 +110,13 @@ class XdrTransactionMetaV3
             array_push($hashes, $hash);
         }
 
-        return new XdrTransactionMetaV3($txChangesBefore, $operations, $txChangesAfter, $events, $txResult, $hashes);
+        $valCount = $xdr->readInteger32();
+        $diagnosticEvents = array();
+        for ($i = 0; $i < $valCount; $i++) {
+            array_push($diagnosticEvents, XdrOperationDiagnosticEvents::decode($xdr));
+        }
+
+        return new XdrTransactionMetaV3($txChangesBefore, $operations, $txChangesAfter, $events, $txResult, $hashes, $diagnosticEvents);
     }
 
     /**

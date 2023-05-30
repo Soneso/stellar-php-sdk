@@ -12,6 +12,7 @@ class XdrContractEventType
 
     const CONTRACT_EVENT_TYPE_SYSTEM = 0;
     const CONTRACT_EVENT_TYPE_CONTRACT = 1;
+    const CONTRACT_EVENT_TYPE_DIAGNOSTIC = 2;
 
     public function __construct(int $value)
     {
@@ -24,6 +25,10 @@ class XdrContractEventType
 
     public static function CONTRACT() :  XdrContractEventType {
         return new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_CONTRACT);
+    }
+
+    public static function DIAGNOSTIC() :  XdrContractEventType {
+        return new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_DIAGNOSTIC);
     }
 
     /**

@@ -57,6 +57,16 @@ class XdrContractAuth
         return new XdrContractAuth($aWithNonce, $rInvocation, $args);
     }
 
+    public static function fromBase64Xdr(String $base64Xdr) : XdrContractAuth {
+        $xdr = base64_decode($base64Xdr);
+        $xdrBuffer = new XdrBuffer($xdr);
+        return XdrContractAuth::decode($xdrBuffer);
+    }
+
+    public function toBase64Xdr() : String {
+        return base64_encode($this->encode());
+    }
+
     /**
      * @return XdrAddressWithNonce|null
      */

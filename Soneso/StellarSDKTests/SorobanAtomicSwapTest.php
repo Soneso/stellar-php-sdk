@@ -7,7 +7,9 @@
 namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
@@ -19,6 +21,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -30,7 +33,6 @@ class SorobanAtomicSwapTest extends TestCase
     public function testAtomicSwap() {
         // See https://soroban.stellar.org/docs/how-to-guides/atomic-swap
         // https://soroban.stellar.org/docs/learn/authorization
-        // https://github.com/StellarCN/py-stellar-base/blob/soroban/examples/soroban_auth_atomic_swap.py
 
         $server = new SorobanServer("https://rpc-futurenet.stellar.org:443");
         $server->enableLogging = true;
@@ -50,10 +52,13 @@ class SorobanAtomicSwapTest extends TestCase
         FuturenetFriendBot::fundTestAccount($bobId);
         sleep(5);
 
-
         $atomicSwapContractId = $this->deployContract($server,'./wasm/atomic_swap.wasm', $adminKeyPair);
-        $tokenAContractId = $this->deployContract($server,'./wasm/token.wasm', $adminKeyPair);;
-        $tokenBContractId = $this->deployContract($server,'./wasm/token.wasm', $adminKeyPair);;
+        //print("atomic swap cid: " . $atomicSwapContractId . PHP_EOL);
+
+        $tokenAContractId = $this->deployContract($server,'./wasm/token.wasm', $adminKeyPair);
+        //print("token a cid: " . $tokenAContractId . PHP_EOL);
+        $tokenBContractId = $this->deployContract($server,'./wasm/token.wasm', $adminKeyPair);
+        //print("token b cid: " . $tokenBContractId . PHP_EOL);
 
         $this->createToken($server, $adminKeyPair, $tokenAContractId, "TokenA", "TokenA");
         $this->createToken($server, $adminKeyPair, $tokenBContractId, "TokenB", "TokenB");
@@ -75,103 +80,102 @@ class SorobanAtomicSwapTest extends TestCase
         $tokenABytes = XdrSCVal::forBytes(hex2bin($tokenAContractId));
         $tokenBBytes = XdrSCVal::forBytes(hex2bin($tokenBContractId));
 
-        $amountA = XdrSCVal::forI128(new XdrInt128Parts(1000,0));
-        $minBForA = XdrSCVal::forI128(new XdrInt128Parts(4500,0));
+        $amountA = XdrSCVal::forI128(new XdrInt128Parts(0,1000));
+        $minBForA = XdrSCVal::forI128(new XdrInt128Parts(0,4500));
 
-        $amountB = XdrSCVal::forI128(new XdrInt128Parts(5000,0));
-        $minAForB = XdrSCVal::forI128(new XdrInt128Parts(950,0));
-
+        $amountB = XdrSCVal::forI128(new XdrInt128Parts(0,5000));
+        $minAForB = XdrSCVal::forI128(new XdrInt128Parts(0,950));
 
         $swapFunctionName = "swap";
-        $incrAllowFunctionName = "incr_allow";
+        $incrAllowFunctionName = "increase_allowance";
 
-        $aliceSubAuthArgs = [$addressAlice, $addressSwapContract, $amountA];
-        $aliceSubAuthInvocation = new AuthorizedInvocation($tokenAContractId,$incrAllowFunctionName, $aliceSubAuthArgs);
-        $aliceRootAuthArgs = [$tokenABytes, $tokenBBytes, $amountA, $minBForA];
-        $aliceRootInvocation = new AuthorizedInvocation($atomicSwapContractId, $swapFunctionName, $aliceRootAuthArgs, [$aliceSubAuthInvocation]);
+         $aliceSubAuthArgs = [$addressAlice, $addressSwapContract, $amountA];
+         $aliceSubAuthInvocation = new AuthorizedInvocation($tokenAContractId,$incrAllowFunctionName, $aliceSubAuthArgs);
+         $aliceRootAuthArgs = [$tokenABytes, $tokenBBytes, $amountA, $minBForA];
+         $aliceRootInvocation = new AuthorizedInvocation($atomicSwapContractId, $swapFunctionName, $aliceRootAuthArgs, [$aliceSubAuthInvocation]);
 
-        $bobSubAuthArgs = [$addressBob, $addressSwapContract, $amountB];
-        $bobSubAutInvocation = new AuthorizedInvocation($tokenBContractId,$incrAllowFunctionName, $bobSubAuthArgs);
-        $bobRootAuthArgs = [$tokenBBytes, $tokenABytes, $amountB, $minAForB];
-        $bobRootInvocation = new AuthorizedInvocation($atomicSwapContractId, $swapFunctionName, $bobRootAuthArgs, [$bobSubAutInvocation]);
+         $bobSubAuthArgs = [$addressBob, $addressSwapContract, $amountB];
+         $bobSubAutInvocation = new AuthorizedInvocation($tokenBContractId,$incrAllowFunctionName, $bobSubAuthArgs);
+         $bobRootAuthArgs = [$tokenBBytes, $tokenABytes, $amountB, $minAForB];
+         $bobRootInvocation = new AuthorizedInvocation($atomicSwapContractId, $swapFunctionName, $bobRootAuthArgs, [$bobSubAutInvocation]);
 
-        $aliceNonce = $server->getNonce($aliceId, $atomicSwapContractId);
-        $aliceContractAuth = new ContractAuth($aliceRootInvocation, address: Address::fromAccountId($aliceId), nonce: $aliceNonce);
-        $aliceContractAuth->sign($aliceKeyPair, Network::futurenet());
+         $aliceNonce = $server->getNonce($aliceId, $atomicSwapContractId);
+         $aliceContractAuth = new ContractAuth($aliceRootInvocation, address: Address::fromAccountId($aliceId), nonce: $aliceNonce);
+         $aliceContractAuth->sign($aliceKeyPair, Network::futurenet());
 
-        $bobNonce = $server->getNonce($bobId, $atomicSwapContractId);
-        $bobContractAuth = new ContractAuth($bobRootInvocation, address: Address::fromAccountId($bobId), nonce: $bobNonce);
-        $bobContractAuth->sign($bobKeyPair, Network::futurenet());
+         $bobNonce = $server->getNonce($bobId, $atomicSwapContractId);
+         $bobContractAuth = new ContractAuth($bobRootInvocation, address: Address::fromAccountId($bobId), nonce: $bobNonce);
+         $bobContractAuth->sign($bobKeyPair, Network::futurenet());
 
-        $invokeArgs = [
-            $addressAlice,
-            $addressBob,
-            $tokenABytes,
-            $tokenBBytes,
-            $amountA,
-            $minBForA,
-            $amountB,
-            $minAForB
-        ];
+         $invokeContract = [
+             $addressAlice,
+             $addressBob,
+             $tokenABytes,
+             $tokenBBytes,
+             $amountA,
+             $minBForA,
+             $amountB,
+             $minAForB
+         ];
 
-        $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($atomicSwapContractId,
-            $swapFunctionName, $invokeArgs, auth: [$aliceContractAuth, $bobContractAuth])->build();
+        $invokeContractHostFunction = new InvokeContractHostFunction($atomicSwapContractId, $swapFunctionName, $invokeContract, auth: [$aliceContractAuth, $bobContractAuth]);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($invokeContractHostFunction)->build();
 
         $source = $sdk->requestAccount($adminId);
+        $transaction = (new TransactionBuilder($source))->addOperation($op)->build();
 
-        // simulate first to obtain the footprint
-
-        $transaction = (new TransactionBuilder($source))
-            ->addOperation($invokeContractOp)->build();
-
-        // simulate first to get the footprint
         $simulateResponse = $server->simulateTransaction($transaction);
-
-        $this->assertNull($simulateResponse->error);
-        $this->assertNotNull($simulateResponse->results);
 
         $authResult = $simulateResponse->getAuth();
         $this->assertNotNull($authResult);
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data  + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($adminKeyPair, Network::futurenet());
 
-        // check transaction xdr encoding back and forth
-        $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
-        $this->assertEquals($transctionEnvelopeXdr, Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
 
-        // send the transaction
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNull($sendResponse->error);
-        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
+         // check transaction xdr encoding back and forth
+         $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
+         $this->assertEquals($transctionEnvelopeXdr, Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
 
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        $this->assertNotNull($statusResponse);
-        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
-        $this->assertNotNull($statusResponse->getResultValue());
-        $result = $statusResponse->getResultValue();
-        $this->assertEquals(XdrSCValType::SCV_VOID, $result->type->value);
+         // send the transaction
+         $sendResponse = $server->sendTransaction($transaction);
+         $this->assertNull($sendResponse->error);
+         $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
+
+         // poll until status is success or error
+         $statusResponse = $this->pollStatus($server, $sendResponse->hash);
+         $this->assertNotNull($statusResponse);
+         $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
+         $this->assertNotNull($statusResponse->getResultValue());
+         $result = $statusResponse->getResultValue();
+         $this->assertEquals(XdrSCValType::SCV_VOID, $result->type->value);
     }
 
     private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : String {
+        sleep(5);
         $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
         $account = $sdk->requestAccount($submitterId);
 
-        // install contract
+        // upload contract wasm
         $contractCode = file_get_contents($pathToCode, false);
-        $installContractOp = InvokeHostFunctionOperationBuilder::
-        forInstallingContractCode($contractCode)->build();
 
-        $transaction = (new TransactionBuilder($account))->addOperation($installContractOp)->build();
+        $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($uploadContractHostFunction)->build();
+
+        $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
         // simulate first to get the footprint
         $simulateResponse = $server->simulateTransaction($transaction);
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
@@ -185,16 +189,22 @@ class SorobanAtomicSwapTest extends TestCase
         $this->assertNotNull($wasmId);
 
         // create contract
-        $createContractOp = InvokeHostFunctionOperationBuilder::forCreatingContract($wasmId)->build();
-        $account = $sdk->requestAccount($submitterId);
+        sleep(5);
 
-        $transaction = (new TransactionBuilder($account))->addOperation($createContractOp)->build();
+        $createContractHostFunction = new CreateContractHostFunction($wasmId);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($createContractHostFunction)->build();
+
+        $account = $sdk->requestAccount($submitterId);
+        $transaction = (new TransactionBuilder($account))
+            ->addOperation($op)->build();
 
         // simulate first to get the footprint
         $simulateResponse = $server->simulateTransaction($transaction);
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
@@ -215,7 +225,6 @@ class SorobanAtomicSwapTest extends TestCase
         // reload account for sequence number
         $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
-        $account = $sdk->requestAccount($submitterId);
 
         $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
         $functionName = "initialize";
@@ -230,19 +239,21 @@ class SorobanAtomicSwapTest extends TestCase
         $rootInvocation = new AuthorizedInvocation($contractId, $functionName, $args);
         $contractAuth = new ContractAuth($rootInvocation);
 
-        $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,
-            $functionName, $args, auth: [$contractAuth])->build();
 
+        $invokeContractHostFunction = new InvokeContractHostFunction($contractId, $functionName, $args, auth: [$contractAuth]);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($invokeContractHostFunction)->build();
 
-        // simulate first to obtain the footprint
+        sleep(5);
+        $account = $sdk->requestAccount($submitterId);
         $transaction = (new TransactionBuilder($account))
-            ->addOperation($invokeContractOp)->build();
+            ->addOperation($op)->build();
 
-        // simulate first to get the footprint
         $simulateResponse = $server->simulateTransaction($transaction);
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data  + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
@@ -256,6 +267,8 @@ class SorobanAtomicSwapTest extends TestCase
 
     private function mint(SorobanServer $server, Keypair $submitterKp, String $contractId, String $toAccountId, int $amount) : void
     {
+        sleep(5);
+
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
         // reload account for sequence number
         $sdk = StellarSDK::getFutureNetInstance();
@@ -264,26 +277,25 @@ class SorobanAtomicSwapTest extends TestCase
 
         $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
         $toAddress = Address::fromAccountId($toAccountId)->toXdrSCVal();
-        $amountValue = XdrSCVal::forI128(new XdrInt128Parts($amount,0));
+        $amountValue = XdrSCVal::forI128(new XdrInt128Parts(0,$amount));
         $functionName = "mint";
 
-        $args = [$adminAddress, $toAddress, $amountValue];
+        $args = [$toAddress, $amountValue];
         $rootInvocation = new AuthorizedInvocation($contractId, $functionName, $args);
         $contractAuth = new ContractAuth($rootInvocation);
 
-        $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,
-            $functionName, $args, auth: [$contractAuth])->build();
+        $invokeContractHostFunction = new InvokeContractHostFunction($contractId, $functionName, $args, auth: [$contractAuth]);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($invokeContractHostFunction)->build();
 
-        // simulate first to obtain the footprint
-        $transaction = (new TransactionBuilder($account))
-            ->addOperation($invokeContractOp)->build();
+        $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
-        // simulate first to get the footprint
         $simulateResponse = $server->simulateTransaction($transaction);
-
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data  + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
+
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -296,6 +308,8 @@ class SorobanAtomicSwapTest extends TestCase
 
     private function balance(SorobanServer $server, Keypair $submitterKp, String $contractId, String $accountId) : int
     {
+        sleep(5);
+
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
         // reload account for sequence number
         $sdk = StellarSDK::getFutureNetInstance();
@@ -307,17 +321,17 @@ class SorobanAtomicSwapTest extends TestCase
 
         $args = [$address];
 
-        $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,
-            $functionName, $args)->build();
+        $invokeContractHostFunction = new InvokeContractHostFunction($contractId, $functionName, $args);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($invokeContractHostFunction)->build();
 
-        // simulate first to obtain the footprint
-        $transaction = (new TransactionBuilder($account))->addOperation($invokeContractOp)->build();
+        $transaction = (new TransactionBuilder($account))
+            ->addOperation($op)->build();
 
-        // simulate first to get the footprint
         $simulateResponse = $server->simulateTransaction($transaction);
-
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data  + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction

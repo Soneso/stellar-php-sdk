@@ -11,8 +11,12 @@ use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
+use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\DeploySACWithAssetHostFunction;
+use Soneso\StellarSDK\DeploySACWithSourceAccountHostFunction;
+use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
@@ -27,7 +31,9 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 
@@ -69,17 +75,17 @@ class SorobanTest extends TestCase
         $this->assertEquals($accountAId, $getAccountResponse->getAccountId());
         $this->assertNotNull($getAccountResponse->getSequenceNumber());
 
-        // install contract
+        // upload contract wasm
         $contractCode = file_get_contents('./wasm/hello.wasm', false);
-        $installContractOp = InvokeHostFunctionOperationBuilder::
-            forInstallingContractCode($contractCode)->build();
+        $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($uploadContractHostFunction)->build();
 
         $transaction = (new TransactionBuilder($getAccountResponse))
-            ->addOperation($installContractOp)->build();
+            ->addOperation($op)->build();
 
-        print($transaction->toEnvelopeXdrBase64() . PHP_EOL);
 
-        // simulate first to get the footprint
+        // simulate first to get the transaction data and fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         $this->assertNull($simulateResponse->error);
@@ -87,18 +93,29 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
+        $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
+        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
+        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
+        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
+        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
+        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        $transactionData = $simulateResponse->transactionData;
+        $minResourceFee = $simulateResponse->minRessourceFee;
+
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($transactionData);
+        $transaction->addRessourceFee($minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
         $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
         $this->assertEquals($transctionEnvelopeXdr,
             Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
+
+        print($transaction->toEnvelopeXdrBase64() . PHP_EOL);
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -107,23 +124,26 @@ class SorobanTest extends TestCase
         $this->assertNotNull($sendResponse->status);
         $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
         if ($sendResponse->error == null) {
-            print("Transaction Id: ".$sendResponse->hash . PHP_EOL);
-            print("Status: ".$sendResponse->status. PHP_EOL);
+            print("Transaction Id: " . $sendResponse->hash . PHP_EOL);
+            print("Status: " . $sendResponse->status . PHP_EOL);
         }
+
         // poll until status is success or error
         $statusResponse = $this->pollStatus($server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
         $helloContractWasmId = $statusResponse->getWasmId();
         $this->assertNotNull($helloContractWasmId);
+        //print("wasm id: " . $helloContractWasmId . PHP_EOL);
 
         // check horizon response decoding.
+        sleep(5);
         $transactionResponse = $sdk->requestTransaction($sendResponse->hash);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
         $this->assertEquals($transctionEnvelopeXdr, $transactionResponse->getEnvelopeXdr()->toBase64Xdr());
         $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
-        //$metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+        $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
         //$this->assertEquals($meta, $metaXdr->toBase64Xdr());
 
         // check horizon operation response
@@ -131,31 +151,41 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
+            $hostFunctionType = $firstOp->getHostFunctions()?->toArray()[0]->type;
+            $this->assertEquals("upload_wasm", $hostFunctionType);
         } else {
             $this->fail();
         }
 
         // create contract
-        $createContractOp = InvokeHostFunctionOperationBuilder::forCreatingContract($helloContractWasmId)->build();
         $accountA = $sdk->requestAccount($accountAId);
+        $createContractHostFunction = new CreateContractHostFunction($helloContractWasmId);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($createContractHostFunction)->build();
 
         $transaction = (new TransactionBuilder($accountA))
-            ->addOperation($createContractOp)->build();
+            ->addOperation($op)->build();
 
-        // simulate first to get the footprint
+        // simulate first to get the transaction data + fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
+        $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
+        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
+        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
+        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
+        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
+        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->transactionData);
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -175,6 +205,9 @@ class SorobanTest extends TestCase
         $this->assertNotNull($statusResponse);
         $helloContractId = $statusResponse->getContractId();
         $this->assertNotNull($helloContractId);
+        //print("contract id: " . $helloContractId . PHP_EOL);
+
+        sleep(5);
 
         // check horizon response decoding.
         $transactionResponse = $sdk->requestTransaction($sendResponse->hash);
@@ -190,7 +223,8 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
+            $hostFunctionType = $firstOp->getHostFunctions()?->toArray()[0]->type;
+            $this->assertEquals("create_contract", $hostFunctionType);
         } else {
             $this->fail();
         }
@@ -216,26 +250,34 @@ class SorobanTest extends TestCase
 
         // invoke contract
         $argVal = XdrSCVal::forSymbol("friend");
-        $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($helloContractId, "hello", [$argVal])->build();
-
-        // simulate first to obtain the footprint
         $accountA = $sdk->requestAccount($accountAId);
-        $transaction = (new TransactionBuilder($accountA))
-            ->addOperation($invokeContractOp)->build();
+        $invokeContractHostFunction = new InvokeContractHostFunction($helloContractId, "hello", [$argVal]);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($invokeContractHostFunction)->build();
 
-        // simulate first to get the footprint
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($op)->build();
+
+        // simulate first to get the transaction data + fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
+        $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
+        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
+        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
+        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
+        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
+        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data  + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -266,7 +308,7 @@ class SorobanTest extends TestCase
         $resVal = $statusResponse->getResultValue();
         $vec = $resVal?->getVec();
         if ($vec != null && count($vec) > 1) {
-            print("[".$vec[0]->sym.", ".$vec[1]->sym."]".PHP_EOL);
+            print("[" . $vec[0]->sym . ", " . $vec[1]->sym . "]" . PHP_EOL);
         }
 
         // check horizon response decoding.
@@ -276,7 +318,7 @@ class SorobanTest extends TestCase
         $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
-        //$metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+        $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
         //$this->assertEquals($meta, $metaXdr->toBase64Xdr());
 
         // check horizon operation response
@@ -284,39 +326,48 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
-            $this->assertNotNull($firstOp->getParameters());
-            $this->assertEquals(3, $firstOp->getParameters()->count());
-            foreach ($firstOp->getParameters() as $parameter) {
+            $hostFunction = $firstOp->getHostFunctions()?->toArray()[0];
+            $hostFunctionType = $hostFunction->type;
+            $this->assertEquals("invoke_contract", $hostFunctionType);
+            foreach ($hostFunction->getParameters() as $parameter) {
                 $this->assertNotEquals("", trim($parameter->type));
+                $this->assertNotNull($parameter->value);
                 $this->assertNotEquals("", trim($parameter->value));
-                //print("Parameter type :" . $parameter->type . " value: " . $parameter->value . PHP_EOL);
+                print("Parameter type :" . $parameter->type . " value: " . $parameter->value . PHP_EOL);
             }
         } else {
             $this->fail();
         }
 
         // deploy create token contract with source account
-        $deployCTContractSAOp = InvokeHostFunctionOperationBuilder::forDeploySACWithSourceAccount()->build();
-
-        // simulate first to obtain the footprint
         $accountA = $sdk->requestAccount($accountAId);
-        $transaction = (new TransactionBuilder($accountA))
-            ->addOperation($deployCTContractSAOp)->build();
+        $deploySACWithSourceAccountHostFunction = new DeploySACWithSourceAccountHostFunction();
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($deploySACWithSourceAccountHostFunction)->build();
 
-        // simulate first to get the footprint
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($op)->build();
+
+        // simulate first to get the transaction data + fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
+        $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
+        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
+        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
+        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
+        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
+        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -337,6 +388,7 @@ class SorobanTest extends TestCase
         $ctcId = $statusResponse->getContractId();
         $this->assertNotNull($ctcId);
 
+        sleep(5);
         // check horizon response decoding.
         $transactionResponse = $sdk->requestTransaction($sendResponse->hash);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
@@ -344,7 +396,7 @@ class SorobanTest extends TestCase
         $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
-        //$metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+        $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
         //$this->assertEquals($meta, $metaXdr->toBase64Xdr());
 
         // check horizon operation response
@@ -352,7 +404,9 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
+            $hostFunction = $firstOp->getHostFunctions()?->toArray()[0];
+            $hostFunctionType = $hostFunction->type;
+            $this->assertEquals("create_contract", $hostFunctionType);
         } else {
             $this->fail();
         }
@@ -381,23 +435,35 @@ class SorobanTest extends TestCase
         // simulate
         sleep(5);
         $accountB = $sdk->requestAccount($accountBId);
-        $deployCTContractAssetOp = InvokeHostFunctionOperationBuilder::forDeploySACWithAsset($iomAsset)->build();
+
+        $deploySACWithAssetHostFunction = new DeploySACWithAssetHostFunction($iomAsset);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($deploySACWithAssetHostFunction)->build();
+
         $transaction = (new TransactionBuilder($accountB))
-            ->addOperation($deployCTContractAssetOp)
-            ->build();
-        // simulate first to get the footprint
+            ->addOperation($op)->build();
+
+        // simulate first to get the transaction data + fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
         $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
+        $this->assertNotNull($simulateResponse->results->toArray()[0]->getResultValue());
+        $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->cpuInsns));
-        $this->assertGreaterThan(1, intval($simulateResponse->cost->memBytes));
+        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
+        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
+        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
+        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
+        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($accountBKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -418,6 +484,8 @@ class SorobanTest extends TestCase
         $ctcId = $statusResponse->getContractId();
         $this->assertNotNull($ctcId);
 
+        sleep(5);
+
         // check horizon response decoding.
         $transactionResponse = $sdk->requestTransaction($sendResponse->hash);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
@@ -425,7 +493,7 @@ class SorobanTest extends TestCase
         $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
-        //$metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+        $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
         //$this->assertEquals($meta, $metaXdr->toBase64Xdr());
 
         // check horizon operation response
@@ -433,34 +501,16 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $this->assertEquals($firstOp->getFootprint(), $simulateResponse->getFootprint()->toBase64Xdr());
+            $hostFunction = $firstOp->getHostFunctions()?->toArray()[0];
+            $hostFunctionType = $hostFunction->type;
+            $this->assertEquals("create_contract", $hostFunctionType);
         } else {
             $this->fail();
         }
     }
 
-    private function pollStatus(SorobanServer $server, string $transactionId) : ?GetTransactionResponse {
-        $statusResponse = null;
-        $status = GetTransactionResponse::STATUS_NOT_FOUND;
-        while ($status == GetTransactionResponse::STATUS_NOT_FOUND) {
-            sleep(3);
-            $statusResponse = $server->getTransaction($transactionId);
-            $this->assertNull($statusResponse->error);
-            $this->assertNotNull($statusResponse->status);
-            $status = $statusResponse->status;
-            if ($status == GetTransactionResponse::STATUS_FAILED) {
-                $this->assertNotNull($statusResponse->resultXdr);
-            } else if ($status == GetTransactionResponse::STATUS_SUCCESS) {
-                $this->assertNotNull($statusResponse->resultXdr);
-                $this->assertNotNull($statusResponse->resultMetaXdr);
-            }
-        }
-        return $statusResponse;
-    }
-
     public function testSorobanEvents(): void
     {
-
         $server = new SorobanServer("https://rpc-futurenet.stellar.org:443");
         $server->enableLogging = true;
         $server->acknowledgeExperimental = true;
@@ -475,22 +525,26 @@ class SorobanTest extends TestCase
         $getAccountResponse = $sdk->requestAccount($accountAId);
         $this->assertEquals($accountAId, $getAccountResponse->getAccountId());
 
-        // install contract
+        // upload contract wasm
         $contractCode = file_get_contents('./wasm/event.wasm', false);
-        $installContractOp = InvokeHostFunctionOperationBuilder::
-        forInstallingContractCode($contractCode)->build();
+        $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($uploadContractHostFunction)->build();
 
         $transaction = (new TransactionBuilder($getAccountResponse))
-            ->addOperation($installContractOp)->build();
+            ->addOperation($op)->build();
 
-        // simulate first to get the footprint
+        print($transaction->toEnvelopeXdrBase64() . PHP_EOL);
+
+        // simulate first to get the transaction data + fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // send the transaction
@@ -503,23 +557,28 @@ class SorobanTest extends TestCase
         $this->assertNotNull($statusResponse);
         $wasmId = $statusResponse->getWasmId();
         $this->assertNotNull($wasmId);
+        //print("wasm id: " . $wasmId . PHP_EOL);
 
         // create contract
-        $createContractOp = InvokeHostFunctionOperationBuilder::forCreatingContract($wasmId)->build();
+        sleep(5);
         $accountA = $sdk->requestAccount($accountAId);
 
-        $transaction = (new TransactionBuilder($accountA))
-            ->addOperation($createContractOp)->build();
+        $createContractHostFunction = new CreateContractHostFunction($wasmId);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($createContractHostFunction)->build();
 
-        // simulate first to get the footprint
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($op)->build();
+
+        // simulate first to get the transaction data + fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         $this->assertNull($simulateResponse->error);
-        $this->assertNotNull($simulateResponse->results);
-        $this->assertNotNull($simulateResponse->getFootprint());
+        $this->assertNull($simulateResponse->resultError);
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // send the transaction
@@ -532,25 +591,33 @@ class SorobanTest extends TestCase
         $this->assertNotNull($statusResponse);
         $contractId = $statusResponse->getContractId();
         $this->assertNotNull($contractId);
+        //print("contract id: " . $contractId . PHP_EOL);
+
         sleep(3);
+
         // invoke
-
         $fnName = "events";
-        $invokeContractOp = InvokeHostFunctionOperationBuilder::forInvokingContract($contractId, $fnName)->build();
-
-        // simulate first to obtain the footprint
         $accountA = $sdk->requestAccount($accountAId);
-        $transaction = (new TransactionBuilder($accountA))
-            ->addOperation($invokeContractOp)->build();
+        $invokeContractHostFunction = new InvokeContractHostFunction($contractId, $fnName);
+        $builder = new InvokeHostFunctionOperationBuilder();
+        $op = $builder->addFunction($invokeContractHostFunction)->build();
 
-        // simulate first to get the footprint
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($op)->build();
+
+        // simulate first to get the transaction data and fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         $this->assertNull($simulateResponse->error);
-        $this->assertNotNull($simulateResponse->results);
+        $this->assertNull($simulateResponse->resultError);
+        $this->assertNotNull($simulateResponse->events);
+        $this->assertCount(1, $simulateResponse->events);
+        $xdrEvent = XdrDiagnosticEvent::fromBase64Xdr($simulateResponse->events[0]);
+        $this->assertNotNull($xdrEvent);
 
-        // set the footprint and sign
-        $transaction->setFootprint($simulateResponse->getFootprint());
+        // set the transaction data  + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // send the transaction
@@ -562,7 +629,7 @@ class SorobanTest extends TestCase
         $statusResponse = $this->pollStatus($server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
 
-        sleep(3);
+        sleep(5);
         $transactionResponse = $sdk->requestTransaction($sendResponse->hash);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
 
@@ -593,5 +660,24 @@ class SorobanTest extends TestCase
         $strEncodedC = StrKey::encodeContractId(hex2bin($contractIdA));
         $this->assertEquals($strEncodedA, $strEncodedC);
         $this->assertEquals($contractIdA , bin2hex(StrKey::decodeContractId($strEncodedC)));
+    }
+
+    private function pollStatus(SorobanServer $server, string $transactionId) : ?GetTransactionResponse {
+        $statusResponse = null;
+        $status = GetTransactionResponse::STATUS_NOT_FOUND;
+        while ($status == GetTransactionResponse::STATUS_NOT_FOUND) {
+            sleep(3);
+            $statusResponse = $server->getTransaction($transactionId);
+            $this->assertNull($statusResponse->error);
+            $this->assertNotNull($statusResponse->status);
+            $status = $statusResponse->status;
+            if ($status == GetTransactionResponse::STATUS_FAILED) {
+                $this->assertNotNull($statusResponse->resultXdr);
+            } else if ($status == GetTransactionResponse::STATUS_SUCCESS) {
+                $this->assertNotNull($statusResponse->resultXdr);
+                $this->assertNotNull($statusResponse->resultMetaXdr);
+            }
+        }
+        return $statusResponse;
     }
 }

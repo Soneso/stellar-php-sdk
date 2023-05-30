@@ -51,7 +51,7 @@ use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\AuthorizedInvocation;
 use Soneso\StellarSDK\Soroban\ContractAuth;
 use Soneso\StellarSDK\Soroban\Footprint;
-use Soneso\StellarSDK\InstallContractCodeOp;
+use Soneso\StellarSDK\UploadContractWasmOp;
 use Soneso\StellarSDK\InvokeContractOp;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
@@ -124,6 +124,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVmErrorCode;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
 
 class TxRep
 {
@@ -644,97 +645,97 @@ class TxRep
         } else if ($opType == 'LIQUIDITY_POOL_WITHDRAW') {
             $opPrefix = $prefix.'liquidityPoolWithdrawOp.';
             return self::getLiquidityPoolWithdrawOp($opPrefix, $map, $sourceAccountId);
-        } else if ($opType == 'INVOKE_HOST_FUNCTION') {
+        } /*else if ($opType == 'INVOKE_HOST_FUNCTION') {
             $opPrefix = $prefix.'invokeHostFunctionOp.';
             return self::getInvokeHostFunctionOp($opPrefix, $map, $sourceAccountId);
-        }
+        }*/
         return null;
     }
 
-    private static function getInvokeHostFunctionOp($opPrefix, array $map, ?string $sourceAccountId) : InvokeHostFunctionOperation
+    /*private static function getInvokeHostFunctionOp($opPrefix, array $map, ?string $sourceAccountId) : InvokeHostFunctionOperation
     {
         $hostFunctionType = self::getClearValue($opPrefix . 'function.type', $map);
         if (!$hostFunctionType) {
             throw new InvalidArgumentException('missing ' . $opPrefix . 'function.type');
         }
-        if ('HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE' == $hostFunctionType) {
-            $code = self::getClearValue($opPrefix . 'function.installContractCodeArgs.code', $map);
+        if ('HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM' == $hostFunctionType) {
+            $code = self::getClearValue($opPrefix . 'function.uploadContractWasm.code', $map);
             if (!$code) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.installContractCodeArgs.code');
+                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.uploadContractWasm.code');
             }
             $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
             $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
-            return InvokeHostFunctionOperationBuilder::forInstallingContractCode(hex2bin($code), $footprint, $auth)->build();
+            return InvokeHostFunctionOperationBuilder::forUploadingContractWasm(hex2bin($code), $footprint, $auth)->build();
         } else if ('HOST_FUNCTION_TYPE_INVOKE_CONTRACT' == $hostFunctionType) {
             $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
             $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
-            $argsLen = self::getClearValue($opPrefix . 'function.invokeArgs.len', $map);
+            $argsLen = self::getClearValue($opPrefix . 'function.invokeContract.len', $map);
             if ($argsLen == null) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeArgs.len');
+                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeContract.len');
             }
             if (!is_numeric($argsLen) ||(int)$argsLen < 2) {
-                throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.invokeArgs.len ' . $argsLen);
+                throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.invokeContract.len ' . $argsLen);
             }
-            $contractId = self::getClearValue($opPrefix . 'function.invokeArgs[0].bytes', $map);
+            $contractId = self::getClearValue($opPrefix . 'function.invokeContract[0].bytes', $map);
             if ($contractId == null) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeArgs[0].bytes');
+                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeContract[0].bytes');
             }
-            $fnName = self::getClearValue($opPrefix . 'function.invokeArgs[1].sym', $map);
+            $fnName = self::getClearValue($opPrefix . 'function.invokeContract[1].sym', $map);
             if ($fnName == null) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeArgs[1].sym');
+                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeContract[1].sym');
             }
             $arguments = array();
             for ($i = 2; $i < (int)$argsLen; $i++) {
-                $next = self::getScVal($opPrefix . 'function.invokeArgs[' . strval($i) . '].', $map);
+                $next = self::getScVal($opPrefix . 'function.invokeContract[' . strval($i) . '].', $map);
                 array_push($arguments, $next);
             }
             return InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,$fnName, $arguments,$footprint, $auth)->build();
         } else if ('HOST_FUNCTION_TYPE_CREATE_CONTRACT' == $hostFunctionType) {
             $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
             $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
-            $contractCodeType = self::getClearValue($opPrefix . 'function.createContractArgs.source.type', $map);
+            $contractCodeType = self::getClearValue($opPrefix . 'function.createContract.source.type', $map);
             if (!$contractCodeType) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.source.type');
+                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.source.type');
             }
-            $contractIDType = self::getClearValue($opPrefix . 'function.createContractArgs.contractID.type', $map);
+            $contractIDType = self::getClearValue($opPrefix . 'function.createContract.contractID.type', $map);
             if (!$contractIDType) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.contractID.type');
+                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.contractID.type');
             }
             if ('SCCONTRACT_CODE_WASM_REF' == $contractCodeType) {
-                $wasmId = self::getClearValue($opPrefix . 'function.createContractArgs.source.wasm_id', $map);
+                $wasmId = self::getClearValue($opPrefix . 'function.createContract.source.wasm_id', $map);
                 if (!$wasmId) {
-                    throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.source.wasm_id');
+                    throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.source.wasm_id');
                 }
                 if ('CONTRACT_ID_FROM_SOURCE_ACCOUNT' != $contractIDType) {
-                    throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.createContractArgs.contractID.type ' . $contractIDType);
+                    throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.createContract.contractID.type ' . $contractIDType);
                 }
-                $salt = self::getClearValue($opPrefix . 'function.createContractArgs.contractID.salt', $map);
+                $salt = self::getClearValue($opPrefix . 'function.createContract.contractID.salt', $map);
                 if (!$salt) {
-                    throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.contractID.salt');
+                    throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.contractID.salt');
                 }
                 return InvokeHostFunctionOperationBuilder::forCreatingContract($wasmId, hex2bin($salt), $footprint, $auth)->build();
             } else if ('SCCONTRACT_CODE_TOKEN' == $contractCodeType) {
                 if ('CONTRACT_ID_FROM_SOURCE_ACCOUNT' == $contractIDType) {
-                    $salt = self::getClearValue($opPrefix . 'function.createContractArgs.contractID.salt', $map);
+                    $salt = self::getClearValue($opPrefix . 'function.createContract.contractID.salt', $map);
                     if (!$salt) {
-                        throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.contractID.salt');
+                        throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.contractID.salt');
                     }
                     return InvokeHostFunctionOperationBuilder::forDeploySACWithSourceAccount(hex2bin($salt), $footprint, $auth)->build();
                 } else if ('CONTRACT_ID_FROM_ASSET' == $contractIDType) {
-                    $assetStr = self::getClearValue($opPrefix . 'function.createContractArgs.contractID.asset', $map);
+                    $assetStr = self::getClearValue($opPrefix . 'function.createContract.contractID.asset', $map);
                     if (!$assetStr) {
-                        throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContractArgs.contractID.asset');
+                        throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.contractID.asset');
                     }
                     $asset = Asset::createFromCanonicalForm($assetStr);
                     if (!$asset) {
-                        throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.createContractArgs.contractID.asset');
+                        throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.createContract.contractID.asset');
                     }
                     return InvokeHostFunctionOperationBuilder::forDeploySACWithAsset($asset, $footprint, $auth)->build();
                 } else {
-                    throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.createContractArgs.contractID.type ' . $contractIDType);
+                    throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.createContract.contractID.type ' . $contractIDType);
                 }
             } else {
-                throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.createContractArgs.source.type ' . $contractCodeType);
+                throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.createContract.source.type ' . $contractCodeType);
             }
 
         } else {
@@ -1019,7 +1020,7 @@ class TxRep
             if (!is_numeric($u128HiStr)) {
                 throw new InvalidArgumentException('invalid ' . $prefix . 'u128.hi ' . $u128HiStr);
             }
-            return XdrSCVal::forU128(new XdrInt128Parts((int)$u128LoStr, (int)$u128HiStr));
+            return XdrSCVal::forU128(new XdrUInt128Parts((int)$u128HiStr, (int)$u128LoStr));
         } else if ('SCV_I128' == $valType) {
             $i128LoStr = self::getClearValue($prefix . 'i128.lo', $map);
             if ($i128LoStr == null) {
@@ -1035,7 +1036,7 @@ class TxRep
             if (!is_numeric($i128HiStr)) {
                 throw new InvalidArgumentException('invalid ' . $prefix . 'i128.hi ' . $i128HiStr);
             }
-            return XdrSCVal::forI128(new XdrInt128Parts((int)$i128LoStr, (int)$i128HiStr));
+            return XdrSCVal::forI128(new XdrInt128Parts((int)$i128HiStr, (int)$i128LiStr));
         } else if ('SCV_U256' == $valType) {
             // TODO add u256 parts as soon as available
             return new XdrSCVal(XdrSCValType::U256());
@@ -1109,8 +1110,8 @@ class TxRep
         } else if ('SCV_LEDGER_KEY_NONCE' == $valType) {
             $address = self::getSCAddress($prefix . 'nonce_key.nonce_address.', $map);
             return XdrSCVal::forNonceKey(new XdrSCNonceKey($address));
-        } else if ('SCV_STATUS' == $valType) {
-            return XdrSCVal::forStatus(self::getSCStatus($prefix . 'error.', $map));
+        } else if ('SCV_ERROR' == $valType) {
+            return XdrSCVal::forError(self::getSCStatus($prefix . 'error.', $map));
         } else {
             throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $valType);
         }
@@ -1355,7 +1356,7 @@ class TxRep
         }
         return $result;
     }
-
+*/
     private static function getLiquidityPoolWithdrawOp($opPrefix, array $map, ?string $sourceAccountId) : LiquidityPoolWithdrawOperation
     {
         $liquidityPoolID = self::getClearValue($opPrefix . 'liquidityPoolID', $map);
@@ -2933,39 +2934,39 @@ class TxRep
             $lines += [$prefix.'amount' => self::toAmount($operation->getAmount())];
             $lines += [$prefix.'minAmountA' => self::toAmount($operation->getMinAmountA())];
             $lines += [$prefix.'minAmountB' => self::toAmount($operation->getMinAmountB())];
-        } else if ($operation instanceof InvokeHostFunctionOperation) {
+        } /*else if ($operation instanceof InvokeHostFunctionOperation) {
             $lines += [$prefix.'function.type' => self::txRepInvokeHostFuncType($operation->getFunctionType())];
-            if ($operation instanceof  InstallContractCodeOp) {
-                $lines += [$prefix.'function.installContractCodeArgs.code' => bin2hex($operation->contractCodeBytes)];
+            if ($operation instanceof  UploadContractWasmOp) {
+                $lines += [$prefix.'function.uploadContractWasm.code' => bin2hex($operation->contractCodeBytes)];
             } else if ($operation instanceof  CreateContractOp) {
-                $lines += [$prefix.'function.createContractArgs.source.type' => 'SCCONTRACT_CODE_WASM_REF'];
-                $lines += [$prefix.'function.createContractArgs.source.wasm_id' => $operation->getWasmId()];
-                $lines += [$prefix.'function.createContractArgs.contractID.type' => 'CONTRACT_ID_FROM_SOURCE_ACCOUNT'];
-                $lines += [$prefix.'function.createContractArgs.contractID.salt' => bin2hex($operation->getSalt())];
+                $lines += [$prefix.'function.createContract.source.type' => 'SCCONTRACT_CODE_WASM_REF'];
+                $lines += [$prefix.'function.createContract.source.wasm_id' => $operation->getWasmId()];
+                $lines += [$prefix.'function.createContract.contractID.type' => 'CONTRACT_ID_FROM_SOURCE_ACCOUNT'];
+                $lines += [$prefix.'function.createContract.contractID.salt' => bin2hex($operation->getSalt())];
             }  else if ($operation instanceof  InvokeContractOp) {
                 $args = $operation->arguments;
-                $lines += [$prefix.'function.invokeArgs.len' => strval(count($args) + 2)];
+                $lines += [$prefix.'function.invokeContract.len' => strval(count($args) + 2)];
 
-                $lines += [$prefix.'function.invokeArgs[0].type' => 'SCV_BYTES'];
-                $lines += [$prefix.'function.invokeArgs[0].bytes' => $operation->contractId];
+                $lines += [$prefix.'function.invokeContract[0].type' => 'SCV_BYTES'];
+                $lines += [$prefix.'function.invokeContract[0].bytes' => $operation->contractId];
 
-                $lines += [$prefix.'function.invokeArgs[1].type' => 'SCV_SYMBOL'];
-                $lines += [$prefix.'function.invokeArgs[1].sym' => $operation->functionName];
+                $lines += [$prefix.'function.invokeContract[1].type' => 'SCV_SYMBOL'];
+                $lines += [$prefix.'function.invokeContract[1].sym' => $operation->functionName];
                 $index = 2;
                 foreach ($args as $argument) {
                     if($argument instanceof XdrSCVal) {
-                        $lines = array_merge($lines, self::getScValTx($prefix.'function.invokeArgs['.$index.'].', $argument));
+                        $lines = array_merge($lines, self::getScValTx($prefix.'function.invokeContract['.$index.'].', $argument));
                         $index++;
                     }
                 }
             } else if ($operation instanceof DeploySACWithSourceAccountOp) {
-                $lines += [$prefix.'function.createContractArgs.source.type' => 'SCCONTRACT_CODE_TOKEN'];
-                $lines += [$prefix.'function.createContractArgs.contractID.type' => 'CONTRACT_ID_FROM_SOURCE_ACCOUNT'];
-                $lines += [$prefix.'function.createContractArgs.contractID.salt' => bin2hex($operation->getSalt())];
+                $lines += [$prefix.'function.createContract.source.type' => 'SCCONTRACT_CODE_TOKEN'];
+                $lines += [$prefix.'function.createContract.contractID.type' => 'CONTRACT_ID_FROM_SOURCE_ACCOUNT'];
+                $lines += [$prefix.'function.createContract.contractID.salt' => bin2hex($operation->getSalt())];
             } else if ($operation instanceof DeploySACWithAssetOp) {
-                $lines += [$prefix.'function.createContractArgs.source.type' => 'SCCONTRACT_CODE_TOKEN'];
-                $lines += [$prefix.'function.createContractArgs.contractID.type' => 'CONTRACT_ID_FROM_ASSET'];
-                $lines += [$prefix.'function.createContractArgs.contractID.asset' => self::encodeAsset($operation->asset)];
+                $lines += [$prefix.'function.createContract.source.type' => 'SCCONTRACT_CODE_TOKEN'];
+                $lines += [$prefix.'function.createContract.contractID.type' => 'CONTRACT_ID_FROM_ASSET'];
+                $lines += [$prefix.'function.createContract.contractID.asset' => self::encodeAsset($operation->asset)];
             }
 
             $xdrFootprint = $operation->footprint->xdrFootprint;
@@ -2998,10 +2999,10 @@ class TxRep
                 }
             }
 
-        }
+        }*/
         return $lines;
     }
-
+/*
     private static function getContractAuthTx(string $prefix, XdrContractAuth $auth) : array {
         $lines = array();
         if ($auth->addressWithNonce == null) {
@@ -3225,8 +3226,8 @@ class TxRep
                 $lines += [$prefix.'type' => 'SCV_LEDGER_KEY_NONCE'];
                 $lines = array_merge($lines, self::getSCAddressTx($prefix.'nonce_key.nonce_address.', $val->nonceKey->nonceAddress));
                 break;
-            case XdrSCValType::SCV_STATUS:
-                $lines += [$prefix.'type' => 'SCV_STATUS'];
+            case XdrSCValType::SCV_ERROR:
+                $lines += [$prefix.'type' => 'SCV_ERROR'];
                 $statusVal = $val->error;
                 switch ($statusVal->type->value) {
                     case XdrSCStatusType::SST_OK:
@@ -3469,7 +3470,7 @@ class TxRep
         }
         return $lines;
     }
-
+*/
     private static function getPredicateTx(string $prefix, XdrClaimPredicate $predicate) : array {
         $type = $predicate->getType()->getValue();
         $lines = array();
@@ -3613,7 +3614,7 @@ class TxRep
 
         return match ($value) {
             XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT => 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT',
-            XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE => 'HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE',
+            XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM => 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM',
             XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT => 'HOST_FUNCTION_TYPE_CREATE_CONTRACT',
             default => strval($type)
         };

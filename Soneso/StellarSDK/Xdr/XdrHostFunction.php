@@ -8,166 +8,69 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrHostFunction
 {
-
-    public XdrHostFunctionType $type;
-    public ?array $invokeArgs = null; // [XdrSCVal]
-    public ?XdrCreateContractArgs $createContractArgs = null;
-    public ?XdrInstallContractCodeArgs $installContractCodeArgs = null;
+    public XdrHostFunctionArgs $args;
+    public array $auth; // [XdrContractAuth]
 
     /**
-     * @param XdrHostFunctionType $type
+     * @param XdrHostFunctionArgs $args
+     * @param array $auth
      */
-    public function __construct(XdrHostFunctionType $type)
+    public function __construct(XdrHostFunctionArgs $args, array $auth)
     {
-        $this->type = $type;
+        $this->args = $args;
+        $this->auth = $auth;
     }
 
-
-    public function encode(): string {
-        $bytes = $this->type->encode();
-
-        switch ($this->type->value) {
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                $bytes .= XdrEncoder::integer32(count($this->invokeArgs));
-                foreach($this->invokeArgs as $val) {
-                    if ($val instanceof XdrSCVal) {
-                        $bytes .= $val->encode();
-                    }
-                }
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-                $bytes .= $this->createContractArgs->encode();
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE:
-                $bytes .= $this->installContractCodeArgs->encode();
-                break;
+    public function encode() : string {
+        $bytes = $this->args->encode();
+        $bytes .= XdrEncoder::integer32(count($this->auth));
+        foreach($this->auth as $val) {
+            $bytes .= $val->encode();
         }
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrHostFunction {
-        $result = new XdrHostFunction(XdrHostFunctionType::decode($xdr));
-        switch ($result->type->value) {
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                $valCount = $xdr->readInteger32();
-                $arr = array();
-                for ($i = 0; $i < $valCount; $i++) {
-                    array_push($arr, XdrSCVal::decode($xdr));
-                }
-                $result->invokeArgs = $arr;
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-                $result->createContractArgs = XdrCreateContractArgs::decode($xdr);
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE:
-                $result->installContractCodeArgs = XdrInstallContractCodeArgs::decode($xdr);
-                break;
+    public static function decode(XdrBuffer $xdr) : XdrHostFunction {
+        $args = XdrHostFunctionArgs::decode($xdr);
+        $valCount = $xdr->readInteger32();
+        $authArr = array();
+        for ($i = 0; $i < $valCount; $i++) {
+            array_push($authArr, XdrContractAuth::decode($xdr));
         }
-        return $result;
-    }
 
-    public static function forInvokingContractWithArgs(array $scValArgs) :  XdrHostFunction {
-        $result = new XdrHostFunction(XdrHostFunctionType::INVOKE_CONTRACT());
-        $result->invokeArgs = $scValArgs;
-        return $result;
-    }
-
-    public static function forInstallingContract(string $contractCodeRawBytes) :  XdrHostFunction {
-        $result = new XdrHostFunction(XdrHostFunctionType::INSTALL_CONTRACT_CODE());
-        $args = new XdrInstallContractCodeArgs(new XdrDataValueMandatory($contractCodeRawBytes));
-        $result->installContractCodeArgs = $args;
-        return $result;
-    }
-
-    public static function forCreatingContract(string $wasmIdHex, string $salt) :  XdrHostFunction {
-        $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
-        $cId = new XdrContractID(new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT));
-        $cId->salt = $salt;
-        $cCode = new XdrSCContractExecutable(XdrSCContractExecutableType::WASM_REF());
-        $cCode->wasmIdHex = $wasmIdHex;
-        $result->createContractArgs = new XdrCreateContractArgs($cId, $cCode);
-        return $result;
-    }
-
-    public static function forDeploySACWithSourceAccount(string $salt) :  XdrHostFunction {
-        $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
-        $cId = new XdrContractID(new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT));
-        $cId->salt = $salt;
-        $cCode = new XdrSCContractExecutable(XdrSCContractExecutableType::TOKEN());
-        $result->createContractArgs = new XdrCreateContractArgs($cId, $cCode);
-        return $result;
-    }
-
-    public static function forDeploySACWithAsset(XdrAsset $asset) :  XdrHostFunction {
-        $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
-        $cId = new XdrContractID(new XdrContractIDType(XdrContractIDType::CONTRACT_ID_FROM_ASSET));
-        $cId->asset = $asset;
-        $cCode = new XdrSCContractExecutable(XdrSCContractExecutableType::TOKEN());
-        $result->createContractArgs = new XdrCreateContractArgs($cId, $cCode);
-        return $result;
+        return new XdrHostFunction($args, $authArr);
     }
 
     /**
-     * @return XdrHostFunctionType
+     * @return XdrHostFunctionArgs
      */
-    public function getType(): XdrHostFunctionType
+    public function getArgs(): XdrHostFunctionArgs
     {
-        return $this->type;
+        return $this->args;
     }
 
     /**
-     * @param XdrHostFunctionType $type
+     * @param XdrHostFunctionArgs $args
      */
-    public function setType(XdrHostFunctionType $type): void
+    public function setArgs(XdrHostFunctionArgs $args): void
     {
-        $this->type = $type;
+        $this->args = $args;
     }
 
     /**
-     * @return array|null [XdrSCVal]
+     * @return array
      */
-    public function getInvokeArgs(): ?array
+    public function getAuth(): array
     {
-        return $this->invokeArgs;
+        return $this->auth;
     }
 
     /**
-     * @param array|null $invokeArgs [XdrSCVal]
+     * @param array $auth
      */
-    public function setInvokeArgs(?array $invokeArgs): void
+    public function setAuth(array $auth): void
     {
-        $this->invokeArgs = $invokeArgs;
+        $this->auth = $auth;
     }
 
-    /**
-     * @return XdrCreateContractArgs|null
-     */
-    public function getCreateContractArgs(): ?XdrCreateContractArgs
-    {
-        return $this->createContractArgs;
-    }
-
-    /**
-     * @param XdrCreateContractArgs|null $createContractArgs
-     */
-    public function setCreateContractArgs(?XdrCreateContractArgs $createContractArgs): void
-    {
-        $this->createContractArgs = $createContractArgs;
-    }
-
-    /**
-     * @return XdrInstallContractCodeArgs|null
-     */
-    public function getInstallContractCodeArgs(): ?XdrInstallContractCodeArgs
-    {
-        return $this->installContractCodeArgs;
-    }
-
-    /**
-     * @param XdrInstallContractCodeArgs|null $installContractCodeArgs
-     */
-    public function setInstallContractCodeArgs(?XdrInstallContractCodeArgs $installContractCodeArgs): void
-    {
-        $this->installContractCodeArgs = $installContractCodeArgs;
-    }
 }

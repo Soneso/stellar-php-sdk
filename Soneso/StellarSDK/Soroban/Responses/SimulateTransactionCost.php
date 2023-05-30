@@ -11,15 +11,15 @@ namespace Soneso\StellarSDK\Soroban\Responses;
  */
 class SimulateTransactionCost
 {
-    /// Stringified-number of the total cpu instructions consumed by this transaction
-    public string $cpuInsns;
+    /// Number of the total cpu instructions consumed by this transaction
+    public int $cpuInsns;
 
-    /// Stringified-number of the total memory bytes allocated by this transaction
-    public string $memBytes;
+    /// Number of the total memory bytes allocated by this transaction
+    public int $memBytes;
 
     protected function loadFromJson(array $json) : void {
-        $this->cpuInsns = $json['cpuInsns'];
-        $this->memBytes = $json['memBytes'];
+        $this->cpuInsns = intval($json['cpuInsns']);
+        $this->memBytes = intval($json['memBytes']);
     }
 
     public static function fromJson(array $json) : SimulateTransactionCost {
@@ -29,33 +29,33 @@ class SimulateTransactionCost
     }
 
     /**
-     * @return string Stringified-number of the total cpu instructions consumed by this transaction.
+     * @return int Number of the total cpu instructions consumed by this transaction
      */
-    public function getCpuInsns(): string
+    public function getCpuInsns(): int
     {
         return $this->cpuInsns;
     }
 
     /**
-     * @param string $cpuInsns
+     * @param int $cpuInsns
      */
-    public function setCpuInsns(string $cpuInsns): void
+    public function setCpuInsns(int $cpuInsns): void
     {
         $this->cpuInsns = $cpuInsns;
     }
 
     /**
-     * @return string Stringified-number of the total memory bytes allocated by this transaction
+     * @return int Number of the total memory bytes allocated by this transaction
      */
-    public function getMemBytes(): string
+    public function getMemBytes(): int
     {
         return $this->memBytes;
     }
 
     /**
-     * @param string $memBytes
+     * @param int $memBytes
      */
-    public function setMemBytes(string $memBytes): void
+    public function setMemBytes(int $memBytes): void
     {
         $this->memBytes = $memBytes;
     }

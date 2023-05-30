@@ -10,7 +10,7 @@ class XdrCreateContractArgs
 {
 
     public XdrContractID $contractID;
-    public XdrSCContractExecutable $source;
+    public XdrSCContractExecutable $executable;
 
     /**
      * @param XdrContractID $contractID
@@ -19,13 +19,13 @@ class XdrCreateContractArgs
     public function __construct(XdrContractID $contractID, XdrSCContractExecutable $source)
     {
         $this->contractID = $contractID;
-        $this->source = $source;
+        $this->executable = $source;
     }
 
 
     public function encode(): string {
         $bytes = $this->contractID->encode();
-        $bytes .= $this->source->encode();
+        $bytes .= $this->executable->encode();
         return $bytes;
     }
 
@@ -52,16 +52,16 @@ class XdrCreateContractArgs
     /**
      * @return XdrSCContractExecutable
      */
-    public function getSource(): XdrSCContractExecutable
+    public function getExecutable(): XdrSCContractExecutable
     {
-        return $this->source;
+        return $this->executable;
     }
 
     /**
-     * @param XdrSCContractExecutable $source
+     * @param XdrSCContractExecutable $executable
      */
-    public function setSource(XdrSCContractExecutable $source): void
+    public function setExecutable(XdrSCContractExecutable $executable): void
     {
-        $this->source = $source;
+        $this->executable = $executable;
     }
 }

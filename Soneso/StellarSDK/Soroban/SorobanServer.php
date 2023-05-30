@@ -12,7 +12,6 @@ use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
-use Soneso\StellarSDK\Soroban\Responses\GetAccountResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
@@ -25,7 +24,6 @@ use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
-use Soneso\StellarSDK\Xdr\XdrSCNonceKey;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /// This class helps you to connect to a local or remote soroban rpc server
@@ -39,7 +37,6 @@ class SorobanServer
 
     private const GET_HEALTH = "getHealth";
     private const GET_NETWORK = "getNetwork";
-    private const GET_ACCOUNT = "getAccount";
     private const SIMULATE_TRANSACTION = "simulateTransaction";
     private const SEND_TRANSACTION = "sendTransaction";
     private const GET_TRANSACTION = "getTransaction";
@@ -97,17 +94,6 @@ class SorobanServer
         return $this->request($body, self::GET_NETWORK);
     }
 
-    /* // This has been removed from the rpc api.
-        // one can use $account = $sdk->requestAccount($accountId); instead.
-        public function getAccount(string $accountId) : GetAccountResponse {
-            if (!$this->acknowledgeExperimental) {
-                $this->printExperimentalFlagErr();
-                return GetAccountResponse::fromJson($this->experimentErr);
-            }
-            $body = $this->prepareRequest(self::GET_ACCOUNT, [$accountId]);
-            return $this->request($body, self::GET_ACCOUNT);
-        }
-    */
     /**
      * Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
      * @param Transaction $transaction to submit.
@@ -263,7 +249,6 @@ class SorobanServer
         $rpcResponse = match ($requestType) {
             self::GET_HEALTH => GetHealthResponse::fromJson($jsonData),
             self::GET_NETWORK => GetNetworkResponse::fromJson($jsonData),
-            self::GET_ACCOUNT => GetAccountResponse::fromJson($jsonData),
             self::SIMULATE_TRANSACTION => SimulateTransactionResponse::fromJson($jsonData),
             self::SEND_TRANSACTION => SendTransactionResponse::fromJson($jsonData),
             self::GET_TRANSACTION => GetTransactionResponse::fromJson($jsonData),

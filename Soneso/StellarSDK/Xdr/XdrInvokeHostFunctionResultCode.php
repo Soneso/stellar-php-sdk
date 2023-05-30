@@ -11,8 +11,9 @@ class XdrInvokeHostFunctionResultCode
     public int $value;
 
     const INVOKE_HOST_FUNCTION_SUCCESS = 0;
-    const INVOKE_HOST_FUNCTION_MALFORMED = 1;
-    const INVOKE_HOST_FUNCTION_TRAPPED = 2;
+    const INVOKE_HOST_FUNCTION_MALFORMED = -1;
+    const INVOKE_HOST_FUNCTION_TRAPPED = -2;
+    const INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED = -3;
 
     public function __construct(int $value)
     {

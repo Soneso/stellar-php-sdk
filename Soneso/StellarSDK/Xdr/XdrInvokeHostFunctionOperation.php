@@ -5,19 +5,47 @@
 // found in the LICENSE file.
 
 namespace Soneso\StellarSDK\Xdr;
+class XdrInvokeHostFunctionOperation
+{
+    public array $functions; //[XdrHostFunction]
 
+    /**
+     * @param array $functions
+     */
+    public function __construct(array $functions)
+    {
+        $this->functions = $functions;
+    }
+
+
+    public function encode(): string {
+        $bytes = XdrEncoder::integer32(count($this->functions));
+        foreach($this->functions as $val) {
+            $bytes .= $val->encode();
+        }
+        return $bytes;
+    }
+
+    public static function decode(XdrBuffer $xdr):  XdrInvokeHostFunctionOperation {
+        $valCount = $xdr->readInteger32();
+        $functionsArr = array();
+        for ($i = 0; $i < $valCount; $i++) {
+            array_push($functionsArr, XdrHostFunction::decode($xdr));
+        }
+
+        return new XdrInvokeHostFunctionOperation($functionsArr);
+    }
+}
+/*
 class XdrInvokeHostFunctionOperation
 {
 
-    public XdrHostFunction $function;
+    public XdrHostFunctionArgs $function;
     public XdrLedgerFootprint $footprint;
     public array $auth; // [XdrContractAuth]
 
-    /**
-     * @param XdrHostFunction $function
-     * @param XdrLedgerFootprint $footprint
-     */
-    public function __construct(XdrHostFunction $function, XdrLedgerFootprint $footprint, array $auth)
+
+    public function __construct(XdrHostFunctionArgs $function, XdrLedgerFootprint $footprint, array $auth)
     {
         $this->function = $function;
         $this->footprint = $footprint;
@@ -38,7 +66,7 @@ class XdrInvokeHostFunctionOperation
     }
 
     public static function decode(XdrBuffer $xdr):  XdrInvokeHostFunctionOperation {
-        $hf = XdrHostFunction::decode($xdr);
+        $hf = XdrHostFunctionArgs::decode($xdr);
         $fp = XdrLedgerFootprint::decode($xdr);
         $valCount = $xdr->readInteger32();
         $auth = array();
@@ -48,51 +76,5 @@ class XdrInvokeHostFunctionOperation
         return new XdrInvokeHostFunctionOperation($hf, $fp, $auth);
     }
 
-    /**
-     * @return XdrHostFunction
-     */
-    public function getFunction(): XdrHostFunction
-    {
-        return $this->function;
-    }
-
-    /**
-     * @param XdrHostFunction $function
-     */
-    public function setFunction(XdrHostFunction $function): void
-    {
-        $this->function = $function;
-    }
-
-    /**
-     * @return XdrLedgerFootprint
-     */
-    public function getFootprint(): XdrLedgerFootprint
-    {
-        return $this->footprint;
-    }
-
-    /**
-     * @param XdrLedgerFootprint $footprint
-     */
-    public function setFootprint(XdrLedgerFootprint $footprint): void
-    {
-        $this->footprint = $footprint;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAuth(): array
-    {
-        return $this->auth;
-    }
-
-    /**
-     * @param array $auth
-     */
-    public function setAuth(array $auth): void
-    {
-        $this->auth = $auth;
-    }
 }
+*/

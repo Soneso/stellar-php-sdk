@@ -16,8 +16,10 @@ use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrTransaction;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0Envelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
 
@@ -32,10 +34,11 @@ class Transaction extends AbstractTransaction
     private array $operations; //[AbstractOperation]
     private Memo $memo;
     private ?TransactionPreconditions $preconditions;
+    private ?XdrSorobanTransactionData $sorobanTransactionData = null;
 
     public function __construct(MuxedAccount $sourceAccount, BigInteger $sequenceNumber, array $operations,
                                 ?Memo $memo = null, ?TransactionPreconditions $preconditions = null,
-                                ?int $fee = null) {
+                                ?int $fee = null, ?XdrSorobanTransactionData $sorobanTransactionData = null) {
 
         if (count($operations) == 0) {
             throw new InvalidArgumentException("At least one operation required");
@@ -58,6 +61,7 @@ class Transaction extends AbstractTransaction
         $this->operations = $operations;
         $this->preconditions = $preconditions;
         $this->memo = $memo ?? Memo::none();
+        $this->sorobanTransactionData = $sorobanTransactionData;
         parent::__construct();
     }
 
@@ -85,6 +89,22 @@ class Transaction extends AbstractTransaction
     public function getFee(): int
     {
         return $this->fee;
+    }
+
+    /**
+     * @param int $fee
+     */
+    public function setFee(int $fee): void
+    {
+        $this->fee = $fee;
+    }
+
+    /**
+     * @param int $ressourceFee
+     */
+    public function addRessourceFee(int $ressourceFee): void
+    {
+        $this->fee += $ressourceFee;
     }
 
     /**
@@ -124,6 +144,22 @@ class Transaction extends AbstractTransaction
         return null;
     }
 
+    /**
+     * @return XdrSorobanTransactionData|null
+     */
+    public function getSorobanTransactionData(): ?XdrSorobanTransactionData
+    {
+        return $this->sorobanTransactionData;
+    }
+
+    /**
+     * @param XdrSorobanTransactionData|null $sorobanTransactionData
+     */
+    public function setSorobanTransactionData(?XdrSorobanTransactionData $sorobanTransactionData): void
+    {
+        $this->sorobanTransactionData = $sorobanTransactionData;
+    }
+
     public function signatureBase(Network $network): string
     {
         $bytes = Hash::generate($network->getNetworkPassphrase());
@@ -143,7 +179,11 @@ class Transaction extends AbstractTransaction
         }
         $xdrMemo = $this->memo->toXdr();
         $xdrCond = $this->preconditions?->toXdr();
-        return new XdrTransaction($xdrMuxedSourceAccount, $xdrSequenceNr, $xdrOperations, $this->fee, $xdrMemo, $xdrCond);
+        $xdrExt = null;
+        if ($this->sorobanTransactionData != null) {
+            $xdrExt = new XdrTransactionExt(1, $this->sorobanTransactionData);
+        }
+        return new XdrTransaction($xdrMuxedSourceAccount, $xdrSequenceNr, $xdrOperations, $this->fee, $xdrMemo, $xdrCond, $xdrExt);
     }
 
     public function toXdrBase64() : string {
@@ -177,7 +217,8 @@ class Transaction extends AbstractTransaction
         foreach($tx->getOperations() as $operation) {
             array_push($operations, AbstractOperation::fromXdr($operation));
         }
-        $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $cond, $fee);
+
+        $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $cond, $fee, $tx->ext->sorobanTransactionData);
         foreach($envelope->getSignatures() as $signature) {
             $transaction->addSignature($signature);
         }
@@ -209,13 +250,5 @@ class Transaction extends AbstractTransaction
 
     public static function builder(TransactionBuilderAccount $sourceAccount) : TransactionBuilder{
         return new TransactionBuilder($sourceAccount);
-    }
-
-    public function setFootprint(?Footprint $footprint) {
-        foreach ($this->operations as $operation) {
-            if ($operation instanceof InvokeHostFunctionOperation) {
-                $operation->footprint = $footprint;
-            }
-        }
     }
 }

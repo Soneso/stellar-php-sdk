@@ -8,10 +8,12 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrTransactionExt
 {
-    private int $discriminant;
+    public int $discriminant;
+    public ?XdrSorobanTransactionData $sorobanTransactionData = null;
 
-    public function __construct(int $discriminant) {
+    public function __construct(int $discriminant, ?XdrSorobanTransactionData $sorobanTransactionData = null) {
         $this->discriminant = $discriminant;
+        $this->sorobanTransactionData = $sorobanTransactionData;
     }
 
     /**
@@ -22,11 +24,22 @@ class XdrTransactionExt
     }
 
     public function encode() : string {
-        return XdrEncoder::integer32($this->discriminant);
+        $bytes = XdrEncoder::integer32($this->discriminant);
+        switch ($this->discriminant) {
+            case 1:
+                $bytes .= $this->sorobanTransactionData->encode();
+        }
+        return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrTransactionExt {
         $v = $xdr->readInteger32();
-        return new XdrTransactionExt($v);
+        $result = new XdrTransactionExt($v);
+        switch ($v) {
+            case 1:
+                $result->sorobanTransactionData = XdrSorobanTransactionData::decode($xdr);
+                break;
+        }
+        return $result;
     }
 }

@@ -7,9 +7,7 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 
-
-use Soneso\StellarSDK\Soroban\Footprint;
-use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
  * Used as a part of simulate transaction
@@ -20,14 +18,8 @@ class SimulateTransactionResult
     /// (optional) Only present on success. xdr-encoded return value of the contract call operation.
     public ?string $xdr;
 
-    ///  The contract data ledger keys which were accessed when simulating this operation.
-    public ?Footprint $footprint = null;
-
     /// Per-address authorizations recorded when simulating this operation. (an array of serialized base64 strings of [XdrContractAuth])
     public ?array $auth = null; //[string xdr]
-
-    /// Events emitted during the contract invocation. (an array of serialized base64 strings of [XdrDiagnosticEvent])
-    public ?array $events = null; //[string xdr]
 
     protected function loadFromJson(array $json) : void {
         if (isset($json['xdr'])) {
@@ -40,17 +32,6 @@ class SimulateTransactionResult
                 array_push($this->auth, $jsonValue);
             }
         }
-
-        if (isset($json['events'])) {
-            $this->events = array();
-            foreach ($json['events'] as $jsonValue) {
-                array_push($this->events, $jsonValue);
-            }
-        }
-
-        if (isset($json['footprint']) && $json['footprint'] != "") {
-            $this->footprint = Footprint::fromBase64Xdr($json['footprint']);
-        }
     }
 
     public static function fromJson(array $json) : SimulateTransactionResult {
@@ -59,6 +40,12 @@ class SimulateTransactionResult
         return $result;
     }
 
+    public function getResultValue(): ?XdrSCVal {
+        if($this->xdr != null) {
+            return XdrSCVal::fromBase64Xdr($this->xdr);
+        }
+        return null;
+    }
     /**
      * @return string|null
      */
@@ -68,28 +55,10 @@ class SimulateTransactionResult
     }
 
     /**
-     * @return Footprint|null
-     */
-    public function getFootprint(): ?Footprint
-    {
-        return $this->footprint;
-    }
-
-    /**
      * @return array|null
      */
     public function getAuth(): ?array
     {
         return $this->auth;
     }
-
-    /**
-     * @return array|null
-     */
-    public function getEvents(): ?array
-    {
-        return $this->events;
-    }
-
-
 }
