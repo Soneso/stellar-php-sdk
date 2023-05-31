@@ -17,7 +17,7 @@ Soroban-RPC can be simply described as a “live network gateway for Soroban”.
 
 You can install your own instance of a Soroban-RPC Server as described [here](https://soroban.stellar.org/docs/tutorials/deploy-to-futurenet). Alternatively, you can use a public remote instance for testing.
 
-The Soroban-RPC API is described in this early stage [design document](https://docs.google.com/document/d/1TZUDgo_3zPz7TiPMMHVW_mtogjLyPL0plvzGMsxSz6A).
+The Soroban-RPC API is described [here](https://soroban.stellar.org/api/methods).
 
 #### Initialize SorobanServer 
 
