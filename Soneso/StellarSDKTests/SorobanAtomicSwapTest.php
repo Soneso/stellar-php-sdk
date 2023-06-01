@@ -132,7 +132,7 @@ class SorobanAtomicSwapTest extends TestCase
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($adminKeyPair, Network::futurenet());
 
 
@@ -169,13 +169,13 @@ class SorobanAtomicSwapTest extends TestCase
 
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
-        // simulate first to get the footprint
+        // simulate first to get the transaction data and resource fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
@@ -199,12 +199,12 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
-        // simulate first to get the footprint
+        // simulate first to get the transaction data and resource fee
         $simulateResponse = $server->simulateTransaction($transaction);
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
@@ -253,7 +253,7 @@ class SorobanAtomicSwapTest extends TestCase
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
@@ -293,7 +293,7 @@ class SorobanAtomicSwapTest extends TestCase
         $simulateResponse = $server->simulateTransaction($transaction);
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
 
@@ -331,7 +331,7 @@ class SorobanAtomicSwapTest extends TestCase
         $simulateResponse = $server->simulateTransaction($transaction);
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction

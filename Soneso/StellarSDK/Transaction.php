@@ -100,11 +100,11 @@ class Transaction extends AbstractTransaction
     }
 
     /**
-     * @param int $ressourceFee
+     * @param int $resourceFee
      */
-    public function addRessourceFee(int $ressourceFee): void
+    public function addResourceFee(int $resourceFee): void
     {
-        $this->fee += $ressourceFee;
+        $this->fee += $resourceFee;
     }
 
     /**

@@ -88,7 +88,7 @@ Next we need to **simulate** the transaction to obtain the **soroban transaction
 $simulateResponse = $server->simulateTransaction($transaction);
 
 $transactionData = $simulateResponse->transactionData;
-$minResourceFee = $simulateResponse->minRessourceFee;
+$minResourceFee = $simulateResponse->minResourceFee;
 ```
 On success, one can find the **soroban transaction data** and the **minimum resource fee** in the response.
 
@@ -96,7 +96,7 @@ Next we need to set the **soroban transaction data** to our transaction, add the
 
 ```php
 $transaction->setSorobanTransactionData($transactionData);
-$transaction->addRessourceFee($minResourceFee);
+$transaction->addResourceFee($minResourceFee);
 $transaction->sign($accountKeyPair, Network::futurenet());
 
 // send transaction to soroban rpc server
@@ -148,7 +148,7 @@ $simulateResponse = $server->simulateTransaction($transaction);
 
 // set the transaction data, add fee and sign
 $transaction->setSorobanTransactionData($simulateResponse->transactionData);
-$transaction->addRessourceFee($simulateResponse->minRessourceFee);
+$transaction->addResourceFee($simulateResponse->minResourceFee);
 $transaction->sign($accountKeyPair, Network::futurenet());
 
 // Send the transaction to the network.
@@ -240,7 +240,7 @@ Next we need to **simulate** the transaction to obtain the **transaction data** 
 $simulateResponse = $server->simulateTransaction($transaction);
 
 $transactionData = $simulateResponse->transactionData;
-$minResourceFee = $simulateResponse->minRessourceFee;
+$minResourceFee = $simulateResponse->minResourceFee;
 ```
 On success, one can find the **transaction data** and the **resource fee** in the response. 
 
@@ -249,7 +249,7 @@ Next we need to set the **soroban transaction data** to our transaction, to add 
 
 ```php
 $transaction->setSorobanTransactionData($transactionData);
-$transaction->addRessourceFee($minResourceFee);
+$transaction->addResourceFee($minResourceFee);
 $transaction->sign($accountKeyPair, Network::futurenet());
 
 // Send the transaction to the network.
@@ -353,7 +353,7 @@ $simulateResponse = $server->simulateTransaction($transaction);
 
 The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code). In this example the submitter of the transaction is not the same as the "invoker" of the contract function. 
 
-One can find another example in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) of the SDK where the submitter and invoker are the same.
+One can find another example in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) of the SDK where the submitter and invoker are the same, , as well as an example where contract auth from the simulation response is used.
 
 An advanced auth example can be found in the [atomic swap](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAtomicSwapTest.php) test.
 
@@ -362,11 +362,11 @@ Hint: Resource values and fees have been added in the new soroban preview 9 vers
 ```php
 $transactionData = $simulateResponse->transactionData;
 $transactionData->resources->instructions += intval($transactionData->resources->instructions / 4);
-$simulateResponse->minRessourceFee += 2800;
+$simulateResponse->minResourceFee += 2800;
 
 // set the transaction data + fee and sign
 $transaction->setSorobanTransactionData($transactionData);
-$transaction->addRessourceFee($simulateResponse->minRessourceFee);
+$transaction->addResourceFee($simulateResponse->minResourceFee);
 $transaction->sign($submitterKeyPair, Network::futurenet());
 ```
 

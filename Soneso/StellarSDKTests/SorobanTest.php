@@ -97,17 +97,17 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
-        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
         /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
         print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
+        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
         $transactionData = $simulateResponse->transactionData;
-        $minResourceFee = $simulateResponse->minRessourceFee;
+        $minResourceFee = $simulateResponse->minResourceFee;
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($transactionData);
-        $transaction->addRessourceFee($minResourceFee);
+        $transaction->addResourceFee($minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -178,14 +178,14 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
-        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
         /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
         print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
+        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->transactionData);
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -270,14 +270,14 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
-        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
         /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
         print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
+        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -360,14 +360,14 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
-        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
         /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
         print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
+        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
         // set the transaction data and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -456,14 +456,14 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
-        $this->assertGreaterThan(1, $simulateResponse->minRessourceFee);
+        $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
         /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
         print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minRessourceFee . PHP_EOL);*/
+        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountBKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
@@ -534,7 +534,7 @@ class SorobanTest extends TestCase
         $transaction = (new TransactionBuilder($getAccountResponse))
             ->addOperation($op)->build();
 
-        print($transaction->toEnvelopeXdrBase64() . PHP_EOL);
+        //print($transaction->toEnvelopeXdrBase64() . PHP_EOL);
 
         // simulate first to get the transaction data + fee
         $simulateResponse = $server->simulateTransaction($transaction);
@@ -544,7 +544,7 @@ class SorobanTest extends TestCase
 
         // set the transaction data and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // send the transaction
@@ -578,7 +578,7 @@ class SorobanTest extends TestCase
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // send the transaction
@@ -617,7 +617,7 @@ class SorobanTest extends TestCase
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addRessourceFee($simulateResponse->minRessourceFee);
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
         // send the transaction

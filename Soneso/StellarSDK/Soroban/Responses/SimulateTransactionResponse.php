@@ -31,7 +31,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     public ?XdrSorobanTransactionData $transactionData = null;
 
     /// Recommended minimum resource fee to add when submitting the transaction. This fee is to be added on top of the Stellar network fee.
-    public ?int $minRessourceFee = null;
+    public ?int $minResourceFee = null;
 
     /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings)
     public ?array $events = null; //[string xdr XdrDiagnosticEvent]
@@ -66,7 +66,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
             }
 
             if (isset($json['result']['minResourceFee'])) {
-                $result->minRessourceFee = intval($json['result']['minResourceFee']);
+                $result->minResourceFee = intval($json['result']['minResourceFee']);
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -97,17 +97,17 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     /**
      * @return int|null
      */
-    public function getMinRessourceFee(): ?int
+    public function getMinResourceFee(): ?int
     {
-        return $this->minRessourceFee;
+        return $this->minResourceFee;
     }
 
     /**
-     * @param int|null $minRessourceFee
+     * @param int|null $minResourceFee
      */
-    public function setMinRessourceFee(?int $minRessourceFee): void
+    public function setMinResourceFee(?int $minResourceFee): void
     {
-        $this->minRessourceFee = $minRessourceFee;
+        $this->minResourceFee = $minResourceFee;
     }
 
 
