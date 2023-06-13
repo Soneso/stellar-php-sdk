@@ -21,6 +21,8 @@ use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Responses\Operations\InvokeHostFunctionOperationResponse;
+use Soneso\StellarSDK\Soroban\Requests\TopicFilter;
+use Soneso\StellarSDK\Soroban\Requests\TopicFilters;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Requests\EventFilter;
@@ -637,7 +639,12 @@ class SorobanTest extends TestCase
         $ledger = $transactionResponse->getLedger();
         $startLedger = strval($ledger);
 
-        $eventFilter = new EventFilter("contract", [$contractId]);
+        // seams that position of the topic in the filter must match event topics ...
+        $topicFilter = new TopicFilter(["*", XdrSCVal::forSymbol("increment")->toBase64Xdr()]);
+        //$topicFilter = new TopicFilter([XdrSCVal::forSymbol("COUNTER")->toBase64Xdr(), "*"]);
+        $topicFilters = new TopicFilters($topicFilter);
+
+        $eventFilter = new EventFilter("contract", [$contractId], $topicFilters);
         $eventFilters = new EventFilters();
         $eventFilters->add($eventFilter);
 

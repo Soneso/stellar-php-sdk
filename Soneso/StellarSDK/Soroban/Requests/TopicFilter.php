@@ -6,76 +6,21 @@
 
 namespace Soneso\StellarSDK\Soroban\Requests;
 
-use Soneso\StellarSDK\Xdr\XdrSCVal;
-
 /**
  * Part of the getEvents request parameters.
  * https://soroban.stellar.org/api/methods/getEvents
- * TODO: update this!
+ * example: $topicFilter = new TopicFilter(["*", XdrSCVal::forSymbol("increment")->toBase64Xdr()]);
  */
 class TopicFilter
 {
-    public ?string $wildcard = null;
-    public ?array $scval = null; // [XdrSCVal]
+    public array $segmentMatchers; // [string]
 
-    /**
-     * @param string|null $wildcard
-     * @param array|null $scval
-     */
-    public function __construct(?string $wildcard = null, ?array $scval = null)
+    public function __construct(array $segmentMatchers)
     {
-        $this->wildcard = $wildcard;
-        $this->scval = $scval;
+        $this->segmentMatchers = $segmentMatchers;
     }
 
     public function getRequestParams() : array {
-        $params = array();
-        if ($this->wildcard != null) {
-            $params['wildcard'] = $this->wildcard;
-        }
-        if ($this->scval != null) {
-            $xdrValues = array();
-            foreach ($this->scval as $xdrValue) {
-                if ($xdrValue instanceof XdrSCVal) {
-                    array_push($xdrValues, $xdrValue->toBase64Xdr());
-                }
-            }
-            $params['scval'] = $xdrValues;
-        }
-
-        return $params;
+        return $this->segmentMatchers;
     }
-
-    /**
-     * @return string|null
-     */
-    public function getWildcard(): ?string
-    {
-        return $this->wildcard;
-    }
-
-    /**
-     * @param string|null $wildcard
-     */
-    public function setWildcard(?string $wildcard): void
-    {
-        $this->wildcard = $wildcard;
-    }
-
-    /**
-     * @return array|null
-     */
-    public function getScval(): ?array
-    {
-        return $this->scval;
-    }
-
-    /**
-     * @param array|null $scval
-     */
-    public function setScval(?array $scval): void
-    {
-        $this->scval = $scval;
-    }
-
 }
