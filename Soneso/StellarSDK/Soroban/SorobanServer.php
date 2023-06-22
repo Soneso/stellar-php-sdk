@@ -179,17 +179,28 @@ class SorobanServer
     }
 
     /**
-     * Loads nonce from ledger entry if available, otherwise returns 0
+     * Loads nonce for an account id from ledger entry if available, otherwise returns 0
      * @param string $accountId the account Id to load the nonce for.
      * @param string $contractId the contract Id to load the nonce for.
      * @return int the nonce if found otherwise 0.
      * @throws GuzzleException
      */
     public function getNonce(string $accountId, string $contractId) : int {
+        $address = new Address(Address::TYPE_ACCOUNT, accountId: $accountId);
+        return $this->getNonceForAddress($address, $contractId);
+    }
+
+    /**
+     * Loads nonce for an address (account or contract) from ledger entry if available, otherwise returns 0
+     * @param Address $address the address to load the nonce for.
+     * @param string $contractId the contract Id to load the nonce for.
+     * @return int the nonce if found otherwise 0.
+     * @throws GuzzleException
+     */
+    public function getNonceForAddress(Address $address, string $contractId) : int {
 
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
         $ledgerKey->contractID = $contractId;
-        $address = new Address(Address::TYPE_ACCOUNT, accountId: $accountId);
         $scoNonceKeyVal = XdrSCVal::forNonceKeyWithAddress($address->toXdr());
         $ledgerKey->contractDataKey = $scoNonceKeyVal;
         $response = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
