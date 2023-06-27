@@ -35,9 +35,17 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
+use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry;
+use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
+use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
+use Soneso\StellarSDK\Xdr\XdrSCSpecType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
+use function PHPUnit\Framework\assertEquals;
 
 class SorobanTest extends TestCase
 {
@@ -686,5 +694,51 @@ class SorobanTest extends TestCase
             }
         }
         return $statusResponse;
+    }
+
+    public function testReadContractSpec(): void {
+
+        $server = new SorobanServer("https://rpc-futurenet.stellar.org:443");
+        $server->enableLogging = true;
+        $server->acknowledgeExperimental = true;
+        $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
+        $ledgerKey->contractCodeHash = hex2bin("e4b6a894dc3e6f6934910662c3a03a5d3beb237a850535d47551816d05803c42");
+
+        $response = $server->getLedgerEntry($ledgerKey->toBase64Xdr());
+        $byteCodeBase64 = $response->ledgerEntryData;
+        $byteCode = base64_decode($byteCodeBase64);
+        if (preg_match('/contractenvmetav0(.*?)contractspecv0/', $byteCode, $match) == 1) {
+            $metaEntryBytes = $match[1];
+            $metaEntry = XdrSCEnvMetaEntry::decode(new XdrBuffer($metaEntryBytes));
+            self::assertEquals(37, $metaEntry->interfaceVersion);
+        } else {
+            self::fail("no contract meta found");
+        }
+        $specBytes = null;
+        if (preg_match('/contractspecv0(.*?)contractmetav0/', $byteCode, $match) == 1) {
+            $specBytes = $match[1];
+        } else {
+            $startPos = strpos($byteCode, 'contractspecv0');
+            if ($startPos !== false) {
+                $specBytes = substr($byteCode, $startPos + strlen('contractspecv0'));
+            }
+        }
+        self::assertNotNull($specBytes);
+        $entry = XdrSCSpecEntry::decode(new XdrBuffer($specBytes));
+        assertEquals(XdrSCSpecEntryKind::SC_SPEC_ENTRY_FUNCTION_V0, $entry->type->value);
+        $function = $entry->functionV0;
+        assertEquals("hello", $function->name);
+        $inputArgs = $function->inputs;
+        self::assertNotNull($inputArgs);
+        self::assertCount(1,$inputArgs);
+        self::assertEquals("to", $inputArgs[0]->name);
+        $outputArgs = $function->outputs;
+        self::assertNotNull($outputArgs);
+        self::assertCount(1,$outputArgs);
+        assertEquals(XdrSCSpecType::SC_SPEC_TYPE_VEC, $outputArgs[0]->type->value);
+        $vec = $outputArgs[0]->vec;
+        self::assertNotNull($vec);
+        $elementType = $vec->elementType;
+        assertEquals(XdrSCSpecType::SC_SPEC_TYPE_SYMBOL, $elementType->type->value);
     }
 }

@@ -10,17 +10,17 @@ class XdrSCSpecUDTEnumV0
 {
 
     public string $doc;
-    public array $lib; // [String]
-    public array $name; // [String]
+    public string $lib;
+    public string $name;
     public array $cases; // [XdrSCSpecUDTEnumCaseV0]
 
     /**
      * @param string $doc
-     * @param array $lib
-     * @param array $name
+     * @param string $lib
+     * @param string $name
      * @param array $cases
      */
-    public function __construct(string $doc, array $lib, array $name, array $cases)
+    public function __construct(string $doc, string $lib, string $name, array $cases)
     {
         $this->doc = $doc;
         $this->lib = $lib;
@@ -31,14 +31,8 @@ class XdrSCSpecUDTEnumV0
 
     public function encode(): string {
         $bytes = XdrEncoder::string($this->doc);
-        $bytes .= XdrEncoder::integer32(count($this->lib));
-        foreach($this->lib as $val) {
-            $bytes .= XdrEncoder::string($val);
-        }
-        $bytes .= XdrEncoder::integer32(count($this->name));
-        foreach($this->name as $val) {
-            $bytes .= XdrEncoder::string($val);
-        }
+        $bytes .= XdrEncoder::string($this->lib);
+        $bytes .= XdrEncoder::string($this->name);
         $bytes .= XdrEncoder::integer32(count($this->cases));
         foreach($this->cases as $val) {
             $bytes .= $val->encode();
@@ -48,23 +42,15 @@ class XdrSCSpecUDTEnumV0
 
     public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTEnumV0 {
         $doc = $xdr->readString();
-        $valCount = $xdr->readInteger32();
-        $libArr = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($libArr, $xdr->readString());
-        }
-        $valCount = $xdr->readInteger32();
-        $nameArr = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($nameArr, $xdr->readString());
-        }
+        $lib = $xdr->readString();
+        $name = $xdr->readString();
         $valCount = $xdr->readInteger32();
         $casesArr = array();
         for ($i = 0; $i < $valCount; $i++) {
             array_push($casesArr, XdrSCSpecUDTEnumCaseV0::decode($xdr));
         }
 
-        return new XdrSCSpecUDTEnumV0($doc, $libArr, $nameArr, $casesArr);
+        return new XdrSCSpecUDTEnumV0($doc, $lib, $name, $casesArr);
     }
 
     /**
@@ -84,33 +70,33 @@ class XdrSCSpecUDTEnumV0
     }
 
     /**
-     * @return array [string]
+     * @return string
      */
-    public function getLib(): array
+    public function getLib(): string
     {
         return $this->lib;
     }
 
     /**
-     * @param array $lib [string]
+     * @param string $lib
      */
-    public function setLib(array $lib): void
+    public function setLib(string $lib): void
     {
         $this->lib = $lib;
     }
 
     /**
-     * @return array [string]
+     * @return string
      */
-    public function getName(): array
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * @param array $name [string]
+     * @param string $name
      */
-    public function setName(array $name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }

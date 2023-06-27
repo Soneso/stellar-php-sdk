@@ -10,14 +10,15 @@ class XdrSCSpecFunctionInputV0
 {
 
     public string $doc;
-    public array $name;
+    public string $name;
     public XdrSCSpecTypeDef $type;
 
     /**
-     * @param array $name
+     * @param string $doc
+     * @param string $name
      * @param XdrSCSpecTypeDef $type
      */
-    public function __construct(string $doc, array $name, XdrSCSpecTypeDef $type)
+    public function __construct(string $doc, string $name, XdrSCSpecTypeDef $type)
     {
         $this->doc = $doc;
         $this->name = $name;
@@ -27,24 +28,17 @@ class XdrSCSpecFunctionInputV0
 
     public function encode(): string {
         $bytes = XdrEncoder::string($this->doc);
-        $bytes .= XdrEncoder::integer32(count($this->name));
-        foreach($this->name as $val) {
-            $bytes .= XdrEncoder::string($val);
-        }
+        $bytes .= XdrEncoder::string($this->name);
         $bytes .= $this->type->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr):  XdrSCSpecFunctionInputV0 {
         $doc = $xdr->readString();
-        $valCount = $xdr->readInteger32();
-        $arr = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($arr, $xdr->readString());
-        }
+        $name = $xdr->readString();
         $type = XdrSCSpecTypeDef::decode($xdr);
 
-        return new XdrSCSpecFunctionInputV0($doc, $arr, $type);
+        return new XdrSCSpecFunctionInputV0($doc, $name, $type);
     }
 
     /**
@@ -64,17 +58,17 @@ class XdrSCSpecFunctionInputV0
     }
 
     /**
-     * @return array
+     * @return string
      */
-    public function getName(): array
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * @param array $name
+     * @param string $name
      */
-    public function setName(array $name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }

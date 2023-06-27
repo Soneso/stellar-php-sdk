@@ -24,7 +24,6 @@ class XdrSCSpecEntry
         $this->type = $type;
     }
 
-
     public function encode(): string {
         $bytes = $this->type->encode();
 

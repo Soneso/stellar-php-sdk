@@ -9,13 +9,13 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrSCSpecUDTUnionCaseVoidV0
 {
     public string $doc;
-    public array $name;
+    public string $name;
 
     /**
      * @param string $doc
-     * @param array $name
+     * @param string $name
      */
-    public function __construct(string $doc, array $name)
+    public function __construct(string $doc, string $name)
     {
         $this->doc = $doc;
         $this->name = $name;
@@ -24,22 +24,14 @@ class XdrSCSpecUDTUnionCaseVoidV0
 
     public function encode(): string {
         $bytes = XdrEncoder::string($this->doc);
-        $bytes .= XdrEncoder::integer32(count($this->name));
-        foreach($this->name as $val) {
-            $bytes .= XdrEncoder::string($val);
-        }
+        $bytes .= XdrEncoder::string($this->name);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr):  XdrSCSpecUDTUnionCaseVoidV0 {
         $doc = $xdr->readString();
-        $valCount = $xdr->readInteger32();
-        $arr = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($arr, $xdr->readString());
-        }
-
-        return new XdrSCSpecUDTUnionCaseVoidV0($doc, $arr);
+        $name = $xdr->readString();
+        return new XdrSCSpecUDTUnionCaseVoidV0($doc, $name);
     }
 
     /**
@@ -59,18 +51,19 @@ class XdrSCSpecUDTUnionCaseVoidV0
     }
 
     /**
-     * @return array
+     * @return string
      */
-    public function getName(): array
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * @param array $name
+     * @param string $name
      */
-    public function setName(array $name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
+
 }

@@ -10,16 +10,17 @@ class XdrSCSpecFunctionV0
 {
 
     public string $doc;
-    public array $name; // [String]
+    public string $name;
     public array $inputs; // [XdrSCSpecFunctionInputV0]
     public array $outputs; // [XdrSCSpecTypeDef]
 
     /**
-     * @param array $name [String]
+     * @param string $doc
+     * @param string $name
      * @param array $inputs [XdrSCSpecFunctionInputV0]
      * @param array $outputs
      */
-    public function __construct(string $doc, array $name, array $inputs, array $outputs)
+    public function __construct(string $doc, string $name, array $inputs, array $outputs)
     {
         $this->doc = $doc;
         $this->name = $name;
@@ -30,10 +31,7 @@ class XdrSCSpecFunctionV0
 
     public function encode(): string {
         $bytes = XdrEncoder::string($this->doc);
-        $bytes .= XdrEncoder::integer32(count($this->name));
-        foreach($this->name as $val) {
-            $bytes .= XdrEncoder::string($val);
-        }
+        $bytes .= XdrEncoder::string($this->name);
         $bytes .= XdrEncoder::integer32(count($this->inputs));
         foreach($this->inputs as $val) {
             $bytes .= $val->encode();
@@ -47,11 +45,7 @@ class XdrSCSpecFunctionV0
 
     public static function decode(XdrBuffer $xdr):  XdrSCSpecFunctionV0 {
         $doc = $xdr->readString();
-        $valCount = $xdr->readInteger32();
-        $nameArr = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($nameArr, $xdr->readString());
-        }
+        $name = $xdr->readString();
         $valCount = $xdr->readInteger32();
         $inputsArr = array();
         for ($i = 0; $i < $valCount; $i++) {
@@ -63,7 +57,7 @@ class XdrSCSpecFunctionV0
             array_push($outputsArr, XdrSCSpecTypeDef::decode($xdr));
         }
 
-        return new XdrSCSpecFunctionV0($doc, $nameArr, $inputsArr, $outputsArr);
+        return new XdrSCSpecFunctionV0($doc, $name, $inputsArr, $outputsArr);
     }
 
     /**
@@ -83,17 +77,17 @@ class XdrSCSpecFunctionV0
     }
 
     /**
-     * @return array [String]
+     * @return string
      */
-    public function getName(): array
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * @param array $name [String]
+     * @param string $name
      */
-    public function setName(array $name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }

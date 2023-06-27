@@ -9,47 +9,39 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrSCSpecTypeUDT
 {
 
-    public array $name;
+    public string $name;
 
     /**
-     * @param array $name
+     * @param string $name
      */
-    public function __construct(array $name)
+    public function __construct(string $name)
     {
         $this->name = $name;
     }
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::integer32(count($this->name));
-        foreach($this->name as $val) {
-            $bytes .= XdrEncoder::string($val);
-        }
-        return $bytes;
+        return XdrEncoder::string($this->name);
     }
 
     public static function decode(XdrBuffer $xdr):  XdrSCSpecTypeUDT {
-        $valCount = $xdr->readInteger32();
-        $arr = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($arr, $xdr->readString());
-        }
-        return new XdrSCSpecTypeUDT($arr);
+        return new XdrSCSpecTypeUDT($xdr->readString());
     }
 
     /**
-     * @return array
+     * @return string
      */
-    public function getName(): array
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * @param array $name
+     * @param string $name
      */
-    public function setName(array $name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
+
 }
