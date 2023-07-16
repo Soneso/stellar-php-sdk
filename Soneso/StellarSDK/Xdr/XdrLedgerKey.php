@@ -33,7 +33,7 @@ class XdrLedgerKey
             XdrLedgerEntryType::OFFER => $this->offer->encode(),
             XdrLedgerEntryType::DATA => $this->data->encode(),
             XdrLedgerEntryType::CLAIMABLE_BALANCE => $this->balanceID->encode(),
-            XdrLedgerEntryType::LIQUIDITY_POOL => XdrEncoder::string($this->liquidityPoolID, 64),
+            XdrLedgerEntryType::LIQUIDITY_POOL => XdrEncoder::opaqueFixed(hex2bin($this->liquidityPoolID), 32),
             XdrLedgerEntryType::CONTRACT_DATA => $this->encodeContractData(),
             XdrLedgerEntryType::CONTRACT_CODE => XdrEncoder::opaqueFixed($this->contractCodeHash, 32),
             XdrLedgerEntryType::CONFIG_SETTING => $this->configSetting->encode(),
@@ -62,7 +62,7 @@ class XdrLedgerKey
                 $result->balanceID = XdrClaimableBalanceID::decode($xdr);
                 break;
             case XdrLedgerEntryType::LIQUIDITY_POOL:
-                $result->liquidityPoolID = $xdr->readString(64);
+                $result->liquidityPoolID = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             case XdrLedgerEntryType::CONTRACT_DATA:
                 $result->contractID = bin2hex($xdr->readOpaqueFixed(32));
