@@ -35,7 +35,7 @@ class AssetsRequestBuilder  extends RequestBuilder
      * @see <a href="https://developers.stellar.org/api/introduction/pagination/">Page documentation</a>
      * @param string cursor
      */
-    public function cursor(string $cursor) : AccountsRequestBuilder {
+    public function cursor(string $cursor) : AssetsRequestBuilder {
         return parent::cursor($cursor);
     }
 
