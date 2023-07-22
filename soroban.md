@@ -138,7 +138,7 @@ If the transaction was successful, the status response contains the ```wasmId```
 
 ```php
 // Build the operation for creating the contract
-$createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($invokerAccountId), $helloContractWasmId);
+$createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($invokerAccountId), $wasmId);
 $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
 $operation = $builder->build();
 
