@@ -33,7 +33,8 @@ class XdrOperationResultTr
     private ?XdrLiquidityPoolDepositResult $liquidityPoolDepositResult= null;
     private ?XdrLiquidityPoolWithdrawResult $liquidityPoolWithdrawResult = null;
     private ?XdrInvokeHostFunctionResult $invokeHostFunctionResult = null;
-
+    private ?XdrBumpFootprintExpirationResult $bumpFootprintExpirationResult= null;
+    private ?XdrRestoreFootprintResult $restoreFootprintResult = null;
     /**
      * @return XdrOperationType
      */
@@ -242,6 +243,39 @@ class XdrOperationResultTr
         $this->invokeHostFunctionResult = $invokeHostFunctionResult;
     }
 
+    /**
+     * @return XdrBumpFootprintExpirationResult|null
+     */
+    public function getBumpFootprintExpirationResult(): ?XdrBumpFootprintExpirationResult
+    {
+        return $this->bumpFootprintExpirationResult;
+    }
+
+    /**
+     * @param XdrBumpFootprintExpirationResult|null $bumpFootprintExpirationResult
+     */
+    public function setBumpFootprintExpirationResult(?XdrBumpFootprintExpirationResult $bumpFootprintExpirationResult): void
+    {
+        $this->bumpFootprintExpirationResult = $bumpFootprintExpirationResult;
+    }
+
+    /**
+     * @return XdrRestoreFootprintResult|null
+     */
+    public function getRestoreFootprintResult(): ?XdrRestoreFootprintResult
+    {
+        return $this->restoreFootprintResult;
+    }
+
+    /**
+     * @param XdrRestoreFootprintResult|null $restoreFootprintResult
+     */
+    public function setRestoreFootprintResult(?XdrRestoreFootprintResult $restoreFootprintResult): void
+    {
+        $this->restoreFootprintResult = $restoreFootprintResult;
+    }
+
+
     public function encode(): string {
         $bytes = $this->type->encode();
         if ($this->createAccountResult != null) {
@@ -290,8 +324,12 @@ class XdrOperationResultTr
             $bytes .= $this->liquidityPoolDepositResult->encode();
         } else if ($this->liquidityPoolWithdrawResult != null) {
             $bytes .= $this->liquidityPoolWithdrawResult->encode();
-        }  else if ($this->invokeHostFunctionResult != null) {
+        } else if ($this->invokeHostFunctionResult != null) {
             $bytes .= $this->invokeHostFunctionResult->encode();
+        } else if ($this->bumpFootprintExpirationResult != null) {
+            $bytes .= $this->bumpFootprintExpirationResult->encode();
+        } else if ($this->restoreFootprintResult != null) {
+            $bytes .= $this->restoreFootprintResult->encode();
         }
         return $bytes;
     }
@@ -373,6 +411,12 @@ class XdrOperationResultTr
                 break;
             case XdrOperationType::INVOKE_HOST_FUNCTION:
                 $result->invokeHostFunctionResult = XdrInvokeHostFunctionResult::decode($xdr);
+                break;
+            case XdrOperationType::BUMP_FOOTPRINT_EXPIRATION:
+                $result->bumpFootprintExpirationResult = XdrBumpFootprintExpirationResult::decode($xdr);
+                break;
+            case XdrOperationType::RESTORE_FOOTPRINT:
+                $result->restoreFootprintResult = XdrRestoreFootprintResult::decode($xdr);
                 break;
         }
         return $result;

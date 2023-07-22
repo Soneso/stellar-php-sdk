@@ -10,6 +10,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
+use Soneso\StellarSDK\BumpFootprintExpirationOperationBuilder;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -21,6 +22,8 @@ use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Responses\Operations\InvokeHostFunctionOperationResponse;
+use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
+use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Requests\TopicFilter;
 use Soneso\StellarSDK\Soroban\Requests\TopicFilters;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
@@ -35,20 +38,23 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrContractEntryBodyType;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
+use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
+use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
-use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry;
-use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
-use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
-use Soneso\StellarSDK\Xdr\XdrSCSpecType;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSorobanResources;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
-use function PHPUnit\Framework\assertEquals;
 
 class SorobanTest extends TestCase
 {
+
+    const HELLO_CONTRACT_PATH = './wasm/soroban_hello_world_contract.wasm';
+    const EVENTS_CONTRACT_PATH = './wasm/soroban_events_contract.wasm';
 
     /**
      * @throws GuzzleException
@@ -80,20 +86,17 @@ class SorobanTest extends TestCase
             sleep(5);
         }
 
-        $getAccountResponse = $sdk->requestAccount($accountAId);
-
-        $this->assertEquals($accountAId, $getAccountResponse->getAccountId());
-        $this->assertNotNull($getAccountResponse->getSequenceNumber());
+        $this->restoreContractFootprint($server, $accountAKeyPair, self::HELLO_CONTRACT_PATH);
 
         // upload contract wasm
-        $contractCode = file_get_contents('./wasm/hello.wasm', false);
+        $contractCode = file_get_contents(self::HELLO_CONTRACT_PATH, false);
         $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
-        $builder = new InvokeHostFunctionOperationBuilder();
-        $op = $builder->addFunction($uploadContractHostFunction)->build();
+        $op = (new InvokeHostFunctionOperationBuilder($uploadContractHostFunction))->build();
 
+        sleep(5);
+        $getAccountResponse = $sdk->requestAccount($accountAId);
         $transaction = (new TransactionBuilder($getAccountResponse))
             ->addOperation($op)->build();
-
 
         // simulate first to get the transaction data and fee
         $simulateResponse = $server->simulateTransaction($transaction);
@@ -108,9 +111,6 @@ class SorobanTest extends TestCase
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
-        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
-        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
         $transactionData = $simulateResponse->transactionData;
         $minResourceFee = $simulateResponse->minResourceFee;
@@ -145,6 +145,12 @@ class SorobanTest extends TestCase
         $this->assertNotNull($helloContractWasmId);
         //print("wasm id: " . $helloContractWasmId . PHP_EOL);
 
+        $contractCodeEntry = $server->loadContractCodeForWasmId($helloContractWasmId);
+        $this->assertNotNull($contractCodeEntry);
+        $loadedSourceCode = $contractCodeEntry->body->code->value;
+        $this->assertEquals($contractCode, $loadedSourceCode);
+        $this->assertGreaterThan(1, $contractCodeEntry->expirationLedgerSeq);
+
         // check horizon response decoding.
         sleep(5);
         $transactionResponse = $sdk->requestTransaction($sendResponse->hash);
@@ -161,18 +167,20 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $hostFunctionType = $firstOp->getHostFunctions()?->toArray()[0]->type;
-            $this->assertEquals("upload_wasm", $hostFunctionType);
+            $hostFunctionType = $firstOp->function;
+            $this->assertEquals("HostFunctionTypeHostFunctionTypeUploadContractWasm", $hostFunctionType);
         } else {
             $this->fail();
         }
 
-        // create contract
-        $accountA = $sdk->requestAccount($accountAId);
-        $createContractHostFunction = new CreateContractHostFunction($helloContractWasmId);
-        $builder = new InvokeHostFunctionOperationBuilder();
-        $op = $builder->addFunction($createContractHostFunction)->build();
+        $this->bumpContractCodeFootprint($server, $accountAKeyPair, $helloContractWasmId, 100000);
 
+        // create contract
+        $createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($accountAId), $helloContractWasmId);
+        $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
+        $op = $builder->build();
+        sleep(5);
+        $accountA = $sdk->requestAccount($accountAId);
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($op)->build();
 
@@ -185,16 +193,15 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
         $this->assertNotNull($simulateResponse->getTransactionData());
+        $this->assertNotNull($simulateResponse->getSorobanAuth());
         $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
-        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
-        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
-        // set the transaction data + fee and sign
+        // set the transaction data + fee  + auth and sign
         $transaction->setSorobanTransactionData($simulateResponse->transactionData);
+        $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
@@ -213,9 +220,16 @@ class SorobanTest extends TestCase
         // poll until status is success or error
         $statusResponse = $this->pollStatus($server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
-        $helloContractId = $statusResponse->getContractId();
+        $helloContractId = $statusResponse->getCreatedContractId();
         $this->assertNotNull($helloContractId);
+
         //print("contract id: " . $helloContractId . PHP_EOL);
+
+        $contractCodeEntry =  $server->loadContractCodeForContractId($helloContractId);
+        $this->assertNotNull($contractCodeEntry);
+        $loadedSourceCode = $contractCodeEntry->body->code->value;
+        $this->assertEquals($contractCode, $loadedSourceCode);
+        $this->assertGreaterThan(1, $contractCodeEntry->expirationLedgerSeq);
 
         sleep(5);
 
@@ -233,8 +247,8 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $hostFunctionType = $firstOp->getHostFunctions()?->toArray()[0]->type;
-            $this->assertEquals("create_contract", $hostFunctionType);
+            $hostFunctionType = $firstOp->function;
+            $this->assertEquals("HostFunctionTypeHostFunctionTypeCreateContract", $hostFunctionType);
         } else {
             $this->fail();
         }
@@ -262,8 +276,8 @@ class SorobanTest extends TestCase
         $argVal = XdrSCVal::forSymbol("friend");
         $accountA = $sdk->requestAccount($accountAId);
         $invokeContractHostFunction = new InvokeContractHostFunction($helloContractId, "hello", [$argVal]);
-        $builder = new InvokeHostFunctionOperationBuilder();
-        $op = $builder->addFunction($invokeContractHostFunction)->build();
+        $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
+        $op = $builder->build();
 
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($op)->build();
@@ -281,9 +295,6 @@ class SorobanTest extends TestCase
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
-        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
-        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
@@ -321,6 +332,7 @@ class SorobanTest extends TestCase
             print("[" . $vec[0]->sym . ", " . $vec[1]->sym . "]" . PHP_EOL);
         }
 
+        sleep(5);
         // check horizon response decoding.
         $transactionResponse = $sdk->requestTransaction($sendResponse->hash);
         $this->assertEquals(1, $transactionResponse->getOperationCount());
@@ -336,10 +348,9 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $hostFunction = $firstOp->getHostFunctions()?->toArray()[0];
-            $hostFunctionType = $hostFunction->type;
-            $this->assertEquals("invoke_contract", $hostFunctionType);
-            foreach ($hostFunction->getParameters() as $parameter) {
+            $hostFunctionType = $firstOp->function;
+            $this->assertEquals("HostFunctionTypeHostFunctionTypeInvokeContract", $hostFunctionType);
+            foreach ($firstOp->getParameters() as $parameter) {
                 $this->assertNotEquals("", trim($parameter->type));
                 $this->assertNotNull($parameter->value);
                 $this->assertNotEquals("", trim($parameter->value));
@@ -351,9 +362,9 @@ class SorobanTest extends TestCase
 
         // deploy create token contract with source account
         $accountA = $sdk->requestAccount($accountAId);
-        $deploySACWithSourceAccountHostFunction = new DeploySACWithSourceAccountHostFunction();
-        $builder = new InvokeHostFunctionOperationBuilder();
-        $op = $builder->addFunction($deploySACWithSourceAccountHostFunction)->build();
+        $deploySACWithSourceAccountHostFunction = new DeploySACWithSourceAccountHostFunction(Address::fromAccountId($accountAId));
+        $builder = new InvokeHostFunctionOperationBuilder($deploySACWithSourceAccountHostFunction);
+        $op = $builder->build();
 
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($op)->build();
@@ -367,6 +378,7 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->latestLedger);
         $this->assertEquals(1, $simulateResponse->results->count());
         $this->assertNotNull($simulateResponse->getTransactionData());
+        $this->assertNotNull($simulateResponse->getSorobanAuth());
         $this->assertNotNull($simulateResponse->getFootprint());
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
@@ -377,6 +389,7 @@ class SorobanTest extends TestCase
 
         // set the transaction data and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->sign($accountAKeyPair, Network::futurenet());
 
@@ -395,7 +408,7 @@ class SorobanTest extends TestCase
         // poll until status is success or error
         $statusResponse = $this->pollStatus($server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
-        $ctcId = $statusResponse->getContractId();
+        $ctcId = $statusResponse->getCreatedContractId();
         $this->assertNotNull($ctcId);
 
         sleep(5);
@@ -414,9 +427,8 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $hostFunction = $firstOp->getHostFunctions()?->toArray()[0];
-            $hostFunctionType = $hostFunction->type;
-            $this->assertEquals("create_contract", $hostFunctionType);
+            $hostFunctionType = $firstOp->function;
+            $this->assertEquals("HostFunctionTypeHostFunctionTypeCreateContract", $hostFunctionType);
         } else {
             $this->fail();
         }
@@ -447,8 +459,8 @@ class SorobanTest extends TestCase
         $accountB = $sdk->requestAccount($accountBId);
 
         $deploySACWithAssetHostFunction = new DeploySACWithAssetHostFunction($iomAsset);
-        $builder = new InvokeHostFunctionOperationBuilder();
-        $op = $builder->addFunction($deploySACWithAssetHostFunction)->build();
+        $builder = new InvokeHostFunctionOperationBuilder($deploySACWithAssetHostFunction);
+        $op = $builder->build();
 
         $transaction = (new TransactionBuilder($accountB))
             ->addOperation($op)->build();
@@ -467,9 +479,7 @@ class SorobanTest extends TestCase
         $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
         $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
-        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
-        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
+
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
@@ -491,7 +501,7 @@ class SorobanTest extends TestCase
         // poll until status is success or error
         $statusResponse = $this->pollStatus($server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
-        $ctcId = $statusResponse->getContractId();
+        $ctcId = $statusResponse->getCreatedContractId();
         $this->assertNotNull($ctcId);
 
         sleep(5);
@@ -511,9 +521,8 @@ class SorobanTest extends TestCase
         $this->assertTrue($operationsResponse->getOperations()->count() == 1);
         $firstOp = $operationsResponse->getOperations()->toArray()[0];
         if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $hostFunction = $firstOp->getHostFunctions()?->toArray()[0];
-            $hostFunctionType = $hostFunction->type;
-            $this->assertEquals("create_contract", $hostFunctionType);
+            $hostFunctionType =  $firstOp->function;
+            $this->assertEquals("HostFunctionTypeHostFunctionTypeCreateContract", $hostFunctionType);
         } else {
             $this->fail();
         }
@@ -530,87 +539,16 @@ class SorobanTest extends TestCase
         $accountAId = $accountAKeyPair->getAccountId();
 
         FuturenetFriendBot::fundTestAccount($accountAId);
-        sleep(5);
-
-        $getAccountResponse = $sdk->requestAccount($accountAId);
-        $this->assertEquals($accountAId, $getAccountResponse->getAccountId());
-
-        // upload contract wasm
-        $contractCode = file_get_contents('./wasm/event.wasm', false);
-        $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
-        $builder = new InvokeHostFunctionOperationBuilder();
-        $op = $builder->addFunction($uploadContractHostFunction)->build();
-
-        $transaction = (new TransactionBuilder($getAccountResponse))
-            ->addOperation($op)->build();
-
-        //print($transaction->toEnvelopeXdrBase64() . PHP_EOL);
-
-        // simulate first to get the transaction data + fee
-        $simulateResponse = $server->simulateTransaction($transaction);
-
-        $this->assertNull($simulateResponse->error);
-        $this->assertNull($simulateResponse->resultError);
-
-        // set the transaction data and sign
-        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->sign($accountAKeyPair, Network::futurenet());
-
-        // send the transaction
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNull($sendResponse->error);
-        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
-
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        $this->assertNotNull($statusResponse);
-        $wasmId = $statusResponse->getWasmId();
-        $this->assertNotNull($wasmId);
-        //print("wasm id: " . $wasmId . PHP_EOL);
-
-        // create contract
-        sleep(5);
-        $accountA = $sdk->requestAccount($accountAId);
-
-        $createContractHostFunction = new CreateContractHostFunction($wasmId);
-        $builder = new InvokeHostFunctionOperationBuilder();
-        $op = $builder->addFunction($createContractHostFunction)->build();
-
-        $transaction = (new TransactionBuilder($accountA))
-            ->addOperation($op)->build();
-
-        // simulate first to get the transaction data + fee
-        $simulateResponse = $server->simulateTransaction($transaction);
-
-        $this->assertNull($simulateResponse->error);
-        $this->assertNull($simulateResponse->resultError);
-
-        // set the transaction data + fee and sign
-        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->sign($accountAKeyPair, Network::futurenet());
-
-        // send the transaction
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNull($sendResponse->error);
-        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
-
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        $this->assertNotNull($statusResponse);
-        $contractId = $statusResponse->getContractId();
-        $this->assertNotNull($contractId);
-        //print("contract id: " . $contractId . PHP_EOL);
+        $contractId = $this->deployContract($server, self::EVENTS_CONTRACT_PATH, $accountAKeyPair);
 
         sleep(3);
 
         // invoke
-        $fnName = "events";
+        $fnName = "increment";
         $accountA = $sdk->requestAccount($accountAId);
         $invokeContractHostFunction = new InvokeContractHostFunction($contractId, $fnName);
-        $builder = new InvokeHostFunctionOperationBuilder();
-        $op = $builder->addFunction($invokeContractHostFunction)->build();
+        $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
+        $op = $builder->build();
 
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($op)->build();
@@ -621,7 +559,7 @@ class SorobanTest extends TestCase
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
         $this->assertNotNull($simulateResponse->events);
-        $this->assertCount(1, $simulateResponse->events);
+        $this->assertCount(3, $simulateResponse->events);
         $xdrEvent = XdrDiagnosticEvent::fromBase64Xdr($simulateResponse->events[0]);
         $this->assertNotNull($xdrEvent);
 
@@ -696,7 +634,192 @@ class SorobanTest extends TestCase
         return $statusResponse;
     }
 
-    public function testReadContractSpec(): void {
+    private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : String {
+        sleep(5);
+        $sdk = StellarSDK::getFutureNetInstance();
+
+        $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
+
+        // upload contract wasm
+        $contractCode = file_get_contents($pathToCode, false);
+
+        $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
+        $builder = new InvokeHostFunctionOperationBuilder($uploadContractHostFunction);
+        $op = $builder->build();
+
+        sleep(5);
+        $submitterId = $submitterKp->getAccountId();
+        $account = $sdk->requestAccount($submitterId);
+        $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
+
+        // simulate first to get the transaction data and resource fee
+        $simulateResponse = $server->simulateTransaction($transaction);
+
+
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
+        $transaction->sign($submitterKp, Network::futurenet());
+
+        // send the transaction
+        $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
+
+        // poll until status is success or error
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
+        $this->assertNotNull($statusResponse);
+        $wasmId = $statusResponse->getWasmId();
+        $this->assertNotNull($wasmId);
+
+        $this->bumpContractCodeFootprint($server, $submitterKp, $wasmId, 100000);
+
+        // create contract
+        $createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($submitterId), $wasmId);
+        $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
+        $op = $builder->build();
+
+        sleep(5);
+        $account = $sdk->requestAccount($submitterId);
+        $transaction = (new TransactionBuilder($account))
+            ->addOperation($op)->build();
+
+        // simulate first to get the transaction data and resource fee
+        $simulateResponse = $server->simulateTransaction($transaction);
+
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
+        $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
+        $transaction->sign($submitterKp, Network::futurenet());
+
+        // send the transaction
+        $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
+
+        // poll until status is success or error
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
+        $this->assertNotNull($statusResponse);
+        $contractId = $statusResponse->getCreatedContractId();
+        $this->assertNotNull($contractId);
+        return $contractId;
+    }
+
+    private function restoreContractFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $contractCodePath) : void {
+        sleep(5);
+        $sdk = StellarSDK::getFutureNetInstance();
+
+        $contractCode = file_get_contents($contractCodePath, false);
+        $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
+        $op = (new InvokeHostFunctionOperationBuilder($uploadContractHostFunction))->build();
+
+        $accountAId = $accountKeyPair->getAccountId();
+        $getAccountResponse = $sdk->requestAccount($accountAId);
+        $transaction = (new TransactionBuilder($getAccountResponse))
+            ->addOperation($op)->build();
+
+        $simulateResponse = $server->simulateTransaction($transaction);
+
+        $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
+        $this->assertNotNull($simulateResponse->results);
+        $this->assertNotNull($simulateResponse->getTransactionData());
+
+        $transactionData = $simulateResponse->getTransactionData();
+        $transactionData->resources->footprint->readWrite = $transactionData->resources->footprint->readWrite + $transactionData->resources->footprint->readOnly;
+        $transactionData->resources->footprint->readOnly = array();
+
+        $getAccountResponse = $sdk->requestAccount($accountAId);
+        $restoreOp = (new RestoreFootprintOperationBuilder())->build();
+        $transaction = (new TransactionBuilder($getAccountResponse))
+            ->addOperation($restoreOp)->build();
+
+        $transaction->setSorobanTransactionData($transactionData) ;
+        $simulateResponse = $server->simulateTransaction($transaction);
+
+        $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
+        $this->assertNotNull($simulateResponse->results);
+        $this->assertNotNull($simulateResponse->getTransactionData());
+        $this->assertNotNull($simulateResponse->getMinResourceFee());
+
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addResourceFee($simulateResponse->getMinResourceFee());
+        $transaction->sign($accountKeyPair, Network::futurenet());
+
+        // check transaction xdr encoding back and forth
+        $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
+        $this->assertEquals($transctionEnvelopeXdr,
+            Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
+
+        // send the transaction
+        $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNull($sendResponse->error);
+        $this->assertNotNull($sendResponse->hash);
+        $this->assertNotNull($sendResponse->status);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
+
+        // poll until status is success or error
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
+        $this->assertNotNull($statusResponse);
+        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
+    }
+
+    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $ledgersToExpire) : void {
+        sleep(5);
+        $sdk = StellarSDK::getFutureNetInstance();
+
+        $builder = new BumpFootprintExpirationOperationBuilder($ledgersToExpire);
+        $bumpOp = $builder->build();
+
+        $accountAId = $accountKeyPair->getAccountId();
+        $getAccountResponse = $sdk->requestAccount($accountAId);
+        $transaction = (new TransactionBuilder($getAccountResponse))
+            ->addOperation($bumpOp)->build();
+
+        $readOnly = array();
+        $readWrite = array();
+        $codeKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
+        $codeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId), XdrContractEntryBodyType::DATA_ENTRY());
+        array_push($readOnly, $codeKey);
+
+        $footprint = new XdrLedgerFootprint($readOnly, $readWrite);
+        $resources = new XdrSorobanResources($footprint, 0,0,0,0);
+        $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
+
+        $transaction->setSorobanTransactionData($transactionData) ;
+        $simulateResponse = $server->simulateTransaction($transaction);
+
+        $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
+        $this->assertNotNull($simulateResponse->results);
+        $this->assertNotNull($simulateResponse->getTransactionData());
+        $this->assertNotNull($simulateResponse->getMinResourceFee());
+
+        // set the transaction data + fee and sign
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addResourceFee($simulateResponse->getMinResourceFee());
+        $transaction->sign($accountKeyPair, Network::futurenet());
+
+        // check transaction xdr encoding back and forth
+        $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
+        $this->assertEquals($transctionEnvelopeXdr,
+            Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
+
+        // send the transaction
+        $sendResponse = $server->sendTransaction($transaction);
+        $this->assertNull($sendResponse->error);
+        $this->assertNotNull($sendResponse->hash);
+        $this->assertNotNull($sendResponse->status);
+        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
+
+        // poll until status is success or error
+        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
+        $this->assertNotNull($statusResponse);
+        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
+    }
+
+    /*public function testReadContractSpec(): void {
 
         $server = new SorobanServer("https://rpc-futurenet.stellar.org:443");
         $server->enableLogging = true;
@@ -740,5 +863,5 @@ class SorobanTest extends TestCase
         self::assertNotNull($vec);
         $elementType = $vec->elementType;
         assertEquals(XdrSCSpecType::SC_SPEC_TYPE_SYMBOL, $elementType->type->value);
-    }
+    }*/
 }

@@ -7,22 +7,22 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
-use Soneso\StellarSDK\Responses\HostFunction\HostFunctionResponse;
-use Soneso\StellarSDK\Responses\HostFunction\HostFunctionsResponse;
 
 class InvokeHostFunctionOperationResponse extends OperationResponse
 {
-    private ?HostFunctionsResponse $hostFunctions = null;
+    public string $function;
+    public ?ParametersResponse $parameters = null;
 
     protected function loadFromJson(array $json) : void {
-
-        if (isset($json['host_functions'])) {
-            $this->hostFunctions = new HostFunctionsResponse();
-            foreach ($json['host_functions'] as $jsonValue) {
-                $value = HostFunctionResponse::fromJson($jsonValue);
-                $this->hostFunctions->add($value);
+        $this->function = $json['function'];
+        if (isset($json['parameters'])) {
+            $this->parameters = new ParametersResponse();
+            foreach ($json['parameters'] as $jsonValue) {
+                $value = ParameterResponse::fromJson($jsonValue);
+                $this->parameters->add($value);
             }
         }
+        parent::loadFromJson($json);
     }
 
     public static function fromJson(array $jsonData) : InvokeHostFunctionOperationResponse {
@@ -32,18 +32,35 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @return HostFunctionsResponse|null
+     * @return string
      */
-    public function getHostFunctions(): ?HostFunctionsResponse
+    public function getFunction(): string
     {
-        return $this->hostFunctions;
+        return $this->function;
     }
 
     /**
-     * @param HostFunctionsResponse|null $hostFunctions
+     * @param string $function
      */
-    public function setHostFunctions(?HostFunctionsResponse $hostFunctions): void
+    public function setFunction(string $function): void
     {
-        $this->hostFunctions = $hostFunctions;
+        $this->function = $function;
     }
+
+    /**
+     * @return ParametersResponse|null
+     */
+    public function getParameters(): ?ParametersResponse
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * @param ParametersResponse|null $parameters
+     */
+    public function setParameters(?ParametersResponse $parameters): void
+    {
+        $this->parameters = $parameters;
+    }
+
 }

@@ -10,7 +10,7 @@ class XdrInvokeHostFunctionResult
 {
 
     public XdrInvokeHostFunctionResultCode $type;
-    public ?array $success = null;
+    public ?string $success = null; // sha256(XdrInvokeHostFunctionSuccessPreImage)
     /**
      * @param XdrInvokeHostFunctionResultCode $type
      */
@@ -25,10 +25,7 @@ class XdrInvokeHostFunctionResult
 
         switch ($this->type->value) {
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS:
-                $bytes .= XdrEncoder::integer32(count($this->success));
-                foreach($this->success as $val) {
-                    $bytes .= $val->encode();
-                }
+                $bytes .= $bytes .= XdrEncoder::opaqueFixed($this->success,32);
                 break;
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED:
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED:
@@ -42,11 +39,7 @@ class XdrInvokeHostFunctionResult
         $result = new XdrInvokeHostFunctionResult(XdrInvokeHostFunctionResultCode::decode($xdr));
         switch ($result->type->value) {
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS:
-                $valCount = $xdr->readInteger32();
-                $result->success = array();
-                for ($i = 0; $i < $valCount; $i++) {
-                    array_push($result->success, XdrSCVal::decode($xdr));
-                }
+                $result->success = $xdr->readOpaqueFixed(32);
                 break;
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED:
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED:
@@ -73,17 +66,17 @@ class XdrInvokeHostFunctionResult
     }
 
     /**
-     * @return array|null
+     * @return string|null
      */
-    public function getSuccess(): ?array
+    public function getSuccess(): ?string
     {
         return $this->success;
     }
 
     /**
-     * @param array|null $success
+     * @param string|null $success
      */
-    public function setSuccess(?array $success): void
+    public function setSuccess(?string $success): void
     {
         $this->success = $success;
     }

@@ -112,6 +112,7 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
             }
         }
         if (isset($json['shares_received'])) $this->sharesReceived = $json['shares_received'];
+        parent::loadFromJson($json);
     }
 
     public static function fromJson(array $jsonData) : LiquidityPoolDepositOperationResponse {

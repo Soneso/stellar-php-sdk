@@ -20,7 +20,9 @@ class XdrConfigSettingEntry
     public ?XdrContractCostParams $contractCostParamsMemBytes = null;
     public ?int $contractDataKeySizeBytes = null;
     public ?int $contractDataEntrySizeBytes = null;
-
+    public ?XdrStateExpirationSettings $stateExpirationSettings = null;
+    public ?XdrConfigSettingContractExecutionLanesV0 $contractExecutionLanes = null;
+    public ?array $bucketListSizeWindow = null; // [uint64]
     /**
      * @param XdrConfigSettingID $configSettingID
      */
@@ -63,6 +65,18 @@ class XdrConfigSettingEntry
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
                 $bytes .= XdrEncoder::unsignedInteger32($this->contractDataEntrySizeBytes);
                 break;
+            case XdrConfigSettingID::CONFIG_SETTING_STATE_EXPIRATION:
+                $bytes .= $this->stateExpirationSettings->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
+                $bytes .= $this->contractExecutionLanes->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW:
+                $bytes .= XdrEncoder::integer32(count($this->bucketListSizeWindow));
+                foreach($this->bucketListSizeWindow as $val) {
+                    $bytes .= XdrEncoder::unsignedInteger64($val);
+                }
+                break;
         }
         return $bytes;
     }
@@ -100,6 +114,20 @@ class XdrConfigSettingEntry
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
                 $result->contractDataEntrySizeBytes = $xdr->readUnsignedInteger32();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_STATE_EXPIRATION:
+                $result->stateExpirationSettings = XdrStateExpirationSettings::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
+                $result->contractExecutionLanes = XdrConfigSettingContractExecutionLanesV0::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW:
+                $valCount = $xdr->readInteger32();
+                $entriesArr = array();
+                for ($i = 0; $i < $valCount; $i++) {
+                    array_push($entriesArr, $xdr->readUnsignedInteger64());
+                }
+                $result->bucketListSizeWindow = $entriesArr;
                 break;
         }
         return $result;
@@ -280,4 +308,53 @@ class XdrConfigSettingEntry
     {
         $this->contractDataEntrySizeBytes = $contractDataEntrySizeBytes;
     }
+
+    /**
+     * @return XdrStateExpirationSettings|null
+     */
+    public function getStateExpirationSettings(): ?XdrStateExpirationSettings
+    {
+        return $this->stateExpirationSettings;
+    }
+
+    /**
+     * @param XdrStateExpirationSettings|null $stateExpirationSettings
+     */
+    public function setStateExpirationSettings(?XdrStateExpirationSettings $stateExpirationSettings): void
+    {
+        $this->stateExpirationSettings = $stateExpirationSettings;
+    }
+
+    /**
+     * @return XdrConfigSettingContractExecutionLanesV0|null
+     */
+    public function getContractExecutionLanes(): ?XdrConfigSettingContractExecutionLanesV0
+    {
+        return $this->contractExecutionLanes;
+    }
+
+    /**
+     * @param XdrConfigSettingContractExecutionLanesV0|null $contractExecutionLanes
+     */
+    public function setContractExecutionLanes(?XdrConfigSettingContractExecutionLanesV0 $contractExecutionLanes): void
+    {
+        $this->contractExecutionLanes = $contractExecutionLanes;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getBucketListSizeWindow(): ?array
+    {
+        return $this->bucketListSizeWindow;
+    }
+
+    /**
+     * @param array|null $bucketListSizeWindow
+     */
+    public function setBucketListSizeWindow(?array $bucketListSizeWindow): void
+    {
+        $this->bucketListSizeWindow = $bucketListSizeWindow;
+    }
+
 }

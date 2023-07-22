@@ -31,7 +31,9 @@ class XdrOperationBody
     private ?XdrSetTrustLineFlagsOperation $setTrustLineFlagsOperation = null;
     private ?XdrLiquidityPoolDepositOperation $liquidityPoolDepositOperation = null;
     private ?XdrLiquidityPoolWithdrawOperation $liquidityPoolWithdrawOperation = null;
-    private ?XdrInvokeHostFunctionOperation $invokeHostFunctionOperation = null;
+    private ?XdrInvokeHostFunctionOp $invokeHostFunctionOperation = null;
+    private ?XdrBumpFootprintExpirationOp $bumpFootprintExpirationOp = null;
+    private ?XdrRestoreFootprintOp $restoreFootprintOp = null;
 
     public function __construct(XdrOperationType $type) {
         $this->type = $type;
@@ -398,19 +400,51 @@ class XdrOperationBody
     }
 
     /**
-     * @return XdrInvokeHostFunctionOperation|null
+     * @return XdrInvokeHostFunctionOp|null
      */
-    public function getInvokeHostFunctionOperation(): ?XdrInvokeHostFunctionOperation
+    public function getInvokeHostFunctionOperation(): ?XdrInvokeHostFunctionOp
     {
         return $this->invokeHostFunctionOperation;
     }
 
     /**
-     * @param XdrInvokeHostFunctionOperation|null $invokeHostFunctionOperation
+     * @param XdrInvokeHostFunctionOp|null $invokeHostFunctionOperation
      */
-    public function setInvokeHostFunctionOperation(?XdrInvokeHostFunctionOperation $invokeHostFunctionOperation): void
+    public function setInvokeHostFunctionOperation(?XdrInvokeHostFunctionOp $invokeHostFunctionOperation): void
     {
         $this->invokeHostFunctionOperation = $invokeHostFunctionOperation;
+    }
+
+    /**
+     * @return XdrBumpFootprintExpirationOp|null
+     */
+    public function getBumpFootprintExpirationOp(): ?XdrBumpFootprintExpirationOp
+    {
+        return $this->bumpFootprintExpirationOp;
+    }
+
+    /**
+     * @param XdrBumpFootprintExpirationOp|null $bumpFootprintExpirationOp
+     */
+    public function setBumpFootprintExpirationOp(?XdrBumpFootprintExpirationOp $bumpFootprintExpirationOp): void
+    {
+        $this->bumpFootprintExpirationOp = $bumpFootprintExpirationOp;
+    }
+
+    /**
+     * @return XdrRestoreFootprintOp|null
+     */
+    public function getRestoreFootprintOp(): ?XdrRestoreFootprintOp
+    {
+        return $this->restoreFootprintOp;
+    }
+
+    /**
+     * @param XdrRestoreFootprintOp|null $restoreFootprintOp
+     */
+    public function setRestoreFootprintOp(?XdrRestoreFootprintOp $restoreFootprintOp): void
+    {
+        $this->restoreFootprintOp = $restoreFootprintOp;
     }
 
 
@@ -440,7 +474,9 @@ class XdrOperationBody
             XdrOperationType::SET_TRUST_LINE_FLAGS => $this->setTrustLineFlagsOperation->encode() ?? "",
             XdrOperationType::LIQUIDITY_POOL_DEPOSIT => $this->liquidityPoolDepositOperation->encode() ?? "",
             XdrOperationType::LIQUIDITY_POOL_WITHDRAW => $this->liquidityPoolWithdrawOperation->encode() ?? "",
-            XdrOperationType::INVOKE_HOST_FUNCTION => $this->invokeHostFunctionOperation->encode() ?? ""
+            XdrOperationType::INVOKE_HOST_FUNCTION => $this->invokeHostFunctionOperation->encode() ?? "",
+            XdrOperationType::BUMP_FOOTPRINT_EXPIRATION => $this->bumpFootprintExpirationOp->encode() ?? "",
+            XdrOperationType::RESTORE_FOOTPRINT => $this->restoreFootprintOp->encode() ?? ""
         };
         return $bytes;
     }
@@ -518,7 +554,13 @@ class XdrOperationBody
                 $result->setLiquidityPoolWithdrawOperation(XdrLiquidityPoolWithdrawOperation::decode($xdr));
                 break;
             case XdrOperationType::INVOKE_HOST_FUNCTION:
-                $result->setInvokeHostFunctionOperation(XdrInvokeHostFunctionOperation::decode($xdr));
+                $result->setInvokeHostFunctionOperation(XdrInvokeHostFunctionOp::decode($xdr));
+                break;
+            case XdrOperationType::BUMP_FOOTPRINT_EXPIRATION:
+                $result->setBumpFootprintExpirationOp(XdrBumpFootprintExpirationOp::decode($xdr));
+                break;
+            case XdrOperationType::RESTORE_FOOTPRINT:
+                $result->setRestoreFootprintOp(XdrRestoreFootprintOp::decode($xdr));
                 break;
         }
         return $result;

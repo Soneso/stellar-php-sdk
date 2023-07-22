@@ -7,45 +7,67 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
-use Soneso\StellarSDK\Xdr\XdrContractIDType;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
-use Soneso\StellarSDK\Xdr\XdrHostFunctionArgs;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
-use Soneso\StellarSDK\Xdr\XdrSCContractExecutableType;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 
 class DeploySACWithSourceAccountHostFunction extends HostFunction
 {
+    public Address $address;
     public string $salt;
 
     /**
+     * @param Address $address
      * @param string|null $salt
-     * @param array|null $auth
      * @throws Exception
      */
-    public function __construct(?string $salt = null, ?array $auth = array())
+    public function __construct(Address $address, ?string $salt = null)
     {
+        $this->address = $address;
         $this->salt = $salt != null ? $salt : random_bytes(32);
-        parent::__construct($auth);
+        parent::__construct();
     }
 
     public function toXdr() : XdrHostFunction {
-        $args = XdrHostFunctionArgs::forDeploySACWithSourceAccount($this->salt);
-        return new XdrHostFunction($args, self::convertToXdrAuth($this->auth));
+        return XdrHostFunction::forDeploySACWithSourceAccount($this->address->toXdr(), $this->salt);
     }
 
     /**
      * @throws Exception
      */
     public static function fromXdr(XdrHostFunction $xdr) : DeploySACWithSourceAccountHostFunction {
-        $args = $xdr->args;
-        $type = $args->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $args->createContract == null
-            || $args->createContract->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT
-            || $args->createContract->executable->type->value != XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN) {
+        $type = $xdr->type;
+        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $xdr->createContract == null
+            || $xdr->createContract->contractIDPreimage->type->value != XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS
+            || $xdr->createContract->executable->type->value != XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN) {
             throw new Exception("Invalid argument");
         }
 
-        return new DeploySACWithSourceAccountHostFunction($args->createContract->contractID->salt, self::convertFromXdrAuth($xdr->auth));
+        $xdrAddress = $xdr->createContract->contractIDPreimage->address;
+
+        if ($xdrAddress == null) {
+            throw new Exception("invalid argument");
+        }
+
+        return new DeploySACWithSourceAccountHostFunction(Address::fromXdr($xdrAddress), $xdr->createContract->contractIDPreimage->salt);
+    }
+
+    /**
+     * @return Address
+     */
+    public function getAddress(): Address
+    {
+        return $this->address;
+    }
+
+    /**
+     * @param Address $address
+     */
+    public function setAddress(Address $address): void
+    {
+        $this->address = $address;
     }
 
     /**
@@ -63,4 +85,5 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction
     {
         $this->salt = $salt;
     }
+
 }

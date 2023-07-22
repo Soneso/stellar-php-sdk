@@ -19,12 +19,8 @@ class XdrEnvelopeType
     const ENVELOPE_TYPE_TX_FEE_BUMP = 5;
     const ENVELOPE_TYPE_OP_ID = 6;
     const ENVELOPE_TYPE_POOL_REVOKE_OP_ID = 7;
-    const ENVELOPE_TYPE_CONTRACT_ID_FROM_ED25519 = 8;
-    const ENVELOPE_TYPE_CONTRACT_ID_FROM_CONTRACT = 9;
-    const ENVELOPE_TYPE_CONTRACT_ID_FROM_ASSET = 10;
-    const ENVELOPE_TYPE_CONTRACT_ID_FROM_SOURCE_ACCOUNT = 11;
-    const ENVELOPE_TYPE_CREATE_CONTRACT_ARGS = 12;
-    const ENVELOPE_TYPE_CONTRACT_AUTH = 13;
+    const ENVELOPE_TYPE_CONTRACT_ID = 8;
+    const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION = 9;
 
     public function __construct(int $value) {
         $this->value = $value;

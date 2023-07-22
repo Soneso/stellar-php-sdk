@@ -6,6 +6,7 @@ The following shows you how to use the PHP SDK to start experimenting with Sorob
 
 **Please note, that both, Soroban itself and the PHP SDK support for Soroban are still under development, so breaking changes may occur.**
 
+**Soroban version supported: Preview 10**
 
 ### Quick Start
 
@@ -64,7 +65,7 @@ print("Sequence: ".$getAccountResponse->getSequenceNumber());
 
 #### Deploy your contract
 
-If you want to create a smart contract for testing, you can easily build one with our [AssemblyScript Soroban SDK](https://github.com/Soneso/as-soroban-sdk) or with the [official Stellar Rust SDK](https://soroban.stellar.org/docs/examples/hello-world). Here you can find [examples](https://github.com/Soneso/as-soroban-examples) to be build with the AssemblyScript SDK.
+If you want to create a smart contract for testing, you can find the official examples [here](https://github.com/stellar/soroban-examples).
 
 There are two main steps involved in the process of deploying a contract. First you need to **upload** the **contract code** and then to **create** the **contract**.
 
@@ -72,9 +73,9 @@ To **upload** the **contract code**, first build a transaction containing the co
 
 ```php
 // Create the operation for uploading the contract code (*.wasm file content)
-$builder = new InvokeHostFunctionOperationBuilder();
 $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
-$operation = $builder->addFunction($uploadContractHostFunction)->build();
+$builder = new InvokeHostFunctionOperationBuilder($uploadContractHostFunction);
+$operation = $builder->build();
 
 // Build the transaction
 $transaction = (new TransactionBuilder($account))
@@ -131,13 +132,15 @@ if (GetTransactionResponse::STATUS_NOT_FOUND == $status) {
 }
 ```
 
+Hint: If you experience an error with the transaction result ```txInternalError``` it is most likely that a ledger entry used in the transaction has expired. This is an issue specific to soroban prev. 10 (see [here](https://discord.com/channels/897514728459468821/1130347673627664515)). You can fix it by restoring the footprint (see this [example](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/SorobanTest.php) in the soroban test of the SDK).
+
 If the transaction was successful, the status response contains the ```wasmId``` of the installed contract code. We need the ```wasmId``` in our next step to **create** the contract:
 
 ```php
 // Build the operation for creating the contract
-$createContractHostFunction = new CreateContractHostFunction($wasmId);
-$builder = new InvokeHostFunctionOperationBuilder();
-$operation = $builder->addFunction($createContractHostFunction)->build();
+$createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($invokerAccountId), $helloContractWasmId);
+$builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
+$operation = $builder->build();
 
 // Build the transaction for creating the contract
 $transaction = (new TransactionBuilder($account))
@@ -146,10 +149,11 @@ $transaction = (new TransactionBuilder($account))
 // First simulate to obtain the footprint
 $simulateResponse = $server->simulateTransaction($transaction);
 
-// set the transaction data, add fee and sign
+// set the transaction data & auth, add fee and sign
 $transaction->setSorobanTransactionData($simulateResponse->transactionData);
+$transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
 $transaction->addResourceFee($simulateResponse->minResourceFee);
-$transaction->sign($accountKeyPair, Network::futurenet());
+$transaction->sign($invokerKeyPair, Network::futurenet());
 
 // Send the transaction to the network.
 $sendResponse = $server->sendTransaction($transaction);
@@ -180,34 +184,44 @@ Success!
 
 The Soroban-RPC server also provides the possibility to request values of ledger entries directly. It will allow you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry. 
 
-For example, to fetch contract wasm byte-code, use the ContractCode ledger entry key:
+```php
+$ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
+$ledgerKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId), XdrContractEntryBodyType::DATA_ENTRY());
+$ledgerEntry = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
+```
+
+If you already have a contractId you can load the code as follows:
+```php
+$contractCodeEntry = $server->loadContractCodeForContractId($contractId);
+if ($contractCodeEntry != null) {
+    $loadedSourceCode = $contractCodeEntry->body->code->value;
+    $expirationLedgerSeq = $contractCodeEntry->expirationLedgerSeq;
+}
+```
+
+If you have a wasmId:
 
 ```php
-$footprint = $simulateResponse->footprint;
-$contractCodeKey = $footprint->getContractCodeLedgerKey();
-
-$contractCodeEntryResponse = $server->getLedgerEntry($contractCodeKey);
+$contractCodeEntry = $server->loadContractCodeForWasmId($wasmId);
+if ($contractCodeEntry != null) {
+    $loadedSourceCode = $contractCodeEntry->body->code->value;
+    $expirationLedgerSeq = $contractCodeEntry->expirationLedgerSeq;
+}
 ```
+
 
 #### Invoking a contract
 
 Now, that we successfully deployed our contract, we are going to invoke it using the PHP SDK.
 
-First let's have a look to a simple (hello word) contract created with the [AssemblyScript Soroban SDK](https://github.com/Soneso/as-soroban-sdk). The code and instructions on how to build it, can be found in this [example](https://github.com/Soneso/as-soroban-examples/tree/main/hello_word).
+First let's have a look to a simple (hello word) contract created with the Rust Soroban SDK. The code and instructions on how to build it, can be found in the official [soroban docs](https://soroban.stellar.org/docs/getting-started/hello-world).
+*Hello Word contract code:*
 
-*Hello Word contract AssemblyScript code:*
-
-```typescript
-import {Symbol, VecObject, fromSmallSymbolStr} from 'as-soroban-sdk/lib/value';
-import {Vec} from 'as-soroban-sdk/lib/vec';
-
-export function hello(to: Symbol): VecObject {
-
-    let vec = new Vec();
-    vec.pushFront(fromSmallSymbolStr("Hello"));
-    vec.pushBack(to);
-
-    return vec.getHostObject();
+```rust
+impl HelloContract {
+    pub fn hello(env: Env, to: Symbol) -> Vec<Symbol> {
+        vec![&env, symbol_short!("Hello"), to]
+    }
 }
 ```
 
@@ -225,8 +239,8 @@ $argVal = XdrSCVal::forSymbol("friend");
 
 // Prepare the "invoke" operation
 $invokeContractHostFunction = new InvokeContractHostFunction($contractId, "hello", [$argVal]);
-$builder = new InvokeHostFunctionOperationBuilder();
-$operation = $builder->addFunction($invokeContractHostFunction)->build();
+$builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
+$operation = $builder->build();
 
 // Build the transaction
 $transaction = (new TransactionBuilder($account))
@@ -302,60 +316,69 @@ Success!
 
 #### Deploying Stellar Asset Contract (SAC)
 
-The PHP SDK also provides support for deploying the build-in [Stellar Asset Contract](https://soroban.stellar.org/docs/built-in-contracts/stellar-asset-contract) (SAC). The following operations are available for this purpose:
+The PHP SDK also provides support for deploying the build-in [Stellar Asset Contract](https://soroban.stellar.org/docs/advanced-tutorials/stellar-asset-contract) (SAC). The following operations are available for this purpose:
 
 1. Deploy SAC with source account:
 
 ```php
-$builder = new InvokeHostFunctionOperationBuilder();
-$operation = $builder->addFunction(new DeploySACWithSourceAccountHostFunction())->build();
+$hostFunction = new DeploySACWithSourceAccountHostFunction(Address::fromAccountId($invokerAccountId));
+$builder = new InvokeHostFunctionOperationBuilder($hostFunction);
+$operation = $builder->build();
+
+//...
+// set the transaction data & auth, add fee and sign
+$transaction->setSorobanTransactionData($simulateResponse->transactionData);
+$transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
+$transaction->addResourceFee($simulateResponse->minResourceFee);
+$transaction->sign($invokerKeyPair, Network::futurenet());
 ```
 
 2. Deploy SAC with asset:
 
 ```php
-$builder = new InvokeHostFunctionOperationBuilder();
-$operation = $builder->addFunction(new DeploySACWithAssetHostFunction($iomAsset))->build();
+$hostFunction = new DeploySACWithAssetHostFunction($iomAsset);
+$builder = new InvokeHostFunctionOperationBuilder($hostFunction);
+$operation = $builder->build();
 ```
 
 #### Soroban Authorization
 
-The PHP SDK provides support for the [Soroban Authorization Framework](https://soroban.stellar.org/docs/learn/authorization).
+The Flutter SDK provides support for the [Soroban Authorization Framework](https://soroban.stellar.org/docs/fundamentals-and-concepts/authorization).
 
-For this purpose, it offers the `Address`, `AuthorizedInvocation` and `ContractAuth` classes as well as helper functions like `getNonce(...)`.
-
-Here is a code fragment showing how they can be used:
+To provide authorization you can add an array of `SorobanAuthorizationEntry` to the transaction before sending it.
 
 ```php
-$invokerAddress = Address::fromAccountId($invokerId);
-$nonce = $server->getNonce($invokerId, $contractId);
-
-$functionName = "auth";
-$args = [$invokerAddress->toXdrSCVal(), XdrSCVal::forU32(3)];
-
-$authInvocation = new AuthorizedInvocation($contractId, $functionName, args: $args);
-
-$contractAuth = new ContractAuth($authInvocation, address: $invokerAddress, nonce: $nonce);
-$contractAuth->sign($invokerKeyPair, Network::futurenet());
-
-$invokeHostFunction = new InvokeContractHostFunction($contractId, $functionName, $args, auth: [$contractAuth]);
-
-$builder = new InvokeHostFunctionOperationBuilder();
-$invokeOp = $builder->addFunction($invokeHostFunction)->build();
-
-// simulate first to obtain the transaction data and resource fee
-$submitterAccount = $server->getAccount($submitterId);
-$transaction = (new TransactionBuilder($submitterAccount))
-    ->addOperation($invokeOp)->build();
-
-$simulateResponse = $server->simulateTransaction($transaction);
+$transaction->setSorobanAuth($myAuthArray);
 ```
 
-The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code). In this example the submitter of the transaction is not the same as the "invoker" of the contract function. 
+The easiest way to do this is to use the auth data generated by the simulation.
 
-One can find another example in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) of the SDK where the submitter and invoker are the same, , as well as an example where contract auth from the simulation response is used.
+```php
+$transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
+```
+But you can also compose the authorization entries by yourself.
 
-An advanced auth example can be found in the [atomic swap](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAtomicSwapTest.php) test.
+If the entries need to be signed you can do it as follows:
+```php
+$auth = $simulateResponse->getSorobanAuth();
+$this->assertNotNull($auth);
+
+$latestLedgerResponse = $server->getLatestLedger();
+foreach ($auth as $a) {
+    if ($a instanceof  SorobanAuthorizationEntry) {
+        $this->assertNotNull($a->credentials->addressCredentials);
+        // increase signature expiration ledger
+        $a->credentials->addressCredentials->signatureExpirationLedger = $latestLedgerResponse->sequence + 10;
+        // sign
+        $a->sign($invokerKeyPair, Network::futurenet());
+    } else {
+        self::fail("invalid auth");
+    }
+}
+$transaction->setSorobanAuth($auth);
+```
+
+You can find multiple examples in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) and in the [Atomic Swap Test](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAtomicSwapTest.php) of the SDK.
 
 Hint: Resource values and fees have been added in the new soroban preview 9 version. The calculation of the minimum resource values and fee by the simulation (preflight) is not always accurate, because it does not consider signatures. This may result in a failing transaction because of insufficient resources. In this case one can experiment and increase the resources values within the soroban transaction data before signing and submitting the transaction. E.g.:
 
@@ -379,18 +402,21 @@ The Soroban-RPC server provides the possibility to request contract events.
 You can use the PHP SDK to request events like this:
 
 ```php
-$eventFilter = new EventFilter("contract", [$contractId]);
+$topicFilter = new TopicFilter(["*", XdrSCVal::forSymbol("increment")->toBase64Xdr()]);
+$topicFilters = new TopicFilters($topicFilter);
+
+$eventFilter = new EventFilter("contract", [$contractId], $topicFilters);
 $eventFilters = new EventFilters();
 $eventFilters->add($eventFilter);
 
-$request = new GetEventsRequest($startLedger, $endLedger, $eventFilters);
+$request = new GetEventsRequest($startLedger, $eventFilters);
 $response = $server->getEvents($request);
 ```
-Find the complete code [here](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanTest.php#L579).
+Find the complete code [here](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanTest.php).
 
 #### Hints and Tips
 
-You can find the working code and more in the [Soroban Test Cases](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/SorobanTest.php) and [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php#L30) of the PHP SDK. The wasm byte-code files can be found in the [test/wasm](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/wasm/) folder.
+You can find the working code and more in the [Soroban Test](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/SorobanTest.php), [Soroban Auth Test](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) and [Atomic Swap Test](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAtomicSwapTest.php) of the PHP SDK. The wasm byte-code files can be found in the [test/wasm](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/wasm/) folder.
 
 Because Soroban and the PHP SDK support for Soroban are in development, errors may occur. For a better understanding of an error you can enable the ```SorobanServer``` logging:
 

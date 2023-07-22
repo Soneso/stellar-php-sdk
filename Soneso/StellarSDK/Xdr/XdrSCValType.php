@@ -13,7 +13,7 @@ class XdrSCValType
 
     const SCV_BOOL = 0;
     const SCV_VOID = 1;
-    const SCV_STATUS = 2;
+    const SCV_ERROR = 2;
     const SCV_U32 = 3;
     const SCV_I32 = 4;
     const SCV_U64 = 5;
@@ -29,9 +29,9 @@ class XdrSCValType
     const SCV_SYMBOL = 15;
     const SCV_VEC = 16;
     const SCV_MAP = 17;
-    const SCV_CONTRACT_EXECUTABLE = 18;
-    const SCV_ADDRESS = 19;
-    const SCV_LEDGER_KEY_CONTRACT_EXECUTABLE = 20;
+    const SCV_ADDRESS = 18;
+    const SCV_CONTRACT_INSTANCE = 19;
+    const SCV_LEDGER_KEY_CONTRACT_INSTANCE = 20;
     const SCV_LEDGER_KEY_NONCE = 21;
 
     public function __construct(int $value)
@@ -67,8 +67,8 @@ class XdrSCValType
         return new XdrSCValType(XdrSCValType::SCV_VOID);
     }
 
-    public static function STATUS() :  XdrSCValType {
-        return new XdrSCValType(XdrSCValType::SCV_STATUS);
+    public static function ERROR() :  XdrSCValType {
+        return new XdrSCValType(XdrSCValType::SCV_ERROR);
     }
 
     public static function U32() :  XdrSCValType {
@@ -131,16 +131,16 @@ class XdrSCValType
         return new XdrSCValType(XdrSCValType::SCV_MAP);
     }
 
-    public static function CONTRACT_EXECUTABLE() :  XdrSCValType {
-        return new XdrSCValType(XdrSCValType::SCV_CONTRACT_EXECUTABLE);
-    }
-
     public static function ADDRESS() :  XdrSCValType {
         return new XdrSCValType(XdrSCValType::SCV_ADDRESS);
     }
 
-    public static function LEDGER_KEY_CONTRACT_EXECUTABLE() :  XdrSCValType {
-        return new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_EXECUTABLE);
+    public static function SCV_CONTRACT_INSTANCE() :  XdrSCValType {
+        return new XdrSCValType(XdrSCValType::SCV_CONTRACT_INSTANCE);
+    }
+
+    public static function SCV_LEDGER_KEY_CONTRACT_INSTANCE() :  XdrSCValType {
+        return new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE);
     }
 
     public static function LEDGER_KEY_NONCE() :  XdrSCValType {

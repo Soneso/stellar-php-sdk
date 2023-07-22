@@ -8,7 +8,6 @@ namespace Soneso\StellarSDK;
 
 use Exception;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
-use Soneso\StellarSDK\Xdr\XdrHostFunctionArgs;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 
 class UploadContractWasmHostFunction extends HostFunction
@@ -18,28 +17,26 @@ class UploadContractWasmHostFunction extends HostFunction
     /**
      * @param string|null $contractCodeBytes
      */
-    public function __construct(?string $contractCodeBytes, ?array $auth = array())
+    public function __construct(?string $contractCodeBytes)
     {
         $this->contractCodeBytes = $contractCodeBytes;
-        parent::__construct($auth);
+        parent::__construct();
     }
 
     public function toXdr() : XdrHostFunction {
-        $args = XdrHostFunctionArgs::forUploadContractWasm($this->contractCodeBytes);
-        return new XdrHostFunction($args, self::convertToXdrAuth($this->auth));
+        return XdrHostFunction::forUploadContractWasm($this->contractCodeBytes);
     }
 
     /**
      * @throws Exception
      */
     public static function fromXdr(XdrHostFunction $xdr) : UploadContractWasmHostFunction {
-        $args = $xdr->args;
-        $type = $args->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM || $args->uploadContractWasm == null) {
+        $type = $xdr->type;
+        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM || $xdr->wasm == null) {
             throw new Exception("Invalid argument");
         }
-        $contractCode = $args->uploadContractWasm->code->getValue();
-        return new UploadContractWasmHostFunction($contractCode, self::convertFromXdrAuth($xdr->auth));
+        $contractCode = $xdr->wasm->getValue();
+        return new UploadContractWasmHostFunction($contractCode);
     }
 
     /**
@@ -57,4 +54,5 @@ class UploadContractWasmHostFunction extends HostFunction
     {
         $this->contractCodeBytes = $contractCodeBytes;
     }
+
 }

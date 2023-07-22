@@ -12,12 +12,8 @@ class XdrHashIDPreimage
     public XdrEnvelopeType $type;
     public ?XdrHashIDPreimageOperationID $operationID;
     public ?XdrHashIDPreimageRevokeID $revokeID;
-    public ?XdrHashIDPreimageEd25519ContractID $ed25519ContractID;
     public ?XdrHashIDPreimageContractID $contractID;
-    public ?XdrHashIDPreimageFromAsset $fromAsset;
-    public ?XdrHashIDPreimageSourceAccountContractID $sourceAccountContractID;
-    public ?XdrHashIDPreimageCreateContractArgs $createContractArgs;
-    public ?XdrHashIDPreimageContractAuth $contractAuth;
+    public ?XdrHashIDPreimageSorobanAuthorization $sorobanAuthorization;
 
     /**
      * @param XdrEnvelopeType $type
@@ -39,23 +35,11 @@ class XdrHashIDPreimage
             case XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
                 $bytes .= $this->revokeID->encode();
                 break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID_FROM_ED25519:
-                $bytes .= $this->ed25519ContractID->encode();
-                break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID_FROM_CONTRACT:
+            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID:
                 $bytes .= $this->contractID->encode();
                 break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID_FROM_ASSET:
-                $bytes .= $this->fromAsset->encode();
-                break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID_FROM_SOURCE_ACCOUNT:
-                $bytes .= $this->sourceAccountContractID->encode();
-                break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CREATE_CONTRACT_ARGS:
-                $bytes .= $this->createContractArgs->encode();
-                break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_AUTH:
-                $bytes .= $this->contractAuth->encode();
+            case XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
+                $bytes .= $this->sorobanAuthorization->encode();
                 break;
         }
         return $bytes;
@@ -71,32 +55,13 @@ class XdrHashIDPreimage
             case XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
                 $result->revokeID = XdrHashIDPreimageRevokeID::decode($xdr);
                 break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID_FROM_ED25519:
-                $result->ed25519ContractID = XdrHashIDPreimageEd25519ContractID::decode($xdr);
-                break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID_FROM_CONTRACT:
+            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID:
                 $result->contractID = XdrHashIDPreimageContractID::decode($xdr);
                 break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID_FROM_ASSET:
-                $result->fromAsset = XdrHashIDPreimageFromAsset::decode($xdr);
-                break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID_FROM_SOURCE_ACCOUNT:
-                $result->sourceAccountContractID = XdrHashIDPreimageSourceAccountContractID::decode($xdr);
-                break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CREATE_CONTRACT_ARGS:
-                $result->createContractArgs = XdrHashIDPreimageCreateContractArgs::decode($xdr);
-                break;
-            case XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_AUTH:
-                $result->contractAuth = XdrHashIDPreimageContractAuth::decode($xdr);
+            case XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
+                $result->sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization::decode($xdr);
                 break;
         }
-        return $result;
-    }
-
-    public static function forContractAuth(XdrHashIDPreimageContractAuth $contractAuth): XdrHashIDPreimage
-    {
-        $result = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_AUTH));
-        $result->contractAuth = $contractAuth;
         return $result;
     }
 }

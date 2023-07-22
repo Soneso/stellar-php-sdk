@@ -7,11 +7,10 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
-use Soneso\StellarSDK\Xdr\XdrContractIDType;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
-use Soneso\StellarSDK\Xdr\XdrHostFunctionArgs;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
-use Soneso\StellarSDK\Xdr\XdrSCContractExecutableType;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 
 class DeploySACWithAssetHostFunction extends HostFunction
 {
@@ -19,34 +18,34 @@ class DeploySACWithAssetHostFunction extends HostFunction
 
     /**
      * @param Asset $asset
-     * @param array|null $auth
      */
-    public function __construct(Asset $asset, ?array $auth = array())
+    public function __construct(Asset $asset)
     {
         $this->asset = $asset;
-        parent::__construct($auth);
+        parent::__construct();
     }
 
     public function toXdr() : XdrHostFunction {
-        $args = XdrHostFunctionArgs::forDeploySACWithAsset($this->asset->toXdr());
-        return new XdrHostFunction($args, self::convertToXdrAuth($this->auth));
+        return XdrHostFunction::forDeploySACWithAsset($this->asset->toXdr());
     }
 
     /**
      * @throws Exception
      */
     public static function fromXdr(XdrHostFunction $xdr) : DeploySACWithAssetHostFunction {
-        $args = $xdr->args;
-        $type = $args->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $args->createContract == null
-            || $args->createContract->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_ASSET
-            || $args->createContract->executable->type->value != XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN) {
+        $type = $xdr->type;
+        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $xdr->createContract == null
+            || $xdr->createContract->contractIDPreimage->type->value != XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET
+            || $xdr->createContract->executable->type->value != XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN) {
             throw new Exception("Invalid argument");
         }
 
-        $asset = Asset::fromXdr($args->createContract->contractID->asset);
+        $xdrAsset = $xdr->createContract->contractIDPreimage->asset;
+        if ($xdrAsset == null) {
+            throw new Exception("invalid argument");
+        }
 
-        return new DeploySACWithAssetHostFunction($asset, self::convertFromXdrAuth($xdr->auth));
+        return new DeploySACWithAssetHostFunction(Asset::fromXdr($xdrAsset));
     }
 
     /**
@@ -64,4 +63,5 @@ class DeploySACWithAssetHostFunction extends HostFunction
     {
         $this->asset = $asset;
     }
+
 }

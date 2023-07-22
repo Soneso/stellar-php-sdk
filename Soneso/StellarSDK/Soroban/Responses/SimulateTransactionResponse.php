@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 use Soneso\StellarSDK\Soroban\Footprint;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
 /**
@@ -83,13 +84,14 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
 
-    public function getAuth() : ?array {
+    public function getSorobanAuth() : ?array {
         $results = $this->results;
-        if ($results!= null && $results->count() == 1) {
-            $result = $results->toArray()[0];
-            if ($result instanceof SimulateTransactionResult) {
-                return $result->auth;
+        if ($results!= null && $results->count() > 0 && $results->toArray()[0]->auth != null) {
+            $result = array();
+            foreach($results->toArray()[0]->auth as $nextAuthXdr) {
+                array_push($result, SorobanAuthorizationEntry::fromBase64Xdr($nextAuthXdr));
             }
+            return $result;
         }
         return null;
     }

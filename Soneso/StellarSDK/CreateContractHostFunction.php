@@ -8,50 +8,70 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
-use Soneso\StellarSDK\Xdr\XdrContractIDType;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
-use Soneso\StellarSDK\Xdr\XdrHostFunctionArgs;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
-use Soneso\StellarSDK\Xdr\XdrSCContractExecutableType;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 
 class CreateContractHostFunction extends HostFunction
 {
+    public Address $address;
     public string $wasmId;
     public string $salt;
 
+
     /**
+     * @param Address $address
      * @param string $wasmId
-     * @param string $salt
+     * @param string|null $salt
+     * @throws Exception
      */
-    public function __construct(string $wasmId, ?string $salt = null, ?array $auth = array())
+    public function __construct(Address $address, string $wasmId, ?string $salt = null)
     {
+        $this->address = $address;
         $this->wasmId = $wasmId;
         $this->salt = $salt != null ? $salt : random_bytes(32);
-        parent::__construct($auth);
+        parent::__construct();
     }
 
     public function toXdr() : XdrHostFunction {
-        $args = XdrHostFunctionArgs::forCreatingContract($this->wasmId, $this->salt);
-        return new XdrHostFunction($args, self::convertToXdrAuth($this->auth));
+        return XdrHostFunction::forCreatingContract($this->address->toXdr(), $this->wasmId, $this->salt);
     }
 
     /**
      * @throws Exception
      */
     public static function fromXdr(XdrHostFunction $xdr) : CreateContractHostFunction {
-        $args = $xdr->args;
-        $type = $args->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $args->createContract == null
-            || $args->createContract->contractID->type->value != XdrContractIDType::CONTRACT_ID_FROM_SOURCE_ACCOUNT
-            || $args->createContract->executable->type->value != XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_WASM_REF) {
+        $type = $xdr->type;
+        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $xdr->createContract == null
+            || $xdr->createContract->contractIDPreimage->type->value != XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS
+            || $xdr->createContract->executable->type->value != XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM) {
             throw new Exception("Invalid argument");
         }
-        $wasmId = $args->createContract->executable->wasmIdHex;
+        $wasmId = $xdr->createContract->executable->wasmIdHex;
+        $xdrAddress = $xdr->createContract->contractIDPreimage->address;
 
-        if ($wasmId == null) {
+        if ($wasmId == null || $xdrAddress == null) {
             throw new Exception("invalid argument");
         }
-        return new CreateContractHostFunction($wasmId, $args->createContract->contractID->salt, self::convertFromXdrAuth($xdr->auth));
+        return new CreateContractHostFunction(Address::fromXdr($xdrAddress), $wasmId, $xdr->createContract->contractIDPreimage->salt);
+    }
+
+    /**
+     * @return Address
+     */
+    public function getAddress(): Address
+    {
+        return $this->address;
+    }
+
+    /**
+     * @param Address $address
+     */
+    public function setAddress(Address $address): void
+    {
+        $this->address = $address;
     }
 
     /**

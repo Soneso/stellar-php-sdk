@@ -10,34 +10,29 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrHashIDPreimageContractID
 {
     public string $networkID; // hash
-    public string $contractID; // hex
-    public string $salt; // uint256
+    public XdrContractIDPreimage $contractIDPreimage;
 
     /**
      * @param string $networkID
-     * @param string $contractID
-     * @param string $salt
+     * @param XdrContractIDPreimage $contractIDPreimage
      */
-    public function __construct(string $networkID, string $contractID, string $salt)
+    public function __construct(string $networkID, XdrContractIDPreimage $contractIDPreimage)
     {
         $this->networkID = $networkID;
-        $this->contractID = $contractID;
-        $this->salt = $salt;
+        $this->contractIDPreimage = $contractIDPreimage;
     }
 
 
     public function encode() : string {
         $bytes = XdrEncoder::opaqueFixed($this->networkID, 32);
-        $bytes .= XdrEncoder::opaqueFixed(hex2bin($this->contractID), 32);
-        $bytes .= XdrEncoder::unsignedInteger256($this->salt);
+        $bytes .= $this->contractIDPreimage->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrHashIDPreimageContractID {
         $networkID = $xdr->readOpaqueFixed(32);
-        $contractID = bin2hex($xdr->readOpaqueFixed(32));
-        $salt = $xdr->readUnsignedInteger256();
-        return new XdrHashIDPreimageContractID($networkID, $contractID, $salt);
+        $contractIDPreimage = XdrContractIDPreimage::decode($xdr);
+        return new XdrHashIDPreimageContractID($networkID, $contractIDPreimage);
     }
 
     /**
@@ -57,34 +52,19 @@ class XdrHashIDPreimageContractID
     }
 
     /**
-     * @return string
+     * @return XdrContractIDPreimage
      */
-    public function getContractID(): string
+    public function getContractIDPreimage(): XdrContractIDPreimage
     {
-        return $this->contractID;
+        return $this->contractIDPreimage;
     }
 
     /**
-     * @param string $contractID
+     * @param XdrContractIDPreimage $contractIDPreimage
      */
-    public function setContractID(string $contractID): void
+    public function setContractIDPreimage(XdrContractIDPreimage $contractIDPreimage): void
     {
-        $this->contractID = $contractID;
+        $this->contractIDPreimage = $contractIDPreimage;
     }
 
-    /**
-     * @return string
-     */
-    public function getSalt(): string
-    {
-        return $this->salt;
-    }
-
-    /**
-     * @param string $salt
-     */
-    public function setSalt(string $salt): void
-    {
-        $this->salt = $salt;
-    }
 }

@@ -9,59 +9,62 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrCreateContractArgs
 {
 
-    public XdrContractID $contractID;
-    public XdrSCContractExecutable $executable;
+    public XdrContractIDPreimage $contractIDPreimage;
+    public XdrContractExecutable $executable;
 
     /**
-     * @param XdrContractID $contractID
-     * @param XdrSCContractExecutable $source
+     * @param XdrContractIDPreimage $contractIDPreimage
+     * @param XdrContractExecutable $executable
      */
-    public function __construct(XdrContractID $contractID, XdrSCContractExecutable $source)
+    public function __construct(XdrContractIDPreimage $contractIDPreimage,
+                                XdrContractExecutable $executable)
     {
-        $this->contractID = $contractID;
-        $this->executable = $source;
+        $this->contractIDPreimage = $contractIDPreimage;
+        $this->executable = $executable;
     }
 
 
     public function encode(): string {
-        $bytes = $this->contractID->encode();
+        $bytes = $this->contractIDPreimage->encode();
         $bytes .= $this->executable->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr):  XdrCreateContractArgs {
-        return new XdrCreateContractArgs(XdrContractID::decode($xdr), XdrSCContractExecutable::decode($xdr));
+        return new XdrCreateContractArgs(XdrContractIDPreimage::decode($xdr),
+            XdrContractExecutable::decode($xdr));
     }
 
     /**
-     * @return XdrContractID
+     * @return XdrContractIDPreimage
      */
-    public function getContractID(): XdrContractID
+    public function getContractIDPreimage(): XdrContractIDPreimage
     {
-        return $this->contractID;
+        return $this->contractIDPreimage;
     }
 
     /**
-     * @param XdrContractID $contractID
+     * @param XdrContractIDPreimage $contractIDPreimage
      */
-    public function setContractID(XdrContractID $contractID): void
+    public function setContractIDPreimage(XdrContractIDPreimage $contractIDPreimage): void
     {
-        $this->contractID = $contractID;
+        $this->contractIDPreimage = $contractIDPreimage;
     }
 
     /**
-     * @return XdrSCContractExecutable
+     * @return XdrContractExecutable
      */
-    public function getExecutable(): XdrSCContractExecutable
+    public function getExecutable(): XdrContractExecutable
     {
         return $this->executable;
     }
 
     /**
-     * @param XdrSCContractExecutable $executable
+     * @param XdrContractExecutable $executable
      */
-    public function setExecutable(XdrSCContractExecutable $executable): void
+    public function setExecutable(XdrContractExecutable $executable): void
     {
         $this->executable = $executable;
     }
+
 }

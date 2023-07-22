@@ -47,9 +47,9 @@ class Address
     public static function fromXdr(XdrSCAddress $xdrAddress) {
         switch ($xdrAddress->type->value) {
             case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
-                return new Address(Address::TYPE_ACCOUNT, $xdrAddress->accountId->getAccountId());
+                return new Address(Address::TYPE_ACCOUNT, accountId: $xdrAddress->accountId->getAccountId());
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                return new Address(Address::TYPE_CONTRACT, $xdrAddress->contractId);
+                return new Address(Address::TYPE_CONTRACT, contractId: $xdrAddress->contractId);
         }
     }
 

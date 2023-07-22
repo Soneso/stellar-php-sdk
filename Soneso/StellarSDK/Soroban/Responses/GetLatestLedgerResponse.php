@@ -19,7 +19,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     public ?string $protocolVersion = null;
 
     /// sequence number of the latest ledger
-    public ?string $sequence = null;
+    public ?int $sequence = null;
 
     public static function fromJson(array $json) : GetLatestLedgerResponse {
         $result = new GetLatestLedgerResponse($json);
@@ -50,11 +50,19 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null
+     * @return int|null
      */
-    public function getSequence(): ?string
+    public function getSequence(): ?int
     {
         return $this->sequence;
+    }
+
+    /**
+     * @param int|null $sequence
+     */
+    public function setSequence(?int $sequence): void
+    {
+        $this->sequence = $sequence;
     }
 
 }

@@ -15,9 +15,8 @@ class XdrLedgerKey
     public ?XdrLedgerKeyData $data = null;
     public ?XdrClaimableBalanceID $balanceID = null;
     public ?string $liquidityPoolID = null;
-    public ?string $contractID = null; // hex
-    public ?XdrSCVal $contractDataKey = null;
-    public ?string $contractCodeHash = null;
+    public ?XdrLedgerKeyContractData $contractData = null;
+    public ?XdrLedgerKeyContractCode $contractCode = null;
     public ?XdrConfigSettingID $configSetting = null;
 
 
@@ -34,8 +33,8 @@ class XdrLedgerKey
             XdrLedgerEntryType::DATA => $this->data->encode(),
             XdrLedgerEntryType::CLAIMABLE_BALANCE => $this->balanceID->encode(),
             XdrLedgerEntryType::LIQUIDITY_POOL => XdrEncoder::opaqueFixed(hex2bin($this->liquidityPoolID), 32),
-            XdrLedgerEntryType::CONTRACT_DATA => $this->encodeContractData(),
-            XdrLedgerEntryType::CONTRACT_CODE => XdrEncoder::opaqueFixed($this->contractCodeHash, 32),
+            XdrLedgerEntryType::CONTRACT_DATA => $this->contractData->encode(),
+            XdrLedgerEntryType::CONTRACT_CODE => $this->contractCode->encode(),
             XdrLedgerEntryType::CONFIG_SETTING => $this->configSetting->encode(),
         };
         return $bytes;
@@ -65,11 +64,10 @@ class XdrLedgerKey
                 $result->liquidityPoolID = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             case XdrLedgerEntryType::CONTRACT_DATA:
-                $result->contractID = bin2hex($xdr->readOpaqueFixed(32));
-                $result->contractDataKey = XdrSCVal::decode($xdr);
+                $result->contractData = XdrLedgerKeyContractData::decode($xdr);
                 break;
             case XdrLedgerEntryType::CONTRACT_CODE:
-                $result->contractCodeHash = $xdr->readOpaqueFixed(32);
+                $result->contractCode = XdrLedgerKeyContractCode::decode($xdr);
                 break;
             case XdrLedgerEntryType::CONFIG_SETTING:
                 $result->configSetting = XdrConfigSettingID::decode($xdr);
@@ -86,13 +84,6 @@ class XdrLedgerKey
 
     public function toBase64Xdr() : String {
         return base64_encode($this->encode());
-    }
-
-    private function encodeContractData() : string
-    {
-        $bytes = XdrEncoder::opaqueFixed(hex2bin($this->contractID), 32);
-        $bytes .= $this->contractDataKey->encode();
-        return $bytes;
     }
 
     /**
@@ -208,51 +199,35 @@ class XdrLedgerKey
     }
 
     /**
-     * @return string|null
+     * @return XdrLedgerKeyContractData|null
      */
-    public function getContractID(): ?string
+    public function getContractData(): ?XdrLedgerKeyContractData
     {
-        return $this->contractID;
+        return $this->contractData;
     }
 
     /**
-     * @param string|null $contractID
+     * @param XdrLedgerKeyContractData|null $contractData
      */
-    public function setContractID(?string $contractID): void
+    public function setContractData(?XdrLedgerKeyContractData $contractData): void
     {
-        $this->contractID = $contractID;
+        $this->contractData = $contractData;
     }
 
     /**
-     * @return XdrSCVal|null
+     * @return XdrLedgerKeyContractCode|null
      */
-    public function getContractDataKey(): ?XdrSCVal
+    public function getContractCode(): ?XdrLedgerKeyContractCode
     {
-        return $this->contractDataKey;
+        return $this->contractCode;
     }
 
     /**
-     * @param XdrSCVal|null $contractDataKey
+     * @param XdrLedgerKeyContractCode|null $contractCode
      */
-    public function setContractDataKey(?XdrSCVal $contractDataKey): void
+    public function setContractCode(?XdrLedgerKeyContractCode $contractCode): void
     {
-        $this->contractDataKey = $contractDataKey;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getContractCodeHash(): ?string
-    {
-        return $this->contractCodeHash;
-    }
-
-    /**
-     * @param string|null $contractCodeHash
-     */
-    public function setContractCodeHash(?string $contractCodeHash): void
-    {
-        $this->contractCodeHash = $contractCodeHash;
+        $this->contractCode = $contractCode;
     }
 
     /**
@@ -270,5 +245,4 @@ class XdrLedgerKey
     {
         $this->configSetting = $configSetting;
     }
-
 }

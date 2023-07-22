@@ -8,9 +8,9 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
-use Soneso\StellarSDK\Xdr\XdrHostFunctionArgs;
-use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 class InvokeContractHostFunction extends HostFunction
@@ -23,21 +23,20 @@ class InvokeContractHostFunction extends HostFunction
      * @param string $contractId
      * @param string $functionName
      * @param array|null $arguments
-     * @param array|null $auth
      */
-    public function __construct(string $contractId, string $functionName, ?array $arguments = null, ?array $auth = array())
+    public function __construct(string $contractId, string $functionName, ?array $arguments = null)
     {
         $this->contractId = $contractId;
         $this->functionName = $functionName;
         $this->arguments = $arguments;
-        parent::__construct($auth);
+        parent::__construct();
     }
 
     public function toXdr() : XdrHostFunction {
         $invokeContract = array();
 
         // contractID
-        $contractIDVal = XdrSCVal::forContractId($this->contractId);
+        $contractIDVal = Address::fromContractId($this->contractId)->toXdrSCVal();
         array_push($invokeContract, $contractIDVal);
 
         // function name
@@ -49,38 +48,39 @@ class InvokeContractHostFunction extends HostFunction
             $invokeContract = array_merge($invokeContract, $this->arguments);
         }
 
-        $args = XdrHostFunctionArgs::forInvokingContractWithArgs($invokeContract);
-        return new XdrHostFunction($args, self::convertToXdrAuth($this->auth));
+        return XdrHostFunction::forInvokingContractWithArgs($invokeContract);
     }
 
     /**
      * @throws Exception
      */
     public static function fromXdr(XdrHostFunction $xdr) : InvokeContractHostFunction {
-        $args = $xdr->args;
-        $type = $args->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT
-            || $args->invokeContract == null || count($args->invokeContract) < 2) {
+        $invokeContract = $xdr->invokeContract;
+        if ($invokeContract == null || count($invokeContract) < 2) {
             throw new Exception("Invalid argument");
         }
+
         $contractId = null;
         $functionName = null;
         $fArgs = null;
-        $contractIdVal = $args->invokeContract[0];
-        $functionVal = $args->invokeContract[1];
-        if ($contractIdVal instanceof XdrSCVal && $contractIdVal->bytes != null ) {
-            $contractId = bin2hex($contractIdVal->bytes->getValue());
+        $contractIdVal = $invokeContract[0];
+        $functionVal = $invokeContract[1];
+
+        if ($contractIdVal instanceof XdrSCVal && $contractIdVal->address != null) {
+            $contractId = Address::fromXdr($contractIdVal->address)->contractId;
         }
+
         if ($functionVal instanceof XdrSCVal && $functionVal->sym != null) {
             $functionName = $functionVal->sym;
         }
-        if(count($args->invokeContract) > 2) {
-            $fArgs = array_slice($args->invokeContract, 2);
+        if(count($invokeContract) > 2) {
+            $fArgs = array_slice($invokeContract, 2);
         }
-        if($contractId == null | $functionName == null) {
+        if ($contractId == null || $functionName == null) {
             throw new Exception("invalid argument");
         }
-        return new InvokeContractHostFunction($contractId, $functionName, $fArgs, self::convertFromXdrAuth($xdr->auth));
+
+        return new InvokeContractHostFunction($contractId, $functionName, $fArgs);
     }
 
     /**

@@ -7,7 +7,9 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
+use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 
 /**
@@ -108,27 +110,26 @@ class GetTransactionResponse extends SorobanRpcResponse
         return $this->getBinHex();
     }
 
-    /// Extracts the contract is from the response if the transaction created a contract
-    public function getContractId(): ?string {
-        return $this->getBinHex();
+    /// Extracts the contract id from the response if the transaction created a contract
+    public function getCreatedContractId(): ?string {
+        $resultValue = $this->getResultValue();
+        if ($resultValue != null && $resultValue->type->value == XdrSCValType::SCV_ADDRESS && $resultValue->address != null) {
+            $address = $resultValue->address;
+            if ($address->type->value == XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT) {
+                return $address->contractId;
+            }
+        }
+        return null;
     }
 
-    /// Extracts the result value from the first entry on success
+    /// Extracts the result value on success
     public function getResultValue(): ?XdrSCVal {
         if ($this->error != null || $this->status != self::STATUS_SUCCESS || $this->resultMetaXdr == null) {
             return null;
         }
 
         $meta = XdrTransactionMeta::fromBase64Xdr($this->resultMetaXdr);
-        $results = $meta->v3?->txResult->result->results;
-        if ($results == null || count($results) == 0) {
-            return null;
-        }
-        $successArr = $results[0]->getResultTr()?->getInvokeHostFunctionResult()?->success;
-        if($successArr != null) {
-            return $successArr[0];
-        }
-        return null;
+        return $meta->v3?->sorobanMeta?->returnValue;
     }
 
     private function getBinHex(): ?string {

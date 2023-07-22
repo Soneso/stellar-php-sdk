@@ -9,35 +9,36 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrSorobanTransactionData
 {
+    public XdrExtensionPoint $ext;
     public XdrSorobanResources $resources;
     public int $refundableFee; // Portion of transaction `fee` allocated to refundable fees.
-    public XdrExtensionPoint $ext;
 
     /**
+     * @param XdrExtensionPoint $ext
      * @param XdrSorobanResources $resources
      * @param int $refundableFee
-     * @param XdrExtensionPoint $ext
      */
-    public function __construct(XdrSorobanResources $resources, int $refundableFee, XdrExtensionPoint $ext)
+    public function __construct(XdrExtensionPoint $ext, XdrSorobanResources $resources, int $refundableFee)
     {
+        $this->ext = $ext;
         $this->resources = $resources;
         $this->refundableFee = $refundableFee;
-        $this->ext = $ext;
     }
 
+
     public function encode(): string {
-        $bytes = $this->resources->encode();
+        $bytes = $this->ext->encode();
+        $bytes .= $this->resources->encode();
         $bytes .= XdrEncoder::integer64($this->refundableFee);
-        $bytes .= $this->ext->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrSorobanTransactionData {
+        $ext = XdrExtensionPoint::decode($xdr);
         $resources = XdrSorobanResources::decode($xdr);
         $refundableFee = $xdr->readInteger64();
-        $ext = XdrExtensionPoint::decode($xdr);
 
-        return new XdrSorobanTransactionData($resources, $refundableFee, $ext);
+        return new XdrSorobanTransactionData($ext, $resources, $refundableFee);
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrSorobanTransactionData {

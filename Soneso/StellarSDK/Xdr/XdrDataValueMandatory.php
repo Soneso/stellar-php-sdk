@@ -9,7 +9,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrDataValueMandatory
 {
-    private string $value;
+    public string $value;
 
     public function __construct(string $value) {
         $this->value = $value;

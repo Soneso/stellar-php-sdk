@@ -8,38 +8,37 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrContractCostParamEntry
 {
+    public XdrExtensionPoint $ext;
     public int $constTerm;
     public int $linearTerm;
-    public XdrExtensionPoint $ext;
 
     /**
+     * @param XdrExtensionPoint $ext
      * @param int $constTerm
      * @param int $linearTerm
-     * @param XdrExtensionPoint $ext
      */
-    public function __construct(int $constTerm, int $linearTerm, XdrExtensionPoint $ext)
+    public function __construct(XdrExtensionPoint $ext, int $constTerm, int $linearTerm)
     {
+        $this->ext = $ext;
         $this->constTerm = $constTerm;
         $this->linearTerm = $linearTerm;
-        $this->ext = $ext;
     }
 
 
     public function encode(): string {
-
-        $bytes = XdrEncoder::integer64($this->constTerm);
+        $bytes = $this->ext->encode();
+        $bytes .= XdrEncoder::integer64($this->constTerm);
         $bytes .= XdrEncoder::integer64($this->linearTerm);
-        $bytes .= $this->ext->encode();
+
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrContractCostParamEntry {
-
+        $ext = XdrExtensionPoint::decode($xdr);
         $constTerm = $xdr->readInteger64();
         $linearTerm = $xdr->readInteger64();
-        $ext = XdrExtensionPoint::decode($xdr);
 
-        return new XdrContractCostParamEntry($constTerm, $linearTerm, $ext);
+        return new XdrContractCostParamEntry($ext, $constTerm, $linearTerm);
     }
 
     /**

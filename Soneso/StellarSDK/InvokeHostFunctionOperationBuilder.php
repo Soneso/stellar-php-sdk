@@ -11,21 +11,20 @@ use Exception;
 class InvokeHostFunctionOperationBuilder
 {
     // common
-    public array $functions;
+    public HostFunction $function;
+    public array $auth; // [XdrSorobanAuthorizationEntry]
     public ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @param array|null $functions
+     * @param HostFunction $function
+     * @param array $auth [XdrSorobanAuthorizationEntry]
      */
-    public function __construct(?array $functions = array())
+    public function __construct(HostFunction $function, array $auth = array())
     {
-        $this->functions = $functions;
+        $this->function = $function;
+        $this->auth = $auth;
     }
 
-    public function addFunction(HostFunction $function) : InvokeHostFunctionOperationBuilder {
-        array_push($this->functions, $function);
-        return $this;
-    }
 
     public function setSourceAccount(string $accountId) : InvokeHostFunctionOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
@@ -41,6 +40,6 @@ class InvokeHostFunctionOperationBuilder
      * @throws Exception if the host function type is unknown or not implemented
      */
     public function build(): InvokeHostFunctionOperation {
-        return new InvokeHostFunctionOperation($this->functions, $this->sourceAccount);
+        return new InvokeHostFunctionOperation($this->function, $this->auth, $this->sourceAccount);
     }
 }

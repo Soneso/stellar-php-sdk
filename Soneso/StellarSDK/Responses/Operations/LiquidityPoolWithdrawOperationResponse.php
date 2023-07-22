@@ -69,6 +69,7 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse
                 $this->reservesReceived->add($value);
             }
         }
+        parent::loadFromJson($json);
 
     }
 

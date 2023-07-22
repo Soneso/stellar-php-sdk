@@ -9,37 +9,32 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrTransactionMetaV3
 {
 
+    public XdrExtensionPoint $ext;
     public array $txChangesBefore; // [XdrLedgerEntryChange]
     public array $operations; // [XdrOperationMeta]
     public array $txChangesAfter; // [XdrLedgerEntryChange]
-    public array $events; // [XdrOperationEvents]
-    public XdrTransactionResult $txResult;
-    public array $hashes; // [bytes string]
-    public array $diagnosticEvents; // [XdrOperationDiagnosticEvents]
+    public ?XdrSorobanTransactionMeta $sorobanMeta = null;
 
     /**
+     * @param XdrExtensionPoint $ext
      * @param array $txChangesBefore
      * @param array $operations
      * @param array $txChangesAfter
-     * @param array $events
-     * @param XdrTransactionResult $txResult
-     * @param array $hashes
-     * @param array $diagnosticEvents
+     * @param XdrSorobanTransactionMeta|null $sorobanMeta
      */
-    public function __construct(array $txChangesBefore, array $operations, array $txChangesAfter, array $events, XdrTransactionResult $txResult, array $hashes, array $diagnosticEvents)
+    public function __construct(XdrExtensionPoint $ext, array $txChangesBefore, array $operations, array $txChangesAfter, ?XdrSorobanTransactionMeta $sorobanMeta)
     {
+        $this->ext = $ext;
         $this->txChangesBefore = $txChangesBefore;
         $this->operations = $operations;
         $this->txChangesAfter = $txChangesAfter;
-        $this->events = $events;
-        $this->txResult = $txResult;
-        $this->hashes = $hashes;
-        $this->diagnosticEvents = $diagnosticEvents;
+        $this->sorobanMeta = $sorobanMeta;
     }
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::integer32(count($this->txChangesBefore));
+        $bytes = $this->ext->encode();
+        $bytes .= XdrEncoder::integer32(count($this->txChangesBefore));
         foreach($this->txChangesBefore as $val) {
             if ($val instanceof XdrLedgerEntryChange) {
                 $bytes .= $val->encode();
@@ -57,30 +52,19 @@ class XdrTransactionMetaV3
                 $bytes .= $val->encode();
             }
         }
-        $bytes .= XdrEncoder::integer32(count($this->events));
-        foreach($this->events as $val) {
-            if ($val instanceof XdrOperationEvents) {
-                $bytes .= $val->encode();
-            }
-        }
 
-        $bytes .= $this->txResult->encode();
-
-        foreach($this->hashes as $val) {
-            $bytes .= XdrEncoder::opaqueFixed($val, 32);
-        }
-
-        $bytes .= XdrEncoder::integer32(count($this->diagnosticEvents));
-        foreach($this->diagnosticEvents as $val) {
-            if ($val instanceof XdrOperationDiagnosticEvents) {
-                $bytes .= $val->encode();
-            }
+        if ($this->sorobanMeta !== null) {
+            $bytes .= XdrEncoder::integer32(1);
+            $bytes .= $this->sorobanMeta->encode();
+        } else {
+            $bytes .= XdrEncoder::integer32(0);
         }
 
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr):  XdrTransactionMetaV3 {
+        $ext = XdrExtensionPoint::decode($xdr);
         $valCount = $xdr->readInteger32();
         $txChangesBefore = array();
         for ($i = 0; $i < $valCount; $i++) {
@@ -96,27 +80,29 @@ class XdrTransactionMetaV3
         for ($i = 0; $i < $valCount; $i++) {
             array_push($txChangesAfter, XdrLedgerEntryChange::decode($xdr));
         }
-        $valCount = $xdr->readInteger32();
-        $events = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($events, XdrOperationEvents::decode($xdr));
-        }
-        $txResult = XdrTransactionResult::decode($xdr);
 
-        $hashesSize = 3;
-        $hashes = array();
-        for ($i = 0; $i < $hashesSize; $i++) {
-            $hash = $xdr->readOpaqueFixed(32);
-            array_push($hashes, $hash);
+        $sorobanMeta = null;
+        if ($xdr->readInteger32() == 1) {
+            $sorobanMeta = XdrSorobanTransactionMeta::decode($xdr);
         }
 
-        $valCount = $xdr->readInteger32();
-        $diagnosticEvents = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($diagnosticEvents, XdrOperationDiagnosticEvents::decode($xdr));
-        }
+        return new XdrTransactionMetaV3($ext, $txChangesBefore, $operations, $txChangesAfter, $sorobanMeta);
+    }
 
-        return new XdrTransactionMetaV3($txChangesBefore, $operations, $txChangesAfter, $events, $txResult, $hashes, $diagnosticEvents);
+    /**
+     * @return XdrExtensionPoint
+     */
+    public function getExt(): XdrExtensionPoint
+    {
+        return $this->ext;
+    }
+
+    /**
+     * @param XdrExtensionPoint $ext
+     */
+    public function setExt(XdrExtensionPoint $ext): void
+    {
+        $this->ext = $ext;
     }
 
     /**
@@ -168,50 +154,19 @@ class XdrTransactionMetaV3
     }
 
     /**
-     * @return array
+     * @return XdrSorobanTransactionMeta|null
      */
-    public function getEvents(): array
+    public function getSorobanMeta(): ?XdrSorobanTransactionMeta
     {
-        return $this->events;
+        return $this->sorobanMeta;
     }
 
     /**
-     * @param array $events
+     * @param XdrSorobanTransactionMeta|null $sorobanMeta
      */
-    public function setEvents(array $events): void
+    public function setSorobanMeta(?XdrSorobanTransactionMeta $sorobanMeta): void
     {
-        $this->events = $events;
+        $this->sorobanMeta = $sorobanMeta;
     }
 
-    /**
-     * @return XdrTransactionResult
-     */
-    public function getTxResult(): XdrTransactionResult
-    {
-        return $this->txResult;
-    }
-
-    /**
-     * @param XdrTransactionResult $txResult
-     */
-    public function setTxResult(XdrTransactionResult $txResult): void
-    {
-        $this->txResult = $txResult;
-    }
-
-    /**
-     * @return array
-     */
-    public function getHashes(): array
-    {
-        return $this->hashes;
-    }
-
-    /**
-     * @param array $hashes
-     */
-    public function setHashes(array $hashes): void
-    {
-        $this->hashes = $hashes;
-    }
 }

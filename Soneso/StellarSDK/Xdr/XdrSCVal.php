@@ -11,7 +11,7 @@ class XdrSCVal
 
     public XdrSCValType $type;
     public ?bool $b = null;
-    public ?XdrSCStatus $error = null;
+    public ?XdrSCError $error = null;
     public ?int $u32 = null;
     public ?int $i32 = null;
     public ?int $u64 = null;
@@ -27,7 +27,7 @@ class XdrSCVal
     public ?String $sym = null;
     public ?array $vec = null; // [XdrSCVal]
     public ?array $map = null; // [XdrSCMapEntry]
-    public ?XdrSCContractExecutable $exec = null;
+    public ?XdrSCContractInstance $instance = null;
     public ?XdrSCAddress $address = null;
     public ?XdrSCNonceKey $nonceKey = null;
 
@@ -48,9 +48,9 @@ class XdrSCVal
                 $bytes .= XdrEncoder::boolean($this->b);
                 break;
             case XdrSCValType::SCV_VOID:
-            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_EXECUTABLE:
+            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
                 break;
-            case XdrSCValType::SCV_STATUS:
+            case XdrSCValType::SCV_ERROR:
                 $bytes .= $this->error->encode();
                 break;
             case XdrSCValType::SCV_U32:
@@ -118,8 +118,8 @@ class XdrSCVal
                     $bytes .= XdrEncoder::integer32(0);
                 }
                 break;
-            case XdrSCValType::SCV_CONTRACT_EXECUTABLE:
-                $bytes .= $this->exec->encode();
+            case XdrSCValType::SCV_CONTRACT_INSTANCE:
+                $bytes .= $this->instance->encode();
                 break;
             case XdrSCValType::SCV_ADDRESS:
                 $bytes .= $this->address->encode();
@@ -138,10 +138,10 @@ class XdrSCVal
                 $result->b = $xdr->readBoolean();
                 break;
             case XdrSCValType::SCV_VOID:
-            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_EXECUTABLE:
+            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
                 break;
-            case XdrSCValType::SCV_STATUS:
-                $result->error = XdrSCStatus::decode($xdr);
+            case XdrSCValType::SCV_ERROR:
+                $result->error = XdrSCError::decode($xdr);
                 break;
             case XdrSCValType::SCV_U32:
                 $result->u32 = $xdr->readUnsignedInteger32();
@@ -202,8 +202,8 @@ class XdrSCVal
                     $result->map = $arr;
                 }
                 break;
-            case XdrSCValType::SCV_CONTRACT_EXECUTABLE:
-                $result->exec = XdrSCContractExecutable::decode($xdr);
+            case XdrSCValType::SCV_CONTRACT_INSTANCE:
+                $result->instance = XdrSCContractInstance::decode($xdr);
                 break;
             case XdrSCValType::SCV_ADDRESS:
                 $result->address = XdrSCAddress::decode($xdr);
@@ -238,15 +238,9 @@ class XdrSCVal
         return new XdrSCVal(XdrSCValType::VOID());
     }
 
-    public static function forStatus(XdrSCStatus $error) : XdrSCVal {
-        $result = new XdrSCVal(XdrSCValType::STATUS());
+    public static function forError(XdrSCError $error) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::ERROR());
         $result->error = $error;
-        return $result;
-    }
-
-    public static function forStatusOk() : XdrSCVal {
-        $result = new XdrSCVal(XdrSCValType::STATUS());
-        $result->error = XdrSCStatus::ok();
         return $result;
     }
 
@@ -328,9 +322,9 @@ class XdrSCVal
         return $result;
     }
 
-    public static function forString(String $symbol) : XdrSCVal {
+    public static function forString(String $str) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::STRING());
-        $result->sym = $symbol;
+        $result->str = $str;
         return $result;
     }
 
@@ -352,9 +346,9 @@ class XdrSCVal
         return $result;
     }
 
-    public static function forContractExecutable(XdrSCContractExecutable $exec) : XdrSCVal {
-        $result = new XdrSCVal(XdrSCValType::CONTRACT_EXECUTABLE());
-        $result->exec = $exec;
+    public static function forContractInstance(XdrSCContractInstance $instance) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::SCV_CONTRACT_INSTANCE());
+        $result->instance = $instance;
         return $result;
     }
 
@@ -364,19 +358,13 @@ class XdrSCVal
         return $result;
     }
 
-    public static function forLedgerKeyContractExecutable() : XdrSCVal {
-        return new XdrSCVal(XdrSCValType::LEDGER_KEY_CONTRACT_EXECUTABLE());
+    public static function forLedgerKeyContractInstance() : XdrSCVal {
+        return new XdrSCVal(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE());
     }
 
-    public static function forNonceKey(XdrSCNonceKey $nonceKey) : XdrSCVal {
+    public static function forLedgerNonceKey(XdrSCNonceKey $nonceKey) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::LEDGER_KEY_NONCE());
         $result->nonceKey = $nonceKey;
-        return $result;
-    }
-
-    public static function forNonceKeyWithAddress(XdrSCAddress $address) : XdrSCVal {
-        $result = new XdrSCVal(XdrSCValType::LEDGER_KEY_NONCE());
-        $result->nonceKey = new XdrSCNonceKey($address);
         return $result;
     }
 
@@ -417,19 +405,43 @@ class XdrSCVal
     }
 
     /**
+     * @param XdrSCValType $type
+     */
+    public function setType(XdrSCValType $type): void
+    {
+        $this->type = $type;
+    }
+
+    /**
      * @return bool|null
      */
-    public function getBool(): ?bool
+    public function getB(): ?bool
     {
         return $this->b;
     }
 
     /**
-     * @return XdrSCStatus|null
+     * @param bool|null $b
      */
-    public function getError(): ?XdrSCStatus
+    public function setB(?bool $b): void
+    {
+        $this->b = $b;
+    }
+
+    /**
+     * @return XdrSCError|null
+     */
+    public function getError(): ?XdrSCError
     {
         return $this->error;
+    }
+
+    /**
+     * @param XdrSCError|null $error
+     */
+    public function setError(?XdrSCError $error): void
+    {
+        $this->error = $error;
     }
 
     /**
@@ -441,11 +453,27 @@ class XdrSCVal
     }
 
     /**
+     * @param int|null $u32
+     */
+    public function setU32(?int $u32): void
+    {
+        $this->u32 = $u32;
+    }
+
+    /**
      * @return int|null
      */
     public function getI32(): ?int
     {
         return $this->i32;
+    }
+
+    /**
+     * @param int|null $i32
+     */
+    public function setI32(?int $i32): void
+    {
+        $this->i32 = $i32;
     }
 
     /**
@@ -457,11 +485,27 @@ class XdrSCVal
     }
 
     /**
+     * @param int|null $u64
+     */
+    public function setU64(?int $u64): void
+    {
+        $this->u64 = $u64;
+    }
+
+    /**
      * @return int|null
      */
     public function getI64(): ?int
     {
         return $this->i64;
+    }
+
+    /**
+     * @param int|null $i64
+     */
+    public function setI64(?int $i64): void
+    {
+        $this->i64 = $i64;
     }
 
     /**
@@ -473,11 +517,27 @@ class XdrSCVal
     }
 
     /**
+     * @param int|null $timepoint
+     */
+    public function setTimepoint(?int $timepoint): void
+    {
+        $this->timepoint = $timepoint;
+    }
+
+    /**
      * @return int|null
      */
     public function getDuration(): ?int
     {
         return $this->duration;
+    }
+
+    /**
+     * @param int|null $duration
+     */
+    public function setDuration(?int $duration): void
+    {
+        $this->duration = $duration;
     }
 
     /**
@@ -489,6 +549,14 @@ class XdrSCVal
     }
 
     /**
+     * @param XdrUInt128Parts|null $u128
+     */
+    public function setU128(?XdrUInt128Parts $u128): void
+    {
+        $this->u128 = $u128;
+    }
+
+    /**
      * @return XdrInt128Parts|null
      */
     public function getI128(): ?XdrInt128Parts
@@ -497,19 +565,43 @@ class XdrSCVal
     }
 
     /**
-     * @return XdrUInt256Parts
+     * @param XdrInt128Parts|null $i128
      */
-    public function getU256(): XdrUInt256Parts
+    public function setI128(?XdrInt128Parts $i128): void
+    {
+        $this->i128 = $i128;
+    }
+
+    /**
+     * @return XdrUInt256Parts|null
+     */
+    public function getU256(): ?XdrUInt256Parts
     {
         return $this->u256;
     }
 
     /**
-     * @return XdrInt256Parts
+     * @param XdrUInt256Parts|null $u256
      */
-    public function getI256(): XdrInt256Parts
+    public function setU256(?XdrUInt256Parts $u256): void
+    {
+        $this->u256 = $u256;
+    }
+
+    /**
+     * @return XdrInt256Parts|null
+     */
+    public function getI256(): ?XdrInt256Parts
     {
         return $this->i256;
+    }
+
+    /**
+     * @param XdrInt256Parts|null $i256
+     */
+    public function setI256(?XdrInt256Parts $i256): void
+    {
+        $this->i256 = $i256;
     }
 
     /**
@@ -521,11 +613,27 @@ class XdrSCVal
     }
 
     /**
+     * @param XdrDataValueMandatory|null $bytes
+     */
+    public function setBytes(?XdrDataValueMandatory $bytes): void
+    {
+        $this->bytes = $bytes;
+    }
+
+    /**
      * @return String|null
      */
     public function getStr(): ?string
     {
         return $this->str;
+    }
+
+    /**
+     * @param String|null $str
+     */
+    public function setStr(?string $str): void
+    {
+        $this->str = $str;
     }
 
     /**
@@ -537,11 +645,27 @@ class XdrSCVal
     }
 
     /**
+     * @param String|null $sym
+     */
+    public function setSym(?string $sym): void
+    {
+        $this->sym = $sym;
+    }
+
+    /**
      * @return array|null
      */
     public function getVec(): ?array
     {
         return $this->vec;
+    }
+
+    /**
+     * @param array|null $vec
+     */
+    public function setVec(?array $vec): void
+    {
+        $this->vec = $vec;
     }
 
     /**
@@ -553,11 +677,27 @@ class XdrSCVal
     }
 
     /**
-     * @return XdrSCContractExecutable|null
+     * @param array|null $map
      */
-    public function getExec(): ?XdrSCContractExecutable
+    public function setMap(?array $map): void
     {
-        return $this->exec;
+        $this->map = $map;
+    }
+
+    /**
+     * @return XdrSCContractInstance|null
+     */
+    public function getInstance(): ?XdrSCContractInstance
+    {
+        return $this->instance;
+    }
+
+    /**
+     * @param XdrSCContractInstance|null $instance
+     */
+    public function setInstance(?XdrSCContractInstance $instance): void
+    {
+        $this->instance = $instance;
     }
 
     /**
@@ -569,11 +709,27 @@ class XdrSCVal
     }
 
     /**
+     * @param XdrSCAddress|null $address
+     */
+    public function setAddress(?XdrSCAddress $address): void
+    {
+        $this->address = $address;
+    }
+
+    /**
      * @return XdrSCNonceKey|null
      */
     public function getNonceKey(): ?XdrSCNonceKey
     {
         return $this->nonceKey;
+    }
+
+    /**
+     * @param XdrSCNonceKey|null $nonceKey
+     */
+    public function setNonceKey(?XdrSCNonceKey $nonceKey): void
+    {
+        $this->nonceKey = $nonceKey;
     }
 
 }

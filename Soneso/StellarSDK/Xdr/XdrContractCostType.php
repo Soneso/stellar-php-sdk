@@ -29,8 +29,18 @@ class XdrContractCostType
     const VmMemRead = 16; // Cost of reading a slice of vm linear memory.
     const VmMemWrite = 17; // Cost of writing to a slice of vm linear memory.
     const VmInstantiation = 18; // Cost of instantiation a VM from wasm bytes code.
-    const InvokeVmFunction = 19; // Roundtrip cost of invoking a VM function from the host.
-    const ChargeBudget = 20; // Cost of charging a value to the budgeting system.
+    const VmCachedInstantiation = 19;
+    const InvokeVmFunction = 20;
+    const ChargeBudget = 21;
+    const ComputeKeccak256Hash = 22;
+    const ComputeEcdsaSecp256k1Key = 23;
+    const ComputeEcdsaSecp256k1Sig = 24;
+    const RecoverEcdsaSecp256k1Key = 25;
+    const Int256AddSub = 26;
+    const Int256Mul = 27;
+    const Int256Div = 28;
+    const Int256Pow = 29;
+    const Int256Shift = 30;
 
     public function __construct(int $value)
     {
@@ -50,7 +60,7 @@ class XdrContractCostType
         return XdrEncoder::integer32($this->value);
     }
 
-    public static function decode(XdrBuffer $xdr): XdrContractCostType
+    public function decode(XdrBuffer $xdr): XdrContractCostType
     {
         $value = $xdr->readInteger32();
         return new XdrContractCostType($value);

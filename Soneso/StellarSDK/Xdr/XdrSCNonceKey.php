@@ -9,38 +9,37 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrSCNonceKey
 {
 
-    public XdrSCAddress $nonceAddress;
+    public int $nonce;
 
     /**
-     * @param XdrSCAddress $nonceAddress
+     * @param int $nonce
      */
-    public function __construct(XdrSCAddress $nonceAddress)
+    public function __construct(int $nonce)
     {
-        $this->nonceAddress = $nonceAddress;
+        $this->nonce = $nonce;
     }
 
     public function encode(): string {
-        return $this->nonceAddress->encode();
+        return XdrEncoder::integer64($this->nonce);
     }
 
     public static function decode(XdrBuffer $xdr):  XdrSCNonceKey {
-        return new XdrSCNonceKey(XdrSCAddress::decode($xdr));
+        return new XdrSCNonceKey($xdr->readInteger64());
     }
 
     /**
-     * @return XdrSCAddress
+     * @return int
      */
-    public function getNonceAddress(): XdrSCAddress
+    public function getNonce(): int
     {
-        return $this->nonceAddress;
+        return $this->nonce;
     }
 
     /**
-     * @param XdrSCAddress $nonceAddress
+     * @param int $nonce
      */
-    public function setNonceAddress(XdrSCAddress $nonceAddress): void
+    public function setNonce(int $nonce): void
     {
-        $this->nonceAddress = $nonceAddress;
+        $this->nonce = $nonce;
     }
-
 }

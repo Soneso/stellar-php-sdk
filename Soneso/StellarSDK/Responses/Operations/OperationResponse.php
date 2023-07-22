@@ -165,6 +165,8 @@ class OperationResponse extends Response
                 OperationType::LIQUIDITY_POOL_DEPOSIT => LiquidityPoolDepositOperationResponse::fromJson($jsonData),
                 OperationType::LIQUIDITY_POOL_WITHDRAW => LiquidityPoolWithdrawOperationResponse::fromJson($jsonData),
                 OperationType::INVOKE_HOST_FUNCTION => InvokeHostFunctionOperationResponse::fromJson($jsonData),
+                OperationType::BUMP_FOOTPRINT_EXPIRATION => BumpFootprintExpirationOperationResponse::fromJson($jsonData),
+                OperationType::RESTORE_FOOTPRINT => RestoreFootprintOperationResponse::fromJson($jsonData),
                 default => throw new \InvalidArgumentException(sprintf("Unknown operation type: %s", $operationType)),
             };
         } else {

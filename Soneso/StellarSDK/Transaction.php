@@ -11,7 +11,6 @@ use Exception;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Crypto\KeyPair;
-use Soneso\StellarSDK\Soroban\Footprint;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
@@ -150,6 +149,21 @@ class Transaction extends AbstractTransaction
     public function getSorobanTransactionData(): ?XdrSorobanTransactionData
     {
         return $this->sorobanTransactionData;
+    }
+
+    /**
+     * @param array|null $auth
+     */
+    public function setSorobanAuth(?array $auth = array()) {
+        $authToSet = $auth;
+        if ($authToSet == null) {
+            $authToSet = array();
+        }
+        foreach ($this->operations as $operation) {
+            if ($operation instanceof InvokeHostFunctionOperation) {
+                $operation->auth = $authToSet;
+            }
+        }
     }
 
     /**
