@@ -343,7 +343,7 @@ $operation = $builder->build();
 
 #### Soroban Authorization
 
-The Flutter SDK provides support for the [Soroban Authorization Framework](https://soroban.stellar.org/docs/fundamentals-and-concepts/authorization).
+The PHP SDK provides support for the [Soroban Authorization Framework](https://soroban.stellar.org/docs/fundamentals-and-concepts/authorization).
 
 To provide authorization you can add an array of `SorobanAuthorizationEntry` to the transaction before sending it.
 
