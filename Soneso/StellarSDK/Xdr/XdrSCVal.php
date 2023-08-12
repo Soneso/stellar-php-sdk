@@ -269,13 +269,13 @@ class XdrSCVal
     }
 
     public static function forTimepoint(int $timepoint) : XdrSCVal {
-        $result = new XdrSCVal(XdrSCValType::U64());
+        $result = new XdrSCVal(XdrSCValType::TIMEPOINT());
         $result->timepoint = $timepoint;
         return $result;
     }
 
     public static function forDuration(int $duration) : XdrSCVal {
-        $result = new XdrSCVal(XdrSCValType::U64());
+        $result = new XdrSCVal(XdrSCValType::DURATION());
         $result->duration = $duration;
         return $result;
     }

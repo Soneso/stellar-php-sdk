@@ -12,8 +12,8 @@ class XdrSCError
     public XdrSCErrorCode $code;
 
     public function __construct(XdrSCErrorType $type, XdrSCErrorCode $code) {
-        $this->$type = $type;
-        $this->$code = $code;
+        $this->type = $type;
+        $this->code = $code;
     }
 
     public function encode(): string {

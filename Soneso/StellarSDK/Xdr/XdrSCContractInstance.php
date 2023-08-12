@@ -27,6 +27,7 @@ class XdrSCContractInstance
     public function encode(): string {
         $bytes = $this->executable->encode();
         if ($this->storage !== null) {
+            $bytes .= XdrEncoder::integer32(1);
             $bytes .= XdrEncoder::integer32(count($this->storage));
             foreach($this->storage  as $val) {
                 if ($val instanceof XdrSCMapEntry) {
