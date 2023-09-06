@@ -69,6 +69,16 @@ class XdrSCSpecEntry
         return $result;
     }
 
+    public static function fromBase64Xdr(String $base64Xdr) : XdrSCSpecEntry {
+        $xdr = base64_decode($base64Xdr);
+        $xdrBuffer = new XdrBuffer($xdr);
+        return XdrSCSpecEntry::decode($xdrBuffer);
+    }
+
+    public function toBase64Xdr() : String {
+        return base64_encode($this->encode());
+    }
+
     /**
      * @return XdrSCSpecEntryKind
      */
