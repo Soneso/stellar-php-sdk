@@ -22,6 +22,8 @@ class AssetResponse extends Response
     private int $numAccounts;
     private int $numClaimableBalances;
     private int $numLiquidityPools;
+    private ?int $numContracts = null;
+    private ?string $contractsAmount = null;
     private AssetFlagsResponse $flags;
     private AssetLinksResponse $links;
 
@@ -137,6 +139,38 @@ class AssetResponse extends Response
         return $this->links;
     }
 
+    /**
+     * @return int|null
+     */
+    public function getNumContracts(): ?int
+    {
+        return $this->numContracts;
+    }
+
+    /**
+     * @param int|null $numContracts
+     */
+    public function setNumContracts(?int $numContracts): void
+    {
+        $this->numContracts = $numContracts;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getContractsAmount(): ?string
+    {
+        return $this->contractsAmount;
+    }
+
+    /**
+     * @param string|null $contractsAmount
+     */
+    public function setContractsAmount(?string $contractsAmount): void
+    {
+        $this->contractsAmount = $contractsAmount;
+    }
+
     protected function loadFromJson(array $json) : void {
 
         if (isset($json['asset_type'])) $this->assetType = $json['asset_type'];
@@ -148,9 +182,11 @@ class AssetResponse extends Response
         if (isset($json['amount'])) $this->amount = $json['amount'];
         if (isset($json['claimable_balances_amount'])) $this->claimableBalancesAmount = $json['claimable_balances_amount'];
         if (isset($json['liquidity_pools_amount'])) $this->liquidityPoolsAmount = $json['liquidity_pools_amount'];
+        if (isset($json['contracts_amount'])) $this->contractsAmount = $json['contracts_amount'];
         if (isset($json['num_accounts'])) $this->numAccounts = $json['num_accounts'];
         if (isset($json['num_claimable_balances'])) $this->numClaimableBalances = $json['num_claimable_balances'];
         if (isset($json['num_liquidity_pools'])) $this->numLiquidityPools = $json['num_liquidity_pools'];
+        if (isset($json['num_contracts'])) $this->numContracts = $json['num_contracts'];
         if (isset($json['flags'])) $this->flags = AssetFlagsResponse::fromJson($json['flags']);
         if (isset($json['_links'])) $this->links = AssetLinksResponse::fromJson($json['_links']);
     }
