@@ -43,4 +43,9 @@ class RequestType
     public const ANCHOR_FEE = "anchor_fee";
     public const ANCHOR_TRANSACTIONS = "anchor_transactions";
     public const ANCHOR_TRANSACTION = "anchor_transaction";
+    public const SEP24_INFO = "sep24_info";
+    public const SEP24_FEE = "sep24_fee";
+    public const SEP24_POST = "sep24_post";
+    public const SEP24_TRANSACTIONS = "sep24_transactions";
+    public const SEP24_TRANSACTION = "sep24_transaction";
 }

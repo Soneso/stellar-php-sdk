@@ -34,6 +34,11 @@ use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
 use Soneso\StellarSDK\SEP\Federation\FederationResponse;
+use Soneso\StellarSDK\SEP\Interactive\SEP24FeeResponse;
+use Soneso\StellarSDK\SEP\Interactive\SEP24InfoResponse;
+use Soneso\StellarSDK\SEP\Interactive\SEP24InteractiveResponse;
+use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionResponse;
+use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionsResponse;
 use Soneso\StellarSDK\SEP\KYCService\GetCustomerInfoResponse;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoResponse;
 use Soneso\StellarSDK\SEP\TransferServerService\AnchorTransactionResponse;
@@ -56,7 +61,7 @@ class ResponseHandler
         // not success
         // this should normally not happen since it will be handled by gruzzle (throwing corresponding gruzzle exception)
         if (300 <= $response->getStatusCode()) {
-            throw new \RuntimeException($content);
+            throw new \RuntimeException($content, $response->getStatusCode());
         }
 
         // success
@@ -101,6 +106,11 @@ class ResponseHandler
             RequestType::ANCHOR_FEE => FeeResponse::fromJson($jsonData),
             RequestType::ANCHOR_TRANSACTIONS => AnchorTransactionsResponse::fromJson($jsonData),
             RequestType::ANCHOR_TRANSACTION => AnchorTransactionResponse::fromJson($jsonData),
+            RequestType::SEP24_INFO => SEP24InfoResponse::fromJson($jsonData),
+            RequestType::SEP24_FEE => SEP24FeeResponse::fromJson($jsonData),
+            RequestType::SEP24_POST => SEP24InteractiveResponse::fromJson($jsonData),
+            RequestType::SEP24_TRANSACTIONS => SEP24TransactionsResponse::fromJson($jsonData),
+            RequestType::SEP24_TRANSACTION => SEP24TransactionResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };
 
