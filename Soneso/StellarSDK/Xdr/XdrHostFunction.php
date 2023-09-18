@@ -11,7 +11,7 @@ class XdrHostFunction
 {
 
     public XdrHostFunctionType $type;
-    public ?array $invokeContract = null; // [XdrSCVal]
+    public ?XdrInvokeContractArgs $invokeContract = null;
     public ?XdrCreateContractArgs $createContract = null;
     public ?XdrDataValueMandatory $wasm = null;
 
@@ -29,12 +29,7 @@ class XdrHostFunction
 
         switch ($this->type->value) {
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                $bytes .= XdrEncoder::integer32(count($this->invokeContract));
-                foreach($this->invokeContract as $val) {
-                    if ($val instanceof XdrSCVal) {
-                        $bytes .= $val->encode();
-                    }
-                }
+                $bytes .= $this->invokeContract->encode();
                 break;
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
                 $bytes .= $this->createContract->encode();
@@ -50,12 +45,7 @@ class XdrHostFunction
         $result = new XdrHostFunction(XdrHostFunctionType::decode($xdr));
         switch ($result->type->value) {
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                $valCount = $xdr->readInteger32();
-                $arr = array();
-                for ($i = 0; $i < $valCount; $i++) {
-                    array_push($arr, XdrSCVal::decode($xdr));
-                }
-                $result->invokeContract = $arr;
+                $result->invokeContract = XdrInvokeContractArgs::decode($xdr);
                 break;
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
                 $result->createContract = XdrCreateContractArgs::decode($xdr);
@@ -67,9 +57,9 @@ class XdrHostFunction
         return $result;
     }
 
-    public static function forInvokingContractWithArgs(array $scValArgs) :  XdrHostFunction {
+    public static function forInvokingContractWithArgs(XdrInvokeContractArgs $args) :  XdrHostFunction {
         $result = new XdrHostFunction(XdrHostFunctionType::INVOKE_CONTRACT());
-        $result->invokeContract = $scValArgs;
+        $result->invokeContract = $args;
         return $result;
     }
 
@@ -126,17 +116,17 @@ class XdrHostFunction
     }
 
     /**
-     * @return array|null
+     * @return XdrInvokeContractArgs|null
      */
-    public function getInvokeContract(): ?array
+    public function getInvokeContract(): ?XdrInvokeContractArgs
     {
         return $this->invokeContract;
     }
 
     /**
-     * @param array|null $invokeContract
+     * @param XdrInvokeContractArgs|null $invokeContract
      */
-    public function setInvokeContract(?array $invokeContract): void
+    public function setInvokeContract(?XdrInvokeContractArgs $invokeContract): void
     {
         $this->invokeContract = $invokeContract;
     }
@@ -172,4 +162,5 @@ class XdrHostFunction
     {
         $this->wasm = $wasm;
     }
+
 }

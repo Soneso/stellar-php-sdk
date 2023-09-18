@@ -9,29 +9,23 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrLedgerKeyContractCode
 {
     public string $hash;
-    public XdrContractEntryBodyType $bodyType;
 
     /**
      * @param string $hash
-     * @param XdrContractEntryBodyType $bodyType
      */
-    public function __construct(string $hash, XdrContractEntryBodyType $bodyType)
+    public function __construct(string $hash)
     {
         $this->hash = $hash;
-        $this->bodyType = $bodyType;
     }
 
 
     public function encode(): string {
-        $body = XdrEncoder::opaqueFixed($this->hash, 32);
-        $body .= $this->bodyType->encode();
-        return $body;
+        return XdrEncoder::opaqueFixed($this->hash, 32);
     }
 
     public static function decode(XdrBuffer $xdr) : XdrLedgerKeyContractCode {
         $hash = $xdr->readOpaqueFixed(32);
-        $bodyType = XdrContractEntryBodyType::decode($xdr);
-        return new XdrLedgerKeyContractCode($hash, $bodyType);
+        return new XdrLedgerKeyContractCode($hash);
     }
 
     /**
@@ -49,21 +43,4 @@ class XdrLedgerKeyContractCode
     {
         $this->hash = $hash;
     }
-
-    /**
-     * @return XdrContractEntryBodyType
-     */
-    public function getBodyType(): XdrContractEntryBodyType
-    {
-        return $this->bodyType;
-    }
-
-    /**
-     * @param XdrContractEntryBodyType $bodyType
-     */
-    public function setBodyType(XdrContractEntryBodyType $bodyType): void
-    {
-        $this->bodyType = $bodyType;
-    }
-
 }

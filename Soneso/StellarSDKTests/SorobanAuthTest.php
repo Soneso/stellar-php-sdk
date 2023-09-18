@@ -27,7 +27,6 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
-use Soneso\StellarSDK\Xdr\XdrContractEntryBodyType;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
@@ -294,7 +293,6 @@ class SorobanAuthTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
 
         $transactionData = $simulateResponse->getTransactionData();
@@ -311,7 +309,6 @@ class SorobanAuthTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getMinResourceFee());
 
@@ -353,11 +350,11 @@ class SorobanAuthTest extends TestCase
         $readOnly = array();
         $readWrite = array();
         $codeKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-        $codeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId), XdrContractEntryBodyType::DATA_ENTRY());
+        $codeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
         array_push($readOnly, $codeKey);
 
         $footprint = new XdrLedgerFootprint($readOnly, $readWrite);
-        $resources = new XdrSorobanResources($footprint, 0,0,0,0);
+        $resources = new XdrSorobanResources($footprint, 0,0,0);
         $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
 
         $transaction->setSorobanTransactionData($transactionData) ;
@@ -365,7 +362,6 @@ class SorobanAuthTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getMinResourceFee());
 

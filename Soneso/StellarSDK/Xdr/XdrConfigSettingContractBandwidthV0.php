@@ -8,52 +8,52 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrConfigSettingContractBandwidthV0
 {
-    public int $ledgerMaxPropagateSizeBytes;
+    public int $ledgerMaxTxsSizeBytes;
     public int $txMaxSizeBytes;
-    public int $feePropagateData1KB;
+    public int $feeTxSize1KB;
 
     /**
-     * @param int $ledgerMaxPropagateSizeBytes Maximum size in bytes to propagate per ledger
-     * @param int $txMaxSizeBytes Maximum size in bytes for a transaction
-     * @param int $feePropagateData1KB Fee for propagating 1KB of data
+     * @param int $ledgerMaxTxsSizeBytes
+     * @param int $txMaxSizeBytes
+     * @param int $feeTxSize1KB
      */
-    public function __construct(int $ledgerMaxPropagateSizeBytes, int $txMaxSizeBytes, int $feePropagateData1KB)
+    public function __construct(int $ledgerMaxTxsSizeBytes, int $txMaxSizeBytes, int $feeTxSize1KB)
     {
-        $this->ledgerMaxPropagateSizeBytes = $ledgerMaxPropagateSizeBytes;
+        $this->ledgerMaxTxsSizeBytes = $ledgerMaxTxsSizeBytes;
         $this->txMaxSizeBytes = $txMaxSizeBytes;
-        $this->feePropagateData1KB = $feePropagateData1KB;
+        $this->feeTxSize1KB = $feeTxSize1KB;
     }
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::unsignedInteger32($this->ledgerMaxPropagateSizeBytes);
+        $bytes = XdrEncoder::unsignedInteger32($this->ledgerMaxTxsSizeBytes);
         $bytes .= XdrEncoder::unsignedInteger32($this->txMaxSizeBytes);
-        $bytes .= XdrEncoder::integer64($this->feePropagateData1KB);
+        $bytes .= XdrEncoder::integer64($this->feeTxSize1KB);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrConfigSettingContractBandwidthV0 {
-        $ledgerMaxPropagateSizeBytes = $xdr->readUnsignedInteger32();
+        $ledgerMaxTxsSizeBytes = $xdr->readUnsignedInteger32();
         $txMaxSizeBytes = $xdr->readUnsignedInteger32();
-        $feePropagateData1KB = $xdr->readInteger64();
+        $feeTxSize1KB = $xdr->readInteger64();
 
-        return new XdrConfigSettingContractBandwidthV0($ledgerMaxPropagateSizeBytes, $txMaxSizeBytes, $feePropagateData1KB);
+        return new XdrConfigSettingContractBandwidthV0($ledgerMaxTxsSizeBytes, $txMaxSizeBytes, $feeTxSize1KB);
     }
 
     /**
      * @return int
      */
-    public function getLedgerMaxPropagateSizeBytes(): int
+    public function getLedgerMaxTxsSizeBytes(): int
     {
-        return $this->ledgerMaxPropagateSizeBytes;
+        return $this->ledgerMaxTxsSizeBytes;
     }
 
     /**
-     * @param int $ledgerMaxPropagateSizeBytes
+     * @param int $ledgerMaxTxsSizeBytes
      */
-    public function setLedgerMaxPropagateSizeBytes(int $ledgerMaxPropagateSizeBytes): void
+    public function setLedgerMaxTxsSizeBytes(int $ledgerMaxTxsSizeBytes): void
     {
-        $this->ledgerMaxPropagateSizeBytes = $ledgerMaxPropagateSizeBytes;
+        $this->ledgerMaxTxsSizeBytes = $ledgerMaxTxsSizeBytes;
     }
 
     /**
@@ -75,16 +75,17 @@ class XdrConfigSettingContractBandwidthV0
     /**
      * @return int
      */
-    public function getFeePropagateData1KB(): int
+    public function getFeeTxSize1KB(): int
     {
-        return $this->feePropagateData1KB;
+        return $this->feeTxSize1KB;
     }
 
     /**
-     * @param int $feePropagateData1KB
+     * @param int $feeTxSize1KB
      */
-    public function setFeePropagateData1KB(int $feePropagateData1KB): void
+    public function setFeeTxSize1KB(int $feeTxSize1KB): void
     {
-        $this->feePropagateData1KB = $feePropagateData1KB;
+        $this->feeTxSize1KB = $feeTxSize1KB;
     }
+
 }

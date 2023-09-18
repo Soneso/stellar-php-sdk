@@ -19,6 +19,7 @@ class XdrLedgerEntryData
     public ?XdrContractDataEntry $contractData = null;
     public ?XdrContractCodeEntry $contractCode = null;
     public ?XdrConfigSettingEntry $configSetting = null;
+    public ?XdrExpirationEntry $expirationEntry = null;
 
     /**
      * @param XdrLedgerEntryType $type
@@ -59,6 +60,9 @@ class XdrLedgerEntryData
             case XdrLedgerEntryType::CONFIG_SETTING:
                 $bytes .= $this->configSetting->encode();
                 break;
+            case XdrLedgerEntryType::EXPIRATION:
+                $bytes .= $this->expirationEntry->encode();
+                break;
         }
         return $bytes;
     }
@@ -92,6 +96,9 @@ class XdrLedgerEntryData
                 break;
             case XdrLedgerEntryType::CONFIG_SETTING:
                 $result->configSetting = XdrConfigSettingEntry::decode($xdr);
+                break;
+            case XdrLedgerEntryType::EXPIRATION:
+                $result->expirationEntry = XdrExpirationEntry::decode($xdr);
                 break;
         }
         return $result;
@@ -265,5 +272,21 @@ class XdrLedgerEntryData
     public function setConfigSetting(?XdrConfigSettingEntry $configSetting): void
     {
         $this->configSetting = $configSetting;
+    }
+
+    /**
+     * @return XdrExpirationEntry|null
+     */
+    public function getExpirationEntry(): ?XdrExpirationEntry
+    {
+        return $this->expirationEntry;
+    }
+
+    /**
+     * @param XdrExpirationEntry|null $expirationEntry
+     */
+    public function setExpirationEntry(?XdrExpirationEntry $expirationEntry): void
+    {
+        $this->expirationEntry = $expirationEntry;
     }
 }

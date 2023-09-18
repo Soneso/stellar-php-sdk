@@ -27,6 +27,7 @@ class XdrBumpFootprintExpirationResult
             case XdrBumpFootprintExpirationResultCode::BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
             case XdrBumpFootprintExpirationResultCode::BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
             case XdrBumpFootprintExpirationResultCode::BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
+            case XdrBumpFootprintExpirationResultCode::BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
         }
         return $bytes;
@@ -38,6 +39,7 @@ class XdrBumpFootprintExpirationResult
             case XdrBumpFootprintExpirationResultCode::BUMP_FOOTPRINT_EXPIRATION_SUCCESS:
             case XdrBumpFootprintExpirationResultCode::BUMP_FOOTPRINT_EXPIRATION_MALFORMED:
             case XdrBumpFootprintExpirationResultCode::BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED:
+            case XdrBumpFootprintExpirationResultCode::BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
         }
         return $result;

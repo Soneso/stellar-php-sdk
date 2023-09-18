@@ -8,46 +8,62 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrContractDataEntry
 {
+    public XdrExtensionPoint $ext;
     public XdrSCAddress $contract;
     public XdrSCVal $key;
     public XdrContractDataDurability $durability;
-    public XdrContractDataEntryBody $body;
-    public int $expirationLedgerSeq; // uint32
+    public XdrSCVal $val;
 
     /**
+     * @param XdrExtensionPoint $ext
      * @param XdrSCAddress $contract
      * @param XdrSCVal $key
      * @param XdrContractDataDurability $durability
-     * @param XdrContractDataEntryBody $body
-     * @param int $expirationLedgerSeq
+     * @param XdrSCVal $val
      */
-    public function __construct(XdrSCAddress $contract, XdrSCVal $key, XdrContractDataDurability $durability, XdrContractDataEntryBody $body, int $expirationLedgerSeq)
+    public function __construct(XdrExtensionPoint $ext, XdrSCAddress $contract, XdrSCVal $key, XdrContractDataDurability $durability, XdrSCVal $val)
     {
+        $this->ext = $ext;
         $this->contract = $contract;
         $this->key = $key;
         $this->durability = $durability;
-        $this->body = $body;
-        $this->expirationLedgerSeq = $expirationLedgerSeq;
+        $this->val = $val;
     }
 
 
     public function encode(): string {
-        $bytes = $this->contract->encode();
+        $bytes = $this->ext->encode();
+        $bytes .= $this->contract->encode();
         $bytes .= $this->key->encode();
         $bytes .= $this->durability->encode();
-        $bytes .= $this->body->encode();
-        $bytes .= XdrEncoder::unsignedInteger32($this->expirationLedgerSeq);
+        $bytes .= $this->val->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrContractDataEntry {
+        $ext = XdrExtensionPoint::decode($xdr);
         $contract = XdrSCAddress::decode($xdr);
         $key = XdrSCVal::decode($xdr);
         $durability = XdrContractDataDurability::decode($xdr);
-        $body = XdrContractDataEntryBody::decode($xdr);
-        $expirationLedgerSeq = $xdr->readUnsignedInteger32();
+        $val = XdrSCVal::decode($xdr);
 
-        return new XdrContractDataEntry($contract, $key, $durability, $body, $expirationLedgerSeq);
+        return new XdrContractDataEntry($ext, $contract, $key, $durability, $val);
+    }
+
+    /**
+     * @return XdrExtensionPoint
+     */
+    public function getExt(): XdrExtensionPoint
+    {
+        return $this->ext;
+    }
+
+    /**
+     * @param XdrExtensionPoint $ext
+     */
+    public function setExt(XdrExtensionPoint $ext): void
+    {
+        $this->ext = $ext;
     }
 
     /**
@@ -99,35 +115,19 @@ class XdrContractDataEntry
     }
 
     /**
-     * @return XdrContractDataEntryBody
+     * @return XdrSCVal
      */
-    public function getBody(): XdrContractDataEntryBody
+    public function getVal(): XdrSCVal
     {
-        return $this->body;
+        return $this->val;
     }
 
     /**
-     * @param XdrContractDataEntryBody $body
+     * @param XdrSCVal $val
      */
-    public function setBody(XdrContractDataEntryBody $body): void
+    public function setVal(XdrSCVal $val): void
     {
-        $this->body = $body;
-    }
-
-    /**
-     * @return int
-     */
-    public function getExpirationLedgerSeq(): int
-    {
-        return $this->expirationLedgerSeq;
-    }
-
-    /**
-     * @param int $expirationLedgerSeq
-     */
-    public function setExpirationLedgerSeq(int $expirationLedgerSeq): void
-    {
-        $this->expirationLedgerSeq = $expirationLedgerSeq;
+        $this->val = $val;
     }
 
 }

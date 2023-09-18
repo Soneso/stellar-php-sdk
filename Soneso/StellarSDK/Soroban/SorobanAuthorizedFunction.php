@@ -8,20 +8,21 @@ namespace Soneso\StellarSDK\Soroban;
 
 use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
+use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunction;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType;
 
 
 class SorobanAuthorizedFunction
 {
-    public ?SorobanAuthorizedContractFunction $contractFn = null;
+    public ?XdrInvokeContractArgs $contractFn = null;
     public ?XdrCreateContractArgs $createContractHostFn = null;
 
     /**
-     * @param SorobanAuthorizedContractFunction|null $contractFn
+     * @param XdrInvokeContractArgs|null $contractFn
      * @param XdrCreateContractArgs|null $createContractHostFn
      */
-    public function __construct(?SorobanAuthorizedContractFunction $contractFn = null, ?XdrCreateContractArgs $createContractHostFn = null)
+    public function __construct(?XdrInvokeContractArgs $contractFn = null, ?XdrCreateContractArgs $createContractHostFn = null)
     {
         if ($contractFn == null && $createContractHostFn == null) {
             throw new InvalidArgumentException("Invalid arguments");
@@ -35,7 +36,7 @@ class SorobanAuthorizedFunction
     }
 
     public static function forContractFunction(Address $contractAddress, string $functionName, array $args = array()) : SorobanAuthorizedFunction {
-        $cfn = new SorobanAuthorizedContractFunction($contractAddress, $functionName,$args);
+        $cfn = new XdrInvokeContractArgs($contractAddress->toXdr(), $functionName, $args);
         return new SorobanAuthorizedFunction($cfn);
     }
 
@@ -45,7 +46,7 @@ class SorobanAuthorizedFunction
 
     public static function fromXdr(XdrSorobanAuthorizedFunction $xdr) : SorobanAuthorizedFunction {
         if ($xdr->type->value == XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN && $xdr->contractFn != null) {
-            return new SorobanAuthorizedFunction(SorobanAuthorizedContractFunction::fromXdr($xdr->contractFn));
+            return new SorobanAuthorizedFunction($xdr->contractFn);
         }
         return new SorobanAuthorizedFunction(null, $xdr->createContractHostFn);
     }
@@ -53,7 +54,7 @@ class SorobanAuthorizedFunction
     public function toXdr(): XdrSorobanAuthorizedFunction {
         if ($this->contractFn != null) {
             $af = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN());
-            $af->contractFn = $this->contractFn->toXdr();
+            $af->contractFn = $this->contractFn;
             return $af;
         }
         $af = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN());
@@ -62,17 +63,17 @@ class SorobanAuthorizedFunction
     }
 
     /**
-     * @return SorobanAuthorizedContractFunction|null
+     * @return XdrInvokeContractArgs|null
      */
-    public function getContractFn(): ?SorobanAuthorizedContractFunction
+    public function getContractFn(): ?XdrInvokeContractArgs
     {
         return $this->contractFn;
     }
 
     /**
-     * @param SorobanAuthorizedContractFunction|null $contractFn
+     * @param XdrInvokeContractArgs|null $contractFn
      */
-    public function setContractFn(?SorobanAuthorizedContractFunction $contractFn): void
+    public function setContractFn(?XdrInvokeContractArgs $contractFn): void
     {
         $this->contractFn = $contractFn;
     }
@@ -92,4 +93,5 @@ class SorobanAuthorizedFunction
     {
         $this->createContractHostFn = $createContractHostFn;
     }
+
 }

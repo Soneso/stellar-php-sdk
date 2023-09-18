@@ -20,11 +20,10 @@ class XdrConfigSettingContractLedgerCostV0
     public int $feeReadLedgerEntry;
     public int $feeWriteLedgerEntry;
     public int $feeRead1KB;
-    public int $feeWrite1KB;
-    public int $bucketListSizeBytes;
-    public int $bucketListFeeRateLow;
-    public int $bucketListFeeRateHigh;
-    public int $bucketListGrowthFactor;
+    public int $bucketListTargetSizeBytes;
+    public int $writeFee1KBBucketListLow;
+    public int $writeFee1KBBucketListHigh;
+    public int $bucketListWriteFeeGrowthFactor;
 
     /**
      * @param int $ledgerMaxReadLedgerEntries Maximum number of ledger entry read operations per ledger
@@ -38,19 +37,18 @@ class XdrConfigSettingContractLedgerCostV0
      * @param int $feeReadLedgerEntry Fee per ledger entry read
      * @param int $feeWriteLedgerEntry Fee per ledger entry write
      * @param int $feeRead1KB Fee for reading 1KB
-     * @param int $feeWrite1KB Fee for writing 1KB
-     * @param int $bucketListSizeBytes Bucket list fees grow slowly up to that size
-     * @param int $bucketListFeeRateLow Fee rate in stroops when the bucket list is empty
-     * @param int $bucketListFeeRateHigh  Fee rate in stroops when the bucket list reached bucketListSizeBytes
-     * @param int $bucketListGrowthFactor Rate multiplier for any additional data past the first bucketListSizeBytes
+     * @param int $bucketListTargetSizeBytes Write fee grows linearly until bucket list reaches this size
+     * @param int $writeFee1KBBucketListLow Fee per 1KB write when the bucket list is empty
+     * @param int $writeFee1KBBucketListHigh  Fee per 1KB write when the bucket list has reached `bucketListTargetSizeBytes`
+     * @param int $bucketListWriteFeeGrowthFactor Write fee multiplier for any additional data past the first `bucketListTargetSizeBytes`
      */
     public function __construct(int $ledgerMaxReadLedgerEntries, int $ledgerMaxReadBytes,
                                 int $ledgerMaxWriteLedgerEntries, int $ledgerMaxWriteBytes,
                                 int $txMaxReadLedgerEntries, int $txMaxReadBytes,
                                 int $txMaxWriteLedgerEntries, int $txMaxWriteBytes,
                                 int $feeReadLedgerEntry, int $feeWriteLedgerEntry,
-                                int $feeRead1KB, int $feeWrite1KB, int $bucketListSizeBytes,
-                                int $bucketListFeeRateLow, int $bucketListFeeRateHigh, int $bucketListGrowthFactor)
+                                int $feeRead1KB, int $bucketListTargetSizeBytes, int $writeFee1KBBucketListLow,
+                                int $writeFee1KBBucketListHigh, int $bucketListWriteFeeGrowthFactor)
     {
         $this->ledgerMaxReadLedgerEntries = $ledgerMaxReadLedgerEntries;
         $this->ledgerMaxReadBytes = $ledgerMaxReadBytes;
@@ -63,11 +61,10 @@ class XdrConfigSettingContractLedgerCostV0
         $this->feeReadLedgerEntry = $feeReadLedgerEntry;
         $this->feeWriteLedgerEntry = $feeWriteLedgerEntry;
         $this->feeRead1KB = $feeRead1KB;
-        $this->feeWrite1KB = $feeWrite1KB;
-        $this->bucketListSizeBytes = $bucketListSizeBytes;
-        $this->bucketListFeeRateLow = $bucketListFeeRateLow;
-        $this->bucketListFeeRateHigh = $bucketListFeeRateHigh;
-        $this->bucketListGrowthFactor = $bucketListGrowthFactor;
+        $this->bucketListTargetSizeBytes = $bucketListTargetSizeBytes;
+        $this->writeFee1KBBucketListLow = $writeFee1KBBucketListLow;
+        $this->writeFee1KBBucketListHigh = $writeFee1KBBucketListHigh;
+        $this->bucketListWriteFeeGrowthFactor = $bucketListWriteFeeGrowthFactor;
     }
 
 
@@ -83,11 +80,10 @@ class XdrConfigSettingContractLedgerCostV0
         $bytes .= XdrEncoder::integer64($this->feeReadLedgerEntry);
         $bytes .= XdrEncoder::integer64($this->feeWriteLedgerEntry);
         $bytes .= XdrEncoder::integer64($this->feeRead1KB);
-        $bytes .= XdrEncoder::integer64($this->feeWrite1KB);
-        $bytes .= XdrEncoder::integer64($this->bucketListSizeBytes);
-        $bytes .= XdrEncoder::integer64($this->bucketListFeeRateLow);
-        $bytes .= XdrEncoder::integer64($this->bucketListFeeRateHigh);
-        $bytes .= XdrEncoder::unsignedInteger32($this->bucketListGrowthFactor);
+        $bytes .= XdrEncoder::integer64($this->bucketListTargetSizeBytes);
+        $bytes .= XdrEncoder::integer64($this->writeFee1KBBucketListLow);
+        $bytes .= XdrEncoder::integer64($this->writeFee1KBBucketListHigh);
+        $bytes .= XdrEncoder::unsignedInteger32($this->bucketListWriteFeeGrowthFactor);
 
         return $bytes;
     }
@@ -105,20 +101,20 @@ class XdrConfigSettingContractLedgerCostV0
         $feeReadLedgerEntry = $xdr->readInteger64();
         $feeWriteLedgerEntry = $xdr->readInteger64();
         $feeRead1KB = $xdr->readInteger64();
-        $feeWrite1KB = $xdr->readInteger64();
-        $bucketListSizeBytes = $xdr->readInteger64();
-        $bucketListFeeRateLow = $xdr->readInteger64();
-        $bucketListFeeRateHigh = $xdr->readInteger64();
+        $bucketListTargetSizeBytes = $xdr->readInteger64();
+        $writeFee1KBBucketListLow = $xdr->readInteger64();
+        $writeFee1KBBucketListHigh = $xdr->readInteger64();
 
-        $bucketListGrowthFactor = $xdr->readUnsignedInteger32();
+        $bucketListWriteFeeGrowthFactor = $xdr->readUnsignedInteger32();
 
         return new XdrConfigSettingContractLedgerCostV0($ledgerMaxReadLedgerEntries, $ledgerMaxReadBytes,
                                 $ledgerMaxWriteLedgerEntries, $ledgerMaxWriteBytes,
                                 $txMaxReadLedgerEntries, $txMaxReadBytes,
                                 $txMaxWriteLedgerEntries, $txMaxWriteBytes,
                                 $feeReadLedgerEntry, $feeWriteLedgerEntry,
-                                $feeRead1KB, $feeWrite1KB, $bucketListSizeBytes,
-                                $bucketListFeeRateLow, $bucketListFeeRateHigh, $bucketListGrowthFactor);
+                                $feeRead1KB, $bucketListTargetSizeBytes,
+                                $writeFee1KBBucketListLow, $writeFee1KBBucketListHigh,
+                                $bucketListWriteFeeGrowthFactor);
     }
 
     /**
@@ -300,80 +296,65 @@ class XdrConfigSettingContractLedgerCostV0
     /**
      * @return int
      */
-    public function getFeeWrite1KB(): int
+    public function getBucketListTargetSizeBytes(): int
     {
-        return $this->feeWrite1KB;
+        return $this->bucketListTargetSizeBytes;
     }
 
     /**
-     * @param int $feeWrite1KB
+     * @param int $bucketListTargetSizeBytes
      */
-    public function setFeeWrite1KB(int $feeWrite1KB): void
+    public function setBucketListTargetSizeBytes(int $bucketListTargetSizeBytes): void
     {
-        $this->feeWrite1KB = $feeWrite1KB;
-    }
-
-    /**
-     * @return int
-     */
-    public function getBucketListSizeBytes(): int
-    {
-        return $this->bucketListSizeBytes;
-    }
-
-    /**
-     * @param int $bucketListSizeBytes
-     */
-    public function setBucketListSizeBytes(int $bucketListSizeBytes): void
-    {
-        $this->bucketListSizeBytes = $bucketListSizeBytes;
+        $this->bucketListTargetSizeBytes = $bucketListTargetSizeBytes;
     }
 
     /**
      * @return int
      */
-    public function getBucketListFeeRateLow(): int
+    public function getWriteFee1KBBucketListLow(): int
     {
-        return $this->bucketListFeeRateLow;
+        return $this->writeFee1KBBucketListLow;
     }
 
     /**
-     * @param int $bucketListFeeRateLow
+     * @param int $writeFee1KBBucketListLow
      */
-    public function setBucketListFeeRateLow(int $bucketListFeeRateLow): void
+    public function setWriteFee1KBBucketListLow(int $writeFee1KBBucketListLow): void
     {
-        $this->bucketListFeeRateLow = $bucketListFeeRateLow;
-    }
-
-    /**
-     * @return int
-     */
-    public function getBucketListFeeRateHigh(): int
-    {
-        return $this->bucketListFeeRateHigh;
-    }
-
-    /**
-     * @param int $bucketListFeeRateHigh
-     */
-    public function setBucketListFeeRateHigh(int $bucketListFeeRateHigh): void
-    {
-        $this->bucketListFeeRateHigh = $bucketListFeeRateHigh;
+        $this->writeFee1KBBucketListLow = $writeFee1KBBucketListLow;
     }
 
     /**
      * @return int
      */
-    public function getBucketListGrowthFactor(): int
+    public function getWriteFee1KBBucketListHigh(): int
     {
-        return $this->bucketListGrowthFactor;
+        return $this->writeFee1KBBucketListHigh;
     }
 
     /**
-     * @param int $bucketListGrowthFactor
+     * @param int $writeFee1KBBucketListHigh
      */
-    public function setBucketListGrowthFactor(int $bucketListGrowthFactor): void
+    public function setWriteFee1KBBucketListHigh(int $writeFee1KBBucketListHigh): void
     {
-        $this->bucketListGrowthFactor = $bucketListGrowthFactor;
+        $this->writeFee1KBBucketListHigh = $writeFee1KBBucketListHigh;
     }
+
+    /**
+     * @return int
+     */
+    public function getBucketListWriteFeeGrowthFactor(): int
+    {
+        return $this->bucketListWriteFeeGrowthFactor;
+    }
+
+    /**
+     * @param int $bucketListWriteFeeGrowthFactor
+     */
+    public function setBucketListWriteFeeGrowthFactor(int $bucketListWriteFeeGrowthFactor): void
+    {
+        $this->bucketListWriteFeeGrowthFactor = $bucketListWriteFeeGrowthFactor;
+    }
+
 }

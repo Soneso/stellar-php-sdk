@@ -17,6 +17,7 @@ class XdrStateExpirationSettings
     public int $maxEntriesToExpire; // uint32
     public int $bucketListSizeWindowSampleSize; // uint32
     public int $evictionScanSize; // uint64
+    public int $startingEvictionScanLevel; // uint32
 
     /**
      * @param int $maxEntryExpiration
@@ -28,12 +29,13 @@ class XdrStateExpirationSettings
      * @param int $maxEntriesToExpire
      * @param int $bucketListSizeWindowSampleSize
      * @param int $evictionScanSize
+     * @param int $startingEvictionScanLevel
      */
     public function __construct(int $maxEntryExpiration, int $minTempEntryExpiration,
                                 int $minPersistentEntryExpiration, int $autoBumpLedgers,
                                 int $persistentRentRateDenominator, int $tempRentRateDenominator,
                                 int $maxEntriesToExpire, int $bucketListSizeWindowSampleSize,
-                                int $evictionScanSize)
+                                int $evictionScanSize, int $startingEvictionScanLevel)
     {
         $this->maxEntryExpiration = $maxEntryExpiration;
         $this->minTempEntryExpiration = $minTempEntryExpiration;
@@ -44,6 +46,7 @@ class XdrStateExpirationSettings
         $this->maxEntriesToExpire = $maxEntriesToExpire;
         $this->bucketListSizeWindowSampleSize = $bucketListSizeWindowSampleSize;
         $this->evictionScanSize = $evictionScanSize;
+        $this->startingEvictionScanLevel = $startingEvictionScanLevel;
     }
 
 
@@ -57,7 +60,7 @@ class XdrStateExpirationSettings
         $body .= XdrEncoder::unsignedInteger32($this->maxEntriesToExpire);
         $body .= XdrEncoder::unsignedInteger32($this->bucketListSizeWindowSampleSize);
         $body .= XdrEncoder::unsignedInteger64($this->evictionScanSize);
-
+        $body .= XdrEncoder::unsignedInteger32($this->startingEvictionScanLevel);
         return $body;
     }
 
@@ -71,11 +74,27 @@ class XdrStateExpirationSettings
         $maxEntriesToExpire = $xdr->readUnsignedInteger32();
         $bucketListSizeWindowSampleSize = $xdr->readUnsignedInteger32();
         $evictionScanSize = $xdr->readUnsignedInteger64();
-
+        $startingEvictionScanLevel = $xdr->readUnsignedInteger32();
         return new XdrStateExpirationSettings($maxEntryExpiration, $minTempEntryExpiration,
             $minPersistentEntryExpiration, $autoBumpLedgers, $persistentRentRateDenominator,
             $tempRentRateDenominator, $maxEntriesToExpire,$bucketListSizeWindowSampleSize,
-            $evictionScanSize);
+            $evictionScanSize, $startingEvictionScanLevel);
+    }
+
+    /**
+     * @return int
+     */
+    public function getStartingEvictionScanLevel(): int
+    {
+        return $this->startingEvictionScanLevel;
+    }
+
+    /**
+     * @param int $startingEvictionScanLevel
+     */
+    public function setStartingEvictionScanLevel(int $startingEvictionScanLevel): void
+    {
+        $this->startingEvictionScanLevel = $startingEvictionScanLevel;
     }
 
     /**

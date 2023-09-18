@@ -37,6 +37,12 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings)
     public ?array $events = null; //[string xdr XdrDiagnosticEvent]
 
+    /// It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations. If present, it indicates
+    /// the simulation detected expired ledger entries which requires restoring with the submission of a RestoreFootprint
+    /// operation before submitting the InvokeHostFunction operation. The restorePreamble.minResourceFee and restorePreamble.transactionData fields should
+    /// be used to construct the transaction containing the RestoreFootprint
+    public ?RestorePreamble $restorePreamble;
+
     public static function fromJson(array $json) : SimulateTransactionResponse {
         $result = new SimulateTransactionResponse($json);
         if (isset($json['result'])) {
@@ -68,6 +74,9 @@ class SimulateTransactionResponse extends SorobanRpcResponse
 
             if (isset($json['result']['minResourceFee'])) {
                 $result->minResourceFee = intval($json['result']['minResourceFee']);
+            }
+            if (isset($json['result']['restorePreamble'])) {
+                $result->restorePreamble = RestorePreamble::fromJson($json['result']['restorePreamble']);
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -208,6 +217,22 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     public function setEvents(?array $events): void
     {
         $this->events = $events;
+    }
+
+    /**
+     * @return RestorePreamble|null
+     */
+    public function getRestorePreamble(): ?RestorePreamble
+    {
+        return $this->restorePreamble;
+    }
+
+    /**
+     * @param RestorePreamble|null $restorePreamble
+     */
+    public function setRestorePreamble(?RestorePreamble $restorePreamble): void
+    {
+        $this->restorePreamble = $restorePreamble;
     }
 
 }

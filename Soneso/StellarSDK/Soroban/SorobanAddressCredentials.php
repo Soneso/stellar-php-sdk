@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Soroban;
 
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentials;
 
 
@@ -14,35 +15,36 @@ class SorobanAddressCredentials
     public Address $address;
     public int $nonce;
     public int $signatureExpirationLedger;
-    public array $signatureArgs; // [XdrSCVal]
+    public XdrSCVal $signature;
 
     /**
      * @param Address $address
      * @param int $nonce
      * @param int $signatureExpirationLedger
-     * @param array $signatureArgs
+     * @param XdrSCVal $signature
      */
-    public function __construct(Address $address, int $nonce, int $signatureExpirationLedger, array $signatureArgs = array())
+    public function __construct(Address $address, int $nonce, int $signatureExpirationLedger, XdrSCVal $signature)
     {
         $this->address = $address;
         $this->nonce = $nonce;
         $this->signatureExpirationLedger = $signatureExpirationLedger;
-        $this->signatureArgs = $signatureArgs;
+        $this->signature = $signature;
     }
+
 
     /**
      * @param XdrSorobanAddressCredentials $xdr
      * @return SorobanAddressCredentials
      */
     public static function fromXdr(XdrSorobanAddressCredentials $xdr) : SorobanAddressCredentials {
-        return new SorobanAddressCredentials(Address::fromXdr($xdr->address), $xdr->nonce, $xdr->signatureExpirationLedger, $xdr->signatureArgs);
+        return new SorobanAddressCredentials(Address::fromXdr($xdr->address), $xdr->nonce, $xdr->signatureExpirationLedger, $xdr->signature);
     }
 
     /**
      * @return XdrSorobanAddressCredentials
      */
     public function toXdr(): XdrSorobanAddressCredentials {
-        return new XdrSorobanAddressCredentials($this->address->toXdr(),$this->nonce, $this->signatureExpirationLedger, $this->signatureArgs);
+        return new XdrSorobanAddressCredentials($this->address->toXdr(),$this->nonce, $this->signatureExpirationLedger, $this->signature);
     }
 
     /**
@@ -94,18 +96,19 @@ class SorobanAddressCredentials
     }
 
     /**
-     * @return array
+     * @return XdrSCVal
      */
-    public function getSignatureArgs(): array
+    public function getSignature(): XdrSCVal
     {
-        return $this->signatureArgs;
+        return $this->signature;
     }
 
     /**
-     * @param array $signatureArgs
+     * @param XdrSCVal $signature
      */
-    public function setSignatureArgs(array $signatureArgs): void
+    public function setSignature(XdrSCVal $signature): void
     {
-        $this->signatureArgs = $signatureArgs;
+        $this->signature = $signature;
     }
+
 }

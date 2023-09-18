@@ -14,7 +14,7 @@ class XdrConfigSettingEntry
     public ?XdrConfigSettingContractComputeV0 $contractCompute = null;
     public ?XdrConfigSettingContractLedgerCostV0 $contractLedgerCost = null;
     public ?XdrConfigSettingContractHistoricalDataV0 $contractHistoricalData = null;
-    public ?XdrConfigSettingContractMetaDataV0 $contractMetaData = null;
+    public ?XdrConfigSettingContractEventsV0 $contractEvents = null;
     public ?XdrConfigSettingContractBandwidthV0 $contractBandwidth = null;
     public ?XdrContractCostParams $contractCostParamsCpuInsns = null;
     public ?XdrContractCostParams $contractCostParamsMemBytes = null;
@@ -23,6 +23,7 @@ class XdrConfigSettingEntry
     public ?XdrStateExpirationSettings $stateExpirationSettings = null;
     public ?XdrConfigSettingContractExecutionLanesV0 $contractExecutionLanes = null;
     public ?array $bucketListSizeWindow = null; // [uint64]
+    public ?XdrEvictionIterator $evictionIterator = null;
     /**
      * @param XdrConfigSettingID $configSettingID
      */
@@ -47,8 +48,8 @@ class XdrConfigSettingEntry
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
                 $bytes .= $this->contractHistoricalData->encode();
                 break;
-            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_META_DATA_V0:
-                $bytes .= $this->contractMetaData->encode();
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0:
+                $bytes .= $this->contractEvents->encode();
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
                 $bytes .= $this->contractBandwidth->encode();
@@ -77,6 +78,9 @@ class XdrConfigSettingEntry
                     $bytes .= XdrEncoder::unsignedInteger64($val);
                 }
                 break;
+            case XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR:
+                $bytes .= $this->evictionIterator->encode();
+                break;
         }
         return $bytes;
     }
@@ -97,8 +101,8 @@ class XdrConfigSettingEntry
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
                 $result->contractHistoricalData = XdrConfigSettingContractHistoricalDataV0::decode($xdr);
                 break;
-            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_META_DATA_V0:
-                $result->contractMetaData = XdrConfigSettingContractMetaDataV0::decode($xdr);
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0:
+                $result->contractEvents = XdrConfigSettingContractEventsV0::decode($xdr);
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
                 $result->contractBandwidth = XdrConfigSettingContractBandwidthV0::decode($xdr);
@@ -128,6 +132,9 @@ class XdrConfigSettingEntry
                     array_push($entriesArr, $xdr->readUnsignedInteger64());
                 }
                 $result->bucketListSizeWindow = $entriesArr;
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR:
+                $result->evictionIterator = XdrEvictionIterator::decode($xdr);
                 break;
         }
         return $result;
@@ -214,19 +221,19 @@ class XdrConfigSettingEntry
     }
 
     /**
-     * @return XdrConfigSettingContractMetaDataV0|null
+     * @return XdrConfigSettingContractEventsV0|null
      */
-    public function getContractMetaData(): ?XdrConfigSettingContractMetaDataV0
+    public function getContractEvents(): ?XdrConfigSettingContractEventsV0
     {
-        return $this->contractMetaData;
+        return $this->contractEvents;
     }
 
     /**
-     * @param XdrConfigSettingContractMetaDataV0|null $contractMetaData
+     * @param XdrConfigSettingContractEventsV0|null $contractEvents
      */
-    public function setContractMetaData(?XdrConfigSettingContractMetaDataV0 $contractMetaData): void
+    public function setContractEvents(?XdrConfigSettingContractEventsV0 $contractEvents): void
     {
-        $this->contractMetaData = $contractMetaData;
+        $this->contractEvents = $contractEvents;
     }
 
     /**
@@ -355,6 +362,22 @@ class XdrConfigSettingEntry
     public function setBucketListSizeWindow(?array $bucketListSizeWindow): void
     {
         $this->bucketListSizeWindow = $bucketListSizeWindow;
+    }
+
+    /**
+     * @return XdrEvictionIterator|null
+     */
+    public function getEvictionIterator(): ?XdrEvictionIterator
+    {
+        return $this->evictionIterator;
+    }
+
+    /**
+     * @param XdrEvictionIterator|null $evictionIterator
+     */
+    public function setEvictionIterator(?XdrEvictionIterator $evictionIterator): void
+    {
+        $this->evictionIterator = $evictionIterator;
     }
 
 }

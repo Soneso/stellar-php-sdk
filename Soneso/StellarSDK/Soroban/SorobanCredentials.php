@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Soroban;
 
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
@@ -33,11 +34,11 @@ class SorobanCredentials
      * @param Address $address
      * @param int $nonce
      * @param int $signatureExpirationLedger
-     * @param array|null $signatureArgs
+     * @param XdrSCVal $signature
      * @return SorobanCredentials
      */
-    public static function forAddress(Address $address, int $nonce, int $signatureExpirationLedger, ?array $signatureArgs = array()) : SorobanCredentials {
-        $addressCredentials = new SorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signatureArgs);
+    public static function forAddress(Address $address, int $nonce, int $signatureExpirationLedger, XdrSCVal $signature) : SorobanCredentials {
+        $addressCredentials = new SorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature);
         return new SorobanCredentials($addressCredentials);
     }
 

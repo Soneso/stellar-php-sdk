@@ -15,32 +15,29 @@ class XdrContractCostType
     const HostMemAlloc = 2; // Cost of allocating a chuck of host memory (in bytes)
     const HostMemCpy = 3; // Cost of copying a chuck of bytes into a pre-allocated host memory
     const HostMemCmp = 4; // Cost of comparing two slices of host memory
-    const InvokeHostFunction = 5; // Cost of a host function invocation, not including the actual work done by the function
-    const VisitObject = 6; // Cost of visiting a host object from the host object storage. Only thing to make sure is the guest can't visitObject repeatly without incurring some charges elsewhere.
-    const ValXdrConv = 7; // Tracks a single Val (RawVal or primitive Object like U64) <=> ScVal conversion cost. Most of these Val counterparts in ScVal (except e.g. Symbol) consumes a single int64 and therefore is a constant overhead.
-    const ValSer = 8; // Cost of serializing an xdr object to bytes
-    const ValDeser = 9; // Cost of deserializing an xdr object from bytes
-    const ComputeSha256Hash = 10; // Cost of computing the sha256 hash from bytes
-    const ComputeEd25519PubKey = 11; // Cost of computing the ed25519 pubkey from bytes
-    const MapEntry = 12; // Cost of accessing an entry in a Map.
-    const VecEntry = 13; // Cost of accessing an entry in a Vec.
-    const GuardFrame = 14; // Cost of guarding a frame, which involves pushing and poping a frame and capturing a rollback point.
-    const VerifyEd25519Sig = 15; // Cost of verifying ed25519 signature of a payload.
-    const VmMemRead = 16; // Cost of reading a slice of vm linear memory.
-    const VmMemWrite = 17; // Cost of writing to a slice of vm linear memory.
-    const VmInstantiation = 18; // Cost of instantiation a VM from wasm bytes code.
-    const VmCachedInstantiation = 19;
-    const InvokeVmFunction = 20;
-    const ChargeBudget = 21;
-    const ComputeKeccak256Hash = 22;
-    const ComputeEcdsaSecp256k1Key = 23;
-    const ComputeEcdsaSecp256k1Sig = 24;
-    const RecoverEcdsaSecp256k1Key = 25;
-    const Int256AddSub = 26;
-    const Int256Mul = 27;
-    const Int256Div = 28;
-    const Int256Pow = 29;
-    const Int256Shift = 30;
+    const DispatchHostFunction = 5; // Cost of a host function dispatch, not including the actual work done by the function nor the cost of VM invocation machinary
+    const VisitObject = 6; // Cost of visiting a host object from the host object storage. Exists to make sure some baseline cost coverage, i.e. repeatly visiting objects by the guest will always incur some charges.
+    const ValSer = 7; // Cost of serializing an xdr object to bytes
+    const ValDeser = 8; // Cost of deserializing an xdr object from bytes
+    const ComputeSha256Hash = 9; // Cost of computing the sha256 hash from bytes
+    const ComputeEd25519PubKey = 10; // Cost of computing the ed25519 pubkey from bytes
+    const MapEntry = 11; // Cost of accessing an entry in a Map.
+    const VecEntry = 12; // Cost of accessing an entry in a Vec.
+    const VerifyEd25519Sig = 13; // Cost of verifying ed25519 signature of a payload.
+    const VmMemRead = 14; // Cost of reading a slice of vm linear memory.
+    const VmMemWrite = 15; // Cost of writing to a slice of vm linear memory.
+    const VmInstantiation = 16; // Cost of instantiation a VM from wasm bytes code.
+    const VmCachedInstantiation = 17;
+    const InvokeVMFunction = 18;
+    const ComputeKeccak256Hash = 19;
+    const ComputeEcdsaSecp256k1Key = 20;
+    const ComputeEcdsaSecp256k1Sig = 21;
+    const RecoverEcdsaSecp256k1Key = 22;
+    const Int256AddSub = 23;
+    const Int256Mul = 24;
+    const Int256Div = 25;
+    const Int256Pow = 26;
+    const Int256Shift = 27;
 
     public function __construct(int $value)
     {

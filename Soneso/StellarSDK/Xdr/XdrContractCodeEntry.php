@@ -10,39 +10,34 @@ class XdrContractCodeEntry
 {
     public XdrExtensionPoint $ext;
     public string $cHash; // hash
-    public XdrContractCodeBody $body;
-    public int $expirationLedgerSeq; // uint32
+    public XdrDataValueMandatory $code;
 
     /**
      * @param XdrExtensionPoint $ext
      * @param string $cHash
-     * @param XdrContractCodeBody $body
-     * @param int $expirationLedgerSeq
+     * @param XdrDataValueMandatory $code
      */
-    public function __construct(XdrExtensionPoint $ext, string $cHash, XdrContractCodeBody $body, int $expirationLedgerSeq)
+    public function __construct(XdrExtensionPoint $ext, string $cHash, XdrDataValueMandatory $code)
     {
         $this->ext = $ext;
         $this->cHash = $cHash;
-        $this->body = $body;
-        $this->expirationLedgerSeq = $expirationLedgerSeq;
+        $this->code = $code;
     }
 
 
     public function encode(): string {
         $bytes = $this->ext->encode();
         $bytes .= XdrEncoder::opaqueFixed($this->cHash,32);
-        $bytes .= $this->body->encode();
-        $bytes .= XdrEncoder::unsignedInteger32($this->expirationLedgerSeq);
+        $bytes .= $this->code->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrContractCodeEntry {
         $ext = XdrExtensionPoint::decode($xdr);
         $cHash = $xdr->readOpaqueFixed(32);
-        $body = XdrContractCodeBody::decode($xdr);
-        $expirationLedgerSeq = $xdr->readUnsignedInteger32();
+        $code= XdrDataValueMandatory::decode($xdr);
 
-        return new XdrContractCodeEntry($ext, $cHash, $body, $expirationLedgerSeq);
+        return new XdrContractCodeEntry($ext, $cHash, $code);
     }
 
     /**
@@ -78,35 +73,19 @@ class XdrContractCodeEntry
     }
 
     /**
-     * @return XdrContractCodeBody
+     * @return XdrDataValueMandatory
      */
-    public function getBody(): XdrContractCodeBody
+    public function getCode(): XdrDataValueMandatory
     {
-        return $this->body;
+        return $this->code;
     }
 
     /**
-     * @param XdrContractCodeBody $body
+     * @param XdrDataValueMandatory $code
      */
-    public function setBody(XdrContractCodeBody $body): void
+    public function setCode(XdrDataValueMandatory $code): void
     {
-        $this->body = $body;
-    }
-
-    /**
-     * @return int
-     */
-    public function getExpirationLedgerSeq(): int
-    {
-        return $this->expirationLedgerSeq;
-    }
-
-    /**
-     * @param int $expirationLedgerSeq
-     */
-    public function setExpirationLedgerSeq(int $expirationLedgerSeq): void
-    {
-        $this->expirationLedgerSeq = $expirationLedgerSeq;
+        $this->code = $code;
     }
 
 }

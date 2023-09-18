@@ -25,7 +25,6 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
-use Soneso\StellarSDK\Xdr\XdrContractEntryBodyType;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
@@ -180,6 +179,7 @@ class SorobanCustomAccountTest extends TestCase
                 // sign
                 $a->sign($signer1, Network::futurenet());
                 $a->sign($signer2, Network::futurenet());
+
             } else {
                 self::fail("invalid auth");
             }
@@ -193,11 +193,11 @@ class SorobanCustomAccountTest extends TestCase
 
         // poll until status is success or error
         $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        /*if ($statusResponse->status == GetTransactionResponse::STATUS_FAILED) {
+        if ($statusResponse->status == GetTransactionResponse::STATUS_FAILED) {
             print("RESULT XDR: " . $statusResponse->resultXdr . PHP_EOL);
         }
         print("Meta XDR: " . $statusResponse->resultMetaXdr . PHP_EOL);
-        */
+
         $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
 
     }
@@ -239,19 +239,18 @@ class SorobanCustomAccountTest extends TestCase
         $readOwnersKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
         $addr = Address::fromContractId($accContractId)->toXdr();
         $readOwnersKey->contractData = new XdrLedgerKeyContractData($addr, XdrSCVal::forSymbol("Owners"),
-            XdrContractDataDurability::PERSISTENT(),XdrContractEntryBodyType::DATA_ENTRY());
+            XdrContractDataDurability::PERSISTENT());
 
         $readLimitKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
         $readLimitKey->contractData = new XdrLedgerKeyContractData($addr, XdrSCVal::forSymbol("SpendMax"),
-            XdrContractDataDurability::PERSISTENT(),XdrContractEntryBodyType::DATA_ENTRY());
+            XdrContractDataDurability::PERSISTENT());
 
         $execKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
         $execKey->contractData = new XdrLedgerKeyContractData($addr, XdrSCVal::forLedgerKeyContractInstance(),
-            XdrContractDataDurability::PERSISTENT(),XdrContractEntryBodyType::DATA_ENTRY());
+            XdrContractDataDurability::PERSISTENT());
 
         $accContractCodeKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-        $accContractCodeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($accContractWasmId),
-            XdrContractEntryBodyType::DATA_ENTRY());
+        $accContractCodeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($accContractWasmId));
 
         array_push($transactionData->resources->footprint->readOnly , $readOwnersKey);
         array_push($transactionData->resources->footprint->readOnly , $readLimitKey);
@@ -309,7 +308,7 @@ class SorobanCustomAccountTest extends TestCase
         $result = array();
         $sdk = StellarSDK::getFutureNetInstance();
 
-        $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
+        // $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
 
         // upload contract wasm
         $contractCode = file_get_contents($pathToCode, false);
@@ -535,7 +534,6 @@ class SorobanCustomAccountTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
 
         $transactionData = $simulateResponse->getTransactionData();
@@ -552,7 +550,6 @@ class SorobanCustomAccountTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getMinResourceFee());
 
@@ -594,11 +591,11 @@ class SorobanCustomAccountTest extends TestCase
         $readOnly = array();
         $readWrite = array();
         $codeKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-        $codeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId), XdrContractEntryBodyType::DATA_ENTRY());
+        $codeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
         array_push($readOnly, $codeKey);
 
         $footprint = new XdrLedgerFootprint($readOnly, $readWrite);
-        $resources = new XdrSorobanResources($footprint, 0,0,0,0);
+        $resources = new XdrSorobanResources($footprint, 0,0,0);
         $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
 
         $transaction->setSorobanTransactionData($transactionData) ;
@@ -606,7 +603,6 @@ class SorobanCustomAccountTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getMinResourceFee());
 

@@ -13,22 +13,19 @@ class XdrSorobanResources
     public int $instructions; // The maximum number of instructions this transaction can use
     public int $readBytes; // The maximum number of bytes this transaction can read from ledger
     public int $writeBytes; // The maximum number of bytes this transaction can write to ledger
-    public int $extendedMetaDataSizeBytes; // Maximum size of dynamic metadata produced by this contract (currently only includes the events).
 
     /**
      * @param XdrLedgerFootprint $footprint // The ledger footprint of the transaction.
      * @param int $instructions // The maximum number of instructions this transaction can use
      * @param int $readBytes // The maximum number of bytes this transaction can read from ledger
      * @param int $writeBytes // The maximum number of bytes this transaction can write to ledger
-     * @param int $extendedMetaDataSizeBytes // Maximum size of dynamic metadata produced by this contract (currently only includes the events).
      */
-    public function __construct(XdrLedgerFootprint $footprint, int $instructions, int $readBytes, int $writeBytes, int $extendedMetaDataSizeBytes)
+    public function __construct(XdrLedgerFootprint $footprint, int $instructions, int $readBytes, int $writeBytes)
     {
         $this->footprint = $footprint;
         $this->instructions = $instructions;
         $this->readBytes = $readBytes;
         $this->writeBytes = $writeBytes;
-        $this->extendedMetaDataSizeBytes = $extendedMetaDataSizeBytes;
     }
 
 
@@ -37,7 +34,6 @@ class XdrSorobanResources
         $bytes .= XdrEncoder::unsignedInteger32($this->instructions);
         $bytes .= XdrEncoder::unsignedInteger32($this->readBytes);
         $bytes .= XdrEncoder::unsignedInteger32($this->writeBytes);
-        $bytes .= XdrEncoder::unsignedInteger32($this->extendedMetaDataSizeBytes);
         return $bytes;
     }
 
@@ -46,9 +42,8 @@ class XdrSorobanResources
         $instructions = $xdr->readUnsignedInteger32();
         $readBytes = $xdr->readUnsignedInteger32();
         $writeBytes = $xdr->readUnsignedInteger32();
-        $extendedMetaDataSizeBytes = $xdr->readUnsignedInteger32();
 
-        return new XdrSorobanResources($footprint, $instructions, $readBytes, $writeBytes, $extendedMetaDataSizeBytes);
+        return new XdrSorobanResources($footprint, $instructions, $readBytes, $writeBytes);
     }
 
     /**
@@ -123,21 +118,4 @@ class XdrSorobanResources
         $this->writeBytes = $writeBytes;
     }
 
-    /**
-     * Maximum size of dynamic metadata produced by this contract (currently only includes the events).
-     * @return int
-     */
-    public function getExtendedMetaDataSizeBytes(): int
-    {
-        return $this->extendedMetaDataSizeBytes;
-    }
-
-    /**
-     * Maximum size of dynamic metadata produced by this contract (currently only includes the events).
-     * @param int $extendedMetaDataSizeBytes
-     */
-    public function setExtendedMetaDataSizeBytes(int $extendedMetaDataSizeBytes): void
-    {
-        $this->extendedMetaDataSizeBytes = $extendedMetaDataSizeBytes;
-    }
 }

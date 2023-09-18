@@ -35,7 +35,6 @@ class XdrSCSpecType
     const SC_SPEC_TYPE_OPTION = 1000;
     const SC_SPEC_TYPE_RESULT = 1001;
     const SC_SPEC_TYPE_VEC = 1002;
-    const SC_SPEC_TYPE_SET = 1003;
     const SC_SPEC_TYPE_MAP = 1004;
     const SC_SPEC_TYPE_TUPLE = 1005;
     const SC_SPEC_TYPE_BYTES_N = 1006;
@@ -131,10 +130,6 @@ class XdrSCSpecType
 
     public static function VEC() :  XdrSCSpecType {
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_VEC);
-    }
-
-    public static function SET() :  XdrSCSpecType {
-        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_SET);
     }
 
     public static function MAP() :  XdrSCSpecType {

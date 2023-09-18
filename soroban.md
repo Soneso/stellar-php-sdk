@@ -6,7 +6,7 @@ The following shows you how to use the PHP SDK to start experimenting with Sorob
 
 **Please note, that both, Soroban itself and the PHP SDK support for Soroban are still under development, so breaking changes may occur.**
 
-**Soroban version supported: Preview 10**
+**Soroban version supported: Preview 11**
 
 ### Quick Start
 
@@ -412,6 +412,9 @@ $eventFilters->add($eventFilter);
 $request = new GetEventsRequest($startLedger, $eventFilters);
 $response = $server->getEvents($request);
 ```
+
+contractId must currently start with "C...". If you only have the hex value you can encode it with: `StrKey::encodeContractIdHex($contractId)`
+
 Find the complete code [here](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanTest.php).
 
 #### Hints and Tips

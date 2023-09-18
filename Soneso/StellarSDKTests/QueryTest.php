@@ -5,7 +5,7 @@
 // found in the LICENSE file.
 
 
-namespace StellarSDKTests;
+namespace Soneso\StellarSDKTests;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
@@ -27,7 +27,6 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDKTests\TestUtils;
 
 class QueryTest extends TestCase
 {

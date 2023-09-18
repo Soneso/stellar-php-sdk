@@ -11,20 +11,17 @@ class XdrLedgerKeyContractData
     public XdrSCAddress $contract;
     public XdrSCVal $key;
     public XdrContractDataDurability $durability;
-    public XdrContractEntryBodyType $bodyType;
 
     /**
      * @param XdrSCAddress $contract
      * @param XdrSCVal $key
      * @param XdrContractDataDurability $durability
-     * @param XdrContractEntryBodyType $bodyType
      */
-    public function __construct(XdrSCAddress $contract, XdrSCVal $key, XdrContractDataDurability $durability, XdrContractEntryBodyType $bodyType)
+    public function __construct(XdrSCAddress $contract, XdrSCVal $key, XdrContractDataDurability $durability)
     {
         $this->contract = $contract;
         $this->key = $key;
         $this->durability = $durability;
-        $this->bodyType = $bodyType;
     }
 
 
@@ -32,7 +29,6 @@ class XdrLedgerKeyContractData
         $body = $this->contract->encode();
         $body .= $this->key->encode();
         $body .= $this->durability->encode();
-        $body .= $this->bodyType->encode();
         return $body;
     }
 
@@ -40,8 +36,7 @@ class XdrLedgerKeyContractData
         $contract = XdrSCAddress::decode($xdr);
         $key = XdrSCVal::decode($xdr);
         $durability = XdrContractDataDurability::decode($xdr);
-        $bodyType = XdrContractEntryBodyType::decode($xdr);
-        return new XdrLedgerKeyContractData($contract, $key, $durability, $bodyType);
+        return new XdrLedgerKeyContractData($contract, $key, $durability);
     }
 
     /**
@@ -90,21 +85,5 @@ class XdrLedgerKeyContractData
     public function setDurability(XdrContractDataDurability $durability): void
     {
         $this->durability = $durability;
-    }
-
-    /**
-     * @return XdrContractEntryBodyType
-     */
-    public function getBodyType(): XdrContractEntryBodyType
-    {
-        return $this->bodyType;
-    }
-
-    /**
-     * @param XdrContractEntryBodyType $bodyType
-     */
-    public function setBodyType(XdrContractEntryBodyType $bodyType): void
-    {
-        $this->bodyType = $bodyType;
     }
 }

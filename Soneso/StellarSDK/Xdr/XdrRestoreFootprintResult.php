@@ -27,6 +27,7 @@ class XdrRestoreFootprintResult
             case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS:
             case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_MALFORMED:
             case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+            case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
         }
         return $bytes;
@@ -38,6 +39,7 @@ class XdrRestoreFootprintResult
             case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS:
             case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_MALFORMED:
             case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
+            case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
         }
         return $result;

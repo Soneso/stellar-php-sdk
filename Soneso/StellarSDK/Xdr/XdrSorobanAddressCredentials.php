@@ -11,20 +11,20 @@ class XdrSorobanAddressCredentials
     public XdrSCAddress $address;
     public int $nonce; // int64
     public int $signatureExpirationLedger; // uint32
-    public array $signatureArgs; // [XdrSCVal]
+    public XdrSCVal $signature;
 
     /**
      * @param XdrSCAddress $address
      * @param int $nonce
      * @param int $signatureExpirationLedger
-     * @param array $signatureArgs
+     * @param XdrSCVal $signature
      */
-    public function __construct(XdrSCAddress $address, int $nonce, int $signatureExpirationLedger, array $signatureArgs)
+    public function __construct(XdrSCAddress $address, int $nonce, int $signatureExpirationLedger, XdrSCVal $signature)
     {
         $this->address = $address;
         $this->nonce = $nonce;
         $this->signatureExpirationLedger = $signatureExpirationLedger;
-        $this->signatureArgs = $signatureArgs;
+        $this->signature = $signature;
     }
 
 
@@ -32,12 +32,7 @@ class XdrSorobanAddressCredentials
         $bytes = $this->address->encode();
         $bytes .= XdrEncoder::integer64($this->nonce);
         $bytes .= XdrEncoder::unsignedInteger32($this->signatureExpirationLedger);
-        $bytes .= XdrEncoder::integer32(count($this->signatureArgs));
-        foreach($this->signatureArgs as $val) {
-            if ($val instanceof XdrSCVal) {
-                $bytes .= $val->encode();
-            }
-        }
+        $bytes .= $this->signature->encode();
         return $bytes;
     }
 
@@ -45,12 +40,8 @@ class XdrSorobanAddressCredentials
         $address = XdrSCAddress::decode($xdr);
         $nonce = $xdr->readInteger64();
         $signatureExpirationLedger = $xdr->readUnsignedInteger32();
-        $valCount = $xdr->readInteger32();
-        $args = array();
-        for ($i = 0; $i < $valCount; $i++) {
-            array_push($args, XdrSCVal::decode($xdr));
-        }
-        return new XdrSorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $args);
+        $signature = XdrSCVal::decode($xdr);
+        return new XdrSorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature);
     }
 
     /**
@@ -102,20 +93,19 @@ class XdrSorobanAddressCredentials
     }
 
     /**
-     * @return array
+     * @return XdrSCVal
      */
-    public function getSignatureArgs(): array
+    public function getSignature(): XdrSCVal
     {
-        return $this->signatureArgs;
+        return $this->signature;
     }
 
     /**
-     * @param array $signatureArgs
+     * @param XdrSCVal $signature
      */
-    public function setSignatureArgs(array $signatureArgs): void
+    public function setSignature(XdrSCVal $signature): void
     {
-        $this->signatureArgs = $signatureArgs;
+        $this->signature = $signature;
     }
-
 
 }

@@ -10,7 +10,7 @@ class XdrSorobanAuthorizedFunction
 {
 
     public XdrSorobanAuthorizedFunctionType $type;
-    public ?XdrSorobanAuthorizedContractFunction $contractFn;
+    public ?XdrInvokeContractArgs $contractFn;
     public ?XdrCreateContractArgs $createContractHostFn = null;
 
     /**
@@ -40,7 +40,7 @@ class XdrSorobanAuthorizedFunction
         $result = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::decode($xdr));
         switch ($result->type->value) {
             case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
-                $result->contractFn = XdrSorobanAuthorizedContractFunction::decode($xdr);
+                $result->contractFn = XdrInvokeContractArgs::decode($xdr);
                 break;
             case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
                 $result->createContractHostFn = XdrCreateContractArgs::decode($xdr);
@@ -49,5 +49,52 @@ class XdrSorobanAuthorizedFunction
         return $result;
     }
 
+    /**
+     * @return XdrSorobanAuthorizedFunctionType
+     */
+    public function getType(): XdrSorobanAuthorizedFunctionType
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param XdrSorobanAuthorizedFunctionType $type
+     */
+    public function setType(XdrSorobanAuthorizedFunctionType $type): void
+    {
+        $this->type = $type;
+    }
+
+    /**
+     * @return XdrInvokeContractArgs|null
+     */
+    public function getContractFn(): ?XdrInvokeContractArgs
+    {
+        return $this->contractFn;
+    }
+
+    /**
+     * @param XdrInvokeContractArgs|null $contractFn
+     */
+    public function setContractFn(?XdrInvokeContractArgs $contractFn): void
+    {
+        $this->contractFn = $contractFn;
+    }
+
+    /**
+     * @return XdrCreateContractArgs|null
+     */
+    public function getCreateContractHostFn(): ?XdrCreateContractArgs
+    {
+        return $this->createContractHostFn;
+    }
+
+    /**
+     * @param XdrCreateContractArgs|null $createContractHostFn
+     */
+    public function setCreateContractHostFn(?XdrCreateContractArgs $createContractHostFn): void
+    {
+        $this->createContractHostFn = $createContractHostFn;
+    }
 
 }

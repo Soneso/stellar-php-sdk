@@ -38,7 +38,6 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
-use Soneso\StellarSDK\Xdr\XdrContractEntryBodyType;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
@@ -147,9 +146,8 @@ class SorobanTest extends TestCase
 
         $contractCodeEntry = $server->loadContractCodeForWasmId($helloContractWasmId);
         $this->assertNotNull($contractCodeEntry);
-        $loadedSourceCode = $contractCodeEntry->body->code->value;
+        $loadedSourceCode = $contractCodeEntry->code->value;
         $this->assertEquals($contractCode, $loadedSourceCode);
-        $this->assertGreaterThan(1, $contractCodeEntry->expirationLedgerSeq);
 
         // check horizon response decoding.
         sleep(5);
@@ -227,9 +225,8 @@ class SorobanTest extends TestCase
 
         $contractCodeEntry =  $server->loadContractCodeForContractId($helloContractId);
         $this->assertNotNull($contractCodeEntry);
-        $loadedSourceCode = $contractCodeEntry->body->code->value;
+        $loadedSourceCode = $contractCodeEntry->code->value;
         $this->assertEquals($contractCode, $loadedSourceCode);
-        $this->assertGreaterThan(1, $contractCodeEntry->expirationLedgerSeq);
 
         sleep(5);
 
@@ -590,7 +587,7 @@ class SorobanTest extends TestCase
         //$topicFilter = new TopicFilter([XdrSCVal::forSymbol("COUNTER")->toBase64Xdr(), "*"]);
         $topicFilters = new TopicFilters($topicFilter);
 
-        $eventFilter = new EventFilter("contract", [$contractId], $topicFilters);
+        $eventFilter = new EventFilter("contract", [StrKey::encodeContractIdHex($contractId)], $topicFilters);
         $eventFilters = new EventFilters();
         $eventFilters->add($eventFilter);
 
@@ -721,7 +718,6 @@ class SorobanTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
 
         $transactionData = $simulateResponse->getTransactionData();
@@ -738,7 +734,6 @@ class SorobanTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getMinResourceFee());
 
@@ -780,11 +775,11 @@ class SorobanTest extends TestCase
         $readOnly = array();
         $readWrite = array();
         $codeKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-        $codeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId), XdrContractEntryBodyType::DATA_ENTRY());
+        $codeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
         array_push($readOnly, $codeKey);
 
         $footprint = new XdrLedgerFootprint($readOnly, $readWrite);
-        $resources = new XdrSorobanResources($footprint, 0,0,0,0);
+        $resources = new XdrSorobanResources($footprint, 0,0,0);
         $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
 
         $transaction->setSorobanTransactionData($transactionData) ;
@@ -792,7 +787,6 @@ class SorobanTest extends TestCase
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getMinResourceFee());
 

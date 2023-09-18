@@ -6,12 +6,11 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrSorobanAuthorizedContractFunction
+class XdrInvokeContractArgs
 {
-
     public XdrSCAddress $contractAddress;
     public string $functionName;
-    public array $args; // [XdrSCVal]
+    public array $args;
 
     /**
      * @param XdrSCAddress $contractAddress
@@ -25,28 +24,27 @@ class XdrSorobanAuthorizedContractFunction
         $this->args = $args;
     }
 
+
     public function encode(): string {
         $bytes = $this->contractAddress->encode();
         $bytes .= XdrEncoder::string($this->functionName);
         $bytes .= XdrEncoder::integer32(count($this->args));
         foreach($this->args as $val) {
-            if ($val instanceof XdrSCVal) {
-                $bytes .= $val->encode();
-            }
+            $bytes .= $val->encode();
         }
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrSorobanAuthorizedContractFunction {
-        $contractAddress = XdrSCAddress::decode($xdr);
+    public static function decode(XdrBuffer $xdr):  XdrInvokeContractArgs {
+        $contractAddress= XdrSCAddress::decode($xdr);
         $functionName = $xdr->readString();
         $valCount = $xdr->readInteger32();
-        $args = array();
+        $argsArr = array();
         for ($i = 0; $i < $valCount; $i++) {
-            array_push($args, XdrSCVal::decode($xdr));
+            array_push($argsArr, XdrSCVal::decode($xdr));
         }
 
-        return new XdrSorobanAuthorizedContractFunction($contractAddress, $functionName, $args);
+        return new XdrInvokeContractArgs($contractAddress, $functionName, $argsArr);
     }
 
     /**

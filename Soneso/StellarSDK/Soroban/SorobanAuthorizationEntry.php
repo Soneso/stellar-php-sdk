@@ -13,6 +13,7 @@ use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorization;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
@@ -53,7 +54,7 @@ class SorobanAuthorizationEntry
     }
 
     /**
-     * Signs the authorization entry. The signature will be added to the signatureArgs of the soroban credentials
+     * Signs the authorization entry. The signature will be added to the signatures of the soroban credentials
      * @param KeyPair $signer
      * @param Network $network
      */
@@ -74,7 +75,13 @@ class SorobanAuthorizationEntry
         $payload = Hash::generate($rootInvocationPreimage->encode()); // sha256
         $signatureBytes = $signer->sign($payload);
         $signature = new AccountEd25519Signature($signer->getPublicKey(), $signatureBytes);
-        array_push($this->credentials->addressCredentials->signatureArgs, $signature->toXdrSCVal());
+        $sigVal = $signature->toXdrSCVal();
+        if ($this->credentials->addressCredentials->signature->vec != null) {
+            array_push($this->credentials->addressCredentials->signature->vec, $sigVal);
+        } else {
+            $this->credentials->addressCredentials->signature = XdrSCVal::forVec([$sigVal]);
+        }
+         $signature->toXdrSCVal();
     }
 
     /**

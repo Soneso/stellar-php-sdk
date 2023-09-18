@@ -13,6 +13,7 @@ class XdrBumpFootprintExpirationResultCode
     const BUMP_FOOTPRINT_EXPIRATION_SUCCESS = 0;
     const BUMP_FOOTPRINT_EXPIRATION_MALFORMED = -1;
     const BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED = -2;
+    const BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE = -3;
 
     public function __construct(int $value)
     {

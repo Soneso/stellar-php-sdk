@@ -15,7 +15,6 @@ class XdrSCSpecTypeDef
     public ?XdrSCSpecTypeResult $result = null;
     public ?XdrSCSpecTypeVec $vec = null;
     public ?XdrSCSpecTypeMap $map = null;
-    public ?XdrSCSpecTypeSet $set = null;
     public ?XdrSCSpecTypeTuple $tuple = null;
     public ?XdrSCSpecTypeBytesN $bytesN = null;
     public ?XdrSCSpecTypeUDT $udt = null;
@@ -53,11 +52,6 @@ class XdrSCSpecTypeDef
         return $result;
     }
 
-    public static function forSet(XdrSCSpecTypeSet $set) : XdrSCSpecTypeDef {
-        $result = new XdrSCSpecTypeDef(XdrSCSpecType::SET());
-        $result->set = $set;
-        return $result;
-    }
 
     public static function forTuple(XdrSCSpecTypeTuple $tuple) : XdrSCSpecTypeDef {
         $result = new XdrSCSpecTypeDef(XdrSCSpecType::TUPLE());
@@ -180,9 +174,6 @@ class XdrSCSpecTypeDef
             case XdrSCSpecType::SC_SPEC_TYPE_MAP:
                 $bytes .= $this->map->encode();
                 break;
-            case XdrSCSpecType::SC_SPEC_TYPE_SET:
-                $bytes .= $this->set->encode();
-                break;
             case XdrSCSpecType::SC_SPEC_TYPE_TUPLE:
                 $bytes .= $this->tuple->encode();
                 break;
@@ -229,9 +220,6 @@ class XdrSCSpecTypeDef
                 break;
             case XdrSCSpecType::SC_SPEC_TYPE_MAP:
                 $result->map = XdrSCSpecTypeMap::decode($xdr);
-                break;
-            case XdrSCSpecType::SC_SPEC_TYPE_SET:
-                $result->set = XdrSCSpecTypeSet::decode($xdr);
                 break;
             case XdrSCSpecType::SC_SPEC_TYPE_TUPLE:
                 $result->tuple = XdrSCSpecTypeTuple::decode($xdr);
@@ -324,22 +312,6 @@ class XdrSCSpecTypeDef
     public function setMap(?XdrSCSpecTypeMap $map): void
     {
         $this->map = $map;
-    }
-
-    /**
-     * @return XdrSCSpecTypeSet|null
-     */
-    public function getSet(): ?XdrSCSpecTypeSet
-    {
-        return $this->set;
-    }
-
-    /**
-     * @param XdrSCSpecTypeSet|null $set
-     */
-    public function setSet(?XdrSCSpecTypeSet $set): void
-    {
-        $this->set = $set;
     }
 
     /**

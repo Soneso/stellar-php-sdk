@@ -64,8 +64,8 @@ class XdrTransactionResultCode
     /// precondition is invalid
     const MALFORMED = -16;
 
-    /// declared Soroban resource usage exceeds the network limit
-    const SOROBAN_RESOURCE_LIMIT_EXCEEDED = -17;
+    /// soroban-specific preconditions were not met
+    const SOROBAN_INVALID = -17;
 
     public function __construct(int $value) {
         $this->value = $value;

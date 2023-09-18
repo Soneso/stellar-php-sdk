@@ -24,13 +24,11 @@ use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrContractCodeEntry;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
-use Soneso\StellarSDK\Xdr\XdrContractEntryBodyType;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractData;
-use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /// This class helps you to connect to a local or remote soroban rpc server
@@ -193,7 +191,7 @@ class SorobanServer
      */
     public function loadContractCodeForWasmId(string $wasmId) : ?XdrContractCodeEntry {
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-        $ledgerKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId), XdrContractEntryBodyType::DATA_ENTRY());
+        $ledgerKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
         $ledgerEntry = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
         if ($ledgerEntry != null && $ledgerEntry->ledgerEntryData != null) {
             $ledgerEntryData = XdrLedgerEntryData::fromBase64Xdr($ledgerEntry->ledgerEntryData);
@@ -213,14 +211,13 @@ class SorobanServer
         $ledgerKey->contractData = new XdrLedgerKeyContractData(
             Address::fromContractId($contractId)->toXdr(),
             XdrSCVal::forLedgerKeyContractInstance(),
-            XdrContractDataDurability::PERSISTENT(),
-            XdrContractEntryBodyType::DATA_ENTRY());
+            XdrContractDataDurability::PERSISTENT());
 
         $ledgerEntry = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
         if ($ledgerEntry != null && $ledgerEntry->ledgerEntryData != null) {
             $ledgerEntryData = XdrLedgerEntryData::fromBase64Xdr($ledgerEntry->ledgerEntryData);
-            if ($ledgerEntryData->contractData != null && $ledgerEntryData->contractData->body->data?->val->instance?->executable->wasmIdHex != null) {
-                $wasmId = $ledgerEntryData->contractData->body->data->val->instance->executable->wasmIdHex;
+            if ($ledgerEntryData->contractData != null && $ledgerEntryData->contractData->val->instance?->executable->wasmIdHex != null) {
+                $wasmId = $ledgerEntryData->contractData->val->instance->executable->wasmIdHex;
                 return $this->loadContractCodeForWasmId($wasmId);
             }
         }

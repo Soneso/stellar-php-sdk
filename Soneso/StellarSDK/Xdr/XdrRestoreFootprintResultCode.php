@@ -13,6 +13,7 @@ class XdrRestoreFootprintResultCode
     const RESTORE_FOOTPRINT_SUCCESS = 0;
     const RESTORE_FOOTPRINT_MALFORMED = -1;
     const RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED = -2;
+    const RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE = - 3;
 
     public function __construct(int $value)
     {

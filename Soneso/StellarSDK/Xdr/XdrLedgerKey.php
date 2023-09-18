@@ -18,7 +18,7 @@ class XdrLedgerKey
     public ?XdrLedgerKeyContractData $contractData = null;
     public ?XdrLedgerKeyContractCode $contractCode = null;
     public ?XdrConfigSettingID $configSetting = null;
-
+    public ?XdrLedgerKeyExpiration $expiration = null;
 
     public function __construct(XdrLedgerEntryType $type) {
         $this->type = $type;
@@ -36,6 +36,7 @@ class XdrLedgerKey
             XdrLedgerEntryType::CONTRACT_DATA => $this->contractData->encode(),
             XdrLedgerEntryType::CONTRACT_CODE => $this->contractCode->encode(),
             XdrLedgerEntryType::CONFIG_SETTING => $this->configSetting->encode(),
+            XdrLedgerEntryType::EXPIRATION => $this->expiration->encode(),
         };
         return $bytes;
     }
@@ -72,6 +73,9 @@ class XdrLedgerKey
             case XdrLedgerEntryType::CONFIG_SETTING:
                 $result->configSetting = XdrConfigSettingID::decode($xdr);
                 break;
+            case XdrLedgerEntryType::EXPIRATION:
+                $result->expiration = XdrLedgerKeyExpiration::decode($xdr);
+                break;
         }
         return $result;
     }
@@ -85,6 +89,23 @@ class XdrLedgerKey
     public function toBase64Xdr() : String {
         return base64_encode($this->encode());
     }
+
+    /**
+     * @return XdrLedgerKeyExpiration|null
+     */
+    public function getExpiration(): ?XdrLedgerKeyExpiration
+    {
+        return $this->expiration;
+    }
+
+    /**
+     * @param XdrLedgerKeyExpiration|null $expiration
+     */
+    public function setExpiration(?XdrLedgerKeyExpiration $expiration): void
+    {
+        $this->expiration = $expiration;
+    }
+
 
     /**
      * @return XdrLedgerEntryType
