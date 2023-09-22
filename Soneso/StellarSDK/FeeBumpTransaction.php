@@ -64,18 +64,13 @@ class FeeBumpTransaction extends AbstractTransaction
         return $bytes;
     }
 
-    /**
-     * @throws Exception if inner transaction is not signed.
-     */
     public function toXdr() : XdrFeeBumpTransaction {
         $xdrInnerTxV1 = $this->innerTx->toEnvelopeXdr()->getV1();
         $xdrInnerTx = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX), $xdrInnerTxV1);
         return new XdrFeeBumpTransaction($this->feeAccount->toXdr(), $this->fee, $xdrInnerTx);
     }
 
-    /**
-     * @throws Exception if transaction is not signed.
-     */
+
     public function toEnvelopeXdr(): XdrTransactionEnvelope
     {
         $xdr = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP));

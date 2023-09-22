@@ -204,9 +204,7 @@ class Transaction extends AbstractTransaction
         $xdr = $this->toXdr();
         return base64_encode($xdr->encode());
     }
-    /**
-     * @throws Exception if transaction is not signed.
-     */
+
     public function toEnvelopeXdr(): XdrTransactionEnvelope
     {
         $xdrTransaction = $this->toXdr();

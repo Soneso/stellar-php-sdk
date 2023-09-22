@@ -162,6 +162,8 @@ class EffectResponse extends Response
                 EffectType::LIQUIDITY_POOL_CREATED => LiquidityPoolCreatedEffectResponse::fromJson($jsonData),
                 EffectType::LIQUIDITY_POOL_REMOVED => LiquidityPoolRemovedEffectResponse::fromJson($jsonData),
                 EffectType::LIQUIDITY_POOL_REVOKED => LiquidityPoolRevokedEffectResponse::fromJson($jsonData),
+                EffectType::CONTRACT_CREDITED => ContractCreditedEffectResponse::fromJson($jsonData),
+                EffectType::CONTRACT_DEBITED => ContractDebitedEffectResponse::fromJson($jsonData),
                 default => throw new \InvalidArgumentException(sprintf("Unknown operation type: %s", $effectType)),
             };
         } else {

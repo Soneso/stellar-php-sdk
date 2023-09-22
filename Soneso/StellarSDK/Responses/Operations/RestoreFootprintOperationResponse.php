@@ -10,8 +10,8 @@ namespace Soneso\StellarSDK\Responses\Operations;
 class RestoreFootprintOperationResponse extends OperationResponse
 {
 
-    public static function fromJson(array $jsonData) : InflationOperationResponse {
-        $result = new InflationOperationResponse();
+    public static function fromJson(array $jsonData) : RestoreFootprintOperationResponse {
+        $result = new RestoreFootprintOperationResponse();
         $result->loadFromJson($jsonData);
         return $result;
     }

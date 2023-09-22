@@ -12,6 +12,9 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
 {
     public string $function;
     public ?ParametersResponse $parameters = null;
+    public string $address;
+    public string $salt;
+    public ?AssetBalanceChangesResponse $assetBalanceChanges = null;
 
     protected function loadFromJson(array $json) : void {
         $this->function = $json['function'];
@@ -22,6 +25,17 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
                 $this->parameters->add($value);
             }
         }
+        $this->address = $json['address'];
+        $this->salt = $json['salt'];
+
+        if (isset($json['asset_balance_changes'])) {
+            $this->assetBalanceChanges  = new AssetBalanceChangesResponse();
+            foreach ($json['asset_balance_changes'] as $jsonValue) {
+                $value = AssetBalanceChangeResponse::fromJson($jsonValue);
+                $this->assetBalanceChanges->add($value);
+            }
+        }
+
         parent::loadFromJson($json);
     }
 
@@ -61,6 +75,54 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     public function setParameters(?ParametersResponse $parameters): void
     {
         $this->parameters = $parameters;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAddress(): string
+    {
+        return $this->address;
+    }
+
+    /**
+     * @param string $address
+     */
+    public function setAddress(string $address): void
+    {
+        $this->address = $address;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSalt(): string
+    {
+        return $this->salt;
+    }
+
+    /**
+     * @param string $salt
+     */
+    public function setSalt(string $salt): void
+    {
+        $this->salt = $salt;
+    }
+
+    /**
+     * @return AssetBalanceChangesResponse|null
+     */
+    public function getAssetBalanceChanges(): ?AssetBalanceChangesResponse
+    {
+        return $this->assetBalanceChanges;
+    }
+
+    /**
+     * @param AssetBalanceChangesResponse|null $assetBalanceChanges
+     */
+    public function setAssetBalanceChanges(?AssetBalanceChangesResponse $assetBalanceChanges): void
+    {
+        $this->assetBalanceChanges = $assetBalanceChanges;
     }
 
 }

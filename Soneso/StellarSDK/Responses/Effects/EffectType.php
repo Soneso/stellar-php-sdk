@@ -67,4 +67,7 @@ class EffectType
     public const LIQUIDITY_POOL_REMOVED = 94;
     public const LIQUIDITY_POOL_REVOKED = 95;
 
+    public const CONTRACT_CREDITED = 96;
+    public const CONTRACT_DEBITED = 97;
+
 }
