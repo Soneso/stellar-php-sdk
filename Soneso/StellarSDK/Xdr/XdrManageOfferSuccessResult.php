@@ -17,6 +17,17 @@ class XdrManageOfferSuccessResult
         $this->offersClaimed = $offersClaimed;
     }
 
+    /** 
+     * @return array XdrClaimAtom
+     */
+    public function getOffersClaimed() : array {
+        return $this->offersClaimed;
+    }
+
+    public function getOffer() : XdrManageOfferSuccessResultOffer {
+        return $this->offer;
+    }
+
     public function encode() : string {
         $numOffersClaimed = count($this->offersClaimed);
         $bytes = XdrEncoder::integer32($numOffersClaimed);
