@@ -15,7 +15,7 @@ class EventInfo
     public string $id;
     public string $pagingToken;
     public array $topic; // [str]
-    public EventInfoValue $value;
+    public string $value; // xdr
 
     /**
      * @param string $type
@@ -25,9 +25,9 @@ class EventInfo
      * @param string $id
      * @param string $pagingToken
      * @param array $topic
-     * @param EventInfoValue $value
+     * @param string $value
      */
-    public function __construct(string $type, string $ledger, string $ledgerClosedAt, string $contractId, string $id, string $pagingToken, array $topic, EventInfoValue $value)
+    public function __construct(string $type, string $ledger, string $ledgerClosedAt, string $contractId, string $id, string $pagingToken, array $topic, string $value)
     {
         $this->type = $type;
         $this->ledger = $ledger;
@@ -47,7 +47,11 @@ class EventInfo
         $contractId = $json['contractId'];
         $id = $json['id'];
         $pagingToken = $json['pagingToken'];
-        $value = EventInfoValue::fromJson($json['value']);
+        if (isset($json['value']['xdr'])) {
+            $value = $json['value']['xdr'];
+        } else {
+            $value = $json['value'];
+        }
         $topic = array();
         foreach ($json['topic'] as $val) {
             array_push($topic, $val);

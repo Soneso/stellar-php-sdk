@@ -84,7 +84,7 @@ abstract class AbstractOperation
             XdrOperationType::LIQUIDITY_POOL_DEPOSIT => self::liquidityPoolDeposit($body),
             XdrOperationType::LIQUIDITY_POOL_WITHDRAW => self::liquidityPoolWithdraw($body),
             XdrOperationType::INVOKE_HOST_FUNCTION => self::invokeHostFunction($body),
-            XdrOperationType::BUMP_FOOTPRINT_EXPIRATION => self::bumpFootprintExpiration($body),
+            XdrOperationType::EXTEND_FOOTPRINT_TTL => self::extendFootprintTTL($body),
             XdrOperationType::RESTORE_FOOTPRINT => self::restoreFootprint($body),
             default => throw new InvalidArgumentException(sprintf("Unknown operation type: %s", $type))
         };
@@ -101,10 +101,10 @@ abstract class AbstractOperation
         }
     }
 
-    private static function bumpFootprintExpiration(XdrOperationBody $body) : BumpFootprintExpirationOperation {
-        $op = $body->getBumpFootprintExpirationOp();
+    private static function extendFootprintTTL(XdrOperationBody $body) : ExtendFootprintTTLOperation {
+        $op = $body->getExtendFootprintTTLOp();
         if ($op != null) {
-            return BumpFootprintExpirationOperation::fromXdrOperation($op);
+            return ExtendFootprintTTLOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing invoke host function operation in xdr operation body");
         }

@@ -6,32 +6,32 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrExpirationEntry
+class XdrTTLEntry
 {
     public string $keyHash;
-    public int $expirationLedgerSeq; // uint32
+    public int $liveUntilLedgerSeq; // uint32
 
     /**
      * @param string $keyHash
-     * @param int $expirationLedgerSeq
+     * @param int $liveUntilLedgerSeq
      */
-    public function __construct(string $keyHash, int $expirationLedgerSeq)
+    public function __construct(string $keyHash, int $liveUntilLedgerSeq)
     {
         $this->keyHash = $keyHash;
-        $this->expirationLedgerSeq = $expirationLedgerSeq;
+        $this->liveUntilLedgerSeq = $liveUntilLedgerSeq;
     }
 
 
     public function encode(): string {
         $body = XdrEncoder::opaqueFixed($this->keyHash, 32);
-        $body .= XdrEncoder::unsignedInteger32($this->expirationLedgerSeq);
+        $body .= XdrEncoder::unsignedInteger32($this->liveUntilLedgerSeq);
         return $body;
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrExpirationEntry {
+    public static function decode(XdrBuffer $xdr) : XdrTTLEntry {
         $keyHash = $xdr->readOpaqueFixed(32);
-        $expirationLedgerSeq = $xdr->readUnsignedInteger32();
-        return new XdrExpirationEntry($keyHash, $expirationLedgerSeq);
+        $liveUntilLedgerSeq = $xdr->readUnsignedInteger32();
+        return new XdrTTLEntry($keyHash, $liveUntilLedgerSeq);
     }
 
     /**
@@ -53,17 +53,17 @@ class XdrExpirationEntry
     /**
      * @return int
      */
-    public function getExpirationLedgerSeq(): int
+    public function getLiveUntilLedgerSeq(): int
     {
-        return $this->expirationLedgerSeq;
+        return $this->liveUntilLedgerSeq;
     }
 
     /**
-     * @param int $expirationLedgerSeq
+     * @param int $liveUntilLedgerSeq
      */
-    public function setExpirationLedgerSeq(int $expirationLedgerSeq): void
+    public function setLiveUntilLedgerSeq(int $liveUntilLedgerSeq): void
     {
-        $this->expirationLedgerSeq = $expirationLedgerSeq;
+        $this->liveUntilLedgerSeq = $liveUntilLedgerSeq;
     }
 
 }

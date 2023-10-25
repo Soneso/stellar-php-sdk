@@ -11,34 +11,34 @@ class XdrSorobanTransactionData
 {
     public XdrExtensionPoint $ext;
     public XdrSorobanResources $resources;
-    public int $refundableFee; // Portion of transaction `fee` allocated to refundable fees.
+    public int $resourceFee; // Portion of transaction `fee` allocated to refundable fees.
 
     /**
      * @param XdrExtensionPoint $ext
      * @param XdrSorobanResources $resources
-     * @param int $refundableFee
+     * @param int $resourceFee
      */
-    public function __construct(XdrExtensionPoint $ext, XdrSorobanResources $resources, int $refundableFee)
+    public function __construct(XdrExtensionPoint $ext, XdrSorobanResources $resources, int $resourceFee)
     {
         $this->ext = $ext;
         $this->resources = $resources;
-        $this->refundableFee = $refundableFee;
+        $this->resourceFee = $resourceFee;
     }
 
 
     public function encode(): string {
         $bytes = $this->ext->encode();
         $bytes .= $this->resources->encode();
-        $bytes .= XdrEncoder::integer64($this->refundableFee);
+        $bytes .= XdrEncoder::integer64($this->resourceFee);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrSorobanTransactionData {
         $ext = XdrExtensionPoint::decode($xdr);
         $resources = XdrSorobanResources::decode($xdr);
-        $refundableFee = $xdr->readInteger64();
+        $resourceFee = $xdr->readInteger64();
 
-        return new XdrSorobanTransactionData($ext, $resources, $refundableFee);
+        return new XdrSorobanTransactionData($ext, $resources, $resourceFee);
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrSorobanTransactionData {
@@ -70,17 +70,17 @@ class XdrSorobanTransactionData
     /**
      * @return int
      */
-    public function getRefundableFee(): int
+    public function getResourceFee(): int
     {
-        return $this->refundableFee;
+        return $this->resourceFee;
     }
 
     /**
-     * @param int $refundableFee
+     * @param int $resourceFee
      */
-    public function setRefundableFee(int $refundableFee): void
+    public function setResourceFee(int $resourceFee): void
     {
-        $this->refundableFee = $refundableFee;
+        $this->resourceFee = $resourceFee;
     }
 
     /**

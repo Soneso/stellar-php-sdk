@@ -32,7 +32,7 @@ class XdrOperationBody
     private ?XdrLiquidityPoolDepositOperation $liquidityPoolDepositOperation = null;
     private ?XdrLiquidityPoolWithdrawOperation $liquidityPoolWithdrawOperation = null;
     private ?XdrInvokeHostFunctionOp $invokeHostFunctionOperation = null;
-    private ?XdrBumpFootprintExpirationOp $bumpFootprintExpirationOp = null;
+    private ?XdrExtendFootprintTTLOp $extendFootprintTTLOp = null;
     private ?XdrRestoreFootprintOp $restoreFootprintOp = null;
 
     public function __construct(XdrOperationType $type) {
@@ -416,19 +416,19 @@ class XdrOperationBody
     }
 
     /**
-     * @return XdrBumpFootprintExpirationOp|null
+     * @return XdrExtendFootprintTTLOp|null
      */
-    public function getBumpFootprintExpirationOp(): ?XdrBumpFootprintExpirationOp
+    public function getExtendFootprintTTLOp(): ?XdrExtendFootprintTTLOp
     {
-        return $this->bumpFootprintExpirationOp;
+        return $this->extendFootprintTTLOp;
     }
 
     /**
-     * @param XdrBumpFootprintExpirationOp|null $bumpFootprintExpirationOp
+     * @param XdrExtendFootprintTTLOp|null $extendFootprintTTLOp
      */
-    public function setBumpFootprintExpirationOp(?XdrBumpFootprintExpirationOp $bumpFootprintExpirationOp): void
+    public function setExtendFootprintTTLOp(?XdrExtendFootprintTTLOp $extendFootprintTTLOp): void
     {
-        $this->bumpFootprintExpirationOp = $bumpFootprintExpirationOp;
+        $this->extendFootprintTTLOp = $extendFootprintTTLOp;
     }
 
     /**
@@ -475,7 +475,7 @@ class XdrOperationBody
             XdrOperationType::LIQUIDITY_POOL_DEPOSIT => $this->liquidityPoolDepositOperation->encode() ?? "",
             XdrOperationType::LIQUIDITY_POOL_WITHDRAW => $this->liquidityPoolWithdrawOperation->encode() ?? "",
             XdrOperationType::INVOKE_HOST_FUNCTION => $this->invokeHostFunctionOperation->encode() ?? "",
-            XdrOperationType::BUMP_FOOTPRINT_EXPIRATION => $this->bumpFootprintExpirationOp->encode() ?? "",
+            XdrOperationType::EXTEND_FOOTPRINT_TTL => $this->extendFootprintTTLOp->encode() ?? "",
             XdrOperationType::RESTORE_FOOTPRINT => $this->restoreFootprintOp->encode() ?? ""
         };
         return $bytes;
@@ -556,8 +556,8 @@ class XdrOperationBody
             case XdrOperationType::INVOKE_HOST_FUNCTION:
                 $result->setInvokeHostFunctionOperation(XdrInvokeHostFunctionOp::decode($xdr));
                 break;
-            case XdrOperationType::BUMP_FOOTPRINT_EXPIRATION:
-                $result->setBumpFootprintExpirationOp(XdrBumpFootprintExpirationOp::decode($xdr));
+            case XdrOperationType::EXTEND_FOOTPRINT_TTL:
+                $result->setExtendFootprintTTLOp(XdrExtendFootprintTTLOp::decode($xdr));
                 break;
             case XdrOperationType::RESTORE_FOOTPRINT:
                 $result->setRestoreFootprintOp(XdrRestoreFootprintOp::decode($xdr));

@@ -20,7 +20,7 @@ class XdrConfigSettingEntry
     public ?XdrContractCostParams $contractCostParamsMemBytes = null;
     public ?int $contractDataKeySizeBytes = null;
     public ?int $contractDataEntrySizeBytes = null;
-    public ?XdrStateExpirationSettings $stateExpirationSettings = null;
+    public ?XdrStateArchivalSettings $stateArchivalSettings = null;
     public ?XdrConfigSettingContractExecutionLanesV0 $contractExecutionLanes = null;
     public ?array $bucketListSizeWindow = null; // [uint64]
     public ?XdrEvictionIterator $evictionIterator = null;
@@ -66,8 +66,8 @@ class XdrConfigSettingEntry
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
                 $bytes .= XdrEncoder::unsignedInteger32($this->contractDataEntrySizeBytes);
                 break;
-            case XdrConfigSettingID::CONFIG_SETTING_STATE_EXPIRATION:
-                $bytes .= $this->stateExpirationSettings->encode();
+            case XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL:
+                $bytes .= $this->stateArchivalSettings->encode();
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
                 $bytes .= $this->contractExecutionLanes->encode();
@@ -119,8 +119,8 @@ class XdrConfigSettingEntry
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
                 $result->contractDataEntrySizeBytes = $xdr->readUnsignedInteger32();
                 break;
-            case XdrConfigSettingID::CONFIG_SETTING_STATE_EXPIRATION:
-                $result->stateExpirationSettings = XdrStateExpirationSettings::decode($xdr);
+            case XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL:
+                $result->stateArchivalSettings = XdrStateArchivalSettings::decode($xdr);
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
                 $result->contractExecutionLanes = XdrConfigSettingContractExecutionLanesV0::decode($xdr);
@@ -317,19 +317,19 @@ class XdrConfigSettingEntry
     }
 
     /**
-     * @return XdrStateExpirationSettings|null
+     * @return XdrStateArchivalSettings|null
      */
-    public function getStateExpirationSettings(): ?XdrStateExpirationSettings
+    public function getStateArchivalSettings(): ?XdrStateArchivalSettings
     {
-        return $this->stateExpirationSettings;
+        return $this->stateArchivalSettings;
     }
 
     /**
-     * @param XdrStateExpirationSettings|null $stateExpirationSettings
+     * @param XdrStateArchivalSettings|null $stateArchivalSettings
      */
-    public function setStateExpirationSettings(?XdrStateExpirationSettings $stateExpirationSettings): void
+    public function setStateArchivalSettings(?XdrStateArchivalSettings $stateArchivalSettings): void
     {
-        $this->stateExpirationSettings = $stateExpirationSettings;
+        $this->stateArchivalSettings = $stateArchivalSettings;
     }
 
     /**

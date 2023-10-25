@@ -18,7 +18,7 @@ class XdrLedgerKey
     public ?XdrLedgerKeyContractData $contractData = null;
     public ?XdrLedgerKeyContractCode $contractCode = null;
     public ?XdrConfigSettingID $configSetting = null;
-    public ?XdrLedgerKeyExpiration $expiration = null;
+    public ?XdrLedgerKeyTTL $ttl = null;
 
     public function __construct(XdrLedgerEntryType $type) {
         $this->type = $type;
@@ -36,7 +36,7 @@ class XdrLedgerKey
             XdrLedgerEntryType::CONTRACT_DATA => $this->contractData->encode(),
             XdrLedgerEntryType::CONTRACT_CODE => $this->contractCode->encode(),
             XdrLedgerEntryType::CONFIG_SETTING => $this->configSetting->encode(),
-            XdrLedgerEntryType::EXPIRATION => $this->expiration->encode(),
+            XdrLedgerEntryType::TTL => $this->ttl->encode(),
         };
         return $bytes;
     }
@@ -73,8 +73,8 @@ class XdrLedgerKey
             case XdrLedgerEntryType::CONFIG_SETTING:
                 $result->configSetting = XdrConfigSettingID::decode($xdr);
                 break;
-            case XdrLedgerEntryType::EXPIRATION:
-                $result->expiration = XdrLedgerKeyExpiration::decode($xdr);
+            case XdrLedgerEntryType::TTL:
+                $result->ttl = XdrLedgerKeyTTL::decode($xdr);
                 break;
         }
         return $result;
@@ -91,19 +91,19 @@ class XdrLedgerKey
     }
 
     /**
-     * @return XdrLedgerKeyExpiration|null
+     * @return XdrLedgerKeyTTL|null
      */
-    public function getExpiration(): ?XdrLedgerKeyExpiration
+    public function getTtl(): ?XdrLedgerKeyTTL
     {
-        return $this->expiration;
+        return $this->ttl;
     }
 
     /**
-     * @param XdrLedgerKeyExpiration|null $expiration
+     * @param XdrLedgerKeyTTL|null $ttl
      */
-    public function setExpiration(?XdrLedgerKeyExpiration $expiration): void
+    public function setTtl(?XdrLedgerKeyTTL $ttl): void
     {
-        $this->expiration = $expiration;
+        $this->ttl = $ttl;
     }
 
 

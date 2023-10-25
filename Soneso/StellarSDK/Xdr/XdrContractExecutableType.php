@@ -11,7 +11,7 @@ class XdrContractExecutableType
     public int $value;
 
     const CONTRACT_EXECUTABLE_WASM = 0;
-    const CONTRACT_EXECUTABLE_TOKEN = 1;
+    const CONTRACT_EXECUTABLE_STELLAR_ASSET = 1;
 
     public function __construct(int $value)
     {
@@ -22,8 +22,8 @@ class XdrContractExecutableType
         return new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM);
     }
 
-    public static function CONTRACT_EXECUTABLE_TOKEN() :  XdrContractExecutableType {
-        return new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN);
+    public static function CONTRACT_EXECUTABLE_STELLAR_ASSET() :  XdrContractExecutableType {
+        return new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET);
     }
 
     /**

@@ -27,7 +27,7 @@ class XdrContractExecutable
     }
 
     public static function forToken() : XdrContractExecutable {
-        return new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN());
+        return new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
     }
 
     public function encode(): string {
@@ -41,7 +41,7 @@ class XdrContractExecutable
                 }
                 $bytes .= XdrEncoder::opaqueFixed($wasmIdBytes, 32);
                 break;
-            case XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN:
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
         }
         return $bytes;
@@ -53,7 +53,7 @@ class XdrContractExecutable
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
                 $result->wasmIdHex = bin2hex($xdr->readOpaqueFixed(32));
                 break;
-            case XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN:
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
         }
         return $result;

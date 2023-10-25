@@ -7,32 +7,32 @@
 
 namespace Soneso\StellarSDK;
 
-class BumpFootprintExpirationOperationBuilder
+class ExtendFootprintTTLOperationBuilder
 {
-    private int $ledgersToExpire;
+    private int $extendTo;
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @param int $ledgersToExpire
+     * @param int $extendTo
      */
-    public function __construct(int $ledgersToExpire)
+    public function __construct(int $extendTo)
     {
-        $this->ledgersToExpire = $ledgersToExpire;
+        $this->extendTo = $extendTo;
     }
 
 
-    public function setSourceAccount(string $accountId) : BumpFootprintExpirationOperationBuilder {
+    public function setSourceAccount(string $accountId) : ExtendFootprintTTLOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
         return $this;
     }
 
-    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : BumpFootprintExpirationOperationBuilder {
+    public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : ExtendFootprintTTLOperationBuilder {
         $this->sourceAccount = $sourceAccount;
         return $this;
     }
 
-    public function build(): BumpFootprintExpirationOperation {
-        $result = new BumpFootprintExpirationOperation($this->ledgersToExpire);
+    public function build(): ExtendFootprintTTLOperation {
+        $result = new ExtendFootprintTTLOperation($this->extendTo);
         if ($this->sourceAccount != null) {
             $result->setSourceAccount($this->sourceAccount);
         }

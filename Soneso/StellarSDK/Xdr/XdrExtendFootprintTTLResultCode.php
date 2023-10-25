@@ -6,14 +6,14 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrBumpFootprintExpirationResultCode
+class XdrExtendFootprintTTLResultCode
 {
     public int $value;
 
-    const BUMP_FOOTPRINT_EXPIRATION_SUCCESS = 0;
-    const BUMP_FOOTPRINT_EXPIRATION_MALFORMED = -1;
-    const BUMP_FOOTPRINT_EXPIRATION_RESOURCE_LIMIT_EXCEEDED = -2;
-    const BUMP_FOOTPRINT_EXPIRATION_INSUFFICIENT_REFUNDABLE_FEE = -3;
+    const EXTEND_FOOTPRINT_TTL_SUCCESS = 0;
+    const EXTEND_FOOTPRINT_TTL_MALFORMED = -1;
+    const EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED = -2;
+    const EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE = -3;
 
     public function __construct(int $value)
     {
@@ -33,9 +33,9 @@ class XdrBumpFootprintExpirationResultCode
         return XdrEncoder::integer32($this->value);
     }
 
-    public static function decode(XdrBuffer $xdr): XdrBumpFootprintExpirationResultCode
+    public static function decode(XdrBuffer $xdr): XdrExtendFootprintTTLResultCode
     {
         $value = $xdr->readInteger32();
-        return new XdrBumpFootprintExpirationResultCode($value);
+        return new XdrExtendFootprintTTLResultCode($value);
     }
 }

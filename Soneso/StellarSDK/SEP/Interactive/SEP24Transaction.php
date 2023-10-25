@@ -25,10 +25,10 @@ class SEP24Transaction extends Response
     /// (optional) True if the anchor has verified the user's KYC information for this transaction.
     public ?bool $kycVerified = null;
 
-    /// (optional) A URL that is opened by wallets after the interactive flow is complete. It can include banking information for users to start deposits, the status of the transaction, or any other information the user might need to know about the transaction.
+    /// A URL that is opened by wallets after the interactive flow is complete. It can include banking information for users to start deposits, the status of the transaction, or any other information the user might need to know about the transaction.
     public string $moreInfoUrl;
 
-    /// (optional) 	Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
+    /// Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
     public string $amountIn;
 
     /// (optional)  The asset received or to be received by the Anchor. Must be present if the deposit/withdraw was made using non-equivalent assets.
@@ -38,7 +38,7 @@ class SEP24Transaction extends Response
     /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
     public ?string $amountInAsset = null;
 
-    /// (optional) Amount sent by anchor to user at end of transaction as a string with up to 7 decimals.
+    /// Amount sent by anchor to user at end of transaction as a string with up to 7 decimals.
     /// Excludes amount converted to XLM to fund account and any external fees.
     public string $amountOut;
 
@@ -49,7 +49,7 @@ class SEP24Transaction extends Response
     /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
     public ?string $amountOutAsset = null;
 
-    /// (optional) Amount of fee charged by anchor.
+    /// Amount of fee charged by anchor.
     public string $amountFee;
 
     /// (optional) The asset in which fees are calculated in. Must be present if the deposit/withdraw was made using non-equivalent assets.

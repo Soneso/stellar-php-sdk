@@ -6,44 +6,41 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrStateExpirationSettings
+class XdrStateArchivalSettings
 {
-    public int $maxEntryExpiration; // uint32
-    public int $minTempEntryExpiration; // uint32
-    public int $minPersistentEntryExpiration; // uint32
-    public int $autoBumpLedgers; // uint32
+    public int $maxEntryTTL; // uint32
+    public int $minTemporaryTTL; // uint32
+    public int $minPersistentTTL; // uint32
     public int $persistentRentRateDenominator; // int64
     public int $tempRentRateDenominator; // int64
-    public int $maxEntriesToExpire; // uint32
+    public int $maxEntriesToArchive; // uint32
     public int $bucketListSizeWindowSampleSize; // uint32
     public int $evictionScanSize; // uint64
     public int $startingEvictionScanLevel; // uint32
 
     /**
-     * @param int $maxEntryExpiration
-     * @param int $minTempEntryExpiration
-     * @param int $minPersistentEntryExpiration
-     * @param int $autoBumpLedgers
+     * @param int $maxEntryTTL
+     * @param int $minTemporaryTTL
+     * @param int $minPersistentTTL
      * @param int $persistentRentRateDenominator
      * @param int $tempRentRateDenominator
-     * @param int $maxEntriesToExpire
+     * @param int $maxEntriesToArchive
      * @param int $bucketListSizeWindowSampleSize
      * @param int $evictionScanSize
      * @param int $startingEvictionScanLevel
      */
-    public function __construct(int $maxEntryExpiration, int $minTempEntryExpiration,
-                                int $minPersistentEntryExpiration, int $autoBumpLedgers,
+    public function __construct(int $maxEntryTTL, int $minTemporaryTTL,
+                                int $minPersistentTTL,
                                 int $persistentRentRateDenominator, int $tempRentRateDenominator,
-                                int $maxEntriesToExpire, int $bucketListSizeWindowSampleSize,
+                                int $maxEntriesToArchive, int $bucketListSizeWindowSampleSize,
                                 int $evictionScanSize, int $startingEvictionScanLevel)
     {
-        $this->maxEntryExpiration = $maxEntryExpiration;
-        $this->minTempEntryExpiration = $minTempEntryExpiration;
-        $this->minPersistentEntryExpiration = $minPersistentEntryExpiration;
-        $this->autoBumpLedgers = $autoBumpLedgers;
+        $this->maxEntryTTL = $maxEntryTTL;
+        $this->minTemporaryTTL = $minTemporaryTTL;
+        $this->minPersistentTTL = $minPersistentTTL;
         $this->persistentRentRateDenominator = $persistentRentRateDenominator;
         $this->tempRentRateDenominator = $tempRentRateDenominator;
-        $this->maxEntriesToExpire = $maxEntriesToExpire;
+        $this->maxEntriesToArchive = $maxEntriesToArchive;
         $this->bucketListSizeWindowSampleSize = $bucketListSizeWindowSampleSize;
         $this->evictionScanSize = $evictionScanSize;
         $this->startingEvictionScanLevel = $startingEvictionScanLevel;
@@ -51,33 +48,31 @@ class XdrStateExpirationSettings
 
 
     public function encode(): string {
-        $body = XdrEncoder::unsignedInteger32($this->maxEntryExpiration);
-        $body .= XdrEncoder::unsignedInteger32($this->minTempEntryExpiration);
-        $body .= XdrEncoder::unsignedInteger32($this->minPersistentEntryExpiration);
-        $body .= XdrEncoder::unsignedInteger32($this->autoBumpLedgers);
+        $body = XdrEncoder::unsignedInteger32($this->maxEntryTTL);
+        $body .= XdrEncoder::unsignedInteger32($this->minTemporaryTTL);
+        $body .= XdrEncoder::unsignedInteger32($this->minPersistentTTL);
         $body .= XdrEncoder::integer64($this->persistentRentRateDenominator);
         $body .= XdrEncoder::integer64($this->tempRentRateDenominator);
-        $body .= XdrEncoder::unsignedInteger32($this->maxEntriesToExpire);
+        $body .= XdrEncoder::unsignedInteger32($this->maxEntriesToArchive);
         $body .= XdrEncoder::unsignedInteger32($this->bucketListSizeWindowSampleSize);
         $body .= XdrEncoder::unsignedInteger64($this->evictionScanSize);
         $body .= XdrEncoder::unsignedInteger32($this->startingEvictionScanLevel);
         return $body;
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrStateExpirationSettings {
-        $maxEntryExpiration = $xdr->readUnsignedInteger32();
-        $minTempEntryExpiration = $xdr->readUnsignedInteger32();
-        $minPersistentEntryExpiration = $xdr->readUnsignedInteger32();
-        $autoBumpLedgers = $xdr->readUnsignedInteger32();
+    public static function decode(XdrBuffer $xdr) : XdrStateArchivalSettings {
+        $maxEntryTTL = $xdr->readUnsignedInteger32();
+        $minTemporaryTTL = $xdr->readUnsignedInteger32();
+        $minPersistentTTL = $xdr->readUnsignedInteger32();
         $persistentRentRateDenominator = $xdr->readInteger64();
         $tempRentRateDenominator = $xdr->readInteger64();
-        $maxEntriesToExpire = $xdr->readUnsignedInteger32();
+        $maxEntriesToArchive = $xdr->readUnsignedInteger32();
         $bucketListSizeWindowSampleSize = $xdr->readUnsignedInteger32();
         $evictionScanSize = $xdr->readUnsignedInteger64();
         $startingEvictionScanLevel = $xdr->readUnsignedInteger32();
-        return new XdrStateExpirationSettings($maxEntryExpiration, $minTempEntryExpiration,
-            $minPersistentEntryExpiration, $autoBumpLedgers, $persistentRentRateDenominator,
-            $tempRentRateDenominator, $maxEntriesToExpire,$bucketListSizeWindowSampleSize,
+        return new XdrStateArchivalSettings($maxEntryTTL, $minTemporaryTTL,
+            $minPersistentTTL, $persistentRentRateDenominator,
+            $tempRentRateDenominator, $maxEntriesToArchive,$bucketListSizeWindowSampleSize,
             $evictionScanSize, $startingEvictionScanLevel);
     }
 
@@ -100,65 +95,49 @@ class XdrStateExpirationSettings
     /**
      * @return int
      */
-    public function getMaxEntryExpiration(): int
+    public function getMaxEntryTTL(): int
     {
-        return $this->maxEntryExpiration;
+        return $this->maxEntryTTL;
     }
 
     /**
-     * @param int $maxEntryExpiration
+     * @param int $maxEntryTTL
      */
-    public function setMaxEntryExpiration(int $maxEntryExpiration): void
+    public function setMaxEntryTTL(int $maxEntryTTL): void
     {
-        $this->maxEntryExpiration = $maxEntryExpiration;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMinTempEntryExpiration(): int
-    {
-        return $this->minTempEntryExpiration;
-    }
-
-    /**
-     * @param int $minTempEntryExpiration
-     */
-    public function setMinTempEntryExpiration(int $minTempEntryExpiration): void
-    {
-        $this->minTempEntryExpiration = $minTempEntryExpiration;
+        $this->maxEntryTTL = $maxEntryTTL;
     }
 
     /**
      * @return int
      */
-    public function getMinPersistentEntryExpiration(): int
+    public function getMinTemporaryTTL(): int
     {
-        return $this->minPersistentEntryExpiration;
+        return $this->minTemporaryTTL;
     }
 
     /**
-     * @param int $minPersistentEntryExpiration
+     * @param int $minTemporaryTTL
      */
-    public function setMinPersistentEntryExpiration(int $minPersistentEntryExpiration): void
+    public function setMinTemporaryTTL(int $minTemporaryTTL): void
     {
-        $this->minPersistentEntryExpiration = $minPersistentEntryExpiration;
+        $this->minTemporaryTTL = $minTemporaryTTL;
     }
 
     /**
      * @return int
      */
-    public function getAutoBumpLedgers(): int
+    public function getMinPersistentTTL(): int
     {
-        return $this->autoBumpLedgers;
+        return $this->minPersistentTTL;
     }
 
     /**
-     * @param int $autoBumpLedgers
+     * @param int $minPersistentTTL
      */
-    public function setAutoBumpLedgers(int $autoBumpLedgers): void
+    public function setMinPersistentTTL(int $minPersistentTTL): void
     {
-        $this->autoBumpLedgers = $autoBumpLedgers;
+        $this->minPersistentTTL = $minPersistentTTL;
     }
 
     /**
@@ -196,17 +175,17 @@ class XdrStateExpirationSettings
     /**
      * @return int
      */
-    public function getMaxEntriesToExpire(): int
+    public function getMaxEntriesToArchive(): int
     {
-        return $this->maxEntriesToExpire;
+        return $this->maxEntriesToArchive;
     }
 
     /**
-     * @param int $maxEntriesToExpire
+     * @param int $maxEntriesToArchive
      */
-    public function setMaxEntriesToExpire(int $maxEntriesToExpire): void
+    public function setMaxEntriesToArchive(int $maxEntriesToArchive): void
     {
-        $this->maxEntriesToExpire = $maxEntriesToExpire;
+        $this->maxEntriesToArchive = $maxEntriesToArchive;
     }
 
     /**

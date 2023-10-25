@@ -35,7 +35,7 @@ class XdrOperationType
     const LIQUIDITY_POOL_DEPOSIT = 22;
     const LIQUIDITY_POOL_WITHDRAW = 23;
     const INVOKE_HOST_FUNCTION = 24;
-    const BUMP_FOOTPRINT_EXPIRATION = 25;
+    const EXTEND_FOOTPRINT_TTL = 25;
     const RESTORE_FOOTPRINT = 26;
 
     public function __construct(int $value) {
@@ -159,8 +159,8 @@ class XdrOperationType
         return new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION);
     }
 
-    public static function BUMP_FOOTPRINT_EXPIRATION() : XdrOperationType {
-        return new XdrOperationType(XdrOperationType::BUMP_FOOTPRINT_EXPIRATION);
+    public static function EXTEND_FOOTPRINT_TTL() : XdrOperationType {
+        return new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL);
     }
 
     public static function RESTORE_FOOTPRINT() : XdrOperationType {

@@ -7,7 +7,7 @@
 namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
-use Soneso\StellarSDK\BumpFootprintExpirationOperationBuilder;
+use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeContractHostFunction;
@@ -47,7 +47,6 @@ class SorobanAtomicSwapTest extends TestCase
 
         $server = new SorobanServer("https://soroban-testnet.stellar.org");
         $server->enableLogging = true;
-        $server->acknowledgeExperimental = true;
 
         $sdk = StellarSDK::getTestNetInstance();
 
@@ -62,6 +61,10 @@ class SorobanAtomicSwapTest extends TestCase
         FriendBot::fundTestAccount($aliceId);
         FriendBot::fundTestAccount($bobId);
         sleep(5);
+
+        //print("admin: " . $adminKeyPair->getSecretSeed() .  " : " . $adminKeyPair->getAccountId(). PHP_EOL);
+        //print("alice: " . $aliceKeyPair->getSecretSeed() .  " : " . $aliceKeyPair->getAccountId(). PHP_EOL);
+        //print("bob: " . $bobKeyPair->getSecretSeed() .  " : " . $bobKeyPair->getAccountId(). PHP_EOL);
 
         $atomicSwapContractId = $this->deployContract($server,self::SWAP_CONTRACT_PATH, $adminKeyPair);
         //print("atomic swap cid: " . $atomicSwapContractId . PHP_EOL);
@@ -443,11 +446,11 @@ class SorobanAtomicSwapTest extends TestCase
         $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
-    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $ledgersToExpire) : void {
+    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $extendTo) : void {
         sleep(5);
         $sdk = StellarSDK::getTestNetInstance();
 
-        $builder = new BumpFootprintExpirationOperationBuilder($ledgersToExpire);
+        $builder = new ExtendFootprintTTLOperationBuilder($extendTo);
         $bumpOp = $builder->build();
 
         $accountAId = $accountKeyPair->getAccountId();

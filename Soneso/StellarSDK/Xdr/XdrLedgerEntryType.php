@@ -19,7 +19,7 @@ class XdrLedgerEntryType
     const CONTRACT_DATA = 6;
     const CONTRACT_CODE = 7;
     const CONFIG_SETTING = 8;
-    const EXPIRATION = 9;
+    const TTL = 9;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -79,6 +79,6 @@ class XdrLedgerEntryType
     }
 
     public static function EXPIRATION() : XdrLedgerEntryType {
-        return new XdrLedgerEntryType(XdrLedgerEntryType::EXPIRATION);
+        return new XdrLedgerEntryType(XdrLedgerEntryType::TTL);
     }
 }

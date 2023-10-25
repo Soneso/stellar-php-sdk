@@ -19,7 +19,7 @@ class XdrLedgerEntryData
     public ?XdrContractDataEntry $contractData = null;
     public ?XdrContractCodeEntry $contractCode = null;
     public ?XdrConfigSettingEntry $configSetting = null;
-    public ?XdrExpirationEntry $expirationEntry = null;
+    public ?XdrTTLEntry $ttlEntry = null;
 
     /**
      * @param XdrLedgerEntryType $type
@@ -60,8 +60,8 @@ class XdrLedgerEntryData
             case XdrLedgerEntryType::CONFIG_SETTING:
                 $bytes .= $this->configSetting->encode();
                 break;
-            case XdrLedgerEntryType::EXPIRATION:
-                $bytes .= $this->expirationEntry->encode();
+            case XdrLedgerEntryType::TTL:
+                $bytes .= $this->ttlEntry->encode();
                 break;
         }
         return $bytes;
@@ -97,8 +97,8 @@ class XdrLedgerEntryData
             case XdrLedgerEntryType::CONFIG_SETTING:
                 $result->configSetting = XdrConfigSettingEntry::decode($xdr);
                 break;
-            case XdrLedgerEntryType::EXPIRATION:
-                $result->expirationEntry = XdrExpirationEntry::decode($xdr);
+            case XdrLedgerEntryType::TTL:
+                $result->ttlEntry = XdrTTLEntry::decode($xdr);
                 break;
         }
         return $result;
@@ -275,18 +275,18 @@ class XdrLedgerEntryData
     }
 
     /**
-     * @return XdrExpirationEntry|null
+     * @return XdrTTLEntry|null
      */
-    public function getExpirationEntry(): ?XdrExpirationEntry
+    public function getTtlEntry(): ?XdrTTLEntry
     {
-        return $this->expirationEntry;
+        return $this->ttlEntry;
     }
 
     /**
-     * @param XdrExpirationEntry|null $expirationEntry
+     * @param XdrTTLEntry|null $ttlEntry
      */
-    public function setExpirationEntry(?XdrExpirationEntry $expirationEntry): void
+    public function setTtlEntry(?XdrTTLEntry $ttlEntry): void
     {
-        $this->expirationEntry = $expirationEntry;
+        $this->ttlEntry = $ttlEntry;
     }
 }

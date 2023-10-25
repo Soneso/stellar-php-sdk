@@ -28,12 +28,6 @@ Provide the url to the endpoint of the Soroban-RPC server to connect to:
 $server = new SorobanServer("https://rpc-futurenet.stellar.org:443");
 ```
 
-Set the experimental flag to true. Otherwise it will not work.
-
-```php
-$server->acknowledgeExperimental = true;
-```
-
 #### General node health check
 ```php
 $healthResponse = $server->getHealth();
@@ -180,14 +174,14 @@ if (GetTransactionResponse::STATUS_SUCCESS == $status) {
 
 Success!
 
-#### Get Ledger Entry
+#### Get Ledger Entries
 
 The Soroban-RPC server also provides the possibility to request values of ledger entries directly. It will allow you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry. 
 
 ```php
 $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
 $ledgerKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId), XdrContractEntryBodyType::DATA_ENTRY());
-$ledgerEntry = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
+$ledgerEntriesResponse = $server->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
 ```
 
 If you already have a contractId you can load the code as follows:
@@ -195,7 +189,6 @@ If you already have a contractId you can load the code as follows:
 $contractCodeEntry = $server->loadContractCodeForContractId($contractId);
 if ($contractCodeEntry != null) {
     $loadedSourceCode = $contractCodeEntry->body->code->value;
-    $expirationLedgerSeq = $contractCodeEntry->expirationLedgerSeq;
 }
 ```
 
@@ -205,7 +198,6 @@ If you have a wasmId:
 $contractCodeEntry = $server->loadContractCodeForWasmId($wasmId);
 if ($contractCodeEntry != null) {
     $loadedSourceCode = $contractCodeEntry->body->code->value;
-    $expirationLedgerSeq = $contractCodeEntry->expirationLedgerSeq;
 }
 ```
 

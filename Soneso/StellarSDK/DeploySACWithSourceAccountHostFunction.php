@@ -41,7 +41,7 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction
         $type = $xdr->type;
         if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $xdr->createContract == null
             || $xdr->createContract->contractIDPreimage->type->value != XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS
-            || $xdr->createContract->executable->type->value != XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN) {
+            || $xdr->createContract->executable->type->value != XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET) {
             throw new Exception("Invalid argument");
         }
 

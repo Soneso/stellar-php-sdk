@@ -33,6 +33,6 @@ class OperationType
     public const LIQUIDITY_POOL_DEPOSIT = 22;
     public const LIQUIDITY_POOL_WITHDRAW = 23;
     public const INVOKE_HOST_FUNCTION = 24;
-    public const BUMP_FOOTPRINT_EXPIRATION = 25;
+    public const EXTEND_FOOTPRINT_TTL = 25;
     public const RESTORE_FOOTPRINT = 26;
 }

@@ -9,7 +9,7 @@ namespace Soneso\StellarSDKTests;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
-use Soneso\StellarSDK\BumpFootprintExpirationOperationBuilder;
+use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeContractHostFunction;
@@ -50,7 +50,6 @@ class SorobanAuthTest extends TestCase
 
         $server = new SorobanServer("https://soroban-testnet.stellar.org");
         $server->enableLogging = true;
-        $server->acknowledgeExperimental = true;
         $sdk = StellarSDK::getTestNetInstance();
 
         $invokerKeyPair = KeyPair::random();
@@ -148,7 +147,6 @@ class SorobanAuthTest extends TestCase
 
         $server = new SorobanServer("https://soroban-testnet.stellar.org");
         $server->enableLogging = true;
-        $server->acknowledgeExperimental = true;
         $sdk = StellarSDK::getTestNetInstance();
 
         $submitterKeyPair = KeyPair::random();
@@ -335,11 +333,11 @@ class SorobanAuthTest extends TestCase
         $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
-    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $ledgersToExpire) : void {
+    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $extendTo) : void {
         sleep(5);
         $sdk = StellarSDK::getTestNetInstance();
 
-        $builder = new BumpFootprintExpirationOperationBuilder($ledgersToExpire);
+        $builder = new ExtendFootprintTTLOperationBuilder($extendTo);
         $bumpOp = $builder->build();
 
         $accountAId = $accountKeyPair->getAccountId();

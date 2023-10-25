@@ -58,7 +58,7 @@ class InvokeHostFunctionOperation extends AbstractOperation
                 if ($contractIdPreimageTypeVal == XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS) {
                     if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM) {
                         return new InvokeHostFunctionOperation(CreateContractHostFunction::fromXdr($xdrFunction), $auth);
-                    } else if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN){
+                    } else if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET){
                         return new InvokeHostFunctionOperation(DeploySACWithSourceAccountHostFunction::fromXdr($xdrFunction), $auth);
                     }
                 } else if ($executableTypeValue == XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET) {

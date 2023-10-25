@@ -7,7 +7,7 @@
 namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
-use Soneso\StellarSDK\BumpFootprintExpirationOperationBuilder;
+use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeContractHostFunction;
@@ -46,7 +46,6 @@ class SorobanCustomAccountTest extends TestCase
 
         $server = new SorobanServer("https://soroban-testnet.stellar.org");
         $server->enableLogging = true;
-        $server->acknowledgeExperimental = true;
 
         $adminKeyPair =  KeyPair::random();
         $adminId = $adminKeyPair->getAccountId();
@@ -308,7 +307,7 @@ class SorobanCustomAccountTest extends TestCase
         $result = array();
         $sdk = StellarSDK::getTestNetInstance();
 
-        // $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
+        $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
 
         // upload contract wasm
         $contractCode = file_get_contents($pathToCode, false);
@@ -576,11 +575,11 @@ class SorobanCustomAccountTest extends TestCase
         $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
-    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $ledgersToExpire) : void {
+    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $extendTo) : void {
         sleep(5);
         $sdk = StellarSDK::getTestNetInstance();
 
-        $builder = new BumpFootprintExpirationOperationBuilder($ledgersToExpire);
+        $builder = new ExtendFootprintTTLOperationBuilder($extendTo);
         $bumpOp = $builder->build();
 
         $accountAId = $accountKeyPair->getAccountId();

@@ -6,7 +6,7 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrLedgerKeyExpiration
+class XdrLedgerKeyTTL
 {
     public string $keyHash;
 
@@ -23,9 +23,9 @@ class XdrLedgerKeyExpiration
         return XdrEncoder::opaqueFixed($this->keyHash, 32);
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrLedgerKeyExpiration {
+    public static function decode(XdrBuffer $xdr) : XdrLedgerKeyTTL {
         $hash = $xdr->readOpaqueFixed(32);
-        return new XdrLedgerKeyExpiration($hash);
+        return new XdrLedgerKeyTTL($hash);
     }
 
     /**

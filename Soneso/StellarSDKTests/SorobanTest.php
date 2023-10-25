@@ -10,7 +10,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
-use Soneso\StellarSDK\BumpFootprintExpirationOperationBuilder;
+use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -63,7 +63,6 @@ class SorobanTest extends TestCase
     {
         $server = new SorobanServer("https://soroban-testnet.stellar.org");
         $server->enableLogging = true;
-        $server->acknowledgeExperimental = true;
         $sdk = StellarSDK::getTestNetInstance();
 
         $accountAKeyPair = KeyPair::random();
@@ -257,17 +256,21 @@ class SorobanTest extends TestCase
         $contractDataKey = $footprint->getContractDataLedgerKey();
         $this->assertNotNull($contractDataKey);
 
-        $contractCodeEntryResponse = $server->getLedgerEntry($contractCodeKey);
-        $this->assertNotNull($contractCodeEntryResponse->ledgerEntryData);
-        $this->assertNotNull($contractCodeEntryResponse->lastModifiedLedgerSeq);
+        $contractCodeEntryResponse = $server->getLedgerEntries([$contractCodeKey]);
+        $this->assertNotNull($contractCodeEntryResponse->entries);
+        $this->assertCount(1,$contractCodeEntryResponse->entries);
         $this->assertNotNull($contractCodeEntryResponse->latestLedger);
-        $this->assertNotNull($contractCodeEntryResponse->getLedgerEntryDataXdr());
+        $this->assertNotNull($contractCodeEntryResponse->entries[0]->key);
+        $this->assertNotNull($contractCodeEntryResponse->entries[0]->lastModifiedLedgerSeq);
+        $this->assertNotNull($contractCodeEntryResponse->entries[0]->getLedgerEntryDataXdr());
 
-        $contractDataEntryResponse = $server->getLedgerEntry($contractDataKey);
-        $this->assertNotNull($contractDataEntryResponse->ledgerEntryData);
-        $this->assertNotNull($contractDataEntryResponse->lastModifiedLedgerSeq);
+        $contractDataEntryResponse = $server->getLedgerEntries([$contractDataKey]);
+        $this->assertNotNull($contractDataEntryResponse->entries);
+        $this->assertCount(1,$contractDataEntryResponse->entries);
         $this->assertNotNull($contractDataEntryResponse->latestLedger);
-        $this->assertNotNull($contractDataEntryResponse->getLedgerEntryDataXdr());
+        $this->assertNotNull($contractDataEntryResponse->entries[0]->key);
+        $this->assertNotNull($contractDataEntryResponse->entries[0]->lastModifiedLedgerSeq);
+        $this->assertNotNull($contractDataEntryResponse->entries[0]->getLedgerEntryDataXdr());
 
         // invoke contract
         $argVal = XdrSCVal::forSymbol("friend");
@@ -529,7 +532,6 @@ class SorobanTest extends TestCase
     {
         $server = new SorobanServer("https://soroban-testnet.stellar.org");
         $server->enableLogging = true;
-        $server->acknowledgeExperimental = true;
         $sdk = StellarSDK::getTestNetInstance();
 
         $accountAKeyPair = KeyPair::random();
@@ -760,11 +762,11 @@ class SorobanTest extends TestCase
         $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
-    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $ledgersToExpire) : void {
+    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $extendTo) : void {
         sleep(5);
         $sdk = StellarSDK::getTestNetInstance();
 
-        $builder = new BumpFootprintExpirationOperationBuilder($ledgersToExpire);
+        $builder = new ExtendFootprintTTLOperationBuilder($extendTo);
         $bumpOp = $builder->build();
 
         $accountAId = $accountKeyPair->getAccountId();

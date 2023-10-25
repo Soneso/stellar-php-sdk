@@ -15,9 +15,10 @@ use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
 use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
-use Soneso\StellarSDK\Soroban\Responses\GetLedgerEntryResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetLedgerEntriesResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetNetworkResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
+use Soneso\StellarSDK\Soroban\Responses\LedgerEntry;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
@@ -45,16 +46,11 @@ class SorobanServer
     private const SIMULATE_TRANSACTION = "simulateTransaction";
     private const SEND_TRANSACTION = "sendTransaction";
     private const GET_TRANSACTION = "getTransaction";
-    private const GET_LEDGER_ENTRY = "getLedgerEntry";
+    private const GET_LEDGER_ENTRIES = "getLedgerEntries";
     private const GET_LATEST_LEDGER = "getLatestLedger";
     private const GET_EVENTS = "getEvents";
 
     public bool $enableLogging = false;
-    public bool $acknowledgeExperimental = false;
-
-    private array $experimentErr = array(
-        'error' => ['code' => -1, 'message' => 'acknowledgeExperimental flag not set']
-    );
 
     /**
      * Helps you to communicate with a remote soroban rpc server.
@@ -76,10 +72,6 @@ class SorobanServer
      * @throws GuzzleException
      */
     public function getHealth() : GetHealthResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return GetHealthResponse::fromJson($this->experimentErr);
-        }
         $body = $this->prepareRequest(self::GET_HEALTH);
         return $this->request($body, self::GET_HEALTH);
     }
@@ -91,10 +83,6 @@ class SorobanServer
      * @throws GuzzleException
      */
     public function getNetwork() : GetNetworkResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return GetNetworkResponse::fromJson($this->experimentErr);
-        }
         $body = $this->prepareRequest(self::GET_NETWORK);
         return $this->request($body, self::GET_NETWORK);
     }
@@ -106,10 +94,6 @@ class SorobanServer
      * @throws GuzzleException
      */
     public function simulateTransaction(Transaction $transaction) : SimulateTransactionResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return SimulateTransactionResponse::fromJson($this->experimentErr);
-        }
         $body = $this->prepareRequest(self::SIMULATE_TRANSACTION, [$transaction->toEnvelopeXdrBase64()]);
         return $this->request($body, self::SIMULATE_TRANSACTION);
     }
@@ -123,10 +107,6 @@ class SorobanServer
      * @throws GuzzleException
      */
     public function sendTransaction(Transaction $transaction) : SendTransactionResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return SendTransactionResponse::fromJson($this->experimentErr);
-        }
         $body = $this->prepareRequest(self::SEND_TRANSACTION, [$transaction->toEnvelopeXdrBase64()]);
         return $this->request($body, self::SEND_TRANSACTION);
     }
@@ -138,10 +118,6 @@ class SorobanServer
      * @throws GuzzleException
      */
     public function getTransaction(String $transactionId) : GetTransactionResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return GetTransactionResponse::fromJson($this->experimentErr);
-        }
         $body = $this->prepareRequest(self::GET_TRANSACTION, [$transactionId]);
         return $this->request($body, self::GET_TRANSACTION);
     }
@@ -151,33 +127,21 @@ class SorobanServer
      * Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
      * This is a backup way to access your contract data which may not be available via events or simulateTransaction.
      * To fetch contract wasm byte-code, use the ContractCode ledger entry key.
-     * @param String $base64EncodedKey to request the ledger entry for.
-     * @return GetLedgerEntryResponse response.
+     * @param array $base64EncodedKeys to request the ledger entry for.
+     * @return GetLedgerEntriesResponse response.
      * @throws GuzzleException
      */
-    public function getLedgerEntry(String $base64EncodedKey) : GetLedgerEntryResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return GetLedgerEntryResponse::fromJson($this->experimentErr);
-        }
-        $body = $this->prepareRequest(self::GET_LEDGER_ENTRY, [$base64EncodedKey]);
-        return $this->request($body, self::GET_LEDGER_ENTRY);
+    public function getLedgerEntries(array $base64EncodedKeys) : GetLedgerEntriesResponse {
+        $body = $this->prepareRequest(self::GET_LEDGER_ENTRIES, [$base64EncodedKeys]);
+        return $this->request($body, self::GET_LEDGER_ENTRIES);
     }
 
     public function getLatestLedger() : GetLatestLedgerResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return GetLatestLedgerResponse::fromJson($this->experimentErr);
-        }
         $body = $this->prepareRequest(self::GET_LATEST_LEDGER);
         return $this->request($body, self::GET_LATEST_LEDGER);
     }
 
     public function getEvents(GetEventsRequest $request) : GetEventsResponse {
-        if (!$this->acknowledgeExperimental) {
-            $this->printExperimentalFlagErr();
-            return GetEventsResponse::fromJson($this->experimentErr);
-        }
         $body = $this->prepareRequest(self::GET_EVENTS, $request->getRequestParams());
         print($body . PHP_EOL);
         return $this->request($body, self::GET_EVENTS);
@@ -192,10 +156,12 @@ class SorobanServer
     public function loadContractCodeForWasmId(string $wasmId) : ?XdrContractCodeEntry {
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
         $ledgerKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
-        $ledgerEntry = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
-        if ($ledgerEntry != null && $ledgerEntry->ledgerEntryData != null) {
-            $ledgerEntryData = XdrLedgerEntryData::fromBase64Xdr($ledgerEntry->ledgerEntryData);
-            return $ledgerEntryData->contractCode;
+        $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
+        if ($ledgerEntries != null && $ledgerEntries->entries != null && count($ledgerEntries->entries) > 0) {
+            $ledgerEntry = $ledgerEntries->entries[0];
+            if ($ledgerEntry instanceof LedgerEntry) {
+                return $ledgerEntry->getLedgerEntryDataXdr()->contractCode;
+            }
         }
         return null;
     }
@@ -213,9 +179,9 @@ class SorobanServer
             XdrSCVal::forLedgerKeyContractInstance(),
             XdrContractDataDurability::PERSISTENT());
 
-        $ledgerEntry = $this->getLedgerEntry($ledgerKey->toBase64Xdr());
-        if ($ledgerEntry != null && $ledgerEntry->ledgerEntryData != null) {
-            $ledgerEntryData = XdrLedgerEntryData::fromBase64Xdr($ledgerEntry->ledgerEntryData);
+        $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
+        if ($ledgerEntries != null && $ledgerEntries->entries != null && count($ledgerEntries->entries) > 0) {
+            $ledgerEntryData = $ledgerEntries->entries[0]->getLedgerEntryDataXdr();
             if ($ledgerEntryData->contractData != null && $ledgerEntryData->contractData->val->instance?->executable->wasmIdHex != null) {
                 $wasmId = $ledgerEntryData->contractData->val->instance->executable->wasmIdHex;
                 return $this->loadContractCodeForWasmId($wasmId);
@@ -268,7 +234,7 @@ class SorobanServer
             self::SIMULATE_TRANSACTION => SimulateTransactionResponse::fromJson($jsonData),
             self::SEND_TRANSACTION => SendTransactionResponse::fromJson($jsonData),
             self::GET_TRANSACTION => GetTransactionResponse::fromJson($jsonData),
-            self::GET_LEDGER_ENTRY => GetLedgerEntryResponse::fromJson($jsonData),
+            self::GET_LEDGER_ENTRIES => GetLedgerEntriesResponse::fromJson($jsonData),
             self::GET_LATEST_LEDGER => GetLatestLedgerResponse::fromJson($jsonData),
             self::GET_EVENTS => GetEventsResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
@@ -296,9 +262,5 @@ class SorobanServer
         }
 
         return json_encode($payload);
-    }
-
-    private function printExperimentalFlagErr() {
-        print("Error: acknowledgeExperimental flag not set".PHP_EOL);
     }
 }

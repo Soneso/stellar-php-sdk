@@ -6,33 +6,33 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrBumpFootprintExpirationOp
+class XdrExtendFootprintTTLOp
 {
     public XdrExtensionPoint $ext;
-    public int $ledgersToExpire;
+    public int $extendTo;
 
     /**
      * @param XdrExtensionPoint $ext
-     * @param int $ledgersToExpire
+     * @param int $extendTo
      */
-    public function __construct(XdrExtensionPoint $ext, int $ledgersToExpire)
+    public function __construct(XdrExtensionPoint $ext, int $extendTo)
     {
         $this->ext = $ext;
-        $this->ledgersToExpire = $ledgersToExpire;
+        $this->extendTo = $extendTo;
     }
 
 
     public function encode(): string {
         $bytes = $this->ext->encode();
-        $bytes .= XdrEncoder::unsignedInteger32($this->ledgersToExpire);
+        $bytes .= XdrEncoder::unsignedInteger32($this->extendTo);
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrBumpFootprintExpirationOp {
+    public static function decode(XdrBuffer $xdr):  XdrExtendFootprintTTLOp {
         $ext = XdrExtensionPoint::decode($xdr);
-        $ledgersToExpire = $xdr->readUnsignedInteger32();
+        $extendTo = $xdr->readUnsignedInteger32();
 
-        return new XdrBumpFootprintExpirationOp($ext, $ledgersToExpire);
+        return new XdrExtendFootprintTTLOp($ext, $extendTo);
     }
 
     /**
@@ -54,17 +54,17 @@ class XdrBumpFootprintExpirationOp
     /**
      * @return int
      */
-    public function getLedgersToExpire(): int
+    public function getExtendTo(): int
     {
-        return $this->ledgersToExpire;
+        return $this->extendTo;
     }
 
     /**
-     * @param int $ledgersToExpire
+     * @param int $extendTo
      */
-    public function setLedgersToExpire(int $ledgersToExpire): void
+    public function setExtendTo(int $extendTo): void
     {
-        $this->ledgersToExpire = $ledgersToExpire;
+        $this->extendTo = $extendTo;
     }
 
 }

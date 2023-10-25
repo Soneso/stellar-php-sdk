@@ -85,7 +85,7 @@ class XdrHostFunction
         $cId = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
         $cId->salt = $salt;
         $cId->address = $address;
-        $cCode = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN());
+        $cCode = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
         $result->createContract = new XdrCreateContractArgs($cId, $cCode);
         return $result;
     }
@@ -94,7 +94,7 @@ class XdrHostFunction
         $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
         $cId = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET());
         $cId->asset = $asset;
-        $cCode = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_TOKEN());
+        $cCode = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
         $result->createContract = new XdrCreateContractArgs($cId, $cCode);
         return $result;
     }

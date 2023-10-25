@@ -14,19 +14,11 @@ class LiquidityPoolTradeEffectResponse extends EffectResponse
     private LiquidityPoolEffectResponse $liquidityPool;
     private ReserveResponse $sold;
     private ReserveResponse $bought;
-    private ReservesResponse $reserves;
 
     protected function loadFromJson(array $json) : void {
         if (isset($json['liquidity_pool'])) $this->liquidityPool = LiquidityPoolEffectResponse::fromJson($json['liquidity_pool']);
         if (isset($json['sold'])) $this->sold = ReserveResponse::fromJson($json['sold']);
         if (isset($json['bought'])) $this->sold = ReserveResponse::fromJson($json['bought']);
-        if (isset($json['reserves'])) {
-            $this->reserves = new ReservesResponse();
-            foreach ($json['reserves'] as $jsonValue) {
-                $value = ReserveResponse::fromJson($jsonValue);
-                $this->reserves->add($value);
-            }
-        }
         parent::loadFromJson($json);
     }
 
