@@ -13,20 +13,20 @@ class LedgerEntry
     public string $key;
     public string $xdr;
     public string $lastModifiedLedgerSeq;
-    public ?string $expirationLedgerSeq = null;
+    public ?string $liveUntilLedgerSeq = null;
 
     /**
      * @param string $key
      * @param string $xdr
      * @param string $lastModifiedLedgerSeq
-     * @param string|null $expirationLedgerSeq
+     * @param string|null $liveUntilLedgerSeq
      */
-    public function __construct(string $key, string $xdr, string $lastModifiedLedgerSeq, ?string $expirationLedgerSeq)
+    public function __construct(string $key, string $xdr, string $lastModifiedLedgerSeq, ?string $liveUntilLedgerSeq)
     {
         $this->key = $key;
         $this->xdr = $xdr;
         $this->lastModifiedLedgerSeq = $lastModifiedLedgerSeq;
-        $this->expirationLedgerSeq = $expirationLedgerSeq;
+        $this->liveUntilLedgerSeq = $liveUntilLedgerSeq;
     }
 
 
@@ -35,11 +35,11 @@ class LedgerEntry
         $key = $json['key'];
         $xdr = $json['xdr'];
         $lastModifiedLedgerSeq = $json['lastModifiedLedgerSeq'];
-        $expirationLedgerSeq = null;
-        if (isset($json['expirationLedgerSeq'])) {
-            $expirationLedgerSeq = $json['expirationLedgerSeq'];
+        $liveUntilLedgerSeq = null;
+        if (isset($json['liveUntilLedgerSeq'])) {
+            $liveUntilLedgerSeq = $json['liveUntilLedgerSeq'];
         }
-        return new LedgerEntry($key, $xdr, $lastModifiedLedgerSeq, $expirationLedgerSeq);
+        return new LedgerEntry($key, $xdr, $lastModifiedLedgerSeq, $liveUntilLedgerSeq);
     }
 
     public function getLedgerEntryDataXdr() : XdrLedgerEntryData {
@@ -97,17 +97,17 @@ class LedgerEntry
     /**
      * @return string|null
      */
-    public function getExpirationLedgerSeq(): ?string
+    public function getLiveUntilLedgerSeq(): ?string
     {
-        return $this->expirationLedgerSeq;
+        return $this->liveUntilLedgerSeq;
     }
 
     /**
-     * @param string|null $expirationLedgerSeq
+     * @param string|null $liveUntilLedgerSeq
      */
-    public function setExpirationLedgerSeq(?string $expirationLedgerSeq): void
+    public function setLiveUntilLedgerSeq(?string $liveUntilLedgerSeq): void
     {
-        $this->expirationLedgerSeq = $expirationLedgerSeq;
+        $this->liveUntilLedgerSeq = $liveUntilLedgerSeq;
     }
 
 }
