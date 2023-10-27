@@ -1,7 +1,7 @@
 
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
-![v1.3.1](https://img.shields.io/badge/v1.3.1-green.svg)
+![v1.3.2](https://img.shields.io/badge/v1.3.2-green.svg)
 
 The Soneso open source Stellar SDK for PHP provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
@@ -210,6 +210,7 @@ if ($response->isSuccessful()) {
 | [SEP-0011: Txrep](examples/sep-0011-txrep.md) | This example shows how to  to generate Txrep (human-readable low-level representation of Stellar transactions) from a transaction and how to create a transaction object from a Txrep string. | [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md)|
 | [SEP-0012: KYC API](examples/sep-0012-kyc.md) | In this examples you can see how to use the sdk to send KYC data to anchors and other services. | [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)|
 | [SEP-0024: Hosted Deposit and Withdrawal](examples/sep-0024.md) | In this examples you can see how to interact with anchors in a standard way defined by SEP-0024. | [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)|
+| [SEP-0030: Account Recovery](examples/sep-0030.md) |In this examples you can see how to recover accounts as defined by SEP-0030. | [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)|
 
 More examples can be found in the [tests](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests).
 
@@ -227,7 +228,8 @@ More examples can be found in the [tests](https://github.com/Soneso/stellar-php-
 - [SEP-0023: Strkeys](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
 - [SEP-0024: Hosted Deposit and Withdrawal](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
 - [SEP-0029: Account Memo Requirements](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
+- [SEP-0030: Account Recovery](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)
 
 ### Soroban support
 
-This SDK provides experimental [support for Soroban](https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md). 
+This SDK provides [support for Soroban](https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md). 
