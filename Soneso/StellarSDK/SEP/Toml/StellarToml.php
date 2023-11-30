@@ -283,6 +283,9 @@ class StellarToml
         if (array_key_exists("anchor_asset", $item)) {
             $currency->anchorAsset = $item["anchor_asset"];
         }
+        if (array_key_exists("attestation_of_reserve", $item)) {
+            $currency->attestationOfReserve = $item["attestation_of_reserve"];
+        }
         if (array_key_exists("redemption_instructions", $item)) {
             $currency->redemptionInstructions = $item["redemption_instructions"];
         }

@@ -55,6 +55,9 @@ class Currency
     /// If anchored token, code / symbol for asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.
     public ?string $anchorAsset = null;
 
+    /// URL to attestation or other proof, evidence, or verification of reserves, such as third-party audits.
+    public ?string $attestationOfReserve = null;
+
     /// If anchored token, these are instructions to redeem the underlying asset from tokens.
     public ?string $redemptionInstructions = null;
 
