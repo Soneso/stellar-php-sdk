@@ -12,16 +12,16 @@ class LedgerEntry
 {
     public string $key;
     public string $xdr;
-    public string $lastModifiedLedgerSeq;
-    public ?string $liveUntilLedgerSeq = null;
+    public int $lastModifiedLedgerSeq;
+    public ?int $liveUntilLedgerSeq = null;
 
     /**
      * @param string $key
      * @param string $xdr
-     * @param string $lastModifiedLedgerSeq
-     * @param string|null $liveUntilLedgerSeq
+     * @param int $lastModifiedLedgerSeq
+     * @param int|null $liveUntilLedgerSeq
      */
-    public function __construct(string $key, string $xdr, string $lastModifiedLedgerSeq, ?string $liveUntilLedgerSeq)
+    public function __construct(string $key, string $xdr, int $lastModifiedLedgerSeq, ?int $liveUntilLedgerSeq)
     {
         $this->key = $key;
         $this->xdr = $xdr;
@@ -46,66 +46,42 @@ class LedgerEntry
         return XdrLedgerEntryData::fromBase64Xdr($this->xdr);
     }
 
-    /**
-     * @return string
-     */
     public function getKey(): string
     {
         return $this->key;
     }
 
-    /**
-     * @param string $key
-     */
     public function setKey(string $key): void
     {
         $this->key = $key;
     }
 
-    /**
-     * @return string
-     */
     public function getXdr(): string
     {
         return $this->xdr;
     }
 
-    /**
-     * @param string $xdr
-     */
     public function setXdr(string $xdr): void
     {
         $this->xdr = $xdr;
     }
 
-    /**
-     * @return string
-     */
-    public function getLastModifiedLedgerSeq(): string
+    public function getLastModifiedLedgerSeq(): int
     {
         return $this->lastModifiedLedgerSeq;
     }
 
-    /**
-     * @param string $lastModifiedLedgerSeq
-     */
-    public function setLastModifiedLedgerSeq(string $lastModifiedLedgerSeq): void
+    public function setLastModifiedLedgerSeq(int $lastModifiedLedgerSeq): void
     {
         $this->lastModifiedLedgerSeq = $lastModifiedLedgerSeq;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getLiveUntilLedgerSeq(): ?string
+    public function getLiveUntilLedgerSeq(): ?int
     {
         return $this->liveUntilLedgerSeq;
     }
 
-    /**
-     * @param string|null $liveUntilLedgerSeq
-     */
-    public function setLiveUntilLedgerSeq(?string $liveUntilLedgerSeq): void
+    public function setLiveUntilLedgerSeq(?int $liveUntilLedgerSeq): void
     {
         $this->liveUntilLedgerSeq = $liveUntilLedgerSeq;
     }

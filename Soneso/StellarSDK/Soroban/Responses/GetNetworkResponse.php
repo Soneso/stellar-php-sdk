@@ -19,7 +19,7 @@ class GetNetworkResponse extends SorobanRpcResponse
     public ?string $passphrase = null;
 
     ///  Protocol version of the latest ledger.
-    public ?string $protocolVersion = null;
+    public ?int $protocolVersion = null;
 
     public static function fromJson(array $json) : GetNetworkResponse {
         $result = new GetNetworkResponse($json);
@@ -56,9 +56,9 @@ class GetNetworkResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null
+     * @return int|null
      */
-    public function getProtocolVersion(): ?string
+    public function getProtocolVersion(): ?int
     {
         return $this->protocolVersion;
     }

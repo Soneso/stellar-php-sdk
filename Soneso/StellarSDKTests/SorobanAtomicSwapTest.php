@@ -24,6 +24,7 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
@@ -45,10 +46,10 @@ class SorobanAtomicSwapTest extends TestCase
 
     public function testAtomicSwap() {
 
-        $server = new SorobanServer("https://soroban-testnet.stellar.org");
+        $server = new SorobanServer("https://rpc-futurenet.stellar.org");
         $server->enableLogging = true;
 
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
 
         $adminKeyPair = KeyPair::random();
         $adminId = $adminKeyPair->getAccountId();
@@ -57,22 +58,22 @@ class SorobanAtomicSwapTest extends TestCase
         $bobKeyPair = KeyPair::random();
         $bobId = $bobKeyPair->getAccountId();
 
-        FriendBot::fundTestAccount($adminId);
-        FriendBot::fundTestAccount($aliceId);
-        FriendBot::fundTestAccount($bobId);
+        FuturenetFriendBot::fundTestAccount($adminId);
+        FuturenetFriendBot::fundTestAccount($aliceId);
+        FuturenetFriendBot::fundTestAccount($bobId);
         sleep(5);
 
-        //print("admin: " . $adminKeyPair->getSecretSeed() .  " : " . $adminKeyPair->getAccountId(). PHP_EOL);
-        //print("alice: " . $aliceKeyPair->getSecretSeed() .  " : " . $aliceKeyPair->getAccountId(). PHP_EOL);
-        //print("bob: " . $bobKeyPair->getSecretSeed() .  " : " . $bobKeyPair->getAccountId(). PHP_EOL);
+        print("admin: " . $adminKeyPair->getSecretSeed() .  " : " . $adminKeyPair->getAccountId(). PHP_EOL);
+        print("alice: " . $aliceKeyPair->getSecretSeed() .  " : " . $aliceKeyPair->getAccountId(). PHP_EOL);
+        print("bob: " . $bobKeyPair->getSecretSeed() .  " : " . $bobKeyPair->getAccountId(). PHP_EOL);
 
         $atomicSwapContractId = $this->deployContract($server,self::SWAP_CONTRACT_PATH, $adminKeyPair);
-        //print("atomic swap cid: " . $atomicSwapContractId . PHP_EOL);
+        print("atomic swap cid: " . $atomicSwapContractId . PHP_EOL);
 
         $tokenAContractId = $this->deployContract($server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
-        //print("token a cid: " . $tokenAContractId . PHP_EOL);
+        print("token a cid: " . $tokenAContractId . PHP_EOL);
         $tokenBContractId = $this->deployContract($server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
-        //print("token b cid: " . $tokenBContractId . PHP_EOL);
+        print("token b cid: " . $tokenBContractId . PHP_EOL);
 
         $this->createToken($server, $adminKeyPair, $tokenAContractId, "TokenA", "TokenA");
         $this->createToken($server, $adminKeyPair, $tokenBContractId, "TokenB", "TokenB");
@@ -118,12 +119,7 @@ class SorobanAtomicSwapTest extends TestCase
 
         $simulateResponse = $server->simulateTransaction($transaction);
 
-        // set the transaction data  + fee and sign
-        // this is because in preview 9 the fee calculation from the simulation is not always accurate
-        // see: https://discord.com/channels/897514728459468821/1112853306881081354
         $transactionData = $simulateResponse->getTransactionData();
-        $transactionData->resources->instructions += intval($transactionData->resources->instructions / 4);
-        $simulateResponse->minResourceFee += 1005000;
 
         $transaction->setSorobanTransactionData($transactionData);
         $transaction->addResourceFee($simulateResponse->minResourceFee);
@@ -141,10 +137,10 @@ class SorobanAtomicSwapTest extends TestCase
                 $a->credentials->addressCredentials->signatureExpirationLedger = $latestLedgerResponse->sequence + 10;
                 // sign
                 if ($a->credentials->addressCredentials->address->accountId == $aliceId) {
-                    $a->sign($aliceKeyPair, Network::testnet());
+                    $a->sign($aliceKeyPair, Network::futurenet());
                 }
                 if ($a->credentials->addressCredentials->address->accountId == $bobId) {
-                    $a->sign($bobKeyPair, Network::testnet());
+                    $a->sign($bobKeyPair, Network::futurenet());
                 }
             } else {
                 self::fail("invalid auth");
@@ -153,7 +149,7 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction->setSorobanAuth($auth);
 
         // sign transaction
-        $transaction->sign($adminKeyPair, Network::testnet());
+        $transaction->sign($adminKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
         $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
@@ -175,7 +171,7 @@ class SorobanAtomicSwapTest extends TestCase
 
     private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : String {
         sleep(5);
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
 
         $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
 
@@ -198,7 +194,7 @@ class SorobanAtomicSwapTest extends TestCase
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -229,7 +225,7 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -246,7 +242,7 @@ class SorobanAtomicSwapTest extends TestCase
     private function createToken(SorobanServer $server, Keypair $submitterKp, String $contractId, String $name, String $symbol) : void
     {
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
 
         $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
@@ -273,7 +269,7 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -289,7 +285,7 @@ class SorobanAtomicSwapTest extends TestCase
         sleep(5);
 
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
 
 
@@ -313,7 +309,7 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
 
         // send the transaction
@@ -330,7 +326,7 @@ class SorobanAtomicSwapTest extends TestCase
         sleep(5);
 
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
 
         $address = Address::fromAccountId($accountId)->toXdrSCVal();
@@ -350,7 +346,7 @@ class SorobanAtomicSwapTest extends TestCase
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -389,7 +385,7 @@ class SorobanAtomicSwapTest extends TestCase
 
     private function restoreContractFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $contractCodePath) : void {
         sleep(5);
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
 
         $contractCode = file_get_contents($contractCodePath, false);
         $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
@@ -426,7 +422,7 @@ class SorobanAtomicSwapTest extends TestCase
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->getMinResourceFee());
-        $transaction->sign($accountKeyPair, Network::testnet());
+        $transaction->sign($accountKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
         $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
@@ -448,7 +444,7 @@ class SorobanAtomicSwapTest extends TestCase
 
     private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $extendTo) : void {
         sleep(5);
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
 
         $builder = new ExtendFootprintTTLOperationBuilder($extendTo);
         $bumpOp = $builder->build();
@@ -479,7 +475,7 @@ class SorobanAtomicSwapTest extends TestCase
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->getMinResourceFee());
-        $transaction->sign($accountKeyPair, Network::testnet());
+        $transaction->sign($accountKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
         $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();

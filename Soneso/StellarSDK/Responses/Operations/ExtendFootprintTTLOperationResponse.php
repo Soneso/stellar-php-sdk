@@ -10,13 +10,11 @@ namespace Soneso\StellarSDK\Responses\Operations;
 
 class ExtendFootprintTTLOperationResponse extends OperationResponse
 {
-    public string $extendTo;
+    public int $extendTo;
 
     protected function loadFromJson(array $json) : void {
         if (isset($json['extend_to'])) {
             $this->extendTo = $json['extend_to'];
-        } else if (isset($json['ledgers_to_expire'])) {
-            $this->extendTo = $json['ledgers_to_expire'];
         }
         parent::loadFromJson($json);
     }
@@ -28,17 +26,17 @@ class ExtendFootprintTTLOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getExtendTo(): string
+    public function getExtendTo(): int
     {
         return $this->extendTo;
     }
 
     /**
-     * @param string $extendTo
+     * @param int $extendTo
      */
-    public function setExtendTo(string $extendTo): void
+    public function setExtendTo(int $extendTo): void
     {
         $this->extendTo = $extendTo;
     }

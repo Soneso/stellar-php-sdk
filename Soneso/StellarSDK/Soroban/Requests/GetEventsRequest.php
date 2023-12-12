@@ -13,11 +13,11 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 class GetEventsRequest
 {
 
-    /// Stringified ledger sequence number to fetch events after (inclusive).
+    /// Ledger sequence number to fetch events after (inclusive).
     /// The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
     /// or greater than the latest ledger seen by this node.
     /// If a cursor is included in the request, startLedger must be omitted.
-    public string $startLedger;
+    public int $startLedger;
 
     /// List of filters for the returned events. Events matching any of the filters are included.
     /// To match a filter, an event must match both a contractId and a topic.
@@ -28,11 +28,11 @@ class GetEventsRequest
     public ?PaginationOptions $paginationOptions = null;
 
     /**
-     * @param string $startLedger
+     * @param int $startLedger
      * @param EventFilters|null $filters
      * @param PaginationOptions|null $paginationOptions
      */
-    public function __construct(string $startLedger, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
+    public function __construct(int $startLedger, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
     {
         $this->startLedger = $startLedger;
         $this->filters = $filters;
@@ -59,35 +59,19 @@ class GetEventsRequest
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getStartLedger(): string
+    public function getStartLedger(): int
     {
         return $this->startLedger;
     }
 
     /**
-     * @param string $startLedger
+     * @param int $startLedger
      */
-    public function setStartLedger(string $startLedger): void
+    public function setStartLedger(int $startLedger): void
     {
         $this->startLedger = $startLedger;
-    }
-
-    /**
-     * @return string
-     */
-    public function getEndLedger(): string
-    {
-        return $this->endLedger;
-    }
-
-    /**
-     * @param string $endLedger
-     */
-    public function setEndLedger(string $endLedger): void
-    {
-        $this->endLedger = $endLedger;
     }
 
     /**

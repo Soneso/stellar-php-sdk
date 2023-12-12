@@ -24,6 +24,7 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
@@ -44,7 +45,7 @@ class SorobanCustomAccountTest extends TestCase
         // https://soroban.stellar.org/docs/advanced-tutorials/custom-account
         // https://soroban.stellar.org/docs/fundamentals-and-concepts/authorization
 
-        $server = new SorobanServer("https://soroban-testnet.stellar.org");
+        $server = new SorobanServer("https://rpc-futurenet.stellar.org");
         $server->enableLogging = true;
 
         $adminKeyPair =  KeyPair::random();
@@ -59,9 +60,9 @@ class SorobanCustomAccountTest extends TestCase
         $bobId = $bobKeyPair->getAccountId();
         //print("BOB: " . $bobKeyPair->getSecretSeed() . PHP_EOL);
 
-        FriendBot::fundTestAccount($adminId);
-        FriendBot::fundTestAccount($aliceId);
-        FriendBot::fundTestAccount($bobId);
+        FuturenetFriendBot::fundTestAccount($adminId);
+        FuturenetFriendBot::fundTestAccount($aliceId);
+        FuturenetFriendBot::fundTestAccount($bobId);
 
         sleep(5);
 
@@ -105,7 +106,7 @@ class SorobanCustomAccountTest extends TestCase
         sleep(5);
 
         // https://soroban.stellar.org/docs/advanced-tutorials/custom-account
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
         $account = $sdk->requestAccount($submitterId);
 
@@ -122,7 +123,7 @@ class SorobanCustomAccountTest extends TestCase
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -136,7 +137,7 @@ class SorobanCustomAccountTest extends TestCase
     private function addLimit(SorobanServer $server, Keypair $submitterKp, String $contractId, String $tokenContractId, int $limit, KeyPair $signer1, KeyPair $signer2) : void
     {
         sleep(5);
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
         $account = $sdk->requestAccount($submitterId);
 
@@ -156,9 +157,11 @@ class SorobanCustomAccountTest extends TestCase
 
         $simulateResponse = $server->simulateTransaction($transaction);
         $transactionData = $simulateResponse->getTransactionData();
-        //$transactionData->resources->writeBytes *= 10;
+
+        // add some resources because preflight can not take __check_auth into account
         $transactionData->resources->readBytes *= 2;
         $transactionData->resources->instructions *= 3;
+        $transactionData->resourceFee += 1200800;
         $simulateResponse->minResourceFee += 1200800;
 
         // set the transaction data  + fee and sign
@@ -176,15 +179,15 @@ class SorobanCustomAccountTest extends TestCase
                 // increase signature expiration ledger
                 $a->credentials->addressCredentials->signatureExpirationLedger = $latestLedgerResponse->sequence + 10;
                 // sign
-                $a->sign($signer1, Network::testnet());
-                $a->sign($signer2, Network::testnet());
+                $a->sign($signer1, Network::futurenet());
+                $a->sign($signer2, Network::futurenet());
 
             } else {
                 self::fail("invalid auth");
             }
         }
         $transaction->setSorobanAuth($auth);
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -208,7 +211,7 @@ class SorobanCustomAccountTest extends TestCase
     {
         sleep(5);
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
         $account = $sdk->requestAccount($submitterId);
 
@@ -232,6 +235,7 @@ class SorobanCustomAccountTest extends TestCase
         // add some resources because preflight can not take __check_auth into account
         $transactionData->resources->readBytes *= 2;
         $transactionData->resources->instructions *= 3;
+        $transactionData->resourceFee += 1200800;
         $simulateResponse->minResourceFee += 1200800;
 
         // we need to extend the footprint, so that __check_auth can read from storage
@@ -273,10 +277,10 @@ class SorobanCustomAccountTest extends TestCase
                 $a->credentials->addressCredentials->signatureExpirationLedger = $latestLedgerResponse->sequence + 10;
                 // sign
                 if ($signer1 != null) {
-                    $a->sign($signer1, Network::testnet());
+                    $a->sign($signer1, Network::futurenet());
                 }
                 if ($signer2 != null) {
-                    $a->sign($signer2, Network::testnet());
+                    $a->sign($signer2, Network::futurenet());
                 }
             } else {
                 self::fail("invalid auth");
@@ -284,7 +288,7 @@ class SorobanCustomAccountTest extends TestCase
         }
         $transaction->setSorobanAuth($auth);
 
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -305,9 +309,9 @@ class SorobanCustomAccountTest extends TestCase
     private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : array {
         sleep(5);
         $result = array();
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
 
-        $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
+        //$this->restoreContractFootprint($server, $submitterKp, $pathToCode);
 
         // upload contract wasm
         $contractCode = file_get_contents($pathToCode, false);
@@ -328,7 +332,7 @@ class SorobanCustomAccountTest extends TestCase
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -360,7 +364,7 @@ class SorobanCustomAccountTest extends TestCase
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -378,7 +382,7 @@ class SorobanCustomAccountTest extends TestCase
     private function createToken(SorobanServer $server, Keypair $submitterKp, String $contractId, String $name, String $symbol) : void
     {
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
 
         $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
@@ -405,7 +409,7 @@ class SorobanCustomAccountTest extends TestCase
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -421,7 +425,7 @@ class SorobanCustomAccountTest extends TestCase
         sleep(5);
 
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
 
         $amountValue = XdrSCVal::forI128(new XdrInt128Parts(0, $amount));
@@ -442,7 +446,7 @@ class SorobanCustomAccountTest extends TestCase
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
         $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
 
         // send the transaction
@@ -459,7 +463,7 @@ class SorobanCustomAccountTest extends TestCase
         sleep(5);
 
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
         $submitterId = $submitterKp->getAccountId();
 
         $functionName = "balance";
@@ -478,7 +482,7 @@ class SorobanCustomAccountTest extends TestCase
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->sign($submitterKp, Network::testnet());
+        $transaction->sign($submitterKp, Network::futurenet());
 
         // send the transaction
         $sendResponse = $server->sendTransaction($transaction);
@@ -518,7 +522,7 @@ class SorobanCustomAccountTest extends TestCase
 
     private function restoreContractFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $contractCodePath) : void {
         sleep(5);
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
 
         $contractCode = file_get_contents($contractCodePath, false);
         $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
@@ -555,7 +559,7 @@ class SorobanCustomAccountTest extends TestCase
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->getMinResourceFee());
-        $transaction->sign($accountKeyPair, Network::testnet());
+        $transaction->sign($accountKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
         $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
@@ -577,7 +581,7 @@ class SorobanCustomAccountTest extends TestCase
 
     private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $extendTo) : void {
         sleep(5);
-        $sdk = StellarSDK::getTestNetInstance();
+        $sdk = StellarSDK::getFutureNetInstance();
 
         $builder = new ExtendFootprintTTLOperationBuilder($extendTo);
         $bumpOp = $builder->build();
@@ -608,7 +612,7 @@ class SorobanCustomAccountTest extends TestCase
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->getMinResourceFee());
-        $transaction->sign($accountKeyPair, Network::testnet());
+        $transaction->sign($accountKeyPair, Network::futurenet());
 
         // check transaction xdr encoding back and forth
         $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
