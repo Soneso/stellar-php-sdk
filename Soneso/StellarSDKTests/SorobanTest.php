@@ -74,7 +74,7 @@ class SorobanTest extends TestCase
 
         // get network info
         $getNetworkResponse = $server->getNetwork();
-        $this->assertEquals("https://friendbot-testnet.stellar.org/", $getNetworkResponse->friendbotUrl);
+        $this->assertEquals("https://friendbot.stellar.org/", $getNetworkResponse->friendbotUrl);
         $this->assertEquals("Test SDF Network ; September 2015", $getNetworkResponse->passphrase);
         $this->assertNotNull($getNetworkResponse->protocolVersion);
 

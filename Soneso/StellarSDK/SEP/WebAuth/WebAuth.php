@@ -150,7 +150,7 @@ class WebAuth
         } else if (504 == $statusCode) {
             throw new SubmitCompletedChallengeTimeoutResponseException();
         } else {
-            throw new SubmitCompletedChallengeUnknownResponseException($response->getBody(), $response->getStatusCode());
+            throw new SubmitCompletedChallengeUnknownResponseException($response->getBody()->__toString(), $response->getStatusCode());
         }
     }
 
