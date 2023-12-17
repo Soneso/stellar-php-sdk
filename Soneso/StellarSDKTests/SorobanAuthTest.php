@@ -17,6 +17,7 @@ use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
@@ -26,7 +27,6 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
-use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
@@ -44,12 +44,14 @@ class SorobanAuthTest extends TestCase
 {
     const AUTH_CONTRACT_PATH = './wasm/soroban_auth_contract.wasm';
 
+    const SERVER_URL = "https://rpc-futurenet.stellar.org";
+
     public function testAuthInvoker(): void
     {
         // submitter and invoker use are the same
         // no need to sign auth
 
-        $server = new SorobanServer("https://rpc-futurenet.stellar.org");
+        $server = new SorobanServer(self::SERVER_URL);
         $server->enableLogging = true;
         $sdk = StellarSDK::getFutureNetInstance();
 
@@ -82,7 +84,8 @@ class SorobanAuthTest extends TestCase
         $transaction = (new TransactionBuilder($invokerAccount))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -179,7 +182,8 @@ class SorobanAuthTest extends TestCase
         $transaction = (new TransactionBuilder($submitterAccount))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -283,7 +287,8 @@ class SorobanAuthTest extends TestCase
         $transaction = (new TransactionBuilder($getAccountResponse))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -299,7 +304,8 @@ class SorobanAuthTest extends TestCase
             ->addOperation($restoreOp)->build();
 
         $transaction->setSorobanTransactionData($transactionData) ;
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -352,7 +358,8 @@ class SorobanAuthTest extends TestCase
         $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
 
         $transaction->setSorobanTransactionData($transactionData) ;
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -401,7 +408,8 @@ class SorobanAuthTest extends TestCase
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
 
         // set the transaction data + fee and sign
@@ -432,7 +440,8 @@ class SorobanAuthTest extends TestCase
             ->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());

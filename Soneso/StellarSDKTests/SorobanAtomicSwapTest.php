@@ -15,6 +15,7 @@ use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
@@ -23,7 +24,6 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
-use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
@@ -117,7 +117,8 @@ class SorobanAtomicSwapTest extends TestCase
         $source = $sdk->requestAccount($adminId);
         $transaction = (new TransactionBuilder($source))->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $transactionData = $simulateResponse->getTransactionData();
 
@@ -188,7 +189,8 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
 
         // set the transaction data + fee and sign
@@ -219,7 +221,8 @@ class SorobanAtomicSwapTest extends TestCase
             ->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
@@ -263,7 +266,8 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
@@ -304,7 +308,8 @@ class SorobanAtomicSwapTest extends TestCase
         $account = $sdk->requestAccount($submitterId);
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
@@ -342,7 +347,8 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
@@ -396,7 +402,8 @@ class SorobanAtomicSwapTest extends TestCase
         $transaction = (new TransactionBuilder($getAccountResponse))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -412,7 +419,8 @@ class SorobanAtomicSwapTest extends TestCase
             ->addOperation($restoreOp)->build();
 
         $transaction->setSorobanTransactionData($transactionData) ;
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -465,7 +473,8 @@ class SorobanAtomicSwapTest extends TestCase
         $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
 
         $transaction->setSorobanTransactionData($transactionData) ;
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);

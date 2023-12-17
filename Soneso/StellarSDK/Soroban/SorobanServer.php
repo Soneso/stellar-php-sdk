@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
+use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
@@ -89,12 +90,12 @@ class SorobanServer
 
     /**
      * Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
-     * @param Transaction $transaction to submit.
+     * @param SimulateTransactionRequest $request request containing the transaction to submit and the resource config.
      * @return SimulateTransactionResponse response.
      * @throws GuzzleException
      */
-    public function simulateTransaction(Transaction $transaction) : SimulateTransactionResponse {
-        $body = $this->prepareRequest(self::SIMULATE_TRANSACTION, [$transaction->toEnvelopeXdrBase64()]);
+    public function simulateTransaction(SimulateTransactionRequest $request) : SimulateTransactionResponse {
+        $body = $this->prepareRequest(self::SIMULATE_TRANSACTION, $request->getRequestParams());
         return $this->request($body, self::SIMULATE_TRANSACTION);
     }
 
@@ -143,7 +144,6 @@ class SorobanServer
 
     public function getEvents(GetEventsRequest $request) : GetEventsResponse {
         $body = $this->prepareRequest(self::GET_EVENTS, $request->getRequestParams());
-        print($body . PHP_EOL);
         return $this->request($body, self::GET_EVENTS);
     }
 
