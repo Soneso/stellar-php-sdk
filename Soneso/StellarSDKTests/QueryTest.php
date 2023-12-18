@@ -117,7 +117,7 @@ class QueryTest extends TestCase
     public function testQueryEffects(): void
     {
         $sdk = StellarSDK::getTestNetInstance();
-        $response = $sdk->assets()->forAssetCode("USD")->limit(5)->order("desc")->execute();
+        $response = $sdk->assets()->forAssetCode("ASTRO")->limit(5)->order("desc")->execute();
         $this->assertTrue($response->getAssets()->count() > 0);
         $this->assertTrue($response->getAssets()->count() < 6);
         $issuer = $response->getAssets()->toArray()[0]->getAssetIssuer();
@@ -152,7 +152,7 @@ class QueryTest extends TestCase
     {
         $sdk = StellarSDK::getTestNetInstance();
         // get balance id from ClaimableBalancesTest
-        $bId = "00000000983412d3194c218af78d0e863f1c88c25c0a091e3301bf2e60554ee06e346aa4";
+        $bId = "000000005bd4daf94b38bfa03dc433161b653e2952b403c75307e4410b921c074f99185c";
         $response = $sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getOperations()->count() == 1);
         $response = $sdk->transactions()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
