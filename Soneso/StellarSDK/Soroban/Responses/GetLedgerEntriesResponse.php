@@ -6,10 +6,6 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
-use Soneso\StellarSDK\Responses\Account\AccountBalanceResponse;
-use Soneso\StellarSDK\Responses\Account\AccountBalancesResponse;
-use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
-
 /**
  * Response when reading the current values of ledger entries.
  * https://soroban.stellar.org/api/methods/getLedgerEntries
@@ -20,7 +16,7 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse
     public ?array $entries = null; // LedgerEntry
 
     /// The current latest ledger observed by the node when this response was generated.
-    public ?string $latestLedger = null;
+    public ?int $latestLedger = null;
 
     public static function fromJson(array $json) : GetLedgerEntriesResponse {
         $result = new GetLedgerEntriesResponse($json);
@@ -57,19 +53,14 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse
         $this->entries = $entries;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getLatestLedger(): ?string
+    public function getLatestLedger(): ?int
     {
         return $this->latestLedger;
     }
 
-    /**
-     * @param string|null $latestLedger
-     */
-    public function setLatestLedger(?string $latestLedger): void
+    public function setLatestLedger(?int $latestLedger): void
     {
         $this->latestLedger = $latestLedger;
     }
+
 }

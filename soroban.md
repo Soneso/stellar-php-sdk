@@ -2,15 +2,12 @@
 ## [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk) 
 ## Soroban support
 
-The following shows you how to use the PHP SDK to start experimenting with Soroban smart contracts. 
+The following shows you how to use the PHP SDK to interact with Soroban. 
 
-**Please note, that both, Soroban itself and the PHP SDK support for Soroban are still under development, so breaking changes may occur.**
-
-**Soroban version supported: Preview 11**
 
 ### Quick Start
 
-PHP SDK Soroban support allows you to deploy and to invoke smart contracts on Futurenet. Futurenet is a special test network provided by Stellar.
+PHP SDK Soroban support allows you to deploy and to invoke Soroban smart contracts.
 
 To deploy and/or invoke smart contracts with the PHP SDK use the ```SorobanServer``` class. It connects to a given local or remote Soroban-RPC Server.
 
@@ -25,7 +22,7 @@ The Soroban-RPC API is described [here](https://soroban.stellar.org/api/methods)
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```php
-$server = new SorobanServer("https://rpc-futurenet.stellar.org:443");
+$server = new SorobanServer("https://soroban-testnet.stellar.org");
 ```
 
 #### General node health check
@@ -39,19 +36,19 @@ if (GetHealthResponse::HEALTHY == $healthResponse->status) {
 
 #### Get account data
 
-You first need an account on Futurenet. For this one can use ```FuturenetFriendBot``` to fund it:
+You first need an account on Testnet. For this one can use ```FriendBot``` to fund it:
 
 ```php
 $accountKeyPair = KeyPair::random();
 $accountId = $accountKeyPair->getAccountId();
 
-FuturenetFriendBot::fundTestAccount($accountId);
+FriendBot::fundTestAccount($accountId);
 ```
 
 Next you can fetch current information about your Stellar account using the SDK:
 
 ```php
-$sdk = StellarSDK::getFutureNetInstance();
+$sdk = StellarSDK::getTestNetInstance();
 $accountResponse = $sdk->requestAccount($accountId);
 print("Sequence: ".$getAccountResponse->getSequenceNumber());
 ```
@@ -60,6 +57,7 @@ print("Sequence: ".$getAccountResponse->getSequenceNumber());
 #### Deploy your contract
 
 If you want to create a smart contract for testing, you can find the official examples [here](https://github.com/stellar/soroban-examples).
+You can also create smart contracts with our AssemblyScript Soroban SDK. Examples can be found [here](https://github.com/Soneso/as-soroban-examples).
 
 There are two main steps involved in the process of deploying a contract. First you need to **upload** the **contract code** and then to **create** the **contract**.
 
@@ -80,7 +78,8 @@ Next we need to **simulate** the transaction to obtain the **soroban transaction
 
 ```php
 // Simulate first to obtain the footprint
-$simulateResponse = $server->simulateTransaction($transaction);
+$request = new SimulateTransactionRequest($transaction);
+$simulateResponse = $server->simulateTransaction($request);
 
 $transactionData = $simulateResponse->transactionData;
 $minResourceFee = $simulateResponse->minResourceFee;
@@ -92,7 +91,7 @@ Next we need to set the **soroban transaction data** to our transaction, add the
 ```php
 $transaction->setSorobanTransactionData($transactionData);
 $transaction->addResourceFee($minResourceFee);
-$transaction->sign($accountKeyPair, Network::futurenet());
+$transaction->sign($accountKeyPair, Network::testnet());
 
 // send transaction to soroban rpc server
 $sendResponse = $server->sendTransaction($transaction);
@@ -140,14 +139,15 @@ $operation = $builder->build();
 $transaction = (new TransactionBuilder($account))
     ->addOperation($operation)->build();
 
-// First simulate to obtain the footprint
-$simulateResponse = $server->simulateTransaction($transaction);
+// First simulate to obtain the needed soroban data
+$request = new SimulateTransactionRequest($transaction);
+$simulateResponse = $server->simulateTransaction($request);
 
 // set the transaction data & auth, add fee and sign
 $transaction->setSorobanTransactionData($simulateResponse->transactionData);
 $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
 $transaction->addResourceFee($simulateResponse->minResourceFee);
-$transaction->sign($invokerKeyPair, Network::futurenet());
+$transaction->sign($invokerKeyPair, Network::testnet());
 
 // Send the transaction to the network.
 $sendResponse = $server->sendTransaction($transaction);
@@ -243,7 +243,8 @@ Next we need to **simulate** the transaction to obtain the **transaction data** 
 
 ```php
 // Simulate first to obtain the transaction data and fee
-$simulateResponse = $server->simulateTransaction($transaction);
+$request = new SimulateTransactionRequest($transaction);
+$simulateResponse = $server->simulateTransaction($request);
 
 $transactionData = $simulateResponse->transactionData;
 $minResourceFee = $simulateResponse->minResourceFee;
@@ -256,7 +257,7 @@ Next we need to set the **soroban transaction data** to our transaction, to add 
 ```php
 $transaction->setSorobanTransactionData($transactionData);
 $transaction->addResourceFee($minResourceFee);
-$transaction->sign($accountKeyPair, Network::futurenet());
+$transaction->sign($accountKeyPair, Network::testnet());
 
 // Send the transaction to the network.
 $sendResponse = $server->sendTransaction($transaction);
@@ -322,7 +323,7 @@ $operation = $builder->build();
 $transaction->setSorobanTransactionData($simulateResponse->transactionData);
 $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
 $transaction->addResourceFee($simulateResponse->minResourceFee);
-$transaction->sign($invokerKeyPair, Network::futurenet());
+$transaction->sign($invokerKeyPair, Network::testnet());
 ```
 
 2. Deploy SAC with asset:
@@ -362,7 +363,7 @@ foreach ($auth as $a) {
         // increase signature expiration ledger
         $a->credentials->addressCredentials->signatureExpirationLedger = $latestLedgerResponse->sequence + 10;
         // sign
-        $a->sign($invokerKeyPair, Network::futurenet());
+        $a->sign($invokerKeyPair, Network::testnet());
     } else {
         self::fail("invalid auth");
     }
@@ -371,21 +372,6 @@ $transaction->setSorobanAuth($auth);
 ```
 
 You can find multiple examples in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) and in the [Atomic Swap Test](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAtomicSwapTest.php) of the SDK.
-
-Hint: Resource values and fees have been added in the new soroban preview 9 version. The calculation of the minimum resource values and fee by the simulation (preflight) is not always accurate, because it does not consider signatures. This may result in a failing transaction because of insufficient resources. In this case one can experiment and increase the resources values within the soroban transaction data before signing and submitting the transaction. E.g.:
-
-```php
-$transactionData = $simulateResponse->transactionData;
-$transactionData->resources->instructions += intval($transactionData->resources->instructions / 4);
-$simulateResponse->minResourceFee += 2800;
-
-// set the transaction data + fee and sign
-$transaction->setSorobanTransactionData($transactionData);
-$transaction->addResourceFee($simulateResponse->minResourceFee);
-$transaction->sign($submitterKeyPair, Network::futurenet());
-```
-
-See also: https://discord.com/channels/897514728459468821/1112853306881081354
 
 #### Get Events
 

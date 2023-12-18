@@ -15,6 +15,7 @@ use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
@@ -39,12 +40,17 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 class SorobanCustomAccountTest extends TestCase
 {
 
+    const CUSTOM_ACCOUNT_CONTRACT_PATH = './wasm/soroban_custom_account.wasm';
+    const TOKEN_CONTRACT_PATH = './wasm/soroban_token_contract.wasm';
+
+    const SERVER_URL = "https://soroban-testnet.stellar.org";
+
     public function testCustomAccount() {
         // https://github.com/Soneso/as-soroban-examples/tree/main/custom_account
         // https://soroban.stellar.org/docs/advanced-tutorials/custom-account
         // https://soroban.stellar.org/docs/fundamentals-and-concepts/authorization
 
-        $server = new SorobanServer("https://soroban-testnet.stellar.org");
+        $server = new SorobanServer(self::SERVER_URL);
         $server->enableLogging = true;
 
         $adminKeyPair =  KeyPair::random();
@@ -65,13 +71,13 @@ class SorobanCustomAccountTest extends TestCase
 
         sleep(5);
 
-        $deployAccRes = $this->deployContract($server,'./wasm/soroban_custom_account.wasm', $adminKeyPair);
+        $deployAccRes = $this->deployContract($server,self::CUSTOM_ACCOUNT_CONTRACT_PATH, $adminKeyPair);
         $accountContractWasmId = $deployAccRes[0];
         $accountContractId = $deployAccRes[1];
         //print("accountContractWasmId : " . $accountContractWasmId . PHP_EOL);
         //print("accountContractId : " . $accountContractId . PHP_EOL);
 
-        $deployTokRes = $this->deployContract($server,'./wasm/soroban_token_contract.wasm', $adminKeyPair);
+        $deployTokRes = $this->deployContract($server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
         $tokenAContractId = $deployTokRes[1];
 
         //print("tokenAContractId: " . $tokenAContractId . PHP_EOL);
@@ -117,7 +123,8 @@ class SorobanCustomAccountTest extends TestCase
 
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
@@ -154,11 +161,14 @@ class SorobanCustomAccountTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
         $transactionData = $simulateResponse->getTransactionData();
-        //$transactionData->resources->writeBytes *= 10;
+
+        // add some resources because preflight can not take __check_auth into account
         $transactionData->resources->readBytes *= 2;
         $transactionData->resources->instructions *= 3;
+        $transactionData->resourceFee += 1200800;
         $simulateResponse->minResourceFee += 1200800;
 
         // set the transaction data  + fee and sign
@@ -226,12 +236,14 @@ class SorobanCustomAccountTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
         $transactionData = $simulateResponse->getTransactionData();
 
         // add some resources because preflight can not take __check_auth into account
         $transactionData->resources->readBytes *= 2;
         $transactionData->resources->instructions *= 3;
+        $transactionData->resourceFee += 1200800;
         $simulateResponse->minResourceFee += 1200800;
 
         // we need to extend the footprint, so that __check_auth can read from storage
@@ -307,7 +319,7 @@ class SorobanCustomAccountTest extends TestCase
         $result = array();
         $sdk = StellarSDK::getTestNetInstance();
 
-        $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
+        //$this->restoreContractFootprint($server, $submitterKp, $pathToCode);
 
         // upload contract wasm
         $contractCode = file_get_contents($pathToCode, false);
@@ -322,7 +334,8 @@ class SorobanCustomAccountTest extends TestCase
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
 
         // set the transaction data + fee and sign
@@ -354,7 +367,8 @@ class SorobanCustomAccountTest extends TestCase
             ->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         // set the transaction data + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
@@ -399,7 +413,8 @@ class SorobanCustomAccountTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
@@ -437,7 +452,8 @@ class SorobanCustomAccountTest extends TestCase
         $account = $sdk->requestAccount($submitterId);
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
@@ -474,7 +490,8 @@ class SorobanCustomAccountTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
         $transaction->addResourceFee($simulateResponse->minResourceFee);
@@ -529,7 +546,8 @@ class SorobanCustomAccountTest extends TestCase
         $transaction = (new TransactionBuilder($getAccountResponse))
             ->addOperation($op)->build();
 
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -545,7 +563,8 @@ class SorobanCustomAccountTest extends TestCase
             ->addOperation($restoreOp)->build();
 
         $transaction->setSorobanTransactionData($transactionData) ;
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);
@@ -597,8 +616,9 @@ class SorobanCustomAccountTest extends TestCase
         $resources = new XdrSorobanResources($footprint, 0,0,0);
         $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
 
-        $transaction->setSorobanTransactionData($transactionData) ;
-        $simulateResponse = $server->simulateTransaction($transaction);
+        $transaction->setSorobanTransactionData($transactionData);
+        $request = new SimulateTransactionRequest($transaction);
+        $simulateResponse = $server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
         $this->assertNull($simulateResponse->resultError);

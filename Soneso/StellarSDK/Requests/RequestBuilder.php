@@ -152,6 +152,9 @@ abstract class RequestBuilder
                     // Ignore "data: hello" handshake
                     if (str_starts_with($line, 'data: "hello"')) continue;
 
+                    // "data: byebye" if closed, restart
+                    if (str_starts_with($line, 'data: "byebye"')) break;
+
                     // Ignore lines that don't start with "data: "
                     $sentinel = 'data: ';
                     if (!str_starts_with($line, $sentinel)) continue;

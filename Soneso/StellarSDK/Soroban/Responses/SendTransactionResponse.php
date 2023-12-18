@@ -33,7 +33,7 @@ class SendTransactionResponse extends SorobanRpcResponse
     public ?string $status = null;
 
     /// The latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
-    public ?string $latestLedger = null;
+    public ?int $latestLedger = null;
 
     /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
     public ?string $latestLedgerCloseTime = null;
@@ -74,9 +74,9 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null
+     * @return int|null
      */
-    public function getLatestLedger(): ?string
+    public function getLatestLedger(): ?int
     {
         return $this->latestLedger;
     }

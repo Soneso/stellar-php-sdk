@@ -17,8 +17,8 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 class SimulateTransactionResponse extends SorobanRpcResponse
 {
 
-    /// Stringified-number of the current latest ledger observed by the node when this response was generated.
-    public string $latestLedger;
+    /// number of the current latest ledger observed by the node when this response was generated.
+    public int $latestLedger;
 
     public ?SimulateTransactionResults $results = null;
 
@@ -139,17 +139,17 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string Stringified-number of the current latest ledger observed by the node when this response was generated.
+     * @return int number of the current latest ledger observed by the node when this response was generated.
      */
-    public function getLatestLedger(): string
+    public function getLatestLedger(): int
     {
         return $this->latestLedger;
     }
 
     /**
-     * @param string $latestLedger
+     * @param int $latestLedger
      */
-    public function setLatestLedger(string $latestLedger): void
+    public function setLatestLedger(int $latestLedger): void
     {
         $this->latestLedger = $latestLedger;
     }

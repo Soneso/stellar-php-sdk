@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Soroban;
 
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
@@ -27,7 +28,7 @@ class Address
     /**
      * @param int $type
      * @param string|null $accountId
-     * @param string|null $contractId
+     * @param string|null $contractId hex value. If you have a str key contract id, you can decode it to hex with StrKey::decodeContractIdHex($contractId)
      */
     public function __construct(int $type, ?string $accountId = null, ?string $contractId = null)
     {
@@ -40,6 +41,10 @@ class Address
         return new Address(Address::TYPE_ACCOUNT, accountId: $accountId);
     }
 
+    /**
+     * @param string $contractId hex value. If you have a str key contract id, you can decode it to hex with StrKey::decodeContractIdHex($contractId)
+     * @return Address
+     */
     public static function fromContractId(string $contractId) {
         return new Address(Address::TYPE_CONTRACT, contractId: $contractId);
     }

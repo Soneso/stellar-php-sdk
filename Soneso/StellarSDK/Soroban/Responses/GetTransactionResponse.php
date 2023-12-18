@@ -27,19 +27,19 @@ class GetTransactionResponse extends SorobanRpcResponse
     public ?string $status = null;
 
     /// The latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
-    public ?string $latestLedger = null;
+    public ?int $latestLedger = null;
 
     /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
     public ?string $latestLedgerCloseTime = null;
 
     /// The oldest ledger ingested by Soroban-RPC at the time it handled the getTransaction() request.
-    public ?string $oldestLedger = null;
+    public ?int $oldestLedger = null;
 
     /// The unix timestamp of the close time of the oldest ledger ingested by Soroban-RPC at the time it handled the getTransaction() request.
     public ?string $oldestLedgerCloseTime = null;
 
     /// (optional) The sequence of the ledger which included the transaction. This field is only present if status is SUCCESS or FAILED.
-    public ?string $ledger = null;
+    public ?int $ledger = null;
 
     /// (optional) The unix timestamp of when the transaction was included in the ledger. This field is only present if status is SUCCESS or FAILED.
     public ?string $createdAt = null;
@@ -147,100 +147,63 @@ class GetTransactionResponse extends SorobanRpcResponse
         return null;
     }
 
-    /**
-     * @return string|null
-     */
     public function getStatus(): ?string
     {
         return $this->status;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getLatestLedger(): ?string
+    public function getLatestLedger(): ?int
     {
         return $this->latestLedger;
     }
 
-    /**
-     * @return string|null
-     */
     public function getLatestLedgerCloseTime(): ?string
     {
         return $this->latestLedgerCloseTime;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getOldestLedger(): ?string
+    public function getOldestLedger(): ?int
     {
         return $this->oldestLedger;
     }
 
-    /**
-     * @return string|null
-     */
     public function getOldestLedgerCloseTime(): ?string
     {
         return $this->oldestLedgerCloseTime;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getLedger(): ?string
+    public function getLedger(): ?int
     {
         return $this->ledger;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCreatedAt(): ?string
     {
         return $this->createdAt;
     }
 
-    /**
-     * @return int|null
-     */
     public function getApplicationOrder(): ?int
     {
         return $this->applicationOrder;
     }
 
-    /**
-     * @return bool|null
-     */
     public function getFeeBump(): ?bool
     {
         return $this->feeBump;
     }
 
-    /**
-     * @return string|null
-     */
     public function getEnvelopeXdr(): ?string
     {
         return $this->envelopeXdr;
     }
 
-    /**
-     * @return string|null
-     */
     public function getResultXdr(): ?string
     {
         return $this->resultXdr;
     }
 
-    /**
-     * @return string|null
-     */
     public function getResultMetaXdr(): ?string
     {
         return $this->resultMetaXdr;
     }
-
 }
