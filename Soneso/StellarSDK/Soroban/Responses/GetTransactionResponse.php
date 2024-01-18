@@ -81,7 +81,7 @@ class GetTransactionResponse extends SorobanRpcResponse
             if (isset($json['result']['ledger'])) {
                 $result->ledger = $json['result']['ledger'];
             }
-            if (isset($json['result']['ledger'])) {
+            if (isset($json['result']['createdAt'])) {
                 $result->createdAt = $json['result']['createdAt'];
             }
             if (isset($json['result']['applicationOrder'])) {

@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
+
 /**
  * Response when submitting a real transaction to the stellar
  * network by using the soroban rpc server.
@@ -41,6 +43,9 @@ class SendTransactionResponse extends SorobanRpcResponse
     /// (optional) If the transaction status is ERROR, this will be a base64 encoded string of the raw TransactionResult XDR (XdrTransactionResult) struct containing details on why stellar-core rejected the transaction.
     public ?string $errorResultXdr = null;
 
+    /// (optional) If the transaction status is "ERROR", this list of xdr diagnostic events may be present containing details on why stellar-core rejected the transaction.
+    public ?array $diagnosticEvents = null;
+
     public static function fromJson(array $json) : SendTransactionResponse {
         $result = new SendTransactionResponse($json);
         if (isset($json['result'])) {
@@ -50,6 +55,13 @@ class SendTransactionResponse extends SorobanRpcResponse
             $result->latestLedgerCloseTime = $json['result']['latestLedgerCloseTime'];
             if (isset($json['result']['errorResultXdr'])) {
                 $result->errorResultXdr = $json['result']['errorResultXdr'];
+            }
+            if (isset($json['result']['diagnosticEventsXdr'])) {
+                $result->diagnosticEvents = array();
+                foreach ($json['result']['diagnosticEventsXdr'] as $jsonEntry) {
+                    $entry = XdrDiagnosticEvent::fromBase64Xdr($jsonEntry);
+                    $result->diagnosticEvents[] = $entry;
+                }
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -95,6 +107,11 @@ class SendTransactionResponse extends SorobanRpcResponse
     public function getErrorResultXdr(): ?string
     {
         return $this->errorResultXdr;
+    }
+
+    public function getDiagnosticEvents(): ?array
+    {
+        return $this->diagnosticEvents;
     }
 
 }
