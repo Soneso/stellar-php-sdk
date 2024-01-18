@@ -29,8 +29,14 @@ class AnchorTransaction extends Response
     /// (optional) Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
     private ?string $amountIn = null;
 
+    /// (optional) The asset received or to be received by the Anchor. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format.
+    private ?string $amountInAsset = null;
+
     /// (optional) Amount sent by anchor to user at end of transaction as a string with up to 7 decimals. Excludes amount converted to XLM to fund account and any external fees.
     private ?string $amountOut = null;
+
+    /// (optional) The asset delivered or to be delivered to the user. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format.
+    private ?string $amountOutAsset = null;
 
     /// (optional) Amount of fee charged by anchor.
     private ?string $amountFee = null;
@@ -323,6 +329,16 @@ class AnchorTransaction extends Response
         return $this->claimableBalanceId;
     }
 
+    public function getAmountInAsset(): ?string
+    {
+        return $this->amountInAsset;
+    }
+
+    public function getAmountOutAsset(): ?string
+    {
+        return $this->amountOutAsset;
+    }
+
 
     protected function loadFromJson(array $json) : void {
         if (isset($json['id'])) $this->id = $json['id'];
@@ -331,7 +347,9 @@ class AnchorTransaction extends Response
         if (isset($json['status_eta'])) $this->statusEta = $json['status_eta'];
         if (isset($json['more_info_url'])) $this->moreInfoUrl = $json['more_info_url'];
         if (isset($json['amount_in'])) $this->amountIn = $json['amount_in'];
+        if (isset($json['amount_in_asset'])) $this->amountInAsset = $json['amount_in_asset'];
         if (isset($json['amount_out'])) $this->amountOut = $json['amount_out'];
+        if (isset($json['amount_out_asset'])) $this->amountOutAsset = $json['amount_out_asset'];
         if (isset($json['amount_fee'])) $this->amountFee = $json['amount_fee'];
         if (isset($json['from'])) $this->from = $json['from'];
         if (isset($json['external_extra'])) $this->externalExtra = $json['external_extra'];
