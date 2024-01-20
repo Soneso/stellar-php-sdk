@@ -14,4 +14,5 @@ class StandardKYCFields
 {
     public ?NaturalPersonKYCFields $naturalPersonKYCFields = null;
     public ?OrganizationKYCFields $organizationKYCFields = null;
+    public ?FinancialAccountKYCFields $financialAccountKYCFields = null;
 }

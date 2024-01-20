@@ -50,18 +50,6 @@ class NaturalPersonKYCFields
     /// ISO Code of country of birth ISO 3166-1 alpha-3
     public ?string $birthCountryCode = null;
 
-    /// Number identifying bank account
-    public ?string $bankAccountNumber = null;
-
-    /// Number identifying bank in national banking system (routing number in US)
-    public ?string $bankNumber = null;
-
-    /// Phone number with country code for bank
-    public ?string $bankPhoneNumber = null;
-
-    /// Number identifying bank branch
-    public ?string $bankBranchNumber = null;
-
     /// Tax identifier of user in their country (social security number in US)
     public ?string $taxId = null;
 
@@ -113,6 +101,15 @@ class NaturalPersonKYCFields
     /// male, female, or other
     public ?string $sex = null;
 
+    /// Image of user's proof of income document (bytes)
+    public ?string $proofOfIncome = null;
+
+    /// video or image file of user as a liveness proof (bytes)
+    public ?string $proofOfLiveness = null;
+
+    // User's origin (such as an id in another application) or a referral code
+    public ?string $referralId = null;
+
     public function fields() : array {
         $fields = array();
         if ($this->lastName) {
@@ -154,18 +151,6 @@ class NaturalPersonKYCFields
         if ($this->birthCountryCode) {
             $fields += [ "birth_country_code" => $this->birthCountryCode ];
         }
-        if ($this->bankAccountNumber) {
-            $fields += [ "bank_account_number" => $this->bankAccountNumber ];
-        }
-        if ($this->bankNumber) {
-            $fields += [ "bank_number" => $this->bankNumber ];
-        }
-        if ($this->bankPhoneNumber) {
-            $fields += [ "bank_phone_number" => $this->bankPhoneNumber ];
-        }
-        if ($this->bankBranchNumber) {
-            $fields += [ "bank_branch_number" => $this->bankBranchNumber ];
-        }
         if ($this->taxId) {
             $fields += [ "tax_id" => $this->taxId ];
         }
@@ -203,7 +188,10 @@ class NaturalPersonKYCFields
             $fields += [ "ip_address" => $this->ipAddress ];
         }
         if ($this->sex) {
-            $fields += [ "sex" => $this->sex ];
+            $fields += [ "sex" => $this->sex];
+        }
+        if ($this->referralId) {
+            $fields += [ "referral_id" => $this->referralId ];
         }
         return $fields;
     }
@@ -222,6 +210,12 @@ class NaturalPersonKYCFields
         }
         if ($this->photoProofResidence) {
             $files += [ "photo_proof_residence" => $this->photoProofResidence ];
+        }
+        if ($this->proofOfIncome) {
+            $files += [ "proof_of_income" => $this->proofOfIncome ];
+        }
+        if ($this->proofOfLiveness) {
+            $files += [ "proof_of_liveness" => $this->proofOfLiveness ];
         }
         return $files;
     }

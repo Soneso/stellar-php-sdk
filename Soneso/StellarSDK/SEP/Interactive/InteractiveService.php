@@ -213,6 +213,9 @@ class InteractiveService
         if ($request->kycFields != null && $request->kycFields->organizationKYCFields != null) {
             $fields += $request->kycFields->organizationKYCFields->fields();
         }
+        if ($request->kycFields != null && $request->kycFields->financialAccountKYCFields != null) {
+            $fields += $request->kycFields->financialAccountKYCFields->fields();
+        }
         if ($request->customFields != null) {
             $fields += $request->customFields;
         }
@@ -306,6 +309,9 @@ class InteractiveService
         }
         if ($request->kycFields != null && $request->kycFields->organizationKYCFields != null) {
             $fields += $request->kycFields->organizationKYCFields->fields();
+        }
+        if ($request->kycFields != null && $request->kycFields->financialAccountKYCFields != null) {
+            $fields += $request->kycFields->financialAccountKYCFields->fields();
         }
         if ($request->customFields != null) {
             $fields += $request->customFields;

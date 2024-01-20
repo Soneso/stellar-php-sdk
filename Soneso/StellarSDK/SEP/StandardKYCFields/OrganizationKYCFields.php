@@ -17,6 +17,9 @@ class OrganizationKYCFields
     /// Organization registration number
     public ?string $registrationNumber = null;
 
+    /// Date the organization was registered
+    public ?string $registrationDate = null;
+
     /// Organization registered address
     public ?string $registeredAddress = null;
 
@@ -67,6 +70,9 @@ class OrganizationKYCFields
         }
         if ($this->registrationNumber) {
             $fields += ["organization.registration_number" => $this->registrationNumber];
+        }
+        if ($this->registrationDate) {
+            $fields += ["organization.registration_date" => $this->registrationDate];
         }
         if ($this->registeredAddress) {
             $fields += ["organization.registered_address" => $this->registeredAddress];

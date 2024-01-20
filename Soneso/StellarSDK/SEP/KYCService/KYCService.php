@@ -117,6 +117,9 @@ class KYCService
         if ($request->KYCFields?->organizationKYCFields) {
             $fields = array_merge($fields, $request->KYCFields?->organizationKYCFields->fields());
         }
+        if ($request->KYCFields?->financialAccountKYCFields) {
+            $fields = array_merge($fields, $request->KYCFields?->financialAccountKYCFields->fields());
+        }
         if ($request->customFields) {
             $fields = array_merge($fields, $request->customFields);
         }
