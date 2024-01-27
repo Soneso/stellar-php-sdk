@@ -39,7 +39,7 @@ class TransactionResponse extends Response
     private string $resultXdrBase64;
     private XdrTransactionResult $resultXdr;
     private string $resultMetaXdrBase64;
-    private XdrTransactionMeta $resultMetaXdr;
+    private ?XdrTransactionMeta $resultMetaXdr = null;
     private ?string $feeMetaXdrBase64 = null; // todo resolve
     private ?array $feeMetaXdr = null; //
     private ?string $validAfter = null; // [XdrLedgerEntryChange]
@@ -202,9 +202,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return XdrTransactionMeta
+     * @return XdrTransactionMeta | null
      */
-    public function getResultMetaXdr(): XdrTransactionMeta
+    public function getResultMetaXdr(): ?XdrTransactionMeta
     {
         return $this->resultMetaXdr;
     }

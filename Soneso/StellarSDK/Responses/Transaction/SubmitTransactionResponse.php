@@ -7,10 +7,6 @@
 
 namespace Soneso\StellarSDK\Responses\Transaction;
 
-use Soneso\StellarSDK\Responses\Response;
-use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
-use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
-use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
 
 class SubmitTransactionResponse extends TransactionResponse

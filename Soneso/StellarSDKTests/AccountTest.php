@@ -20,16 +20,13 @@ use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
-use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
-use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 
 final class AccountTest extends TestCase
 {
