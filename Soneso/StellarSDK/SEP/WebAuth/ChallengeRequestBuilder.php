@@ -6,13 +6,24 @@
 
 namespace Soneso\StellarSDK\SEP\WebAuth;
 
+use GuzzleHttp\Client;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
-use Soneso\StellarSDK\SEP\Federation\FederationResponse;
 
 class ChallengeRequestBuilder extends RequestBuilder
 {
+    private string $authEndpoint;
+
+    /**
+     * @param string $authEndpoint
+     */
+    public function __construct(string $authEndpoint, Client $httpClient)
+    {
+        $this->authEndpoint = $authEndpoint;
+        parent::__construct($httpClient);
+    }
+
     public function forAccountId(string $accountId) : ChallengeRequestBuilder {
         $this->queryParameters["account"] = $accountId;
         return $this;
@@ -39,7 +50,7 @@ class ChallengeRequestBuilder extends RequestBuilder
     }
 
     public function buildUrl() : string {
-        return "?" . http_build_query($this->queryParameters);
+        return $this->authEndpoint . "?" . http_build_query($this->queryParameters);
     }
 
     /**

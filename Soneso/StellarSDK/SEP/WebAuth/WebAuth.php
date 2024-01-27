@@ -42,16 +42,21 @@ class WebAuth
      * @param string $serverSigningKey The server public key, taken from stellar.toml.
      * @param string $serverHomeDomain The server home domain of the server where the stellar.toml was loaded from.
      * @param Network $network The network used.
+     * @param ?Client $httpClient Optional http client to be used for requests.
      */
-    public function __construct(string $authEndpoint, string $serverSigningKey, string $serverHomeDomain, Network $network) {
+    public function __construct(string $authEndpoint, string $serverSigningKey, string $serverHomeDomain, Network $network, ?Client $httpClient = null) {
         $this->authEndpoint = $authEndpoint;
         $this->serverSigningKey = $serverSigningKey;
         $this->network = $network;
         $this->serverHomeDomain = $serverHomeDomain;
-        $this->httpClient = new Client([
-            'base_uri' => $this->authEndpoint,
-            'exceptions' => false,
-        ]);
+
+        if ($httpClient === null) {
+            $this->httpClient = new Client([
+                'exceptions' => false,
+            ]);
+        } else {
+            $this->httpClient = $httpClient;
+        }
     }
 
 
@@ -59,12 +64,13 @@ class WebAuth
      *  e.g. fromDomain("soneso.com", Network::testnet())
      * @param string $domain The domain from which to get the stellar information
      * @param Network $network The network used.
+     * @param ?Client $httpClient Optional http client to be used for requests.
      * @return WebAuth
      * @throws Exception
      */
-    public static function fromDomain(string $domain, Network $network) : WebAuth {
+    public static function fromDomain(string $domain, Network $network, ?Client $httpClient = null) : WebAuth {
 
-        $stellarToml = StellarToml::fromDomain($domain);
+        $stellarToml = StellarToml::fromDomain($domain, $httpClient);
         $webAuthEndpoint = $stellarToml->getGeneralInformation()->webAuthEndpoint;
         $signingKey = $stellarToml->getGeneralInformation()->signingKey;
         if (!$webAuthEndpoint) {
@@ -73,7 +79,7 @@ class WebAuth
         if (!$signingKey) {
             throw new Exception("No auth server SIGNING_KEY found in stellar.toml");
         }
-        return new WebAuth($webAuthEndpoint, $signingKey, $domain, $network);
+        return new WebAuth($webAuthEndpoint, $signingKey, $domain, $network, $httpClient);
     }
 
     /**
@@ -98,7 +104,7 @@ class WebAuth
      * @throws SubmitCompletedChallengeErrorResponseException
      * @throws SubmitCompletedChallengeTimeoutResponseException
      * @throws SubmitCompletedChallengeUnknownResponseException
-     * @throws GuzzleException|ChallengeRequestErrorResponse
+     * @throws GuzzleException|ChallengeRequestErrorResponse|ChallengeValidationErrorInvalidOperationType
      */
     public function jwtToken(string $clientAccountId, array $signers, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null, ?KeyPair $clientDomainKeyPair = null) : string {
 
@@ -346,7 +352,7 @@ class WebAuth
         if ($memo && strpos($accountId, "M" ) === 0) {
             throw new InvalidArgumentException("memo cannot be used if accountId is a muxed account");
         }
-        $requestBuilder = (new ChallengeRequestBuilder($this->httpClient))->forAccountId($accountId);
+        $requestBuilder = (new ChallengeRequestBuilder($this->authEndpoint, $this->httpClient))->forAccountId($accountId);
         if ($memo) {
             $requestBuilder = $requestBuilder->forMemo($memo);
         }
