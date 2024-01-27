@@ -13,27 +13,29 @@ use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
 class PutCustomerInfoRequestBuilder extends RequestBuilder {
+    private string $serviceAddress;
     private ?string $jwtToken = null;
     private ?array $fields = null;
     private ?array $files = null;
 
     /**
      * @param Client $httpClient
+     * @param string $serviceAddress
      * @param array|null $fields
      * @param array|null $files
      * @param string|null $jwtToken
      */
-    public function __construct(Client $httpClient, ?array $fields = null, ?array $files = null, ?string $jwtToken = null)
+    public function __construct(Client $httpClient, string $serviceAddress, ?array $fields = null, ?array $files = null, ?string $jwtToken = null)
     {
+        $this->serviceAddress = $serviceAddress;
         $this->jwtToken = $jwtToken;
         $this->fields = $fields;
         $this->files = $files;
-        parent::__construct($httpClient, "customer");
+        parent::__construct($httpClient);
     }
 
     public function buildUrl() : string {
-        $implodedSegments = implode("/", $this->segments);
-        return "/" . $implodedSegments;
+        return $this->serviceAddress . "/customer";
     }
     /**
      * @param string $url

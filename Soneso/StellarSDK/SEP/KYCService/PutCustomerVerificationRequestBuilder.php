@@ -14,24 +14,26 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 
 class PutCustomerVerificationRequestBuilder extends RequestBuilder
 {
+    private string $serviceAddress;
     private ?string $jwtToken = null;
     private ?array $fields = null;
 
     /**
      * @param Client $httpClient
+     * @param string $serviceAddress
      * @param array|null $fields
      * @param string|null $jwtToken
      */
-    public function __construct(Client $httpClient, ?array $fields = null, ?string $jwtToken = null)
+    public function __construct(Client $httpClient, string $serviceAddress, ?array $fields = null, ?string $jwtToken = null)
     {
+        $this->serviceAddress = $serviceAddress;
         $this->jwtToken = $jwtToken;
         $this->fields = $fields;
-        parent::__construct($httpClient, "customer/verification");
+        parent::__construct($httpClient);
     }
 
     public function buildUrl() : string {
-        $implodedSegments = implode("/", $this->segments);
-        return "/" . $implodedSegments;
+        return $this->serviceAddress . "/customer/verification";
     }
     /**
      * @param string $url

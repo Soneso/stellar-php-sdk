@@ -6,12 +6,15 @@
 
 namespace Soneso\StellarSDKTests;
 
+use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\KYCService\GetCustomerInfoField;
 use Soneso\StellarSDK\SEP\KYCService\GetCustomerInfoProvidedField;
 use Soneso\StellarSDK\SEP\KYCService\GetCustomerInfoRequest;
@@ -19,6 +22,9 @@ use Soneso\StellarSDK\SEP\KYCService\KYCService;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerCallbackRequest;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoRequest;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerVerificationRequest;
+use Soneso\StellarSDK\SEP\StandardKYCFields\NaturalPersonKYCFields;
+use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
+use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 class SEP012Test extends TestCase
 {
@@ -495,5 +501,50 @@ class SEP012Test extends TestCase
         $response = $kycService->putCustomerCallback($request);
         $this->assertNotNull($response);
         $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testLocalServer(): void {
+        $domain = 'localhost:5173';
+        $client = new Client([
+            'verify' => false, // This disables SSL verification
+        ]);
+
+        $userKeyPair = KeyPair::random();
+        $userAccountId = $userKeyPair->getAccountId();
+        $webAuth = WebAuth::fromDomain($domain, network: Network::testnet(), httpClient: $client);
+        $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        print('Authenticated. JWT: ' . $jwtToken);
+        $this->assertNotNull($jwtToken);
+        $kycService = KYCService::fromDomain($domain, httpClient: $client);
+
+        $request = new PutCustomerInfoRequest();
+        $request->account = $userAccountId;
+        $request->jwt = $jwtToken;
+        $nat = new NaturalPersonKYCFields();
+        $nat->firstName = "Lulu";
+        $kyc = new StandardKYCFields();
+        $kyc->naturalPersonKYCFields = $nat;
+        $request->KYCFields = $kyc;
+        $response = $kycService->putCustomerInfo($request);
+        self::assertEquals('d1ce2f48-3ff1-495d-9240-7a50d806cfed', $response->getId());
+
+        $request = new GetCustomerInfoRequest();
+        $request->account = $userAccountId;
+        $request->jwt = $jwtToken;
+        $response = $kycService->getCustomerInfo($request);
+        self::assertEquals('d1ce2f48-3ff1-495d-9240-7a50d806cfed', $response->getId());
+
+        $request = new PutCustomerVerificationRequest();
+        $request->id = 'd1ce2f48-3ff1-495d-9240-7a50d806cfed';
+        $request->jwt = $jwtToken;
+        $fields = array();
+        $fields += ["mobile_number_verification" => "2735021"];
+        $request->verificationFields = $fields;
+        $response = $kycService->putCustomerVerification($request);
+        self::assertEquals('d1ce2f48-3ff1-495d-9240-7a50d806cfed', $response->getId());
+
+        $response = $kycService->deleteCustomer($userAccountId, $jwtToken);
+        self::assertEquals(200, $response->getStatusCode());
+
     }
 }

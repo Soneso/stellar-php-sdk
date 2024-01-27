@@ -21,24 +21,32 @@ class KYCService
 
     /**
      * @param string $serviceAddress
+     * @param ?Client $httpClient Optional http client to be used for requests.
      */
-    public function __construct(string $serviceAddress)
+    public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
         $this->serviceAddress = $serviceAddress;
-        $this->httpClient = new Client([
-            'base_uri' => $this->serviceAddress,
-            'exceptions' => false,
-        ]);
+        if (substr($this->serviceAddress, -1) === "/") {
+            $this->serviceAddress = substr($this->serviceAddress, 0, -1);
+        }
+        if ($httpClient === null) {
+            $this->httpClient = new Client([
+                'exceptions' => false,
+            ]);
+        } else {
+            $this->httpClient = $httpClient;
+        }
     }
 
     /**
      * creates a KYCService by parsing server address from stellar.toml of given domain.
-     * @param string $domain
+     * @param string $domain to parse the toml data from.
+     * @param ?Client $httpClient Optional http client to be used for requests.
      * @return KYCService
      * @throws Exception
      */
-    public static function fromDomain(string $domain) : KYCService {
-        $stellarToml = StellarToml::fromDomain($domain);
+    public static function fromDomain(string $domain, ?Client $httpClient = null) : KYCService {
+        $stellarToml = StellarToml::fromDomain($domain, $httpClient);
         $address = $stellarToml->getGeneralInformation()->kYCServer;
         if (!$address) {
             $address = $stellarToml->getGeneralInformation()->transferServer;
@@ -46,7 +54,7 @@ class KYCService
         if (!$address) {
             throw new Exception("No KYC service or transfer service found in stellar.toml");
         }
-        return new KYCService($address);
+        return new KYCService($address, $httpClient);
     }
 
 
@@ -63,7 +71,7 @@ class KYCService
      * @throws GuzzleException
      */
     public function getCustomerInfo(GetCustomerInfoRequest $request) : GetCustomerInfoResponse {
-        $requestBuilder = new GetCustomerInfoRequestBuilder($this->httpClient, $request->jwt);
+        $requestBuilder = new GetCustomerInfoRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
         $queryParameters = array();
         if ($request->id) {
             $queryParameters += ["id" => $request->id];
@@ -138,7 +146,7 @@ class KYCService
             $files = null;
         }
 
-        $requestBuilder = new PutCustomerInfoRequestBuilder($this->httpClient, $fields, $files, $request->jwt);
+        $requestBuilder = new PutCustomerInfoRequestBuilder($this->httpClient, $this->serviceAddress, $fields, $files, $request->jwt);
         return $requestBuilder->execute();
     }
 
@@ -160,7 +168,7 @@ class KYCService
             $fields = array_merge($fields, $request->verificationFields);
         }
 
-        $requestBuilder = new PutCustomerVerificationRequestBuilder($this->httpClient, $fields, $request->jwt);
+        $requestBuilder = new PutCustomerVerificationRequestBuilder($this->httpClient, $this->serviceAddress, $fields, $request->jwt);
         return $requestBuilder->execute();
     }
 
@@ -199,7 +207,7 @@ class KYCService
             array_push($multipart, $arr);
         }
 
-        $url = "/customer/" . $account;
+        $url = $this->serviceAddress . "/customer/" . $account;
         return $this->httpClient->request("DELETE", $url, [
             "multipart" => $multipart,
             "headers" => $headers
@@ -245,7 +253,7 @@ class KYCService
             array_push($multipart, $arr);
         }
 
-        $url = "/customer/callback";
+        $url = $this->serviceAddress . "/customer/callback";
         return $this->httpClient->request("PUT", $url, [
             "multipart" => $multipart,
             "headers" => $headers

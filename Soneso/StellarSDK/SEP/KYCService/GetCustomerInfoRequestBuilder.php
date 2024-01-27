@@ -15,16 +15,18 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 
 class GetCustomerInfoRequestBuilder extends RequestBuilder
 {
+    private string $serviceAddress;
     private ?string $jwtToken = null;
 
     /**
      * @param Client $httpClient
      * @param string|null $jwtToken
      */
-    public function __construct(Client $httpClient, ?string $jwtToken = null)
+    public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {
+        $this->serviceAddress = $serviceAddress;
         $this->jwtToken = $jwtToken;
-        parent::__construct($httpClient, "customer");
+        parent::__construct($httpClient);
     }
 
     public function forQueryParameters(array $queryParameters) : GetCustomerInfoRequestBuilder {
@@ -41,12 +43,20 @@ class GetCustomerInfoRequestBuilder extends RequestBuilder
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
         if ($this->jwtToken) {
-            $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
+            $headers = array_merge($headers, ['Authorization' => "Bearer " . $this->jwtToken]);
         }
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
         return $responseHandler->handleResponse($response, RequestType::GET_CUSTOMER_INFO, $this->httpClient);
+    }
+
+    public function buildUrl() : string {
+        $url = $this->serviceAddress . "/customer";
+        if (count($this->queryParameters) > 0) {
+            $url .= '?' . http_build_query($this->queryParameters);
+        }
+        return $url;
     }
 
     /**
