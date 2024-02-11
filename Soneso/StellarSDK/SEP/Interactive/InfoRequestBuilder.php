@@ -15,39 +15,78 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 
 class InfoRequestBuilder extends RequestBuilder
 {
-    private string $jwtToken;
+    private ?string $jwtToken = null;
+    private string $serviceAddress;
 
-
-    public function __construct(Client $httpClient)
+    /**
+     * Constructor.
+     * @param Client $httpClient the client to be used for the request.
+     * @param string $serviceAddress the server address of the sep-24 service (e.g. from sep-01).
+     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication. If provided it will be used in the request header.
+     */
+    public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {
-        parent::__construct($httpClient, "info");
+        $this->serviceAddress = $serviceAddress;
+        $this->jwtToken = $jwtToken;
+        parent::__construct($httpClient);
     }
 
+    /**
+     * Append query parameters to the request.
+     * @param array<array-key, mixed> $queryParameters the query parameters to use for the get request.
+     * @return $this returns the builder, so that it can be chained.
+     */
     public function forQueryParameters(array $queryParameters) : InfoRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
+
         return $this;
     }
 
     /**
-     * @param string $url
-     * @return SEP24InfoResponse
-     * @throws GuzzleException
+     * Sends the get request for the given url.
+     * Attaches the jwt token to the request if provided by constructor.
+     * @param string $url the url to request from
+     * @return SEP24InfoResponse the parsed response
+     * @throws GuzzleException if an exception occurs during the request.
      */
     public function request(string $url) : SEP24InfoResponse {
+        /**
+         * @var array<array-key, mixed> $headers
+         */
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
+        if ($this->jwtToken) {
+            $headers = array_merge($headers, ['Authorization' => "Bearer " . $this->jwtToken]);
+        }
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
-        return $responseHandler->handleResponse($response, RequestType::SEP24_INFO, $this->httpClient);
+        $response = $responseHandler->handleResponse($response, RequestType::SEP24_INFO, $this->httpClient);
+        assert($response instanceof SEP24InfoResponse);
+
+        return $response;
+    }
+
+    /**
+     * Builds the url for the request.
+     * @return string the constructed url.
+     */
+    public function buildUrl() : string {
+        $url = $this->serviceAddress . "/info";
+        if (count($this->queryParameters) > 0) {
+            $url .= '?' . http_build_query($this->queryParameters);
+        }
+
+        return $url;
     }
 
     /**
      * Build and execute request.
-     * @return SEP24InfoResponse
-     * @throws GuzzleException
+     * @return SEP24InfoResponse the parsed response.
+     * @throws GuzzleException if any request exception occurs.
      */
     public function execute() : SEP24InfoResponse {
+
         return $this->request($this->buildUrl());
     }
 }

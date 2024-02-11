@@ -11,30 +11,44 @@ use DateTime;
 
 class SEP24TransactionsRequest
 {
-    /// jwt token previously received from the anchor via the SEP-10 authentication flow
+    /**
+     * @var string $jwt jwt token previously received from the anchor via the SEP-10 authentication flow
+     */
     public string $jwt;
 
-    /// The code of the asset of interest. E.g. BTC, ETH, USD, INR, etc.
+    /**
+     * @var string $assetCode The code of the asset of interest. E.g. BTC, ETH, USD, INR, etc.
+     */
     public string $assetCode;
 
-    /// (optional) The response should contain transactions starting on or after this date & time. UTC ISO 8601 string.
+    /**
+     * @var DateTime|null $noOlderThan (optional) The response should contain transactions starting on or after this date & time. UTC ISO 8601 string.
+     */
     public ?DateTime $noOlderThan = null;
 
-    /// (optional) The response should contain at most limit transactions.
+    /**
+     * @var int|null $limit (optional) The response should contain at most limit transactions.
+     */
     public ?int $limit = null;
 
-    /// (optional) The kind of transaction that is desired. Should be either deposit or withdrawal.
+    /**
+     * @var string|null $kind (optional) The kind of transaction that is desired. Should be either 'deposit' or 'withdrawal'.
+     */
     public ?string $kind = null;
 
-    /// (optional) The response should contain transactions starting prior to this ID (exclusive).
+    /**
+     * @var string|null $pagingId (optional) The response should contain transactions starting prior to this ID (exclusive).
+     */
     public ?string $pagingId = null;
 
-    /// (optional) Defaults to en if not specified or if the specified language is not supported.
-    /// Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+    /**
+     * @var string|null $lang (optional) Defaults to en if not specified or if the specified language is not supported.
+     * Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+     */
     public ?string $lang = null;
 
     /**
-     * @return string
+     * @return string jwt token previously received from the anchor via the SEP-10 authentication flow
      */
     public function getJwt(): string
     {
@@ -42,7 +56,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @param string $jwt
+     * @param string $jwt jwt token previously received from the anchor via the SEP-10 authentication flow
      */
     public function setJwt(string $jwt): void
     {
@@ -50,7 +64,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @return string
+     * @return string The code of the asset of interest. E.g. BTC, ETH, USD, INR, etc.
      */
     public function getAssetCode(): string
     {
@@ -58,7 +72,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @param string $assetCode
+     * @param string $assetCode The code of the asset of interest. E.g. BTC, ETH, USD, INR, etc.
      */
     public function setAssetCode(string $assetCode): void
     {
@@ -66,7 +80,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @return DateTime|null
+     * @return DateTime|null (optional) The response should contain transactions starting on or after this date & time. UTC ISO 8601 string.
      */
     public function getNoOlderThan(): ?DateTime
     {
@@ -74,7 +88,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @param DateTime|null $noOlderThan
+     * @param DateTime|null $noOlderThan (optional) The response should contain transactions starting on or after this date & time. UTC ISO 8601 string.
      */
     public function setNoOlderThan(?DateTime $noOlderThan): void
     {
@@ -83,7 +97,7 @@ class SEP24TransactionsRequest
 
 
     /**
-     * @return int|null
+     * @return int|null (optional) The response should contain at most limit transactions.
      */
     public function getLimit(): ?int
     {
@@ -91,7 +105,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @param int|null $limit
+     * @param int|null $limit (optional) The response should contain at most limit transactions.
      */
     public function setLimit(?int $limit): void
     {
@@ -99,7 +113,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) The kind of transaction that is desired. Should be either 'deposit' or 'withdrawal'.
      */
     public function getKind(): ?string
     {
@@ -107,7 +121,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @param string|null $kind
+     * @param string|null $kind (optional) The kind of transaction that is desired. Should be either 'deposit' or 'withdrawal'.
      */
     public function setKind(?string $kind): void
     {
@@ -115,7 +129,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) The response should contain transactions starting prior to this ID (exclusive).
      */
     public function getPagingId(): ?string
     {
@@ -123,7 +137,7 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @param string|null $pagingId
+     * @param string|null $pagingId (optional) The response should contain transactions starting prior to this ID (exclusive).
      */
     public function setPagingId(?string $pagingId): void
     {
@@ -131,7 +145,8 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) Defaults to en if not specified or if the specified language is not supported.
+     *  Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
      */
     public function getLang(): ?string
     {
@@ -139,7 +154,8 @@ class SEP24TransactionsRequest
     }
 
     /**
-     * @param string|null $lang
+     * @param string|null $lang (optional) Defaults to en if not specified or if the specified language is not supported.
+     *  Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
      */
     public function setLang(?string $lang): void
     {

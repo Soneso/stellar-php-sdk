@@ -10,25 +10,45 @@ use Soneso\StellarSDK\Responses\Response;
 
 class FeatureFlags extends Response
 {
-    /// Whether or not the anchor supports creating accounts for users requesting deposits. Defaults to true.
+    /**
+     * @var bool $accountCreation Whether the anchor supports creating accounts for users requesting deposits.
+     * Defaults to true.
+     */
     public bool $accountCreation = true;
-    /// Whether or not the anchor supports sending deposit funds as claimable balances. This is relevant for users of Stellar accounts without a trustline to the requested asset. Defaults to false.
+
+
+    /**
+     * @var bool $claimableBalances Whether the anchor supports sending deposit funds as claimable balances.
+     * This is relevant for users of Stellar accounts without a trustline to the requested asset. Defaults to false.
+     */
     public bool $claimableBalances = false;
 
+    /**
+     * Loads the needed data from a json array.
+     * @param array<array-key, mixed> $json the data array to read from.
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['account_creation'])) $this->accountCreation = $json['account_creation'];
         if (isset($json['claimable_balances'])) $this->claimableBalances = $json['claimable_balances'];
     }
 
+    /**
+     * Constructs a new FeatureFlags object from the given data array.
+     * @param array<array-key, mixed> $json the data array to extract the needed values from.
+     * @return FeatureFlags the constructed FeatureFlags object.
+     */
     public static function fromJson(array $json) : FeatureFlags
     {
         $result = new FeatureFlags();
         $result->loadFromJson($json);
+
         return $result;
     }
 
     /**
-     * @return bool
+     * @return bool Whether the anchor supports creating accounts for users requesting deposits.
+     *  Defaults to true.
      */
     public function isAccountCreation(): bool
     {
@@ -36,7 +56,8 @@ class FeatureFlags extends Response
     }
 
     /**
-     * @param bool $accountCreation
+     * @param bool $accountCreation Whether the anchor supports creating accounts for users requesting deposits.
+     *  Defaults to true.
      */
     public function setAccountCreation(bool $accountCreation): void
     {
@@ -44,7 +65,8 @@ class FeatureFlags extends Response
     }
 
     /**
-     * @return bool
+     * @return bool Whether the anchor supports sending deposit funds as claimable balances.
+     *  This is relevant for users of Stellar accounts without a trustline to the requested asset. Defaults to false.
      */
     public function isClaimableBalances(): bool
     {
@@ -52,7 +74,8 @@ class FeatureFlags extends Response
     }
 
     /**
-     * @param bool $claimableBalances
+     * @param bool $claimableBalances Whether the anchor supports sending deposit funds as claimable balances.
+     *  This is relevant for users of Stellar accounts without a trustline to the requested asset. Defaults to false.
      */
     public function setClaimableBalances(bool $claimableBalances): void
     {

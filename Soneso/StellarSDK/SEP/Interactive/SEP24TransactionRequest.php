@@ -8,19 +8,29 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 class SEP24TransactionRequest {
 
-    /// jwt token previously received from the anchor via the SEP-10 authentication flow
+    /**
+     * @var string $jwt jwt token previously received from the anchor via the SEP-10 authentication flow
+     */
     public string $jwt;
 
-    /// (optional) The id of the transaction.
+    /**
+     * @var string|null $id The id of the sep-24 transaction as obtained from the anchor.
+     */
     public ?string $id = null;
 
-    /// (optional) The stellar transaction id of the transaction.
+    /**
+     * @var string|null $stellarTransactionId The stellar transaction id of the transaction.
+     */
     public ?string $stellarTransactionId = null;
 
-    /// (optional) The external transaction id of the transaction.
+    /**
+     * @var string|null $externalTransactionId (optional) The external transaction id of the transaction.
+     */
     public ?string $externalTransactionId = null;
 
-    /// (optional) Defaults to en if not specified or if the specified language is not supported.
-    /// Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+    /**
+     * @var string|null $lang (optional) Defaults to en if not specified or if the specified language is not supported.
+     * Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+     */
     public ?string $lang = null;
 }

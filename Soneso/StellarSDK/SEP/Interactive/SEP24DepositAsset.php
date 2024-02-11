@@ -10,19 +10,45 @@ use Soneso\StellarSDK\Responses\Response;
 
 class SEP24DepositAsset extends Response
 {
-    /// true if deposit for this asset is supported
+    /**
+     * @var bool $enabled true if deposit for this asset is supported
+     */
     public bool $enabled;
-    /// Optional minimum amount. No limit if not specified.
+
+    /**
+     * @var float|null $minAmount Optional minimum amount. No limit if not specified.
+     */
     public ?float $minAmount = null;
-    /// Optional maximum amount. No limit if not specified.
+
+    /**
+     * @var float|null $maxAmount Optional maximum amount. No limit if not specified.
+     */
     public ?float $maxAmount = null;
-    /// Optional fixed (base) fee for deposit. In units of the deposited asset. This is in addition to any fee_percent. Omitted if there is no fee or the fee schedule is complex.
+
+    /**
+     * @var float|null $feeFixed Optional fixed (base) fee for deposit. In units of the deposited asset.
+     * This is in addition to any fee_percent.
+     * Omitted if there is no fee or the fee schedule is complex.
+     */
     public ?float $feeFixed = null;
-    /// Optional percentage fee for deposit. In percentage points. This is in addition to any fee_fixed. Omitted if there is no fee or the fee schedule is complex.
+
+    /**
+     * @var float|null $feePercent Optional percentage fee for deposit. In percentage points.
+     *  This is in addition to any fee_fixed.
+     *  Omitted if there is no fee or the fee schedule is complex.
+     */
     public ?float $feePercent = null;
-    /// Optional minimum fee in units of the deposited asset.
+
+    /**
+     * @var float|null $feeMinimum Optional minimum fee in units of the deposited asset.
+     */
     public ?float $feeMinimum = null;
 
+    /**
+     * Loads the needed data from the given data array.
+     * @param array<array-key, mixed> $json the array containing the data to read from.
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['enabled'])) $this->enabled = $json['enabled'];
         if (isset($json['min_amount'])) $this->minAmount = $json['min_amount'];
@@ -32,15 +58,21 @@ class SEP24DepositAsset extends Response
         if (isset($json['fee_minimum'])) $this->feeMinimum  = $json['fee_minimum'];
     }
 
+    /**
+     * Constructs a new instance of SEP24DepositAsset by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return SEP24DepositAsset the object containing the parsed data.
+     */
     public static function fromJson(array $json) : SEP24DepositAsset
     {
         $result = new SEP24DepositAsset();
         $result->loadFromJson($json);
+
         return $result;
     }
 
     /**
-     * @return bool
+     * @return bool true if deposit for this asset is supported
      */
     public function isEnabled(): bool
     {
@@ -48,7 +80,7 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @param bool $enabled
+     * @param bool $enabled true if deposit for this asset is supported
      */
     public function setEnabled(bool $enabled): void
     {
@@ -56,7 +88,7 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @return float|null
+     * @return float|null Optional minimum amount. No limit if not specified.
      */
     public function getMinAmount(): ?float
     {
@@ -64,7 +96,7 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @param float|null $minAmount
+     * @param float|null $minAmount Optional minimum amount. No limit if not specified.
      */
     public function setMinAmount(?float $minAmount): void
     {
@@ -72,7 +104,7 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @return float|null
+     * @return float|null Optional maximum amount. No limit if not specified.
      */
     public function getMaxAmount(): ?float
     {
@@ -80,7 +112,7 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @param float|null $maxAmount
+     * @param float|null $maxAmount Optional maximum amount. No limit if not specified.
      */
     public function setMaxAmount(?float $maxAmount): void
     {
@@ -88,7 +120,9 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @return float|null
+     * @return float|null Optional fixed (base) fee for deposit.
+     * In units of the deposited asset. This is in addition to any fee_percent.
+     * Omit if there is no fee or the fee schedule is complex.
      */
     public function getFeeFixed(): ?float
     {
@@ -96,7 +130,9 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @param float|null $feeFixed
+     * @param float|null $feeFixed Optional fixed (base) fee for deposit.
+     *  In units of the deposited asset. This is in addition to any fee_percent.
+     *  Omit if there is no fee or the fee schedule is complex.
      */
     public function setFeeFixed(?float $feeFixed): void
     {
@@ -104,7 +140,9 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @return float|null
+     * @return float|null Optional percentage fee for deposit.
+     * In percentage points. This is in addition to any fee_fixed.
+     * Omit if there is no fee or the fee schedule is complex.
      */
     public function getFeePercent(): ?float
     {
@@ -112,7 +150,9 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @param float|null $feePercent
+     * @param float|null $feePercent Optional percentage fee for deposit.
+     *  In percentage points. This is in addition to any fee_fixed.
+     *  Omit if there is no fee or the fee schedule is complex.
      */
     public function setFeePercent(?float $feePercent): void
     {
@@ -120,7 +160,7 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @return float|null
+     * @return float|null Optional minimum fee in units of the deposited asset.
      */
     public function getFeeMinimum(): ?float
     {
@@ -128,7 +168,7 @@ class SEP24DepositAsset extends Response
     }
 
     /**
-     * @param float|null $feeMinimum
+     * @param float|null $feeMinimum Optional minimum fee in units of the deposited asset.
      */
     public function setFeeMinimum(?float $feeMinimum): void
     {

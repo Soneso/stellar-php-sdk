@@ -11,21 +11,34 @@ use Soneso\StellarSDK\Responses\Response;
 class RefundPayment extends Response
 {
 
-    /// The payment ID that can be used to identify the refund payment.
-    /// This is either a Stellar transaction hash or an off-chain payment identifier,
-    /// such as a reference number provided to the user when the refund was initiated.
-    /// This id is not guaranteed to be unique.
+    /**
+     * @var string $id The payment ID that can be used to identify the refund payment.
+     * This is either a Stellar transaction hash or an off-chain payment identifier,
+     * such as a reference number provided to the user when the refund was initiated.
+     * This id is not guaranteed to be unique.
+     */
     public string $id;
 
-    /// stellar or external.
+    /**
+     * @var string $idType possible values: 'stellar' or 'external'.
+     */
     public string $idType;
 
-    /// The amount sent back to the user for the payment identified by id, in units of amount_in_asset.
+    /**
+     * @var string $amount The amount sent back to the user for the payment identified by id, in units of amount_in_asset.
+     */
     public string $amount;
 
-    /// The amount charged as a fee for processing the refund, in units of amount_in_asset.
+    /**
+     * @var string $fee The amount charged as a fee for processing the refund, in units of amount_in_asset.
+     */
     public string $fee;
 
+    /**
+     * Loads the needed data from the given data array.
+     * @param array<array-key, mixed> $json the array containing the data to read from.
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['id'])) $this->id = $json['id'];
         if (isset($json['id_type'])) $this->idType = $json['id_type'];
@@ -33,15 +46,24 @@ class RefundPayment extends Response
         if (isset($json['fee'])) $this->fee = $json['fee'];
     }
 
+    /**
+     * Constructs a new instance of RefundPayment by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return RefundPayment the object containing the parsed data.
+     */
     public static function fromJson(array $json) : RefundPayment
     {
         $result = new RefundPayment();
         $result->loadFromJson($json);
+
         return $result;
     }
 
     /**
-     * @return string
+     * @return string The payment ID that can be used to identify the refund payment.
+     *  This is either a Stellar transaction hash or an off-chain payment identifier,
+     *  such as a reference number provided to the user when the refund was initiated.
+     *  This id is not guaranteed to be unique.
      */
     public function getId(): string
     {
@@ -49,7 +71,10 @@ class RefundPayment extends Response
     }
 
     /**
-     * @param string $id
+     * @param string $id The payment ID that can be used to identify the refund payment.
+     *   This is either a Stellar transaction hash or an off-chain payment identifier,
+     *   such as a reference number provided to the user when the refund was initiated.
+     *   This id is not guaranteed to be unique.
      */
     public function setId(string $id): void
     {
@@ -57,7 +82,7 @@ class RefundPayment extends Response
     }
 
     /**
-     * @return string
+     * @return string possible values: 'stellar' or 'external'.
      */
     public function getIdType(): string
     {
@@ -65,7 +90,7 @@ class RefundPayment extends Response
     }
 
     /**
-     * @param string $idType
+     * @param string $idType possible values: 'stellar' or 'external'.
      */
     public function setIdType(string $idType): void
     {
@@ -73,7 +98,7 @@ class RefundPayment extends Response
     }
 
     /**
-     * @return string
+     * @return string The amount sent back to the user for the payment identified by id, in units of amount_in_asset.
      */
     public function getAmount(): string
     {
@@ -81,7 +106,7 @@ class RefundPayment extends Response
     }
 
     /**
-     * @param string $amount
+     * @param string $amount The amount sent back to the user for the payment identified by id, in units of amount_in_asset.
      */
     public function setAmount(string $amount): void
     {
@@ -89,7 +114,7 @@ class RefundPayment extends Response
     }
 
     /**
-     * @return string
+     * @return string The amount charged as a fee for processing the refund, in units of amount_in_asset.
      */
     public function getFee(): string
     {
@@ -97,7 +122,7 @@ class RefundPayment extends Response
     }
 
     /**
-     * @param string $fee
+     * @param string $fee The amount charged as a fee for processing the refund, in units of amount_in_asset.
      */
     public function setFee(string $fee): void
     {

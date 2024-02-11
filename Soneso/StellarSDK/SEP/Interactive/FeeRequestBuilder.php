@@ -16,28 +16,43 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 class FeeRequestBuilder extends RequestBuilder
 {
     private ?string $jwtToken = null;
+    private string $serviceAddress;
 
     /**
-     * @param Client $httpClient
-     * @param ?string $jwtToken
+     * Constructor.
+     * @param Client $httpClient the client to be used for the request.
+     * @param string $serviceAddress the server address of the sep-24 service (e.g. from sep-01).
+     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication. If provided it will be used in the request header.
      */
-    public function __construct(Client $httpClient, ?string $jwtToken = null)
+    public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {
         $this->jwtToken = $jwtToken;
-        parent::__construct($httpClient, "fee");
+        $this->serviceAddress = $serviceAddress;
+        parent::__construct($httpClient);
     }
 
+    /**
+     * Append query parameters to the request.
+     * @param array<array-key, mixed> $queryParameters the query parameters to use for the get request.
+     * @return $this returns the builder, so that it can be chained.
+     */
     public function forQueryParameters(array $queryParameters) : FeeRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
+
         return $this;
     }
 
     /**
-     * @param string $url
-     * @return SEP24FeeResponse
-     * @throws GuzzleException
+     * Sends the get request for the given url.
+     * Attaches the jwt token to the request if provided by constructor.
+     * @param string $url the url to request from
+     * @return SEP24FeeResponse the parsed response
+     * @throws GuzzleException if an exception occurs during the request.
      */
     public function request(string $url) : SEP24FeeResponse {
+        /**
+         * @var array<array-key, mixed> $headers
+         */
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
         if ($this->jwtToken != null) {
@@ -46,15 +61,32 @@ class FeeRequestBuilder extends RequestBuilder
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
-        return $responseHandler->handleResponse($response, RequestType::SEP24_FEE, $this->httpClient);
+        $response = $responseHandler->handleResponse($response, RequestType::SEP24_FEE, $this->httpClient);
+        assert($response instanceof SEP24FeeResponse);
+
+        return $response;
+    }
+
+    /**
+     * Builds the url for the request.
+     * @return string the constructed url.
+     */
+    public function buildUrl() : string {
+        $url = $this->serviceAddress . "/fee";
+        if (count($this->queryParameters) > 0) {
+            $url .= '?' . http_build_query($this->queryParameters);
+        }
+
+        return $url;
     }
 
     /**
      * Build and execute request.
-     * @return SEP24FeeResponse
-     * @throws GuzzleException
+     * @return SEP24FeeResponse the parsed response.
+     * @throws GuzzleException if any request exception occurs.
      */
     public function execute() : SEP24FeeResponse {
+
         return $this->request($this->buildUrl());
     }
 }

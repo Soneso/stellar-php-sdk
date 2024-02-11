@@ -8,20 +8,45 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 class SEP24FeeRequest
 {
+    /**
+     * @var string $operation Kind of operation ('deposit' or 'withdraw').
+     */
     public string $operation;
-    public ?string $type = null;
-    public string $assetCode;
-    public float $amount;
-    public ?string $jwt = null;
 
     /**
-     * @param string $operation
-     * @param string|null $type
-     * @param string $assetCode
-     * @param float $amount
-     * @param string|null $jwt
+     * @var string $assetCode the asset code of the asset to request the operation fee for.
      */
-    public function __construct(string $operation, string $assetCode, float $amount,  ?string $type = null, ?string $jwt = null)
+    public string $assetCode;
+
+    /**
+     * @var float $amount Amount of the asset that will be deposited/withdrawn.
+     */
+    public float $amount;
+    /**
+     * @var string|null $type (optional) Type of deposit or withdrawal (SEPA, bank_account, cash, etc...).
+     */
+    public ?string $type = null;
+
+    /**
+     * @var string|null $jwt (optional) the jwt token obtained from sep-10 authentication.
+     */
+    public ?string $jwt = null;
+
+
+    /**
+     * Constructor.
+     * @param string $operation Kind of operation ('deposit' or 'withdraw').
+     * @param string $assetCode The asset code of the asset to request the operation fee for.
+     * @param float $amount Amount of the asset that will be deposited/withdrawn.
+     * @param string|null $type (optional) Type of deposit or withdrawal (SEPA, bank_account, cash, etc...).
+     * @param string|null $jwt (optional) the jwt token obtained from sep-10 authentication.
+     */
+    public function __construct(
+        string $operation,
+        string $assetCode,
+        float $amount,
+        ?string $type = null,
+        ?string $jwt = null)
     {
         $this->operation = $operation;
         $this->type = $type;
@@ -31,7 +56,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @return string
+     * @return string Kind of operation ('deposit' or 'withdraw').
      */
     public function getOperation(): string
     {
@@ -39,7 +64,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @param string $operation
+     * @param string $operation Kind of operation ('deposit' or 'withdraw').
      */
     public function setOperation(string $operation): void
     {
@@ -47,7 +72,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) Type of deposit or withdrawal (SEPA, bank_account, cash, etc...).
      */
     public function getType(): ?string
     {
@@ -55,7 +80,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @param string|null $type
+     * @param string|null $type (optional) Type of deposit or withdrawal (SEPA, bank_account, cash, etc...).
      */
     public function setType(?string $type): void
     {
@@ -63,7 +88,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @return string
+     * @return string The asset code of the asset to request the operation fee for.
      */
     public function getAssetCode(): string
     {
@@ -71,7 +96,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @param string $assetCode
+     * @param string $assetCode The asset code of the asset to request the operation fee for.
      */
     public function setAssetCode(string $assetCode): void
     {
@@ -79,7 +104,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @return float
+     * @return float Amount of the asset that will be deposited/withdrawn.
      */
     public function getAmount(): float
     {
@@ -87,7 +112,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @param float $amount
+     * @param float $amount Amount of the asset that will be deposited/withdrawn.
      */
     public function setAmount(float $amount): void
     {
@@ -95,7 +120,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) the jwt token obtained from sep-10 authentication.
      */
     public function getJwt(): ?string
     {
@@ -103,7 +128,7 @@ class SEP24FeeRequest
     }
 
     /**
-     * @param string|null $jwt
+     * @param string|null $jwt (optional) the jwt token obtained from sep-10 authentication.
      */
     public function setJwt(?string $jwt): void
     {

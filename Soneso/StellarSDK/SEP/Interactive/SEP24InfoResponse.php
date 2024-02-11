@@ -10,12 +10,33 @@ use Soneso\StellarSDK\Responses\Response;
 
 class SEP24InfoResponse extends Response
 {
-    public ?array $depositAssets = null; //[string => SEP24DepositAsset]
-    public ?array $withdrawAssets = null; //[string => SEP24WithdrawAsset]
+    /**
+     * @var array<array-key, SEP24DepositAsset>|null deposit assets of the info response.
+     */
+    public ?array $depositAssets = null;
+
+    /**
+     * @var array<array-key, SEP24WithdrawAsset>|null withdrawal assets of the info response.
+     */
+    public ?array $withdrawAssets = null;
+
+    /**
+     * @var FeeEndpointInfo|null Info about the fee endpoint (e.g. if enabled and if it requires sep-10 authentication)
+     */
     public ?FeeEndpointInfo $feeEndpointInfo = null;
+
+    /**
+     * @var FeatureFlags|null Info about the additional features the anchor offers.
+     * E.g. whether the anchor supports creating accounts for users requesting deposits.
+     */
     public ?FeatureFlags $featureFlags = null;
 
 
+    /**
+     * Loads the needed data from a json array.
+     * @param array<array-key, mixed> $json the data array to read from.
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['deposit'])) {
             $this->depositAssets = array();
@@ -37,6 +58,11 @@ class SEP24InfoResponse extends Response
         if (isset($json['features'])) $this->featureFlags = FeatureFlags::fromJson($json['features']);
     }
 
+    /**
+     * Constructs a new instance of SEP24InfoResponse by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return SEP24InfoResponse the object containing the parsed data.
+     */
     public static function fromJson(array $json) : SEP24InfoResponse
     {
         $result = new SEP24InfoResponse();
@@ -45,7 +71,7 @@ class SEP24InfoResponse extends Response
     }
 
     /**
-     * @return array|null
+     * @return array<array-key, SEP24DepositAsset>|null deposit assets of the info response.
      */
     public function getDepositAssets(): ?array
     {
@@ -53,7 +79,7 @@ class SEP24InfoResponse extends Response
     }
 
     /**
-     * @param array|null $depositAssets
+     * @param array<array-key, SEP24DepositAsset>|null $depositAssets deposit assets of the info response.
      */
     public function setDepositAssets(?array $depositAssets): void
     {
@@ -61,7 +87,7 @@ class SEP24InfoResponse extends Response
     }
 
     /**
-     * @return array|null
+     * @return array<array-key, SEP24WithdrawAsset>|null withdrawal assets of the info response.
      */
     public function getWithdrawAssets(): ?array
     {
@@ -69,7 +95,7 @@ class SEP24InfoResponse extends Response
     }
 
     /**
-     * @param array|null $withdrawAssets
+     * @param array<array-key, SEP24WithdrawAsset>|null $withdrawAssets withdrawal assets of the info response.
      */
     public function setWithdrawAssets(?array $withdrawAssets): void
     {
@@ -77,7 +103,7 @@ class SEP24InfoResponse extends Response
     }
 
     /**
-     * @return FeeEndpointInfo|null
+     * @return FeeEndpointInfo|null Info about the fee endpoint (e.g. if enabled and if it requires sep-10 authentication)
      */
     public function getFeeEndpointInfo(): ?FeeEndpointInfo
     {
@@ -85,7 +111,7 @@ class SEP24InfoResponse extends Response
     }
 
     /**
-     * @param FeeEndpointInfo|null $feeEndpointInfo
+     * @param FeeEndpointInfo|null $feeEndpointInfo Info about the fee endpoint (e.g. if enabled and if it requires sep-10 authentication)
      */
     public function setFeeEndpointInfo(?FeeEndpointInfo $feeEndpointInfo): void
     {
@@ -93,7 +119,8 @@ class SEP24InfoResponse extends Response
     }
 
     /**
-     * @return FeatureFlags|null
+     * @return FeatureFlags|null Info about the additional features the anchor offers.
+     *  E.g. whether the anchor supports creating accounts for users requesting deposits.
      */
     public function getFeatureFlags(): ?FeatureFlags
     {
@@ -101,7 +128,8 @@ class SEP24InfoResponse extends Response
     }
 
     /**
-     * @param FeatureFlags|null $featureFlags
+     * @param FeatureFlags|null $featureFlags Info about the additional features the anchor offers.
+     * E.g. whether the anchor supports creating accounts for users requesting deposits.
      */
     public function setFeatureFlags(?FeatureFlags $featureFlags): void
     {

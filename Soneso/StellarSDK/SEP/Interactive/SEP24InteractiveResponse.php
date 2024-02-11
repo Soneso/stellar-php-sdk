@@ -10,21 +10,38 @@ use Soneso\StellarSDK\Responses\Response;
 
 class SEP24InteractiveResponse extends Response
 {
-    /// Always set to interactive_customer_info_needed.
+    /**
+     * @var string $type Always set to 'interactive_customer_info_needed'.
+     */
     public string $type;
 
-    /// URL hosted by the anchor. The wallet should show this URL to the user as a popup.
+    /**
+     * @var string $url URL hosted by the anchor. The wallet should show this URL to the user as a popup.
+     */
     public string $url;
 
-    /// The anchor's internal ID for this deposit / withdrawal request. The wallet will use this ID to query the /transaction endpoint to check status of the request.
+    /**
+     * @var string $id The anchor's internal ID for this deposit / withdrawal request.
+     * The wallet should use this ID to query the /transaction endpoint to check status of the request.
+     */
     public string $id;
 
+    /**
+     * Loads the needed data from a json array.
+     * @param array<array-key, mixed> $json the data array to read from.
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['type'])) $this->type = $json['type'];
         if (isset($json['url'])) $this->url = $json['url'];
         if (isset($json['id'])) $this->id = $json['id'];
     }
 
+    /**
+     * Constructs a new instance of SEP24InteractiveResponse by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return SEP24InteractiveResponse the object containing the parsed data.
+     */
     public static function fromJson(array $json) : SEP24InteractiveResponse
     {
         $result = new SEP24InteractiveResponse();
@@ -33,7 +50,7 @@ class SEP24InteractiveResponse extends Response
     }
 
     /**
-     * @return string
+     * @return string Always set to 'interactive_customer_info_needed'.
      */
     public function getType(): string
     {
@@ -41,7 +58,7 @@ class SEP24InteractiveResponse extends Response
     }
 
     /**
-     * @param string $type
+     * @param string $type Always set to 'interactive_customer_info_needed'.
      */
     public function setType(string $type): void
     {
@@ -49,7 +66,7 @@ class SEP24InteractiveResponse extends Response
     }
 
     /**
-     * @return string
+     * @return string URL hosted by the anchor. The wallet should show this URL to the user as a popup.
      */
     public function getUrl(): string
     {
@@ -57,7 +74,7 @@ class SEP24InteractiveResponse extends Response
     }
 
     /**
-     * @param string $url
+     * @param string $url URL hosted by the anchor. The wallet should show this URL to the user as a popup.
      */
     public function setUrl(string $url): void
     {
@@ -65,7 +82,8 @@ class SEP24InteractiveResponse extends Response
     }
 
     /**
-     * @return string
+     * @return string The anchor's internal ID for this deposit / withdrawal request.
+     * The wallet should use this ID to query the /transaction endpoint to check status of the request.
      */
     public function getId(): string
     {
@@ -73,7 +91,8 @@ class SEP24InteractiveResponse extends Response
     }
 
     /**
-     * @param string $id
+     * @param string $id The anchor's internal ID for this deposit / withdrawal request.
+     * The wallet should use this ID to query the /transaction endpoint to check status of the request.
      */
     public function setId(string $id): void
     {

@@ -11,36 +11,54 @@ use Soneso\StellarSDK\Responses\Response;
 class Refund extends Response
 {
 
-    /// The total amount refunded to the user, in units of amount_in_asset.
-    /// If a full refund was issued, this amount should match amount_in.
+    /**
+     * @var string  $amountRefunded The total amount refunded to the user, in units of amount_in_asset.
+     *  If a full refund was issued, this amount should match amount_in.
+     */
     public string $amountRefunded;
 
-    /// The total amount charged in fees for processing all refund payments, in units of amount_in_asset.
-    /// The sum of all fee values in the payments object list should equal this value.
+    /**
+     * @var string $amountFee The total amount charged in fees for processing all refund payments, in units of amount_in_asset.
+     * The sum of all fee values in the payments object list should equal this value.
+     */
     public string $amountFee;
 
-    /// A list of objects containing information on the individual payments made back to the user as refunds.
+    /**
+     * @var array<RefundPayment> $payments A list of objects containing information on the individual payments made back to the user as refunds.
+     */
     public array $payments = array();
 
+    /**
+     * Loads the needed data from the given data array.
+     * @param array<array-key, mixed> $json the array containing the data to read from.
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['amount_refunded'])) $this->amountRefunded = $json['amount_refunded'];
         if (isset($json['amount_fee'])) $this->amountFee = $json['amount_fee'];
         if (isset($json['payments'])) {
             foreach ($json['payments'] as $payment) {
-                array_push($this->payments, RefundPayment::fromJson($payment));
+                $this->payments[] = RefundPayment::fromJson($payment);
             }
         }
     }
 
+    /**
+     * Constructs a new instance of Refund by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return Refund the object containing the parsed data.
+     */
     public static function fromJson(array $json) : Refund
     {
         $result = new Refund();
         $result->loadFromJson($json);
+
         return $result;
     }
 
     /**
-     * @return string
+     * @return string The total amount refunded to the user, in units of amount_in_asset.
+     *   If a full refund was issued, this amount should match amount_in.
      */
     public function getAmountRefunded(): string
     {
@@ -48,7 +66,8 @@ class Refund extends Response
     }
 
     /**
-     * @param string $amountRefunded
+     * @param string $amountRefunded The total amount refunded to the user, in units of amount_in_asset.
+     *    If a full refund was issued, this amount should match amount_in.
      */
     public function setAmountRefunded(string $amountRefunded): void
     {
@@ -56,7 +75,8 @@ class Refund extends Response
     }
 
     /**
-     * @return string
+     * @return string The total amount charged in fees for processing all refund payments, in units of amount_in_asset.
+     *  The sum of all fee values in the payments object list should equal this value.
      */
     public function getAmountFee(): string
     {
@@ -64,7 +84,8 @@ class Refund extends Response
     }
 
     /**
-     * @param string $amountFee
+     * @param string $amountFee The total amount charged in fees for processing all refund payments, in units of amount_in_asset.
+     *   The sum of all fee values in the payments object list should equal this value.
      */
     public function setAmountFee(string $amountFee): void
     {
@@ -72,7 +93,7 @@ class Refund extends Response
     }
 
     /**
-     * @return array
+     * @return array<RefundPayment> A list of objects containing information on the individual payments made back to the user as refunds.
      */
     public function getPayments(): array
     {
@@ -80,7 +101,7 @@ class Refund extends Response
     }
 
     /**
-     * @param array $payments
+     * @param array<RefundPayment> $payments A list of objects containing information on the individual payments made back to the user as refunds.
      */
     public function setPayments(array $payments): void
     {

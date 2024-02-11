@@ -15,44 +15,74 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 
 class AnchorTransactionRequestBuilder extends RequestBuilder
 {
+    private string $serviceAddress;
     private string $jwtToken;
 
     /**
-     * @param Client $httpClient
-     * @param string $jwtToken
+     * Constructor.
+     * @param Client $httpClient client to use for the request.
+     * @param string $serviceAddress the server address of the sep-24 service (e.g. from sep-01).
+     * @param string $jwtToken the jwt token obtained by sep-10 authentication.
      */
-    public function __construct(Client $httpClient, string $jwtToken)
+    public function __construct(Client $httpClient, string $serviceAddress, string $jwtToken)
     {
+        $this->serviceAddress = $serviceAddress;
         $this->jwtToken = $jwtToken;
-        parent::__construct($httpClient, "transaction");
+        parent::__construct($httpClient);
     }
 
+    /**
+     * Append query parameters to the anchor transaction request.
+     * @param array<array-key, mixed> $queryParameters the query parameters to use for the get request.
+     * @return $this returns the builder, so that it can be chained.
+     */
     public function forQueryParameters(array $queryParameters) : AnchorTransactionRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
+
         return $this;
     }
 
     /**
-     * @param string $url
-     * @return SEP24TransactionResponse
-     * @throws GuzzleException
+     * Sends the get request for the given url. attaches the jwt token to the request.
+     * @param string $url the url to request from
+     * @return SEP24TransactionResponse the parsed response
+     * @throws GuzzleException if an exception occurs during the request.
      */
-    public function request(string $url) : SEP24TransactionResponse {
-        $headers = array();
-        $headers = array_merge($headers, RequestBuilder::HEADERS);
-        $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
+    private function request(string $url) : SEP24TransactionResponse {
+        /**
+         * @var array<array-key, mixed> $headers
+         */
+        $headers = array_merge(RequestBuilder::HEADERS, ['Authorization' => "Bearer ".$this->jwtToken]);
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
-        return $responseHandler->handleResponse($response, RequestType::SEP24_TRANSACTION, $this->httpClient);
+        $response = $responseHandler->handleResponse($response, RequestType::SEP24_TRANSACTION, $this->httpClient);
+        assert($response instanceof SEP24TransactionResponse);
+
+        return $response;
+    }
+
+
+    /**
+     * Builds the url for the request.
+     * @return string the constructed url.
+     */
+    public function buildUrl() : string {
+        $url = $this->serviceAddress . "/transaction";
+        if (count($this->queryParameters) > 0) {
+            $url .= '?' . http_build_query($this->queryParameters);
+        }
+
+        return $url;
     }
 
     /**
-     * Build and execute request.
-     * @return SEP24TransactionResponse
-     * @throws GuzzleException
+     * Builds and executes the  request.
+     * @return SEP24TransactionResponse the parsed response.
+     * @throws GuzzleException if any request exception occurs.
      */
     public function execute() : SEP24TransactionResponse {
+
         return $this->request($this->buildUrl());
     }
 }

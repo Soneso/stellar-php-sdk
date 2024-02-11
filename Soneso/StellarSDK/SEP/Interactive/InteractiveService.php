@@ -24,30 +24,34 @@ class InteractiveService
     private Client $httpClient;
 
     /**
-     * @param string $serviceAddress
-     * @param Client|null $httpClient
+     * Constructor.
+     * @param string $serviceAddress the server address of the sep-24 service (e.g. from sep-01).
+     * @param Client|null $httpClient optional http client to be used for the requests. If not provided, then uses an own client.
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
         $this->serviceAddress = $serviceAddress;
-        if ($httpClient != null) {
-            $this->httpClient = $httpClient;
-        } else {
+        if (substr($this->serviceAddress, -1) === "/") {
+            $this->serviceAddress = substr($this->serviceAddress, 0, -1);
+        }
+        if ($httpClient === null) {
             $this->httpClient = new Client([
-                'base_uri' => $this->serviceAddress,
                 'exceptions' => false,
             ]);
+        } else {
+            $this->httpClient = $httpClient;
         }
     }
 
     /**
-     * @param string $domain
-     * @param Client|null $httpClient
-     * @return InteractiveService
-     * @throws Exception
+     * Constructs an InteractiveService instance by parsing the server service address from the given domain using sep-01.
+     * @param string $domain the domain to parse the data from. e.g. 'testanchor.stellar.org'.
+     * @param Client|null $httpClient optional http client to be used for the requests. If not provided, then uses an own client.
+     * @return InteractiveService the constructed InteractiveService object.
+     * @throws Exception if the service address could not be loaded from the given domain.
      */
     public static function fromDomain(string $domain, ?Client $httpClient = null) : InteractiveService {
-        $stellarToml = StellarToml::fromDomain($domain);
+        $stellarToml = StellarToml::fromDomain($domain, $httpClient);
         $address = $stellarToml->getGeneralInformation()->transferServerSep24;
         if (!$address) {
             throw new Exception("Transfer server SEP 24 not available for domain " . $domain);
@@ -58,11 +62,11 @@ class InteractiveService
     /**
      * Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
      * @param string|null $lang (optional) Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
-     * @return SEP24InfoResponse response
-     * @throws GuzzleException if en request error occurs.
+     * @return SEP24InfoResponse response the parsed response.
+     * @throws GuzzleException if a request exception occurs.
      */
     public function info(?string $lang = null) : SEP24InfoResponse {
-        $requestBuilder = new InfoRequestBuilder($this->httpClient);
+        $requestBuilder = new InfoRequestBuilder($this->httpClient, $this->serviceAddress, $this->serviceAddress);
         if($lang) {
             $requestBuilder = $requestBuilder->forQueryParameters(["lang" => $lang]);
         }
@@ -74,15 +78,18 @@ class InteractiveService
      * This is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex.
      * If a fee can be fully expressed with the fee_fixed, fee_percent or fee_minimum fields in the /info response,
      * then an anchor will not implement this endpoint.
-     * @param SEP24FeeRequest $request
-     * @return SEP24FeeResponse
+     * @param SEP24FeeRequest $request the request data.
+     * @return SEP24FeeResponse the parsed response.
      * @throws RequestErrorException if the server responds with an error and corresponding error message.
      * @throws SEP24AuthenticationRequiredException if the server responds with an authentication_required error.
      * @throws GuzzleException if another request error occurred.
      */
     public function fee(SEP24FeeRequest $request) : SEP24FeeResponse {
-        $requestBuilder = new FeeRequestBuilder($this->httpClient, $request->jwt);
+        $requestBuilder = new FeeRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
 
+        /**
+         * @var array<array-key, mixed> $queryParameters
+         */
         $queryParameters = ["operation" => $request->operation,
             "asset_code" => $request->assetCode, "amount" => $request->amount];
         if ($request->type != null) {
@@ -90,7 +97,9 @@ class InteractiveService
         }
 
         $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
+
         try {
+
             return $requestBuilder->execute();
         } catch (Exception $ex) {
             if ($ex->getCode() == 403) {
@@ -157,56 +166,60 @@ class InteractiveService
      * all the information needed to initiate a deposit. It also lets the anchor specify additional
      * information that the user must submit interactively via a popup or embedded browser
      * window to be able to deposit.
-     * @param SEP24DepositRequest $request
-     * @return SEP24InteractiveResponse
+     * @param SEP24DepositRequest $request the request data.
+     * @return SEP24InteractiveResponse the parsed response.
      * @throws RequestErrorException if the server responds with an error and corresponding error message.
      * @throws SEP24AuthenticationRequiredException if the server responds with an authentication_required error.
      * @throws GuzzleException if another request error occurred.
      */
     public function deposit(SEP24DepositRequest $request) : SEP24InteractiveResponse {
 
-        $fields = array();
+        /**
+         * @var array<array-key, mixed> $fields
+         */
+        $fields = ["asset_code" => $request->assetCode];
+
+        /**
+         * @var array<array-key, mixed> $files
+         */
         $files = array();
-        $fields += ["asset_code" => $request->assetCode];
 
         if ($request->assetIssuer != null) {
             $fields += ["asset_issuer" => $request->assetIssuer];
         }
-
+        if ($request->sourceAsset != null) {
+            $fields += ["source_asset" => $request->sourceAsset];
+        }
         if ($request->amount != null) {
             $fields += ["amount" => $request->amount];
         }
-
         if ($request->quoteId != null) {
             $fields += ["quote_id" => $request->quoteId];
         }
-
         if ($request->account != null) {
             $fields += ["account" => $request->account];
         }
-
         if ($request->memoType != null) {
             $fields += ["memo_type" => $request->memoType];
         }
         if ($request->memo != null) {
             $fields += ["memo" => $request->memo];
         }
-
         if ($request->walletName != null) {
             $fields += ["wallet_name" => $request->walletName];
         }
         if ($request->walletUrl != null) {
             $fields += ["wallet_url" => $request->walletUrl];
         }
-
         if ($request->lang != null) {
             $fields += ["lang" => $request->lang];
         }
-
         if ($request->claimableBalanceSupported != null) {
             $fields += ["claimable_balance_supported" => $request->claimableBalanceSupported];
         }
-
+        if ($request->customerId != null) {
+            $fields += ["customer_id" => $request->customerId];
+        }
         if ($request->kycFields != null && $request->kycFields->naturalPersonKYCFields != null) {
             $fields += $request->kycFields->naturalPersonKYCFields->fields();
         }
@@ -219,7 +232,6 @@ class InteractiveService
         if ($request->customFields != null) {
             $fields += $request->customFields;
         }
-
         if ($request->kycFields != null && $request->kycFields->naturalPersonKYCFields != null) {
             $files += $request->kycFields->naturalPersonKYCFields->files();
         }
@@ -230,8 +242,17 @@ class InteractiveService
             $files += $request->customFiles;
         }
 
-        $requestBuilder = new PostRequestBuilder($this->httpClient, "transactions/deposit/interactive", $fields, $files, $request->jwt);
+        $requestBuilder = new Sep24PostRequestBuilder(
+            httpClient: $this->httpClient,
+            serviceAddress: $this->serviceAddress,
+            endpoint: "transactions/deposit/interactive",
+            jwtToken: $request->jwt,
+            fields: $fields,
+            files: $files,
+        );
+
         try {
+
             return $requestBuilder->execute();
         } catch (Exception $ex) {
             if ($ex->getCode() == 403) {
@@ -247,63 +268,62 @@ class InteractiveService
      * This operation allows a user to redeem an asset currently on the Stellar network for the real asset (BTC, USD, stock, etc...) via the anchor of the Stellar asset.
      * The withdraw endpoint allows a wallet to get withdrawal information from an anchor, so a user has all the information needed to initiate a withdrawal.
      * It also lets the anchor specify the url for the interactive webapp to continue with the anchor's side of the withdrawal.
-     * @param SEP24WithdrawRequest $request
-     * @return SEP24InteractiveResponse
+     * @param SEP24WithdrawRequest $request the request data
+     * @return SEP24InteractiveResponse the parsed response.
      * @throws RequestErrorException if the server responds with an error and corresponding error message.
      * @throws SEP24AuthenticationRequiredException if the server responds with an authentication_required error.
-     * @throws GuzzleException if another request error occurred.
+     * @throws GuzzleException if another request exception occurred.
      */
     public function withdraw(SEP24WithdrawRequest $request) : SEP24InteractiveResponse {
-        $fields = array();
+        /**
+         * @var array<array-key, mixed> $fields
+         */
+        $fields = ["asset_code" => $request->assetCode];
+
+        /**
+         * @var array<array-key, mixed> $files
+         */
         $files = array();
-        $fields += ["asset_code" => $request->assetCode];
 
         if ($request->destinationAsset != null) {
             $fields += ["destination_asset" => $request->destinationAsset];
         }
-
         if ($request->assetIssuer != null) {
             $fields += ["asset_issuer" => $request->assetIssuer];
         }
-
         if ($request->amount != null) {
             $fields += ["amount" => $request->amount];
         }
-
         if ($request->quoteId != null) {
             $fields += ["quote_id" => $request->quoteId];
         }
-
         if ($request->account != null) {
             $fields += ["account" => $request->account];
         }
-
         if ($request->memoType != null) {
             $fields += ["memo_type" => $request->memoType];
         }
         if ($request->memo != null) {
             $fields += ["memo" => $request->memo];
         }
-
         if ($request->walletName != null) {
             $fields += ["wallet_name" => $request->walletName];
         }
         if ($request->walletUrl != null) {
             $fields += ["wallet_url" => $request->walletUrl];
         }
-
         if ($request->lang != null) {
             $fields += ["lang" => $request->lang];
         }
-
         if ($request->refundMemo != null) {
             $fields += ["refund_memo" => $request->refundMemo];
         }
-
         if ($request->refundMemoType != null) {
             $fields += ["refund_memo_type" => $request->refundMemoType];
         }
-
+        if ($request->customerId != null) {
+            $fields += ["customer_id" => $request->customerId];
+        }
         if ($request->kycFields != null && $request->kycFields->naturalPersonKYCFields != null) {
             $fields += $request->kycFields->naturalPersonKYCFields->fields();
         }
@@ -316,7 +336,6 @@ class InteractiveService
         if ($request->customFields != null) {
             $fields += $request->customFields;
         }
-
         if ($request->kycFields != null && $request->kycFields->naturalPersonKYCFields != null) {
             $files += $request->kycFields->naturalPersonKYCFields->files();
         }
@@ -327,8 +346,17 @@ class InteractiveService
             $files += $request->customFiles;
         }
 
-        $requestBuilder = new PostRequestBuilder($this->httpClient, "transactions/withdraw/interactive", $fields, $files, $request->jwt);
+        $requestBuilder = new Sep24PostRequestBuilder(
+            httpClient: $this->httpClient,
+            serviceAddress: $this->serviceAddress,
+            endpoint: "transactions/withdraw/interactive",
+            jwtToken: $request->jwt,
+            fields: $fields,
+            files: $files,
+        );
+
         try {
+
             return $requestBuilder->execute();
         } catch (Exception $ex) {
             if ($ex->getCode() == 403) {
@@ -345,21 +373,23 @@ class InteractiveService
      * With it, wallets can display the status of deposits and withdrawals while they process and a history of past transactions with the anchor.
      * It's only for transactions that are deposits to or withdrawals from the anchor.
      * It returns a list of transactions from the account encoded in the authenticated JWT.
-     * @param SEP24TransactionsRequest $request
-     * @return SEP24TransactionsResponse
+     * @param SEP24TransactionsRequest $request the request data.
+     * @return SEP24TransactionsResponse the parsed response.
      * @throws RequestErrorException if the server responds with an error and corresponding error message.
      * @throws SEP24AuthenticationRequiredException if the server responds with an authentication_required error.
      * @throws GuzzleException if another request error occurred.
      */
     public function transactions(SEP24TransactionsRequest $request) : SEP24TransactionsResponse {
-        $requestBuilder = new AnchorTransactionsRequestBuilder($this->httpClient, $request->jwt);
-        $queryParameters = array();
-        $queryParameters += ["asset_code" => $request->assetCode];
+        $requestBuilder = new AnchorTransactionsRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
+
+        /**
+         * @var array<array-key, mixed> $queryParameters
+         */
+        $queryParameters = ["asset_code" => $request->assetCode];
 
         if ($request->noOlderThan) {
             $queryParameters += ["no_older_than" => $request->noOlderThan->format(DateTimeInterface::ATOM)];
         }
-
         if ($request->limit) {
             $queryParameters += ["limit" => $request->limit];
         }
@@ -378,6 +408,7 @@ class InteractiveService
 
         $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
         try {
+
             return $requestBuilder->execute();
         } catch (Exception $ex) {
             if ($ex->getCode() == 403) {
@@ -395,15 +426,19 @@ class InteractiveService
      * Anchors must ensure that the SEP-10 JWT included in the request contains the Stellar account
      * and optional memo value used when making the original deposit or withdraw request
      * that resulted in the transaction requested using this endpoint.
-     * @param SEP24TransactionRequest $request
-     * @return SEP24TransactionResponse
+     * @param SEP24TransactionRequest $request the request data.
+     * @return SEP24TransactionResponse the parsed response.
      * @throws RequestErrorException if the server responds with an error and corresponding error message.
      * @throws SEP24AuthenticationRequiredException if the server responds with an authentication_required error.
      * @throws SEP24TransactionNotFoundException if the anchor could not find the transaction.
      * @throws GuzzleException if another request error occurred.
      */
     public function transaction(SEP24TransactionRequest $request) : SEP24TransactionResponse {
-        $requestBuilder = new AnchorTransactionRequestBuilder($this->httpClient, $request->jwt);
+        $requestBuilder = new AnchorTransactionRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
+
+        /**
+         * @var array<array-key, mixed> $queryParameters
+         */
         $queryParameters = array();
 
         if ($request->id) {
@@ -424,6 +459,7 @@ class InteractiveService
 
         $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
         try {
+
             return $requestBuilder->execute();
         } catch (Exception $ex) {
             if ($ex->getCode() == 403) {

@@ -10,78 +10,130 @@ use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
 
 class SEP24WithdrawRequest
 {
-    /// jwt token previously received from the anchor via the SEP-10 authentication flow
+    /**
+     * @var string $jwt jwt token previously received from the anchor via the SEP-10 authentication flow
+     */
     public string $jwt;
 
-    /// Code of the asset the user wants to withdraw. The value passed must match one of the codes listed in the /info response's withdraw object.
-    /// 'native' is a special asset_code that represents the native XLM token.
+    /**
+     * @var string $assetCode Code of the asset the user wants to withdraw. The value passed must match one of the codes listed in the /info response's withdraw object.
+     * 'native' is a special asset_code that represents the native XLM token.
+     */
     public string $assetCode;
 
 
-    /// (optional) The issuer of the stellar asset the user wants to withdraw with the anchor.
-    /// If asset_issuer is not provided, the anchor should use the asset issued by themselves as described in their TOML file.
-    /// If 'native' is specified as the asset_code, asset_issuer must be not be set.
+    /**
+     * @var string|null $assetIssuer (optional) The issuer of the stellar asset the user wants to withdraw with the anchor.
+     * If asset_issuer is not provided, the anchor should use the asset issued by themselves as described in their TOML file.
+     * If 'native' is specified as the asset_code, asset_issuer must be not be set.
+     */
     public ?string $assetIssuer = null;
 
-    /// (optional) string in Asset Identification Format - The asset user wants to receive. It's an off-chain or fiat asset.
-    /// If this is not provided, it will be collected in the interactive flow.
-    /// When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
+    /**
+     * @var string|null $destinationAsset (optional) string in Asset Identification Format - The asset user wants to receive.
+     * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     * It's an off-chain or fiat asset.
+     * If this is not provided, it will be collected in the interactive flow.
+     * When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
+     */
     public ?string $destinationAsset = null;
 
-    /// (optional) Amount of asset requested to withdraw. If this is not provided it will be collected in the interactive flow.
-    public ?string $amount = null;
+    /**
+     * @var float|null $amount (optional) Amount of asset requested to withdraw. If this is not provided it will be collected in the interactive flow.
+     */
+    public ?float $amount = null;
 
-    /// (optional) The id returned from a SEP-38 POST /quote response.
+    /**
+     * @var string|null $quoteId (optional) The id returned from a SEP-38 POST /quote response.
+     */
     public ?string $quoteId = null;
 
-    /// (optional) The Stellar (G...) or muxed account (M...) the client wants to use as the destination of the payment sent by the anchor.
-    /// Defaults to the account authenticated via SEP-10 if not specified.
+    /**
+     * @var string|null $account The Stellar or muxed account the client will use as the source of the withdrawal payment to the anchor.
+     * Defaults to the account authenticated via SEP-10 if not specified.
+     */
     public ?string $account = null;
 
-    /// (deprecated, optional) This field was originally intended to differentiate users of the same Stellar account.
-    /// However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
-    /// Anchors should still support this parameter to maintain support for outdated clients.
-    /// See the Shared Account Authentication section for more information.
-    /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
+    /**
+     * @var string|null $memo (deprecated, optional) This field was originally intended to differentiate users of the same Stellar account.
+     * However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
+     * Anchors should still support this parameter to maintain support for outdated clients.
+     * See the Shared Account Authentication section for more information.
+     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
+     */
     public ?string $memo = null;
 
-    /// (deprecated, optional) Type of memo. One of text, id or hash. Deprecated because memos used to identify users of the same Stellar account should always be of type of id.
+    /**
+     * @var string|null $memoType (deprecated, optional) Type of memo. One of text, id or hash.
+     * Deprecated because memos used to identify users of the same Stellar account should always be of type of id.
+     */
     public ?string $memoType = null;
 
-    /// (optional) In communications / pages about the withdrawal, anchor should display the wallet name to the user to explain where funds are coming from.
+    /**
+     * @var string|null $walletName (deprecated,optional) In communications / pages about the withdrawal,
+     * anchor should display the wallet name to the user to explain where funds are coming from.
+     * However, anchors should use client_domain (for non-custodial) and sub value
+     * of JWT (for custodial) to determine wallet information.
+     */
     public ?string $walletName = null;
 
-    /// (optional) Anchor can show this to the user when referencing the wallet involved in the withdrawal (ex. in the anchor's transaction history).
+    /**
+     * @var string|null $walletUrl (deprecated,optional) Anchor can show this to the user when referencing
+     * the wallet involved in the withdrawal (ex. in the anchor's transaction history).
+     * However, anchors should use client_domain (for non-custodial) and sub value
+     * of JWT (for custodial) to determine wallet information.
+     */
     public ?string $walletUrl = null;
 
-    /// (optional) Defaults to en if not specified or if the specified language is not supported.
-    /// Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
-    /// error fields in the response, as well as the interactive flow UI and any other user-facing
-    /// strings returned for this transaction should be in this language.
+    /**
+     * @var string|null $lang (optional) Defaults to en if not specified or if the specified language is not supported.
+     * Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+     * error fields in the response, as well as the interactive flow UI and any other user-facing
+     * strings returned for this transaction should be in this language.
+     */
     public ?string $lang = null;
 
-    /// (optional) The memo the anchor must use when sending refund payments back to the user.
-    /// If not specified, the anchor should use the same memo used by the user to send the original payment.
-    /// If specified, refund_memo_type must also be specified.
+    /**
+     * @var string|null $refundMemo (optional) The memo the anchor must use when sending refund payments back to the user.
+     * If not specified, the anchor should use the same memo used by the user to send the original payment.
+     * If specified, refund_memo_type must also be specified.
+     */
     public ?string $refundMemo = null;
 
-    /// (optional) The type of the refund_memo. Can be id, text, or hash.
-    /// See the memos documentation for more information.
-    /// If specified, refund_memo must also be specified.
-    /// https://developers.stellar.org/docs/encyclopedia/memos
+    /**
+     * @var string|null $refundMemoType (optional) The type of the refund_memo. Can be id, text, or hash.
+     * See the memos documentation for more information.
+     * If specified, refund_memo must also be specified.
+     * https://developers.stellar.org/docs/encyclopedia/memos
+     */
     public ?string $refundMemoType = null;
 
-    /// Additionally, any SEP-9 parameters may be passed as well to make the onboarding experience simpler.
+    /**
+     * @var string|null $customerId (optional) id of an off-chain account (managed by the anchor) associated
+     * with this user's Stellar account (identified by the JWT's sub field).
+     * If the anchor supports [SEP-12], the customer_id field should match the [SEP-12] customer's id.
+     * customer_id should be passed only when the off-chain id is known to the client,
+     * but the relationship between this id and the user's Stellar account is not known to the Anchor.
+     */
+    public ?string $customerId = null;
+
+    /**
+     * @var StandardKYCFields|null $kycFields Additionally, any SEP-9 parameters may be passed as well to make the onboarding experience simpler.
+     */
     public ?StandardKYCFields $kycFields = null;
 
-    /// Custom SEP-9 fields that you can use for transmission (fieldname,value)
+    /**
+     * @var array<array-key, mixed>|null $customFields Custom SEP-9 fields that you can use for transmission.
+     */
     public ?array $customFields = null;
 
-    /// Custom SEP-9 files that you can use for transmission (fieldname, value)
+    /**
+     * @var array<array-key, string>|null $customFiles Custom SEP-9 files that you can use for transmission (["fieldname" => "binary string value", ...])
+     */
     public ?array $customFiles = null;
 
     /**
-     * @return string
+     * @return string jwt token previously received from the anchor via the SEP-10 authentication flow
      */
     public function getJwt(): string
     {
@@ -89,7 +141,7 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string $jwt
+     * @param string $jwt jwt token previously received from the anchor via the SEP-10 authentication flow
      */
     public function setJwt(string $jwt): void
     {
@@ -97,7 +149,8 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string
+     * @return string Code of the asset the user wants to withdraw. The value passed must match one of the codes listed in the /info response's withdraw object.
+     *  'native' is a special asset_code that represents the native XLM token.
      */
     public function getAssetCode(): string
     {
@@ -105,7 +158,8 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string $assetCode
+     * @param string $assetCode Code of the asset the user wants to withdraw. The value passed must match one of the codes listed in the /info response's withdraw object.
+     *  'native' is a special asset_code that represents the native XLM token.
      */
     public function setAssetCode(string $assetCode): void
     {
@@ -113,7 +167,9 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) The issuer of the stellar asset the user wants to withdraw with the anchor.
+     * If asset_issuer is not provided, the anchor should use the asset issued by themselves as described in their TOML file.
+     * If 'native' is specified as the asset_code, asset_issuer must be not be set.
      */
     public function getAssetIssuer(): ?string
     {
@@ -121,7 +177,9 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $assetIssuer
+     * @param string|null $assetIssuer (optional) The issuer of the stellar asset the user wants to withdraw with the anchor.
+     *  If asset_issuer is not provided, the anchor should use the asset issued by themselves as described in their TOML file.
+     *  If 'native' is specified as the asset_code, asset_issuer must be not be set.
      */
     public function setAssetIssuer(?string $assetIssuer): void
     {
@@ -129,7 +187,11 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) string in Asset Identification Format - The asset user wants to receive.
+     *  See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     *  It's an off-chain or fiat asset.
+     *  If this is not provided, it will be collected in the interactive flow.
+     *  When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
      */
     public function getDestinationAsset(): ?string
     {
@@ -137,7 +199,11 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $destinationAsset
+     * @param string|null $destinationAsset (optional) string in Asset Identification Format - The asset user wants to receive.
+     *  See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     *  It's an off-chain or fiat asset.
+     *  If this is not provided, it will be collected in the interactive flow.
+     *  When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
      */
     public function setDestinationAsset(?string $destinationAsset): void
     {
@@ -145,23 +211,23 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return float|null (optional) Amount of asset requested to withdraw. If this is not provided it will be collected in the interactive flow.
      */
-    public function getAmount(): ?string
+    public function getAmount(): ?float
     {
         return $this->amount;
     }
 
     /**
-     * @param string|null $amount
+     * @param float|null $amount (optional) Amount of asset requested to withdraw. If this is not provided it will be collected in the interactive flow.
      */
-    public function setAmount(?string $amount): void
+    public function setAmount(?float $amount): void
     {
         $this->amount = $amount;
     }
 
     /**
-     * @return string|null
+     * @return string|null The id returned from a SEP-38 POST /quote response.
      */
     public function getQuoteId(): ?string
     {
@@ -169,7 +235,7 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $quoteId
+     * @param string|null $quoteId The id returned from a SEP-38 POST /quote response.
      */
     public function setQuoteId(?string $quoteId): void
     {
@@ -177,7 +243,8 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null The Stellar or muxed account the client will use as the source of the withdrawal payment to the anchor.
+     *  Defaults to the account authenticated via SEP-10 if not specified.
      */
     public function getAccount(): ?string
     {
@@ -185,7 +252,8 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $account
+     * @param string|null $account The Stellar or muxed account the client will use as the source of the withdrawal payment to the anchor.
+     *  Defaults to the account authenticated via SEP-10 if not specified.
      */
     public function setAccount(?string $account): void
     {
@@ -193,7 +261,11 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (deprecated, optional) This field was originally intended to differentiate users of the same Stellar account.
+     *  However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
+     *  Anchors should still support this parameter to maintain support for outdated clients.
+     *  See the Shared Account Authentication section for more information.
+     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
      */
     public function getMemo(): ?string
     {
@@ -201,7 +273,11 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $memo
+     * @param string|null $memo (deprecated, optional) This field was originally intended to differentiate users of the same Stellar account.
+     *  However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
+     *  Anchors should still support this parameter to maintain support for outdated clients.
+     *  See the Shared Account Authentication section for more information.
+     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
      */
     public function setMemo(?string $memo): void
     {
@@ -209,7 +285,8 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (deprecated, optional) Type of memo. One of text, id or hash.
+     *  Deprecated because memos used to identify users of the same Stellar account should always be of type of id.
      */
     public function getMemoType(): ?string
     {
@@ -217,7 +294,8 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $memoType
+     * @param string|null $memoType (deprecated, optional) Type of memo. One of text, id or hash.
+     *  Deprecated because memos used to identify users of the same Stellar account should always be of type of id.
      */
     public function setMemoType(?string $memoType): void
     {
@@ -225,7 +303,10 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (deprecated,optional) In communications / pages about the withdrawal,
+     *  anchor should display the wallet name to the user to explain where funds are coming from.
+     *  However, anchors should use client_domain (for non-custodial) and sub value
+     *  of JWT (for custodial) to determine wallet information.
      */
     public function getWalletName(): ?string
     {
@@ -233,7 +314,10 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $walletName
+     * @param string|null $walletName (deprecated,optional) In communications / pages about the withdrawal,
+     *  anchor should display the wallet name to the user to explain where funds are coming from.
+     *  However, anchors should use client_domain (for non-custodial) and sub value
+     *  of JWT (for custodial) to determine wallet information.
      */
     public function setWalletName(?string $walletName): void
     {
@@ -241,7 +325,10 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (deprecated,optional) Anchor can show this to the user when referencing
+     *  the wallet involved in the withdrawal (ex. in the anchor's transaction history).
+     *  However, anchors should use client_domain (for non-custodial) and sub value
+     *  of JWT (for custodial) to determine wallet information.
      */
     public function getWalletUrl(): ?string
     {
@@ -249,7 +336,10 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $walletUrl
+     * @param string|null $walletUrl (deprecated,optional) Anchor can show this to the user when referencing
+     *  the wallet involved in the withdrawal (ex. in the anchor's transaction history).
+     *  However, anchors should use client_domain (for non-custodial) and sub value
+     *  of JWT (for custodial) to determine wallet information.
      */
     public function setWalletUrl(?string $walletUrl): void
     {
@@ -257,7 +347,10 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) Defaults to en if not specified or if the specified language is not supported.
+     *  Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+     *  error fields in the response, as well as the interactive flow UI and any other user-facing
+     *  strings returned for this transaction should be in this language.
      */
     public function getLang(): ?string
     {
@@ -265,7 +358,10 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $lang
+     * @param string|null $lang (optional) Defaults to en if not specified or if the specified language is not supported.
+     *  Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
+     *  error fields in the response, as well as the interactive flow UI and any other user-facing
+     *  strings returned for this transaction should be in this language.
      */
     public function setLang(?string $lang): void
     {
@@ -273,7 +369,9 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) The memo the anchor must use when sending refund payments back to the user.
+     *  If not specified, the anchor should use the same memo used by the user to send the original payment.
+     *  If specified, refund_memo_type must also be specified.
      */
     public function getRefundMemo(): ?string
     {
@@ -281,7 +379,9 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $refundMemo
+     * @param string|null $refundMemo (optional) The memo the anchor must use when sending refund payments back to the user.
+     *  If not specified, the anchor should use the same memo used by the user to send the original payment.
+     *  If specified, refund_memo_type must also be specified.
      */
     public function setRefundMemo(?string $refundMemo): void
     {
@@ -289,7 +389,10 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) The type of the refund_memo. Can be id, text, or hash.
+     *  See the memos documentation for more information.
+     *  If specified, refund_memo must also be specified.
+     *  https://developers.stellar.org/docs/encyclopedia/memos
      */
     public function getRefundMemoType(): ?string
     {
@@ -297,7 +400,10 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param string|null $refundMemoType
+     * @param string|null $refundMemoType (optional) The type of the refund_memo. Can be id, text, or hash.
+     *   See the memos documentation for more information.
+     *   If specified, refund_memo must also be specified.
+     *   https://developers.stellar.org/docs/encyclopedia/memos
      */
     public function setRefundMemoType(?string $refundMemoType): void
     {
@@ -305,7 +411,32 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return StandardKYCFields|null
+     * @return string|null (optional) id of an off-chain account (managed by the anchor) associated
+     *  with this user's Stellar account (identified by the JWT's sub field).
+     *  If the anchor supports [SEP-12], the customer_id field should match the [SEP-12] customer's id.
+     *  customer_id should be passed only when the off-chain id is known to the client,
+     *  but the relationship between this id and the user's Stellar account is not known to the Anchor.
+     */
+    public function getCustomerId(): ?string
+    {
+        return $this->customerId;
+    }
+
+    /**
+     * @param string|null $customerId (optional) id of an off-chain account (managed by the anchor) associated
+     *  with this user's Stellar account (identified by the JWT's sub field).
+     *  If the anchor supports [SEP-12], the customer_id field should match the [SEP-12] customer's id.
+     *  customer_id should be passed only when the off-chain id is known to the client,
+     *  but the relationship between this id and the user's Stellar account is not known to the Anchor.
+     * @return void
+     */
+    public function setCustomerId(?string $customerId): void
+    {
+        $this->customerId = $customerId;
+    }
+
+    /**
+     * @return StandardKYCFields|null Additionally, any SEP-9 parameters may be passed as well to make the onboarding experience simpler.
      */
     public function getKycFields(): ?StandardKYCFields
     {
@@ -313,7 +444,7 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param StandardKYCFields|null $kycFields
+     * @param StandardKYCFields|null $kycFields Additionally, any SEP-9 parameters may be passed as well to make the onboarding experience simpler.
      */
     public function setKycFields(?StandardKYCFields $kycFields): void
     {
@@ -321,7 +452,7 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return array|null
+     * @return array<array-key, mixed>|null Custom SEP-9 fields that you can use for transmission.
      */
     public function getCustomFields(): ?array
     {
@@ -329,7 +460,7 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param array|null $customFields
+     * @param array<array-key, mixed>|null $customFields Custom SEP-9 fields that you can use for transmission.
      */
     public function setCustomFields(?array $customFields): void
     {
@@ -337,7 +468,7 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @return array|null
+     * @return array<array-key, string>|null Custom SEP-9 files that you can use for transmission (["fieldname" => "binary string value", ...])
      */
     public function getCustomFiles(): ?array
     {
@@ -345,7 +476,7 @@ class SEP24WithdrawRequest
     }
 
     /**
-     * @param array|null $customFiles
+     * @param array<array-key, string>|null $customFiles Custom SEP-9 files that you can use for transmission (["fieldname" => "binary string value", ...])
      */
     public function setCustomFiles(?array $customFiles): void
     {
