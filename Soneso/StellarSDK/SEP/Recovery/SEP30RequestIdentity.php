@@ -9,11 +9,14 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 class SEP30RequestIdentity
 {
     public string $role;
-    public array $authMethods; // SEP30AuthMethod
+    /**
+     * @var array<SEP30AuthMethod> $authMethods
+     */
+    public array $authMethods;
 
     /**
      * @param string $role
-     * @param array $authMethods
+     * @param array<SEP30AuthMethod> $authMethods
      */
     public function __construct(string $role, array $authMethods)
     {
@@ -27,7 +30,7 @@ class SEP30RequestIdentity
 
         foreach ($this->authMethods as $authMethod) {
             if ($authMethod instanceof SEP30AuthMethod) {
-                array_push($authMethodsJson, $authMethod->toJson());
+                $authMethodsJson[] = $authMethod->toJson();
             }
         }
         return array(
@@ -53,7 +56,7 @@ class SEP30RequestIdentity
     }
 
     /**
-     * @return array of SEP30AuthMethod
+     * @return array<SEP30AuthMethod>
      */
     public function getAuthMethods(): array
     {
@@ -61,7 +64,7 @@ class SEP30RequestIdentity
     }
 
     /**
-     * @param array $authMethods
+     * @param array<SEP30AuthMethod> $authMethods
      */
     public function setAuthMethods(array $authMethods): void
     {

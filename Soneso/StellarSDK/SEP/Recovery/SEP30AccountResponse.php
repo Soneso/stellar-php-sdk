@@ -9,13 +9,20 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 class SEP30AccountResponse
 {
     public string $address;
-    public array $identities; // [SEP30ResponseIdentity]
-    public array $signers; // [SEP30ResponseSigner]
+    /**
+     * @var array<SEP30ResponseIdentity> $identities
+     */
+    public array $identities;
+
+    /**
+     * @var array<SEP30ResponseSigner> $signers
+     */
+    public array $signers;
 
     /**
      * @param string $address
-     * @param array $identities
-     * @param array $signers
+     * @param array<SEP30ResponseIdentity> $identities
+     * @param array<SEP30ResponseSigner> $signers
      */
     public function __construct(string $address, array $identities, array $signers)
     {
@@ -30,12 +37,12 @@ class SEP30AccountResponse
         $address = $json['address'];
         $identities = array();
         foreach ($json['identities'] as $identity) {
-            array_push($identities, SEP30ResponseIdentity::fromJson($identity));
+            $identities[] = SEP30ResponseIdentity::fromJson($identity);
         }
 
         $signers = array();
         foreach ($json['signers'] as $signer) {
-            array_push($signers, SEP30ResponseSigner::fromJson($signer));
+            $signers[] = SEP30ResponseSigner::fromJson($signer);
         }
 
         return new SEP30AccountResponse($address, $identities, $signers);
@@ -58,7 +65,7 @@ class SEP30AccountResponse
     }
 
     /**
-     * @return array of SEP30ResponseIdentity
+     * @return array<SEP30ResponseIdentity>
      */
     public function getIdentities(): array
     {
@@ -66,7 +73,7 @@ class SEP30AccountResponse
     }
 
     /**
-     * @param array $identities of SEP30ResponseIdentity
+     * @param array<SEP30ResponseIdentity> $identities
      */
     public function setIdentities(array $identities): void
     {
@@ -74,7 +81,7 @@ class SEP30AccountResponse
     }
 
     /**
-     * @return array of SEP30ResponseSigner
+     * @return array<SEP30ResponseSigner>
      */
     public function getSigners(): array
     {
@@ -82,7 +89,7 @@ class SEP30AccountResponse
     }
 
     /**
-     * @param array $signers of SEP30ResponseSigner
+     * @param array<SEP30ResponseSigner> $signers
      */
     public function setSigners(array $signers): void
     {

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-// Copyright 2022 The Stellar PHP SDK Authors. All rights reserved.
+// Copyright 2024 The Stellar PHP SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 
 /**
  * Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
- * See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md" target="_blank">Account Recovery: multi-party recovery of Stellar accounts.</a>
+ * See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md" target="_blank">Account Recovery: multi-party recovery of Stellar accounts.</a>
  */
 class RecoveryService
 {
@@ -62,20 +62,20 @@ class RecoveryService
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
         $jsonData = @json_decode($content, true);
-        if (200 == $statusCode) {
+        if (200 === $statusCode) {
             return SEP30AccountResponse::fromJson($jsonData);
         } else {
             $errorMsg = $content;
             if (null !== $jsonData && isset($jsonData['error'])) {
                 $errorMsg = $jsonData['error'];
             }
-            if (400 == $statusCode) {
+            if (400 === $statusCode) {
                 throw new SEP30BadRequestResponseException($errorMsg, $statusCode);
-            } else if (401 == $statusCode) {
+            } else if (401 === $statusCode) {
                 throw new SEP30UnauthorizedResponseException($errorMsg, $statusCode);
-            } else if (404 == $statusCode) {
+            } else if (404 === $statusCode) {
                 throw new SEP30NotFoundResponseException($errorMsg, $statusCode);
-            } else if (409 == $statusCode) {
+            } else if (409 === $statusCode) {
                 throw new SEP30ConflictResponseException($errorMsg, $statusCode);
             } else {
                 throw new SEP30UnknownResponseException($errorMsg, $statusCode);
@@ -109,20 +109,20 @@ class RecoveryService
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
         $jsonData = @json_decode($content, true);
-        if (200 == $statusCode) {
+        if (200 === $statusCode) {
             return SEP30AccountResponse::fromJson($jsonData);
         } else {
             $errorMsg = $content;
             if (null !== $jsonData && isset($jsonData['error'])) {
                 $errorMsg = $jsonData['error'];
             }
-            if (400 == $statusCode) {
+            if (400 === $statusCode) {
                 throw new SEP30BadRequestResponseException($errorMsg, $statusCode);
-            } else if (401 == $statusCode) {
+            } else if (401 === $statusCode) {
                 throw new SEP30UnauthorizedResponseException($errorMsg, $statusCode);
-            } else if (404 == $statusCode) {
+            } else if (404 === $statusCode) {
                 throw new SEP30NotFoundResponseException($errorMsg, $statusCode);
-            } else if (409 == $statusCode) {
+            } else if (409 === $statusCode) {
                 throw new SEP30ConflictResponseException($errorMsg, $statusCode);
             } else {
                 throw new SEP30UnknownResponseException($errorMsg, $statusCode);
@@ -156,20 +156,20 @@ class RecoveryService
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
         $jsonData = @json_decode($content, true);
-        if (200 == $statusCode) {
+        if (200 === $statusCode) {
             return SEP30SignatureResponse::fromJson($jsonData);
         } else {
             $errorMsg = $content;
             if (null !== $jsonData && isset($jsonData['error'])) {
                 $errorMsg = $jsonData['error'];
             }
-            if (400 == $statusCode) {
+            if (400 === $statusCode) {
                 throw new SEP30BadRequestResponseException($errorMsg, $statusCode);
-            } else if (401 == $statusCode) {
+            } else if (401 === $statusCode) {
                 throw new SEP30UnauthorizedResponseException($errorMsg, $statusCode);
-            } else if (404 == $statusCode) {
+            } else if (404 === $statusCode) {
                 throw new SEP30NotFoundResponseException($errorMsg, $statusCode);
-            } else if (409 == $statusCode) {
+            } else if (409 === $statusCode) {
                 throw new SEP30ConflictResponseException($errorMsg, $statusCode);
             } else {
                 throw new SEP30UnknownResponseException($errorMsg, $statusCode);
@@ -200,20 +200,20 @@ class RecoveryService
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
         $jsonData = @json_decode($content, true);
-        if (200 == $statusCode) {
+        if (200 === $statusCode) {
             return SEP30AccountResponse::fromJson($jsonData);
         } else {
             $errorMsg = $content;
             if (null !== $jsonData && isset($jsonData['error'])) {
                 $errorMsg = $jsonData['error'];
             }
-            if (400 == $statusCode) {
+            if (400 === $statusCode) {
                 throw new SEP30BadRequestResponseException($errorMsg, $statusCode);
-            } else if (401 == $statusCode) {
+            } else if (401 === $statusCode) {
                 throw new SEP30UnauthorizedResponseException($errorMsg, $statusCode);
-            } else if (404 == $statusCode) {
+            } else if (404 === $statusCode) {
                 throw new SEP30NotFoundResponseException($errorMsg, $statusCode);
-            } else if (409 == $statusCode) {
+            } else if (409 === $statusCode) {
                 throw new SEP30ConflictResponseException($errorMsg, $statusCode);
             } else {
                 throw new SEP30UnknownResponseException($errorMsg, $statusCode);
@@ -244,20 +244,20 @@ class RecoveryService
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
         $jsonData = @json_decode($content, true);
-        if (200 == $statusCode) {
+        if (200 === $statusCode) {
             return SEP30AccountResponse::fromJson($jsonData);
         } else {
             $errorMsg = $content;
             if (null !== $jsonData && isset($jsonData['error'])) {
                 $errorMsg = $jsonData['error'];
             }
-            if (400 == $statusCode) {
+            if (400 === $statusCode) {
                 throw new SEP30BadRequestResponseException($errorMsg, $statusCode);
-            } else if (401 == $statusCode) {
+            } else if (401 === $statusCode) {
                 throw new SEP30UnauthorizedResponseException($errorMsg, $statusCode);
-            } else if (404 == $statusCode) {
+            } else if (404 === $statusCode) {
                 throw new SEP30NotFoundResponseException($errorMsg, $statusCode);
-            } else if (409 == $statusCode) {
+            } else if (409 === $statusCode) {
                 throw new SEP30ConflictResponseException($errorMsg, $statusCode);
             } else {
                 throw new SEP30UnknownResponseException($errorMsg, $statusCode);
@@ -291,20 +291,20 @@ class RecoveryService
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
         $jsonData = @json_decode($content, true);
-        if (200 == $statusCode) {
+        if (200 === $statusCode) {
             return SEP30AccountsResponse::fromJson($jsonData);
         } else {
             $errorMsg = $content;
             if (null !== $jsonData && isset($jsonData['error'])) {
                 $errorMsg = $jsonData['error'];
             }
-            if (400 == $statusCode) {
+            if (400 === $statusCode) {
                 throw new SEP30BadRequestResponseException($errorMsg, $statusCode);
-            } else if (401 == $statusCode) {
+            } else if (401 === $statusCode) {
                 throw new SEP30UnauthorizedResponseException($errorMsg, $statusCode);
-            } else if (404 == $statusCode) {
+            } else if (404 === $statusCode) {
                 throw new SEP30NotFoundResponseException($errorMsg, $statusCode);
-            } else if (409 == $statusCode) {
+            } else if (409 === $statusCode) {
                 throw new SEP30ConflictResponseException($errorMsg, $statusCode);
             } else {
                 throw new SEP30UnknownResponseException($errorMsg, $statusCode);
@@ -315,11 +315,11 @@ class RecoveryService
     private function buildHeaders(string $jwt) : array {
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
-        $headers = array_merge($headers, ['Authorization' => "Bearer ". $jwt]);
-        return $headers;
+        return array_merge($headers, ['Authorization' => "Bearer ". $jwt]);
     }
 
-    private function buildServiceUrl(string $segment) {
+    private function buildServiceUrl(string $segment): string
+    {
 
         if (str_ends_with($this->serviceAddress, "/")) {
             return $this->serviceAddress . $segment;

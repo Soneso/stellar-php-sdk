@@ -8,10 +8,13 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 
 class SEP30Request
 {
-     public array $identities; //SEP30RequestIdentity
+    /**
+     * @var array<SEP30RequestIdentity> $identities
+     */
+     public array $identities;
 
     /**
-     * @param array $identities of type SEP30RequestIdentity
+     * @param array<SEP30RequestIdentity> $identities of type SEP30RequestIdentity
      */
     public function __construct(array $identities)
     {
@@ -33,7 +36,7 @@ class SEP30Request
     }
 
     /**
-     * @return array of SEP30RequestIdentity
+     * @return array<SEP30RequestIdentity> of SEP30RequestIdentity
      */
     public function getIdentities(): array
     {
@@ -41,7 +44,7 @@ class SEP30Request
     }
 
     /**
-     * @param array $identities of SEP30RequestIdentity
+     * @param array<SEP30RequestIdentity> $identities of SEP30RequestIdentity
      */
     public function setIdentities(array $identities): void
     {

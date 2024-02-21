@@ -8,10 +8,13 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 
 class SEP30AccountsResponse
 {
-    public array $accounts; // [SEP30AccountResponse]
+    /**
+     * @var array<SEP30AccountResponse> $accounts
+     */
+    public array $accounts;
 
     /**
-     * @param array $accounts
+     * @param array<SEP30AccountResponse> $accounts
      */
     public function __construct(array $accounts)
     {
@@ -23,14 +26,14 @@ class SEP30AccountsResponse
 
         $accounts = array();
         foreach ($json['accounts'] as $account) {
-            array_push($accounts, SEP30AccountResponse::fromJson($account));
+            $accounts[] = SEP30AccountResponse::fromJson($account);
         }
 
         return new SEP30AccountsResponse($accounts);
     }
 
     /**
-     * @return array of SEP30AccountResponse
+     * @return array<SEP30AccountResponse>
      */
     public function getAccounts(): array
     {
@@ -38,7 +41,7 @@ class SEP30AccountsResponse
     }
 
     /**
-     * @param array $accounts of SEP30AccountResponse
+     * @param array<SEP30AccountResponse> $accounts
      */
     public function setAccounts(array $accounts): void
     {
