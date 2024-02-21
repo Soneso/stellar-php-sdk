@@ -10,7 +10,9 @@ use Soneso\StellarSDK\Responses\Response;
 
 class PutCustomerInfoResponse extends Response
 {
-    /// An identifier for the updated or created customer.
+    /**
+     * @var string|null $id An identifier for the updated or created customer.
+     */
     private ?string $id = null;
 
     /**

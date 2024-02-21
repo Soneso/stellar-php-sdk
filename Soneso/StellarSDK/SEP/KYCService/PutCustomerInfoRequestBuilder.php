@@ -15,14 +15,21 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 class PutCustomerInfoRequestBuilder extends RequestBuilder {
     private string $serviceAddress;
     private ?string $jwtToken = null;
+    /**
+     * @var array<array-key, mixed>|null $fields
+     */
     private ?array $fields = null;
+
+    /**
+     * @var array<array-key, string>|null $files
+     */
     private ?array $files = null;
 
     /**
      * @param Client $httpClient
      * @param string $serviceAddress
-     * @param array|null $fields
-     * @param array|null $files
+     * @param array<array-key, mixed>|null $fields
+     * @param array<array-key, string>|null $files
      * @param string|null $jwtToken
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?array $fields = null, ?array $files = null, ?string $jwtToken = null)

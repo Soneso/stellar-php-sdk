@@ -10,19 +10,36 @@ use Soneso\StellarSDK\Responses\Response;
 
 class GetCustomerInfoProvidedField extends Response
 {
-    /// The data type of the field value. Can be "string", "binary", "number", or "date".
-    private string $type;
-    /// A human-readable description of this field, especially important if this is not a SEP-9 field.
-    private ?string $description = null;
-    /// (optional) An array of valid values for this field.
-    private ?array $choices = null;
-    /// (optional) A boolean whether this field is required to proceed or not. Defaults to false.
-    private bool $optional  = false;
-    /// (optional) One of the values described here: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#field-statuses
-    /// If the server does not wish to expose which field(s) were accepted or rejected, this property will be omitted.
-    private ?string $status = null;
-    /// (optional) The human readable description of why the field is REJECTED.
-    private ?string $error = null;
+    /**
+     * @var string $type The data type of the field value. Can be "string", "binary", "number", or "date".
+     */
+    public string $type;
+
+    /**
+     * @var string|null $description A human-readable description of this field, especially important if this is not a SEP-9 field.
+     */
+    public ?string $description = null;
+
+    /**
+     * @var array<string>|null $choices An array of valid values for this field.
+     */
+    public ?array $choices = null;
+
+    /**
+     * @var bool $optional A boolean whether this field is required to proceed or not. Defaults to false.
+     */
+    public bool $optional  = false;
+
+    /**
+     * @var string|null $status One of the values described here: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#field-statuses
+     * If the server does not wish to expose which field(s) were accepted or rejected, this property will be omitted.
+     */
+    public ?string $status = null;
+
+    /**
+     * @var string|null $error The human-readable description of why the field is REJECTED.
+     */
+    public ?string $error = null;
 
     /**
      * @return string
@@ -41,7 +58,7 @@ class GetCustomerInfoProvidedField extends Response
     }
 
     /**
-     * @return array|null
+     * @return array<string>|null
      */
     public function getChoices(): ?array
     {
@@ -78,7 +95,7 @@ class GetCustomerInfoProvidedField extends Response
         if (isset($json['choices'])) {
             $this->choices = array();
             foreach ($json['choices'] as $choice) {
-                array_push($this->choices, $choice);
+                $this->choices[] = $choice;
             }
         }
         if (isset($json['optional'])) $this->optional = $json['optional'];

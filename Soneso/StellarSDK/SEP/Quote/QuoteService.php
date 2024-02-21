@@ -35,7 +35,6 @@ class QuoteService
             $this->httpClient = $httpClient;
         } else {
             $this->httpClient = new Client([
-                'base_uri' => $this->serviceAddress,
                 'exceptions' => false,
             ]);
         }

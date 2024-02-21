@@ -8,23 +8,35 @@ namespace Soneso\StellarSDK\SEP\KYCService;
 
 use Soneso\StellarSDK\Responses\Response;
 
-/// Represents a customer info request response.
+/**
+ * Represents a customer info request response.
+ */
 class GetCustomerInfoResponse extends Response
 {
-    /// (optional) ID of the customer, if the customer has already been created via a PUT /customer request.
-    private ?string $id = null;
+    /**
+     * @var string|null $id ID of the customer, if the customer has already been created via a PUT /customer request.
+     */
+    public ?string $id = null;
 
-    /// Status of the customers KYC process.
-    private string $status;
+    /**
+     * @var string $status Status of the customers KYC process.
+     */
+    public string $status;
 
-    /// (optional) An object containing the fields the anchor has not yet received for the given customer of the type provided in the request. Required for customers in the NEEDS_INFO status. See Fields for more detailed information.
-    private ?array $fields = null; //[key => GetCustomerInfoField]
+    /**
+     * @var array<array-key, GetCustomerInfoField>|null $fields An array containing the fields the anchor has not yet received for the given customer of the type provided in the request. Required for customers in the NEEDS_INFO status. See Fields for more detailed information.
+     */
+    public ?array $fields = null;
 
-    /// (optional) An object containing the fields the anchor has received for the given customer. Required for customers whose information needs verification via customerVerification.
-    private ?array $providedFields = null;  //[key => GetCustomerInfoProvidedField]
+    /**
+     * @var array<array-key, GetCustomerInfoProvidedField>|null $providedFields An array containing the fields the anchor has received for the given customer. Required for customers whose information needs verification via customerVerification.
+     */
+    public ?array $providedFields = null;
 
-    /// (optional) Human readable message describing the current state of customer's KYC process.
-    private ?string $message = null;
+    /**
+     * @var string|null $message Human-readable message describing the current state of customer's KYC process.
+     */
+    public ?string $message = null;
 
     /**
      * @return string|null
@@ -43,7 +55,7 @@ class GetCustomerInfoResponse extends Response
     }
 
     /**
-     * @return array|null
+     * @return array<array-key, GetCustomerInfoField>|null
      */
     public function getFields(): ?array
     {
@@ -51,7 +63,7 @@ class GetCustomerInfoResponse extends Response
     }
 
     /**
-     * @return array|null
+     * @return array<array-key, GetCustomerInfoProvidedField>|null
      */
     public function getProvidedFields(): ?array
     {

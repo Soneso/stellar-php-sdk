@@ -8,13 +8,20 @@ namespace Soneso\StellarSDK\SEP\KYCService;
 
 class PutCustomerVerificationRequest
 {
-    /// The ID of the customer as returned in the response of a previous PUT request.
+    /**
+     * @var string|null $id The ID of the customer as returned in the response of a previous PUT request.
+     */
     public ?string $id = null;
 
-    /// One or more SEP-9 fields appended with _verification ( *_verification)
-    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
-    public ?array $verificationFields = null; // [string => string]
+    /**
+     * One or more SEP-9 fields appended with _verification ( *_verification)
+     * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
+     * @var array<array-key, string>|null
+     */
+    public ?array $verificationFields = null;
 
-    /// jwt previously received from the anchor via the SEP-10 authentication flow
+    /**
+     * @var string|null $jwt jwt token previously received from the anchor via the SEP-10 authentication flow
+     */
     public ?string $jwt = null;
 }

@@ -618,18 +618,4 @@ class SEP010Test extends TestCase
         $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair], clientDomain:"place.domain.com", clientDomainKeyPair: $clientDomainAccountKeyPair);
         $this->assertEquals($this->successJWTToken, $jwtToken);
     }
-
-    public function testLocalServer(): void {
-        $domain = 'localhost:5173';
-        $client = new Client([
-            'verify' => false, // This disables SSL verification
-        ]);
-
-        $userKeyPair = KeyPair::random();
-        $userAccountId = $userKeyPair->getAccountId();
-        $webAuth = WebAuth::fromDomain($domain, network: Network::testnet(), httpClient: $client);
-        $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
-        print('Authenticated. JWT: ' . $jwtToken);
-        $this->assertNotNull($jwtToken);
-    }
 }
