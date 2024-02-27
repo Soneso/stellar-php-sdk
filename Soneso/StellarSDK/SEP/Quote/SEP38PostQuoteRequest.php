@@ -55,12 +55,12 @@ class SEP38PostQuoteRequest
     }
 
     /**
-     * @return array<array-key|mixed> json data
+     * @return array<array-key, mixed> json data
      */
     public function toJson() : array {
 
         /**
-         * @var array<array-key|mixed> $result
+         * @var array<array-key, mixed> $result
          */
         $result = [
             'sell_asset' => $this->sellAsset,
