@@ -19,6 +19,10 @@ use Soneso\StellarSDK\SEP\KYCService\KYCService;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerCallbackRequest;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoRequest;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerVerificationRequest;
+use Soneso\StellarSDK\SEP\StandardKYCFields\FinancialAccountKYCFields;
+use Soneso\StellarSDK\SEP\StandardKYCFields\NaturalPersonKYCFields;
+use Soneso\StellarSDK\SEP\StandardKYCFields\OrganizationKYCFields;
+use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
 
 class SEP012Test extends TestCase
 {
@@ -364,6 +368,24 @@ class SEP012Test extends TestCase
         $request->account = $this->accountId;
         $request->jwt = $this->jwtToken;
 
+        $kycFields = new StandardKYCFields();
+        $naturalPersonKycFields = new NaturalPersonKYCFields();
+        $naturalPersonKycFields->firstName = 'John';
+        $naturalPersonKycFields->lastName ='Doe';
+        $financialAccountFields = new FinancialAccountKYCFields();
+        $financialAccountFields->bankAccountNumber = '1982937837864';
+        $naturalPersonKycFields->financialAccountKYCFields = $financialAccountFields;
+        $kycFields->naturalPersonKYCFields = $naturalPersonKycFields;
+
+        $orgKycFields = new OrganizationKYCFields();
+        $orgKycFields->name = 'My LLC';
+        $orgFinancialFields = new FinancialAccountKYCFields();
+        $orgFinancialFields->clabeNumber = '9999999';
+        $orgKycFields->financialAccountKYCFields = $orgFinancialFields;
+        $kycFields->organizationKYCFields = $orgKycFields;
+
+        $request->KYCFields = $kycFields;
+
         $mock = new MockHandler([
             new Response(200, ['X-Foo' => 'Bar'], $this->requestPutCustomerInfo())
         ]);
@@ -376,8 +398,14 @@ class SEP012Test extends TestCase
             $this->assertEquals("Bearer " . $this->jwtToken, $auth);
             $this->assertEquals("PUT", $request->getMethod());
             $body = $request->getBody()->__toString();
+            // print($body . PHP_EOL);
             $this->assertTrue(str_contains($body, $this->customerId));
             $this->assertTrue(str_contains($body, $this->accountId));
+            $this->assertTrue(str_contains($body, 'John'));
+            $this->assertTrue(str_contains($body, 'Doe'));
+            $this->assertTrue(str_contains($body, '1982937837864'));
+            $this->assertTrue(str_contains($body, 'My LLC'));
+            $this->assertTrue(str_contains($body, '9999999'));
             return $request;
         }));
 

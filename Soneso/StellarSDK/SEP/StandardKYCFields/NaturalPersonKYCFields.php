@@ -11,6 +11,43 @@ use DateTimeInterface;
 
 class NaturalPersonKYCFields
 {
+    // field keys
+    public const LAST_NAME_KEY = 'last_name';
+    public const FIRST_NAME_KEY = 'first_name';
+    public const ADDITIONAL_NAME_KEY = 'additional_name';
+    public const ADDRESS_COUNTRY_CODE_KEY = 'address_country_code';
+    public const STATE_OR_PROVINCE_KEY = 'state_or_province';
+    public const CITY_KEY = 'city';
+    public const POSTAL_CODE_KEY = 'postal_code';
+    public const ADDRESS_KEY = 'address';
+    public const MOBILE_NUMBER_KEY = 'mobile_number';
+    public const EMAIL_ADDRESS_KEY = 'email_address';
+    public const BIRTH_DATE_KEY = 'birth_date';
+    public const BIRTH_PLACE_KEY = 'birth_place';
+    public const BIRTH_COUNTRY_CODE_KEY = 'birth_country_code';
+    public const TAX_ID_KEY = 'tax_id';
+    public const TAX_ID_NAME_KEY = 'tax_id_name';
+    public const OCCUPATION_KEY = 'occupation';
+    public const EMPLOYER_NAME_KEY = 'employer_name';
+    public const EMPLOYER_ADDRESS_KEY = 'employer_address';
+    public const LANGUAGE_CODE_KEY = 'language_code';
+    public const ID_TYPE_KEY = 'id_type';
+    public const ID_COUNTRY_CODE_KEY = 'id_country_code';
+    public const ID_ISSUE_DATE_KEY = 'id_issue_date';
+    public const ID_EXPIRATION_DATE_KEY = 'id_expiration_date';
+    public const ID_NUMBER_KEY = 'id_number';
+    public const IP_ADDRESS_KEY = 'ip_address';
+    public const SEX_KEY = 'sex';
+    public const REFERRAL_ID_KEY = 'referral_id';
+
+    // files keys
+    public const PHOTO_ID_FRONT_KEY = 'photo_id_front';
+    public const PHOTO_ID_BACK_KEY = 'photo_id_back';
+    public const NOTARY_APPROVAL_OF_PHOTO_ID_KEY = 'notary_approval_of_photo_id';
+    public const PHOTO_PROOF_RESIDENCE_KEY = 'photo_proof_residence';
+    public const PROOF_OF_INCOME_KEY = 'proof_of_income';
+    public const PROOF_OF_LIVENESS_KEY = 'proof_of_liveness';
+
     /// Family or last name
     public ?string $lastName = null;
 
@@ -110,89 +147,101 @@ class NaturalPersonKYCFields
     // User's origin (such as an id in another application) or a referral code
     public ?string $referralId = null;
 
+    /// Financial Account Fields
+    public ?FinancialAccountKYCFields $financialAccountKYCFields = null;
+
     public function fields() : array {
+        /**
+         * @var array<array-key, mixed> $fields
+         */
         $fields = array();
         if ($this->lastName) {
-            $fields += [ "last_name" => $this->lastName ];
+            $fields += [ self::LAST_NAME_KEY => $this->lastName ];
         }
         if ($this->firstName) {
-            $fields += [ "first_name" => $this->firstName ];
+            $fields += [ self::FIRST_NAME_KEY => $this->firstName ];
         }
         if ($this->additionalName) {
-            $fields += [ "additional_name" => $this->additionalName ];
+            $fields += [ self::ADDITIONAL_NAME_KEY => $this->additionalName ];
         }
         if ($this->addressCountryCode) {
-            $fields += [ "address_country_code" => $this->addressCountryCode ];
+            $fields += [ self::ADDRESS_COUNTRY_CODE_KEY => $this->addressCountryCode ];
         }
         if ($this->stateOrProvince) {
-            $fields += [ "state_or_province" => $this->stateOrProvince ];
+            $fields += [ self::STATE_OR_PROVINCE_KEY => $this->stateOrProvince ];
         }
         if ($this->city) {
-            $fields += [ "city" => $this->city ];
+            $fields += [ self::CITY_KEY => $this->city ];
         }
         if ($this->postalCode) {
-            $fields += [ "postal_code" => $this->postalCode ];
+            $fields += [ self::POSTAL_CODE_KEY => $this->postalCode ];
         }
         if ($this->address) {
-            $fields += [ "address" => $this->address ];
+            $fields += [ self::ADDRESS_KEY => $this->address ];
         }
         if ($this->mobileNumber) {
-            $fields += [ "mobile_number" => $this->mobileNumber ];
+            $fields += [ self::MOBILE_NUMBER_KEY => $this->mobileNumber ];
         }
         if ($this->emailAddress) {
-            $fields += [ "email_address" => $this->emailAddress ];
+            $fields += [ self::EMAIL_ADDRESS_KEY => $this->emailAddress ];
         }
         if ($this->birthDate) {
-            $fields += [ "birth_date" => $this->birthDate ];
+            $fields += [ self::BIRTH_DATE_KEY => $this->birthDate ];
         }
         if ($this->birthPlace) {
-            $fields += [ "birth_place" => $this->birthPlace ];
+            $fields += [ self::BIRTH_PLACE_KEY => $this->birthPlace ];
         }
         if ($this->birthCountryCode) {
-            $fields += [ "birth_country_code" => $this->birthCountryCode ];
+            $fields += [ self::BIRTH_COUNTRY_CODE_KEY => $this->birthCountryCode ];
         }
         if ($this->taxId) {
-            $fields += [ "tax_id" => $this->taxId ];
+            $fields += [ self::TAX_ID_KEY => $this->taxId ];
         }
         if ($this->taxIdName) {
-            $fields += [ "tax_id_name" => $this->taxIdName ];
+            $fields += [ self::TAX_ID_NAME_KEY => $this->taxIdName ];
         }
         if ($this->occupation) {
-            $fields += [ "occupation" => strval($this->occupation) ];
+            $fields += [ self::OCCUPATION_KEY => strval($this->occupation) ];
         }
         if ($this->employerName) {
-            $fields += [ "employer_name" => $this->employerName ];
+            $fields += [ self::EMPLOYER_NAME_KEY => $this->employerName ];
         }
         if ($this->employerAddress) {
-            $fields += [ "employer_address" => $this->employerAddress ];
+            $fields += [ self::EMPLOYER_ADDRESS_KEY => $this->employerAddress ];
         }
         if ($this->languageCode) {
-            $fields += [ "language_code" => $this->languageCode ];
+            $fields += [ self::LANGUAGE_CODE_KEY => $this->languageCode ];
         }
         if ($this->idType) {
-            $fields += [ "id_type" => $this->idType ];
+            $fields += [ self::ID_TYPE_KEY => $this->idType ];
         }
         if ($this->idCountryCode) {
-            $fields += [ "id_country_code" => $this->idCountryCode ];
+            $fields += [ self::ID_COUNTRY_CODE_KEY => $this->idCountryCode ];
         }
         if ($this->idIssueDate) {
-            $fields += [ "id_issue_date" => $this->idIssueDate->format(DateTimeInterface::ATOM) ];
+            $fields += [ self::ID_ISSUE_DATE_KEY => $this->idIssueDate->format(DateTimeInterface::ATOM) ];
         }
         if ($this->idExpirationDate) {
-            $fields += [ "id_expiration_date" => $this->idExpirationDate->format(DateTimeInterface::ATOM) ];
+            $fields += [ self::ID_EXPIRATION_DATE_KEY => $this->idExpirationDate->format(DateTimeInterface::ATOM) ];
         }
         if ($this->idNumber) {
-            $fields += [ "id_number" => $this->idNumber ];
+            $fields += [ self::ID_NUMBER_KEY => $this->idNumber ];
         }
         if ($this->ipAddress) {
-            $fields += [ "ip_address" => $this->ipAddress ];
+            $fields += [ self::IP_ADDRESS_KEY => $this->ipAddress ];
         }
         if ($this->sex) {
-            $fields += [ "sex" => $this->sex];
+            $fields += [ self::SEX_KEY => $this->sex];
         }
         if ($this->referralId) {
-            $fields += [ "referral_id" => $this->referralId ];
+            $fields += [ self::REFERRAL_ID_KEY => $this->referralId ];
         }
+
+        if ($this->financialAccountKYCFields !== null) {
+            $financialFields = $this->financialAccountKYCFields->fields();
+            $fields = array_merge($fields, $financialFields);
+        }
+
         return $fields;
     }
 
@@ -200,22 +249,22 @@ class NaturalPersonKYCFields
     {
         $files = array();
         if ($this->photoIdFront) {
-            $files += [ "photo_id_front" => $this->photoIdFront ];
+            $files += [ self::PHOTO_ID_FRONT_KEY => $this->photoIdFront ];
         }
         if ($this->photoIdBack) {
-            $files += [ "photo_id_back" => $this->photoIdBack ];
+            $files += [ self::PHOTO_ID_BACK_KEY => $this->photoIdBack ];
         }
         if ($this->notaryApprovalOfPhotoId) {
-            $files += [ "notary_approval_of_photo_id" => $this->notaryApprovalOfPhotoId ];
+            $files += [ self::NOTARY_APPROVAL_OF_PHOTO_ID_KEY => $this->notaryApprovalOfPhotoId ];
         }
         if ($this->photoProofResidence) {
-            $files += [ "photo_proof_residence" => $this->photoProofResidence ];
+            $files += [ self::PHOTO_PROOF_RESIDENCE_KEY => $this->photoProofResidence ];
         }
         if ($this->proofOfIncome) {
-            $files += [ "proof_of_income" => $this->proofOfIncome ];
+            $files += [ self::PROOF_OF_INCOME_KEY => $this->proofOfIncome ];
         }
         if ($this->proofOfLiveness) {
-            $files += [ "proof_of_liveness" => $this->proofOfLiveness ];
+            $files += [ self::PROOF_OF_LIVENESS_KEY => $this->proofOfLiveness ];
         }
         return $files;
     }

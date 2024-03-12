@@ -9,6 +9,18 @@ namespace Soneso\StellarSDK\SEP\StandardKYCFields;
 
 class FinancialAccountKYCFields
 {
+    // field keys
+    public const BANK_ACCOUNT_TYPE_KEY = 'bank_account_type';
+    public const BANK_ACCOUNT_NUMBER_KEY = 'bank_account_number';
+    public const BANK_NUMBER_KEY = 'bank_number';
+    public const BANK_PHONE_NUMBER_KEY = 'bank_phone_number';
+    public const BANK_BRANCH_NUMBER_KEY = 'bank_branch_number';
+    public const CLABE_NUMBER_KEY = 'clabe_number';
+    public const CBU_NUMBER_KEY = 'cbu_number';
+    public const CBU_ALIAS_KEY = 'cbu_alias';
+    public const CRYPTO_ADDRESS_KEY = 'crypto_address';
+    public const CRYPTO_MEMO_KEY = 'crypto_memo';
+
     /// checking or savings
     public ?string $bankAccountType = null;
 
@@ -39,37 +51,44 @@ class FinancialAccountKYCFields
     /// A destination tag/memo used to identify a transaction
     public ?string $cryptoMemo = null;
 
-    public function fields() : array {
+    /**
+     * @param string|null $keyPrefix optional prefix for the fields keys. e.g. 'organization.'
+     * @return array<array-key, mixed>
+     */
+    public function fields(?string $keyPrefix = '') : array {
+        /**
+         * @var array<array-key, mixed> $fields
+         */
         $fields = array();
         if ($this->bankAccountType) {
-            $fields += [ "bank_account_type" => $this->bankAccountType ];
+            $fields += [ $keyPrefix . self::BANK_ACCOUNT_TYPE_KEY => $this->bankAccountType ];
         }
         if ($this->bankAccountNumber) {
-            $fields += [ "bank_account_number" => $this->bankAccountNumber ];
+            $fields += [ $keyPrefix . self::BANK_ACCOUNT_NUMBER_KEY => $this->bankAccountNumber ];
         }
         if ($this->bankNumber) {
-            $fields += [ "bank_number" => $this->bankNumber ];
+            $fields += [ $keyPrefix . self::BANK_NUMBER_KEY => $this->bankNumber ];
         }
         if ($this->bankPhoneNumber) {
-            $fields += [ "bank_phone_number" => $this->bankPhoneNumber ];
+            $fields += [ $keyPrefix . self::BANK_PHONE_NUMBER_KEY => $this->bankPhoneNumber ];
         }
         if ($this->bankBranchNumber) {
-            $fields += [ "bank_branch_number" => $this->bankBranchNumber ];
+            $fields += [ $keyPrefix . self::BANK_BRANCH_NUMBER_KEY => $this->bankBranchNumber ];
         }
         if ($this->clabeNumber) {
-            $fields += [ "clabe_number" => $this->clabeNumber ];
+            $fields += [ $keyPrefix . self::CLABE_NUMBER_KEY => $this->clabeNumber ];
         }
         if ($this->cbuNumber) {
-            $fields += [ "cbu_number" => $this->cbuNumber ];
+            $fields += [ $keyPrefix . self::CBU_NUMBER_KEY => $this->cbuNumber ];
         }
         if ($this->cbuAlias) {
-            $fields += [ "cbu_alias" => $this->cbuAlias ];
+            $fields += [ $keyPrefix . self::CBU_ALIAS_KEY => $this->cbuAlias ];
         }
         if ($this->cryptoAddress) {
-            $fields += [ "crypto_address" => $this->cryptoAddress ];
+            $fields += [ $keyPrefix . self::CRYPTO_ADDRESS_KEY => $this->cryptoAddress ];
         }
         if ($this->cryptoMemo) {
-            $fields += [ "crypto_memo" => $this->cryptoMemo ];
+            $fields += [ $keyPrefix . self::CRYPTO_MEMO_KEY => $this->cryptoMemo ];
         }
         return $fields;
     }

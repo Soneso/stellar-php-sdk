@@ -25,6 +25,10 @@ use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionRequest;
 use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionsRequest;
 use Soneso\StellarSDK\SEP\Interactive\SEP24WithdrawAsset;
 use Soneso\StellarSDK\SEP\Interactive\SEP24WithdrawRequest;
+use Soneso\StellarSDK\SEP\StandardKYCFields\FinancialAccountKYCFields;
+use Soneso\StellarSDK\SEP\StandardKYCFields\NaturalPersonKYCFields;
+use Soneso\StellarSDK\SEP\StandardKYCFields\OrganizationKYCFields;
+use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
 use Soneso\StellarSDK\SEP\TransferServerService\AnchorField;
 use Soneso\StellarSDK\SEP\TransferServerService\AnchorTransactionRequest;
 use Soneso\StellarSDK\SEP\TransferServerService\AnchorTransactionsRequest;
@@ -192,6 +196,28 @@ class SEP024Test extends TestCase
             new Response(200, ['X-Foo' => 'Bar'], $this->requestInteractive())
         ]);
 
+        $request = new SEP24DepositRequest();
+        $request->jwt = $this->jwtToken;
+        $request->assetCode = "USD";
+
+        $kycFields = new StandardKYCFields();
+        $naturalPersonKycFields = new NaturalPersonKYCFields();
+        $naturalPersonKycFields->firstName = 'John';
+        $naturalPersonKycFields->lastName ='Doe';
+        $financialAccountFields = new FinancialAccountKYCFields();
+        $financialAccountFields->bankAccountNumber = '1982937837864';
+        $naturalPersonKycFields->financialAccountKYCFields = $financialAccountFields;
+        $kycFields->naturalPersonKYCFields = $naturalPersonKycFields;
+
+        $orgKycFields = new OrganizationKYCFields();
+        $orgKycFields->name = 'My LLC';
+        $orgFinancialFields = new FinancialAccountKYCFields();
+        $orgFinancialFields->clabeNumber = '9999999';
+        $orgKycFields->financialAccountKYCFields = $orgFinancialFields;
+        $kycFields->organizationKYCFields = $orgKycFields;
+
+        $request->kycFields = $kycFields;
+
         $stack = new HandlerStack();
         $stack->setHandler($mock);
         $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
@@ -202,13 +228,16 @@ class SEP024Test extends TestCase
             $body = $request->getBody()->__toString();
             $this->assertTrue(str_contains($body, "asset_code"));
             $this->assertTrue(str_contains($body, "USD"));
+            $this->assertTrue(str_contains($body, 'John'));
+            $this->assertTrue(str_contains($body, 'Doe'));
+            $this->assertTrue(str_contains($body, '1982937837864'));
+            $this->assertTrue(str_contains($body, 'My LLC'));
+            $this->assertTrue(str_contains($body, '9999999'));
             return $request;
         }));
 
         $transferService->setMockHandlerStack($stack);
-        $request = new SEP24DepositRequest();
-        $request->jwt = $this->jwtToken;
-        $request->assetCode = "USD";
+
         $response = $transferService->deposit($request);
         $this->assertNotNull($response);
         $this->assertEquals("82fhs729f63dh0v4", $response->id);
@@ -223,6 +252,28 @@ class SEP024Test extends TestCase
             new Response(200, ['X-Foo' => 'Bar'], $this->requestInteractive())
         ]);
 
+        $request = new SEP24WithdrawRequest();
+        $request->jwt = $this->jwtToken;
+        $request->assetCode = "USD";
+
+        $kycFields = new StandardKYCFields();
+        $naturalPersonKycFields = new NaturalPersonKYCFields();
+        $naturalPersonKycFields->firstName = 'John';
+        $naturalPersonKycFields->lastName ='Doe';
+        $financialAccountFields = new FinancialAccountKYCFields();
+        $financialAccountFields->bankAccountNumber = '1982937837864';
+        $naturalPersonKycFields->financialAccountKYCFields = $financialAccountFields;
+        $kycFields->naturalPersonKYCFields = $naturalPersonKycFields;
+
+        $orgKycFields = new OrganizationKYCFields();
+        $orgKycFields->name = 'My LLC';
+        $orgFinancialFields = new FinancialAccountKYCFields();
+        $orgFinancialFields->clabeNumber = '9999999';
+        $orgKycFields->financialAccountKYCFields = $orgFinancialFields;
+        $kycFields->organizationKYCFields = $orgKycFields;
+
+        $request->kycFields = $kycFields;
+
         $stack = new HandlerStack();
         $stack->setHandler($mock);
         $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
@@ -233,13 +284,15 @@ class SEP024Test extends TestCase
             $body = $request->getBody()->__toString();
             $this->assertTrue(str_contains($body, "asset_code"));
             $this->assertTrue(str_contains($body, "USD"));
+            $this->assertTrue(str_contains($body, 'John'));
+            $this->assertTrue(str_contains($body, 'Doe'));
+            $this->assertTrue(str_contains($body, '1982937837864'));
+            $this->assertTrue(str_contains($body, 'My LLC'));
+            $this->assertTrue(str_contains($body, '9999999'));
             return $request;
         }));
 
         $transferService->setMockHandlerStack($stack);
-        $request = new SEP24WithdrawRequest();
-        $request->jwt = $this->jwtToken;
-        $request->assetCode = "USD";
         $response = $transferService->withdraw($request);
         $this->assertNotNull($response);
         $this->assertEquals("82fhs729f63dh0v4", $response->id);
