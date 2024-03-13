@@ -10,126 +10,68 @@ use Soneso\StellarSDK\Responses\Response;
 
 class WithdrawResponse extends Response
 {
-    /// The account the user should send its token back to.
-    private string $accountId;
-
-    /// (optional) Type of memo to attach to transaction, one of text, id or hash.
-    private ?string $memoType;
-
-    /// (optional) Value of memo to attach to transaction, for hash this should be base64-encoded.
-    private ?string $memo;
-
-    /// (optional) The anchor's ID for this withdrawal. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-    private ?string $id;
-
-    /// (optional) Estimate of how long the withdrawal will take to credit in seconds.
-    private ?int $eta;
-
-    /// (optional) Minimum amount of an asset that a user can withdraw.
-    private ?float $minAmount;
-
-    /// (optional) Maximum amount of asset that a user can withdraw.
-    private ?float $maxAmount;
-
-    /// (optional) If there is a fee for withdraw. In units of the withdrawn asset.
-    private ?float $feeFixed;
-
-    /// (optional) If there is a percent fee for withdraw.
-    private ?float $feePercent;
-
-    /// (optional) JSON object with additional information about the withdraw process. Any additional data needed as an input for this withdraw, example: Bank Name.
-    private ?array $extraInfo;
+    /**
+     * @var string|null $accountId (optional) The account the user should send its token back to.
+     * This field can be omitted if the anchor cannot provide this information
+     * at the time of the request.
+     */
+    public ?string $accountId = null;
 
     /**
-     * The account the user should send its token back to.
-     * @return string
+     * @var string|null $memoType (optional) Type of memo to attach to transaction, one of text, id or hash.
      */
-    public function getAccountId(): string
-    {
-        return $this->accountId;
-    }
+    public ?string $memoType = null;
 
     /**
-     * (optional) Type of memo to attach to transaction, one of text, id or hash.
-     * @return string|null
+     * @var string|null $memo (optional) Value of memo to attach to transaction, for hash this should
+     * be base64-encoded. The anchor should use this memo to match the Stellar
+     * transaction with the database entry associated created to represent it.
      */
-    public function getMemoType(): ?string
-    {
-        return $this->memoType;
-    }
+    public ?string $memo = null;
 
     /**
-     * (optional) Value of memo to attach to transaction, for hash this should be base64-encoded.
-     * @return string|null
+     * @var string|null $id (optional) The anchor's ID for this withdrawal. The wallet will use this
+     * ID to query the /transaction endpoint to check status of the request.
      */
-    public function getMemo(): ?string
-    {
-        return $this->memo;
-    }
+    public ?string $id = null;
 
     /**
-     * (optional) The anchor's ID for this withdrawal. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-     * @return string|null
+     * @var int|null $eta (optional) Estimate of how long the withdrawal will take to credit
+     * in seconds.
      */
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
+    public ?int $eta = null;
 
     /**
-     * (optional) Estimate of how long the withdrawal will take to credit in seconds.
-     * @return int|null
+     * @var float|null (optional) Minimum amount of an asset that a user can withdraw.
      */
-    public function getEta(): ?int
-    {
-        return $this->eta;
-    }
+    public ?float $minAmount = null;
 
     /**
-     * (optional) Minimum amount of an asset that a user can withdraw.
-     * @return float|null
+     * @var float|null $maxAmount (optional) Maximum amount of asset that a user can withdraw.
      */
-    public function getMinAmount(): ?float
-    {
-        return $this->minAmount;
-    }
+    public ?float $maxAmount = null;
 
     /**
-     * (optional) Maximum amount of asset that a user can withdraw.
-     * @return float|null
+     * @var float|null $feeFixed (optional) If there is a fee for withdraw. In units of the withdrawn asset
      */
-    public function getMaxAmount(): ?float
-    {
-        return $this->maxAmount;
-    }
+    public ?float $feeFixed = null;
 
     /**
-     * (optional) If there is a fee for withdraw. In units of the withdrawn asset.
-     * @return float|null
+     * @var float|null $feePercent (optional) If there is a percent fee for withdraw.
      */
-    public function getFeeFixed(): ?float
-    {
-        return $this->feeFixed;
-    }
+    public ?float $feePercent = null;
 
     /**
-     * (optional) If there is a percent fee for withdraw.
-     * @return float|null
+     * @var ExtraInfo|null $extraInfo (optional) Any additional data needed as an input for this withdraw,
+     * example: Bank Name.
      */
-    public function getFeePercent(): ?float
-    {
-        return $this->feePercent;
-    }
+    public ?ExtraInfo $extraInfo = null;
 
     /**
-     * (optional) JSON object with additional information about the withdraw process. Any additional data needed as an input for this withdraw, example: Bank Name.
-     * @return array|null
+     * Loads the needed data from a json array.
+     * @param array<array-key, mixed> $json the data array to read from.
+     * @return void
      */
-    public function getExtraInfo(): ?array
-    {
-        return $this->extraInfo;
-    }
-
     protected function loadFromJson(array $json) : void {
         if (isset($json['account_id'])) $this->accountId = $json['account_id'];
         if (isset($json['memo_type'])) $this->memoType = $json['memo_type'];
@@ -140,9 +82,14 @@ class WithdrawResponse extends Response
         if (isset($json['max_amount'])) $this->maxAmount = $json['max_amount'];
         if (isset($json['fee_fixed'])) $this->feeFixed = $json['fee_fixed'];
         if (isset($json['fee_percent'])) $this->feePercent = $json['fee_percent'];
-        if (isset($json['extra_info'])) $this->extraInfo = $json['extra_info'];
+        if (isset($json['extra_info'])) $this->extraInfo = ExtraInfo::fromJson($json['extra_info']);
     }
 
+    /**
+     * Constructs a new instance of WithdrawResponse by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return WithdrawResponse the object containing the parsed data.
+     */
     public static function fromJson(array $json) : WithdrawResponse
     {
         $result = new WithdrawResponse();

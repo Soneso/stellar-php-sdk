@@ -6,33 +6,26 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
-use Soneso\StellarSDK\Responses\Response;
-
-class CustomerInformationNeededResponse extends Response
+class CustomerInformationNeededResponse
 {
-    private array $fields = array();
+    /**
+     * @var array<string> $fields A list of field names that need to be transmitted via SEP-12 for the deposit to proceed.
+     */
+    public array $fields = array();
 
     /**
-     * /// A list of field names [string] that need to be transmitted via SEP-12 for the deposit to proceed.
-     * @return array
+     * Constructs a new instance of CustomerInformationNeededResponse by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return CustomerInformationNeededResponse the object containing the parsed data.
      */
-    public function getFields(): array
-    {
-        return $this->fields;
-    }
-
-    protected function loadFromJson(array $json) : void {
-        if (isset($json['fields'])) {
-            foreach ($json['fields'] as $field) {
-                array_push($this->fields, $field);
-            }
-        }
-    }
-
     public static function fromJson(array $json) : CustomerInformationNeededResponse
     {
         $result = new CustomerInformationNeededResponse();
-        $result->loadFromJson($json);
+        if (isset($json['fields'])) {
+            foreach ($json['fields'] as $field) {
+                $result->fields[] = $field;
+            }
+        }
         return $result;
     }
 

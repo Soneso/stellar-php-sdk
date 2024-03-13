@@ -15,16 +15,21 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 
 class InfoRequestBuilder extends RequestBuilder
 {
-    private string $jwtToken;
+    private ?string $jwtToken = null;
+    private string $serviceAddress;
 
     /**
-     * @param Client $httpClient
-     * @param string $jwtToken
+     * Constructor.
+     * @param Client $httpClient the client to be used for the request.
+     * @param string $serviceAddress the address of the service from stellar toml.
+     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication.
+     * If provided it will be used in the request header.
      */
-    public function __construct(Client $httpClient, string $jwtToken)
+    public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {
         $this->jwtToken = $jwtToken;
-        parent::__construct($httpClient, "info");
+        $this->serviceAddress = $serviceAddress;
+        parent::__construct($httpClient);
     }
 
     public function forQueryParameters(array $queryParameters) : InfoRequestBuilder {
@@ -33,26 +38,50 @@ class InfoRequestBuilder extends RequestBuilder
     }
 
     /**
-     * @param string $url
-     * @return InfoResponse
-     * @throws GuzzleException
+     * Sends the get request for the given url.
+     * Attaches the jwt token to the request if provided by constructor.
+     * @param string $url the url to request from
+     * @return InfoResponse the parsed response
+     * @throws GuzzleException if an exception occurs during the request.
      */
     public function request(string $url) : InfoResponse {
+        /**
+         * @var array<array-key, mixed> $headers
+         */
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
-        $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
+        if ($this->jwtToken !== null) {
+            $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
+        }
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
-        return $responseHandler->handleResponse($response, RequestType::ANCHOR_INFO, $this->httpClient);
+        $response = $responseHandler->handleResponse($response, RequestType::ANCHOR_INFO, $this->httpClient);
+        assert($response instanceof InfoResponse);
+
+        return $response;
+    }
+
+    /**
+     * Builds the url for the request.
+     * @return string the constructed url.
+     */
+    public function buildUrl() : string {
+        $url = $this->serviceAddress . "/info";
+        if (count($this->queryParameters) > 0) {
+            $url .= '?' . http_build_query($this->queryParameters);
+        }
+
+        return $url;
     }
 
     /**
      * Build and execute request.
-     * @return InfoResponse
-     * @throws GuzzleException
+     * @return InfoResponse the parsed response.
+     * @throws GuzzleException if any request exception occurs.
      */
     public function execute() : InfoResponse {
+
         return $this->request($this->buildUrl());
     }
 }

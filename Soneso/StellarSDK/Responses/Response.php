@@ -13,7 +13,7 @@ abstract class Response
     protected ?int $rateLimitLimit = null;
     protected ?int $rateLimitRemaining = null;
     protected ?int $rateLimitReset = null;
-    protected Client $httpClient;
+    protected ?Client $httpClient = null;
 
     public function setHeaders(array $headers) : void {
         
@@ -61,14 +61,14 @@ abstract class Response
         if (isset($json['rateLimitReset'])) $this->rateLimitReset = $json['rateLimitReset'];
     }
 
-    public function setHttpClient(Client $httpClient) : void {
+    public function setHttpClient(?Client $httpClient = null) : void {
         $this->httpClient = $httpClient;
     }
 
     /**
-     * @return Client
+     * @return Client|null
      */
-    public function getHttpClient(): Client
+    public function getHttpClient(): ?Client
     {
         return $this->httpClient;
     }

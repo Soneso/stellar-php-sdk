@@ -10,102 +10,60 @@ use Soneso\StellarSDK\Responses\Response;
 
 class DepositResponse extends Response
 {
-    /// Terse but complete instructions for how to deposit the asset. In the case of most cryptocurrencies it is just an address to which the deposit should be sent.
-    private string $how;
-
-    /// (optional) The anchor's ID for this deposit. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-    private ?string $id = null;
-
-    /// (optional) Estimate of how long the deposit will take to credit in seconds.
-    private ?int $eta;
-
-    /// (optional) Minimum amount of an asset that a user can deposit
-    private ?float $minAmount = null;
-
-    /// (optional) Maximum amount of asset that a user can deposit.
-    private ?float $maxAmount = null;
-
-    /// (optional) Fixed fee (if any). In units of the deposited asset.
-    private ?float $feeFixed = null;
-
-    /// (optional) Percentage fee (if any). In units of percentage points.
-    private ?float $feePercent = null;
-
-    /// (optional) JSON object with additional information about the deposit process.
-    private ?array $extraInfo = null;
+    /**
+     * @var string|null $how (deprecated, use instructions instead) Terse but complete instructions
+     * for how to deposit the asset. In the case of most cryptocurrencies it is
+     * just an address to which the deposit should be sent.
+     */
+    public ?string $how;
 
     /**
-     * Terse but complete instructions for how to deposit the asset. In the case of most cryptocurrencies it is just an address to which the deposit should be sent.
-     * @return string
+     * @var string|null $id (optional) The anchor's ID for this deposit. The wallet will use this ID
+     * to query the /transaction endpoint to check status of the request.
      */
-    public function getHow(): string
-    {
-        return $this->how;
-    }
+    public ?string $id = null;
 
     /**
-     * (optional) The anchor's ID for this deposit. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-     * @return string|null
+     * @var int|null $eta (optional) Estimate of how long the deposit will take to credit in seconds.
      */
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
+    public ?int $eta;
 
     /**
-     * (optional) Estimate of how long the deposit will take to credit in seconds.
-     * @return int|null
+     * @var float|null $minAmount (optional) Minimum amount of an asset that a user can deposit.
      */
-    public function getEta(): ?int
-    {
-        return $this->eta;
-    }
+    public ?float $minAmount = null;
 
     /**
-     * (optional) Minimum amount of an asset that a user can deposit
-     * @return float|null
+     * @var float|null $maxAmount (optional) Maximum amount of asset that a user can deposit.
      */
-    public function getMinAmount(): ?float
-    {
-        return $this->minAmount;
-    }
+    public ?float $maxAmount = null;
 
     /**
-     * (optional) Maximum amount of asset that a user can deposit.
-     * @return float|null
+     * @var float|null $feeFixed (optional) Fixed fee (if any). In units of the deposited asset.
      */
-    public function getMaxAmount(): ?float
-    {
-        return $this->maxAmount;
-    }
+    public ?float $feeFixed = null;
 
     /**
-     * Fixed fee (if any). In units of the deposited asset.
-     * @return float|null
+     * @var float|null $feePercent (optional) Percentage fee (if any). In units of percentage points.
      */
-    public function getFeeFixed(): ?float
-    {
-        return $this->feeFixed;
-    }
+    public ?float $feePercent = null;
 
     /**
-     * (optional) Percentage fee (if any). In units of percentage points.
-     * @return float|null
+     * @var ExtraInfo|null $extraInfo additional information about the deposit process.
      */
-    public function getFeePercent(): ?float
-    {
-        return $this->feePercent;
-    }
+    public ?ExtraInfo $extraInfo = null;
 
     /**
-     * (optional) object with additional information about the deposit process.
-     * @return array|null
+     * @var array<string, DepositInstruction>|null
      */
-    public function getExtraInfo(): ?array
-    {
-        return $this->extraInfo;
-    }
+    public ?array $instructions;
 
+
+    /**
+     * Loads the needed data from a json array.
+     * @param array<array-key, mixed> $json the data array to read from.
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['how'])) $this->how = $json['how'];
         if (isset($json['id'])) $this->id = $json['id'];
@@ -114,9 +72,22 @@ class DepositResponse extends Response
         if (isset($json['fee_percent'])) $this->feePercent = $json['fee_percent'];
         if (isset($json['min_amount'])) $this->minAmount = $json['min_amount'];
         if (isset($json['max_amount'])) $this->maxAmount = $json['max_amount'];
-        if (isset($json['extra_info'])) $this->extraInfo = $json['extra_info'];
+        if (isset($json['extra_info'])) $this->extraInfo = ExtraInfo::fromJson($json['extra_info']);
+        if (isset($json['instructions'])) {
+            $this->instructions = array();
+            $jsonFields = $json['instructions'];
+            foreach(array_keys($jsonFields) as $key) {
+                $value = DepositInstruction::fromJson($jsonFields[$key]);
+                $this->instructions += [$key => $value];
+            }
+        }
     }
 
+    /**
+     * Constructs a new instance of DepositResponse by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return DepositResponse the object containing the parsed data.
+     */
     public static function fromJson(array $json) : DepositResponse
     {
         $result = new DepositResponse();

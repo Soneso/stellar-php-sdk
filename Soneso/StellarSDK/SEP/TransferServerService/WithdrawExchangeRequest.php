@@ -1,18 +1,36 @@
 <?php declare(strict_types=1);
 
-// Copyright 2022 The Stellar PHP SDK Authors. All rights reserved.
+// Copyright 2024 The Stellar PHP SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
-class WithdrawRequest
+class WithdrawExchangeRequest
 {
     /**
-     * @var string $assetCode Code of the on-chain asset the user wants to withdraw.
-     * The value passed must match one of the codes listed in the /info response's withdraw object.
+     * @var string $sourceAsset Code of the on-chain asset the user wants to withdraw. The value passed
+     * must match one of the codes listed in the /info response's withdraw-exchange object.
      */
-    public string $assetCode;
+    public string $sourceAsset;
+
+
+    /**
+     * @var string $destinationAsset The off-chain asset the Anchor will deliver to the user's account.
+     * The value must match one of the asset values included in a SEP-38
+     * GET /prices?sell_asset=stellar:<source_asset>:<asset_issuer> response
+     * using SEP-38 Asset Identification Format.
+     */
+    public string $destinationAsset;
+
+    /**
+     * @var string $amount The amount of the on-chain asset (source_asset) the user would like to
+     * send to the anchor's Stellar account. This field may be necessary for
+     * the anchor to determine what KYC information is necessary to collect.
+     * Should be equals to quote.sell_amount if a quote_id was used.
+     */
+    public string $amount;
+
 
     /**
      * @var string $type Type of withdrawal. Can be: crypto, bank_account, cash, mobile,
@@ -35,6 +53,17 @@ class WithdrawRequest
      * partner handling the withdrawal.
      */
     public ?string $destExtra = null;
+
+    /**
+     * @var string|null $quoteId (optional) The id returned from a SEP-38 POST /quote response.
+     * If this parameter is provided and the Stellar transaction used to send
+     * the asset to the Anchor has a created_at timestamp earlier than the
+     * quote's expires_at attribute, the Anchor should respect the conversion
+     * rate agreed in that quote. If the values of destination_asset,
+     * source_asset and amount conflict with the ones used to create the
+     * SEP-38 quote, this request should be rejected with a 400.
+     */
+    public ?string $quoteId = null;
 
     /**
      * @var string|null $account (optional) The Stellar or muxed account the client will use as the source
@@ -94,13 +123,6 @@ class WithdrawRequest
     public ?string $onChangeCallback = null;
 
     /**
-     * @var string|null $amount (optional) The amount of the asset the user would like to withdraw.
-     * This field may be necessary for the anchor to determine what KYC
-     * information is necessary to collect.
-     */
-    public ?string $amount = null;
-
-    /**
      * @var string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address.
      * This field may be necessary for the anchor to determine what KYC
      * information is necessary to collect.
@@ -142,16 +164,27 @@ class WithdrawRequest
     public ?string $jwt = null;
 
     /**
-     * @param string $assetCode Code of the on-chain asset the user wants to withdraw.
-     * The value passed must match one of the codes listed in the /info response's withdraw object.
-     * @param string $type Type of withdrawal. Can be: crypto, bank_account, cash, mobile,
-     * bill_payment or other custom values. This field may be necessary
-     * for the anchor to determine what KYC information is necessary to collect.
+     * @param string $sourceAsset Code of the on-chain asset the user wants to withdraw. The value passed
+     * must match one of the codes listed in the /info response's
+     * withdraw-exchange object.
+     * @param string $destinationAsset The off-chain asset the Anchor will deliver to the user's account.
+     * The value must match one of the asset values included in a SEP-38
+     * GET /prices?sell_asset=stellar:<source_asset>:<asset_issuer> response using SEP-38 Asset Identification Format.
+     * @param string $amount The amount of the on-chain asset (source_asset) the user would like to
+     * send to the anchor's Stellar account. This field may be necessary for the anchor to determine what KYC
+     * information is necessary to collect. Should be equals to quote.sell_amount if a quote_id was used.
+     * @param string $type Type of withdrawal. Can be: crypto, bank_account, cash, mobile, bill_payment or other custom
+     * values. This field may be necessary for the anchor to determine what KYC information is necessary to collect.
      * @param string|null $dest (deprecated) The account that the user wants to withdraw their funds to.
      * This can be a crypto account, a bank account number, IBAN, mobile number, or email address.
      * @param string|null $destExtra (deprecated, optional) Extra information to specify withdrawal location.
-     * For crypto it may be a memo in addition to the dest address.
-     * It can also be a routing number for a bank, a BIC, or the name of a partner handling the withdrawal.
+     * For crypto it may be a memo in addition to the dest address. It can also be a routing number for a bank, a BIC,
+     * or the name of a partner handling the withdrawal.
+     * @param string|null $quoteId (optional) The id returned from a SEP-38 POST /quote response. If this parameter is
+     * provided and the Stellar transaction used to send the asset to the Anchor has a created_at timestamp earlier
+     * than the quote's expires_at attribute, the Anchor should respect the conversion rate agreed in that quote.
+     * If the values of destination_asset, source_asset and amount conflict with the ones used to create the
+     * SEP-38 quote, this request should be rejected with a 400.
      * @param string|null $account (optional) The Stellar or muxed account the client will use as the source
      * of the withdrawal payment to the anchor. If SEP-10 authentication is not used, the anchor can use account to
      * look up the user's KYC information. Note that the account specified in this request could differ from the
@@ -173,8 +206,6 @@ class WithdrawRequest
      * @param string|null $onChangeCallback (optional) A URL that the anchor should POST a JSON message to when the
      * status property of the transaction created as a result of this request changes. The JSON message should be
      * identical to the response format for the /transaction endpoint.
-     * @param string|null $amount (optional) The amount of the asset the user would like to withdraw. This field may be
-     * necessary for the anchor to determine what KYC information is necessary to collect.
      * @param string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address.
      * This field may be necessary for the anchor to determine what KYC information is necessary to collect.
      * @param string|null $refundMemo (optional) The memo the anchor must use when sending refund payments back
@@ -191,10 +222,13 @@ class WithdrawRequest
      * @param string|null $jwt jwt previously received from the anchor via the SEP-10 authentication flow
      */
     public function __construct(
-        string $assetCode,
+        string $sourceAsset,
+        string $destinationAsset,
+        string $amount,
         string $type,
         ?string $dest = null,
         ?string $destExtra = null,
+        ?string $quoteId = null,
         ?string $account = null,
         ?string $memo = null,
         ?string $memoType = null,
@@ -202,7 +236,6 @@ class WithdrawRequest
         ?string $walletUrl = null,
         ?string $lang = null,
         ?string $onChangeCallback = null,
-        ?string $amount = null,
         ?string $countryCode = null,
         ?string $refundMemo = null,
         ?string $refundMemoType = null,
@@ -210,10 +243,13 @@ class WithdrawRequest
         ?string $locationId = null,
         ?string $jwt = null)
     {
-        $this->assetCode = $assetCode;
+        $this->sourceAsset = $sourceAsset;
+        $this->destinationAsset = $destinationAsset;
+        $this->amount = $amount;
         $this->type = $type;
         $this->dest = $dest;
         $this->destExtra = $destExtra;
+        $this->quoteId = $quoteId;
         $this->account = $account;
         $this->memo = $memo;
         $this->memoType = $memoType;
@@ -221,7 +257,6 @@ class WithdrawRequest
         $this->walletUrl = $walletUrl;
         $this->lang = $lang;
         $this->onChangeCallback = $onChangeCallback;
-        $this->amount = $amount;
         $this->countryCode = $countryCode;
         $this->refundMemo = $refundMemo;
         $this->refundMemoType = $refundMemoType;

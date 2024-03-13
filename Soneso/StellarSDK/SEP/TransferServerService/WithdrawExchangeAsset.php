@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-// Copyright 2022 The Stellar PHP SDK Authors. All rights reserved.
+// Copyright 2024 The Stellar PHP SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
-class WithdrawAsset
+class WithdrawExchangeAsset
 {
     /**
-     * @var bool $enabled true if SEP-6 withdrawal for this asset is supported
+     * @var bool $enabled true if SEP-6 withdrawal exchange for this asset is supported
      */
     public bool $enabled;
 
@@ -18,28 +18,6 @@ class WithdrawAsset
      * the withdraw endpoint for this asset. false if not specified.
      */
     public ?bool $authenticationRequired = null;
-
-    /**
-     * @var float|null $feeFixed Optional fixed (flat) fee for withdraw, in units of the Stellar asset.
-     * Null if there is no fee or the fee schedule is complex.
-     */
-    public ?float $feeFixed = null;
-
-    /**
-     * @var float|null $feePercent Optional percentage fee for withdraw, in percentage points of the
-     * Stellar asset. Null if there is no fee or the fee schedule is complex.
-     */
-    public ?float $feePercent = null;
-
-    /**
-     * @var float|null $minAmount Optional minimum amount. No limit if not specified.
-     */
-    public ?float $minAmount = null;
-
-    /**
-     * @var float|null $maxAmount Optional maximum amount. No limit if not specified.
-     */
-    public ?float $maxAmount = null;
 
     /**
      * A field with each type of withdrawal supported for that asset as a key.
@@ -58,7 +36,7 @@ class WithdrawAsset
     public ?array $types = null;
 
     /**
-     * @param bool $enabled true if SEP-6 withdrawal for this asset is supported
+     * @param bool $enabled true if SEP-6 withdrawal exchange for this asset is supported
      */
     public function __construct(bool $enabled)
     {
@@ -68,20 +46,16 @@ class WithdrawAsset
     /**
      * Constructs a new instance of WithdrawAsset by using the given data.
      * @param array<array-key, mixed> $json the data to construct the object from.
-     * @return WithdrawAsset the object containing the parsed data.
+     * @return WithdrawExchangeAsset the object containing the parsed data.
      */
-    public static function fromJson(array $json) : WithdrawAsset
+    public static function fromJson(array $json) : WithdrawExchangeAsset
     {
         $enabled = false;
         if (isset($json['enabled'])) $enabled = $json['enabled'];
 
-        $result = new WithdrawAsset($enabled);
+        $result = new WithdrawExchangeAsset($enabled);
 
         if (isset($json['authentication_required'])) $result->authenticationRequired = $json['authentication_required'];
-        if (isset($json['fee_fixed'])) $result->feeFixed = $json['fee_fixed'];
-        if (isset($json['fee_percent'])) $result->feePercent = $json['fee_percent'];
-        if (isset($json['min_amount'])) $result->minAmount = $json['min_amount'];
-        if (isset($json['max_amount'])) $result->maxAmount = $json['max_amount'];
         if (isset($json['types'])) {
             $result->types = array();
             $typesFields = $json['types'];

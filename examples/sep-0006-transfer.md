@@ -30,9 +30,8 @@ $transferService = new TransferServerService("http://api.stellar-anchor.org/tran
 This endpoint (described [here](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)) allows an anchor to communicate basic info about what their TRANSFER_SERVER supports to wallets and clients. With the php sdk you can use the ```info``` method of your ```TransferServerService``` instance to get the info:
 
 ```php
-// uses the jwt token received from stellar web auth - sep-0010
-$response = $transferService->info($jwtToken, "en");
-print($response->getFeeInfo()->isEnabled());
+$response = $transferService->info();
+print($response->feeInfo->enabled);
 ```
 
 
@@ -42,20 +41,20 @@ print($response->getFeeInfo()->isEnabled());
 This endpoint (described [here](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#deposit)) is used when a user sends an external token (BTC via Bitcoin, USD via bank transfer, etc...) to an address held by an anchor. With the php sdk you can use the ```deposit``` method of your ```TransferServerService``` instance to get the deposit information:
 
 ```php
-$request = new DepositRequest();
-$request->jwt = $jwtToken; // jwt token received from stellar web auth - sep-0010
-$request->assetCode = "BTC";
-$request->account = $accountId; // The stellar account ID of the user that wants to deposit.
+$request = new DepositRequest(
+                assetCode: "USD",
+                account: $accountId,
+                jwt: $jwtToken);
 // ...
 
 try {
     $response = $transferService->deposit($request);
-    print($response->getHow() . PHP_EOL);
-    print($response->getFeeFixed() . PHP_EOL);
+    print($response->how . PHP_EOL);
+    print($response->feeFixed . PHP_EOL);
 } catch (CustomerInformationNeededException $e) {
-    print_r($e->getResponse()->getFields());
+    print_r($e->response->fields);
 } catch (CustomerInformationStatusException $e) {
-    print($e->getResponse()->getStatus() . PHP_EOL);
+    print($e->response->status . PHP_EOL);
 }
 // ...
 ```
@@ -67,23 +66,63 @@ try {
 This endpoint (described [here](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#withdraw)) is used when a user redeems an asset currently on the Stellar network for it's equivalent off-chain asset via the Anchor. For instance, a user redeeming their NGNT in exchange for fiat NGN. With the php sdk you can use the ```withdraw``` method of your ```TransferServerService``` instance to get the withdrawal information:
 
 ```php
-$request = new WithdrawRequest();
-$request->jwt = $jwtToken; // jwt token received from stellar web auth - sep-0010
-$request->assetCode = "NGNT";
-$request->amount = "129.01";
+$request = new WithdrawRequest(
+                assetCode: "NGNT",
+                type: "bank_account",
+                jwt: $jwtToken);
 // ...
 try {
     $response = $transferService->withdraw($request);
-    print($response->getAccountId() . PHP_EOL);
-    print($response->getFeeFixed() . PHP_EOL);
+    print($response->accountId . PHP_EOL);
+    print($response->feeFixed . PHP_EOL);
 } catch (CustomerInformationNeededException $e) {
-    print_r($e->getResponse()->getFields());
+    print_r($e->response->fields);
 } catch (CustomerInformationStatusException $e) {
-    print($e->getResponse()->getStatus() . PHP_EOL);
+    print($e->response->status . PHP_EOL);
 }
 // ...
 ```
 
+
+### Deposit-Exchange
+
+If the anchor supports SEP-38 quotes, it can provide a deposit that makes a bridge between non-equivalent tokens by receiving, for instance BRL via bank transfer and in return sending the equivalent value (minus fees) as USDC to the user's Stellar account.
+
+The /deposit-exchange endpoint allows a wallet to get deposit information from an anchor when the user intends to make a conversion between non-equivalent tokens. With this endpoint, described [here](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#deposit-exchange), a user has all the information needed to initiate a deposit and it also lets the anchor specify additional information (if desired) that the user must submit via SEP-12.
+
+```php
+$request = new DepositExchangeRequest(
+                destinationAsset: 'USDC',
+                sourceAsset: 'iso4217:BRA',
+                amount: '480.00',
+                account: $accountId,
+                quoteId: '282837',
+                jwt: $jwtToken);
+
+$response = $transferService->depositExchange($request);
+$instructions = $response->instructions;
+//...
+```
+
+### Withdraw-Exchange
+
+If the anchor supports SEP-38 quotes, it can provide a withdraw that makes a bridge between non-equivalent tokens by receiving, for instance USDC from the Stellar network and in return sending the equivalent value (minus fees) as NGN to the user's bank account.
+
+The /withdraw-exchange endpoint allows a wallet to get withdraw information from an anchor when the user intends to make a conversion between non-equivalent tokens. With this endpoint, a user has all the information needed to initiate a withdraw and it also lets the anchor specify additional information (if desired) that the user must submit via SEP-12.
+
+```php
+$request = new WithdrawExchangeRequest(
+                sourceAsset: 'USDC',
+                destinationAsset: 'iso4217:NGN',
+                amount: '700',
+                type: 'bank_account',
+                quoteId: '282837',
+                jwt: $jwtToken);
+
+$response = $transferService->withdrawExchange($request);
+print($response->accountId);
+//...
+```
 
 
 ### Fee
@@ -91,15 +130,14 @@ try {
 This endpoint (described [here](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#fee)) allows an anchor to report the fee that would be charged for a given deposit or withdraw operation. With the php sdk you can use the ```fee``` method of your ```TransferServerService``` instance to get the info if supported by the anchor:
 
 ```php
-$request = new FeeRequest();
-$request->jwt = $jwtToken; // jwt token received from stellar web auth - sep-0010
-$request->operation = "deposit";
-$request->assetCode = "NGN";
-$request->amount = 123.09;
+$request = new FeeRequest(
+            operation: "deposit",
+            assetCode: "NGN",
+            amount: 123.09);
 // ...
 
 $response = $transferService->fee($request);
-print($response->getFee());
+print($response->fee);
 ```
 
 
@@ -109,14 +147,14 @@ print($response->getFee());
 From this endpoint (described [here](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)) wallets can receive the status of deposits and withdrawals while they process and a history of past transactions with the anchor. With the php sdk you can use the ```transactions``` method of your ```TransferServerService``` instance to get the transactions:
 
 ```php
-$request = new AnchorTransactionsRequest();
-$request->jwt = $jwtToken; // jwt token received from stellar web auth - sep-0010
-$request->account = "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK";
-$request->assetCode = "XLM";
+$request = new AnchorTransactionsRequest(
+                assetCode: "XLM",
+                account: "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK",
+                jwt: $jwtToken);
 
 $response = $transferService->transactions($request);
-print(count($response->getTransactions()) . PHP_EOL);
-print($response->getTransactions()[0]->getId() . PHP_EOL);
+print(count($response->transactions) . PHP_EOL);
+print($response->transactions[0]->id . PHP_EOL);
 // ...
 ```
 
@@ -132,8 +170,8 @@ $request->jwt = $jwtToken; // jwt token received from stellar web auth - sep-001
 $request->id = "82fhs729f63dh0v4";
 
 $response = $transferService->transaction($request);
-print($response->getTransaction()->getKind() .  PHP_EOL);
-print($response->getTransaction()->getStatus() .  PHP_EOL);
+print($response->transaction->kind .  PHP_EOL);
+print($response->transaction->status .  PHP_EOL);
 // ...
 ```
 
@@ -144,19 +182,24 @@ print($response->getTransaction()->getStatus() .  PHP_EOL);
 This endpoint (described [here](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#update)) is used when the anchor requests more info via the pending_transaction_info_update status. With the php sdk you can use the ```patchTransaction``` method of your ```TransferServerService``` instance to update the data:
 
 ```php
-$request = new PatchTransactionRequest();
-$request->jwt = $jwtToken; // jwt token received from stellar web auth - sep-0010
-$request->id = "82fhs729f63dh0v4";
-$request->fields = array();
-$request->fields["dest"] = "12345678901234";
-$request->fields["dest_extra"] = "021000021";
+$fields = array();
+$fields["dest"] = "12345678901234";
+$fields["dest_extra"] = "021000021";
+
+$request = new PatchTransactionRequest(
+    id: "82fhs729f63dh0v4",
+    fields: $fields,
+    jwt: $jwtToken,
+);
 
 $response = $transferService->patchTransaction($request);
-print($response->getStatusCode());
+print($response->statusCode);
 // ...
 ```
 
 ### Further readings
 
-For more info, see also the sdk's sep-0006 test cases.
+For more info, see also the class documentation of  [`TransferServerService`](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDK/SEP/TransferServerService/TransferServerService.php)  
+and the sdk's [SEP-0006 test cases](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SEP006Test.php).
+
 

@@ -10,26 +10,23 @@ use Soneso\StellarSDK\Responses\Response;
 
 class AnchorTransactionResponse extends Response {
 
-    private AnchorTransaction $transaction;
+    public AnchorTransaction $transaction;
 
     /**
-     * @return AnchorTransaction
+     * @param AnchorTransaction $transaction
      */
-    public function getTransaction(): AnchorTransaction
+    public function __construct(AnchorTransaction $transaction)
     {
-        return $this->transaction;
+        $this->transaction = $transaction;
     }
 
-    protected function loadFromJson(array $json) : void {
-        if (isset($json['transaction'])) {
-            $this->transaction = AnchorTransaction::fromJson($json['transaction']);
-        }
-    }
-
+    /**
+     * Constructs a new instance of AnchorTransactionResponse by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return AnchorTransactionResponse the object containing the parsed data.
+     */
     public static function fromJson(array $json) : AnchorTransactionResponse
     {
-        $result = new AnchorTransactionResponse();
-        $result->loadFromJson($json);
-        return $result;
+        return new AnchorTransactionResponse(AnchorTransaction::fromJson($json['transaction']));;
     }
 }

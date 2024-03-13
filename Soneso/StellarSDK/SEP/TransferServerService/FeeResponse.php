@@ -10,25 +10,28 @@ use Soneso\StellarSDK\Responses\Response;
 
 class FeeResponse extends Response
 {
-    private float $fee;
+    /**
+     * @var float $fee The total fee (in units of the asset involved) that would be charged
+     * to deposit/withdraw the specified amount of asset_code.
+     */
+    public float $fee;
 
     /**
-     * The total fee (in units of the asset involved) that would be charged to deposit/withdraw the specified amount of asset_code.
-     * @return float
+     * @param float $fee The total fee (in units of the asset involved) that would be charged
+     *  to deposit/withdraw the specified amount of asset_code.
      */
-    public function getFee(): float
+    public function __construct(float $fee)
     {
-        return $this->fee;
+        $this->fee = $fee;
     }
 
-    protected function loadFromJson(array $json) : void {
-        if (isset($json['fee'])) $this->fee = $json['fee'];
-    }
-
+    /**
+     * Constructs a new instance of FeeResponse by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return FeeResponse the object containing the parsed data.
+     */
     public static function fromJson(array $json) : FeeResponse
     {
-        $result = new FeeResponse();
-        $result->loadFromJson($json);
-        return $result;
+        return new FeeResponse($json['fee']);
     }
 }

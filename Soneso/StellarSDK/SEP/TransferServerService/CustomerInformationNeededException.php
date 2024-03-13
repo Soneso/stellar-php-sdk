@@ -10,20 +10,19 @@ use Exception;
 
 class CustomerInformationNeededException extends Exception
 {
-    private CustomerInformationNeededResponse $response;
+    /**
+     * @var CustomerInformationNeededResponse $response the response data received from the server.
+     */
+    public CustomerInformationNeededResponse $response;
 
+    /**
+     * Constructor.
+     * @param CustomerInformationNeededResponse $response the response data received from the server.
+     */
     public function __construct(CustomerInformationNeededResponse $response)
     {
         $this->response = $response;
-        $message = "The anchor needs more information about the customer and all the information can be received non-interactively via SEP-12. Fields: " . implode(", ", $response->getFields());
+        $message = "The anchor needs more information about the customer and all the information can be received non-interactively via SEP-12. Fields: " . implode(", ", $response->fields);
         parent::__construct($message);
-    }
-
-    /**
-     * @return CustomerInformationNeededResponse
-     */
-    public function getResponse(): CustomerInformationNeededResponse
-    {
-        return $this->response;
     }
 }

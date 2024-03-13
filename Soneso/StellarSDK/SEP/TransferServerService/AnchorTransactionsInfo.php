@@ -6,39 +6,29 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
-use Soneso\StellarSDK\Responses\Response;
-
-class AnchorTransactionsInfo extends Response {
-
-    private bool $enabled;
-    private ?bool $authenticationRequired = null;
+class AnchorTransactionsInfo {
 
     /**
-     * @return bool
+     * @var bool|null true if the endpoint is available.
      */
-    public function isEnabled(): bool
-    {
-        return $this->enabled;
-    }
+    public ?bool $enabled = null;
 
     /**
-     * @return bool|null
+     * @var bool|null true if client must be authenticated before accessing the endpoint.
      */
-    public function getAuthenticationRequired(): ?bool
-    {
-        return $this->authenticationRequired;
-    }
+    public ?bool $authenticationRequired = null;
 
 
-    protected function loadFromJson(array $json) : void {
-        if (isset($json['enabled'])) $this->enabled = $json['enabled'];
-        if (isset($json['authentication_required'])) $this->authenticationRequired = $json['authentication_required'];
-    }
-
+    /**
+     * Constructs a new instance of AnchorTransactionsInfo by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return AnchorTransactionsInfo the object containing the parsed data.
+     */
     public static function fromJson(array $json) : AnchorTransactionsInfo
     {
         $result = new AnchorTransactionsInfo();
-        $result->loadFromJson($json);
+        if (isset($json['enabled'])) $result->enabled = $json['enabled'];
+        if (isset($json['authentication_required'])) $result->authenticationRequired = $json['authentication_required'];
         return $result;
     }
 }

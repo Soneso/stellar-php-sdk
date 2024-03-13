@@ -10,24 +10,25 @@ use Exception;
 
 class CustomerInformationStatusException extends Exception
 {
-    private CustomerInformationStatusResponse $response;
-
-    public function __construct(CustomerInformationStatusResponse $response) {
-        $this->response = $response;
-        $message = "Customer information was submitted for the account, but the information is either still being processed or was not accepted. Status: ". $response->getStatus();
-        if ($response->getMoreInfoUrl()) {
-            $message = $message . " more info url: " . $response->getMoreInfoUrl();
-        }
-        if ($response->getEta()) {
-            $message = $message . " eta: " . strval($response->getEta());
-        }
-        parent::__construct($message);
-    }
+    /**
+     * @var CustomerInformationStatusResponse $response the response data received from the server.
+     */
+    public CustomerInformationStatusResponse $response;
 
     /**
-     * @return CustomerInformationStatusResponse
+     * Constructor.
+     *
+     * @param CustomerInformationStatusResponse $response the response data received from the server.
      */
-    public function getResponse(): CustomerInformationStatusResponse {
-        return $this->response;
+    public function __construct(CustomerInformationStatusResponse $response) {
+        $this->response = $response;
+        $message = "Customer information was submitted for the account, but the information is either still being processed or was not accepted. Status: ". $response->status;
+        if ($response->moreInfoUrl) {
+            $message = $message . " more info url: " . $response->moreInfoUrl;
+        }
+        if ($response->eta) {
+            $message = $message . " eta: " . $response->eta;
+        }
+        parent::__construct($message);
     }
 }

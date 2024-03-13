@@ -1,7 +1,7 @@
 
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
-![v1.3.9](https://img.shields.io/badge/v1.3.9-green.svg)
+![v1.4.0](https://img.shields.io/badge/v1.4.0-green.svg)
 
 The Soneso open source Stellar SDK for PHP provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 

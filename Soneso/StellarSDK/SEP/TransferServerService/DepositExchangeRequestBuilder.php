@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-// Copyright 2022 The Stellar PHP SDK Authors. All rights reserved.
+// Copyright 2024 The Stellar PHP SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
-class DepositRequestBuilder extends RequestBuilder
+class DepositExchangeRequestBuilder extends RequestBuilder
 {
     private ?string $jwtToken = null;
     private string $serviceAddress;
@@ -37,7 +37,7 @@ class DepositRequestBuilder extends RequestBuilder
      * @param array<array-key, mixed> $queryParameters the query parameters to use for the get request.
      * @return $this returns the builder, so that it can be chained.
      */
-    public function forQueryParameters(array $queryParameters) : DepositRequestBuilder {
+    public function forQueryParameters(array $queryParameters) : DepositExchangeRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
         return $this;
     }
@@ -53,7 +53,7 @@ class DepositRequestBuilder extends RequestBuilder
      * type is non_interactive_customer_info_needed
      * @throws AuthenticationRequiredException if the endpoint requires authentication.
      * @throws GuzzleException if an exception occurs during the request.
-    */
+     */
     public function request(string $url) : DepositResponse {
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
@@ -74,7 +74,7 @@ class DepositRequestBuilder extends RequestBuilder
                     $val = CustomerInformationStatusResponse::fromJson($jsonData);
                     throw new CustomerInformationStatusException($val);
                 } else if ("authentication_required" === $type) {
-                    throw new AuthenticationRequiredException("The deposit endpoint requires authentication");
+                    throw new AuthenticationRequiredException("The deposit exchange endpoint requires authentication");
                 }
             }
         }
@@ -90,7 +90,7 @@ class DepositRequestBuilder extends RequestBuilder
      * @return string the constructed url.
      */
     public function buildUrl() : string {
-        $url = $this->serviceAddress . "/deposit";
+        $url = $this->serviceAddress . "/deposit-exchange";
         if (count($this->queryParameters) > 0) {
             $url .= '?' . http_build_query($this->queryParameters);
         }

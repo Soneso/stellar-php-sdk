@@ -6,53 +6,39 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
-use Soneso\StellarSDK\Responses\Response;
-
-class AnchorField extends Response
+class AnchorField
 {
-    private string $description;
-    private ?bool $optional = null;
-    private ?array $choices = null;
+    /**
+     * @var string|null $description description of field to show to user.
+     */
+    public ?string $description = null;
 
     /**
-     * @return string
+     * @var bool|null $optional if field is optional. Defaults to false.
      */
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
+    public ?bool $optional = null;
 
     /**
-     * @return bool|null
+     * @var array<string>|null $choices list of possible values for the field.
      */
-    public function getOptional(): ?bool
-    {
-        return $this->optional;
-    }
+    public ?array $choices = null;
 
     /**
-     * @return array|null
+     * Constructs a new instance of AnchorField by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return AnchorField the object containing the parsed data.
      */
-    public function getChoices(): ?array
-    {
-        return $this->choices;
-    } //[string]
-
-    protected function loadFromJson(array $json) : void {
-        if (isset($json['description'])) $this->description = $json['description'];
-        if (isset($json['optional'])) $this->optional = $json['optional'];
-        if (isset($json['choices'])) {
-            $this->choices = array();
-            foreach ($json['choices'] as $choice) {
-                array_push($this->choices, $choice);
-            }
-        }
-    }
-
     public static function fromJson(array $json) : AnchorField
     {
         $result = new AnchorField();
-        $result->loadFromJson($json);
+        if (isset($json['description'])) $result->description = $json['description'];
+        if (isset($json['optional'])) $result->optional = $json['optional'];
+        if (isset($json['choices'])) {
+            $result->choices = array();
+            foreach ($json['choices'] as $choice) {
+                $result->choices[] = $choice;
+            }
+        }
         return $result;
     }
 }

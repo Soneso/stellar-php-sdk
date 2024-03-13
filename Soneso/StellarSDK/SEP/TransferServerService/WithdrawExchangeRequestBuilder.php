@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-// Copyright 2022 The Stellar PHP SDK Authors. All rights reserved.
+// Copyright 2024 The Stellar PHP SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
-class DepositRequestBuilder extends RequestBuilder
+class WithdrawExchangeRequestBuilder extends RequestBuilder
 {
     private ?string $jwtToken = null;
     private string $serviceAddress;
@@ -21,9 +21,8 @@ class DepositRequestBuilder extends RequestBuilder
     /**
      * Constructor.
      * @param Client $httpClient the client to be used for the request.
-     * @param string $serviceAddress the server address of the sep-06 service (e.g. from sep-01).
-     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication.
-     * If provided it will be used in the request header.
+     * @param string $serviceAddress the server address of the sep-24 service (e.g. from sep-01).
+     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication. If provided it will be used in the request header.
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {
@@ -37,7 +36,7 @@ class DepositRequestBuilder extends RequestBuilder
      * @param array<array-key, mixed> $queryParameters the query parameters to use for the get request.
      * @return $this returns the builder, so that it can be chained.
      */
-    public function forQueryParameters(array $queryParameters) : DepositRequestBuilder {
+    public function forQueryParameters(array $queryParameters) : WithdrawExchangeRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
         return $this;
     }
@@ -46,20 +45,22 @@ class DepositRequestBuilder extends RequestBuilder
      * Sends the get request for the given url.
      * Attaches the jwt token to the request if provided by constructor.
      * @param string $url the url to request from
-     * @return DepositResponse the parsed response
+     * @return WithdrawResponse the parsed response
      * @throws CustomerInformationNeededException if the server response status code is 403 and
      * type is customer_info_status
      * @throws CustomerInformationStatusException if the server response status code is 403 and
      * type is non_interactive_customer_info_needed
      * @throws AuthenticationRequiredException if the endpoint requires authentication.
      * @throws GuzzleException if an exception occurs during the request.
-    */
-    public function request(string $url) : DepositResponse {
+     */
+    public function request(string $url) : WithdrawResponse {
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
+
         if ($this->jwtToken !== null) {
             $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
         }
+
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
         if (403 === $response->getStatusCode()) {
@@ -73,14 +74,14 @@ class DepositRequestBuilder extends RequestBuilder
                 } else if ("customer_info_status" === $type) {
                     $val = CustomerInformationStatusResponse::fromJson($jsonData);
                     throw new CustomerInformationStatusException($val);
-                } else if ("authentication_required" === $type) {
-                    throw new AuthenticationRequiredException("The deposit endpoint requires authentication");
+                }  else if ("authentication_required" === $type) {
+                    throw new AuthenticationRequiredException("The withdraw endpoint requires authentication");
                 }
             }
         }
         $responseHandler = new ResponseHandler();
-        $response = $responseHandler->handleResponse($response, RequestType::ANCHOR_DEPOSIT, $this->httpClient);
-        assert($response instanceof DepositResponse);
+        $response = $responseHandler->handleResponse($response, RequestType::ANCHOR_WITHDRAW, $this->httpClient);
+        assert($response instanceof WithdrawResponse);
 
         return $response;
     }
@@ -90,7 +91,7 @@ class DepositRequestBuilder extends RequestBuilder
      * @return string the constructed url.
      */
     public function buildUrl() : string {
-        $url = $this->serviceAddress . "/deposit";
+        $url = $this->serviceAddress . "/withdraw-exchange";
         if (count($this->queryParameters) > 0) {
             $url .= '?' . http_build_query($this->queryParameters);
         }
@@ -100,7 +101,7 @@ class DepositRequestBuilder extends RequestBuilder
 
     /**
      * Build and execute request.
-     * @return DepositResponse the parsed response.
+     * @return WithdrawResponse the parsed response.
      * @throws CustomerInformationNeededException if the server response status code is 403 and
      * type is customer_info_status
      * @throws CustomerInformationStatusException if the server response status code is 403 and
@@ -108,7 +109,7 @@ class DepositRequestBuilder extends RequestBuilder
      * @throws AuthenticationRequiredException if the endpoint requires authentication.
      * @throws GuzzleException if any request exception occurs.
      */
-    public function execute() : DepositResponse {
+    public function execute() : WithdrawResponse {
         return $this->request($this->buildUrl());
     }
 }

@@ -6,56 +6,48 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
-use Soneso\StellarSDK\Responses\Response;
-
-class CustomerInformationStatusResponse extends Response
+class CustomerInformationStatusResponse
 {
-    /// Status of customer information processing. One of: pending, denied.
-    private string $status;
-
-    /// (optional) A URL the user can visit if they want more information about their account / status.
-    private ?string $moreInfoUrl = null;
-
-    /// (optional) Estimated number of seconds until the customer information status will update.
-    private ?int $eta = null;
+    /**
+     * @var string $status Status of customer information processing. One of: pending, denied.
+     */
+    public string $status;
 
     /**
-     * Status of customer information processing. One of: pending, denied.
-     * @return string
+     * @var string|null $moreInfoUrl (optional) A URL the user can visit if they want more information
+     * about their account / status.
      */
-    public function getStatus(): string
+    public ?string $moreInfoUrl = null;
+
+    /**
+     * @var int|null $eta (optional) Estimated number of seconds until the customer information
+     * status will update.
+     */
+    public ?int $eta = null;
+
+    /**
+     * @param string $status Status of customer information processing. One of: pending, denied.
+     * @param string|null $moreInfoUrl (optional) A URL the user can visit if they want more information
+     * @param int|null $eta (optional) Estimated number of seconds until the customer information
+     *  status will update.
+     */
+    public function __construct(string $status, ?string $moreInfoUrl = null, ?int $eta = null)
     {
-        return $this->status;
+        $this->status = $status;
+        $this->moreInfoUrl = $moreInfoUrl;
+        $this->eta = $eta;
     }
 
     /**
-     * (optional) A URL the user can visit if they want more information about their account / status.
-     * @return string|null
+     * Constructs a new instance of CustomerInformationStatusResponse by using the given data.
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return CustomerInformationStatusResponse the object containing the parsed data.
      */
-    public function getMoreInfoUrl(): ?string
-    {
-        return $this->moreInfoUrl;
-    }
-
-    /**
-     * (optional) Estimated number of seconds until the customer information status will update.
-     * @return int|null
-     */
-    public function getEta(): ?int
-    {
-        return $this->eta;
-    }
-
-    protected function loadFromJson(array $json) : void {
-        if (isset($json['status'])) $this->status = $json['status'];
-        if (isset($json['more_info_url'])) $this->moreInfoUrl = $json['more_info_url'];
-        if (isset($json['eta'])) $this->eta = $json['eta'];
-    }
-
     public static function fromJson(array $json) : CustomerInformationStatusResponse
     {
-        $result = new CustomerInformationStatusResponse();
-        $result->loadFromJson($json);
+        $result = new CustomerInformationStatusResponse($json['status']);
+        if (isset($json['more_info_url'])) $result->moreInfoUrl = $json['more_info_url'];
+        if (isset($json['eta'])) $result->eta = $json['eta'];
         return $result;
     }
 }
