@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -71,9 +72,9 @@ class SorobanAtomicSwapTest extends TestCase
         print("atomic swap cid: " . $atomicSwapContractId . PHP_EOL);
 
         $tokenAContractId = $this->deployContract($server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
-        print("token a cid: " . $tokenAContractId . PHP_EOL);
+        print("token a cid: " . StrKey::encodeContractIdHex($tokenAContractId) . PHP_EOL);
         $tokenBContractId = $this->deployContract($server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
-        print("token b cid: " . $tokenBContractId . PHP_EOL);
+        print("token b cid: " . StrKey::encodeContractIdHex($tokenBContractId) . PHP_EOL);
 
         $this->createToken($server, $adminKeyPair, $tokenAContractId, "TokenA", "TokenA");
         $this->createToken($server, $adminKeyPair, $tokenBContractId, "TokenB", "TokenB");

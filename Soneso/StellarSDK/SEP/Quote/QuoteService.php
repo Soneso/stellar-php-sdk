@@ -46,13 +46,13 @@ class QuoteService
      * @return QuoteService the initialized QuoteService
      * @throws Exception if the loading of the service address for the given domain failed.
      */
-    public static function fromDomain(string $domain) : QuoteService {
-        $stellarToml = StellarToml::fromDomain($domain);
+    public static function fromDomain(string $domain, ?Client $httpClient = null) : QuoteService {
+        $stellarToml = StellarToml::fromDomain($domain, $httpClient);
         $address = $stellarToml->getGeneralInformation()->anchorQuoteServer;
         if (!$address) {
             throw new Exception("No anchor quote service found in stellar.toml");
         }
-        return new QuoteService($address);
+        return new QuoteService($address, $httpClient);
     }
 
     /**

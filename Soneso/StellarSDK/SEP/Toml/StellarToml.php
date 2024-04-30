@@ -17,11 +17,11 @@ use Yosymfony\Toml\Toml;
 /// Supported version: 2.5.0
 class StellarToml
 {
-    private ?GeneralInformation $generalInformation = null;
-    private ?Documentation $documentation = null;
-    private ?Principals $principals = null;
-    private ?Currencies $currencies = null;
-    private ?Validators $validators = null;
+    public ?GeneralInformation $generalInformation = null;
+    public ?Documentation $documentation = null;
+    public ?Principals $principals = null;
+    public ?Currencies $currencies = null;
+    public ?Validators $validators = null;
 
     public function __construct(string $toml) {
 
