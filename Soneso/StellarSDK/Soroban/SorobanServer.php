@@ -108,7 +108,7 @@ class SorobanServer
      * @throws GuzzleException
      */
     public function sendTransaction(Transaction $transaction) : SendTransactionResponse {
-        $body = $this->prepareRequest(self::SEND_TRANSACTION, [$transaction->toEnvelopeXdrBase64()]);
+        $body = $this->prepareRequest(self::SEND_TRANSACTION, ['transaction' => $transaction->toEnvelopeXdrBase64()]);
         return $this->request($body, self::SEND_TRANSACTION);
     }
 
@@ -119,7 +119,7 @@ class SorobanServer
      * @throws GuzzleException
      */
     public function getTransaction(String $transactionId) : GetTransactionResponse {
-        $body = $this->prepareRequest(self::GET_TRANSACTION, [$transactionId]);
+        $body = $this->prepareRequest(self::GET_TRANSACTION, ['hash' => $transactionId]);
         return $this->request($body, self::GET_TRANSACTION);
     }
 
@@ -133,7 +133,7 @@ class SorobanServer
      * @throws GuzzleException
      */
     public function getLedgerEntries(array $base64EncodedKeys) : GetLedgerEntriesResponse {
-        $body = $this->prepareRequest(self::GET_LEDGER_ENTRIES, [$base64EncodedKeys]);
+        $body = $this->prepareRequest(self::GET_LEDGER_ENTRIES, ['keys' => $base64EncodedKeys]);
         return $this->request($body, self::GET_LEDGER_ENTRIES);
     }
 
