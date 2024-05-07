@@ -20,6 +20,28 @@ class WithdrawExchangeAsset
     public ?bool $authenticationRequired = null;
 
     /**
+     * @var float|null $feeFixed Optional fixed (flat) fee for withdraw, in units of the Stellar asset.
+     * Null if there is no fee or the fee schedule is complex.
+     */
+    public ?float $feeFixed = null;
+
+    /**
+     * @var float|null $feePercent Optional percentage fee for withdraw, in percentage points of the
+     * Stellar asset. Null if there is no fee or the fee schedule is complex.
+     */
+    public ?float $feePercent = null;
+
+    /**
+     * @var float|null $minAmount Optional minimum amount. No limit if not specified.
+     */
+    public ?float $minAmount = null;
+
+    /**
+     * @var float|null $maxAmount Optional maximum amount. No limit if not specified.
+     */
+    public ?float $maxAmount = null;
+
+    /**
      * A field with each type of withdrawal supported for that asset as a key.
      * Each type can specify a fields object explaining what fields
      * are needed and what they do. Anchors are encouraged to use SEP-9
@@ -56,12 +78,16 @@ class WithdrawExchangeAsset
         $result = new WithdrawExchangeAsset($enabled);
 
         if (isset($json['authentication_required'])) $result->authenticationRequired = $json['authentication_required'];
+        if (isset($json['fee_fixed'])) $result->feeFixed = $json['fee_fixed'];
+        if (isset($json['fee_percent'])) $result->feePercent = $json['fee_percent'];
+        if (isset($json['min_amount'])) $result->minAmount = $json['min_amount'];
+        if (isset($json['max_amount'])) $result->maxAmount = $json['max_amount'];
         if (isset($json['types'])) {
             $result->types = array();
             $typesFields = $json['types'];
             foreach(array_keys($typesFields) as $typeKey) {
 
-                if ($typesFields[$typeKey]['fields']) {
+                if (isset($typesFields[$typeKey]['fields'])) {
                     $fields = array();
                     foreach(array_keys($typesFields[$typeKey]['fields']) as $fieldKey) {
                         $value = AnchorField::fromJson($typesFields[$typeKey]['fields'][$fieldKey]);

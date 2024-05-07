@@ -87,7 +87,7 @@ class WithdrawAsset
             $typesFields = $json['types'];
             foreach(array_keys($typesFields) as $typeKey) {
 
-                if ($typesFields[$typeKey]['fields']) {
+                if (isset($typesFields[$typeKey]['fields'])) {
                     $fields = array();
                     foreach(array_keys($typesFields[$typeKey]['fields']) as $fieldKey) {
                         $value = AnchorField::fromJson($typesFields[$typeKey]['fields'][$fieldKey]);

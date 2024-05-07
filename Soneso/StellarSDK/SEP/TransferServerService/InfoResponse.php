@@ -87,7 +87,7 @@ class InfoResponse extends Response
         if (isset($json['fee'])) $this->feeInfo = AnchorFeeInfo::fromJson($json['fee']);
         if (isset($json['transactions'])) $this->transactionsInfo = AnchorTransactionsInfo::fromJson($json['transactions']);
         if (isset($json['transaction'])) $this->transactionInfo = AnchorTransactionInfo::fromJson($json['transaction']);
-        if (isset($json['features'])) $this->featureFlags = AnchorFeatureFlags::fromJson($json['transaction']);
+        if (isset($json['features'])) $this->featureFlags = AnchorFeatureFlags::fromJson($json['features']);
     }
 
     public static function fromJson(array $json) : InfoResponse
