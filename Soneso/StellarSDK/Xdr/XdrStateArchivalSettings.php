@@ -15,7 +15,8 @@ class XdrStateArchivalSettings
     public int $tempRentRateDenominator; // int64
     public int $maxEntriesToArchive; // uint32
     public int $bucketListSizeWindowSampleSize; // uint32
-    public int $evictionScanSize; // uint64
+    public int $bucketListWindowSamplePeriod; // uint32
+    public int $evictionScanSize; // uint32
     public int $startingEvictionScanLevel; // uint32
 
     /**
@@ -26,14 +27,22 @@ class XdrStateArchivalSettings
      * @param int $tempRentRateDenominator
      * @param int $maxEntriesToArchive
      * @param int $bucketListSizeWindowSampleSize
+     * @param int $bucketListWindowSamplePeriod
      * @param int $evictionScanSize
      * @param int $startingEvictionScanLevel
      */
-    public function __construct(int $maxEntryTTL, int $minTemporaryTTL,
-                                int $minPersistentTTL,
-                                int $persistentRentRateDenominator, int $tempRentRateDenominator,
-                                int $maxEntriesToArchive, int $bucketListSizeWindowSampleSize,
-                                int $evictionScanSize, int $startingEvictionScanLevel)
+    public function __construct(
+        int $maxEntryTTL,
+        int $minTemporaryTTL,
+        int $minPersistentTTL,
+        int $persistentRentRateDenominator,
+        int $tempRentRateDenominator,
+        int $maxEntriesToArchive,
+        int $bucketListSizeWindowSampleSize,
+        int $bucketListWindowSamplePeriod,
+        int $evictionScanSize,
+        int $startingEvictionScanLevel,
+    )
     {
         $this->maxEntryTTL = $maxEntryTTL;
         $this->minTemporaryTTL = $minTemporaryTTL;
@@ -42,6 +51,7 @@ class XdrStateArchivalSettings
         $this->tempRentRateDenominator = $tempRentRateDenominator;
         $this->maxEntriesToArchive = $maxEntriesToArchive;
         $this->bucketListSizeWindowSampleSize = $bucketListSizeWindowSampleSize;
+        $this->bucketListWindowSamplePeriod = $bucketListWindowSamplePeriod;
         $this->evictionScanSize = $evictionScanSize;
         $this->startingEvictionScanLevel = $startingEvictionScanLevel;
     }
@@ -55,7 +65,8 @@ class XdrStateArchivalSettings
         $body .= XdrEncoder::integer64($this->tempRentRateDenominator);
         $body .= XdrEncoder::unsignedInteger32($this->maxEntriesToArchive);
         $body .= XdrEncoder::unsignedInteger32($this->bucketListSizeWindowSampleSize);
-        $body .= XdrEncoder::unsignedInteger64($this->evictionScanSize);
+        $body .= XdrEncoder::unsignedInteger32($this->bucketListWindowSamplePeriod);
+        $body .= XdrEncoder::unsignedInteger32($this->evictionScanSize);
         $body .= XdrEncoder::unsignedInteger32($this->startingEvictionScanLevel);
         return $body;
     }
@@ -68,12 +79,21 @@ class XdrStateArchivalSettings
         $tempRentRateDenominator = $xdr->readInteger64();
         $maxEntriesToArchive = $xdr->readUnsignedInteger32();
         $bucketListSizeWindowSampleSize = $xdr->readUnsignedInteger32();
-        $evictionScanSize = $xdr->readUnsignedInteger64();
+        $bucketListWindowSamplePeriod = $xdr->readUnsignedInteger32();
+        $evictionScanSize = $xdr->readUnsignedInteger32();
         $startingEvictionScanLevel = $xdr->readUnsignedInteger32();
-        return new XdrStateArchivalSettings($maxEntryTTL, $minTemporaryTTL,
-            $minPersistentTTL, $persistentRentRateDenominator,
-            $tempRentRateDenominator, $maxEntriesToArchive,$bucketListSizeWindowSampleSize,
-            $evictionScanSize, $startingEvictionScanLevel);
+        return new XdrStateArchivalSettings(
+            $maxEntryTTL,
+            $minTemporaryTTL,
+            $minPersistentTTL,
+            $persistentRentRateDenominator,
+            $tempRentRateDenominator,
+            $maxEntriesToArchive,
+            $bucketListSizeWindowSampleSize,
+            $bucketListWindowSamplePeriod,
+            $evictionScanSize,
+            $startingEvictionScanLevel,
+        );
     }
 
     /**
@@ -202,6 +222,22 @@ class XdrStateArchivalSettings
     public function setBucketListSizeWindowSampleSize(int $bucketListSizeWindowSampleSize): void
     {
         $this->bucketListSizeWindowSampleSize = $bucketListSizeWindowSampleSize;
+    }
+
+    /**
+     * @return int
+     */
+    public function getBucketListWindowSamplePeriod(): int
+    {
+        return $this->bucketListWindowSamplePeriod;
+    }
+
+    /**
+     * @param int $bucketListWindowSamplePeriod
+     */
+    public function setBucketListWindowSamplePeriod(int $bucketListWindowSamplePeriod): void
+    {
+        $this->bucketListWindowSamplePeriod = $bucketListWindowSamplePeriod;
     }
 
     /**

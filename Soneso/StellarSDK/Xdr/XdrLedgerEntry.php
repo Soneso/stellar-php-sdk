@@ -39,6 +39,12 @@ class XdrLedgerEntry
         return new XdrLedgerEntry($lastModifiedLedgerSeq, $data, $ext);
     }
 
+    public static function fromBase64Xdr(String $base64Xdr) : XdrLedgerEntry {
+        $xdr = base64_decode($base64Xdr);
+        $xdrBuffer = new XdrBuffer($xdr);
+        return XdrLedgerEntry::decode($xdrBuffer);
+    }
+
     /**
      * @return int
      */

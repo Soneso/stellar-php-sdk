@@ -9,18 +9,32 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrSorobanTransactionMeta
 {
-    public XdrExtensionPoint $ext;
-    public array $events; // [XdrContractEvent]
+    public XdrSorobanTransactionMetaExt $ext;
+    /**
+     * @var array<XdrContractEvent> $events
+     */
+    public array $events;
     public XdrSCVal $returnValue;
-    public array $diagnosticEvents; // [XdrDiagnosticEvent]
 
     /**
-     * @param XdrExtensionPoint $ext
-     * @param array $events
-     * @param XdrSCVal $returnValue
-     * @param array $diagnosticEvents
+     * @var array<XdrDiagnosticEvent> $diagnosticEvents
      */
-    public function __construct(XdrExtensionPoint $ext, array $events, XdrSCVal $returnValue, array $diagnosticEvents)
+    public array $diagnosticEvents;
+
+    /**
+     * Constructor.
+     *
+     * @param XdrSorobanTransactionMetaExt $ext
+     * @param array<XdrContractEvent> $events
+     * @param XdrSCVal $returnValue
+     * @param array<XdrDiagnosticEvent> $diagnosticEvents
+     */
+    public function __construct(
+        XdrSorobanTransactionMetaExt $ext,
+        array $events,
+        XdrSCVal $returnValue,
+        array $diagnosticEvents,
+    )
     {
         $this->ext = $ext;
         $this->events = $events;
@@ -44,7 +58,7 @@ class XdrSorobanTransactionMeta
     }
 
     public static function decode(XdrBuffer $xdr) : XdrSorobanTransactionMeta {
-        $ext = XdrExtensionPoint::decode($xdr);
+        $ext = XdrSorobanTransactionMetaExt::decode($xdr);
         $valCount = $xdr->readInteger32();
         $eventsArr = array();
         for ($i = 0; $i < $valCount; $i++) {
@@ -60,23 +74,23 @@ class XdrSorobanTransactionMeta
     }
 
     /**
-     * @return XdrExtensionPoint
+     * @return XdrSorobanTransactionMetaExt
      */
-    public function getExt(): XdrExtensionPoint
+    public function getExt(): XdrSorobanTransactionMetaExt
     {
         return $this->ext;
     }
 
     /**
-     * @param XdrExtensionPoint $ext
+     * @param XdrSorobanTransactionMetaExt $ext
      */
-    public function setExt(XdrExtensionPoint $ext): void
+    public function setExt(XdrSorobanTransactionMetaExt $ext): void
     {
         $this->ext = $ext;
     }
 
     /**
-     * @return array
+     * @return array<XdrContractEvent>
      */
     public function getEvents(): array
     {
@@ -84,7 +98,7 @@ class XdrSorobanTransactionMeta
     }
 
     /**
-     * @param array $events
+     * @param array<XdrContractEvent> $events
      */
     public function setEvents(array $events): void
     {
@@ -108,7 +122,7 @@ class XdrSorobanTransactionMeta
     }
 
     /**
-     * @return array
+     * @return array<XdrDiagnosticEvent>
      */
     public function getDiagnosticEvents(): array
     {
@@ -116,7 +130,7 @@ class XdrSorobanTransactionMeta
     }
 
     /**
-     * @param array $diagnosticEvents
+     * @param array<XdrDiagnosticEvent> $diagnosticEvents
      */
     public function setDiagnosticEvents(array $diagnosticEvents): void
     {

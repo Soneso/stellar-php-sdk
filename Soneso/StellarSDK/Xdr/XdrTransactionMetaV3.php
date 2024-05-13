@@ -10,19 +10,36 @@ class XdrTransactionMetaV3
 {
 
     public XdrExtensionPoint $ext;
-    public array $txChangesBefore; // [XdrLedgerEntryChange]
-    public array $operations; // [XdrOperationMeta]
-    public array $txChangesAfter; // [XdrLedgerEntryChange]
+    /**
+     * @var array<XdrLedgerEntryChange> $txChangesBefore
+     */
+    public array $txChangesBefore;
+
+    /**
+     * @var array<XdrOperationMeta> $operations
+     */
+    public array $operations;
+
+    /**
+     * @var array<XdrLedgerEntryChange> $txChangesAfter
+     */
+    public array $txChangesAfter;
     public ?XdrSorobanTransactionMeta $sorobanMeta = null;
 
     /**
      * @param XdrExtensionPoint $ext
-     * @param array $txChangesBefore
-     * @param array $operations
-     * @param array $txChangesAfter
+     * @param array<XdrLedgerEntryChange> $txChangesBefore
+     * @param array<XdrOperationMeta> $operations
+     * @param array<XdrLedgerEntryChange> $txChangesAfter
      * @param XdrSorobanTransactionMeta|null $sorobanMeta
      */
-    public function __construct(XdrExtensionPoint $ext, array $txChangesBefore, array $operations, array $txChangesAfter, ?XdrSorobanTransactionMeta $sorobanMeta)
+    public function __construct(
+        XdrExtensionPoint $ext,
+        array $txChangesBefore,
+        array $operations,
+        array $txChangesAfter,
+        ?XdrSorobanTransactionMeta $sorobanMeta,
+    )
     {
         $this->ext = $ext;
         $this->txChangesBefore = $txChangesBefore;
@@ -66,19 +83,29 @@ class XdrTransactionMetaV3
     public static function decode(XdrBuffer $xdr):  XdrTransactionMetaV3 {
         $ext = XdrExtensionPoint::decode($xdr);
         $valCount = $xdr->readInteger32();
+        /**
+         * @var array<XdrLedgerEntryChange> $txChangesBefore
+         */
         $txChangesBefore = array();
         for ($i = 0; $i < $valCount; $i++) {
-            array_push($txChangesBefore, XdrLedgerEntryChange::decode($xdr));
+            $txChangesBefore[] = XdrLedgerEntryChange::decode($xdr);
         }
         $valCount = $xdr->readInteger32();
+        /**
+         * @var array<XdrOperationMeta> $operations
+         */
         $operations = array();
         for ($i = 0; $i < $valCount; $i++) {
-            array_push($operations, XdrOperationMeta::decode($xdr));
+            $operations[] = XdrOperationMeta::decode($xdr);
         }
         $valCount = $xdr->readInteger32();
+
+        /**
+         * @var array<XdrLedgerEntryChange> $txChangesAfter
+         */
         $txChangesAfter = array();
         for ($i = 0; $i < $valCount; $i++) {
-            array_push($txChangesAfter, XdrLedgerEntryChange::decode($xdr));
+            $txChangesAfter[] = XdrLedgerEntryChange::decode($xdr);
         }
 
         $sorobanMeta = null;
@@ -106,7 +133,7 @@ class XdrTransactionMetaV3
     }
 
     /**
-     * @return array
+     * @return array<XdrLedgerEntryChange>
      */
     public function getTxChangesBefore(): array
     {
@@ -114,7 +141,7 @@ class XdrTransactionMetaV3
     }
 
     /**
-     * @param array $txChangesBefore
+     * @param array<XdrLedgerEntryChange> $txChangesBefore
      */
     public function setTxChangesBefore(array $txChangesBefore): void
     {
@@ -122,7 +149,7 @@ class XdrTransactionMetaV3
     }
 
     /**
-     * @return array
+     * @return array<XdrOperationMeta>
      */
     public function getOperations(): array
     {
@@ -130,7 +157,7 @@ class XdrTransactionMetaV3
     }
 
     /**
-     * @param array $operations
+     * @param array<XdrOperationMeta> $operations
      */
     public function setOperations(array $operations): void
     {
@@ -138,7 +165,7 @@ class XdrTransactionMetaV3
     }
 
     /**
-     * @return array
+     * @return array<XdrLedgerEntryChange>
      */
     public function getTxChangesAfter(): array
     {
@@ -146,7 +173,7 @@ class XdrTransactionMetaV3
     }
 
     /**
-     * @param array $txChangesAfter
+     * @param array<XdrLedgerEntryChange> $txChangesAfter
      */
     public function setTxChangesAfter(array $txChangesAfter): void
     {

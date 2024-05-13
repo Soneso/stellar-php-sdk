@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrSCAddress
 {
 
@@ -29,7 +31,11 @@ class XdrSCAddress
                 $bytes .= $this->accountId->encode();
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $bytes .= XdrEncoder::opaqueFixed(hex2bin($this->contractId),32);
+                $contractIdHex = $this->contractId;
+                if (substr($contractIdHex, 0, 1 ) === 'C') {
+                    $contractIdHex = StrKey::decodeContractIdHex($contractIdHex);
+                }
+                $bytes .= XdrEncoder::opaqueFixed(hex2bin($contractIdHex),32);
                 break;
         }
         return $bytes;

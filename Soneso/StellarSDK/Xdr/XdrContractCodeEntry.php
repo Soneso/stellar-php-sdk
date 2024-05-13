@@ -8,16 +8,16 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrContractCodeEntry
 {
-    public XdrExtensionPoint $ext;
+    public XdrContractCodeEntryExt $ext;
     public string $cHash; // hash
     public XdrDataValueMandatory $code;
 
     /**
-     * @param XdrExtensionPoint $ext
+     * @param XdrContractCodeEntryExt $ext
      * @param string $cHash
      * @param XdrDataValueMandatory $code
      */
-    public function __construct(XdrExtensionPoint $ext, string $cHash, XdrDataValueMandatory $code)
+    public function __construct(XdrContractCodeEntryExt $ext, string $cHash, XdrDataValueMandatory $code)
     {
         $this->ext = $ext;
         $this->cHash = $cHash;
@@ -33,7 +33,7 @@ class XdrContractCodeEntry
     }
 
     public static function decode(XdrBuffer $xdr) : XdrContractCodeEntry {
-        $ext = XdrExtensionPoint::decode($xdr);
+        $ext = XdrContractCodeEntryExt::decode($xdr);
         $cHash = $xdr->readOpaqueFixed(32);
         $code= XdrDataValueMandatory::decode($xdr);
 
@@ -41,17 +41,17 @@ class XdrContractCodeEntry
     }
 
     /**
-     * @return XdrExtensionPoint
+     * @return XdrContractCodeEntryExt
      */
-    public function getExt(): XdrExtensionPoint
+    public function getExt(): XdrContractCodeEntryExt
     {
         return $this->ext;
     }
 
     /**
-     * @param XdrExtensionPoint $ext
+     * @param XdrContractCodeEntryExt $ext
      */
-    public function setExt(XdrExtensionPoint $ext): void
+    public function setExt(XdrContractCodeEntryExt $ext): void
     {
         $this->ext = $ext;
     }

@@ -14,11 +14,17 @@ class GetHealthResponse extends SorobanRpcResponse
     const HEALTHY = "healthy";
 
     public ?string $status = null;
+    public ?int $ledgerRetentionWindow = null;
 
     public static function fromJson(array $json) : GetHealthResponse {
         $result = new GetHealthResponse($json);
         if (isset($json['result'])) {
-            $result->status = $json['result']['status'];
+            if (isset($json['result']['status'])) {
+                $result->status = $json['result']['status'];
+            }
+            if (isset($json['result']['ledgerRetentionWindow'])) {
+                $result->ledgerRetentionWindow = $json['result']['ledgerRetentionWindow'];
+            }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
         }

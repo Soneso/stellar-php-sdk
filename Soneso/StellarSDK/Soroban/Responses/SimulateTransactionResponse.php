@@ -41,7 +41,12 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     /// the simulation detected expired ledger entries which requires restoring with the submission of a RestoreFootprint
     /// operation before submitting the InvokeHostFunction operation. The restorePreamble.minResourceFee and restorePreamble.transactionData fields should
     /// be used to construct the transaction containing the RestoreFootprint
-    public ?RestorePreamble $restorePreamble;
+    public ?RestorePreamble $restorePreamble = null;
+
+    /**
+     * @var array<LedgerEntryChange>|null $stateChanges If present, it indicates how the state (ledger entries) will change as a result of the transaction execution.
+     */
+    public ?array $stateChanges = null;
 
     public static function fromJson(array $json) : SimulateTransactionResponse {
         $result = new SimulateTransactionResponse($json);
@@ -78,6 +83,14 @@ class SimulateTransactionResponse extends SorobanRpcResponse
             if (isset($json['result']['restorePreamble'])) {
                 $result->restorePreamble = RestorePreamble::fromJson($json['result']['restorePreamble']);
             }
+
+            if (isset($json['result']['stateChanges'])) {
+                $result->stateChanges = array();
+                foreach ($json['result']['stateChanges'] as $jsonValue) {
+                    $result->stateChanges[] = LedgerEntryChange::fromJson($jsonValue);
+                }
+            }
+
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
         }
