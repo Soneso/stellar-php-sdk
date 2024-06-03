@@ -8,14 +8,31 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 use Soneso\StellarSDK\Transaction;
 
+/**
+ * Soroban Simulate Transaction Request.
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ */
 class SimulateTransactionRequest
 {
+    /**
+     * @var Transaction $transaction A Stellar transaction. In order for the RPC server to successfully simulate a
+     * Stellar transaction, the provided transaction must contain only a single operation of the
+     * type invokeHostFunction.
+     */
     public Transaction $transaction;
+
+    /**
+     * @var ResourceConfig|null Contains configuration for how resources will be calculated when simulating
+     * transactions.
+     */
     public ?ResourceConfig $resourceConfig = null;
 
     /**
-     * @param Transaction $transaction The transaction to be sumbitted.
-     * @param ResourceConfig|null $resourceConfig allows budget instruction leeway used in preflight calculations to be configured. If not provided the leeway defaults to 3000000 instructions.
+     * @param Transaction $transaction The transaction to be submitted. In order for the RPC server to successfully
+     * simulate a Stellar transaction, the provided transaction must contain only a single operation of the
+     * type invokeHostFunction.
+     * @param ResourceConfig|null $resourceConfig Contains configuration for how resources will be calculated when simulating
+     * transactions.
      */
     public function __construct(Transaction $transaction, ?ResourceConfig $resourceConfig = null)
     {
@@ -34,21 +51,39 @@ class SimulateTransactionRequest
         return $params;
     }
 
+    /**
+     * @return Transaction The transaction to be submitted. In order for the RPC server to successfully
+     *  simulate a Stellar transaction, the provided transaction must contain only a single operation of the
+     *  type invokeHostFunction.
+     */
     public function getTransaction(): Transaction
     {
         return $this->transaction;
     }
 
+    /**
+     * @param Transaction $transaction The transaction to be submitted. In order for the RPC server to successfully
+     *  simulate a Stellar transaction, the provided transaction must contain only a single operation of the
+     *  type invokeHostFunction.
+     */
     public function setTransaction(Transaction $transaction): void
     {
         $this->transaction = $transaction;
     }
 
+    /**
+     * @return ResourceConfig|null Contains configuration for how resources will be calculated when simulating
+     *  transactions.
+     */
     public function getResourceConfig(): ?ResourceConfig
     {
         return $this->resourceConfig;
     }
 
+    /**
+     * @param ResourceConfig|null $resourceConfig Contains configuration for how resources will be calculated when
+     * simulating transactions.
+     */
     public function setResourceConfig(?ResourceConfig $resourceConfig): void
     {
         $this->resourceConfig = $resourceConfig;

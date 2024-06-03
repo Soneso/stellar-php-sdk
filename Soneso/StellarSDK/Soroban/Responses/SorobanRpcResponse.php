@@ -11,11 +11,18 @@ namespace Soneso\StellarSDK\Soroban\Responses;
  */
 abstract class SorobanRpcResponse
 {
+    /**
+     * @var array<array-key, mixed> $jsonResponse the complete json response as data array.
+     */
     public array $jsonResponse;
+
+    /**
+     * @var SorobanRpcErrorResponse|null If the response is an error response, then here is the error data.
+     */
     public ?SorobanRpcErrorResponse $error = null;
 
     /**
-     * @param array $jsonResponse
+     * @param array<array-key, mixed> $jsonResponse the complete json response as data array.
      */
     public function __construct(array $jsonResponse)
     {
@@ -23,7 +30,7 @@ abstract class SorobanRpcResponse
     }
 
     /**
-     * @return array
+     * @return array<array-key, mixed> the complete json response as data array.
      */
     public function getJsonResponse(): array
     {
@@ -31,7 +38,7 @@ abstract class SorobanRpcResponse
     }
 
     /**
-     * @param array $jsonResponse
+     * @param array<array-key, mixed> $jsonResponse
      */
     public function setJsonResponse(array $jsonResponse): void
     {
@@ -39,7 +46,7 @@ abstract class SorobanRpcResponse
     }
 
     /**
-     * @return SorobanRpcErrorResponse|null
+     * @return SorobanRpcErrorResponse|null If the response is an error response, then here is the error data.
      */
     public function getError(): ?SorobanRpcErrorResponse
     {
@@ -47,7 +54,7 @@ abstract class SorobanRpcResponse
     }
 
     /**
-     * @param SorobanRpcErrorResponse|null $error
+     * @param SorobanRpcErrorResponse|null $error If the response is an error response, then here is the error data.
      */
     public function setError(?SorobanRpcErrorResponse $error): void
     {

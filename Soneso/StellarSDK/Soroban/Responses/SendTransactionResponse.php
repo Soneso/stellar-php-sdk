@@ -7,43 +7,69 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
+use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 
 /**
  * Response when submitting a real transaction to the stellar
  * network by using the soroban rpc server.
- * See: https://soroban.stellar.org/api/methods/sendTransaction
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction
  */
 class SendTransactionResponse extends SorobanRpcResponse
 {
 
-    /// The transaction has been accepted by stellar-core.
+    /**
+     * The transaction has been accepted by stellar-core.
+     */
     public const STATUS_PENDING = "PENDING";
 
-    /// The transaction has already been submitted to stellar-core.
+    /**
+     * The transaction has already been submitted to stellar-core.
+     */
     public const STATUS_DUPLICATE = "DUPLICATE";
 
-    /// The transaction was not included in the previous 4 ledgers and is banned from the next few ledgers.
+    /**
+     * The transaction was not included in the previous 4 ledgers and is banned from the next few ledgers.
+     */
     public const STATUS_TRY_AGAIN_LATER = "TRY_AGAIN_LATER";
 
-    /// An error occurred from submitting the transaction to stellar-core.
+    /**
+     * An error occurred from submitting the transaction to stellar-core.
+     */
     public const STATUS_ERROR = "ERROR";
 
-    /// The transaction hash (in an hex-encoded string)
+    /**
+     * @var string|null $hash Transaction hash (as a hex-encoded string).
+     */
     public ?string $hash = null;
 
-    /// The current status of the transaction by hash, one of: PENDING, DUPLICATE, TRY_AGAIN_LATER, ERROR
+    /**
+     * @var string|null $status The current status of the transaction by hash, one of: PENDING, DUPLICATE,
+     * TRY_AGAIN_LATER, ERROR
+     */
     public ?string $status = null;
 
-    /// The latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
+    /**
+     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it
+     * handled the request.
+     */
     public ?int $latestLedger = null;
 
-    /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
+    /**
+     * @var string|null $latestLedgerCloseTime The unix timestamp of the close time of the latest ledger known to
+     * Soroban RPC at the time it handled the request.
+     */
     public ?string $latestLedgerCloseTime = null;
 
-    /// (optional) If the transaction status is ERROR, this will be a base64 encoded string of the raw TransactionResult XDR (XdrTransactionResult) struct containing details on why stellar-core rejected the transaction.
+    /**
+     * @var string|null $errorResultXdr (optional) If the transaction status is ERROR, this will be a base64 encoded
+     * string of the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
+     */
     public ?string $errorResultXdr = null;
 
-    /// (optional) If the transaction status is "ERROR", this list of xdr diagnostic events may be present containing details on why stellar-core rejected the transaction.
+    /**
+     * @var array<XdrDiagnosticEvent>|null $diagnosticEvents (optional) If the transaction status is "ERROR", this
+     * list of xdr diagnostic events may be present containing details on why stellar-core rejected the transaction.
+     */
     public ?array $diagnosticEvents = null;
 
     public static function fromJson(array $json) : SendTransactionResponse {
@@ -70,7 +96,7 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null
+     * @return string|null Transaction hash (as a hex-encoded string).
      */
     public function getHash(): ?string
     {
@@ -78,7 +104,8 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null
+     * @return string|null The current status of the transaction by hash, one of: PENDING, DUPLICATE,
+     *  TRY_AGAIN_LATER, ERROR
      */
     public function getStatus(): ?string
     {
@@ -86,7 +113,8 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it
+     *  handled the request.
      */
     public function getLatestLedger(): ?int
     {
@@ -94,7 +122,8 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null
+     * @return string|null The unix timestamp of the close time of the latest ledger known to
+     *  Soroban RPC at the time it handled the request.
      */
     public function getLatestLedgerCloseTime(): ?string
     {
@@ -102,13 +131,29 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null
+     * @return string|null (optional) If the transaction status is ERROR, this will be a base64 encoded
+     *  string of the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
      */
     public function getErrorResultXdr(): ?string
     {
         return $this->errorResultXdr;
     }
 
+    /**
+     * @return XdrTransactionResult|null (optional) If the transaction status is ERROR, this will be a
+     * XdrTransactionResult object containing details on why stellar-core rejected the transaction.
+     */
+    public function getErrorXdrTransactionResult(): ?XdrTransactionResult {
+        if ($this->errorResultXdr !== null) {
+            return XdrTransactionResult::fromBase64Xdr($this->errorResultXdr);
+        }
+        return null;
+    }
+
+    /**
+     * @return array<XdrDiagnosticEvent>|null (optional) If the transaction status is "ERROR", this
+     *  list of xdr diagnostic events may be present containing details on why stellar-core rejected the transaction.
+     */
     public function getDiagnosticEvents(): ?array
     {
         return $this->diagnosticEvents;

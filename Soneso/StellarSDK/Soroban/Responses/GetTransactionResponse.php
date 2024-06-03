@@ -10,7 +10,9 @@ use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
+use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 
 /**
  * Response when polling the rpc server to find out if a transaction has been completed.
@@ -23,40 +25,75 @@ class GetTransactionResponse extends SorobanRpcResponse
     public const STATUS_NOT_FOUND = "NOT_FOUND";
     public const STATUS_FAILED = "FAILED";
 
-    /// the current status of the transaction by hash, one of: SUCCESS, NOT_FOUND, FAILED
+    /**
+     * @var string|null $status The current status of the transaction by hash, one of: SUCCESS, NOT_FOUND, FAILED
+     */
     public ?string $status = null;
 
-    /// The latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
+    /**
+     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the
+     * time it handled the request.
+     */
     public ?int $latestLedger = null;
 
-    /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
+    /**
+     * @var string|null $latestLedgerCloseTime The unix timestamp of the close time of the latest ledger known
+     * to Soroban RPC at the time it handled the request.
+     */
     public ?string $latestLedgerCloseTime = null;
 
-    /// The oldest ledger ingested by Soroban-RPC at the time it handled the getTransaction() request.
+    /**
+     * @var int|null $oldestLedger The sequence number of the oldest ledger ingested by Soroban RPC at the
+     * time it handled the request.
+     */
     public ?int $oldestLedger = null;
 
-    /// The unix timestamp of the close time of the oldest ledger ingested by Soroban-RPC at the time it handled the getTransaction() request.
+    /**
+     * @var string|null $oldestLedgerCloseTime The unix timestamp of the close time of the oldest ledger ingested by Soroban
+     * RPC at the time it handled the request.
+     */
     public ?string $oldestLedgerCloseTime = null;
 
-    /// (optional) The sequence of the ledger which included the transaction. This field is only present if status is SUCCESS or FAILED.
+    /**
+     * @var int|null $ledger (optional) The sequence number of the ledger which included the transaction.
+     * This field is only present if status is SUCCESS or FAILED.
+     */
     public ?int $ledger = null;
 
-    /// (optional) The unix timestamp of when the transaction was included in the ledger. This field is only present if status is SUCCESS or FAILED.
+    /**
+     * @var string|null $createdAt (optional) The unix timestamp of when the transaction was included in the ledger.
+     * This field is only present if status is SUCCESS or FAILED.
+     */
     public ?string $createdAt = null;
 
-    /// (optional) The index of the transaction among all transactions included in the ledger. This field is only present if status is SUCCESS or FAILED.
+    /**
+     * @var int|null $applicationOrder (optional) The index of the transaction among all transactions included in the
+     * ledger. This field is only present if status is SUCCESS or FAILED.
+     */
     public ?int $applicationOrder = null;
 
-    /// (optional) Indicates whether the transaction was fee bumped. This field is only present if status is SUCCESS or FAILED.
+    /**
+     * @var bool|null $feeBump (optional) Indicates whether the transaction was fee bumped. This field is only present
+     * if status is SUCCESS or FAILED.
+     */
     public ?bool $feeBump = null;
 
-    /// (optional) A base64 encoded string of the raw TransactionEnvelope XDR (XdrTransactionEnvelope) struct for this transaction.
+    /**
+     * @var string|null $envelopeXdr (optional) A base64 encoded string of the raw TransactionEnvelope XDR struct
+     * for this transaction.
+     */
     public ?string $envelopeXdr = null;
 
-    /// (optional) A base64 encoded string of the raw TransactionResult XDR (XdrTransactionResult) struct for this transaction. This field is only present if status is SUCCESS or FAILED.
+    /**
+     * @var string|null $resultXdr (optional) A base64 encoded string of the raw TransactionResult XDR struct for this
+     * transaction. This field is only present if status is SUCCESS or FAILED.
+     */
     public ?string $resultXdr = null;
 
-    /// (optional) A base64 encoded string of the raw TransactionResultMeta XDR (XdrTransactionMeta) struct for this transaction.
+    /**
+     * @var string|null $resultMetaXdr (optional) A base64 encoded string of the raw TransactionMeta XDR struct
+     * for this transaction.
+     */
     public ?string $resultMetaXdr = null;
 
     public static function fromJson(array $json) : GetTransactionResponse {
@@ -105,12 +142,18 @@ class GetTransactionResponse extends SorobanRpcResponse
         return $result;
     }
 
-    /// Extracts the wasm id from the response if the transaction installed a contract
+    /**
+     * Extracts the wasm id from the response if the transaction installed a contract.
+     * @return string|null the wasm id if available.
+     */
     public function getWasmId() : ?string {
         return $this->getBinHex();
     }
 
-    /// Extracts the contract id from the response if the transaction created a contract
+    /**
+     * Extracts the contract id from the response if the transaction created a contract
+     * @return string|null the contract id if available.
+     */
     public function getCreatedContractId(): ?string {
         $resultValue = $this->getResultValue();
         if ($resultValue != null && $resultValue->type->value == XdrSCValType::SCV_ADDRESS && $resultValue->address != null) {
@@ -122,7 +165,10 @@ class GetTransactionResponse extends SorobanRpcResponse
         return null;
     }
 
-    /// Extracts the result value on success
+    /**
+     * Extracts the result value on success
+     * @return XdrSCVal|null the result value if available.
+     */
     public function getResultValue(): ?XdrSCVal {
         if ($this->error != null || $this->status != self::STATUS_SUCCESS || $this->resultMetaXdr == null) {
             return null;
@@ -147,63 +193,143 @@ class GetTransactionResponse extends SorobanRpcResponse
         return null;
     }
 
+    /**
+     * @return string|null The current status of the transaction by hash, one of: SUCCESS, NOT_FOUND, FAILED
+     */
     public function getStatus(): ?string
     {
         return $this->status;
     }
 
+    /**
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the
+     *  time it handled the request.
+     */
     public function getLatestLedger(): ?int
     {
         return $this->latestLedger;
     }
 
+    /**
+     * @return string|null The unix timestamp of the close time of the latest ledger known
+     *  to Soroban RPC at the time it handled the request.
+     */
     public function getLatestLedgerCloseTime(): ?string
     {
         return $this->latestLedgerCloseTime;
     }
 
+    /**
+     * @return int|null The sequence number of the oldest ledger ingested by Soroban RPC at the
+     *  time it handled the request.
+     */
     public function getOldestLedger(): ?int
     {
         return $this->oldestLedger;
     }
 
+    /**
+     * @return string|null The unix timestamp of the close time of the oldest ledger ingested by Soroban
+     *  RPC at the time it handled the request.
+     */
     public function getOldestLedgerCloseTime(): ?string
     {
         return $this->oldestLedgerCloseTime;
     }
 
+    /**
+     * @return int|null (optional) The sequence number of the ledger which included the transaction.
+     *  This field is only present if status is SUCCESS or FAILED.
+     */
     public function getLedger(): ?int
     {
         return $this->ledger;
     }
 
+    /**
+     * @return string|null (optional) The unix timestamp of when the transaction was included in the ledger.
+     *  This field is only present if status is SUCCESS or FAILED.
+     */
     public function getCreatedAt(): ?string
     {
         return $this->createdAt;
     }
 
+    /**
+     * @return int|null (optional) The index of the transaction among all transactions included in the
+     *  ledger. This field is only present if status is SUCCESS or FAILED.
+     */
     public function getApplicationOrder(): ?int
     {
         return $this->applicationOrder;
     }
 
+    /**
+     * @return bool|null (optional) Indicates whether the transaction was fee bumped. This field is only present
+     *  if status is SUCCESS or FAILED.
+     */
     public function getFeeBump(): ?bool
     {
         return $this->feeBump;
     }
 
+    /**
+     * @return string|null (optional) A base64 encoded string of the raw TransactionEnvelope XDR struct
+     *  for this transaction.
+     */
     public function getEnvelopeXdr(): ?string
     {
         return $this->envelopeXdr;
     }
 
+    /**
+     * @return XdrTransactionEnvelope|null (optional) the TransactionEnvelope XDR struct for this transaction.
+     */
+    public function getXdrTransactionEnvelope(): ?XdrTransactionEnvelope {
+        if ($this->envelopeXdr !== null) {
+            return XdrTransactionEnvelope::fromEnvelopeBase64XdrString($this->envelopeXdr);
+        }
+        return null;
+    }
+
+    /**
+     * @return string|null (optional) A base64 encoded string of the raw TransactionResult XDR object for this
+     * transaction. This field is only present if status is SUCCESS or FAILED.
+     */
     public function getResultXdr(): ?string
     {
         return $this->resultXdr;
     }
 
+    /**
+     * @return XdrTransactionResult|null (optional) the TransactionResult XDR object for this
+     * transaction. This field is only present if status is SUCCESS or FAILED.
+     */
+    public function getXdrTransactionResult(): ?XdrTransactionResult {
+        if ($this->resultXdr !== null) {
+            return XdrTransactionResult::fromBase64Xdr($this->resultXdr);
+        }
+        return null;
+    }
+
+    /**
+     * @return string|null (optional) A base64 encoded string of the raw TransactionMeta XDR struct
+     *  for this transaction.
+     */
     public function getResultMetaXdr(): ?string
     {
         return $this->resultMetaXdr;
+    }
+
+    /**
+     * @return XdrTransactionMeta|null (optional) TransactionMeta XDR object
+     *   for this transaction.
+     */
+    public function getXdrTransactionMeta(): ? XdrTransactionMeta
+    {
+        if($this->resultXdr !== null) {
+            return XdrTransactionMeta::fromBase64Xdr($this->resultXdr);
+        }
+        return null;
     }
 }

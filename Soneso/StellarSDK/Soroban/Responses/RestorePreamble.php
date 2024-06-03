@@ -8,7 +8,10 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
-/*
+/**
+ * Part of the simulateTransaction response.
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ *
  * It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations.
  * If present, it indicates the simulation detected expired ledger entries which requires restoring
  * with the submission of a RestoreFootprint operation before submitting the InvokeHostFunction operation.
@@ -18,15 +21,25 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 class RestorePreamble
 {
 
-    /// The recommended Soroban Transaction Data to use when submitting the RestoreFootprint operation.
+    /**
+     * @var XdrSorobanTransactionData $transactionData The recommended Soroban Transaction Data to use when submitting
+     * the RestoreFootprint operation.
+     */
     public XdrSorobanTransactionData $transactionData;
 
-    ///  Recommended minimum resource fee to add when submitting the RestoreFootprint operation. This fee is to be added on top of the Stellar network fee.
+    /**
+     * @var int $minResourceFee Recommended minimum resource fee to add when submitting the RestoreFootprint operation.
+     * This fee is to be added on top of the Stellar network fee.
+     */
     public int $minResourceFee;
 
     /**
-     * @param XdrSorobanTransactionData $transactionData
-     * @param int $minResourceFee
+     * Constructor.
+     *
+     * @param XdrSorobanTransactionData $transactionData The recommended Soroban Transaction Data to use when submitting
+     *  the RestoreFootprint operation.
+     * @param int $minResourceFee Recommended minimum resource fee to add when submitting the RestoreFootprint operation.
+     *  This fee is to be added on top of the Stellar network fee.
      */
     public function __construct(XdrSorobanTransactionData $transactionData, int $minResourceFee)
     {
@@ -43,7 +56,8 @@ class RestorePreamble
     }
 
     /**
-     * @return XdrSorobanTransactionData
+     * @return XdrSorobanTransactionData The recommended Soroban Transaction Data to use when submitting
+     *  the RestoreFootprint operation.
      */
     public function getTransactionData(): XdrSorobanTransactionData
     {
@@ -51,7 +65,8 @@ class RestorePreamble
     }
 
     /**
-     * @param XdrSorobanTransactionData $transactionData
+     * @param XdrSorobanTransactionData $transactionData The recommended Soroban Transaction Data to use when submitting
+     *  the RestoreFootprint operation.
      */
     public function setTransactionData(XdrSorobanTransactionData $transactionData): void
     {
@@ -59,7 +74,8 @@ class RestorePreamble
     }
 
     /**
-     * @return int
+     * @return int Recommended minimum resource fee to add when submitting the RestoreFootprint operation.
+     *   This fee is to be added on top of the Stellar network fee.
      */
     public function getMinResourceFee(): int
     {
@@ -67,7 +83,8 @@ class RestorePreamble
     }
 
     /**
-     * @param int $minResourceFee
+     * @param int $minResourceFee Recommended minimum resource fee to add when submitting the RestoreFootprint operation.
+     *   This fee is to be added on top of the Stellar network fee.
      */
     public function setMinResourceFee(int $minResourceFee): void
     {

@@ -8,17 +8,36 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 /**
  * Part of the getEvents() request
- * See: https://soroban.stellar.org/api/methods/getEvents
- * See: https://soroban.stellar.org/api/pagination
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+ * See: https://developers.stellar.org/network/soroban-rpc/pagination
  */
 class PaginationOptions
 {
+    /**
+     * @var string|null $cursor A string ID that points to a specific location in a collection of responses and
+     * is pulled from the paging_token value of a record. When a cursor is provided Soroban-RPC will not include
+     * the element whose id matches the cursor in the response. Only elements which appear after the cursor
+     * are included.
+     */
     public ?string $cursor = null;
+
+    /**
+     * @var int|null $limit The maximum number of records returned. The limit for getEvents can range from
+     * 1 to 10000 - an upper limit that is hardcoded in Soroban-RPC for performance reasons.
+     * If this argument isn't designated, it defaults to 100.
+     */
     public ?int $limit = null;
 
     /**
-     * @param string|null $cursor
-     * @param int|null $limit
+     * Constructor.
+     *
+     * @param string|null $cursor A string ID that points to a specific location in a collection of responses and
+     *  is pulled from the paging_token value of a record. When a cursor is provided Soroban-RPC will not include
+     *  the element whose id matches the cursor in the response. Only elements which appear after the cursor
+     *  are included.
+     * @param int|null $limit The maximum number of records returned. The limit for getEvents can range from
+     *  1 to 10000 - an upper limit that is hardcoded in Soroban-RPC for performance reasons.
+     *  If this argument isn't designated, it defaults to 100.
      */
     public function __construct(?string $cursor = null, ?int $limit = null)
     {
@@ -38,7 +57,10 @@ class PaginationOptions
     }
 
     /**
-     * @return string|null
+     * @return string|null A string ID that points to a specific location in a collection of responses and
+     *   is pulled from the paging_token value of a record. When a cursor is provided Soroban-RPC will not include
+     *   the element whose id matches the cursor in the response. Only elements which appear after the cursor
+     *   are included.
      */
     public function getCursor(): ?string
     {
@@ -46,7 +68,10 @@ class PaginationOptions
     }
 
     /**
-     * @param string|null $cursor
+     * @param string|null $cursor A string ID that points to a specific location in a collection of responses and
+     *   is pulled from the paging_token value of a record. When a cursor is provided Soroban-RPC will not include
+     *   the element whose id matches the cursor in the response. Only elements which appear after the cursor
+     *   are included.
      */
     public function setCursor(?string $cursor): void
     {
@@ -54,7 +79,9 @@ class PaginationOptions
     }
 
     /**
-     * @return int|null
+     * @return int|null The maximum number of records returned. The limit for getEvents can range from
+     *   1 to 10000 - an upper limit that is hardcoded in Soroban-RPC for performance reasons.
+     *   If this argument isn't designated, it defaults to 100.
      */
     public function getLimit(): ?int
     {
@@ -62,7 +89,9 @@ class PaginationOptions
     }
 
     /**
-     * @param int|null $limit
+     * @param int|null $limit The maximum number of records returned. The limit for getEvents can range from
+     *   1 to 10000 - an upper limit that is hardcoded in Soroban-RPC for performance reasons.
+     *   If this argument isn't designated, it defaults to 100.
      */
     public function setLimit(?int $limit): void
     {

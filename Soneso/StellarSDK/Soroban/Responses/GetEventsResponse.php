@@ -6,12 +6,20 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+/**
+ * Response of the getEvents request.
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+ */
 class GetEventsResponse extends SorobanRpcResponse
 {
-    /// List of filters for the returned events. Events matching any of the filters are included.
-    /// To match a filter, an event must match both a contractId and a topic.
-    /// Maximum 5 filters are allowed per request.
-    public ?array $events = null; // [EventInfo]
+    /**
+     * @var array<EventInfo>|null $events found events.
+     */
+    public ?array $events = null;
+
+    /**
+     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     */
     public ?int $latestLedger = null;
 
     public static function fromJson(array $json): GetEventsResponse
@@ -35,7 +43,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return array|null
+     * @return array<EventInfo>|null events.
      */
     public function getEvents(): ?array
     {
@@ -43,7 +51,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param array|null $events
+     * @param array<EventInfo>|null $events
      */
     public function setEvents(?array $events): void
     {
@@ -51,7 +59,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
      */
     public function getLatestLedger(): ?int
     {
@@ -59,7 +67,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $latestLedger
+     * @param int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
      */
     public function setLatestLedger(?int $latestLedger): void
     {

@@ -38,8 +38,8 @@ use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
-// See https://soroban.stellar.org/docs/advanced-tutorials/atomic-swap
-// See: https://soroban.stellar.org/docs/fundamentals-and-concepts/authorization
+// See https://developers.stellar.org/docs/smart-contracts/example-contracts/atomic-swap
+// See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
 class SorobanAtomicSwapTest extends TestCase
 {
 

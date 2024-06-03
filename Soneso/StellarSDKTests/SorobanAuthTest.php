@@ -39,8 +39,8 @@ use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 
-// see: https://soroban.stellar.org/docs/fundamentals-and-concepts/authorization
-// see: https://soroban.stellar.org/docs/basic-tutorials/auth
+// see: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+// see: https://developers.stellar.org/docs/smart-contracts/example-contracts/auth
 class SorobanAuthTest extends TestCase
 {
     const AUTH_CONTRACT_PATH = './wasm/soroban_auth_contract.wasm';

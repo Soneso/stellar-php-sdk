@@ -6,6 +6,10 @@
 
 namespace Soneso\StellarSDK\Soroban\Requests;
 
+/**
+ * Part of the getEvents request.
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+ */
 class TopicFilters extends \IteratorIterator
 {
 
@@ -29,6 +33,9 @@ class TopicFilters extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<TopicFilter> list of topic filters.
+     */
     public function toArray() : array {
         $result = array();
         foreach($this as $value) {

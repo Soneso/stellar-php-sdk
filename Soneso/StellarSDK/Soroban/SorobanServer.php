@@ -26,7 +26,6 @@ use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrContractCodeEntry;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
-use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
@@ -157,7 +156,7 @@ class SorobanServer
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
         $ledgerKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
         $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
-        if ($ledgerEntries != null && $ledgerEntries->entries != null && count($ledgerEntries->entries) > 0) {
+        if ($ledgerEntries->entries != null && count($ledgerEntries->entries) > 0) {
             $ledgerEntry = $ledgerEntries->entries[0];
             if ($ledgerEntry instanceof LedgerEntry) {
                 return $ledgerEntry->getLedgerEntryDataXdr()->contractCode;
@@ -180,7 +179,7 @@ class SorobanServer
             XdrContractDataDurability::PERSISTENT());
 
         $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
-        if ($ledgerEntries != null && $ledgerEntries->entries != null && count($ledgerEntries->entries) > 0) {
+        if ($ledgerEntries->entries != null && count($ledgerEntries->entries) > 0) {
             $ledgerEntryData = $ledgerEntries->entries[0]->getLedgerEntryDataXdr();
             if ($ledgerEntryData->contractData != null && $ledgerEntryData->contractData->val->instance?->executable->wasmIdHex != null) {
                 $wasmId = $ledgerEntryData->contractData->val->instance->executable->wasmIdHex;

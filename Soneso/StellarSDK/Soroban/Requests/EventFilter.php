@@ -12,24 +12,35 @@ namespace Soneso\StellarSDK\Soroban\Requests;
  */
 class EventFilter
 {
-    /// (optional) A comma separated list of event types (system, contract, or diagnostic)
-    /// used to filter events. If omitted, all event types are included.
+    /**
+     * @var string|null $type A comma separated list of event types (system, contract, or diagnostic)
+     * used to filter events. If omitted, all event types are included.
+     */
     public ?string $type = null;
 
-    /// (optional) List of contract ids to query for events.
-    /// If omitted, return events for all contracts.
-    /// Maximum 5 contract IDs are allowed per request.
+    /**
+     * @var array<String>|null $contractIds List of contract ids to query for events.
+     * If omitted, return events for all contracts. Maximum 5 contract IDs are allowed per request.
+     */
     public ?array $contractIds = null;
 
-    /// (optional) List of topic filters. If omitted, query for all events.
-    /// If multiple filters are specified, events will be included if they match any of the filters.
-    /// Maximum 5 filters are allowed per request.
+    /**
+     * @var TopicFilters|null $topics List of topic filters. If omitted, query for all events.
+     * If multiple filters are specified, events will be included if they match any of the filters.
+     * Maximum 5 filters are allowed per request.
+     */
     public ?TopicFilters $topics = null;
 
     /**
-     * @param string|null $type
-     * @param array|null $contractIds
-     * @param TopicFilters|null $topics
+     * Constructor.
+     *
+     * @param string|null $type A comma separated list of event types (system, contract, or diagnostic)
+     *  used to filter events. If omitted, all event types are included.
+     * @param array<String>|null $contractIds List of contract ids to query for events.
+     *  If omitted, return events for all contracts. Maximum 5 contract IDs are allowed per request.
+     * @param TopicFilters|null $topics List of topic filters. If omitted, query for all events.
+     *  If multiple filters are specified, events will be included if they match any of the filters.
+     *  Maximum 5 filters are allowed per request.
      */
     public function __construct(?string $type = null, ?array $contractIds = null, ?TopicFilters $topics = null)
     {
@@ -71,7 +82,7 @@ class EventFilter
     }
 
     /**
-     * @return array|null
+     * @return array<String>|null
      */
     public function getContractIds(): ?array
     {

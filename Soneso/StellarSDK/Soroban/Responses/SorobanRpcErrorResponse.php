@@ -6,24 +6,33 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
-/*
- * Holds error response info if no result is provided.
+/**
+ * Holds error response info if no successful result is provided.
  */
 class SorobanRpcErrorResponse
 {
-    /// Short unique int representing the type of error
+    /**
+     * Short unique int representing the type of error.
+     */
     public ?int $code = null;
 
-    /// Human friendly summary of the error
+    /**
+     * @var string|null Human friendly summary of the error
+     */
     public ?string $message = null; // error message
 
-    /// (optional) More data related to the error if available
+    /**
+     * @var array|null (optional) More data related to the error if available
+     */
     public ?array $data = null;
 
+    /**
+     * @var array<array-key,mixed> $jsonResponse complete json response received.
+     */
     public array $jsonResponse;
 
     /**
-     * @param array $jsonResponse
+     * @param array<array-key,mixed> $jsonResponse complete json response received.
      */
     public function __construct(array $jsonResponse)
     {
@@ -47,7 +56,7 @@ class SorobanRpcErrorResponse
     }
 
     /**
-     * @return array
+     * @return array<array-key,mixed> complete json response received.
      */
     public function getJsonResponse(): array
     {
@@ -55,7 +64,7 @@ class SorobanRpcErrorResponse
     }
 
     /**
-     * @param array $jsonResponse
+     * @param array<array-key,mixed> $jsonResponse complete json response received.
      */
     public function setJsonResponse(array $jsonResponse): void
     {
@@ -71,7 +80,7 @@ class SorobanRpcErrorResponse
     }
 
     /**
-     * @param string|null $code
+     * @param string|null $code Short unique int representing the type of error
      */
     public function setCode(?string $code): void
     {
@@ -87,7 +96,7 @@ class SorobanRpcErrorResponse
     }
 
     /**
-     * @param string|null $message
+     * @param string|null $message Human friendly summary of the error
      */
     public function setMessage(?string $message): void
     {
@@ -95,7 +104,7 @@ class SorobanRpcErrorResponse
     }
 
     /**
-     * @return array|null (optional) More data related to the error if available
+     * @return array|null (optional) More data related to the error if available.
      */
     public function getData(): ?array
     {
@@ -103,7 +112,7 @@ class SorobanRpcErrorResponse
     }
 
     /**
-     * @param array|null $data
+     * @param array|null $data (optional) More data related to the error if available.
      */
     public function setData(?array $data): void
     {

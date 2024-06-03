@@ -8,13 +8,23 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 /**
  * Part of the getEvents request parameters.
- * https://soroban.stellar.org/api/methods/getEvents
+ * https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
  * example: $topicFilter = new TopicFilter(["*", XdrSCVal::forSymbol("increment")->toBase64Xdr()]);
  */
 class TopicFilter
 {
-    public array $segmentMatchers; // [string]
+    /**
+     * @var array<String> $segmentMatchers For an exact segment match, a string containing a base64-encoded ScVal.
+     * For a wildcard single-segment match, the string "*", matches exactly one segment.
+     */
+    public array $segmentMatchers;
 
+    /**
+     * Constructor.
+     *
+     * @param array<String> $segmentMatchers For an exact segment match, a string containing a base64-encoded ScVal.
+     *  For a wildcard single-segment match, the string "*", matches exactly one segment.
+     */
     public function __construct(array $segmentMatchers)
     {
         $this->segmentMatchers = $segmentMatchers;

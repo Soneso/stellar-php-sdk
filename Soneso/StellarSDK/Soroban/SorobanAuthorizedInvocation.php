@@ -13,11 +13,14 @@ use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation;
 class SorobanAuthorizedInvocation
 {
     public SorobanAuthorizedFunction $function;
-    public array $subInvocations; // [SorobanAuthorizedInvocation]
+    /**
+     * @var array<SorobanAuthorizedInvocation> $subInvocations
+     */
+    public array $subInvocations;
 
     /**
      * @param SorobanAuthorizedFunction $function
-     * @param array $subInvocations
+     * @param array<SorobanAuthorizedInvocation> $subInvocations
      */
     public function __construct(SorobanAuthorizedFunction $function, array $subInvocations = array())
     {
@@ -63,7 +66,7 @@ class SorobanAuthorizedInvocation
     }
 
     /**
-     * @return array
+     * @return array<SorobanAuthorizedInvocation>
      */
     public function getSubInvocations(): array
     {
@@ -71,7 +74,7 @@ class SorobanAuthorizedInvocation
     }
 
     /**
-     * @param array $subInvocations
+     * @param array<SorobanAuthorizedInvocation> $subInvocations
      */
     public function setSubInvocations(array $subInvocations): void
     {

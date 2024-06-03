@@ -10,27 +10,27 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
- * Used as a part of simulate transaction
- * See: https://soroban.stellar.org/api/methods/simulateTransaction
+ * Used as a part of simulate transaction response.
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
  */
 class SimulateTransactionResult
 {
-    /// (optional) Only present on success. xdr-encoded return value of the contract call operation.
-    public ?string $xdr;
+    /**
+     * @var string Serialized base64 string - return value of the Host Function call.
+     */
+    public string $xdr;
 
-    /// Per-address authorizations recorded when simulating this operation. (an array of serialized base64 strings of [XdrContractAuth])
-    public ?array $auth = null; //[string xdr]
+    /**
+     * @var array<String> Array of serialized base64 strings - Per-address authorizations recorded when
+     * simulating this Host Function call.
+     */
+    public array $auth;
 
     protected function loadFromJson(array $json) : void {
-        if (isset($json['xdr'])) {
-            $this->xdr = $json['xdr'];
-        }
-
-        if (isset($json['auth'])) {
-            $this->auth = array();
-            foreach ($json['auth'] as $jsonValue) {
-                array_push($this->auth, $jsonValue);
-            }
+        $this->xdr = $json['xdr'];
+        $this->auth = array();
+        foreach ($json['auth'] as $jsonValue) {
+            array_push($this->auth, $jsonValue);
         }
     }
 
@@ -40,24 +40,26 @@ class SimulateTransactionResult
         return $result;
     }
 
-    public function getResultValue(): ?XdrSCVal {
-        if($this->xdr != null) {
-            return XdrSCVal::fromBase64Xdr($this->xdr);
-        }
-        return null;
-    }
     /**
-     * @return string|null
+     * @return XdrSCVal return value of the Host Function call as XdrSCVal.
      */
-    public function getXdr(): ?string
+    public function getResultValue(): XdrSCVal {
+        return XdrSCVal::fromBase64Xdr($this->xdr);
+    }
+
+    /**
+     * @return string Serialized base64 string - return value of the Host Function call.
+     */
+    public function getXdr(): string
     {
         return $this->xdr;
     }
 
     /**
-     * @return array|null
+     * @return array<String> Array of serialized base64 strings - Per-address authorizations recorded when
+     * simulating this Host Function call.
      */
-    public function getAuth(): ?array
+    public function getAuth(): array
     {
         return $this->auth;
     }

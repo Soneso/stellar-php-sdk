@@ -8,17 +8,25 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  * Response for getLatestLedger()
- * See: https://soroban.stellar.org/api/methods/getLatestLedger
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
  */
 class GetLatestLedgerResponse extends SorobanRpcResponse
 {
-    ///  hash of the latest ledger as a hex-encoded string
+    /**
+     * @var string|null $id Hash identifier of the latest ledger (as a hex-encoded string)
+     * known to Soroban RPC at the time it handled the request.
+     */
     public ?string $id = null;
 
-    /// Stellar Core protocol version associated with the latest ledger
+    /**
+     * @var int|null $protocolVersion Stellar Core protocol version associated with the latest ledger.
+     */
     public ?int $protocolVersion = null;
 
-    /// sequence number of the latest ledger
+    /**
+     * @var int|null $sequence The sequence number of the latest ledger known to Soroban RPC at the time it
+     * handled the request.
+     */
     public ?int $sequence = null;
 
     public static function fromJson(array $json) : GetLatestLedgerResponse {
@@ -34,33 +42,41 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null
+     * @return string|null Hash identifier of the latest ledger (as a hex-encoded string)
+     *  known to Soroban RPC at the time it handled the request.
      */
     public function getId(): ?string
     {
         return $this->id;
     }
 
+    /**
+     * @param string|null $id Hash identifier of the latest ledger (as a hex-encoded string)
+     *  known to Soroban RPC at the time it handled the request.
+     */
     public function setId(?string $id): void
     {
         $this->id = $id;
     }
 
     /**
-     * @return int|null
+     * @return int|null Stellar Core protocol version associated with the latest ledger.
      */
     public function getProtocolVersion(): ?int
     {
         return $this->protocolVersion;
     }
 
+    /**
+     * @param int|null $protocolVersion Stellar Core protocol version associated with the latest ledger.
+     */
     public function setProtocolVersion(?int $protocolVersion): void
     {
         $this->protocolVersion = $protocolVersion;
     }
 
     /**
-     * @return int|null
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
      */
     public function getSequence(): ?int
     {
@@ -68,7 +84,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $sequence
+     * @param int|null $sequence The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
      */
     public function setSequence(?int $sequence): void
     {

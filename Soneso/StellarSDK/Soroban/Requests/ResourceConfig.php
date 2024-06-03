@@ -6,18 +6,28 @@
 
 namespace Soneso\StellarSDK\Soroban\Requests;
 
+/**
+ * Part of the soroban simulate transaction request.
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ */
 class ResourceConfig
 {
-    public int $instructionLeeway; // number of add CPU instructions to reserve
+    /**
+     * @var int $instructionLeeway allows budget instruction leeway used in preflight calculations to be configured.
+     *  number of add CPU instructions to reserve.
+     */
+    public int $instructionLeeway;
 
     /**
-     * @param int $instructionLeeway allows budget instruction leeway used in preflight calculations to be configured. number of add'l CPU instructions to reserve.
+     * Constructor.
+     *
+     * @param int $instructionLeeway allows budget instruction leeway used in preflight calculations to be configured.
+     * number of add CPU instructions to reserve.
      */
     public function __construct(int $instructionLeeway)
     {
         $this->instructionLeeway = $instructionLeeway;
     }
-
 
     public function getRequestParams() : array {
         $params = array();
@@ -25,16 +35,22 @@ class ResourceConfig
         return $params;
     }
 
+    /**
+     * @return int allows budget instruction leeway used in preflight calculations to be configured.
+     *  number of add CPU instructions to reserve.
+     */
     public function getInstructionLeeway(): int
     {
         return $this->instructionLeeway;
     }
 
+    /**
+     * @param int $instructionLeeway allows budget instruction leeway used in preflight calculations to be configured.
+     *  number of add CPU instructions to reserve.
+     */
     public function setInstructionLeeway(int $instructionLeeway): void
     {
         $this->instructionLeeway = $instructionLeeway;
     }
-
-
 
 }

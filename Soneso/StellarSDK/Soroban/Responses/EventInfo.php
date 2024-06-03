@@ -6,30 +6,88 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+/**
+ * Part of the getEvents request.
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+ */
 class EventInfo
 {
+    /**
+     * @var string $type The type of event emission. Possible values: contract, diagnostic, system.
+     */
     public string $type;
+
+    /**
+     * @var int $ledger Sequence number of the ledger in which this event was emitted.
+     */
     public int $ledger;
-    public string $ledgerClosedAt; // datetime
+
+    /**
+     * @var string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time.
+     */
+    public string $ledgerClosedAt;
+
+    /**
+     * @var string $contractId StrKey representation of the contract address that emitted this event. ("C...").
+     */
     public string $contractId;
+
+    /**
+     * @var string $id Unique identifier for this event.
+     */
     public string $id;
+
+    /**
+     * @var string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
+     */
     public string $pagingToken;
-    public array $topic; // [str]
-    public string $value; // xdr
+
+    /**
+     * @var array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
+     */
+    public array $topic;
+
+    /**
+     * @var string $value The emitted body value of the event (serialized in a base64 xdr string).
+     */
+    public string $value;
+
+    /**
+     * @var bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
+     */
     public bool $inSuccessfulContractCall;
 
     /**
-     * @param string $type
-     * @param int $ledger
-     * @param string $ledgerClosedAt
-     * @param string $contractId
-     * @param string $id
-     * @param string $pagingToken
-     * @param array $topic
-     * @param string $value
-     * @param bool $inSuccessfulContractCall
+     * @var string $txHash The transaction which triggered this event.
      */
-    public function __construct(string $type, int $ledger, string $ledgerClosedAt, string $contractId, string $id, string $pagingToken, array $topic, string $value, bool $inSuccessfulContractCall)
+    public string $txHash;
+
+    /**
+     * @param string $type The type of event emission. Possible values: contract, diagnostic, system.
+     * @param int $ledger Sequence number of the ledger in which this event was emitted.
+     * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time.
+     * @param string $contractId StrKey representation of the contract address that emitted this event. ("C...").
+     * @param string $id Unique identifier for this event.
+     * @param string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
+     * @param array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
+     * @param string $value The emitted body value of the event (serialized in a base64 xdr string).
+     * @param bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
+     * @param string $txHash The transaction which triggered this event.
+     */
+    public function __construct(
+        string $type,
+        int $ledger,
+        string $ledgerClosedAt,
+        string $contractId,
+        string $id,
+        string $pagingToken,
+        array $topic,
+        string $value,
+        bool $inSuccessfulContractCall,
+        string $txHash,
+    )
     {
         $this->type = $type;
         $this->ledger = $ledger;
@@ -40,6 +98,7 @@ class EventInfo
         $this->topic = $topic;
         $this->value = $value;
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;
+        $this->txHash = $txHash;
     }
 
     public static function fromJson(array $json): EventInfo
@@ -50,21 +109,29 @@ class EventInfo
         $contractId = $json['contractId'];
         $id = $json['id'];
         $pagingToken = $json['pagingToken'];
-        if (isset($json['value']['xdr'])) {
-            $value = $json['value']['xdr'];
-        } else {
-            $value = $json['value'];
-        }
+        $value = $json['value']['xdr'] ?? $json['value'];
         $topic = array();
         foreach ($json['topic'] as $val) {
-            array_push($topic, $val);
+            $topic[] = $val;
         }
         $inSuccessfulContractCall = $json['inSuccessfulContractCall'];
-        return new EventInfo($type, $ledger, $ledgerClosedAt, $contractId, $id, $pagingToken, $topic, $value, $inSuccessfulContractCall);
+        $txHash = $json['txHash'];
+        return new EventInfo(
+            $type,
+            $ledger,
+            $ledgerClosedAt,
+            $contractId,
+            $id,
+            $pagingToken,
+            $topic,
+            $value,
+            $inSuccessfulContractCall,
+            $txHash,
+        );
     }
 
     /**
-     * @return string
+     * @return string The type of event emission. Possible values: contract, diagnostic, system.
      */
     public function getType(): string
     {
@@ -72,7 +139,7 @@ class EventInfo
     }
 
     /**
-     * @param string $type
+     * @param string $type The type of event emission. Possible values: contract, diagnostic, system.
      */
     public function setType(string $type): void
     {
@@ -80,7 +147,7 @@ class EventInfo
     }
 
     /**
-     * @return int
+     * @return int Sequence number of the ledger in which this event was emitted.
      */
     public function getLedger(): int
     {
@@ -88,7 +155,7 @@ class EventInfo
     }
 
     /**
-     * @param int $ledger
+     * @param int $ledger Sequence number of the ledger in which this event was emitted.
      */
     public function setLedger(int $ledger): void
     {
@@ -96,7 +163,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string ISO-8601 timestamp of the ledger closing time.
      */
     public function getLedgerClosedAt(): string
     {
@@ -104,7 +171,7 @@ class EventInfo
     }
 
     /**
-     * @param string $ledgerClosedAt
+     * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time.
      */
     public function setLedgerClosedAt(string $ledgerClosedAt): void
     {
@@ -112,7 +179,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string StrKey representation of the contract address that emitted this event. ("C...").
      */
     public function getContractId(): string
     {
@@ -120,7 +187,7 @@ class EventInfo
     }
 
     /**
-     * @param string $contractId
+     * @param string $contractId StrKey representation of the contract address that emitted this event. ("C...").
      */
     public function setContractId(string $contractId): void
     {
@@ -128,7 +195,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string Unique identifier for this event.
      */
     public function getId(): string
     {
@@ -136,7 +203,7 @@ class EventInfo
     }
 
     /**
-     * @param string $id
+     * @param string $id Unique identifier for this event.
      */
     public function setId(string $id): void
     {
@@ -144,7 +211,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string Duplicate of id field, but in the standard place for pagination tokens.
      */
     public function getPagingToken(): string
     {
@@ -152,7 +219,7 @@ class EventInfo
     }
 
     /**
-     * @param string $pagingToken
+     * @param string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
      */
     public function setPagingToken(string $pagingToken): void
     {
@@ -160,7 +227,7 @@ class EventInfo
     }
 
     /**
-     * @return array
+     * @return array<String> List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
      */
     public function getTopic(): array
     {
@@ -168,28 +235,47 @@ class EventInfo
     }
 
     /**
-     * @param array $topic
+     * @param array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
      */
     public function setTopic(array $topic): void
     {
         $this->topic = $topic;
     }
 
+    /**
+     * @return XdrSCVal The emitted body value of the event.
+     */
+    public function getValueXdr(): XdrSCVal {
+        return XdrSCVal::fromBase64Xdr($this->value);
+    }
+
+    /**
+     * @return string The emitted body value of the event (serialized in a base64 xdr string).
+     */
     public function getValue(): string
     {
         return $this->value;
     }
 
+    /**
+     * @param string $value The emitted body value of the event (serialized in a base64 xdr string).
+     */
     public function setValue(string $value): void
     {
         $this->value = $value;
     }
 
+    /**
+     * @return bool If true the event was emitted during a successful contract call.
+     */
     public function isInSuccessfulContractCall(): bool
     {
         return $this->inSuccessfulContractCall;
     }
 
+    /**
+     * @param bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
+     */
     public function setInSuccessfulContractCall(bool $inSuccessfulContractCall): void
     {
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;

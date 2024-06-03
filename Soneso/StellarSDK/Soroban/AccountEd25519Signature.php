@@ -10,16 +10,23 @@ use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
- * https://soroban.stellar.org/docs/how-to-guides/invoking-contracts-with-transactions#stellar-account-signatures
+ * This class is used during the signing of soroban authorization entries.
  */
 class AccountEd25519Signature
 {
-    public string $publicKey; //raw public key of 32 bytes.
+    /**
+     * @var string $publicKey raw public key of 32 bytes.
+     */
+    public string $publicKey;
+
+    /**
+     * @var string $signatureBytes the raw signature bytes.
+     */
     public string $signatureBytes;
 
     /**
-     * @param string $publicKey
-     * @param string $signatureBytes
+     * @param string $publicKey raw public key of 32 bytes.
+     * @param string $signatureBytes the raw signature bytes.
      */
     public function __construct(string $publicKey, string $signatureBytes)
     {
@@ -27,6 +34,11 @@ class AccountEd25519Signature
         $this->signatureBytes = $signatureBytes;
     }
 
+    /**
+     * Returns a scval map containing the public key and signature bytes.
+     *
+     * @return XdrSCVal the scval map containing the public key and signature bytes.
+     */
     public function toXdrSCVal() : XdrSCVal {
         $pkMapEntry = new XdrSCMapEntry(XdrSCVal::forSymbol("public_key"), XdrSCVal::forBytes($this->publicKey));
         $sigMapEntry = new XdrSCMapEntry(XdrSCVal::forSymbol("signature"), XdrSCVal::forBytes($this->signatureBytes));
@@ -34,7 +46,7 @@ class AccountEd25519Signature
     }
 
     /**
-     * @return string
+     * @return string raw public key of 32 bytes.
      */
     public function getPublicKey(): string
     {
@@ -42,7 +54,7 @@ class AccountEd25519Signature
     }
 
     /**
-     * @param string $publicKey
+     * @param string $publicKey raw public key of 32 bytes.
      */
     public function setPublicKey(string $publicKey): void
     {
@@ -50,7 +62,7 @@ class AccountEd25519Signature
     }
 
     /**
-     * @return string
+     * @return string the raw signature bytes.
      */
     public function getSignatureBytes(): string
     {
@@ -58,7 +70,7 @@ class AccountEd25519Signature
     }
 
     /**
-     * @param string $signatureBytes
+     * @param string $signatureBytes the raw signature bytes.
      */
     public function setSignatureBytes(string $signatureBytes): void
     {

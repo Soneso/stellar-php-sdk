@@ -10,6 +10,10 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntry;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 
+/**
+ * Part of the simulate transaction response
+ * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ */
 class LedgerEntryChange
 {
     /**
@@ -17,25 +21,25 @@ class LedgerEntryChange
      */
     public string $type;
     /**
-     * @var string $key XdrLedgerKey in base64
+     * @var string $key XdrLedgerKey in base64 for this delta
      */
     public string $key;
 
     /**
-     * @var string|null $before XdrLedgerEntry in base64
+     * @var string|null $before XdrLedgerEntry in base64 (state prior to simulation)
      */
-    public ?string $before;
+    public ?string $before = null;
 
     /**
-     * @var string|null $after XdrLedgerEntry in base64
+     * @var string|null $after XdrLedgerEntry in base64 (state after simulation)
      */
-    public ?string $after;
+    public ?string $after = null;
 
     /**
-     * @param string $type
-     * @param string $key
-     * @param string|null $before
-     * @param string|null $after
+     * @param string $type Indicates if the entry was 'created', 'updated', or 'deleted'
+     * @param string $key the XdrLedgerKey in base64 for this delta
+     * @param string|null $before XdrLedgerEntry in base64 (state prior to simulation)
+     * @param string|null $after XdrLedgerEntry in base64 (state after simulation)
      */
     public function __construct(
         string $type,
@@ -69,7 +73,7 @@ class LedgerEntryChange
     }
 
     /**
-     * @return string
+     * @return string Indicates if the entry was 'created', 'updated', or 'deleted'
      */
     public function getType(): string
     {
@@ -77,7 +81,7 @@ class LedgerEntryChange
     }
 
     /**
-     * @param string $type
+     * @param string $type Indicates if the entry was 'created', 'updated', or 'deleted'
      */
     public function setType(string $type): void
     {
@@ -85,7 +89,7 @@ class LedgerEntryChange
     }
 
     /**
-     * @return string
+     * @return string the XdrLedgerKey in base64 for this delta.
      */
     public function getKey(): string
     {
@@ -93,7 +97,7 @@ class LedgerEntryChange
     }
 
     /**
-     * @param string $key
+     * @param string $key the XdrLedgerKey in base64 for this delta
      */
     public function setKey(string $key): void
     {
@@ -101,7 +105,7 @@ class LedgerEntryChange
     }
 
     /**
-     * @return string|null
+     * @return string|null XdrLedgerEntry in base64 (state prior to simulation)
      */
     public function getBefore(): ?string
     {
@@ -109,7 +113,7 @@ class LedgerEntryChange
     }
 
     /**
-     * @param string|null $before
+     * @param string|null $before XdrLedgerEntry in base64 (state prior to simulation)
      */
     public function setBefore(?string $before): void
     {
@@ -117,7 +121,7 @@ class LedgerEntryChange
     }
 
     /**
-     * @return string|null
+     * @return string|null XdrLedgerEntry in base64 (state after simulation)
      */
     public function getAfter(): ?string
     {
@@ -125,17 +129,23 @@ class LedgerEntryChange
     }
 
     /**
-     * @param string|null $after
+     * @param string|null $after XdrLedgerEntry in base64 (state after simulation)
      */
     public function setAfter(?string $after): void
     {
         $this->after = $after;
     }
 
+    /**
+     * @return XdrLedgerKey the XdrLedgerKey for this delta
+     */
     public function getKeyXdr() : XdrLedgerKey {
         return XdrLedgerKey::fromBase64Xdr($this->key);
     }
 
+    /**
+     * @return XdrLedgerEntry|null XdrLedgerEntry (state after to simulation)
+     */
     public function getAfterXdr() : ?XdrLedgerEntry {
         if($this->after !== null) {
             return XdrLedgerEntry::fromBase64Xdr($this->after);
@@ -143,6 +153,9 @@ class LedgerEntryChange
         return null;
     }
 
+    /**
+     * @return XdrLedgerEntry|null XdrLedgerEntry (state prior to simulation)
+     */
     public function getBeforeXdr() : ?XdrLedgerEntry {
         if($this->before !== null) {
             return XdrLedgerEntry::fromBase64Xdr($this->before);

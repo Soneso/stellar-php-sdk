@@ -31,6 +31,9 @@ class EventFilters extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<EventFilter>
+     */
     public function toArray() : array {
         $result = array();
         foreach($this as $value) {
