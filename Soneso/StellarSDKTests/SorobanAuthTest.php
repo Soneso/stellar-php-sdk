@@ -38,6 +38,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
+use function PHPUnit\Framework\assertNotNull;
 
 // see: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
 // see: https://developers.stellar.org/docs/smart-contracts/example-contracts/auth
@@ -104,7 +105,8 @@ class SorobanAuthTest extends TestCase
         $op = $builder->build();
 
         sleep(5);
-        $invokerAccount = $this->sdk->requestAccount($invokerId);
+        $invokerAccount = $this->server->getAccount($invokerId);
+        assertNotNull($invokerAccount);
         $transaction = (new TransactionBuilder($invokerAccount))
             ->addOperation($op)->build();
 
@@ -204,7 +206,8 @@ class SorobanAuthTest extends TestCase
         $builder = new InvokeHostFunctionOperationBuilder($invokeHostFunction);
         $op = $builder->build();
 
-        $submitterAccount = $this->sdk->requestAccount($submitterId);
+        $submitterAccount = $this->server->getAccount($submitterId);
+        assertNotNull($submitterAccount);
         $transaction = (new TransactionBuilder($submitterAccount))
             ->addOperation($op)->build();
 
@@ -308,8 +311,9 @@ class SorobanAuthTest extends TestCase
         $op = (new InvokeHostFunctionOperationBuilder($uploadContractHostFunction))->build();
 
         $accountAId = $accountKeyPair->getAccountId();
-        $getAccountResponse = $this->sdk->requestAccount($accountAId);
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $account = $this->server->getAccount($accountAId);
+        assertNotNull($account);
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
         $request = new SimulateTransactionRequest($transaction);
@@ -323,9 +327,10 @@ class SorobanAuthTest extends TestCase
         $transactionData->resources->footprint->readWrite = $transactionData->resources->footprint->readWrite + $transactionData->resources->footprint->readOnly;
         $transactionData->resources->footprint->readOnly = array();
 
-        $getAccountResponse = $this->sdk->requestAccount($accountAId);
+        $account = $this->server->getAccount($accountAId);
+        assertNotNull($account);
         $restoreOp = (new RestoreFootprintOperationBuilder())->build();
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($restoreOp)->build();
 
         $transaction->setSorobanTransactionData($transactionData) ;
@@ -367,8 +372,9 @@ class SorobanAuthTest extends TestCase
         $bumpOp = $builder->build();
 
         $accountAId = $accountKeyPair->getAccountId();
-        $getAccountResponse = $this->sdk->requestAccount($accountAId);
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $account = $this->server->getAccount($accountAId);
+        assertNotNull($account);
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($bumpOp)->build();
 
         $readOnly = array();
@@ -427,7 +433,8 @@ class SorobanAuthTest extends TestCase
 
         sleep(5);
         $submitterId = $submitterKp->getAccountId();
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
@@ -458,7 +465,8 @@ class SorobanAuthTest extends TestCase
         $op = $builder->build();
 
         sleep(5);
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 

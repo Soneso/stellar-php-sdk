@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
+use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
@@ -24,17 +25,21 @@ use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
 use Soneso\StellarSDK\Transaction;
+use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrContractCodeEntry;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractData;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
-/// This class helps you to connect to a local or remote soroban rpc server
-/// and send requests to the server. It parses the results and provides
-/// corresponding response objects.
+/**
+ * This class helps you to connect to a local or remote soroban rpc server
+ * and send requests to the server. It parses the results and provides
+ * corresponding response objects.
+ */
 class SorobanServer
 {
     private string $endpoint;
@@ -156,7 +161,7 @@ class SorobanServer
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
         $ledgerKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
         $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
-        if ($ledgerEntries->entries != null && count($ledgerEntries->entries) > 0) {
+        if ($ledgerEntries->entries !== null && count($ledgerEntries->entries) > 0) {
             $ledgerEntry = $ledgerEntries->entries[0];
             if ($ledgerEntry instanceof LedgerEntry) {
                 return $ledgerEntry->getLedgerEntryDataXdr()->contractCode;
@@ -179,12 +184,67 @@ class SorobanServer
             XdrContractDataDurability::PERSISTENT());
 
         $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
-        if ($ledgerEntries->entries != null && count($ledgerEntries->entries) > 0) {
+        if ($ledgerEntries->entries !== null && count($ledgerEntries->entries) > 0) {
             $ledgerEntryData = $ledgerEntries->entries[0]->getLedgerEntryDataXdr();
             if ($ledgerEntryData->contractData != null && $ledgerEntryData->contractData->val->instance?->executable->wasmIdHex != null) {
                 $wasmId = $ledgerEntryData->contractData->val->instance->executable->wasmIdHex;
                 return $this->loadContractCodeForWasmId($wasmId);
             }
+        }
+        return null;
+    }
+
+    /**
+     * Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
+     * number for the account, so you can build a successful transaction.
+     * Returns null if account was not found.
+     * @param string $accountId th account id to request the data for ("G...")
+     * @return Account|null The account object or null if not found.
+     * @throws GuzzleException
+     */
+    public function getAccount(string $accountId): ?Account {
+        $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
+        $ledgerKey->account = new XdrLedgerKeyAccount(
+            new XdrAccountID($accountId)
+        );
+        $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
+        if ($ledgerEntries->entries !== null && count($ledgerEntries->entries) > 0) {
+            $accountEntry = $ledgerEntries->entries[0]->getLedgerEntryDataXdr()->account;
+            if ($accountEntry !== null) {
+                $accountId = $accountEntry->getAccountID()->getAccountId();
+                $seqNr = $accountEntry->seqNum->getValue();
+                return new Account($accountId, $seqNr);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Reads the current value of contract data ledger entries directly.
+     *
+     * @param string $contractId id of the contract containing the data to load.
+     * @param XdrSCVal $key of the contract data to load.
+     * @param XdrContractDataDurability $durability keyspace that this ledger key belongs to, which is either
+     * XdrContractDataDurability::PERSISTENT() or XdrContractDataDurability::TEMPORARY().
+     * @return LedgerEntry|null Ledger Entry if found otherwise null.
+     * @throws GuzzleException
+     */
+    public function getContractData(
+        string $contractId,
+        XdrSCVal $key,
+        XdrContractDataDurability $durability,
+    ) : ?LedgerEntry {
+
+        $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
+        $ledgerKey->contractData = new XdrLedgerKeyContractData(
+            Address::fromContractId($contractId)->toXdr(),
+            $key,
+            $durability,
+        );
+
+        $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
+        if ($ledgerEntries->entries !== null && count($ledgerEntries->entries) > 0) {
+            return $ledgerEntries->entries[0];
         }
         return null;
     }

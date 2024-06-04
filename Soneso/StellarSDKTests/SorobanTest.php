@@ -40,6 +40,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
@@ -112,7 +113,6 @@ class SorobanTest extends TestCase
         }
 
         $this->assertNotNull($getNetworkResponse->protocolVersion);
-
         $this->restoreContractFootprint($this->server, $this->accountAKeyPair, self::HELLO_CONTRACT_PATH);
 
         // upload contract wasm
@@ -121,8 +121,9 @@ class SorobanTest extends TestCase
         $op = (new InvokeHostFunctionOperationBuilder($uploadContractHostFunction))->build();
 
         sleep(5);
-        $getAccountResponse = $this->sdk->requestAccount($this->accountAId);
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $account = $this->server->getAccount($this->accountAId);
+        assertNotNull($account);
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
         // simulate first to get the transaction data and fee
@@ -207,7 +208,8 @@ class SorobanTest extends TestCase
         $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
         $op = $builder->build();
         sleep(5);
-        $accountA = $this->sdk->requestAccount($this->accountAId);
+        $accountA = $this->server->getAccount($this->accountAId);
+        assertNotNull($accountA);
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($op)->build();
 
@@ -305,7 +307,8 @@ class SorobanTest extends TestCase
 
         // invoke contract
         $argVal = XdrSCVal::forSymbol("friend");
-        $accountA = $this->sdk->requestAccount($this->accountAId);
+        $accountA = $this->server->getAccount($this->accountAId);
+        assertNotNull($accountA);
 
         $invokeContractHostFunction = new InvokeContractHostFunction($helloContractId, "hello", [$argVal]);
         $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
@@ -394,7 +397,9 @@ class SorobanTest extends TestCase
         }
 
         // deploy create token contract with source account
-        $accountA = $this->sdk->requestAccount($this->accountAId);
+        $accountA = $this->server->getAccount($this->accountAId);
+        assertNotNull($accountA);
+
         $deploySACWithSourceAccountHostFunction = new DeploySACWithSourceAccountHostFunction(Address::fromAccountId($this->accountAId));
         $builder = new InvokeHostFunctionOperationBuilder($deploySACWithSourceAccountHostFunction);
         $op = $builder->build();
@@ -488,7 +493,8 @@ class SorobanTest extends TestCase
         }
         sleep(5);
 
-        $accountB = $this->sdk->requestAccount($accountBId);
+        $accountB = $this->server->getAccount($accountBId);
+        assertNotNull($accountB);
         $iomAsset = new AssetTypeCreditAlphanum4("IOM", $this->accountAId);
         $changeTrustBOperation = (new ChangeTrustOperationBuilder($iomAsset, "200999"))
             ->setSourceAccount($accountBId)->build();
@@ -504,7 +510,8 @@ class SorobanTest extends TestCase
 
         // simulate
         sleep(5);
-        $accountB = $this->sdk->requestAccount($accountBId);
+        $accountB = $this->server->getAccount($accountBId);
+        assertNotNull($accountB);
 
         $deploySACWithAssetHostFunction = new DeploySACWithAssetHostFunction($iomAsset);
         $builder = new InvokeHostFunctionOperationBuilder($deploySACWithAssetHostFunction);
@@ -575,6 +582,14 @@ class SorobanTest extends TestCase
         } else {
             $this->fail();
         }
+
+        // test contract data fetching
+        $entry = $this->server->getContractData(
+            $helloContractId,
+            XdrSCVal::forLedgerKeyContractInstance(),
+            XdrContractDataDurability::PERSISTENT(),
+        );
+        assertNotNull($entry);
     }
 
     public function testSorobanEvents(): void
@@ -586,7 +601,9 @@ class SorobanTest extends TestCase
 
         // invoke
         $fnName = "increment";
-        $accountA = $this->sdk->requestAccount($this->accountAId);
+        $accountA = $this->server->getAccount($this->accountAId);
+        assertNotNull($accountA);
+
         $invokeContractHostFunction = new InvokeContractHostFunction($contractId, $fnName);
         $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
         $op = $builder->build();
@@ -690,7 +707,9 @@ class SorobanTest extends TestCase
 
         sleep(5);
         $submitterId = $submitterKp->getAccountId();
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
+
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
@@ -721,7 +740,9 @@ class SorobanTest extends TestCase
         $op = $builder->build();
 
         sleep(5);
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
+
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
@@ -755,8 +776,11 @@ class SorobanTest extends TestCase
         $op = (new InvokeHostFunctionOperationBuilder($uploadContractHostFunction))->build();
 
         $this->accountAId = $accountKeyPair->getAccountId();
-        $getAccountResponse = $this->sdk->requestAccount($this->accountAId);
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        //$account = $this->sdk->requestAccount($this->accountAId);
+        $account = $this->server->getAccount($this->accountAId);
+        assertNotNull($account);
+
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
         $request = new SimulateTransactionRequest($transaction);
@@ -770,9 +794,10 @@ class SorobanTest extends TestCase
         $transactionData->resources->footprint->readWrite = $transactionData->resources->footprint->readWrite + $transactionData->resources->footprint->readOnly;
         $transactionData->resources->footprint->readOnly = array();
 
-        $getAccountResponse = $this->sdk->requestAccount($this->accountAId);
+        $account = $this->server->getAccount($this->accountAId);
+        assertNotNull($account);
         $restoreOp = (new RestoreFootprintOperationBuilder())->build();
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($restoreOp)->build();
 
         $transaction->setSorobanTransactionData($transactionData) ;
@@ -814,8 +839,9 @@ class SorobanTest extends TestCase
         $bumpOp = $builder->build();
 
         $this->accountAId = $accountKeyPair->getAccountId();
-        $getAccountResponse = $this->sdk->requestAccount($this->accountAId);
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $account = $this->server->getAccount($this->accountAId);
+        assertNotNull($account);
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($bumpOp)->build();
 
         $readOnly = array();

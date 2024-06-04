@@ -37,6 +37,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
+use function PHPUnit\Framework\assertNotNull;
 
 // See https://developers.stellar.org/docs/smart-contracts/example-contracts/atomic-swap
 // See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
@@ -145,7 +146,8 @@ class SorobanAtomicSwapTest extends TestCase
         $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
         $op = $builder->build();
 
-        $source = $this->sdk->requestAccount($adminId);
+        $source = $this->server->getAccount($adminId);
+        assertNotNull($source);
         $transaction = (new TransactionBuilder($source))->addOperation($op)->build();
 
         $request = new SimulateTransactionRequest($transaction);
@@ -215,7 +217,8 @@ class SorobanAtomicSwapTest extends TestCase
 
         sleep(5);
         $submitterId = $submitterKp->getAccountId();
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
         // simulate first to get the transaction data and resource fee
@@ -246,7 +249,8 @@ class SorobanAtomicSwapTest extends TestCase
         $op = $builder->build();
 
         sleep(5);
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
@@ -291,7 +295,8 @@ class SorobanAtomicSwapTest extends TestCase
 
         sleep(5);
         // reload account for sequence number
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
@@ -333,7 +338,8 @@ class SorobanAtomicSwapTest extends TestCase
         $op = $builder->build();
 
         // reload account for sequence number
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
         $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
 
         $request = new SimulateTransactionRequest($transaction);
@@ -370,7 +376,8 @@ class SorobanAtomicSwapTest extends TestCase
         $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
         $op = $builder->build();
 
-        $account = $this->sdk->requestAccount($submitterId);
+        $account = $this->server->getAccount($submitterId);
+        assertNotNull($account);
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
@@ -424,8 +431,9 @@ class SorobanAtomicSwapTest extends TestCase
         $op = (new InvokeHostFunctionOperationBuilder($uploadContractHostFunction))->build();
 
         $accountAId = $accountKeyPair->getAccountId();
-        $getAccountResponse = $this->sdk->requestAccount($accountAId);
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $account = $this->server->getAccount($accountAId);
+        assertNotNull($account);
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
         $request = new SimulateTransactionRequest($transaction);
@@ -439,9 +447,10 @@ class SorobanAtomicSwapTest extends TestCase
         $transactionData->resources->footprint->readWrite = $transactionData->resources->footprint->readWrite + $transactionData->resources->footprint->readOnly;
         $transactionData->resources->footprint->readOnly = array();
 
-        $getAccountResponse = $this->sdk->requestAccount($accountAId);
+        $account = $this->server->getAccount($accountAId);
+        assertNotNull($account);
         $restoreOp = (new RestoreFootprintOperationBuilder())->build();
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($restoreOp)->build();
 
         $transaction->setSorobanTransactionData($transactionData) ;
@@ -483,8 +492,9 @@ class SorobanAtomicSwapTest extends TestCase
         $bumpOp = $builder->build();
 
         $accountAId = $accountKeyPair->getAccountId();
-        $getAccountResponse = $this->sdk->requestAccount($accountAId);
-        $transaction = (new TransactionBuilder($getAccountResponse))
+        $account = $this->server->getAccount($accountAId);
+        assertNotNull($account);
+        $transaction = (new TransactionBuilder($account))
             ->addOperation($bumpOp)->build();
 
         $readOnly = array();

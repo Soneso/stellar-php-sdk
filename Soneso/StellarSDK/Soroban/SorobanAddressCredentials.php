@@ -9,7 +9,10 @@ namespace Soneso\StellarSDK\Soroban;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentials;
 
-
+/**
+ * Used for soroban authorization as a part of SorobanCredentials.
+ * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+ */
 class SorobanAddressCredentials
 {
     public Address $address;

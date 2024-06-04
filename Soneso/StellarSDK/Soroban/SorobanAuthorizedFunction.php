@@ -13,6 +13,10 @@ use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunction;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType;
 
 
+/**
+ * Used for soroban authorization as a part of SorobanAuthorizedInvocation.
+ * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+ */
 class SorobanAuthorizedFunction
 {
     public ?XdrInvokeContractArgs $contractFn = null;

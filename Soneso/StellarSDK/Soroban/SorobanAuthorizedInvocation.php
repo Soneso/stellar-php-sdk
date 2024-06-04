@@ -9,7 +9,10 @@ namespace Soneso\StellarSDK\Soroban;
 
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation;
 
-
+/**
+ * Used for soroban authorization as a part of SorobanAuthorizedEntry.
+ * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+ */
 class SorobanAuthorizedInvocation
 {
     public SorobanAuthorizedFunction $function;
@@ -27,7 +30,6 @@ class SorobanAuthorizedInvocation
         $this->function = $function;
         $this->subInvocations = $subInvocations;
     }
-
 
     public static function fromXdr(XdrSorobanAuthorizedInvocation $xdr) : SorobanAuthorizedInvocation {
         $subs = array();

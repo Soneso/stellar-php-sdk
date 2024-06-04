@@ -18,6 +18,10 @@ use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
 
+/**
+ * Used for soroban authorization.
+ * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+ */
 class SorobanAuthorizationEntry
 {
     public SorobanCredentials $credentials;
@@ -58,7 +62,8 @@ class SorobanAuthorizationEntry
      * @param KeyPair $signer
      * @param Network $network
      */
-    public function sign(KeyPair $signer, Network $network) {
+    public function sign(KeyPair $signer, Network $network): void
+    {
         $xdrCredentials = $this->credentials->toXdr();
         if ($this->credentials->addressCredentials == null ||
             $xdrCredentials->type->value != XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS ||

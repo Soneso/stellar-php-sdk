@@ -10,7 +10,10 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
-
+/**
+ * Used for Soroban authorization as Part of SorobanAuthorizationEntry.
+ * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+ */
 class SorobanCredentials
 {
     public ?SorobanAddressCredentials $addressCredentials = null;
