@@ -30,6 +30,62 @@ class XdrConfigSettingID
         $this->value = $value;
     }
 
+    public static function CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_COMPUTE_V0() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_LEDGER_COST_V0() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_EVENTS_V0() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_BANDWIDTH_V0() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES);
+    }
+
+    public static function CONFIG_SETTING_STATE_ARCHIVAL() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_EXECUTION_LANES() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES);
+    }
+
+    public static function CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW);
+    }
+
+    public static function CONFIG_SETTING_EVICTION_ITERATOR() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR);
+    }
+
     /**
      * @return int
      */

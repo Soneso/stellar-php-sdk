@@ -46,4 +46,11 @@ class XdrClaimableBalanceID
         $hash = bin2hex($xdr->readOpaqueFixed(32));
         return new XdrClaimableBalanceID($type, $hash);
     }
+
+    public static function forClaimableBalanceId(string $claimableBalanceId) : XdrClaimableBalanceID {
+        return new XdrClaimableBalanceID(
+            XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0(),
+            $claimableBalanceId,
+        );
+    }
 }

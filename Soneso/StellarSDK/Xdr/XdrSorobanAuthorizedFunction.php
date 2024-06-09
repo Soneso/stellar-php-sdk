@@ -49,6 +49,18 @@ class XdrSorobanAuthorizedFunction
         return $result;
     }
 
+    public static function forInvokeContractArgs(XdrInvokeContractArgs $args): XdrSorobanAuthorizedFunction {
+        $result = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN());
+        $result->contractFn = $args;
+        return $result;
+    }
+
+    public static function forCreateContractArgs(XdrCreateContractArgs $args): XdrSorobanAuthorizedFunction {
+        $result = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN());
+        $result->createContractHostFn = $args;
+        return $result;
+    }
+
     /**
      * @return XdrSorobanAuthorizedFunctionType
      */

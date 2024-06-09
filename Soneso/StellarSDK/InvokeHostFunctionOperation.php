@@ -18,11 +18,14 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 class InvokeHostFunctionOperation extends AbstractOperation
 {
     public HostFunction $function;
-    public array $auth; // [SorobanAuthorizationEntry]
+    /**
+     * @var array<SorobanAuthorizationEntry>
+     */
+    public array $auth;
 
     /**
      * @param HostFunction $function
-     * @param array $auth [XdrSorobanAuthorizationEntry]
+     * @param array<SorobanAuthorizationEntry> $auth
      * @param MuxedAccount|null $sourceAccount
      */
     public function __construct(HostFunction $function, array $auth = array(), ?MuxedAccount $sourceAccount = null)
@@ -31,7 +34,6 @@ class InvokeHostFunctionOperation extends AbstractOperation
         $this->auth = $auth;
         $this->setSourceAccount($sourceAccount);
     }
-
 
     /**
      * @throws Exception
@@ -99,7 +101,7 @@ class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
-     * @return array
+     * @return array<SorobanAuthorizationEntry>
      */
     public function getAuth(): array
     {
@@ -107,7 +109,7 @@ class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
-     * @param array $auth
+     * @param array<SorobanAuthorizationEntry> $auth
      */
     public function setAuth(array $auth): void
     {

@@ -36,14 +36,19 @@ use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperation;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
+use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperation;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\EndSponsoringFutureReservesOperation;
 use Soneso\StellarSDK\EndSponsoringFutureReservesOperationBuilder;
+use Soneso\StellarSDK\ExtendFootprintTTLOperation;
 use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
+use Soneso\StellarSDK\HostFunction;
+use Soneso\StellarSDK\InvokeContractHostFunction;
+use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\LedgerBounds;
 use Soneso\StellarSDK\LiquidityPoolDepositOperation;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
@@ -64,32 +69,72 @@ use Soneso\StellarSDK\PathPaymentStrictSendOperationBuilder;
 use Soneso\StellarSDK\PaymentOperation;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\RestoreFootprintOperation;
 use Soneso\StellarSDK\RevokeSponsorshipOperation;
 use Soneso\StellarSDK\RevokeSponsorshipOperationBuilder;
 use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\SetTrustLineFlagsOperation;
 use Soneso\StellarSDK\SetTrustLineFlagsOperationBuilder;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\TransactionPreconditions;
+use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
+use Soneso\StellarSDK\Xdr\XdrConfigSettingID;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
+use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
+use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
+use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
+use Soneso\StellarSDK\Xdr\XdrInt128Parts;
+use Soneso\StellarSDK\Xdr\XdrInt256Parts;
+use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
+use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
+use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
+use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
+use Soneso\StellarSDK\Xdr\XdrSCAddressType;
+use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
+use Soneso\StellarSDK\Xdr\XdrSCError;
+use Soneso\StellarSDK\Xdr\XdrSCErrorCode;
+use Soneso\StellarSDK\Xdr\XdrSCErrorType;
+use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
+use Soneso\StellarSDK\Xdr\XdrSCNonceKey;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
+use Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentials;
+use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
+use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunction;
+use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType;
+use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation;
+use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
+use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
+use Soneso\StellarSDK\Xdr\XdrSorobanResources;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
+use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
 
 class TxRep
 {
-    public static function fromTransactionEnvelopeXdrBase64(string $transactionEnvelopeXdrBase64) : string {
+    public static function fromTransactionEnvelopeXdrBase64(string $transactionEnvelopeXdrBase64): string
+    {
 
         $tx = null;
         $feeBump = null;
@@ -124,31 +169,31 @@ class TxRep
             $lines += ['feeBump.tx.innerTx.type' => 'ENVELOPE_TYPE_TX'];
         }
 
-        $lines += [$prefix.'sourceAccount' => $tx->getSourceAccount()->getAccountId()];
-        $lines += [$prefix.'fee' => strval($tx->getFee())];
-        $lines += [$prefix.'seqNum' => $tx->getSequenceNumber()->toString()];
+        $lines += [$prefix . 'sourceAccount' => $tx->getSourceAccount()->getAccountId()];
+        $lines += [$prefix . 'fee' => strval($tx->getFee())];
+        $lines += [$prefix . 'seqNum' => $tx->getSequenceNumber()->toString()];
 
         $lines = array_merge($lines, self::getPreconditions($tx->getPreconditions(), $prefix));
 
         $memo = $tx->getMemo();
         if ($memo->getType() == Memo::MEMO_TYPE_NONE) {
-            $lines += [$prefix.'memo.type' => 'MEMO_NONE'];
+            $lines += [$prefix . 'memo.type' => 'MEMO_NONE'];
         } else if ($memo->getType() == Memo::MEMO_TYPE_TEXT) {
-            $lines += [$prefix.'memo.type' => 'MEMO_TEXT'];
-            $lines += [$prefix.'memo.text' => json_encode($memo->getValue())];
+            $lines += [$prefix . 'memo.type' => 'MEMO_TEXT'];
+            $lines += [$prefix . 'memo.text' => json_encode($memo->getValue())];
         } else if ($memo->getType() == Memo::MEMO_TYPE_ID) {
-            $lines += [$prefix.'memo.type' => 'MEMO_ID'];
-            $lines += [$prefix.'memo.id' => strval($memo->getValue())];
+            $lines += [$prefix . 'memo.type' => 'MEMO_ID'];
+            $lines += [$prefix . 'memo.id' => strval($memo->getValue())];
         } else if ($memo->getType() == Memo::MEMO_TYPE_HASH) {
-            $lines += [$prefix.'memo.type' => 'MEMO_HASH'];
-            $lines += [$prefix.'memo.hash' => $memo->getValue()];
+            $lines += [$prefix . 'memo.type' => 'MEMO_HASH'];
+            $lines += [$prefix . 'memo.hash' => $memo->getValue()];
         } else if ($memo->getType() == Memo::MEMO_TYPE_RETURN) {
-            $lines += [$prefix.'memo.type' => 'MEMO_RETURN'];
-            $lines += [$prefix.'memo.retHash' => $memo->getValue()];
+            $lines += [$prefix . 'memo.type' => 'MEMO_RETURN'];
+            $lines += [$prefix . 'memo.retHash' => $memo->getValue()];
         }
 
         $operations = $tx->getOperations();
-        $lines += [$prefix.'operations.len' => count($operations)];
+        $lines += [$prefix . 'operations.len' => count($operations)];
 
         $index = 0;
         foreach ($operations as $operation) {
@@ -157,7 +202,18 @@ class TxRep
             $index++;
         }
 
-        $lines += [$prefix.'ext.v' => '0'];
+        $txXdr = $tx->toXdr();
+        $lines += [$prefix . 'ext.v' => strval($txXdr->ext->discriminant)];
+        if ($txXdr->ext->sorobanTransactionData != null) {
+            $lines = array_merge(
+                $lines,
+                self::getSorobanTransactionDataTx(
+                    $prefix . 'sorobanData.',
+                    $txXdr->ext->sorobanTransactionData,
+                ),
+            );
+        }
+
         $p = $isFeeBump ? 'feeBump.tx.innerTx.' : '';
         $lines = array_merge($lines, self::getSignatures($p, $tx->getSignatures()));
         if ($isFeeBump) {
@@ -177,25 +233,26 @@ class TxRep
         return $result;
     }
 
-    public static function transactionEnvelopeXdrBase64FromTxRep(string $txRep) : string {
+    public static function transactionEnvelopeXdrBase64FromTxRep(string $txRep): string
+    {
         $lines = explode(PHP_EOL, $txRep);
         $map = array();
-        foreach($lines as $line) {
+        foreach ($lines as $line) {
             $line = trim($line);
             if ($line == "") {
                 continue;
             }
             $parts = explode(':', $line);
             if (count($parts) > 1) {
-               $key = $parts[0];
-               $value = trim(implode(':', array_slice($parts, 1)));
-               $map += [$key => $value];
+                $key = $parts[0];
+                $value = trim(implode(':', array_slice($parts, 1)));
+                $map += [$key => $value];
             }
         }
         $prefix = 'tx.';
         $isFeeBump = self::getClearValue('type', $map) == 'ENVELOPE_TYPE_TX_FEE_BUMP';
         $feeBumpFee = null;
-        $feeBumpSource =  self::getClearValue('feeBump.tx.feeSource', $map);
+        $feeBumpSource = self::getClearValue('feeBump.tx.feeSource', $map);
 
         if ($isFeeBump) {
             $prefix = 'feeBump.tx.innerTx.tx.';
@@ -213,143 +270,141 @@ class TxRep
                 throw new InvalidArgumentException('missing feeBump.tx.feeSource');
             }
 
-            $feeBumpSourceKeyPair = null;
             try {
-                $feeBumpSourceKeyPair = KeyPair::fromAccountId($feeBumpSource);
+                KeyPair::fromAccountId($feeBumpSource);
             } catch (Exception $e) {
-                throw new InvalidArgumentException('invalid feeBump.tx.feeSource');
-            }
-            if (!$feeBumpSourceKeyPair) {
                 throw new InvalidArgumentException('invalid feeBump.tx.feeSource');
             }
         }
 
-        $sourceAccountId = self::getClearValue($prefix.'sourceAccount', $map);
+        $sourceAccountId = self::getClearValue($prefix . 'sourceAccount', $map);
         if (!$sourceAccountId) {
-            throw new InvalidArgumentException('missing '.$prefix.'sourceAccount');
+            throw new InvalidArgumentException('missing ' . $prefix . 'sourceAccount');
         }
-        $sourceAccountKeyPair = null;
+
         try {
-            $sourceAccountKeyPair = KeyPair::fromAccountId($sourceAccountId);
+            KeyPair::fromAccountId($sourceAccountId);
         } catch (Exception $e) {
-            throw new InvalidArgumentException('invalid '.$prefix.'sourceAccount');
+            throw new InvalidArgumentException('invalid ' . $prefix . 'sourceAccount');
         }
-        if (!$sourceAccountKeyPair) {
-            throw new InvalidArgumentException('invalid '.$prefix.'sourceAccount');
-        }
-        $feeStr = self::getClearValue($prefix.'fee', $map);
+
+        $feeStr = self::getClearValue($prefix . 'fee', $map);
         if (!$feeStr || !is_numeric($feeStr)) {
-            throw new InvalidArgumentException('missing or invalid '.$prefix.'fee');
+            throw new InvalidArgumentException('missing or invalid ' . $prefix . 'fee');
         }
         $fee = (int)$feeStr;
-        $sequenceNumberStr = self::getClearValue($prefix.'seqNum', $map);
+        $sequenceNumberStr = self::getClearValue($prefix . 'seqNum', $map);
         if (!$sequenceNumberStr) {
-            throw new InvalidArgumentException('missing '.$prefix.'seqNum');
+            throw new InvalidArgumentException('missing ' . $prefix . 'seqNum');
         }
         $sequenceNumber = new BigInteger($sequenceNumberStr);
         if ($sequenceNumber->toString() != $sequenceNumberStr) {
-            throw new InvalidArgumentException('invalid '.$prefix.'seqNum');
+            throw new InvalidArgumentException('invalid ' . $prefix . 'seqNum');
         }
 
         $sourceAccount = Account::fromAccountId($sourceAccountId, $sequenceNumber->subtract(new BigInteger(1)));
         $txBuilder = new TransactionBuilder($sourceAccount);
 
-        $preconditions  = self::parsePreconditions($map,$prefix);
+        $preconditions = self::parsePreconditions($map, $prefix);
         if ($preconditions != null) {
             $txBuilder->setPreconditions($preconditions);
         }
 
-        $memoType = self::getClearValue($prefix.'memo.type', $map);
+        $memoType = self::getClearValue($prefix . 'memo.type', $map);
         if (!$memoType) {
-            throw new InvalidArgumentException('missing '.$prefix.'memo.type');
+            throw new InvalidArgumentException('missing ' . $prefix . 'memo.type');
         }
-        if ($memoType == 'MEMO_TEXT' && self::getClearValue($prefix.'memo.text', $map)) {
-            $text = str_replace('"','', self::getClearValue($prefix.'memo.text', $map));
+        if ($memoType == 'MEMO_TEXT' && self::getClearValue($prefix . 'memo.text', $map)) {
+            $text = str_replace('"', '', self::getClearValue($prefix . 'memo.text', $map));
             $txBuilder->addMemo(Memo::text($text));
-        } else if ($memoType == 'MEMO_ID' && self::getClearValue($prefix.'memo.id', $map)) {
-            $val = self::getClearValue($prefix.'memo.id', $map);
+        } else if ($memoType == 'MEMO_ID' && self::getClearValue($prefix . 'memo.id', $map)) {
+            $val = self::getClearValue($prefix . 'memo.id', $map);
             if (!is_numeric($val)) {
-                throw new InvalidArgumentException($prefix.'memo.id');
+                throw new InvalidArgumentException($prefix . 'memo.id');
             }
-            $id = (int)self::getClearValue($prefix.'memo.id', $map);
+            $id = (int)self::getClearValue($prefix . 'memo.id', $map);
             $txBuilder->addMemo(Memo::id($id));
-        } else if ($memoType == 'MEMO_HASH' && self::getClearValue($prefix.'memo.hash', $map)) {
-            $hash = hex2bin(self::getClearValue($prefix.'memo.hash', $map));
+        } else if ($memoType == 'MEMO_HASH' && self::getClearValue($prefix . 'memo.hash', $map)) {
+            $hash = hex2bin(self::getClearValue($prefix . 'memo.hash', $map));
             if (!$hash) {
-                throw new InvalidArgumentException($prefix.'memo.hash');
+                throw new InvalidArgumentException($prefix . 'memo.hash');
             }
             $txBuilder->addMemo(Memo::hash($hash));
-        } else if ($memoType == 'MEMO_RETURN' && self::getClearValue($prefix.'memo.return', $map)) {
-            $hash = hex2bin(self::getClearValue($prefix.'memo.return', $map));
+        } else if ($memoType == 'MEMO_RETURN' && self::getClearValue($prefix . 'memo.return', $map)) {
+            $hash = hex2bin(self::getClearValue($prefix . 'memo.return', $map));
             if (!$hash) {
-                throw new InvalidArgumentException($prefix.'memo.return');
+                throw new InvalidArgumentException($prefix . 'memo.return');
             }
             $txBuilder->addMemo(Memo::return($hash));
         } else {
             $txBuilder->addMemo(Memo::none());
         }
 
-        $operationsLen = self::getClearValue($prefix.'operations.len', $map);
+        $operationsLen = self::getClearValue($prefix . 'operations.len', $map);
         if (!$operationsLen) {
-            throw new InvalidArgumentException('missing '.$prefix.'operations.len');
+            throw new InvalidArgumentException('missing ' . $prefix . 'operations.len');
         }
         if (!is_numeric($operationsLen)) {
-            throw new InvalidArgumentException('invalid '.$prefix.'operations.len');
+            throw new InvalidArgumentException('invalid ' . $prefix . 'operations.len');
         }
         $nrOfOperations = (int)$operationsLen;
         if ($nrOfOperations > 100) {
-            throw new InvalidArgumentException('invalid '.$prefix.'operations.len - greater than 100');
+            throw new InvalidArgumentException('invalid ' . $prefix . 'operations.len - greater than 100');
         }
 
         for ($i = 0; $i < $nrOfOperations; $i++) {
             $operation = self::getOperation($i, $map, $prefix);
             if ($operation) {
-               $txBuilder->addOperation($operation);
+                $txBuilder->addOperation($operation);
             }
         }
         $maxOperationFee = intval(round((float)$fee / (float)$nrOfOperations));
         $txBuilder->setMaxOperationFee($maxOperationFee);
+
+
         $transaction = $txBuilder->build();
+        $sorobanTransactionData = self::getSorobanTransactionData($prefix, $map);
+        $transaction->setSorobanTransactionData($sorobanTransactionData);
 
         // Signatures
         $prefix = $isFeeBump ? 'feeBump.tx.innerTx.' : "";
-        $signaturesLen = self::getClearValue($prefix.'signatures.len', $map);
+        $signaturesLen = self::getClearValue($prefix . 'signatures.len', $map);
         if ($signaturesLen) {
-            if(!is_numeric($signaturesLen)) {
-                throw new InvalidArgumentException('invalid '.$prefix.'signatures.len');
+            if (!is_numeric($signaturesLen)) {
+                throw new InvalidArgumentException('invalid ' . $prefix . 'signatures.len');
             }
             $nrOfSignatures = intval($signaturesLen);
-            if($nrOfSignatures > 20) {
-                throw new InvalidArgumentException('invalid '.$prefix.'signatures.len - greater than 20');
+            if ($nrOfSignatures > 20) {
+                throw new InvalidArgumentException('invalid ' . $prefix . 'signatures.len - greater than 20');
             }
             $signatures = array();
-            for($i = 0; $i< $nrOfSignatures; $i++) {
+            for ($i = 0; $i < $nrOfSignatures; $i++) {
                 $signature = self::getSignature($i, $map, $prefix);
-                if($signature) {
+                if ($signature) {
                     array_push($signatures, $signature);
                 }
             }
             $transaction->setSignatures($signatures);
         }
         if ($isFeeBump) {
-           $builder =  new FeeBumpTransactionBuilder($transaction);
-           $baseFee = intval(round((float)$feeBumpFee / (float)($nrOfOperations +  1)));
-           $builder->setBaseFee($baseFee);
-           $builder->setMuxedFeeAccount(MuxedAccount::fromAccountId($feeBumpSource));
-           $feeBumpTransaction = $builder->build();
-           $fbSignaturesLen = self::getClearValue('feeBump.signatures.len', $map);
+            $builder = new FeeBumpTransactionBuilder($transaction);
+            $baseFee = intval(round((float)$feeBumpFee / (float)($nrOfOperations + 1)));
+            $builder->setBaseFee($baseFee);
+            $builder->setMuxedFeeAccount(MuxedAccount::fromAccountId($feeBumpSource));
+            $feeBumpTransaction = $builder->build();
+            $fbSignaturesLen = self::getClearValue('feeBump.signatures.len', $map);
             if ($fbSignaturesLen) {
-                if(!is_numeric($fbSignaturesLen)) {
-                    throw new InvalidArgumentException('invalid '.$prefix.'feeBump.signatures.len');
+                if (!is_numeric($fbSignaturesLen)) {
+                    throw new InvalidArgumentException('invalid ' . $prefix . 'feeBump.signatures.len');
                 }
                 $nrOfFbSignatures = intval($fbSignaturesLen);
-                if($nrOfFbSignatures > 20) {
-                    throw new InvalidArgumentException('invalid '.$prefix.'feeBump.signatures.len - greater than 20');
+                if ($nrOfFbSignatures > 20) {
+                    throw new InvalidArgumentException('invalid ' . $prefix . 'feeBump.signatures.len - greater than 20');
                 }
                 $fbSignatures = array();
-                for($i = 0; $i< $nrOfFbSignatures; $i++) {
+                for ($i = 0; $i < $nrOfFbSignatures; $i++) {
                     $signature = self::getSignature($i, $map, 'feeBump.');
-                    if($signature) {
+                    if ($signature) {
                         array_push($fbSignatures, $signature);
                     }
                 }
@@ -360,14 +415,15 @@ class TxRep
         return $transaction->toEnvelopeXdrBase64();
     }
 
-    private static function getSignature(int $index, array $map, string $txPrefix) : ?XdrDecoratedSignature {
-        $hintStr = self::getClearValue($txPrefix.'signatures['.$index.'].hint', $map);
+    private static function getSignature(int $index, array $map, string $txPrefix): ?XdrDecoratedSignature
+    {
+        $hintStr = self::getClearValue($txPrefix . 'signatures[' . $index . '].hint', $map);
         if (!$hintStr) {
-            throw new InvalidArgumentException('missing '.$txPrefix.'signatures['.$index.'].hint');
+            throw new InvalidArgumentException('missing ' . $txPrefix . 'signatures[' . $index . '].hint');
         }
-        $signatureStr = self::getClearValue($txPrefix.'signatures['.$index.'].signature', $map);
+        $signatureStr = self::getClearValue($txPrefix . 'signatures[' . $index . '].signature', $map);
         if (!$signatureStr) {
-            throw new InvalidArgumentException('missing '.$txPrefix.'signatures['.$index.'].signature');
+            throw new InvalidArgumentException('missing ' . $txPrefix . 'signatures[' . $index . '].signature');
         }
         $hint = hex2bin($hintStr);
         $signature = hex2bin($signatureStr);
@@ -377,19 +433,20 @@ class TxRep
         return null;
     }
 
-    private static function parsePreconditions(array $map, string $txPrefix) : ?TransactionPreconditions {
+    private static function parsePreconditions(array $map, string $txPrefix): ?TransactionPreconditions
+    {
         $cond = new TransactionPreconditions();
-        $preonditionsType = self::getClearValue($txPrefix.'cond.type', $map);
+        $preonditionsType = self::getClearValue($txPrefix . 'cond.type', $map);
         if ($preonditionsType == "PRECOND_TIME") {
-            $precondPrefix = $txPrefix.'cond.';
-            $minTimeStr = self::getClearValue($precondPrefix.'timeBounds.minTime', $map);
-            $maxTimeStr = self::getClearValue($precondPrefix.'timeBounds.maxTime', $map);
+            $precondPrefix = $txPrefix . 'cond.';
+            $minTimeStr = self::getClearValue($precondPrefix . 'timeBounds.minTime', $map);
+            $maxTimeStr = self::getClearValue($precondPrefix . 'timeBounds.maxTime', $map);
             if ($minTimeStr != null && $maxTimeStr != null) {
                 if (!is_numeric($minTimeStr)) {
-                    throw new InvalidArgumentException('invalid '.$precondPrefix.'minTime');
+                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'minTime');
                 }
                 if (!is_numeric($maxTimeStr)) {
-                    throw new InvalidArgumentException('invalid '.$precondPrefix.'maxTime');
+                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'maxTime');
                 }
                 $minTime = (int)$minTimeStr;
                 $maxTime = (int)$maxTimeStr;
@@ -397,56 +454,56 @@ class TxRep
                 $cond->setTimeBounds($timeBounds);
                 return $cond;
             } else {
-                throw new InvalidArgumentException('invalid '.$precondPrefix.'timeBounds');
+                throw new InvalidArgumentException('invalid ' . $precondPrefix . 'timeBounds');
             }
         } else if ($preonditionsType == "PRECOND_V2") {
-            $precondPrefix = $txPrefix.'cond.v2.';
+            $precondPrefix = $txPrefix . 'cond.v2.';
             $cond->setTimeBounds(self::parseTimeBounds($map, $precondPrefix));
             $cond->setLedgerBounds(self::parseLedgerBounds($map, $precondPrefix));
-            $minSeqNrStr = self::getClearValue($precondPrefix.'minSeqNum', $map);
-            if (self::getClearValue($precondPrefix.'minSeqNum._present', $map) == 'true' && $minSeqNrStr != null) {
+            $minSeqNrStr = self::getClearValue($precondPrefix . 'minSeqNum', $map);
+            if (self::getClearValue($precondPrefix . 'minSeqNum._present', $map) == 'true' && $minSeqNrStr != null) {
                 $minSeqNr = new BigInteger($minSeqNrStr);
                 $cond->setMinSeqNumber($minSeqNr);
             } else {
-                throw new InvalidArgumentException('invalid '.$precondPrefix.'minSeqNum');
+                throw new InvalidArgumentException('invalid ' . $precondPrefix . 'minSeqNum');
             }
-            $minSeqAgeStr = self::getClearValue($precondPrefix.'minSeqAge', $map);
+            $minSeqAgeStr = self::getClearValue($precondPrefix . 'minSeqAge', $map);
             if ($minSeqAgeStr != null) {
                 if (!is_numeric($minSeqAgeStr)) {
-                    throw new InvalidArgumentException('invalid '.$precondPrefix.'minSeqAge');
+                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'minSeqAge');
                 }
                 $minSeqAge = (int)$minSeqAgeStr;
                 $cond->setMinSeqAge($minSeqAge);
             } else {
-                throw new InvalidArgumentException('missing '.$precondPrefix.'minSeqAge');
+                throw new InvalidArgumentException('missing ' . $precondPrefix . 'minSeqAge');
             }
-            $minSeqLedgerGapStr = self::getClearValue($precondPrefix.'minSeqLedgerGap', $map);
+            $minSeqLedgerGapStr = self::getClearValue($precondPrefix . 'minSeqLedgerGap', $map);
             if ($minSeqLedgerGapStr != null) {
                 if (!is_numeric($minSeqLedgerGapStr)) {
-                    throw new InvalidArgumentException('invalid '.$precondPrefix.'minSeqLedgerGap');
+                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'minSeqLedgerGap');
                 }
                 $minSeqLedgerGap = (int)$minSeqLedgerGapStr;
                 $cond->setMinSeqLedgerGap($minSeqLedgerGap);
             } else {
-                throw new InvalidArgumentException('missing '.$precondPrefix.'minSeqLedgerGap');
+                throw new InvalidArgumentException('missing ' . $precondPrefix . 'minSeqLedgerGap');
             }
 
-            $extraSignersLen = self::getClearValue($precondPrefix.'extraSigners.len', $map);
+            $extraSignersLen = self::getClearValue($precondPrefix . 'extraSigners.len', $map);
             if (!$extraSignersLen) {
-                throw new InvalidArgumentException('missing '.$precondPrefix.'extraSigners.len');
+                throw new InvalidArgumentException('missing ' . $precondPrefix . 'extraSigners.len');
             }
             if (!is_numeric($extraSignersLen)) {
-                throw new InvalidArgumentException('invalid '.$precondPrefix.'extraSigners.len');
+                throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners.len');
             }
-            $nrOfExtraSigners= (int)$extraSignersLen;
+            $nrOfExtraSigners = (int)$extraSignersLen;
             if ($nrOfExtraSigners > 2) {
-                throw new InvalidArgumentException('invalid '.$precondPrefix.'extraSigners.len - greater than 2');
+                throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners.len - greater than 2');
             }
             $extraSigners = array();
             for ($i = 0; $i < $nrOfExtraSigners; $i++) {
-                $key = self::getClearValue($precondPrefix . 'extraSigners['.strval($i).']', $map);
+                $key = self::getClearValue($precondPrefix . 'extraSigners[' . strval($i) . ']', $map);
                 if (!$key) {
-                    throw new InvalidArgumentException('missing ' . $precondPrefix . 'extraSigners['.strval($i).']');
+                    throw new InvalidArgumentException('missing ' . $precondPrefix . 'extraSigners[' . strval($i) . ']');
                 }
 
                 if (str_starts_with($key, 'G')) {
@@ -470,854 +527,719 @@ class TxRep
                     $signer->setSignedPayload(StrKey::decodeXdrSignedPayload($key));
                     array_push($extraSigners, $signer);
                 } else {
-                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners['.strval($i).']');
+                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners[' . strval($i) . ']');
                 }
             }
             $cond->setExtraSigners($extraSigners);
             return $cond;
-        }
-        else if ($preonditionsType == "PRECOND_NONE") {
+        } else if ($preonditionsType == "PRECOND_NONE") {
             return null;
         }
         $cond->setTimeBounds(self::parseTimeBounds($map, $txPrefix));
         return $cond;
     }
 
-    private static function parseTimeBounds(array $map, string $prefix) : ?TimeBounds {
-        $minTimeStr = self::getClearValue($prefix.'timeBounds.minTime', $map);
-        $maxTimeStr = self::getClearValue($prefix.'timeBounds.maxTime', $map);
-        if (self::getClearValue($prefix.'timeBounds._present', $map) == 'true' && $minTimeStr != null && $maxTimeStr != null) {
+    private static function parseTimeBounds(array $map, string $prefix): ?TimeBounds
+    {
+        $minTimeStr = self::getClearValue($prefix . 'timeBounds.minTime', $map);
+        $maxTimeStr = self::getClearValue($prefix . 'timeBounds.maxTime', $map);
+        if (self::getClearValue($prefix . 'timeBounds._present', $map) == 'true' && $minTimeStr != null && $maxTimeStr != null) {
             if (!is_numeric($minTimeStr)) {
-                throw new InvalidArgumentException('invalid '.$prefix.'minTime');
+                throw new InvalidArgumentException('invalid ' . $prefix . 'minTime');
             }
             if (!is_numeric($maxTimeStr)) {
-                throw new InvalidArgumentException('invalid '.$prefix.'maxTime');
+                throw new InvalidArgumentException('invalid ' . $prefix . 'maxTime');
             }
             $minTime = (int)$minTimeStr;
             $maxTime = (int)$maxTimeStr;
             return new TimeBounds((new DateTime)->setTimestamp($minTime), (new DateTime)->setTimestamp($maxTime));
         } else {
-            throw new InvalidArgumentException('invalid '.$prefix.'timeBounds');
+            throw new InvalidArgumentException('invalid ' . $prefix . 'timeBounds');
         }
     }
 
-    private static function parseLedgerBounds(array $map, string $prefix) : ?LedgerBounds {
-        $minLedgerStr = self::getClearValue($prefix.'ledgerBounds.minLedger', $map);
-        $maxLedgerStr = self::getClearValue($prefix.'ledgerBounds.maxLedger', $map);
-        if (self::getClearValue($prefix.'ledgerBounds._present', $map) == 'true' && $minLedgerStr != null && $maxLedgerStr != null) {
+    private static function parseLedgerBounds(array $map, string $prefix): ?LedgerBounds
+    {
+        $minLedgerStr = self::getClearValue($prefix . 'ledgerBounds.minLedger', $map);
+        $maxLedgerStr = self::getClearValue($prefix . 'ledgerBounds.maxLedger', $map);
+        if (self::getClearValue($prefix . 'ledgerBounds._present', $map) == 'true' && $minLedgerStr != null && $maxLedgerStr != null) {
             if (!is_numeric($minLedgerStr)) {
-                throw new InvalidArgumentException('invalid '.$prefix.'minLedger');
+                throw new InvalidArgumentException('invalid ' . $prefix . 'minLedger');
             }
             if (!is_numeric($maxLedgerStr)) {
-                throw new InvalidArgumentException('invalid '.$prefix.'maxLedger');
+                throw new InvalidArgumentException('invalid ' . $prefix . 'maxLedger');
             }
             $minLedger = (int)$minLedgerStr;
             $maxLedger = (int)$maxLedgerStr;
             return new LedgerBounds($minLedger, $maxLedger);
         } else {
-            throw new InvalidArgumentException('invalid '.$prefix.'ledgerBounds');
+            throw new InvalidArgumentException('invalid ' . $prefix . 'ledgerBounds');
         }
     }
 
-    private static function getOperation(int $index, array $map, string $txPrefix) : ?AbstractOperation {
-        $prefix = $txPrefix.'operations['.$index.'].body.';
+    private static function getOperation(int $index, array $map, string $txPrefix): ?AbstractOperation
+    {
+        $prefix = $txPrefix . 'operations[' . $index . '].body.';
         $sourceAccountId = null;
-        if (self::getClearValue($txPrefix.'operations['.$index.'].sourceAccount._present', $map) == 'true') {
-            $sourceAccountId = self::getClearValue($txPrefix.'operations['.$index.'].sourceAccount', $map);
+        if (self::getClearValue($txPrefix . 'operations[' . $index . '].sourceAccount._present', $map) == 'true') {
+            $sourceAccountId = self::getClearValue($txPrefix . 'operations[' . $index . '].sourceAccount', $map);
             if (!$sourceAccountId) {
-                throw new InvalidArgumentException('missing '.$txPrefix.'operations['.$index.'].sourceAccount');
+                throw new InvalidArgumentException('missing ' . $txPrefix . 'operations[' . $index . '].sourceAccount');
             }
             try {
                 KeyPair::fromAccountId($sourceAccountId);
             } catch (Exception $e) {
-                throw new InvalidArgumentException('invalid '.$txPrefix.'operations['.$index.'].sourceAccount');
+                throw new InvalidArgumentException('invalid ' . $txPrefix . 'operations[' . $index . '].sourceAccount');
             }
         }
 
-        $opType = self::getClearValue($prefix.'type', $map);
+        $opType = self::getClearValue($prefix . 'type', $map);
         if (!$opType) {
-            throw new InvalidArgumentException($prefix.'type');
+            throw new InvalidArgumentException($prefix . 'type');
         }
         if ($opType == 'CREATE_ACCOUNT') {
-            $opPrefix = $prefix.'createAccountOp.';
+            $opPrefix = $prefix . 'createAccountOp.';
             return self::getCreateAccountOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'PAYMENT') {
-            $opPrefix = $prefix.'paymentOp.';
+            $opPrefix = $prefix . 'paymentOp.';
             return self::getPaymentOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'PATH_PAYMENT_STRICT_RECEIVE') {
-            $opPrefix = $prefix.'pathPaymentStrictReceiveOp.';
+            $opPrefix = $prefix . 'pathPaymentStrictReceiveOp.';
             return self::getPathPaymentStrictReceiveOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'PATH_PAYMENT_STRICT_SEND') {
-            $opPrefix = $prefix.'pathPaymentStrictSendOp.';
+            $opPrefix = $prefix . 'pathPaymentStrictSendOp.';
             return self::getPathPaymentStrictSendOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'MANAGE_SELL_OFFER') {
-            $opPrefix = $prefix.'manageSellOfferOp.';
+            $opPrefix = $prefix . 'manageSellOfferOp.';
             return self::getManageSellOfferOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'CREATE_PASSIVE_SELL_OFFER') {
-            $opPrefix = $prefix.'createPassiveSellOfferOp.';
+            $opPrefix = $prefix . 'createPassiveSellOfferOp.';
             return self::getCreatePassiveSellOfferOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'SET_OPTIONS') {
-            $opPrefix = $prefix.'setOptionsOp.';
+            $opPrefix = $prefix . 'setOptionsOp.';
             return self::getSetOptionsOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'CHANGE_TRUST') {
-            $opPrefix = $prefix.'changeTrustOp.';
+            $opPrefix = $prefix . 'changeTrustOp.';
             return self::getChangeTrustOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'ALLOW_TRUST') {
-            $opPrefix = $prefix.'allowTrustOp.';
+            $opPrefix = $prefix . 'allowTrustOp.';
             return self::getAllowTrustOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'ACCOUNT_MERGE') {
             // account merge does not include 'accountMergeOp' prefix
             return self::getAccountMergeOperation($index, $map, $txPrefix, $sourceAccountId);
         } else if ($opType == 'MANAGE_DATA') {
-            $opPrefix = $prefix.'manageDataOp.';
+            $opPrefix = $prefix . 'manageDataOp.';
             return self::getManageDataOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'BUMP_SEQUENCE') {
-            $opPrefix = $prefix.'bumpSequenceOp.';
+            $opPrefix = $prefix . 'bumpSequenceOp.';
             return self::getBumpSequenceOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'MANAGE_BUY_OFFER') {
-            $opPrefix = $prefix.'manageBuyOfferOp.';
+            $opPrefix = $prefix . 'manageBuyOfferOp.';
             return self::getManageBuyOfferOperation($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'CREATE_CLAIMABLE_BALANCE') {
-            $opPrefix = $prefix.'createClaimableBalanceOp.';
+            $opPrefix = $prefix . 'createClaimableBalanceOp.';
             return self::getCreateClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'CLAIM_CLAIMABLE_BALANCE') {
-            $opPrefix = $prefix.'claimClaimableBalanceOp.';
+            $opPrefix = $prefix . 'claimClaimableBalanceOp.';
             return self::getClaimClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'BEGIN_SPONSORING_FUTURE_RESERVES') {
-            $opPrefix = $prefix.'beginSponsoringFutureReservesOp.';
+            $opPrefix = $prefix . 'beginSponsoringFutureReservesOp.';
             return self::getBeginSponsoringFutureReservesOp($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'END_SPONSORING_FUTURE_RESERVES') {
             return self::getEndSponsoringFutureReservesOp($sourceAccountId);
         } else if ($opType == 'REVOKE_SPONSORSHIP') {
-            $opPrefix = $prefix.'revokeSponsorshipOp.';
+            $opPrefix = $prefix . 'revokeSponsorshipOp.';
             return self::getRevokeSponsorshipOp($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'CLAWBACK') {
-            $opPrefix = $prefix.'clawbackOp.';
+            $opPrefix = $prefix . 'clawbackOp.';
             return self::getClawbackOp($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'CLAWBACK_CLAIMABLE_BALANCE') {
-            $opPrefix = $prefix.'clawbackClaimableBalanceOp.';
+            $opPrefix = $prefix . 'clawbackClaimableBalanceOp.';
             return self::getClawbackClaimableBalanceOp($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'SET_TRUST_LINE_FLAGS') {
-            $opPrefix = $prefix.'setTrustLineFlagsOp.';
+            $opPrefix = $prefix . 'setTrustLineFlagsOp.';
             return self::getSetTrustlineFlagsOp($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'LIQUIDITY_POOL_DEPOSIT') {
-            $opPrefix = $prefix.'liquidityPoolDepositOp.';
+            $opPrefix = $prefix . 'liquidityPoolDepositOp.';
             return self::getLiquidityPoolDepositOp($opPrefix, $map, $sourceAccountId);
         } else if ($opType == 'LIQUIDITY_POOL_WITHDRAW') {
-            $opPrefix = $prefix.'liquidityPoolWithdrawOp.';
+            $opPrefix = $prefix . 'liquidityPoolWithdrawOp.';
             return self::getLiquidityPoolWithdrawOp($opPrefix, $map, $sourceAccountId);
-        } /*else if ($opType == 'INVOKE_HOST_FUNCTION') {
-            $opPrefix = $prefix.'invokeHostFunctionOp.';
+        } else if ($opType == 'INVOKE_HOST_FUNCTION') {
+            $opPrefix = $prefix . 'invokeHostFunctionOp.';
             return self::getInvokeHostFunctionOp($opPrefix, $map, $sourceAccountId);
-        }*/
+        } else if ($opType == 'EXTEND_FOOTPRINT_TTL') {
+            $opPrefix = $prefix . 'extendFootprintTTLOp.';
+            return self::getExtendFootprintTTLOp($opPrefix, $map, $sourceAccountId);
+        } else if ($opType == 'RESTORE_FOOTPRINT') {
+            $result = new RestoreFootprintOperation();
+            if ($sourceAccountId !== null) {
+                $result->setSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+            }
+            return $result;
+        }
         return null;
     }
 
-    /*private static function getInvokeHostFunctionOp($opPrefix, array $map, ?string $sourceAccountId) : InvokeHostFunctionOperation
+    private static function getSCAddress($prefix, array $map): XdrSCAddress
     {
-        $hostFunctionType = self::getClearValue($opPrefix . 'function.type', $map);
-        if (!$hostFunctionType) {
-            throw new InvalidArgumentException('missing ' . $opPrefix . 'function.type');
-        }
-        if ('HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM' == $hostFunctionType) {
-            $code = self::getClearValue($opPrefix . 'function.uploadContractWasm.code', $map);
-            if (!$code) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.uploadContractWasm.code');
-            }
-            $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
-            $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
-            return InvokeHostFunctionOperationBuilder::forUploadingContractWasm(hex2bin($code), $footprint, $auth)->build();
-        } else if ('HOST_FUNCTION_TYPE_INVOKE_CONTRACT' == $hostFunctionType) {
-            $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
-            $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
-            $argsLen = self::getClearValue($opPrefix . 'function.invokeContract.len', $map);
-            if ($argsLen == null) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeContract.len');
-            }
-            if (!is_numeric($argsLen) ||(int)$argsLen < 2) {
-                throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.invokeContract.len ' . $argsLen);
-            }
-            $contractId = self::getClearValue($opPrefix . 'function.invokeContract[0].bytes', $map);
-            if ($contractId == null) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeContract[0].bytes');
-            }
-            $fnName = self::getClearValue($opPrefix . 'function.invokeContract[1].sym', $map);
-            if ($fnName == null) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.invokeContract[1].sym');
-            }
-            $arguments = array();
-            for ($i = 2; $i < (int)$argsLen; $i++) {
-                $next = self::getScVal($opPrefix . 'function.invokeContract[' . strval($i) . '].', $map);
-                array_push($arguments, $next);
-            }
-            return InvokeHostFunctionOperationBuilder::forInvokingContract($contractId,$fnName, $arguments,$footprint, $auth)->build();
-        } else if ('HOST_FUNCTION_TYPE_CREATE_CONTRACT' == $hostFunctionType) {
-            $footprint = self::getInvokeHostFunctionOpFootprint($opPrefix .'footprint.', $map);
-            $auth = self::getInvokeHostFunctionOpAuth($opPrefix, $map);
-            $contractCodeType = self::getClearValue($opPrefix . 'function.createContract.source.type', $map);
-            if (!$contractCodeType) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.source.type');
-            }
-            $contractIDType = self::getClearValue($opPrefix . 'function.createContract.contractID.type', $map);
-            if (!$contractIDType) {
-                throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.contractID.type');
-            }
-            if ('SCCONTRACT_CODE_WASM_REF' == $contractCodeType) {
-                $wasmId = self::getClearValue($opPrefix . 'function.createContract.source.wasm_id', $map);
-                if (!$wasmId) {
-                    throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.source.wasm_id');
-                }
-                if ('CONTRACT_ID_FROM_SOURCE_ACCOUNT' != $contractIDType) {
-                    throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.createContract.contractID.type ' . $contractIDType);
-                }
-                $salt = self::getClearValue($opPrefix . 'function.createContract.contractID.salt', $map);
-                if (!$salt) {
-                    throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.contractID.salt');
-                }
-                return InvokeHostFunctionOperationBuilder::forCreatingContract($wasmId, hex2bin($salt), $footprint, $auth)->build();
-            } else if ('SCCONTRACT_CODE_TOKEN' == $contractCodeType) {
-                if ('CONTRACT_ID_FROM_SOURCE_ACCOUNT' == $contractIDType) {
-                    $salt = self::getClearValue($opPrefix . 'function.createContract.contractID.salt', $map);
-                    if (!$salt) {
-                        throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.contractID.salt');
-                    }
-                    return InvokeHostFunctionOperationBuilder::forDeploySACWithSourceAccount(hex2bin($salt), $footprint, $auth)->build();
-                } else if ('CONTRACT_ID_FROM_ASSET' == $contractIDType) {
-                    $assetStr = self::getClearValue($opPrefix . 'function.createContract.contractID.asset', $map);
-                    if (!$assetStr) {
-                        throw new InvalidArgumentException('missing ' . $opPrefix . 'function.createContract.contractID.asset');
-                    }
-                    $asset = Asset::createFromCanonicalForm($assetStr);
-                    if (!$asset) {
-                        throw new InvalidArgumentException('invalid ' . $opPrefix . 'function.createContract.contractID.asset');
-                    }
-                    return InvokeHostFunctionOperationBuilder::forDeploySACWithAsset($asset, $footprint, $auth)->build();
-                } else {
-                    throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.createContract.contractID.type ' . $contractIDType);
-                }
-            } else {
-                throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.createContract.source.type ' . $contractCodeType);
-            }
-
-        } else {
-            throw new InvalidArgumentException('unknown ' . $opPrefix . 'function.type '. $hostFunctionType);
-        }
-    }
-
-    private static function getInvokeHostFunctionOpAuth($prefix, array $map) : array {
-        $auth = array();
-        $authLenStr = self::getClearValue($prefix . 'auth.len', $map);
-        if ($authLenStr == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'auth.len');
-        }
-        if (!is_numeric($authLenStr)) {
-            throw new InvalidArgumentException('invalid '. $prefix . 'auth.len');
-        }
-        $authLen = (int)$authLenStr;
-        for ($i = 0; $i < $authLen; $i++) {
-            $next = self::getContractAuth($prefix . 'auth['.$i.'].', $map);
-            array_push($auth, $next);
-        }
-        return $auth;
-    }
-
-    private static function getContractAuth($prefix, array $map) : ContractAuth {
-        $addressWithNonce = null;
-        $present = self::getClearValue($prefix . 'addressWithNonce._present', $map);
-        if ($present == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'addressWithNonce._present');
-        }
-        if ('true' == $present) {
-            $addressWithNonce = self::getAddressWithNonce($prefix . 'addressWithNonce.', $map);
-        }
-        $rootInvocation = self::getAuthorizedInvocation($prefix . 'rootInvocation.', $map);
-        $args = array();
-        $argsLenStr = self::getClearValue($prefix . 'signatureArgs.len', $map);
-        if ($argsLenStr == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'signatureArgs.len');
-        }
-        if (!is_numeric($argsLenStr)) {
-            throw new InvalidArgumentException('invalid '. $prefix . 'signatureArgs.len');
-        }
-        $argsLen = (int)$argsLenStr;
-        for ($i = 0; $i < $argsLen; $i++) {
-            $next = self::getScVal($prefix . 'signatureArgs['.$i.'].', $map);
-            array_push($args, $next);
-        }
-
-        $address = null;
-        $nonce = null;
-        if($addressWithNonce != null) {
-            $address = Address::fromXdr($addressWithNonce->address);
-            $nonce = $addressWithNonce->nonce;
-        }
-        return new ContractAuth($rootInvocation, $args, $address, $nonce);
-    }
-
-    private static function getAuthorizedInvocation($prefix, array $map) : AuthorizedInvocation {
-        $contractId = self::getClearValue($prefix . 'contractID', $map);
-        if ($contractId == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'contractID');
-        }
-        $functionName = self::getClearValue($prefix . 'functionName', $map);
-        if ($functionName == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'functionName');
-        }
-
-        $args = array();
-        $argsLenStr = self::getClearValue($prefix . 'args.len', $map);
-        if ($argsLenStr == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'args.len');
-        }
-        if (!is_numeric($argsLenStr)) {
-            throw new InvalidArgumentException('invalid '. $prefix . 'args.len');
-        }
-        $argsLen = (int)$argsLenStr;
-        for ($i = 0; $i < $argsLen; $i++) {
-            $next = self::getScVal($prefix . 'args['.$i.'].', $map);
-            array_push($args, $next);
-        }
-
-        $subs = array();
-        $subsLenStr = self::getClearValue($prefix . 'subInvocations.len', $map);
-        if ($subsLenStr == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'subInvocations.len');
-        }
-        if (!is_numeric($subsLenStr)) {
-            throw new InvalidArgumentException('invalid '. $prefix . 'subInvocations.len');
-        }
-        $subsLen = (int)$subsLenStr;
-        for ($i = 0; $i < $subsLen; $i++) {
-            $next = self::getAuthorizedInvocation($prefix . 'subInvocations['.$i.'].', $map);
-            array_push($subs, $next);
-        }
-        return new AuthorizedInvocation($contractId,$functionName,$args,$subs);
-    }
-
-    private static function getAddressWithNonce($prefix, array $map) : XdrAddressWithNonce {
-        $address =  self::getSCAddress($prefix . 'address.', $map);
-        $nonceStr = self::getClearValue($prefix . 'nonce', $map);
-        if ($nonceStr == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'nonce');
-        }
-        if (!is_numeric($nonceStr)) {
-            throw new InvalidArgumentException('invalid '. $prefix . 'nonce');
-        }
-        $nonce = (int)$nonceStr;
-        return new XdrAddressWithNonce($address, $nonce);
-    }
-
-    private static function getInvokeHostFunctionOpFootprint($prefix, array $map) : Footprint {
-        $readOnly = array();
-        $readWrite = array();
-        $readOnlyLenStr = self::getClearValue($prefix . 'readOnly.len', $map);
-        if ($readOnlyLenStr == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'readOnly.len');
-        }
-        if (!is_numeric($readOnlyLenStr)) {
-            throw new InvalidArgumentException('invalid '. $prefix . 'readOnly.len');
-        }
-        $readOnlyLen = (int)$readOnlyLenStr;
-        for ($i = 0; $i < $readOnlyLen; $i++) {
-            $next = self::getContractLedgerKey($prefix . 'readOnly['.$i.'].', $map);
-            array_push($readOnly, $next);
-        }
-        $readWriteLenStr = self::getClearValue($prefix . 'readWrite.len', $map);
-        if ($readWriteLenStr == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'readWrite.len');
-        }
-        if (!is_numeric($readWriteLenStr)) {
-            throw new InvalidArgumentException('invalid '. $prefix . 'readWrite.len');
-        }
-        $readWriteLen = (int)$readWriteLenStr;
-        for ($i = 0; $i < $readWriteLen; $i++) {
-            $next = self::getContractLedgerKey($prefix . 'readWrite['.$i.'].', $map);
-            array_push($readWrite, $next);
-        }
-        $xdr = new XdrLedgerFootprint($readOnly, $readWrite);
-        return new Footprint($xdr);
-    }
-
-    private static function getContractLedgerKey($prefix, array $map) : XdrLedgerKey {
-        $type = self::getClearValue($prefix . 'type', $map);
-        if (!$type) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'type');
-        }
-        if ('ACCOUNT' == $type) {
-            $accountID = self::getClearValue($prefix . 'account.accountID', $map);
-            if (!$accountID) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'account.accountID');
-            }
-            $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
-            $ledgerKey->account = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId($accountID));
-            return $ledgerKey;
-        }
-        else if ('TRUSTLINE' == $type) {
-            $accountID = self::getClearValue($prefix . 'trustLine.accountID', $map);
-            if (!$accountID) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'trustLine.accountID');
-            }
-            $assetStr = self::getClearValue($prefix . 'trustLine.asset', $map);
-            if (!$assetStr) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'trustLine.asset');
-            }
-            $asset = Asset::createFromCanonicalForm($assetStr);
-            if (!$asset) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'trustLine.asset');
-            }
-            $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::TRUSTLINE());
-            $ledgerKey->trustLine = new XdrLedgerKeyTrustLine(XdrAccountID::fromAccountId($accountID), $asset->toXdrTrustlineAsset());
-            return $ledgerKey;
-        }
-        else if ('CONTRACT_DATA' == $type) {
-            $contractID = self::getClearValue($prefix . 'contractData.contractID', $map);
-            if (!$contractID) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'contractData.contractID');
-            }
-            $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
-            $ledgerKey->contractID = $contractID;
-            $ledgerKey->contractDataKey = self::getScVal($prefix . 'contractData.key.', $map);
-            return $ledgerKey;
-        } else if ('CONTRACT_CODE' == $type) {
-            $contractCodeHash = self::getClearValue($prefix . 'contractCode.hash', $map);
-            if (!$contractCodeHash) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'contractCode.hash');
-            }
-            $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-            $ledgerKey->contractCodeHash = hex2bin($contractCodeHash);
-            return $ledgerKey;
-        } else {
-            throw new InvalidArgumentException('unknown ' . $prefix . 'type');
-        }
-    }
-
-    private static function getScVal($prefix, array $map) : XdrSCVal {
-        $valType = self::getClearValue($prefix . 'type', $map);
-        if ($valType == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'type');
-        }
-        if ('SCV_BOOL' == $valType) {
-            $bStr = self::getClearValue($prefix . 'b', $map);
-            if ($bStr == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'b');
-            }
-            if ($bStr == 'true') {
-                return XdrSCVal::forTrue();
-            } else if ($bStr == 'false') {
-                return XdrSCVal::forFalse();
-            }
-            else {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'b');
-            }
-        } else if ('SCV_VOID' == $valType) {
-            return XdrSCVal::forVoid();
-        }
-        else if ('SCV_U32' == $valType) {
-            $u32Str = self::getClearValue($prefix . 'u32', $map);
-            if ($u32Str == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'u32');
-            }
-            if (!is_numeric($u32Str)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'u32');
-            }
-            return XdrSCVal::forU32((int)($u32Str));
-        } else if ('SCV_I32' == $valType) {
-            $i32Str = self::getClearValue($prefix . 'i32', $map);
-            if ($i32Str == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'i32');
-            }
-            if (!is_numeric($i32Str)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'i32');
-            }
-            return XdrSCVal::forI32((int)($i32Str));
-        } else if ('SCV_U64' == $valType) {
-            $u64Str = self::getClearValue($prefix . 'u64', $map);
-            if ($u64Str == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'u64');
-            }
-            if (!is_numeric($u64Str)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'u64');
-            }
-            return XdrSCVal::forU64((int)($u64Str));
-        } else if ('SCV_I64' == $valType) {
-            $i64Str = self::getClearValue($prefix . 'i64', $map);
-            if ($i64Str == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'i64');
-            }
-            if (!is_numeric($i64Str)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'i64');
-            }
-            return XdrSCVal::forI64((int)($i64Str));
-        } else if ('SCV_TIMEPOINT' == $valType) {
-            $u64Str = self::getClearValue($prefix . 'timepoint', $map);
-            if ($u64Str == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'timepoint');
-            }
-            if (!is_numeric($u64Str)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'timepoint');
-            }
-            return XdrSCVal::forTimepoint((int)($u64Str));
-        } else if ('SCV_DURATION' == $valType) {
-            $u64Str = self::getClearValue($prefix . 'duration', $map);
-            if ($u64Str == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'duration');
-            }
-            if (!is_numeric($u64Str)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'duration');
-            }
-            return XdrSCVal::forDuration((int)($u64Str));
-        } else if ('SCV_U128' == $valType) {
-            $u128LoStr = self::getClearValue($prefix . 'u128.lo', $map);
-            if ($u128LoStr == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'u128.lo');
-            }
-            if (!is_numeric($u128LoStr)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'u128.lo ' . $u128LoStr);
-            }
-            $u128HiStr = self::getClearValue($prefix . 'u128.hi', $map);
-            if ($u128HiStr == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'u128.hi');
-            }
-            if (!is_numeric($u128HiStr)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'u128.hi ' . $u128HiStr);
-            }
-            return XdrSCVal::forU128(new XdrUInt128Parts((int)$u128HiStr, (int)$u128LoStr));
-        } else if ('SCV_I128' == $valType) {
-            $i128LoStr = self::getClearValue($prefix . 'i128.lo', $map);
-            if ($i128LoStr == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'i128.lo');
-            }
-            if (!is_numeric($i128LoStr)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'i128.lo ' . $i128LoStr);
-            }
-            $i128HiStr = self::getClearValue($prefix . 'i128.hi', $map);
-            if ($i128HiStr == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'i128.hi');
-            }
-            if (!is_numeric($i128HiStr)) {
-                throw new InvalidArgumentException('invalid ' . $prefix . 'i128.hi ' . $i128HiStr);
-            }
-            return XdrSCVal::forI128(new XdrInt128Parts((int)$i128HiStr, (int)$i128LiStr));
-        } else if ('SCV_U256' == $valType) {
-            // TODO add u256 parts as soon as available
-            return new XdrSCVal(XdrSCValType::U256());
-        } else if ('SCV_I256' == $valType) {
-            // TODO add i256 parts as soon as available
-            return new XdrSCVal(XdrSCValType::I256());
-        } else if ('SCV_BYTES' == $valType) {
-            $bin = self::getClearValue($prefix . 'bytes', $map);
-            if ($bin == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'bytes');
-            }
-            return XdrSCVal::forBytes(hex2bin($bin));
-        } else if ('SCV_STRING' == $valType) {
-
-            $str = self::getClearValue($prefix . 'str', $map);
-            if ($str == '' || $str != null) {
-                return XdrSCVal::forString($str);
-            } else {
-                throw new InvalidArgumentException('missing ' . $prefix . 'str');
-            }
-        } else if ('SCV_SYMBOL' == $valType) {
-
-            $sym = self::getClearValue($prefix . 'sym', $map);
-            if ($sym == '' || $sym != null) {
-                return XdrSCVal::forSymbol($sym);
-            } else {
-                throw new InvalidArgumentException('missing ' . $prefix . 'sym');
-            }
-        } else if ('SCV_VEC' == $valType) {
-            $present = self::getClearValue($prefix . 'vec._present', $map);
-            if ($present == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'vec._present');
-            }
-            if ('true' != $present) {
-                return new XdrSCVal(XdrSCValType::VEC());
-            }
-            return XdrSCVal::forVec(self::getSCVec($prefix, $map));
-        } else if ('SCV_MAP' == $valType) {
-            $present = self::getClearValue($prefix . 'map._present', $map);
-            if ($present == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'map._present');
-            }
-            if ('true' != $present) {
-                return new XdrSCVal(XdrSCValType::MAP());
-            }
-            return XdrSCVal::forMap(self::getSCMap($prefix, $map));
-        } else if ('SCV_CONTRACT_EXECUTABLE' == $valType) {
-            $ccType = self::getClearValue($prefix . 'exec.type', $map);
-            if ($ccType == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'exec.type');
-            }
-            if ('SCCONTRACT_EXECUTABLE_WASM_REF' == $ccType) {
-                $wasmId = self::getClearValue($prefix . 'exec.wasm_id', $map);
-                if ($wasmId == null) {
-                    throw new InvalidArgumentException('missing ' . $prefix . 'exec.wasm_id');
-                }
-                $xdr = new XdrSCContractExecutable(new XdrSCContractExecutableType(XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_WASM_REF));
-                $xdr->wasmIdHex = $wasmId;
-                return XdrSCVal::forContractExecutable($xdr);
-            } else if ('SCCONTRACT_EXECUTABLE_TOKEN' == $ccType) {
-                $xdr = new XdrSCContractExecutable(new XdrSCContractExecutableType(XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN));
-                return XdrSCVal::forContractExecutable($xdr);
-            } else {
-                throw new InvalidArgumentException('unknown ' . $prefix . 'exec.type ' . $ccType);
-            }
-        } else if ('SCV_ADDRESS' == $valType) {
-            $address = self::getSCAddress($prefix . 'address.', $map);
-            return XdrSCVal::forAddress($address);
-        }  else if ('SCV_LEDGER_KEY_CONTRACT_EXECUTABLE' == $valType) {
-            return XdrSCVal::forLedgerKeyContractExecutable();
-        } else if ('SCV_LEDGER_KEY_NONCE' == $valType) {
-            $address = self::getSCAddress($prefix . 'nonce_key.nonce_address.', $map);
-            return XdrSCVal::forNonceKey(new XdrSCNonceKey($address));
-        } else if ('SCV_ERROR' == $valType) {
-            return XdrSCVal::forError(self::getSCStatus($prefix . 'error.', $map));
-        } else {
-            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $valType);
-        }
-    }
-
-    private static function getSCStatus($prefix, array $map) : XdrSCStatus
-    {
-        $type = self::getClearValue($prefix . 'type', $map);
-        if ($type == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'type');
-        }
-        if ('SST_OK' == $type) {
-            return new XdrSCStatus(new XdrSCStatusType(XdrSCStatusType::SST_OK));
-        } else if ('SST_UNKNOWN_ERROR' == $type) {
-            $result = new XdrSCStatus(new XdrSCStatusType(XdrSCStatusType::SST_UNKNOWN_ERROR));
-            $unknownCode = self::getClearValue($prefix . 'unknownCode', $map);
-            if ($unknownCode == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'unknownCode');
-            }
-            if ('UNKNOWN_ERROR_GENERAL' == $unknownCode) {
-                $result->unknownCode = new XdrSCUnknownErrorCode(XdrSCUnknownErrorCode::UNKNOWN_ERROR_GENERAL);
-            } else if ('UNKNOWN_ERROR_XDR' == $unknownCode) {
-                $result->unknownCode = new XdrSCUnknownErrorCode(XdrSCUnknownErrorCode::UNKNOWN_ERROR_XDR);
-            } else {
-                throw new InvalidArgumentException('unknown ' . $prefix . 'unknownCode ' . $unknownCode);
-            }
-            return $result;
-        } else if ('SST_HOST_VALUE_ERROR' == $type) {
-            $result = new XdrSCStatus(new XdrSCStatusType(XdrSCStatusType::SST_HOST_VALUE_ERROR));
-            $valCode = self::getClearValue($prefix . 'valCode', $map);
-            if ($valCode == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'valCode');
-            }
-            if ('HOST_VALUE_UNKNOWN_ERROR' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_UNKNOWN_ERROR);
-            } else if ('HOST_VALUE_RESERVED_TAG_VALUE' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_RESERVED_TAG_VALUE);
-            } else if ('HOST_VALUE_UNEXPECTED_VAL_TYPE' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_UNEXPECTED_VAL_TYPE);
-            } else if ('HOST_VALUE_U63_OUT_OF_RANGE' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_U63_OUT_OF_RANGE);
-            } else if ('HOST_VALUE_U32_OUT_OF_RANGE' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_U32_OUT_OF_RANGE);
-            } else if ('HOST_VALUE_STATIC_UNKNOWN' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_STATIC_UNKNOWN);
-            } else if ('HOST_VALUE_MISSING_OBJECT' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_MISSING_OBJECT);
-            } else if ('HOST_VALUE_SYMBOL_TOO_LONG' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_TOO_LONG);
-            } else if ('HOST_VALUE_SYMBOL_BAD_CHAR' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_BAD_CHAR);
-            } else if ('HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8);
-            } else if ('HOST_VALUE_BITSET_TOO_MANY_BITS' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_BITSET_TOO_MANY_BITS);
-            } else if ('HOST_VALUE_STATUS_UNKNOWN' == $valCode) {
-                $result->valCode = new XdrSCHostValErrorCode(XdrSCHostValErrorCode::HOST_VALUE_STATUS_UNKNOWN);
-            } else {
-                throw new InvalidArgumentException('unknown ' . $prefix . 'valCode ' . $valCode);
-            }
-            return $result;
-        } else if ('SST_HOST_OBJECT_ERROR' == $type) {
-            $result = new XdrSCStatus(new XdrSCStatusType(XdrSCStatusType::SST_HOST_OBJECT_ERROR));
-            $objCode = self::getClearValue($prefix . 'objCode', $map);
-            if ($objCode == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'objCode');
-            }
-            if ('HOST_OBJECT_UNKNOWN_ERROR' == $objCode) {
-                $result->objCode = new XdrSCHostObjErrorCode(XdrSCHostObjErrorCode::HOST_OBJECT_UNKNOWN_ERROR);
-            } else if ('HOST_OBJECT_UNKNOWN_REFERENCE' == $objCode) {
-                $result->objCode = new XdrSCHostObjErrorCode(XdrSCHostObjErrorCode::HOST_OBJECT_UNKNOWN_REFERENCE);
-            } else if ('HOST_OBJECT_UNEXPECTED_TYPE' == $objCode) {
-                $result->objCode = new XdrSCHostObjErrorCode(XdrSCHostObjErrorCode::HOST_OBJECT_UNEXPECTED_TYPE);
-            } else if ('HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX' == $objCode) {
-                $result->objCode = new XdrSCHostObjErrorCode(XdrSCHostObjErrorCode::HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX);
-            } else if ('HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND' == $objCode) {
-                $result->objCode = new XdrSCHostObjErrorCode(XdrSCHostObjErrorCode::HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND);
-            } else if ('HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH' == $objCode) {
-                $result->objCode = new XdrSCHostObjErrorCode(XdrSCHostObjErrorCode::HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH);
-            } else {
-                throw new InvalidArgumentException('unknown ' . $prefix . 'objCode ' . $objCode);
-            }
-            return $result;
-        } else if ('SST_HOST_FUNCTION_ERROR' == $type) {
-            $result = new XdrSCStatus(new XdrSCStatusType(XdrSCStatusType::SST_HOST_FUNCTION_ERROR));
-            $fnCode = self::getClearValue($prefix . 'fnCode', $map);
-            if ($fnCode == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'fnCode');
-            }
-            if ('HOST_FN_UNKNOWN_ERROR' == $fnCode) {
-                $result->fnCode = new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_UNKNOWN_ERROR);
-            } else if ('HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION' == $fnCode) {
-                $result->fnCode = new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION);
-            } else if ('HOST_FN_INPUT_ARGS_WRONG_LENGTH' == $fnCode) {
-                $result->fnCode = new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_WRONG_LENGTH);
-            } else if ('HOST_FN_INPUT_ARGS_WRONG_TYPE' == $fnCode) {
-                $result->fnCode = new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_WRONG_TYPE);
-            } else if ('HOST_FN_INPUT_ARGS_INVALID' == $fnCode) {
-                $result->fnCode = new XdrSCHostFnErrorCode(XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_INVALID);
-            } else {
-                throw new InvalidArgumentException('unknown ' . $prefix . 'fnCode ' . $fnCode);
-            }
-            return $result;
-        } else if ('SST_HOST_STORAGE_ERROR' == $type) {
-            $result = new XdrSCStatus(new XdrSCStatusType(XdrSCStatusType::SST_HOST_STORAGE_ERROR));
-            $storageCode = self::getClearValue($prefix . 'storageCode', $map);
-            if ($storageCode == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'storageCode');
-            }
-            if ('HOST_STORAGE_UNKNOWN_ERROR' == $storageCode) {
-                $result->storageCode = new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_UNKNOWN_ERROR);
-            } else if ('HOST_STORAGE_EXPECT_CONTRACT_DATA' == $storageCode) {
-                $result->storageCode = new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_EXPECT_CONTRACT_DATA);
-            } else if ('HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY' == $storageCode) {
-                $result->storageCode = new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY);
-            } else if ('HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY' == $storageCode) {
-                $result->storageCode = new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY);
-            } else if ('HOST_STORAGE_MISSING_KEY_IN_GET' == $storageCode) {
-                $result->storageCode = new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_MISSING_KEY_IN_GET);
-            } else if ('HOST_STORAGE_GET_ON_DELETED_KEY' == $storageCode) {
-                $result->storageCode = new XdrSCHostStorageErrorCode(XdrSCHostStorageErrorCode::HOST_STORAGE_GET_ON_DELETED_KEY);
-            } else {
-                throw new InvalidArgumentException('unknown ' . $prefix . 'storageCode ' . $storageCode);
-            }
-            return $result;
-        }  else if ('SST_HOST_CONTEXT_ERROR' == $type) {
-            $result = new XdrSCStatus(new XdrSCStatusType(XdrSCStatusType::SST_HOST_CONTEXT_ERROR));
-            $contextCode = self::getClearValue($prefix . 'contextCode', $map);
-            if ($contextCode == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'contextCode');
-            }
-            if ('HOST_CONTEXT_UNKNOWN_ERROR' == $contextCode) {
-                $result->contextCode = new XdrSCHostContextErrorCode(XdrSCHostContextErrorCode::HOST_CONTEXT_UNKNOWN_ERROR);
-            } else if ('HOST_CONTEXT_NO_CONTRACT_RUNNING' == $contextCode) {
-                $result->contextCode = new XdrSCHostContextErrorCode(XdrSCHostContextErrorCode::HOST_CONTEXT_NO_CONTRACT_RUNNING);
-            } else {
-                throw new InvalidArgumentException('unknown ' . $prefix . 'contextCode ' . $contextCode);
-            }
-            return $result;
-        } else if ('SST_VM_ERROR' == $type) {
-            $result = new XdrSCStatus(new XdrSCStatusType(XdrSCStatusType::SST_VM_ERROR));
-            $vmCode = self::getClearValue($prefix . 'vmCode', $map);
-            if ($vmCode == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'vmCode');
-            }
-            if ('VM_UNKNOWN' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_UNKNOWN);
-            } else if ('VM_VALIDATION' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_VALIDATION);
-            } else if ('VM_INSTANTIATION' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_INSTANTIATION);
-            } else if ('VM_FUNCTION' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_FUNCTION);
-            } else if ('VM_TABLE' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TABLE);
-            } else if ('VM_MEMORY' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_MEMORY);
-            } else if ('VM_GLOBAL' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_GLOBAL);
-            } else if ('VM_VALUE' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_VALUE);
-            } else if ('VM_TRAP_UNREACHABLE' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_UNREACHABLE);
-            } else if ('VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS);
-            } else if ('VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS);
-            } else if ('VM_TRAP_ELEM_UNINITIALIZED' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_ELEM_UNINITIALIZED);
-            } else if ('VM_TRAP_DIVISION_BY_ZERO' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_DIVISION_BY_ZERO);
-            } else if ('VM_TRAP_INTEGER_OVERFLOW' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_INTEGER_OVERFLOW);
-            } else if ('VM_TRAP_INVALID_CONVERSION_TO_INT' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_INVALID_CONVERSION_TO_INT);
-            } else if ('VM_TRAP_STACK_OVERFLOW' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_STACK_OVERFLOW);
-            } else if ('VM_TRAP_UNEXPECTED_SIGNATURE' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_UNEXPECTED_SIGNATURE);
-            } else if ('VM_TRAP_MEM_LIMIT_EXCEEDED' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_MEM_LIMIT_EXCEEDED);
-            } else if ('VM_TRAP_CPU_LIMIT_EXCEEDED' == $vmCode) {
-                $result->vmCode = new XdrSCVmErrorCode(XdrSCVmErrorCode::VM_TRAP_CPU_LIMIT_EXCEEDED);
-            } else {
-                throw new InvalidArgumentException('unknown ' . $prefix . 'vmCode ' . $vmCode);
-            }
-            return $result;
-        } else {
-            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
-        }
-    }
-
-    private static function getSCAddress($prefix, array $map) : XdrSCAddress {
-        $type = self::getClearValue($prefix . 'type', $map);
+        $type = self::getString($prefix . 'type', $map);
         if ("SC_ADDRESS_TYPE_ACCOUNT" == $type) {
-            $accId = self::getClearValue($prefix . 'accountId', $map);
-            if ($accId == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'accountId');
-            }
+            $accId = self::getString($prefix . 'accountId', $map);
             return XdrSCAddress::forAccountId($accId);
         } else if ("SC_ADDRESS_TYPE_CONTRACT" == $type) {
-            $contractId = self::getClearValue($prefix . 'contractId', $map);
-            if ($contractId == null) {
-                throw new InvalidArgumentException('missing ' . $prefix . 'contractId');
-            }
+            $contractId = self::getString($prefix . 'contractId', $map);
             return XdrSCAddress::forContractId($contractId);
         } else {
             throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
         }
     }
 
-    private static function getSCVec($prefix, array $map) : array {
+    /**
+     * @param $prefix
+     * @param array $map
+     * @return array<XdrSCVal>
+     */
+    private static function getSCVec($prefix, array $map): array
+    {
+        /**
+         * @var array<XdrSCVal> $vec
+         */
         $vec = array();
-        $len = self::getClearValue($prefix . 'vec.len', $map);
-        if($len == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'vec.len');
-        }
-        if (!is_numeric($len)) {
-            throw new InvalidArgumentException('invalid ' . $prefix . 'vec.len ' . $len);
-        }
-        for ($i = 0; $i < (int)$len; $i++) {
-            $val = self::getScVal($prefix . 'vec['.strval($i).'].', $map);
+        $len = self::getInt($prefix . 'vec.len', $map);
+        for ($i = 0; $i < $len; $i++) {
+            $val = self::getSCVal($prefix . 'vec[' . strval($i) . '].', $map);
             array_push($vec, $val);
         }
         return $vec;
     }
 
-    private static function getSCMap($prefix, array $map) : array {
+    /**
+     * @param $prefix
+     * @param array $map
+     * @return array<XdrSCMapEntry>
+     */
+    private static function getSCMapEntries($prefix, array $map): array
+    {
+        /**
+         * @var array<XdrSCMapEntry> $result
+         */
         $result = array();
-        $len = self::getClearValue($prefix . 'map.len', $map);
-        if($len == null) {
-            throw new InvalidArgumentException('missing ' . $prefix . 'map.len');
-        }
-        if (!is_numeric($len)) {
-            throw new InvalidArgumentException('invalid ' . $prefix . 'map.len ' . $len);
-        }
-        for ($i = 0; $i < (int)$len; $i++) {
-            $key = self::getScVal($prefix . 'map['.strval($i).'].key.', $map);
-            $value = self::getScVal($prefix . 'map['.strval($i).'].val.', $map);
+        $len = self::getInt($prefix . '.len', $map);
+        for ($i = 0; $i < $len; $i++) {
+            $key = self::getSCVal($prefix . '[' . strval($i) . '].key.', $map);
+            $value = self::getSCVal($prefix . '[' . strval($i) . '].val.', $map);
             $entry = new XdrSCMapEntry($key, $value);
             array_push($result, $entry);
         }
         return $result;
     }
-*/
+
+    private static function getContractExecutable($prefix, array $map): XdrContractExecutable
+    {
+        $type = self::getString($prefix . 'type', $map);
+
+        if ("CONTRACT_EXECUTABLE_WASM" === $type) {
+            $wasm = self::getString($prefix . 'wasm_hash', $map);
+            return XdrContractExecutable::forWasmId($wasm);
+        } else if ("CONTRACT_EXECUTABLE_STELLAR_ASSET" === $type) {
+            return XdrContractExecutable::forToken();
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
+        }
+    }
+
+    private static function getSCVal($prefix, array $map): XdrSCVal
+    {
+        $valType = self::getString($prefix . 'type', $map);
+        if ('SCV_BOOL' == $valType) {
+            $bStr = self::getString($prefix . 'b', $map);
+            if ($bStr == 'true') {
+                return XdrSCVal::forTrue();
+            } else if ($bStr == 'false') {
+                return XdrSCVal::forFalse();
+            } else {
+                throw new InvalidArgumentException('invalid ' . $prefix . 'b');
+            }
+        } else if ('SCV_VOID' == $valType) {
+            return XdrSCVal::forVoid();
+        } else if ('SCV_ERROR' == $valType) {
+            return XdrSCVal::forError(self::getSCError($prefix . 'error', $map));
+        } else if ('SCV_U32' == $valType) {
+            $u32 = self::getInt($prefix . 'u32', $map);
+            return XdrSCVal::forU32($u32);
+        } else if ('SCV_I32' == $valType) {
+            $i32 = self::getInt($prefix . 'i32', $map);
+            return XdrSCVal::forI32($i32);
+        } else if ('SCV_U64' == $valType) {
+            $u64 = self::getInt($prefix . 'u64', $map);
+            return XdrSCVal::forU64($u64);
+        } else if ('SCV_I64' == $valType) {
+            $i64 = self::getInt($prefix . 'i64', $map);
+            return XdrSCVal::forI64($i64);
+        } else if ('SCV_TIMEPOINT' == $valType) {
+            $timepoint = self::getInt($prefix . 'timepoint', $map);
+            return XdrSCVal::forTimepoint($timepoint);
+        } else if ('SCV_DURATION' == $valType) {
+            $duration = self::getInt($prefix . 'duration', $map);
+            return XdrSCVal::forDuration($duration);
+        } else if ('SCV_U128' == $valType) {
+            $u128Lo = self::getInt($prefix . 'u128.lo', $map);
+            $u128Hi = self::getInt($prefix . 'u128.hi', $map);
+            return XdrSCVal::forU128(new XdrUInt128Parts($u128Hi, $u128Lo));
+        } else if ('SCV_I128' == $valType) {
+            $i128Lo = self::getInt($prefix . 'i128.lo', $map);
+            $i128Hi = self::getInt($prefix . 'i128.hi', $map);
+            return XdrSCVal::forI128(new XdrInt128Parts($i128Hi, $i128Lo));
+        } else if ('SCV_U256' == $valType) {
+            $u256LoLo = self::getInt($prefix . 'u256.lo_lo', $map);
+            $u256LoHi = self::getInt($prefix . 'u256.lo_hi', $map);
+            $u256HiLo = self::getInt($prefix . 'u256.hi_lo', $map);
+            $u256HiHi = self::getInt($prefix . 'u256.hi_hi', $map);
+            return XdrSCVal::forU256(new XdrUInt256Parts($u256HiHi, $u256HiLo, $u256LoHi, $u256LoLo));
+        } else if ('SCV_I256' == $valType) {
+            $i256LoLo = self::getInt($prefix . 'i256.lo_lo', $map);
+            $i256LoHi = self::getInt($prefix . 'i256.lo_hi', $map);
+            $i256HiLo = self::getInt($prefix . 'i256.hi_lo', $map);
+            $i256HiHi = self::getInt($prefix . 'i256.hi_hi', $map);
+            return XdrSCVal::forI256(new XdrInt256Parts($i256HiHi, $i256HiLo, $i256LoHi, $i256LoLo));
+        } else if ('SCV_BYTES' == $valType) {
+            $bin = self::getString($prefix . 'bytes', $map);
+            return XdrSCVal::forBytes(hex2bin($bin));
+        } else if ('SCV_STRING' == $valType) {
+            $str = self::getString($prefix . 'str', $map);
+            return XdrSCVal::forString($str);
+        } else if ('SCV_SYMBOL' == $valType) {
+            $sym = self::getString($prefix . 'sym', $map);
+            return XdrSCVal::forSymbol($sym);
+        } else if ('SCV_VEC' == $valType) {
+            $present = self::getString($prefix . 'vec._present', $map);
+            if ('true' != $present) {
+                return new XdrSCVal(XdrSCValType::VEC());
+            }
+            return XdrSCVal::forVec(self::getSCVec($prefix, $map));
+        } else if ('SCV_MAP' == $valType) {
+            $present = self::getString($prefix . 'map._present', $map);
+            if ('true' != $present) {
+                return new XdrSCVal(XdrSCValType::MAP());
+            }
+            return XdrSCVal::forMap(self::getSCMapEntries($prefix . 'map', $map));
+        } else if ('SCV_ADDRESS' == $valType) {
+            $address = self::getSCAddress($prefix . 'address.', $map);
+            return XdrSCVal::forAddress($address);
+        } else if ('SCV_LEDGER_KEY_CONTRACT_INSTANCE' == $valType) {
+            return XdrSCVal::forLedgerKeyContractInstance();
+        } else if ('SCV_LEDGER_KEY_NONCE' == $valType) {
+            $nonce = self::getInt($prefix . 'nonce_key.nonce', $map);
+            return XdrSCVal::forLedgerNonceKey(new XdrSCNonceKey($nonce));
+        } else if ('SCV_CONTRACT_INSTANCE' == $valType) {
+            $executable = self::getContractExecutable($prefix . 'contractInstance.executable.', $map);
+            $present = self::getString($prefix . 'storage._present', $map);
+            if ('true' != $present) {
+                /**
+                 * @var array<XdrSCMapEntry> $storageEntries
+                 */
+                $storageEntries = self::getSCMapEntries($prefix . 'storage', $map);
+                return XdrSCVal::forContractInstance(new XdrSCContractInstance($executable, $storageEntries));
+            } else {
+                return XdrSCVal::forContractInstance(new XdrSCContractInstance($executable, null));
+            }
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $valType);
+        }
+    }
+
+    private static function getSCError($prefix, array $map): XdrSCError
+    {
+        $type = self::getString($prefix . 'type', $map);
+
+        if ("SCE_CONTRACT" === $type) {
+            $code = self::getInt($prefix . 'contractCode', $map);
+            $result = new XdrSCError(XdrSCErrorType::SCE_CONTRACT());
+            $result->contractCode = $code;
+            return $result;
+        } else if ("SCE_WASM_VM" === $type) {
+            return new XdrSCError(XdrSCErrorType::SCE_WASM_VM());
+        } else if ("SCE_CONTEXT" === $type) {
+            return new XdrSCError(XdrSCErrorType::SCE_CONTEXT());
+        } else if ("SCE_STORAGE" === $type) {
+            return new XdrSCError(XdrSCErrorType::SCE_STORAGE());
+        } else if ("SCE_OBJECT" === $type) {
+            return new XdrSCError(XdrSCErrorType::SCE_OBJECT());
+        } else if ("SCE_CRYPTO" === $type) {
+            return new XdrSCError(XdrSCErrorType::SCE_CRYPTO());
+        } else if ("SCE_EVENTS" === $type) {
+            return new XdrSCError(XdrSCErrorType::SCE_EVENTS());
+        } else if ("SCE_BUDGET" === $type) {
+            return new XdrSCError(XdrSCErrorType::SCE_BUDGET());
+        } else if ("SCE_VALUE" === $type) {
+            return new XdrSCError(XdrSCErrorType::SCE_VALUE());
+        } else if ("SCE_AUTH" === $type) {
+            $result =  new XdrSCError(XdrSCErrorType::SCE_AUTH());
+            $code = self::getString($prefix . 'code', $map);
+            if ("SCEC_ARITH_DOMAIN" === $code) {
+                $result->code = new XdrSCErrorCode(0);
+            } else if ("SCEC_INDEX_BOUNDS" === $code) {
+                $result->code = new XdrSCErrorCode(1);
+            } else if ("SCEC_INVALID_INPUT" === $code) {
+                $result->code = new XdrSCErrorCode(2);
+            } else if ("SCEC_MISSING_VALUE" === $code) {
+                $result->code = new XdrSCErrorCode(3);
+            } else if ("SCEC_EXISTING_VALUE" === $code) {
+                $result->code = new XdrSCErrorCode(4);
+            } else if ("SCEC_EXCEEDED_LIMIT" === $code) {
+                $result->code = new XdrSCErrorCode(5);
+            } else if ("SCEC_INVALID_ACTION" === $code) {
+                $result->code = new XdrSCErrorCode(6);
+            } else if ("SCEC_INTERNAL_ERROR" === $code) {
+                $result->code = new XdrSCErrorCode(7);
+            } else if ("SCEC_UNEXPECTED_TYPE" === $code) {
+                $result->code = new XdrSCErrorCode(8);
+            } else if ("SCEC_UNEXPECTED_SIZE" === $code) {
+                $result->code = new XdrSCErrorCode(9);
+            } else {
+                throw new InvalidArgumentException('unknown ' . $prefix . 'code ' . $type);
+            }
+            return $result;
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
+        }
+    }
+    private static function getContractIDPreimage($prefix, array $map): XdrContractIDPreimage
+    {
+        $type = self::getString($prefix . 'type', $map);
+
+        if ("CONTRACT_ID_PREIMAGE_FROM_ADDRESS" === $type) {
+            $address = self::getSCAddress($prefix . 'fromAddress.address.', $map);
+            $salt = self::getString($prefix . 'fromAddress.salt', $map);
+            return XdrContractIDPreimage::forAddress($address, $salt);
+        } else if ("CONTRACT_ID_PREIMAGE_FROM_ASSET" === $type) {
+            $assetStr = self::getString($prefix . 'fromAsset', $map);
+            $asset = Asset::createFromCanonicalForm($assetStr);
+            if ($asset === null) {
+                throw new InvalidArgumentException('invalid value for ' . $prefix . 'fromAsset');
+            }
+            return XdrContractIDPreimage::forAsset($asset->toXdr());
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
+        }
+    }
+
+    private static function getCreateContractArgs($prefix, array $map): XdrCreateContractArgs
+    {
+        $preimage = self::getContractIDPreimage($prefix . 'contractIDPreimage.', $map);
+        $executable = self::getContractExecutable($prefix . 'executable.', $map);
+        return new XdrCreateContractArgs($preimage, $executable);
+    }
+
+    private static function getInvokeContractArgs($prefix, array $map): XdrInvokeContractArgs
+    {
+        $address = self::getSCAddress($prefix . 'contractAddress.', $map);
+        $functionName = self::getString($prefix . 'functionName', $map);
+        $argsLen = self::getInt($prefix . 'args.len', $map);
+        /**
+         * @var array<XdrSCVal> $arguments
+         */
+        $arguments = array();
+
+        for ($i = 0; $i < $argsLen; $i++) {
+            $next = self::getSCVal($prefix . 'args[' . $i . '].', $map);
+            array_push($arguments, $next);
+        }
+        return new XdrInvokeContractArgs($address, $functionName, $arguments);
+    }
+
+    private static function getHostFunction($prefix, array $map): XdrHostFunction
+    {
+        $type = self::getString($prefix . 'type', $map);
+        switch ($type) {
+            case 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT':
+                $args = self::getInvokeContractArgs($prefix . 'invokeContract.', $map);
+                return XdrHostFunction::forInvokingContractWithArgs($args);
+            case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT':
+                $args = self::getCreateContractArgs($prefix . 'createContract.', $map);
+                return XdrHostFunction::forCreatingContractWithArgs($args);
+            case 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM':
+                $wasm = self::getString($prefix . 'wasm', $map);
+                return XdrHostFunction::forUploadContractWasm(hex2bin($wasm));
+            default:
+                throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
+        }
+    }
+
+    private static function getSorobanAddressCredentials($prefix, array $map): XdrSorobanAddressCredentials
+    {
+        $address = self::getSCAddress($prefix . 'address.', $map);
+        $nonce = self::getInt($prefix . 'nonce', $map);
+        $expLedger = self::getInt($prefix . 'signatureExpirationLedger', $map);
+        $signature = self::getSCVal($prefix . 'signature.', $map);
+        return new XdrSorobanAddressCredentials($address, $nonce, $expLedger, $signature);
+    }
+
+    private static function getSorobanCredentials($prefix, array $map): XdrSorobanCredentials
+    {
+        $type = self::getString($prefix . 'type', $map);
+
+        if ("SOROBAN_CREDENTIALS_SOURCE_ACCOUNT" === $type) {
+            return XdrSorobanCredentials::forSourceAccount();
+        } else if ("SOROBAN_CREDENTIALS_ADDRESS" === $type) {
+            $addressCredentials = self::getSorobanAddressCredentials($prefix . 'address.', $map);
+            return XdrSorobanCredentials::forAddressCredentials($addressCredentials);
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
+        }
+    }
+
+    private static function getSorobanAuthorizedFunction($prefix, array $map): XdrSorobanAuthorizedFunction
+    {
+        $type = self::getString($prefix . 'type', $map);
+
+        if ("SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN" === $type) {
+            $args = self::getInvokeContractArgs($prefix . 'contractFn.', $map);
+            return XdrSorobanAuthorizedFunction::forInvokeContractArgs($args);
+        } else if ("SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN" === $type) {
+            $args = self::getCreateContractArgs($prefix . 'createContractHostFn.', $map);
+            return XdrSorobanAuthorizedFunction::forCreateContractArgs($args);
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
+        }
+    }
+
+    private static function getSorobanAuthorizedInvocation($prefix, array $map): XdrSorobanAuthorizedInvocation
+    {
+        $function = self::getSorobanAuthorizedFunction($prefix . 'function.', $map);
+        $subsLen = self::getInt($prefix . 'subInvocations.len', $map);
+        /**
+         * @var array<XdrSorobanAuthorizedInvocation> $subs
+         */
+        $subs = array();
+
+        for ($i = 0; $i < $subsLen; $i++) {
+            $next = self::getSorobanAuthorizedInvocation($prefix . 'subInvocations[' . $i . '].', $map);
+            array_push($subs, $next);
+        }
+        return new XdrSorobanAuthorizedInvocation($function, $subs);
+    }
+
+    private static function getSorobanAuthEntry($prefix, array $map): XdrSorobanAuthorizationEntry
+    {
+        $credentials = self::getSorobanCredentials($prefix . 'credentials.', $map);
+        $rootInvocation = self::getSorobanAuthorizedInvocation($prefix . 'rootInvocation.', $map);
+        return new XdrSorobanAuthorizationEntry($credentials, $rootInvocation);
+    }
+
+    /**
+     * @param $prefix
+     * @param array $map
+     * @return array<XdrSorobanAuthorizationEntry>
+     */
+    private static function getSorobanAuthEntries($prefix, array $map): array
+    {
+        $len = self::getInt($prefix . '.len', $map);
+        /**
+         * @var array<XdrSorobanAuthorizationEntry> $entries
+         */
+        $entries = array();
+
+        for ($i = 0; $i < $len; $i++) {
+            $next = self::getSorobanAuthEntry($prefix . '[' . $i . '].', $map);
+            array_push($entries, $next);
+        }
+        return $entries;
+    }
+
+    private static function getExtendFootprintTTLOp($opPrefix, array $map, ?string $sourceAccountId): ExtendFootprintTTLOperation {
+        $extendTo = self::getInt($opPrefix . 'extendTo', $map);
+        $result = new ExtendFootprintTTLOperation($extendTo);
+        if ($sourceAccountId !== null) {
+            $result->setSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+        }
+        return $result;
+    }
+
+    private static function getInvokeHostFunctionOp($opPrefix, array $map, ?string $sourceAccountId): InvokeHostFunctionOperation
+    {
+        $hostFunctionXdr = self::getHostFunction($opPrefix . 'hostFunction.', $map);
+        $authEntriesXdr = self::getSorobanAuthEntries($opPrefix . 'auth', $map);
+        $xdr = new XdrInvokeHostFunctionOp($hostFunctionXdr, $authEntriesXdr);
+        try {
+            $result = InvokeHostFunctionOperation::fromXdrOperation($xdr);
+            if ($sourceAccountId !== null) {
+                $result->setSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
+            }
+            return $result;
+        } catch(Exception) {
+            throw new InvalidArgumentException('could not decode host function');
+        }
+    }
+
+    private static function getLedgerKey(String $prefix, array $map): XdrLedgerKey {
+
+        $ledgerKeyType = self::getString($prefix . 'type', $map);
+        if ($ledgerKeyType === 'ACCOUNT') {
+            $accountId = self::getAccountId($prefix . 'account.accountID', $map);
+            return XdrLedgerKey::forAccountId($accountId);
+        } else if($ledgerKeyType === 'TRUSTLINE') {
+            $accountId = self::getAccountId($prefix . 'trustLine.accountID', $map);
+            $assetStr = self::getString($prefix . 'trustLine.asset', $map);
+            $asset = Asset::createFromCanonicalForm($assetStr);
+            if (!$asset) {
+                throw new InvalidArgumentException('invalid ' . $prefix . 'trustLine.asset');
+            }
+            return XdrLedgerKey::forTrustLine($accountId, $asset->toXdr());
+        } else if($ledgerKeyType === 'OFFER') {
+            $sellerId = self::getAccountId($prefix . 'offer.sellerID', $map);
+            $offerId = self::getInt($prefix . 'offer.offerID', $map);
+            return XdrLedgerKey::forOffer($sellerId, $offerId);
+        } else if($ledgerKeyType === 'DATA') {
+            $accountId = self::getAccountId($prefix . 'data.accountID', $map);
+            $dataNameStr = self::getClearValue($prefix . 'data.dataName', $map);
+            $dataName = str_replace('"','', $dataNameStr);
+            return XdrLedgerKey::forData($accountId, $dataName);
+        } else if($ledgerKeyType === 'CLAIMABLE_BALANCE') {
+            $claimableBalanceId = self::getString($prefix . 'claimableBalance.balanceID.v0', $map);
+            if (!$claimableBalanceId) {
+                throw new InvalidArgumentException('missing ' . $prefix . 'claimableBalance.balanceID.v0');
+            }
+            return XdrLedgerKey::forClaimableBalanceId($claimableBalanceId);
+        } else if($ledgerKeyType === 'LIQUIDITY_POOL') {
+            $liquidityPoolId = self::getString($prefix . 'liquidityPool.liquidityPoolID', $map);
+            return XdrLedgerKey::forLiquidityPoolId($liquidityPoolId);
+        } else if($ledgerKeyType === 'CONTRACT_DATA') {
+            $address = self::getSCAddress($prefix . 'contractData.contract.', $map);
+            $keyVal = self::getSCVal($prefix . 'contractData.key.', $map);
+            $durability = self::getString($prefix . 'contractData.durability', $map);
+            if ($durability === 'PERSISTENT') {
+                return XdrLedgerKey::forContractData($address, $keyVal, XdrContractDataDurability::PERSISTENT());
+            } else if ($durability === 'TEMPORARY') {
+                return XdrLedgerKey::forContractData($address, $keyVal, XdrContractDataDurability::TEMPORARY());
+            } else {
+                throw new InvalidArgumentException('unknown ' . $prefix . 'contractData.durability ' . $durability);
+            }
+        } else if($ledgerKeyType === 'CONTRACT_CODE') {
+            $hashStr = self::getString($prefix . 'contractCode.hash', $map);
+            return XdrLedgerKey::forContractCode(hex2bin($hashStr));
+        } else if($ledgerKeyType === 'CONFIG_SETTING') {
+            $id = self::getConfigSettingID($prefix . 'configSetting.configSettingID', $map);
+            return XdrLedgerKey::forConfigSettingID($id);
+        } else if($ledgerKeyType === 'TTL') {
+            $hashStr = self::getString($prefix . 'ttl.keyHash', $map);
+            return XdrLedgerKey::forTTL(hex2bin($hashStr));
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $ledgerKeyType);
+        }
+    }
+
+    private static function getConfigSettingID(string $prefix, array $map): XdrConfigSettingID {
+
+        $type = self::getString($prefix . 'type', $map);
+
+        if ("CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES();
+        } else if ("CONFIG_SETTING_CONTRACT_COMPUTE_V0" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0();
+        } else if ("CONFIG_SETTING_CONTRACT_LEDGER_COST_V0" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0();
+        } else if ("CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0();
+        } else if ("CONFIG_SETTING_CONTRACT_EVENTS_V0" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0();
+        } else if ("CONFIG_SETTING_CONTRACT_BANDWIDTH_V0" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0();
+        } else if ("CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS();
+        } else if ("CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES();
+        } else if ("CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES();
+        } else if ("CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES();
+        } else if ("CONFIG_SETTING_STATE_ARCHIVAL" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL();
+        } else if ("CONFIG_SETTING_CONTRACT_EXECUTION_LANES" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES();
+        } else if ("CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW();
+        } else if ("CONFIG_SETTING_EVICTION_ITERATOR" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR();
+        } else {
+            throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
+        }
+    }
+    private static function getFootprint(string $prefix, array $map): XdrLedgerFootprint {
+        /**
+         * @var array<XdrLedgerKey> $readOnly
+         */
+        $readOnly = array();
+        $len = self::getInt($prefix . 'readOnly.len', $map);
+        for ($i = 0; $i < $len; $i++) {
+            $next = self::getLedgerKey($prefix . 'readOnly[' . $i . '].', $map);
+            array_push($readOnly, $next);
+        }
+
+        /**
+         * @var array<XdrLedgerKey> $readWrite
+         */
+        $readWrite = array();
+        $len = self::getInt($prefix . 'readWrite.len', $map);
+        for ($i = 0; $i < $len; $i++) {
+            $next = self::getLedgerKey($prefix . 'readWrite[' . $i . '].', $map);
+            array_push($readWrite, $next);
+        }
+        return new XdrLedgerFootprint($readOnly, $readWrite);
+    }
+    private static function getSorobanResources(String $prefix, array $map): XdrSorobanResources {
+        $footprint = self::getFootprint($prefix . 'footprint.', $map);
+        $instructions = self::getInt($prefix . 'instructions', $map);
+        $readBytes = self::getInt($prefix . 'readBytes', $map);
+        $writeBytes= self::getInt($prefix . 'writeBytes', $map);
+        return new XdrSorobanResources($footprint, $instructions, $readBytes, $writeBytes);
+    }
+
+    private static function getSorobanTransactionData(String $prefix, array $map): ?XdrSorobanTransactionData {
+        $v = self::getInt($prefix . 'ext.v', $map);
+        if ($v === 1) {
+            $resources = self::getSorobanResources($prefix . 'sorobanData.resources.', $map);
+            $resourcesFee = self::getInt($prefix . 'sorobanData.resourceFee', $map);
+            return new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, $resourcesFee);
+        }
+        return null;
+    }
+
+    private static function getAccountId(string $key, array $map): String {
+        $accountId = self::getString($key, $map);
+        try {
+            KeyPair::fromAccountId($accountId);
+        } catch (Exception) {
+            throw new InvalidArgumentException('invalid value for '. $key);
+        }
+        return $accountId;
+    }
+
+    private static function getString(string $key, array $map): String {
+        $str = self::getClearValue($key, $map);
+        if ($str === null || $str === '') {
+            throw new InvalidArgumentException('missing ' . $key);
+        }
+        return $str;
+    }
+
+    private static function getInt(string $key, array $map): int {
+        $str = self::getClearValue($key, $map);
+        if ($str === null) {
+            throw new InvalidArgumentException('missing ' . $key);
+        }
+        if (!self::isInt($str)) {
+            throw new InvalidArgumentException('invalid value for ' . $key);
+        }
+
+        return intval($str);
+    }
+
+    private static function isInt(string $value): bool {
+        return is_numeric($value) && floatval(intval($value)) === floatval($value);
+    }
+
     private static function getLiquidityPoolWithdrawOp($opPrefix, array $map, ?string $sourceAccountId) : LiquidityPoolWithdrawOperation
     {
         $liquidityPoolID = self::getClearValue($opPrefix . 'liquidityPoolID', $map);
@@ -2895,172 +2817,140 @@ class TxRep
             $lines += [$prefix.'amount' => self::toAmount($operation->getAmount())];
             $lines += [$prefix.'minAmountA' => self::toAmount($operation->getMinAmountA())];
             $lines += [$prefix.'minAmountB' => self::toAmount($operation->getMinAmountB())];
-        } /*else if ($operation instanceof InvokeHostFunctionOperation) {
-            $lines += [$prefix.'function.type' => self::txRepInvokeHostFuncType($operation->getFunctionType())];
-            if ($operation instanceof  UploadContractWasmOp) {
-                $lines += [$prefix.'function.uploadContractWasm.code' => bin2hex($operation->contractCodeBytes)];
-            } else if ($operation instanceof  CreateContractOp) {
-                $lines += [$prefix.'function.createContract.source.type' => 'SCCONTRACT_CODE_WASM_REF'];
-                $lines += [$prefix.'function.createContract.source.wasm_id' => $operation->getWasmId()];
-                $lines += [$prefix.'function.createContract.contractID.type' => 'CONTRACT_ID_FROM_SOURCE_ACCOUNT'];
-                $lines += [$prefix.'function.createContract.contractID.salt' => bin2hex($operation->getSalt())];
-            }  else if ($operation instanceof  InvokeContractOp) {
-                $args = $operation->arguments;
-                $lines += [$prefix.'function.invokeContract.len' => strval(count($args) + 2)];
-
-                $lines += [$prefix.'function.invokeContract[0].type' => 'SCV_BYTES'];
-                $lines += [$prefix.'function.invokeContract[0].bytes' => $operation->contractId];
-
-                $lines += [$prefix.'function.invokeContract[1].type' => 'SCV_SYMBOL'];
-                $lines += [$prefix.'function.invokeContract[1].sym' => $operation->functionName];
-                $index = 2;
-                foreach ($args as $argument) {
-                    if($argument instanceof XdrSCVal) {
-                        $lines = array_merge($lines, self::getScValTx($prefix.'function.invokeContract['.$index.'].', $argument));
-                        $index++;
-                    }
-                }
-            } else if ($operation instanceof DeploySACWithSourceAccountOp) {
-                $lines += [$prefix.'function.createContract.source.type' => 'SCCONTRACT_CODE_TOKEN'];
-                $lines += [$prefix.'function.createContract.contractID.type' => 'CONTRACT_ID_FROM_SOURCE_ACCOUNT'];
-                $lines += [$prefix.'function.createContract.contractID.salt' => bin2hex($operation->getSalt())];
-            } else if ($operation instanceof DeploySACWithAssetOp) {
-                $lines += [$prefix.'function.createContract.source.type' => 'SCCONTRACT_CODE_TOKEN'];
-                $lines += [$prefix.'function.createContract.contractID.type' => 'CONTRACT_ID_FROM_ASSET'];
-                $lines += [$prefix.'function.createContract.contractID.asset' => self::encodeAsset($operation->asset)];
-            }
-
-            $xdrFootprint = $operation->footprint->xdrFootprint;
-            $readOnly = $xdrFootprint->readOnly;
-            $lines += [$prefix.'footprint.readOnly.len' => strval(count($readOnly))];
-            $index = 0;
-            foreach ($readOnly as $key) {
-                if($key instanceof XdrLedgerKey) {
-                    $lines = array_merge($lines, self::getContractLedgerKeyTx($prefix.'footprint.readOnly['.$index.'].', $key));
-                    $index++;
-                }
-            }
-            $readWrite = $xdrFootprint->readWrite;
-            $lines += [$prefix.'footprint.readWrite.len' => strval(count($readWrite))];
-            $index = 0;
-            foreach ($readWrite as $key) {
-                if($key instanceof XdrLedgerKey) {
-                    $lines = array_merge($lines, self::getContractLedgerKeyTx($prefix.'footprint.readWrite['.$index.'].', $key));
-                    $index++;
-                }
-            }
-
-            $authArr = $operation->auth;
-            $lines += [$prefix.'auth.len' => strval(count($authArr))];
-            $index = 0;
-            foreach ($authArr as $auth) {
-                if($auth instanceof ContractAuth) {
-                    $lines = array_merge($lines, self::getContractAuthTx($prefix.'auth['.$index.'].', $auth->toXdr()));
-                    $index++;
-                }
-            }
-
-        }*/
-        return $lines;
-    }
-/*
-    private static function getContractAuthTx(string $prefix, XdrContractAuth $auth) : array {
-        $lines = array();
-        if ($auth->addressWithNonce == null) {
-            $lines += [$prefix.'addressWithNonce._present' => 'false'];
-        } else {
-            $lines += [$prefix.'addressWithNonce._present' => 'true'];
-            $lines = array_merge($lines, self::getAddressWithNonceTx($prefix.'addressWithNonce.', $auth->addressWithNonce));
         }
-
-        $lines = array_merge($lines, self::getAuthorizedInvocationTx($prefix.'rootInvocation.', $auth->rootInvocation));
-
-        $argsArr = array();
-        // PATCH START : See: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
-        $argsPatched = $auth->signatureArgs;
-        if (count($argsPatched) == 1) {
-            $innerVal = $argsPatched[0];
-            if ($innerVal instanceof XdrSCVal && $innerVal->vec != null) {
-                $argsArr = $innerVal->vec;
-            }
-            else {
-                $argsArr = $auth->signatureArgs;
-            }
-        }
-        // PATCH END
-        //$argsArr = $auth->signatureArgs;
-
-        $lines += [$prefix.'signatureArgs.len' => strval(count($argsArr))];
-        $index = 0;
-        foreach ($argsArr as $val) {
-            if($val instanceof XdrSCVal) {
-                $lines = array_merge($lines, self::getScValTx($prefix.'signatureArgs['.$index.'].', $val));
+        else if ($operation instanceof InvokeHostFunctionOperation) {
+             $fnPrefix = $prefix . 'hostFunction.';
+             $function = $operation->function;
+             $hostFunctionXdr = $function->toXdr();
+             if ($hostFunctionXdr->type->value == XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT) {
+                 $lines += [$fnPrefix.'type' => 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT'];
+                 $lines = array_merge($lines, self::getInvokeContractArgsTx($fnPrefix.'invokeContract.', $hostFunctionXdr->invokeContract));
+             } else if ($hostFunctionXdr->type->value == XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT) {
+                 $lines += [$fnPrefix.'type' => 'HOST_FUNCTION_TYPE_CREATE_CONTRACT'];
+                 $lines = array_merge($lines, self::getCreateContractArgsTx($fnPrefix.'createContract.', $hostFunctionXdr->createContract));
+             } else if ($hostFunctionXdr->type->value == XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM) {
+                 $lines += [$fnPrefix.'type' => 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM'];
+                 $lines += [$fnPrefix.'wasm' => bin2hex($hostFunctionXdr->wasm->value)];
+             }
+             $auth = $operation->getAuth();
+             $lines += [$prefix . 'auth.len' => strval(count($auth))];
+             $index = 0;
+             foreach ($auth as $val) {
+                $lines = array_merge($lines, self::getSorobanAuthorizationEntryTx($prefix.'auth['.$index.'].', $val->toXdr()));
                 $index++;
-            }
+             }
+
+        }  else if ($operation instanceof ExtendFootprintTTLOperation) {
+            $lines += [$prefix.'ext.v' => '0'];
+            $lines += [$prefix.'extendTo' => strval($operation->getExtendTo())];
+        } else if ($operation instanceof RestoreFootprintOperation) {
+            $lines += [$prefix.'ext.v' => '0'];
         }
         return $lines;
     }
 
-    private static function getAuthorizedInvocationTx(string $prefix, XdrAuthorizedInvocation $auth) : array {
+    private static function getSCAddressTx(string $prefix, XdrSCAddress $address) : array {
+        $type = $address->getType()->getValue();
         $lines = array();
-        $lines += [$prefix.'contractID' => $auth->contractId];
-        $lines += [$prefix.'functionName' => $auth->functionName];
-
-        $argsArr = $auth->args;
-        $lines += [$prefix.'args.len' => strval(count($argsArr))];
-        $index = 0;
-        foreach ($argsArr as $val) {
-            if($val instanceof XdrSCVal) {
-                $lines = array_merge($lines, self::getScValTx($prefix.'args['.$index.'].', $val));
-                $index++;
-            }
-        }
-
-        $subsArr = $auth->subInvocations;
-        $lines += [$prefix.'subInvocations.len' => strval(count($subsArr))];
-        $index = 0;
-        foreach ($subsArr as $val) {
-            if($val instanceof XdrAuthorizedInvocation) {
-                $lines = array_merge($lines, self::getAuthorizedInvocationTx($prefix.'subInvocations['.$index.'].', $val));
-                $index++;
-            }
-        }
-        return $lines;
-    }
-
-    private static function getAddressWithNonceTx(string $prefix, XdrAddressWithNonce $addressWithNonce) : array {
-        $lines = array();
-        $lines = array_merge($lines, self::getSCAddressTx($prefix.'address.', $addressWithNonce->address));
-        $lines += [$prefix.'nonce' => $addressWithNonce->nonce];
-        return $lines;
-    }
-
-    private static function getContractLedgerKeyTx(string $prefix, XdrLedgerKey $key) : array {
-        $lines = array();
-        $type = $key->getType()->getValue();
         switch ($type) {
-            case XdrLedgerEntryType::ACCOUNT:
-                $lines += [$prefix . 'type' => 'ACCOUNT'];
-                $lines += [$prefix . 'account.accountID' => $key->account->getAccountID()->getAccountId()];
+            case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
+                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_ACCOUNT'];
+                $lines += [$prefix . 'accountId' => $address->getAccountId()->getAccountId()];
                 break;
-            case XdrLedgerEntryType::TRUSTLINE:
-                $lines += [$prefix . 'type' => 'TRUSTLINE'];
-                $lines += [$prefix . 'trustLine.accountID' => $key->trustLine->getAccountID()->getAccountId()];
-                $lines += [$prefix . 'trustLine.asset' => self::encodeAsset(Asset::fromXdr($key->getTrustline()->getAsset()))];
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_CONTRACT'];
+                $lines += [$prefix . 'contractId' => StrKey::encodeContractIdHex($address->getContractId())];
                 break;
-            case XdrLedgerEntryType::CONTRACT_DATA:
-                $lines += [$prefix . 'type' => 'CONTRACT_DATA'];
-                $lines += [$prefix . 'contractData.contractID' => $key->contractID];
-                $lines = array_merge($lines, self::getScValTx($prefix.'contractData.key.', $key->contractDataKey));
-                break;
-            case XdrLedgerEntryType::CONTRACT_CODE:
-                $lines += [$prefix . 'type' => 'CONTRACT_CODE'];
-                $lines += [$prefix . 'contractCode.hash' => bin2hex($key->contractCodeHash)];
         }
         return $lines;
     }
 
-    private static function getScValTx(string $prefix, XdrSCVal $val) : array {
+    private static function getContractExecutableTx(string $prefix, XdrContractExecutable $val) : array {
+        $type = $val->getType()->getValue();
+        $lines = array();
+        switch ($type) {
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
+                $lines += [$prefix . 'type' => 'CONTRACT_EXECUTABLE_WASM'];
+                $lines += [$prefix . 'wasm_hash' => $val->getWasmIdHex()];
+                break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
+                $lines += [$prefix . 'type' => 'CONTRACT_EXECUTABLE_STELLAR_ASSET'];
+                break;
+        }
+        return $lines;
+    }
+
+    private static function getSCErrorTx(string $prefix, XdrSCError $val) : array {
+        $lines = array();
+        $type = $val->getType()->getValue();
+        switch ($type) {
+            case XdrSCErrorType::SCE_CONTRACT:
+                $lines += [$prefix . 'type' => 'SCE_CONTRACT'];
+                $lines += [$prefix . 'contractCode' => strval($val->getContractCode())];
+                break;
+            case XdrSCErrorType::SCE_WASM_VM:
+                $lines += [$prefix . 'type' => 'SCE_WASM_VM'];
+                break;
+            case XdrSCErrorType::SCE_CONTEXT:
+                $lines += [$prefix . 'type' => 'SCE_CONTEXT'];
+                break;
+            case XdrSCErrorType::SCE_STORAGE:
+                $lines += [$prefix . 'type' => 'SCE_STORAGE'];
+                break;
+            case XdrSCErrorType::SCE_OBJECT:
+                $lines += [$prefix . 'type' => 'SCE_OBJECT'];
+                break;
+            case XdrSCErrorType::SCE_CRYPTO:
+                $lines += [$prefix . 'type' => 'SCE_CRYPTO'];
+                break;
+            case XdrSCErrorType::SCE_EVENTS:
+                $lines += [$prefix . 'type' => 'SCE_EVENTS'];
+                break;
+            case XdrSCErrorType::SCE_BUDGET:
+                $lines += [$prefix . 'type' => 'SCE_BUDGET'];
+                break;
+            case XdrSCErrorType::SCE_VALUE:
+                $lines += [$prefix . 'type' => 'SCE_VALUE'];
+                break;
+            case XdrSCErrorType::SCE_AUTH:
+                $lines += [$prefix . 'type' => 'SCE_AUTH'];
+                switch ($val->code->value) {
+                    case 0:
+                        $lines += [$prefix . 'code' => 'SCEC_ARITH_DOMAIN'];
+                        break;
+                    case 1:
+                        $lines += [$prefix . 'code' => 'SCEC_INDEX_BOUNDS'];
+                        break;
+                    case 2:
+                        $lines += [$prefix . 'code' => 'SCEC_INVALID_INPUT'];
+                        break;
+                    case 3:
+                        $lines += [$prefix . 'code' => 'SCEC_MISSING_VALUE'];
+                        break;
+                    case 4:
+                        $lines += [$prefix . 'code' => 'SCEC_EXISTING_VALUE'];
+                        break;
+                    case 5:
+                        $lines += [$prefix . 'code' => 'SCEC_EXCEEDED_LIMIT'];
+                        break;
+                    case 6:
+                        $lines += [$prefix . 'code' => 'SCEC_INVALID_ACTION'];
+                        break;
+                    case 7:
+                        $lines += [$prefix . 'code' => 'SCEC_INTERNAL_ERROR'];
+                        break;
+                    case 8:
+                        $lines += [$prefix . 'code' => 'SCEC_UNEXPECTED_TYPE'];
+                        break;
+                    case 9:
+                        $lines += [$prefix . 'code' => 'SCEC_UNEXPECTED_SIZE'];
+                        break;
+                }
+                break;
+        }
+        return $lines;
+    }
+    private static function getSCValTx(string $prefix, XdrSCVal $val) : array {
         $lines = array();
         $type = $val->getType()->getValue();
         switch ($type) {
@@ -3070,6 +2960,10 @@ class TxRep
                 break;
             case XdrSCValType::SCV_VOID:
                 $lines += [$prefix.'type' => 'SCV_VOID'];
+                break;
+            case XdrSCValType::SCV_ERROR:
+                $lines += [$prefix.'type' => 'SCV_ERROR'];
+                $lines = array_merge($lines, self::getSCErrorTx($prefix.'error.', $val->error));
                 break;
             case XdrSCValType::SCV_U32:
                 $lines += [$prefix.'type' => 'SCV_U32'];
@@ -3107,11 +3001,17 @@ class TxRep
                 break;
             case XdrSCValType::SCV_U256:
                 $lines += [$prefix.'type' => 'SCV_U256'];
-                //$lines += [$prefix.'u256' => $val->u256]; // TODO: update to new UInt256Parts as soon as available
+                $lines += [$prefix.'u256.hi_hi' => $val->u256->hiHi];
+                $lines += [$prefix.'u256.hi_lo' => $val->u256->hiLo];
+                $lines += [$prefix.'u256.lo_hi' => $val->u256->loHi];
+                $lines += [$prefix.'u256.lo_lo' => $val->u256->loLo];
                 break;
             case XdrSCValType::SCV_I256:
                 $lines += [$prefix.'type' => 'SCV_I256'];
-                //$lines += [$prefix.'i256' => $val->i256]; // TODO: update to new UInt256Parts as soon as available
+                $lines += [$prefix.'i256.hi_hi' => $val->i256->hiHi];
+                $lines += [$prefix.'i256.hi_lo' => $val->i256->hiLo];
+                $lines += [$prefix.'i256.lo_hi' => $val->i256->loHi];
+                $lines += [$prefix.'i256.lo_lo' => $val->i256->loLo];
                 break;
             case XdrSCValType::SCV_BYTES:
                 $lines += [$prefix.'type' => 'SCV_BYTES'];
@@ -3135,10 +3035,8 @@ class TxRep
                 $lines += [$prefix.'vec.len' => strval(count($val->vec))];
                 $index = 0;
                 foreach ($val->vec as $vecVal) {
-                    if($vecVal instanceof XdrSCVal) {
-                        $lines = array_merge($lines, self::getScValTx($prefix.'vec['.$index.'].', $vecVal));
-                        $index++;
-                    }
+                    $lines = array_merge($lines, self::getSCValTx($prefix.'vec['.$index.'].', $vecVal));
+                    $index++;
                 }
                 break;
             case XdrSCValType::SCV_MAP:
@@ -3151,287 +3049,218 @@ class TxRep
                 $lines += [$prefix.'map.len' => strval(count($val->map))];
                 $index = 0;
                 foreach ($val->map as $mapEntry) {
-                    if($mapEntry instanceof XdrSCMapEntry) {
-                        $entryKey = $mapEntry->key;
-                        $entryVal = $mapEntry->val;
-                        if ($entryKey instanceof  XdrSCVal) {
-                            $lines = array_merge($lines, self::getScValTx($prefix.'map['.$index.'].key.', $entryKey));
-                        }
-                        if ($entryVal instanceof  XdrSCVal) {
-                            $lines = array_merge($lines, self::getScValTx($prefix.'map['.$index.'].val.', $entryVal));
-                        }
-                        $index++;
-                    }
-                }
-                break;
-            case XdrSCValType::SCV_CONTRACT_EXECUTABLE:
-                $lines += [$prefix.'type' => 'SCV_CONTRACT_EXECUTABLE'];
-                $contractCode = $val->exec;
-                switch ($contractCode->type->value) {
-                    case XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_WASM_REF:
-                        $lines += [$prefix.'exec.type' => 'SCCONTRACT_EXECUTABLE_WASM_REF'];
-                        $lines += [$prefix.'exec.wasm_id' => $contractCode->wasmIdHex];
-                        break;
-                    case XdrSCContractExecutableType::SCCONTRACT_EXECUTABLE_TOKEN:
-                        $lines += [$prefix.'exec.type' => 'SCCONTRACT_EXECUTABLE_TOKEN'];
+                    $entryKey = $mapEntry->key;
+                    $entryVal = $mapEntry->val;
+                    $lines = array_merge($lines, self::getSCValTx($prefix.'map['.$index.'].key.', $entryKey));
+                    $lines = array_merge($lines, self::getSCValTx($prefix.'map['.$index.'].val.', $entryVal));
+                    $index++;
                 }
                 break;
             case XdrSCValType::SCV_ADDRESS:
                 $lines += [$prefix.'type' => 'SCV_ADDRESS'];
                 $lines = array_merge($lines, self::getSCAddressTx($prefix.'address.', $val->address));
                 break;
-            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_EXECUTABLE:
-                $lines += [$prefix.'type' => 'SCV_LEDGER_KEY_CONTRACT_EXECUTABLE'];
+            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+                $lines += [$prefix.'type' => 'SCV_LEDGER_KEY_CONTRACT_INSTANCE'];
                 break;
             case XdrSCValType::SCV_LEDGER_KEY_NONCE:
                 $lines += [$prefix.'type' => 'SCV_LEDGER_KEY_NONCE'];
-                $lines = array_merge($lines, self::getSCAddressTx($prefix.'nonce_key.nonce_address.', $val->nonceKey->nonceAddress));
+                $lines += [$prefix.'nonce_key.nonce' => strval($val->nonceKey->nonce)];
                 break;
-            case XdrSCValType::SCV_ERROR:
-                $lines += [$prefix.'type' => 'SCV_ERROR'];
-                $statusVal = $val->error;
-                switch ($statusVal->type->value) {
-                    case XdrSCStatusType::SST_OK:
-                        $lines += [$prefix.'error.type' => 'SST_OK'];
-                        break;
-                    case XdrSCStatusType::SST_UNKNOWN_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_UNKNOWN_ERROR'];
-                        $unknownCode = $statusVal->unknownCode->getValue();
-                        switch ($unknownCode) {
-                            case XdrSCUnknownErrorCode::UNKNOWN_ERROR_GENERAL:
-                                $lines += [$prefix.'error.unknownCode' => 'UNKNOWN_ERROR_GENERAL'];
-                                break;
-                            case XdrSCUnknownErrorCode::UNKNOWN_ERROR_XDR:
-                                $lines += [$prefix.'error.unknownCode' => 'UNKNOWN_ERROR_XDR'];
-                        }
-                        break;
-                    case XdrSCStatusType::SST_HOST_VALUE_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_HOST_VALUE_ERROR'];
-                        $code = $statusVal->valCode->getValue();
-                        switch ($code) {
-                            case XdrSCHostValErrorCode::HOST_VALUE_UNKNOWN_ERROR:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_UNKNOWN_ERROR'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_RESERVED_TAG_VALUE:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_RESERVED_TAG_VALUE'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_UNEXPECTED_VAL_TYPE:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_UNEXPECTED_VAL_TYPE'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_U63_OUT_OF_RANGE:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_U63_OUT_OF_RANGE'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_U32_OUT_OF_RANGE:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_U32_OUT_OF_RANGE'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_STATIC_UNKNOWN:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_STATIC_UNKNOWN'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_MISSING_OBJECT:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_MISSING_OBJECT'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_TOO_LONG:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_SYMBOL_TOO_LONG'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_BAD_CHAR:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_SYMBOL_BAD_CHAR'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_BITSET_TOO_MANY_BITS:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_BITSET_TOO_MANY_BITS'];
-                                break;
-                            case XdrSCHostValErrorCode::HOST_VALUE_STATUS_UNKNOWN:
-                                $lines += [$prefix.'error.valCode' => 'HOST_VALUE_STATUS_UNKNOWN'];
-                        }
-                        break;
-                    case XdrSCStatusType::SST_HOST_OBJECT_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_HOST_OBJECT_ERROR'];
-                        $code = $statusVal->objCode->getValue();
-                        switch ($code) {
-                            case XdrSCHostObjErrorCode::HOST_OBJECT_UNKNOWN_ERROR:
-                                $lines += [$prefix.'error.objCode' => 'HOST_OBJECT_UNKNOWN_ERROR'];
-                                break;
-                            case XdrSCHostObjErrorCode::HOST_OBJECT_UNKNOWN_REFERENCE:
-                                $lines += [$prefix.'error.objCode' => 'HOST_OBJECT_UNKNOWN_REFERENCE'];
-                                break;
-                            case XdrSCHostObjErrorCode::HOST_OBJECT_UNEXPECTED_TYPE:
-                                $lines += [$prefix.'error.objCode' => 'HOST_OBJECT_UNEXPECTED_TYPE'];
-                                break;
-                            case XdrSCHostObjErrorCode::HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX:
-                                $lines += [$prefix.'error.objCode' => 'HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX'];
-                                break;
-                            case XdrSCHostObjErrorCode::HOST_OBJECT_OBJECT_NOT_EXIST:
-                                $lines += [$prefix.'error.objCode' => 'HOST_OBJECT_OBJECT_NOT_EXIST'];
-                                break;
-                            case XdrSCHostObjErrorCode::HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND:
-                                $lines += [$prefix.'error.objCode' => 'HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND'];
-                                break;
-                            case XdrSCHostObjErrorCode::HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH:
-                                $lines += [$prefix.'error.objCode' => 'HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH'];
-                        }
-                        break;
-                    case XdrSCStatusType::SST_HOST_FUNCTION_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_HOST_FUNCTION_ERROR'];
-                        $code = $statusVal->fnCode->getValue();
-                        switch ($code) {
-                            case XdrSCHostFnErrorCode::HOST_FN_UNKNOWN_ERROR:
-                                $lines += [$prefix.'error.fnCode' => 'HOST_FN_UNKNOWN_ERROR'];
-                                break;
-                            case XdrSCHostFnErrorCode::HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION:
-                                $lines += [$prefix.'error.fnCode' => 'HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION'];
-                                break;
-                            case XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_WRONG_LENGTH:
-                                $lines += [$prefix.'error.fnCode' => 'HOST_FN_INPUT_ARGS_WRONG_LENGTH'];
-                                break;
-                            case XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_WRONG_TYPE:
-                                $lines += [$prefix.'error.fnCode' => 'HOST_FN_INPUT_ARGS_WRONG_TYPE'];
-                                break;
-                            case XdrSCHostFnErrorCode::HOST_FN_INPUT_ARGS_INVALID:
-                                $lines += [$prefix.'error.fnCode' => 'HOST_FN_INPUT_ARGS_INVALID'];
-                        }
-                        break;
-                    case XdrSCStatusType::SST_HOST_STORAGE_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_HOST_STORAGE_ERROR'];
-                        $code = $statusVal->storageCode->getValue();
-                        switch ($code) {
-                            case XdrSCHostStorageErrorCode::HOST_STORAGE_UNKNOWN_ERROR:
-                                $lines += [$prefix.'error.storageCode' => 'HOST_STORAGE_UNKNOWN_ERROR'];
-                                break;
-                            case XdrSCHostStorageErrorCode::HOST_STORAGE_EXPECT_CONTRACT_DATA:
-                                $lines += [$prefix.'error.storageCode' => 'HOST_STORAGE_EXPECT_CONTRACT_DATA'];
-                                break;
-                            case XdrSCHostStorageErrorCode::HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY:
-                                $lines += [$prefix.'error.storageCode' => 'HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY'];
-                                break;
-                            case XdrSCHostStorageErrorCode::HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY:
-                                $lines += [$prefix.'error.storageCode' => 'HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY'];
-                                break;
-                            case XdrSCHostStorageErrorCode::HOST_STORAGE_MISSING_KEY_IN_GET:
-                                $lines += [$prefix.'error.storageCode' => 'HOST_STORAGE_MISSING_KEY_IN_GET'];
-                                break;
-                            case XdrSCHostStorageErrorCode::HOST_STORAGE_GET_ON_DELETED_KEY:
-                                $lines += [$prefix.'error.storageCode' => 'HOST_STORAGE_GET_ON_DELETED_KEY'];
-                        }
-                        break;
-                    case XdrSCStatusType::SST_HOST_CONTEXT_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_HOST_CONTEXT_ERROR'];
-                        $code = $statusVal->contextCode->getValue();
-                        switch ($code) {
-                            case XdrSCHostContextErrorCode::HOST_CONTEXT_UNKNOWN_ERROR:
-                                $lines += [$prefix.'error.contextCode' => 'HOST_CONTEXT_UNKNOWN_ERROR'];
-                                break;
-                            case XdrSCHostContextErrorCode::HOST_CONTEXT_NO_CONTRACT_RUNNING:
-                                $lines += [$prefix.'error.contextCode' => 'HOST_CONTEXT_NO_CONTRACT_RUNNING'];
-                        }
-                        break;
-                    case XdrSCStatusType::SST_VM_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_VM_ERROR'];
-                        $code = $statusVal->vmCode->getValue();
-                        switch ($code) {
-                            case XdrSCVmErrorCode::VM_UNKNOWN:
-                                $lines += [$prefix.'error.vmCode' => 'VM_UNKNOWN'];
-                                break;
-                            case XdrSCVmErrorCode::VM_VALIDATION:
-                                $lines += [$prefix.'error.vmCode' => 'VM_VALIDATION'];
-                                break;
-                            case XdrSCVmErrorCode::VM_INSTANTIATION:
-                                $lines += [$prefix.'error.vmCode' => 'VM_INSTANTIATION'];
-                                break;
-                            case XdrSCVmErrorCode::VM_FUNCTION:
-                                $lines += [$prefix.'error.vmCode' => 'VM_FUNCTION'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TABLE:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TABLE'];
-                                break;
-                            case XdrSCVmErrorCode::VM_MEMORY:
-                                $lines += [$prefix.'error.vmCode' => 'VM_MEMORY'];
-                                break;
-                            case XdrSCVmErrorCode::VM_GLOBAL:
-                                $lines += [$prefix.'error.vmCode' => 'VM_GLOBAL'];
-                                break;
-                            case XdrSCVmErrorCode::VM_VALUE:
-                                $lines += [$prefix.'error.vmCode' => 'VM_VALUE'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_UNREACHABLE:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_UNREACHABLE'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_ELEM_UNINITIALIZED:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_ELEM_UNINITIALIZED'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_DIVISION_BY_ZERO:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_DIVISION_BY_ZERO'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_INTEGER_OVERFLOW:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_INTEGER_OVERFLOW'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_INVALID_CONVERSION_TO_INT:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_INVALID_CONVERSION_TO_INT'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_STACK_OVERFLOW:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_STACK_OVERFLOW'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_UNEXPECTED_SIGNATURE:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_UNEXPECTED_SIGNATURE'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_MEM_LIMIT_EXCEEDED:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_MEM_LIMIT_EXCEEDED'];
-                                break;
-                            case XdrSCVmErrorCode::VM_TRAP_CPU_LIMIT_EXCEEDED:
-                                $lines += [$prefix.'error.vmCode' => 'VM_TRAP_CPU_LIMIT_EXCEEDED'];
-                        }
-                        break;
-                    case XdrSCStatusType::SST_CONTRACT_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_CONTRACT_ERROR'];
-                        $lines += [$prefix.'error.contractCode' => $statusVal->contractCode];
-                        break;
-                    case XdrSCStatusType::SST_HOST_AUTH_ERROR:
-                        $lines += [$prefix.'error.type' => 'SST_HOST_AUTH_ERROR'];
-                        $code = $statusVal->authCode->getValue();
-                        switch ($code) {
-                            case XdrSCHostAuthErrorCode::HOST_AUTH_UNKNOWN_ERROR:
-                                $lines += [$prefix.'error.authCode' => 'HOST_AUTH_UNKNOWN_ERROR'];
-                                break;
-                            case XdrSCHostAuthErrorCode::HOST_AUTH_NONCE_ERROR:
-                                $lines += [$prefix.'error.authCode' => 'HOST_AUTH_NONCE_ERROR'];
-                                break;
-                            case XdrSCHostAuthErrorCode::HOST_AUTH_DUPLICATE_AUTHORIZATION:
-                                $lines += [$prefix.'error.authCode' => 'HOST_AUTH_DUPLICATE_AUTHORIZATION'];
-                                break;
-                            case XdrSCHostAuthErrorCode::HOST_AUTH_NOT_AUTHORIZED:
-                                $lines += [$prefix.'error.authCode' => 'HOST_AUTH_NOT_AUTHORIZED'];
-                                break;
-                        }
-                        break;
+            case XdrSCValType::SCV_CONTRACT_INSTANCE:
+                $lines += [$prefix.'type' => 'SCV_CONTRACT_INSTANCE'];
+                $lines = array_merge($lines, self::getContractExecutableTx($prefix.'executable.', $val->instance->executable));
+                if ($val->instance->storage !== null) {
+                    $lines += [$prefix.'storage._present' => 'true'];
+                    $lines += [$prefix.'storage.len' => strval(count($val->instance->storage))];
+                    $index = 0;
+                    foreach ($val->instance->storage as $entry) {
+                        $lines = array_merge($lines, self::getSCValTx($prefix.'storage['.$index.'].key.', $entry->key));
+                        $lines = array_merge($lines, self::getSCValTx($prefix.'storage['.$index.'].val.', $entry->val));
+                        $index++;
+                    }
+                } else {
+                    $lines += [$prefix.'storage._present' => 'false'];
                 }
-
+                break;
         }
         return $lines;
     }
 
-    private static function getSCAddressTx(string $prefix, XdrSCAddress $address) : array {
-        $type = $address->getType()->getValue();
+    private static function getContractIDPreimageTx(string $prefix, XdrContractIDPreimage $val) : array {
+        $type = $val->getType()->getValue();
         $lines = array();
         switch ($type) {
-            case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
-                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_ACCOUNT'];
-                $lines += [$prefix . 'accountId' => $address->getAccountId()->getAccountId()];
+            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
+                $lines += [$prefix . 'type' => 'CONTRACT_ID_PREIMAGE_FROM_ADDRESS'];
+                $lines = array_merge($lines, self::getSCAddressTx($prefix.'fromAddress.address.', $val->address));
+                $lines += [$prefix . 'fromAddress.salt' => bin2hex($val->salt)];
                 break;
-            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_CONTRACT'];
-                $lines += [$prefix . 'contractId' => $address->getContractId()];
+            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET:
+                $lines += [$prefix . 'type' => 'CONTRACT_ID_PREIMAGE_FROM_ASSET'];
+                $lines += [$prefix . 'fromAsset' => self::encodeAsset(Asset::fromXdr($val->asset))];
                 break;
         }
         return $lines;
     }
-*/
+    private static function getCreateContractArgsTx(string $prefix, XdrCreateContractArgs $args) : array {
+        $lines = array();
+        $lines = array_merge($lines, self::getContractIDPreimageTx($prefix.'contractIDPreimage.', $args->contractIDPreimage));
+        return array_merge($lines, self::getContractExecutableTx($prefix.'executable.', $args->executable));
+    }
+    private static function getInvokeContractArgsTx(string $prefix, XdrInvokeContractArgs $args) : array {
+        $lines = array();
+        $lines = array_merge($lines, self::getSCAddressTx($prefix.'contractAddress.', $args->contractAddress));
+        $lines += [$prefix . 'functionName' => $args->functionName];
+        $lines += [$prefix . 'args.len' => strval(count($args->args))];
+        $index = 0;
+        foreach ($args->args as $val) {
+            $lines = array_merge($lines, self::getSCValTx($prefix.'args['.$index.'].', $val));
+            $index++;
+        }
+        return $lines;
+    }
+
+    private static function getSorobanAddressCredentialsTx(string $prefix, XdrSorobanAddressCredentials $credentials) : array {
+        $lines = array();
+        $lines = array_merge($lines, self::getSCAddressTx($prefix.'address.', $credentials->address));
+        $lines += [$prefix . 'nonce' => strval($credentials->nonce)];
+        $lines += [$prefix . 'signatureExpirationLedger' => strval($credentials->signatureExpirationLedger)];
+        return array_merge($lines, self::getSCValTx($prefix.'signature.', $credentials->signature));
+    }
+    private static function getSorobanCredentialsTx(string $prefix, XdrSorobanCredentials $credentials) : array {
+        $type = $credentials->getType()->getValue();
+        $lines = array();
+        switch ($type) {
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
+                $lines += [$prefix . 'type' => 'SOROBAN_CREDENTIALS_SOURCE_ACCOUNT'];
+                break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS:
+                $lines += [$prefix . 'type' => 'SOROBAN_CREDENTIALS_ADDRESS'];
+                $lines = array_merge($lines, self::getSorobanAddressCredentialsTx($prefix.'address.', $credentials->address));
+                break;
+        }
+        return $lines;
+    }
+
+    private static function getSorobanAuthorizedFunctionTx(string $prefix, XdrSorobanAuthorizedFunction $function) : array {
+        $type = $function->getType()->getValue();
+        $lines = array();
+        switch ($type) {
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+                $lines += [$prefix . 'type' => 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN'];
+                $lines = array_merge($lines, self::getInvokeContractArgsTx($prefix.'contractFn.', $function->contractFn));
+                break;
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+                $lines += [$prefix . 'type' => 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN'];
+                $lines = array_merge($lines, self::getCreateContractArgsTx($prefix.'createContractHostFn.', $function->createContractHostFn));
+                break;
+        }
+        return $lines;
+    }
+
+    private static function getSorobanAuthorizedInvocationTx(string $prefix, XdrSorobanAuthorizedInvocation $invocation) : array {
+        $lines = array();
+        $lines = array_merge($lines, self::getSorobanAuthorizedFunctionTx($prefix.'function.', $invocation->function));
+
+        $lines += [$prefix . 'subInvocations.len' => strval(count($invocation->subInvocations))];
+        $index = 0;
+        foreach ($invocation->subInvocations as $val) {
+            $lines = array_merge($lines, self::getSorobanAuthorizedInvocationTx($prefix.'subInvocations['.$index.'].', $val));
+            $index++;
+        }
+        return $lines;
+
+    }
+    private static function getSorobanAuthorizationEntryTx(string $prefix, XdrSorobanAuthorizationEntry $entry) : array {
+        $lines = array();
+        $lines = array_merge($lines, self::getSorobanCredentialsTx($prefix.'credentials.', $entry->credentials));
+        return array_merge($lines, self::getSorobanAuthorizedInvocationTx($prefix.'rootInvocation.', $entry->rootInvocation));
+    }
+
+    private static function getLedgerKeyTx(string $prefix, XdrLedgerKey $ledgerKey) : array {
+        $lines = array();
+        $type = $ledgerKey->getType()->getValue();
+        if ($type === XdrLedgerEntryType::ACCOUNT) {
+            $lines += [$prefix.'type' => 'ACCOUNT'];
+            $lines += [$prefix.'account.accountID' => $ledgerKey->getAccount()->getAccountID()->getAccountId()];
+        }
+        else if ($type === XdrLedgerEntryType::TRUSTLINE) {
+            $lines += [$prefix.'type' => 'TRUSTLINE'];
+            $lines += [$prefix.'trustLine.accountID' => $ledgerKey->getTrustline()->getAccountID()->getAccountId()];
+            $lines += [$prefix.'trustLine.asset' => self::encodeAsset(Asset::fromXdr($ledgerKey->getTrustline()->getAsset()))];
+        }
+        else if ($type === XdrLedgerEntryType::OFFER) {
+            $lines += [$prefix.'type' => 'OFFER'];
+            $lines += [$prefix.'offer.sellerID' => $ledgerKey->getOffer()->getSellerID()->getAccountId()];
+            $lines += [$prefix.'offer.offerID' => $ledgerKey->getOffer()->getOfferID()];
+        }
+        else if ($type === XdrLedgerEntryType::DATA) {
+            $lines += [$prefix.'type' => 'DATA'];
+            $lines += [$prefix.'data.accountID' => $ledgerKey->getData()->getAccountID()->getAccountId()];
+            $lines += [$prefix.'data.dataName' => '"' . $ledgerKey->getData()->getDataName() . '"'];
+        }
+        else if ($type === XdrLedgerEntryType::CLAIMABLE_BALANCE) {
+            $lines += [$prefix.'type' => 'CLAIMABLE_BALANCE'];
+            $lines += [$prefix.'claimableBalance.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
+            $lines += [$prefix.'claimableBalance.balanceID.v0' => $ledgerKey->getBalanceID()->getHash()];
+        } else if ($type === XdrLedgerEntryType::LIQUIDITY_POOL) {
+            $lines += [$prefix.'type' => 'LIQUIDITY_POOL'];
+            $lines += [$prefix.'liquidityPool.liquidityPoolID' => $ledgerKey->getLiquidityPoolID()];
+        } else if ($type === XdrLedgerEntryType::CONTRACT_DATA) {
+            $lines += [$prefix.'type' => 'CONTRACT_DATA'];
+            $lines = array_merge($lines, self::getSCAddressTx($prefix .'contractData.contract.', $ledgerKey->contractData->contract));
+            $lines = array_merge($lines, self::getSCValTx($prefix .'contractData.key.', $ledgerKey->contractData->key));
+            if ($ledgerKey->contractData->durability->value === XdrContractDataDurability::PERSISTENT) {
+                $lines += [$prefix.'contractData.durability' => 'PERSISTENT'];
+            } else if ($ledgerKey->contractData->durability->value === XdrContractDataDurability::TEMPORARY) {
+                $lines += [$prefix.'contractData.durability' => 'TEMPORARY'];
+            }
+        } else if ($type === XdrLedgerEntryType::CONTRACT_CODE) {
+            $lines += [$prefix.'type' => 'CONTRACT_CODE'];
+            $lines += [$prefix.'contractCode.hash' => bin2hex($ledgerKey->contractCode->getHash())];
+        } else if ($type === XdrLedgerEntryType::CONFIG_SETTING) {
+            $lines += [$prefix.'type' => 'CONFIG_SETTING'];
+            $lines += [$prefix.'configSetting.configSettingID' => strval($ledgerKey->configSetting->value)];
+        } else if ($type === XdrLedgerEntryType::TTL) {
+            $lines += [$prefix.'type' => 'TTL'];
+            $lines += [$prefix.'ttl.keyHash' => bin2hex($ledgerKey->ttl->keyHash)];
+        }
+        return $lines;
+    }
+
+    private static function getFootprintTx(string $prefix, XdrLedgerFootprint $footprint) : array {
+        $lines = array();
+        $lines += [$prefix . 'readOnly.len' => strval(count($footprint->readOnly))];
+        $index = 0;
+        foreach ($footprint->readOnly as $val) {
+            $lines = array_merge($lines, self::getLedgerKeyTx($prefix.'readOnly['.$index.'].', $val));
+            $index++;
+        }
+        $lines += [$prefix . 'readWrite.len' => strval(count($footprint->readWrite))];
+        $index = 0;
+        foreach ($footprint->readWrite as $val) {
+            $lines = array_merge($lines, self::getLedgerKeyTx($prefix.'readWrite['.$index.'].', $val));
+            $index++;
+        }
+        return $lines;
+    }
+    private static function getSorobanResourcesTx(string $prefix, XdrSorobanResources $resources) : array {
+        $lines = array();
+        $lines = array_merge($lines, self::getFootprintTx($prefix.'footprint.', $resources->footprint));
+        $lines += [$prefix . 'instructions' => strval($resources->instructions)];
+        $lines += [$prefix . 'readBytes' => strval($resources->readBytes)];
+        $lines += [$prefix . 'writeBytes' => strval($resources->writeBytes)];
+        return $lines;
+    }
+    private static function getSorobanTransactionDataTx(string $prefix, XdrSorobanTransactionData $data) : array {
+        $lines = array();
+        $lines += [$prefix . 'ext.v' => '0'];
+        $lines = array_merge($lines, self::getSorobanResourcesTx($prefix.'resources.', $data->resources));
+        $lines += [$prefix . 'resourceFee' => strval($data->resourceFee)];
+        return $lines;
+    }
+
     private static function getPredicateTx(string $prefix, XdrClaimPredicate $predicate) : array {
         $type = $predicate->getType()->getValue();
         $lines = array();
@@ -3533,6 +3362,8 @@ class TxRep
             XdrOperationType::LIQUIDITY_POOL_DEPOSIT => 'LIQUIDITY_POOL_DEPOSIT',
             XdrOperationType::LIQUIDITY_POOL_WITHDRAW => 'LIQUIDITY_POOL_WITHDRAW',
             XdrOperationType::INVOKE_HOST_FUNCTION => 'INVOKE_HOST_FUNCTION',
+            XdrOperationType::EXTEND_FOOTPRINT_TTL => 'EXTEND_FOOTPRINT_TTL',
+            XdrOperationType::RESTORE_FOOTPRINT => 'RESTORE_FOOTPRINT',
             default => strval($type)
         };
     }
@@ -3566,17 +3397,8 @@ class TxRep
             XdrOperationType::LIQUIDITY_POOL_DEPOSIT => 'liquidityPoolDepositOp',
             XdrOperationType::LIQUIDITY_POOL_WITHDRAW => 'liquidityPoolWithdrawOp',
             XdrOperationType::INVOKE_HOST_FUNCTION => 'invokeHostFunctionOp',
-            default => strval($type)
-        };
-    }
-
-    private static function txRepInvokeHostFuncType(XdrHostFunctionType $type) : string {
-        $value = $type->getValue();
-
-        return match ($value) {
-            XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT => 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT',
-            XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM => 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM',
-            XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT => 'HOST_FUNCTION_TYPE_CREATE_CONTRACT',
+            XdrOperationType::EXTEND_FOOTPRINT_TTL => 'extendFootprintTTLOp',
+            XdrOperationType::RESTORE_FOOTPRINT => 'restoreFootprintOp',
             default => strval($type)
         };
     }

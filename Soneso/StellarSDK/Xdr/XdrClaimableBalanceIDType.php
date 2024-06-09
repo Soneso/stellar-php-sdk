@@ -32,4 +32,8 @@ class XdrClaimableBalanceIDType
         $value = $xdr->readInteger32();
         return new XdrClaimableBalanceIDType($value);
     }
+
+    public static function CLAIMABLE_BALANCE_ID_TYPE_V0(): XdrClaimableBalanceIDType {
+        return new XdrClaimableBalanceIDType(self::CLAIMABLE_BALANCE_ID_TYPE_V0);
+    }
 }

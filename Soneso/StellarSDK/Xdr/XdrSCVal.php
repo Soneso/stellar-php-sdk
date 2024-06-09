@@ -25,8 +25,14 @@ class XdrSCVal
     public ?XdrDataValueMandatory $bytes = null;
     public ?String $str = null;
     public ?String $sym = null;
-    public ?array $vec = null; // [XdrSCVal]
-    public ?array $map = null; // [XdrSCMapEntry]
+    /**
+     * @var array<XdrSCVal>|null
+     */
+    public ?array $vec = null;
+    /**
+     * @var array<XdrSCMapEntry>|null
+     */
+    public ?array $map = null;
     public ?XdrSCContractInstance $instance = null;
     public ?XdrSCAddress $address = null;
     public ?XdrSCNonceKey $nonceKey = null;
@@ -653,7 +659,7 @@ class XdrSCVal
     }
 
     /**
-     * @return array|null
+     * @return array<XdrSCVal>|null
      */
     public function getVec(): ?array
     {
@@ -661,7 +667,7 @@ class XdrSCVal
     }
 
     /**
-     * @param array|null $vec
+     * @param array<XdrSCVal>|null $vec
      */
     public function setVec(?array $vec): void
     {
@@ -669,7 +675,7 @@ class XdrSCVal
     }
 
     /**
-     * @return array|null
+     * @return array<XdrSCMapEntry>|null
      */
     public function getMap(): ?array
     {
@@ -677,7 +683,7 @@ class XdrSCVal
     }
 
     /**
-     * @param array|null $map
+     * @param array<XdrSCMapEntry>|null $map
      */
     public function setMap(?array $map): void
     {

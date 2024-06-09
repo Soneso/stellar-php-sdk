@@ -99,6 +99,12 @@ class XdrHostFunction
         return $result;
     }
 
+    public static function forCreatingContractWithArgs(XdrCreateContractArgs $args) :  XdrHostFunction {
+        $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
+        $result->createContract = $args;
+        return $result;
+    }
+
     /**
      * @return XdrHostFunctionType
      */

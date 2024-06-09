@@ -30,6 +30,11 @@ class GetHealthResponse extends SorobanRpcResponse
      */
     public ?int $oldestLedger = null;
 
+    /**
+     * @var int|null $latestLedger Most recent known ledger sequence
+     */
+    public ?int $latestLedger = null;
+
 
     public static function fromJson(array $json) : GetHealthResponse {
         $result = new GetHealthResponse($json);
@@ -42,6 +47,9 @@ class GetHealthResponse extends SorobanRpcResponse
             }
             if (isset($json['result']['oldestLedger'])) {
                 $result->oldestLedger = $json['result']['oldestLedger'];
+            }
+            if (isset($json['result']['latestLedger'])) {
+                $result->latestLedger = $json['result']['latestLedger'];
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -97,5 +105,21 @@ class GetHealthResponse extends SorobanRpcResponse
     public function setOldestLedger(?int $oldestLedger): void
     {
         $this->oldestLedger = $oldestLedger;
+    }
+
+    /**
+     * @return int|null Most recent known ledger sequence
+     */
+    public function getLatestLedger(): ?int
+    {
+        return $this->latestLedger;
+    }
+
+    /**
+     * @param int|null $latestLedger Most recent known ledger sequence
+     */
+    public function setLatestLedger(?int $latestLedger): void
+    {
+        $this->latestLedger = $latestLedger;
     }
 }

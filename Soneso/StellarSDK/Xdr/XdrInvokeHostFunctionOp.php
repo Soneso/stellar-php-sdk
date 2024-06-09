@@ -9,11 +9,14 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrInvokeHostFunctionOp
 {
     public XdrHostFunction $hostFunction;
-    public array $auth; // [XdrSorobanAuthorizationEntry]
+    /**
+     * @var array<XdrSorobanAuthorizationEntry> $auth
+     */
+    public array $auth;
 
     /**
      * @param XdrHostFunction $hostFunction
-     * @param array $auth
+     * @param array<XdrSorobanAuthorizationEntry> $auth
      */
     public function __construct(XdrHostFunction $hostFunction, array $auth)
     {
@@ -58,7 +61,7 @@ class XdrInvokeHostFunctionOp
     }
 
     /**
-     * @return array
+     * @return array<XdrSorobanAuthorizationEntry>
      */
     public function getAuth(): array
     {
@@ -66,7 +69,7 @@ class XdrInvokeHostFunctionOp
     }
 
     /**
-     * @param array $auth
+     * @param array<XdrSorobanAuthorizationEntry> $auth
      */
     public function setAuth(array $auth): void
     {

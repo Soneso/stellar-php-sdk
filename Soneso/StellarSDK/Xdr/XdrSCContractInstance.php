@@ -11,11 +11,14 @@ class XdrSCContractInstance
 {
 
     public XdrContractExecutable $executable;
-    public ?array $storage = null; // [XdrSCMapEntry]
+    /**
+     * @var array<XdrSCMapEntry>|null
+     */
+    public ?array $storage = null;
 
     /**
      * @param XdrContractExecutable $executable
-     * @param array|null $storage
+     * @param array<XdrSCMapEntry>|null $storage
      */
     public function __construct(XdrContractExecutable $executable, ?array $storage)
     {
@@ -72,7 +75,7 @@ class XdrSCContractInstance
     }
 
     /**
-     * @return array|null
+     * @return array<XdrSCMapEntry>|null
      */
     public function getStorage(): ?array
     {
@@ -80,7 +83,7 @@ class XdrSCContractInstance
     }
 
     /**
-     * @param array|null $storage
+     * @param array<XdrSCMapEntry>|null $storage
      */
     public function setStorage(?array $storage): void
     {

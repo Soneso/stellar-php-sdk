@@ -52,6 +52,19 @@ class XdrContractIDPreimage
         return $result;
     }
 
+    public static function forAddress(XdrSCAddress $address, String $saltHex): XdrContractIDPreimage {
+        $result = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+        $result->address = $address;
+        $result->salt = hex2bin($saltHex);
+        return $result;
+    }
+
+    public static function forAsset(XdrAsset $asset): XdrContractIDPreimage {
+        $result = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET());
+        $result->asset = $asset;
+        return $result;
+    }
+
     public static function fromBase64Xdr(String $base64Xdr) : XdrContractIDPreimage {
         $xdr = base64_decode($base64Xdr);
         $xdrBuffer = new XdrBuffer($xdr);

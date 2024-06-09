@@ -9,12 +9,19 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrLedgerFootprint
 {
 
-    public array $readOnly; // [XdrLedgerKey]
-    public array $readWrite; // [XdrLedgerKey]
+    /**
+     * @var array<XdrLedgerKey>
+     */
+    public array $readOnly;
 
     /**
-     * @param array $readOnly [XdrLedgerKey]
-     * @param array $readWrite [XdrLedgerKey]
+     * @var array<XdrLedgerKey>
+     */
+    public array $readWrite;
+
+    /**
+     * @param array<XdrLedgerKey> $readOnly [XdrLedgerKey]
+     * @param array<XdrLedgerKey> $readWrite [XdrLedgerKey]
      */
     public function __construct(array $readOnly, array $readWrite)
     {
@@ -61,7 +68,7 @@ class XdrLedgerFootprint
     }
 
     /**
-     * @return array [XdrLedgerKey]
+     * @return array<XdrLedgerKey> [XdrLedgerKey]
      */
     public function getReadOnly(): array
     {
@@ -69,7 +76,7 @@ class XdrLedgerFootprint
     }
 
     /**
-     * @param array $readOnly [XdrLedgerKey]
+     * @param array<XdrLedgerKey> $readOnly [XdrLedgerKey]
      */
     public function setReadOnly(array $readOnly): void
     {
@@ -77,7 +84,7 @@ class XdrLedgerFootprint
     }
 
     /**
-     * @return array [XdrLedgerKey]
+     * @return array<XdrLedgerKey> [XdrLedgerKey]
      */
     public function getReadWrite(): array
     {
@@ -85,7 +92,7 @@ class XdrLedgerFootprint
     }
 
     /**
-     * @param array $readWrite [XdrLedgerKey]
+     * @param array<XdrLedgerKey> $readWrite [XdrLedgerKey]
      */
     public function setReadWrite(array $readWrite): void
     {

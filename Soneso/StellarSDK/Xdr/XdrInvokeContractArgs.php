@@ -10,12 +10,15 @@ class XdrInvokeContractArgs
 {
     public XdrSCAddress $contractAddress;
     public string $functionName;
+    /**
+     * @var array<XdrSCVal>
+     */
     public array $args;
 
     /**
      * @param XdrSCAddress $contractAddress
      * @param string $functionName
-     * @param array $args
+     * @param array<XdrSCVal> $args
      */
     public function __construct(XdrSCAddress $contractAddress, string $functionName, array $args)
     {
@@ -80,7 +83,7 @@ class XdrInvokeContractArgs
     }
 
     /**
-     * @return array
+     * @return array<XdrSCVal>
      */
     public function getArgs(): array
     {
@@ -88,7 +91,7 @@ class XdrInvokeContractArgs
     }
 
     /**
-     * @param array $args
+     * @param array<XdrSCVal> $args
      */
     public function setArgs(array $args): void
     {

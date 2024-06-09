@@ -30,4 +30,8 @@ class XdrLedgerKeyAccount
         $acc = XdrAccountID::decode($xdr);
         return new XdrLedgerKeyAccount($acc);
     }
+
+    public static function forAccountId(String $accountId) : XdrLedgerKeyAccount {
+        return new XdrLedgerKeyAccount(XdrAccountID::fromAccountId($accountId));
+    }
 }

@@ -5,7 +5,7 @@
 // found in the LICENSE file.
 
 
-namespace StellarSDKTests;
+namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Asset;
@@ -28,7 +28,6 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
-use Soneso\StellarSDKTests\TestUtils;
 
 class SponsorshipTest extends TestCase
 {

@@ -80,6 +80,69 @@ class XdrLedgerKey
         return $result;
     }
 
+    public static function forAccountId(string $accountId) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
+        $result->account = XdrLedgerKeyAccount::forAccountId($accountId);
+        return $result;
+    }
+
+    public static function forTrustLine(string $accountId, XdrAsset $asset) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::TRUSTLINE());
+        $result->trustLine = new XdrLedgerKeyTrustLine(
+            XdrAccountID::fromAccountId($accountId),
+            XdrTrustlineAsset::fromXdrAsset($asset),
+        );
+        return $result;
+    }
+
+    public static function forOffer(string $sellerId, int $offerId) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::OFFER());
+        $result->offer = new XdrLedgerKeyOffer(XdrAccountID::fromAccountId($sellerId), $offerId);
+        return $result;
+    }
+
+    public static function forData(string $accountId, string $dataName) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::DATA());
+        $result->data = new XdrLedgerKeyData(XdrAccountID::fromAccountId($accountId), $dataName);
+        return $result;
+    }
+
+    public static function forClaimableBalanceId(string $claimableBalanceId) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::CLAIMABLE_BALANCE());
+        $result->balanceID = XdrClaimableBalanceID::forClaimableBalanceId($claimableBalanceId);
+        return $result;
+    }
+
+    public static function forLiquidityPoolId(string $liquidityPoolId) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::LIQUIDITY_POOL());
+        $result->liquidityPoolID = $liquidityPoolId;
+        return $result;
+    }
+
+    public static function forContractData(XdrSCAddress $contract, XdrSCVal $key, XdrContractDataDurability $durability) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
+        $result->contractData = new XdrLedgerKeyContractData($contract, $key, $durability);
+        return $result;
+    }
+
+    public static function forContractCode(string $code) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
+        $result->contractCode = new XdrLedgerKeyContractCode($code);
+        return $result;
+    }
+
+    public static function forConfigSettingID(XdrConfigSettingID $id) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::CONFIG_SETTING());
+        $result->configSetting = $id;
+        return $result;
+    }
+
+    public static function forTTL(string $keyHash) : XdrLedgerKey {
+        $result = new XdrLedgerKey(XdrLedgerEntryType::TTL);
+        $result->ttl = new XdrLedgerKeyTTL($keyHash);
+        return $result;
+    }
+
     public static function fromBase64Xdr(String $base64Xdr) : XdrLedgerKey {
         $xdr = base64_decode($base64Xdr);
         $xdrBuffer = new XdrBuffer($xdr);

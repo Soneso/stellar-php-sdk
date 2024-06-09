@@ -10,11 +10,14 @@ class XdrSorobanAuthorizedInvocation
 {
 
     public XdrSorobanAuthorizedFunction $function; // hex
-    public array $subInvocations; // [XdrSorobanAuthorizedFunction]
+    /**
+     * @var array<XdrSorobanAuthorizedInvocation>
+     */
+    public array $subInvocations;
 
     /**
      * @param XdrSorobanAuthorizedFunction $function
-     * @param array $subInvocations
+     * @param array<XdrSorobanAuthorizedInvocation> $subInvocations
      */
     public function __construct(XdrSorobanAuthorizedFunction $function, array $subInvocations)
     {
@@ -61,7 +64,7 @@ class XdrSorobanAuthorizedInvocation
     }
 
     /**
-     * @return array
+     * @return array<XdrSorobanAuthorizedInvocation>
      */
     public function getSubInvocations(): array
     {
@@ -69,7 +72,7 @@ class XdrSorobanAuthorizedInvocation
     }
 
     /**
-     * @param array $subInvocations
+     * @param array<XdrSorobanAuthorizedInvocation> $subInvocations
      */
     public function setSubInvocations(array $subInvocations): void
     {

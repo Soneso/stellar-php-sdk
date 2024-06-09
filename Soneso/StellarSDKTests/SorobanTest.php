@@ -99,9 +99,10 @@ class SorobanTest extends TestCase
         // get health
         $getHealthResponse = $this->server->getHealth();
         $this->assertEquals(GetHealthResponse::HEALTHY, $getHealthResponse->status);
-        if ($this->testOn === 'futurenet') {
-            $this->assertNotNull($getHealthResponse->ledgerRetentionWindow);
-        }
+        $this->assertNotNull($getHealthResponse->ledgerRetentionWindow);
+        $this->assertNotNull($getHealthResponse->latestLedger);
+        $this->assertNotNull($getHealthResponse->oldestLedger);
+
         // get network info
         $getNetworkResponse = $this->server->getNetwork();
         if ($this->testOn === 'testnet') {

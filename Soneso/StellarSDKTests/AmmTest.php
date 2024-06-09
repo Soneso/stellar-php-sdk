@@ -4,7 +4,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-namespace StellarSDKTests;
+namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Asset;
@@ -29,7 +29,6 @@ use Soneso\StellarSDK\Responses\Operations\LiquidityPoolWithdrawOperationRespons
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDKTests\TestUtils;
 
 class AmmTest extends TestCase
 {

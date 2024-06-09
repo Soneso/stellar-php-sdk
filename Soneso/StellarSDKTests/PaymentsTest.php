@@ -4,7 +4,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-namespace StellarSDKTests;
+namespace Soneso\StellarSDKTests;
 
 use DateTime;
 use phpseclib3\Math\BigInteger;
@@ -31,7 +31,6 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\TransactionPreconditions;
 use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDKTests\TestUtils;
 
 class PaymentsTest extends TestCase
 {
