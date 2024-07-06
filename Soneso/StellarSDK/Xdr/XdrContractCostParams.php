@@ -8,7 +8,10 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrContractCostParams
 {
-    public array $entries; // [XdrContractCostParamEntry]
+    /**
+     * @var array<XdrContractCostParamEntry>
+     */
+    public array $entries;
 
     public function __construct(array $entries)
     {

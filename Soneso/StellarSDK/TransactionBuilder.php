@@ -16,8 +16,12 @@ class TransactionBuilder
     private TransactionBuilderAccount $sourceAccount;
     private ?Memo $memo = null;
     private ?TransactionPreconditions $preconditions = null;
-    private array $operations; //[AbstractOperation]
+    /**
+     * @var array<AbstractOperation>
+     */
+    private array $operations;
     private ?int $maxOperationFee = null;
+    private bool $incrementSeqNr = true;
 
     /**
      * Construct a new transaction builder.
@@ -43,13 +47,24 @@ class TransactionBuilder
 
     /**
      * Adds N new <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">operation</a> to this transaction.
-     * @param Array Array of itens.
+     * @param array<AbstractOperation> $allOperations Array of itens.
      * @return TransactionBuilder Builder object so you can chain methods.
      */
-    public function addOperations(Array $allOperations) : TransactionBuilder {
+    public function addOperations(array $allOperations) : TransactionBuilder {
         foreach($allOperations as $operations){
             array_push($this->operations, $operations);
         }
+        return $this;
+    }
+
+    /**
+     * Allows you to avoid source account and transaction sequence number incrementation, when building the transaction.
+     * If not set to false, it automatically increments it when building the transaction.
+     * @param bool $increment false if you would like to suppress sequence number incrementation.
+     * @return TransactionBuilder Builder object so you can chain methods.
+     */
+    public function setIncrementSequenceNumber(bool $increment) : TransactionBuilder {
+        $this->incrementSeqNr = $increment;
         return $this;
     }
 
@@ -110,10 +125,17 @@ class TransactionBuilder
 
         $fee = count($this->operations) * $this->maxOperationFee;
         $source = $this->sourceAccount->getMuxedAccount();
-        $seqNr = $this->sourceAccount->getIncrementedSequenceNumber();
+        $seqNr = $this->sourceAccount->getSequenceNumber();
+        if ($this->incrementSeqNr) {
+            $seqNr = $this->sourceAccount->getIncrementedSequenceNumber();
+        }
+
         $transaction = new Transaction($source, $seqNr, $this->operations, $this->memo, $this->preconditions, $fee);
-        // Increment sequence number when there were no exceptions when creating a transaction
-        $this->sourceAccount->incrementSequenceNumber();
+
+        if ($this->incrementSeqNr) {
+            // Increment sequence number when there were no exceptions when creating a transaction
+            $this->sourceAccount->incrementSequenceNumber();
+        }
         return $transaction;
     }
 }

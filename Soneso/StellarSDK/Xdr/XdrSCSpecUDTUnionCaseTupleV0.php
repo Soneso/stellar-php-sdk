@@ -11,12 +11,15 @@ class XdrSCSpecUDTUnionCaseTupleV0
 
     public string $doc;
     public string $name;
-    public array $type; // [XdrSCSpecTypeDef]
+    /**
+     * @var array<XdrSCSpecTypeDef>
+     */
+    public array $type;
 
     /**
      * @param string $doc
      * @param string $name
-     * @param array $type
+     * @param array<XdrSCSpecTypeDef> $type
      */
     public function __construct(string $doc, string $name, array $type)
     {
@@ -84,7 +87,7 @@ class XdrSCSpecUDTUnionCaseTupleV0
     }
 
     /**
-     * @return array
+     * @return array<XdrSCSpecTypeDef>
      */
     public function getType(): array
     {
@@ -92,7 +95,7 @@ class XdrSCSpecUDTUnionCaseTupleV0
     }
 
     /**
-     * @param array $type
+     * @param array<XdrSCSpecTypeDef> $type
      */
     public function setType(array $type): void
     {

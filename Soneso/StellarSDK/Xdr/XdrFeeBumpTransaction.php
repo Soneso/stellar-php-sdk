@@ -9,10 +9,10 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrFeeBumpTransaction
 {
-    private XdrMuxedAccount $feeSource;
-    private int $fee; //int64
-    private XdrFeeBumpTransactionInnerTx $innerTx;
-    private XdrFeeBumpTransactionExt $ext;
+    public XdrMuxedAccount $feeSource;
+    public int $fee; //int64
+    public XdrFeeBumpTransactionInnerTx $innerTx;
+    public XdrFeeBumpTransactionExt $ext;
 
     public function __construct(XdrMuxedAccount $feeSource, int $fee, XdrFeeBumpTransactionInnerTx $innerTx, ?XdrFeeBumpTransactionExt $ext = null)
     {

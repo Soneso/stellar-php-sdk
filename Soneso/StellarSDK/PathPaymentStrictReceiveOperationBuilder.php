@@ -19,7 +19,10 @@ class PathPaymentStrictReceiveOperationBuilder
     private MuxedAccount $destination;
     private Asset $destAsset;
     private String $destAmount;
-    private ?array $path = null; // [Asset]
+    /**
+     * @var array<Asset>|null
+     */
+    private ?array $path = null;
 
     /**
      * Creates a new PathPaymentStrictReceiveOperation builder.
@@ -42,7 +45,7 @@ class PathPaymentStrictReceiveOperationBuilder
     }
 
     /**
-     * @param array $path The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -&raquo; XLM -&raquo; BTC -&raquo; EUR and the path field would contain XLM and BTC.
+     * @param array<Asset> $path The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -&raquo; XLM -&raquo; BTC -&raquo; EUR and the path field would contain XLM and BTC.
      * @return PathPaymentStrictReceiveOperationBuilder Builder object so you can chain methods.
      */
     public function setPath(array $path) : PathPaymentStrictReceiveOperationBuilder {

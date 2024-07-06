@@ -10,13 +10,16 @@ class XdrAccountEntryV2
 {
     public int $numSponsored;
     public int $numSponsoring;
+    /**
+     * @var array<XdrAccountID|null>
+     */
     public array $signerSponsoringIDs; // [?XdrAccountID]
     public XdrAccountEntryV2Ext $ext;
 
     /**
      * @param int $numSponsored
      * @param int $numSponsoring
-     * @param array $signerSponsoringIDs  [?XdrAccountID]
+     * @param array<XdrAccountID|null> $signerSponsoringIDs  [?XdrAccountID]
      * @param XdrAccountEntryV2Ext $ext
      */
     public function __construct(int $numSponsored, int $numSponsoring, array $signerSponsoringIDs, XdrAccountEntryV2Ext $ext)
@@ -96,7 +99,7 @@ class XdrAccountEntryV2
     }
 
     /**
-     * @return array
+     * @return array<XdrAccountID|null>
      */
     public function getSignerSponsoringIDs(): array
     {
@@ -104,7 +107,7 @@ class XdrAccountEntryV2
     }
 
     /**
-     * @param array $signerSponsoringIDs
+     * @param array<XdrAccountID|null> $signerSponsoringIDs
      */
     public function setSignerSponsoringIDs(array $signerSponsoringIDs): void
     {

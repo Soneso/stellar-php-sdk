@@ -8,8 +8,16 @@ class XdrCreateClaimableBalanceOperation
 {
     private XdrAsset $asset;
     private BigInteger $amount;
-    private array $claimants; // [XdrClaimant]
+    /**
+     * @var array<XdrClaimant>
+     */
+    private array $claimants;
 
+    /**
+     * @param XdrAsset $asset
+     * @param BigInteger $amount
+     * @param array<XdrClaimant> $claimants
+     */
     public function __construct(XdrAsset $asset, BigInteger $amount, array $claimants) {
         $this->asset = $asset;
         $this->amount = $amount;
@@ -33,7 +41,7 @@ class XdrCreateClaimableBalanceOperation
     }
 
     /**
-     * @return array
+     * @return array<XdrClaimant>
      */
     public function getClaimants(): array
     {

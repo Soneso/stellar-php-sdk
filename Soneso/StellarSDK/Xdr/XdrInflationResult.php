@@ -9,8 +9,15 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrInflationResult
 {
     private XdrInflationResultCode $code;
-    private ?array $payouts = null; // [XdrInflationPayout]
+    /**
+     * @var array<XdrInflationPayout>|null
+     */
+    private ?array $payouts = null;
 
+    /**
+     * @param XdrInflationResultCode $code
+     * @param array<XdrInflationPayout>|null $payouts
+     */
     public function __construct(XdrInflationResultCode $code, ?array $payouts = null) {
         $this->code = $code;
         $this->payouts = $payouts;
@@ -25,7 +32,7 @@ class XdrInflationResult
     }
 
     /**
-     * @return array|null
+     * @return array<XdrInflationPayout>|null
      */
     public function getPayouts(): ?array
     {

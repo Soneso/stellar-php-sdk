@@ -12,13 +12,16 @@ class XdrSCSpecUDTErrorEnumV0
     public string $doc;
     public string $lib;
     public string $name;
-    public array $cases; // [XdrSCSpecUDTErrorEnumCaseV0]
+    /**
+     * @var array<XdrSCSpecUDTErrorEnumCaseV0>
+     */
+    public array $cases;
 
     /**
      * @param string $doc
      * @param string $lib
      * @param string $name
-     * @param array $cases
+     * @param array<XdrSCSpecUDTErrorEnumCaseV0> $cases
      */
     public function __construct(string $doc, string $lib, string $name, array $cases)
     {
@@ -69,7 +72,7 @@ class XdrSCSpecUDTErrorEnumV0
     }
 
     /**
-     * @return array
+     * @return array<XdrSCSpecUDTErrorEnumCaseV0>
      */
     public function getCases(): array
     {
@@ -77,7 +80,7 @@ class XdrSCSpecUDTErrorEnumV0
     }
 
     /**
-     * @param array $cases
+     * @param array<XdrSCSpecUDTErrorEnumCaseV0> $cases
      */
     public function setCases(array $cases): void
     {

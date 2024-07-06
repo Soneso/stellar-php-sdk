@@ -8,11 +8,14 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrContractEventBodyV0
 {
-    public array $topics; // [XdrSCVal]
+    /**
+     * @var array<XdrSCVal> $topics
+     */
+    public array $topics;
     public XdrSCVal $data;
 
     /**
-     * @param array $topics
+     * @param array<XdrSCVal> $topics
      * @param XdrSCVal $data
      */
     public function __construct(array $topics, XdrSCVal $data)
@@ -46,7 +49,7 @@ class XdrContractEventBodyV0
     }
 
     /**
-     * @return array
+     * @return array<XdrSCVal>
      */
     public function getTopics(): array
     {
@@ -54,7 +57,7 @@ class XdrContractEventBodyV0
     }
 
     /**
-     * @param array $topics
+     * @param array<XdrSCVal> $topics
      */
     public function setTopics(array $topics): void
     {

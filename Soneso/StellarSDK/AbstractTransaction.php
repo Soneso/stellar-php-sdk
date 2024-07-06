@@ -17,7 +17,10 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 abstract class AbstractTransaction
 {
     const MIN_BASE_FEE = 100;
-    private array $signatures; //[XdrDecoratedSignature]
+    /**
+     * @var array<XdrDecoratedSignature> $signatures
+     */
+    private array $signatures;
 
     public function __construct() {
         $this->signatures = array();
@@ -41,7 +44,7 @@ abstract class AbstractTransaction
         array_push($this->signatures, $signature);
     }
     /**
-     * @return array
+     * @return array<XdrDecoratedSignature>
      */
     public function getSignatures(): array
     {
@@ -49,7 +52,7 @@ abstract class AbstractTransaction
     }
 
     /**
-     * @param array $signatures
+     * @param array<XdrDecoratedSignature> $signatures
      */
     public function setSignatures(array $signatures): void
     {

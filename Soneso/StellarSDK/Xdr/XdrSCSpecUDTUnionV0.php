@@ -12,13 +12,16 @@ class XdrSCSpecUDTUnionV0
     public string $doc;
     public string $lib;
     public string $name;
-    public array $cases; // [XdrSCSpecUDTUnionCaseV0]
+    /**
+     * @var array<XdrSCSpecUDTUnionCaseV0>
+     */
+    public array $cases;
 
     /**
      * @param string $doc
      * @param string $lib
      * @param string $name
-     * @param array $cases
+     * @param array<XdrSCSpecUDTUnionCaseV0> $cases
      */
     public function __construct(string $doc, string $lib, string $name, array $cases)
     {
@@ -102,7 +105,7 @@ class XdrSCSpecUDTUnionV0
     }
 
     /**
-     * @return array
+     * @return array<XdrSCSpecUDTUnionCaseV0>
      */
     public function getCases(): array
     {
@@ -110,7 +113,7 @@ class XdrSCSpecUDTUnionV0
     }
 
     /**
-     * @param array $cases
+     * @param array<XdrSCSpecUDTUnionCaseV0> $cases
      */
     public function setCases(array $cases): void
     {

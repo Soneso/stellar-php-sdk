@@ -9,8 +9,14 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrClaimPredicate
 {
     private XdrClaimPredicateType $type;
-    private ?array $andPredicates = null; // [XdrClaimPredicate]
-    private ?array $orPredicates = null; // [XdrClaimPredicate]
+    /**
+     * @var array<XdrClaimPredicate>|null
+     */
+    private ?array $andPredicates = null;
+    /**
+     * @var array<XdrClaimPredicate>|null
+     */
+    private ?array $orPredicates = null;
     private ?XdrClaimPredicate $notPredicate = null;
     private ?int $absBefore = null;
     private ?int $relBefore = null;
@@ -28,7 +34,7 @@ class XdrClaimPredicate
     }
 
     /**
-     * @return array|null
+     * @return array<XdrClaimPredicate>|null
      */
     public function getAndPredicates(): ?array
     {
@@ -36,7 +42,7 @@ class XdrClaimPredicate
     }
 
     /**
-     * @param array|null $andPredicates
+     * @param array<XdrClaimPredicate>|null $andPredicates
      */
     public function setAndPredicates(?array $andPredicates): void
     {
@@ -44,7 +50,7 @@ class XdrClaimPredicate
     }
 
     /**
-     * @return array|null
+     * @return array<XdrClaimPredicate>|null
      */
     public function getOrPredicates(): ?array
     {
@@ -52,7 +58,7 @@ class XdrClaimPredicate
     }
 
     /**
-     * @param array|null $orPredicates
+     * @param array<XdrClaimPredicate>|null $orPredicates
      */
     public function setOrPredicates(?array $orPredicates): void
     {

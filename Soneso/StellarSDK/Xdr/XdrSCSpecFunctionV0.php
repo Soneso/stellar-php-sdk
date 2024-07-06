@@ -11,14 +11,20 @@ class XdrSCSpecFunctionV0
 
     public string $doc;
     public string $name;
-    public array $inputs; // [XdrSCSpecFunctionInputV0]
-    public array $outputs; // [XdrSCSpecTypeDef]
+    /**
+     * @var array<XdrSCSpecFunctionInputV0>
+     */
+    public array $inputs;
+    /**
+     * @var array<XdrSCSpecTypeDef>
+     */
+    public array $outputs;
 
     /**
      * @param string $doc
      * @param string $name
-     * @param array $inputs [XdrSCSpecFunctionInputV0]
-     * @param array $outputs
+     * @param array<XdrSCSpecFunctionInputV0> $inputs
+     * @param array<XdrSCSpecTypeDef> $outputs
      */
     public function __construct(string $doc, string $name, array $inputs, array $outputs)
     {
@@ -93,7 +99,7 @@ class XdrSCSpecFunctionV0
     }
 
     /**
-     * @return array [XdrSCSpecFunctionInputV0]
+     * @return array<XdrSCSpecFunctionInputV0>
      */
     public function getInputs(): array
     {
@@ -101,7 +107,7 @@ class XdrSCSpecFunctionV0
     }
 
     /**
-     * @param array $inputs [XdrSCSpecFunctionInputV0]
+     * @param array<XdrSCSpecFunctionInputV0> $inputs
      */
     public function setInputs(array $inputs): void
     {
@@ -109,7 +115,7 @@ class XdrSCSpecFunctionV0
     }
 
     /**
-     * @return array [XdrSCSpecTypeDef]
+     * @return array<XdrSCSpecTypeDef>
      */
     public function getOutputs(): array
     {
@@ -117,7 +123,7 @@ class XdrSCSpecFunctionV0
     }
 
     /**
-     * @param array $outputs [XdrSCSpecTypeDef]
+     * @param array<XdrSCSpecTypeDef> $outputs
      */
     public function setOutputs(array $outputs): void
     {

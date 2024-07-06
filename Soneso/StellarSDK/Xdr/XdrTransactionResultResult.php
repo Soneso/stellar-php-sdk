@@ -9,6 +9,9 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrTransactionResultResult
 {
     public XdrTransactionResultCode $resultCode;
+    /**
+     * @var array<XdrOperationResult>|null
+     */
     public ?array $results = null;
     public ?XdrInnerTransactionResultPair $innerResultPair = null;
 
@@ -72,7 +75,7 @@ class XdrTransactionResultResult
     }
 
     /**
-     * @return array|null
+     * @return array<XdrOperationResult>|null
      */
     public function getResults(): ?array
     {
@@ -80,7 +83,7 @@ class XdrTransactionResultResult
     }
 
     /**
-     * @param array|null $results
+     * @param array<XdrOperationResult>|null $results
      */
     public function setResults(?array $results): void
     {

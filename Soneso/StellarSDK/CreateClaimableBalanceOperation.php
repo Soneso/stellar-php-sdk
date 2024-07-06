@@ -14,7 +14,10 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class CreateClaimableBalanceOperation extends AbstractOperation
 {
 
-    private array $claimants; //[Claimant]
+    /**
+     * @var array<Claimant>
+     */
+    private array $claimants;
     private Asset $asset;
     private string $amount;
 
@@ -25,7 +28,7 @@ class CreateClaimableBalanceOperation extends AbstractOperation
     }
 
     /**
-     * @return array
+     * @return array<Claimant>
      */
     public function getClaimants(): array
     {

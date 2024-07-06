@@ -11,17 +11,21 @@ use Exception;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 class InvokeContractHostFunction extends HostFunction
 {
     public string $contractId;
     public string $functionName;
-    public ?array $arguments; // [XdrSCVal]
+    /**
+     * @var array<XdrSCVal>|null
+     */
+    public ?array $arguments;
 
     /**
      * @param string $contractId
      * @param string $functionName
-     * @param array|null $arguments
+     * @param array<XdrSCVal>|null $arguments
      */
     public function __construct(string $contractId, string $functionName, ?array $arguments = null)
     {
@@ -90,7 +94,7 @@ class InvokeContractHostFunction extends HostFunction
     }
 
     /**
-     * @return array|null
+     * @return array<XdrSCVal>|null
      */
     public function getArguments(): ?array
     {
@@ -98,7 +102,7 @@ class InvokeContractHostFunction extends HostFunction
     }
 
     /**
-     * @param array|null $arguments
+     * @param array<XdrSCVal>|null $arguments
      */
     public function setArguments(?array $arguments): void
     {

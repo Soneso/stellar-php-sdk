@@ -30,11 +30,25 @@ class Transaction extends AbstractTransaction
     private int $fee = AbstractTransaction::MIN_BASE_FEE;
     private BigInteger $sequenceNumber;
     private MuxedAccount $sourceAccount;
-    private array $operations; //[AbstractOperation]
+    /**
+     * @var array<AbstractOperation> $operations
+     */
+    private array $operations;
     private Memo $memo;
     private ?TransactionPreconditions $preconditions;
     private ?XdrSorobanTransactionData $sorobanTransactionData = null;
 
+    /**
+     * Constructor.
+     * @param MuxedAccount $sourceAccount Source account of the transaction.
+     * @param BigInteger $sequenceNumber Sequence number of the source account.
+     * @param array<AbstractOperation> $operations Operations to be added to the transaction.
+     * @param Memo|null $memo Memo to be added to the transaction.
+     * @param TransactionPreconditions|null $preconditions Transaction preconditions if any.
+     * @param int|null $fee maximum fee to be paid to the Stellar Network for the transaction.
+     * If not set it will be calculated by using the current minimum base fee of currently 100 stoops per operation.
+     * @param XdrSorobanTransactionData|null $sorobanTransactionData Soroban transaction data if needed.
+     */
     public function __construct(MuxedAccount $sourceAccount, BigInteger $sequenceNumber, array $operations,
                                 ?Memo $memo = null, ?TransactionPreconditions $preconditions = null,
                                 ?int $fee = null, ?XdrSorobanTransactionData $sorobanTransactionData = null) {
@@ -116,7 +130,7 @@ class Transaction extends AbstractTransaction
 
     /**
      * Returns operations in this transaction.
-     * @return array
+     * @return array<AbstractOperation>
      */
     public function getOperations(): array
     {

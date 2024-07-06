@@ -16,9 +16,21 @@ class XdrTransactionV0
     private XdrSequenceNumber $sequenceNumber;
     private ?XdrTimeBounds $timeBounds = null;
     private XdrMemo $memo;
-    private array $operations; // [XdrOperation]
+    /**
+     * @var array<XdrOperation>
+     */
+    private array $operations;
     private XdrTransactionV0Ext $ext;
 
+    /**
+     * @param string $sourceAccountEd25519
+     * @param XdrSequenceNumber $sequenceNumber
+     * @param array<XdrOperation> $operations
+     * @param int|null $fee
+     * @param XdrMemo|null $memo
+     * @param XdrTimeBounds|null $timeBounds
+     * @param XdrTransactionV0Ext|null $ext
+     */
     public function __construct(string $sourceAccountEd25519, XdrSequenceNumber $sequenceNumber, array $operations, ?int $fee = null, ?XdrMemo $memo = null, ?XdrTimeBounds $timeBounds = null, ?XdrTransactionV0Ext $ext = null)
     {
         $this->sourceAccountEd25519 = $sourceAccountEd25519;
@@ -84,7 +96,7 @@ class XdrTransactionV0
     }
 
     /**
-     * @return array
+     * @return array<XdrOperation>
      */
     public function getOperations(): array
     {

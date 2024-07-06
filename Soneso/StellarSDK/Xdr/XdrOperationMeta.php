@@ -9,10 +9,13 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrOperationMeta
 {
 
-    public array $ledgerEntryChanges; // [XdrLedgerEntryChange]
+    /**
+     * @var array<XdrLedgerEntryChange>
+     */
+    public array $ledgerEntryChanges;
 
     /**
-     * @param array $ledgerEntryChanges [XdrLedgerEntryChange]
+     * @param array<XdrLedgerEntryChange> $ledgerEntryChanges
      */
     public function __construct(array $ledgerEntryChanges)
     {
@@ -41,7 +44,7 @@ class XdrOperationMeta
     }
 
     /**
-     * @return array
+     * @return array<XdrLedgerEntryChange>
      */
     public function getLedgerEntryChanges(): array
     {
@@ -49,7 +52,7 @@ class XdrOperationMeta
     }
 
     /**
-     * @param array $ledgerEntryChanges
+     * @param array<XdrLedgerEntryChange> $ledgerEntryChanges
      */
     public function setLedgerEntryChanges(array $ledgerEntryChanges): void
     {

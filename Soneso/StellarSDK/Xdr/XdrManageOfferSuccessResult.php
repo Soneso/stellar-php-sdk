@@ -9,9 +9,16 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrManageOfferSuccessResult
 {
-    private array $offersClaimed; // [XdrClaimAtom]
+    /**
+     * @var array<XdrClaimAtom>
+     */
+    private array $offersClaimed;
     private XdrManageOfferSuccessResultOffer $offer;
 
+    /**
+     * @param array<XdrClaimAtom> $offersClaimed
+     * @param XdrManageOfferSuccessResultOffer $offer
+     */
     public function __construct(array $offersClaimed, XdrManageOfferSuccessResultOffer $offer) {
         $this->offer = $offer;
         $this->offersClaimed = $offersClaimed;

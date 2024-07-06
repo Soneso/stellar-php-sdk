@@ -11,6 +11,7 @@ use Soneso\StellarSDK\Xdr\XdrPreconditions;
 use Soneso\StellarSDK\Xdr\XdrPreconditionsV2;
 use Soneso\StellarSDK\Xdr\XdrPreconditionType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
+use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
 class TransactionPreconditions
 {
@@ -19,7 +20,10 @@ class TransactionPreconditions
     private ?BigInteger $minSeqNumber = null;
     private int $minSeqAge = 0;
     private int $minSeqLedgerGap = 0;
-    private array $extraSigners = []; //[XdrSignerKey]
+    /**
+     * @var array<XdrSignerKey> $extraSigners
+     */
+    private array $extraSigners = [];
     private ?TimeBounds $timeBounds = null;
 
     /**
@@ -103,7 +107,7 @@ class TransactionPreconditions
     }
 
     /**
-     * @return array
+     * @return array<XdrSignerKey>
      */
     public function getExtraSigners(): array
     {
@@ -111,7 +115,7 @@ class TransactionPreconditions
     }
 
     /**
-     * @param array $extraSigners
+     * @param array<XdrSignerKey> $extraSigners
      */
     public function setExtraSigners(array $extraSigners): void
     {

@@ -8,7 +8,10 @@ namespace Soneso\StellarSDK;
 
 class CreateClaimableBalanceOperationBuilder
 {
-    private array $claimants; //[Claimant]
+    /**
+     * @var array<Claimant>
+     */
+    private array $claimants;
     private Asset $asset;
     private string $amount;
     private ?MuxedAccount $sourceAccount = null;

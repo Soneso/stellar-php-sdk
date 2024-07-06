@@ -9,14 +9,23 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrTransactionMetaV2
 {
 
-    public array $txChangesBefore; // [XdrLedgerEntryChange]
-    public array $operations; // [XdrOperationMeta]
-    public array $txChangesAfter; // [XdrLedgerEntryChange]
+    /**
+     * @var array<XdrLedgerEntryChange>
+     */
+    public array $txChangesBefore;
+    /**
+     * @var array<XdrOperationMeta>
+     */
+    public array $operations;
+    /**
+     * @var array<XdrLedgerEntryChange>
+     */
+    public array $txChangesAfter;
 
     /**
-     * @param array $txChangesBefore [XdrLedgerEntryChange]
-     * @param array $operations [XdrOperationMeta]
-     * @param array $txChangesAfter [XdrLedgerEntryChange]
+     * @param array<XdrLedgerEntryChange> $txChangesBefore
+     * @param array<XdrOperationMeta> $operations
+     * @param array<XdrLedgerEntryChange> $txChangesAfter
      */
     public function __construct(array $txChangesBefore, array $operations, array $txChangesAfter)
     {
@@ -69,7 +78,7 @@ class XdrTransactionMetaV2
     }
 
     /**
-     * @return array
+     * @return array<XdrLedgerEntryChange>
      */
     public function getTxChangesBefore(): array
     {
@@ -77,7 +86,7 @@ class XdrTransactionMetaV2
     }
 
     /**
-     * @param array $txChangesBefore
+     * @param array<XdrLedgerEntryChange> $txChangesBefore
      */
     public function setTxChangesBefore(array $txChangesBefore): void
     {
@@ -85,7 +94,7 @@ class XdrTransactionMetaV2
     }
 
     /**
-     * @return array
+     * @return array<XdrOperationMeta>
      */
     public function getOperations(): array
     {
@@ -93,7 +102,7 @@ class XdrTransactionMetaV2
     }
 
     /**
-     * @param array $operations
+     * @param array<XdrOperationMeta> $operations
      */
     public function setOperations(array $operations): void
     {
@@ -101,7 +110,7 @@ class XdrTransactionMetaV2
     }
 
     /**
-     * @return array
+     * @return array<XdrLedgerEntryChange>
      */
     public function getTxChangesAfter(): array
     {
@@ -109,7 +118,7 @@ class XdrTransactionMetaV2
     }
 
     /**
-     * @param array $txChangesAfter
+     * @param array<XdrLedgerEntryChange> $txChangesAfter
      */
     public function setTxChangesAfter(array $txChangesAfter): void
     {

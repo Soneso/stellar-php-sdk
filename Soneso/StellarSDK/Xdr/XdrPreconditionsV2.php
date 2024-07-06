@@ -13,6 +13,9 @@ class XdrPreconditionsV2
     private ?XdrSequenceNumber $minSeqNum = null;
     private int $minSeqAge = 0;
     private int $minSeqLedgerGap = 0;
+    /**
+     * @var array<XdrSignerKey>
+     */
     private array $extraSigners = [];
 
     /**
@@ -96,7 +99,7 @@ class XdrPreconditionsV2
     }
 
     /**
-     * @return array
+     * @return array<XdrSignerKey>
      */
     public function getExtraSigners(): array
     {
@@ -104,7 +107,7 @@ class XdrPreconditionsV2
     }
 
     /**
-     * @param array $extraSigners
+     * @param array<XdrSignerKey> $extraSigners
      */
     public function setExtraSigners(array $extraSigners): void
     {

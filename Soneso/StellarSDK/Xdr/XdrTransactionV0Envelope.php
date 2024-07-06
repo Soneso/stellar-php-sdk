@@ -10,9 +10,16 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrTransactionV0Envelope
 {
     private XdrTransactionV0 $tx;
-    private array $signatures; //[XdrDecoratedSignature]
+    /**
+     * @var array<XdrDecoratedSignature> $signatures
+     */
+    private array $signatures;
 
 
+    /**
+     * @param XdrTransactionV0 $tx
+     * @param array<XdrDecoratedSignature> $signatures
+     */
     public function __construct(XdrTransactionV0 $tx, array $signatures) {
         $this->tx = $tx;
         $this->signatures = $signatures;
@@ -27,7 +34,7 @@ class XdrTransactionV0Envelope
     }
 
     /**
-     * @return array
+     * @return array<XdrDecoratedSignature>
      */
     public function getSignatures(): array
     {

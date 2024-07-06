@@ -8,11 +8,14 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrPathPaymentResultSuccess
 {
-    private array $offers; //[XdrClaimAtom]
+    /**
+     * @var array<XdrClaimAtom>
+     */
+    private array $offers;
     private XdrSimplePaymentResult $last;
 
     /**
-     * @return array
+     * @return array<XdrClaimAtom>
      */
     public function getOffers(): array
     {

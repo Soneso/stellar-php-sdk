@@ -18,7 +18,10 @@ class XdrAccountEntry
     public int $flags; // uint32
     public string $homeDomain; // string 32
     public string $thresholds;
-    public array $signers;  // [XdrSigner]
+    /**
+     * @var array<XdrSigner>
+     */
+    public array $signers;
     public XdrAccountEntryExt $ext;
 
     /**
@@ -30,7 +33,7 @@ class XdrAccountEntry
      * @param int $flags
      * @param string $homeDomain
      * @param string $thresholds
-     * @param array $signers
+     * @param array<XdrSigner> $signers
      * @param XdrAccountEntryExt $ext
      */
     public function __construct(XdrAccountID $accountID, BigInteger $balance, XdrSequenceNumber $seqNum, int $numSubEntries, ?XdrAccountID $inflationDest, int $flags, string $homeDomain, string $thresholds, array $signers, XdrAccountEntryExt $ext)
@@ -223,7 +226,7 @@ class XdrAccountEntry
     }
 
     /**
-     * @return array
+     * @return array<XdrSigner>
      */
     public function getSigners(): array
     {
@@ -231,7 +234,7 @@ class XdrAccountEntry
     }
 
     /**
-     * @param array $signers
+     * @param array<XdrSigner> $signers
      */
     public function setSigners(array $signers): void
     {

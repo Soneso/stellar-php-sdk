@@ -9,11 +9,11 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrTransactionV1Envelope
 {
-    private XdrTransaction $tx;
+    public XdrTransaction $tx;
     /**
      * @var array<XdrDecoratedSignature>
      */
-    private array $signatures;
+    public array $signatures;
 
 
     /**

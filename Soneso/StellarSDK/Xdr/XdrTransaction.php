@@ -10,15 +10,36 @@ use Soneso\StellarSDK\AbstractTransaction;
 
 class XdrTransaction
 {
-    private XdrMuxedAccount $sourceAccount;
-    private int $fee; //uint32
-    private XdrSequenceNumber $sequenceNumber;
-    private ?XdrPreconditions $preconditions = null;
-    private XdrMemo $memo;
-    private array $operations; // [XdrOperation]
+    public XdrMuxedAccount $sourceAccount;
+    public int $fee; //uint32
+    public XdrSequenceNumber $sequenceNumber;
+    public ?XdrPreconditions $preconditions = null;
+    public XdrMemo $memo;
+    /**
+     * @var array<XdrOperation> $operations
+     */
+    public array $operations;
     public XdrTransactionExt $ext;
 
-    public function __construct(XdrMuxedAccount $sourceAccount, XdrSequenceNumber $sequenceNumber, array $operations, ?int $fee = null, ?XdrMemo $memo = null, ?XdrPreconditions $preconditions = null, ?XdrTransactionExt $ext = null)
+    /**
+     * Constructor.
+     * @param XdrMuxedAccount $sourceAccount
+     * @param XdrSequenceNumber $sequenceNumber
+     * @param array<XdrOperation> $operations
+     * @param int|null $fee
+     * @param XdrMemo|null $memo
+     * @param XdrPreconditions|null $preconditions
+     * @param XdrTransactionExt|null $ext
+     */
+    public function __construct(
+        XdrMuxedAccount $sourceAccount,
+        XdrSequenceNumber $sequenceNumber,
+        array $operations,
+        ?int $fee = null,
+        ?XdrMemo $memo = null,
+        ?XdrPreconditions $preconditions = null,
+        ?XdrTransactionExt $ext = null,
+    )
     {
         $this->sourceAccount = $sourceAccount;
         $this->sequenceNumber = $sequenceNumber;
@@ -98,7 +119,7 @@ class XdrTransaction
     }
 
     /**
-     * @return array
+     * @return array<XdrOperation>
      */
     public function getOperations(): array
     {

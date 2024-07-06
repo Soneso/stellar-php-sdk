@@ -8,8 +8,8 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrFeeBumpTransactionInnerTx
 {
-    private XdrEnvelopeType $type;
-    private XdrTransactionV1Envelope $v1;
+    public XdrEnvelopeType $type;
+    public XdrTransactionV1Envelope $v1;
 
     public function __construct(XdrEnvelopeType $type, XdrTransactionV1Envelope $v1)
     {

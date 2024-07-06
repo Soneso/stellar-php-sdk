@@ -22,6 +22,9 @@ class XdrConfigSettingEntry
     public ?int $contractDataEntrySizeBytes = null;
     public ?XdrStateArchivalSettings $stateArchivalSettings = null;
     public ?XdrConfigSettingContractExecutionLanesV0 $contractExecutionLanes = null;
+    /**
+     * @var array<int>|null
+     */
     public ?array $bucketListSizeWindow = null; // [uint64]
     public ?XdrEvictionIterator $evictionIterator = null;
     /**
@@ -349,7 +352,7 @@ class XdrConfigSettingEntry
     }
 
     /**
-     * @return array|null
+     * @return array<int>|null
      */
     public function getBucketListSizeWindow(): ?array
     {
@@ -357,7 +360,7 @@ class XdrConfigSettingEntry
     }
 
     /**
-     * @param array|null $bucketListSizeWindow
+     * @param array<int>|null $bucketListSizeWindow
      */
     public function setBucketListSizeWindow(?array $bucketListSizeWindow): void
     {

@@ -7,17 +7,21 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 
 class InvokeHostFunctionOperationBuilder
 {
     // common
     public HostFunction $function;
-    public array $auth; // [XdrSorobanAuthorizationEntry]
+    /**
+     * @var array<SorobanAuthorizationEntry>
+     */
+    public array $auth;
     public ?MuxedAccount $sourceAccount = null;
 
     /**
      * @param HostFunction $function
-     * @param array $auth [XdrSorobanAuthorizationEntry]
+     * @param array<SorobanAuthorizationEntry> $auth
      */
     public function __construct(HostFunction $function, array $auth = array())
     {

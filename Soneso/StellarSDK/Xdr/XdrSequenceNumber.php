@@ -10,10 +10,10 @@ use phpseclib3\Math\BigInteger;
 
 class XdrSequenceNumber
 {
-    private BigInteger $seqenceNumber;
+    private BigInteger $sequenceNumber;
 
     public function __construct(BigInteger $sequenceNumber) {
-        $this->seqenceNumber = $sequenceNumber;
+        $this->sequenceNumber = $sequenceNumber;
     }
 
     /**
@@ -21,11 +21,11 @@ class XdrSequenceNumber
      */
     public function getValue(): BigInteger
     {
-        return $this->seqenceNumber;
+        return $this->sequenceNumber;
     }
 
     public function encode() : string {
-        return XdrEncoder::bigInteger64($this->seqenceNumber);
+        return XdrEncoder::bigInteger64($this->sequenceNumber);
     }
 
     public static function decode(XdrBuffer $xdr) : XdrSequenceNumber {

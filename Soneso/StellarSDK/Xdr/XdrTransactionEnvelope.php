@@ -8,10 +8,10 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrTransactionEnvelope
 {
-    private XdrEnvelopeType $type;
-    private ?XdrTransactionV1Envelope $v1 = null;
-    private ?XdrTransactionV0Envelope $v0 = null;
-    private ?XdrFeeBumpTransactionEnvelope $feeBump = null;
+    public XdrEnvelopeType $type;
+    public ?XdrTransactionV1Envelope $v1 = null;
+    public ?XdrTransactionV0Envelope $v0 = null;
+    public ?XdrFeeBumpTransactionEnvelope $feeBump = null;
 
     public function __construct(XdrEnvelopeType $type) {
         $this->type = $type;

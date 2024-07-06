@@ -12,13 +12,16 @@ class XdrSCSpecUDTStructV0
     public string $doc;
     public string $lib;
     public string $name;
-    public array $fields; // [XdrSCSpecUDTStructFieldV0]
+    /**
+     * @var array<XdrSCSpecUDTStructFieldV0>
+     */
+    public array $fields;
 
     /**
      * @param string $doc
      * @param string $lib
      * @param string $name
-     * @param array $fields
+     * @param array<XdrSCSpecUDTStructFieldV0> $fields
      */
     public function __construct(string $doc, string $lib, string $name, array $fields)
     {
@@ -102,7 +105,7 @@ class XdrSCSpecUDTStructV0
     }
 
     /**
-     * @return array
+     * @return array<XdrSCSpecUDTStructFieldV0>
      */
     public function getFields(): array
     {
@@ -110,7 +113,7 @@ class XdrSCSpecUDTStructV0
     }
 
     /**
-     * @param array $fields
+     * @param array<XdrSCSpecUDTStructFieldV0> $fields
      */
     public function setFields(array $fields): void
     {

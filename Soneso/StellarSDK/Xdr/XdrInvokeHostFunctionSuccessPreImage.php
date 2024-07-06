@@ -10,11 +10,14 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrInvokeHostFunctionSuccessPreImage
 {
     public XdrSCVal $returnValue;
-    public array $events; // [XdrContractEvent]
+    /**
+     * @var array<XdrContractEvent>
+     */
+    public array $events;
 
     /**
      * @param XdrSCVal $returnValue
-     * @param array $events
+     * @param array<XdrContractEvent> $events
      */
     public function __construct(XdrSCVal $returnValue, array $events)
     {
@@ -59,7 +62,7 @@ class XdrInvokeHostFunctionSuccessPreImage
     }
 
     /**
-     * @return array
+     * @return array<XdrContractEvent>
      */
     public function getEvents(): array
     {
@@ -67,7 +70,7 @@ class XdrInvokeHostFunctionSuccessPreImage
     }
 
     /**
-     * @param array $events
+     * @param array<XdrContractEvent> $events
      */
     public function setEvents(array $events): void
     {

@@ -15,8 +15,19 @@ class XdrPathPaymentStrictReceiveOperation
     private XdrMuxedAccount $destination;
     private XdrAsset $destAsset;
     private BigInteger $destAmount;
-    private array $path; // [XdrAsset]
+    /**
+     * @var array<XdrAsset>
+     */
+    private array $path;
 
+    /**
+     * @param XdrAsset $sendAsset
+     * @param BigInteger $sendAmount
+     * @param XdrMuxedAccount $destination
+     * @param XdrAsset $destAsset
+     * @param BigInteger $destAmount
+     * @param array<XdrAsset> $path
+     */
     public function __construct(XdrAsset $sendAsset, BigInteger $sendAmount, XdrMuxedAccount $destination, XdrAsset $destAsset, BigInteger $destAmount, array $path) {
         $this->sendAsset = $sendAsset;
         $this->sendAmount = $sendAmount;
@@ -67,7 +78,7 @@ class XdrPathPaymentStrictReceiveOperation
     }
 
     /**
-     * @return array
+     * @return array<XdrAsset>
      */
     public function getPath(): array
     {

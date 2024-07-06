@@ -11,14 +11,17 @@ use phpseclib3\Math\BigInteger;
 class XdrClaimableBalanceEntry
 {
     public XdrClaimableBalanceID $accountID;
-    public array $claimants;  // [XdrClaimant]
+    /**
+     * @var array<XdrClaimant>
+     */
+    public array $claimants;
     public XdrAsset $asset;
     private BigInteger $amount;
     public XdrClaimableBalanceEntryExt $ext;
 
     /**
      * @param XdrClaimableBalanceID $accountID
-     * @param array $claimants
+     * @param array<XdrClaimant> $claimants
      * @param XdrAsset $asset
      * @param BigInteger $amount
      * @param XdrClaimableBalanceEntryExt $ext

@@ -311,9 +311,11 @@ class URIScheme
     }
 
     private function getXdrTransactionEnvelope(string $url): XdrTransactionEnvelope {
-        $base64UrlEncodedTransactionEnvelope = $this->getParameterValue(URIScheme::xdrParameterName, $url);
-        if ($base64UrlEncodedTransactionEnvelope != null) {
-            $base64TransactionEnvelope = urldecode($base64UrlEncodedTransactionEnvelope);
+        $base64TransactionEnvelope = $this->getParameterValue(URIScheme::xdrParameterName, $url);
+        if ($base64TransactionEnvelope != null) {
+            if (strpos($base64TransactionEnvelope, '%') !== false) {
+                $base64TransactionEnvelope = urldecode($base64TransactionEnvelope);
+            }
             return XdrTransactionEnvelope::fromEnvelopeBase64XdrString($base64TransactionEnvelope);
         } else {
             throw new InvalidArgumentException("invalid url: ". $url);

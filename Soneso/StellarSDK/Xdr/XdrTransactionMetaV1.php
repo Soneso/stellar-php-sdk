@@ -9,12 +9,18 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrTransactionMetaV1
 {
 
-    public array $ledgerEntryChanges; // [XdrLedgerEntryChange]
-    public array $operations; // [XdrOperationMeta]
+    /**
+     * @var array<XdrLedgerEntryChange>
+     */
+    public array $ledgerEntryChanges;
+    /**
+     * @var array<XdrOperationMeta>
+     */
+    public array $operations;
 
     /**
-     * @param array $ledgerEntryChanges [XdrLedgerEntryChange]
-     * @param array $operations [XdrOperationMeta]
+     * @param array<XdrLedgerEntryChange> $ledgerEntryChanges
+     * @param array<XdrOperationMeta> $operations
      */
     public function __construct(array $ledgerEntryChanges, array $operations)
     {
@@ -55,7 +61,7 @@ class XdrTransactionMetaV1
     }
 
     /**
-     * @return array
+     * @return array<XdrLedgerEntryChange>
      */
     public function getLedgerEntryChanges(): array
     {
@@ -63,7 +69,7 @@ class XdrTransactionMetaV1
     }
 
     /**
-     * @param array $ledgerEntryChanges
+     * @param array<XdrLedgerEntryChange> $ledgerEntryChanges
      */
     public function setLedgerEntryChanges(array $ledgerEntryChanges): void
     {
@@ -71,7 +77,7 @@ class XdrTransactionMetaV1
     }
 
     /**
-     * @return array
+     * @return array<XdrOperationMeta>
      */
     public function getOperations(): array
     {
@@ -79,7 +85,7 @@ class XdrTransactionMetaV1
     }
 
     /**
-     * @param array $operations
+     * @param array<XdrOperationMeta> $operations
      */
     public function setOperations(array $operations): void
     {

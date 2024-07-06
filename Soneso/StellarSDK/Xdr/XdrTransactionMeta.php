@@ -9,6 +9,9 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrTransactionMeta
 {
     public int $v;
+    /**
+     * @var array<XdrOperationMeta>|null
+     */
     public ?array $operations;
     public ?XdrTransactionMetaV1 $v1 = null;
     public ?XdrTransactionMetaV2 $v2 = null;
@@ -99,7 +102,7 @@ class XdrTransactionMeta
     }
 
     /**
-     * @return array|null
+     * @return array<XdrOperationMeta>|null
      */
     public function getOperations(): ?array
     {
@@ -107,7 +110,7 @@ class XdrTransactionMeta
     }
 
     /**
-     * @param array|null $operations
+     * @param array<XdrOperationMeta>|null $operations
      */
     public function setOperations(?array $operations): void
     {

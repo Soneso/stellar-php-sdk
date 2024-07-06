@@ -8,10 +8,13 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrSCSpecTypeTuple
 {
+    /**
+     * @var array<XdrSCSpecTypeDef>
+     */
     public array $valueTypes;
 
     /**
-     * @param array $valueTypes
+     * @param array<XdrSCSpecTypeDef> $valueTypes
      */
     public function __construct(array $valueTypes)
     {
