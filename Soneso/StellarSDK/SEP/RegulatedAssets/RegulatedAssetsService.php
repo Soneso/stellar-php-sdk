@@ -46,7 +46,7 @@ class RegulatedAssetsService
             $this->httpClient = $httpClient;
         } else {
             $this->httpClient = new Client([
-                'exceptions' => false,
+                'http_errors' => false,
             ]);
         }
 
@@ -142,7 +142,7 @@ class RegulatedAssetsService
      */
     public function postTransaction(String $tx, String $approvalServer) : SEP08PostTransactionResponse {
 
-        $response = $this->httpClient->post($approvalServer, [RequestOptions::JSON => ['tx' => $tx]]);
+        $response = $this->httpClient->post($approvalServer, [RequestOptions::JSON => ['tx' => $tx], 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -168,7 +168,7 @@ class RegulatedAssetsService
      * @throws GuzzleException if a connection error occurs
     */
     public function postAction(String $url, array $actionFields) : SEP08PostActionResponse {
-        $response = $this->httpClient->post($url, [RequestOptions::JSON => $actionFields]);
+        $response = $this->httpClient->post($url, [RequestOptions::JSON => $actionFields, 'http_errors' => false]);
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
         $jsonData = @json_decode($content, true);

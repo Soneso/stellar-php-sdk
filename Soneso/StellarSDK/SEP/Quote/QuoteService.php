@@ -70,7 +70,7 @@ class QuoteService
         $url = $this->buildServiceUrl("info");
 
         $response = $this->httpClient->get($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -128,7 +128,7 @@ class QuoteService
         }
 
         $response = $this->httpClient->get($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -203,7 +203,7 @@ class QuoteService
         }
 
         $response = $this->httpClient->get($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -245,7 +245,7 @@ class QuoteService
 
         $response = $this->httpClient->post($url,
             [RequestOptions::JSON => $request->toJson(),
-                RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+                RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -283,7 +283,7 @@ class QuoteService
         $url = $this->buildServiceUrl('quote/' . $id);
 
         $response = $this->httpClient->get($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -319,7 +319,6 @@ class QuoteService
 
     private function buildServiceUrl(string $segment): string
     {
-
         if (str_ends_with($this->serviceAddress, "/")) {
             return $this->serviceAddress . $segment;
         } else {

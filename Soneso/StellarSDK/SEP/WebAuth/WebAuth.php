@@ -137,7 +137,7 @@ class WebAuth
      * @throws GuzzleException
      */
     private function sendSignedChallengeTransaction(string $base64EnvelopeXDR) : string {
-        $response = $this->httpClient->post($this->authEndpoint, [RequestOptions::JSON => ['transaction' => $base64EnvelopeXDR]]);
+        $response = $this->httpClient->post($this->authEndpoint, [RequestOptions::JSON => ['transaction' => $base64EnvelopeXDR], 'http_errors' => false]);
         $statusCode = $response->getStatusCode();
         if (200 == $statusCode || 400 == $statusCode) {
             $content = $response->getBody()->__toString();

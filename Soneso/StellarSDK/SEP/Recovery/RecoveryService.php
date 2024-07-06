@@ -56,7 +56,7 @@ class RecoveryService
 
         $response = $this->httpClient->post($url,
             [RequestOptions::JSON => $request->toJson(),
-            RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -103,7 +103,7 @@ class RecoveryService
 
         $response = $this->httpClient->put($url,
             [RequestOptions::JSON => $request->toJson(),
-                RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+                RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -150,7 +150,7 @@ class RecoveryService
 
         $response = $this->httpClient->post($url,
             [RequestOptions::JSON => ['transaction' => $transaction],
-                RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+                RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -194,7 +194,7 @@ class RecoveryService
         $url = $this->buildServiceUrl("accounts/" . $address);
 
         $response = $this->httpClient->get($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -238,7 +238,7 @@ class RecoveryService
         $url = $this->buildServiceUrl("accounts/" . $address);
 
         $response = $this->httpClient->delete($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -285,7 +285,7 @@ class RecoveryService
         }
 
         $response = $this->httpClient->get($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();

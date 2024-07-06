@@ -43,15 +43,16 @@ class CrossBorderPaymentsService
      * Creates an instance of this class by loading the anchor direct payment server SEP-31 url from the given domain stellar toml file (DIRECT_PAYMENT_SERVER).
      * @param string $domain to load the service address from.
      * @return CrossBorderPaymentsService the initialized QuoteService
+     * @param Client|null $httpClient to be used for requests. If not provided, this service will use its own http client.
      * @throws Exception if the loading of the service address for the given domain failed.
      */
-    public static function fromDomain(string $domain) : CrossBorderPaymentsService {
-        $stellarToml = StellarToml::fromDomain($domain);
+    public static function fromDomain(string $domain, ?Client $httpClient = null) : CrossBorderPaymentsService {
+        $stellarToml = StellarToml::fromDomain($domain, $httpClient);
         $address = $stellarToml->getGeneralInformation()->directPaymentServer;
         if (!$address) {
             throw new Exception("No anchor direct payment service found in stellar.toml");
         }
-        return new CrossBorderPaymentsService($address);
+        return new CrossBorderPaymentsService($address, $httpClient);
     }
 
     /**
@@ -108,7 +109,7 @@ class CrossBorderPaymentsService
 
         $response = $this->httpClient->post($url,
             [RequestOptions::JSON => $request->toJson(),
-                RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+                RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -154,7 +155,7 @@ class CrossBorderPaymentsService
         $url = $this->buildServiceUrl("transactions/" . $id);
 
         $response = $this->httpClient->get($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -195,7 +196,7 @@ class CrossBorderPaymentsService
 
         $response = $this->httpClient->put($url,
             [RequestOptions::JSON => ['url' => $callbackUrl],
-                RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+                RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
@@ -245,7 +246,7 @@ class CrossBorderPaymentsService
 
         $response = $this->httpClient->patch($url,
             [RequestOptions::JSON => ['fields' => $fields],
-                RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+                RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();
