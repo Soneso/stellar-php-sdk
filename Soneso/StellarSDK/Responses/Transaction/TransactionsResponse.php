@@ -30,7 +30,13 @@ class TransactionsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<TransactionResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<TransactionResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

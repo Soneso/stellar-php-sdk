@@ -31,7 +31,13 @@ class OffersResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<OfferResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<OfferResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

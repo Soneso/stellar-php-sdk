@@ -29,6 +29,9 @@ class LedgersResponse extends \IteratorIterator {
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<LedgerResponse>
+     */
     public function toArray() : array {
         $result = array();
         foreach($this as $value) {

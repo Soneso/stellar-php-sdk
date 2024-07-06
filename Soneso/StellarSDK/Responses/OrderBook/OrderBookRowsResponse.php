@@ -29,7 +29,13 @@ class OrderBookRowsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<OrderBookRowResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<OrderBookRowResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

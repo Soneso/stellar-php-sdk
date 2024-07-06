@@ -29,7 +29,13 @@ class AccountSignersResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<AccountSignerResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<AccountSignerResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

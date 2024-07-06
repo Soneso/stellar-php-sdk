@@ -30,7 +30,13 @@ class TradeAggregationsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<TradeAggregationResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<TradeAggregationResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

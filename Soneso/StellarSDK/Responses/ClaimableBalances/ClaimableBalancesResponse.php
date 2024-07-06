@@ -29,7 +29,13 @@ class ClaimableBalancesResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<ClaimableBalanceResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<ClaimableBalanceResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

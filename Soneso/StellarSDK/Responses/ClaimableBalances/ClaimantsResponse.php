@@ -29,7 +29,13 @@ class ClaimantsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<ClaimantResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<ClaimantResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

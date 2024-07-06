@@ -29,7 +29,13 @@ class EffectsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<EffectResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<EffectResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

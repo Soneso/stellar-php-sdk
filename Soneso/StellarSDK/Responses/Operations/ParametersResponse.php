@@ -29,7 +29,13 @@ class ParametersResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<ParameterResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<ParameterResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

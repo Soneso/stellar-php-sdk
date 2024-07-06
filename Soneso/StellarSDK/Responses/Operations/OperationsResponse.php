@@ -30,7 +30,13 @@ class OperationsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<OperationResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<OperationResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

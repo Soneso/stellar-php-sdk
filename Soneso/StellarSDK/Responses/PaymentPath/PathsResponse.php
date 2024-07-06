@@ -31,7 +31,13 @@ class PathsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<PathResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<PathResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

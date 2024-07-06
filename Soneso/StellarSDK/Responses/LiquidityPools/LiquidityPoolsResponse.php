@@ -29,7 +29,13 @@ class LiquidityPoolsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<LiquidityPoolResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<LiquidityPoolResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

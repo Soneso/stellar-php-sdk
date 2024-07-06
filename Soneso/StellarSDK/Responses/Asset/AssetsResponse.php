@@ -30,7 +30,13 @@ class AssetsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<AssetResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<AssetResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);
