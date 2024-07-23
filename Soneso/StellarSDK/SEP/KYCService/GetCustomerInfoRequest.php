@@ -38,6 +38,12 @@ class GetCustomerInfoRequest
     public ?string $type = null;
 
     /**
+     * @var string|null $transactionId The transaction id with which the customer's info is associated. When information
+     * from the customer depends on the transaction (e.g., more information is required for larger amounts)
+     */
+    public ?string $transactionId = null;
+
+    /**
      * @var string|null $lang Defaults to en. Language code specified using ISO 639-1. Human-readable descriptions, choices, and messages should be in this language.
      */
     public ?string $lang = null;

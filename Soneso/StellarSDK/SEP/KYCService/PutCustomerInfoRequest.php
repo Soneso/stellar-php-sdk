@@ -39,6 +39,12 @@ class PutCustomerInfoRequest
     public ?string $type = null;
 
     /**
+     * @var string|null $transactionId The transaction id with which the customer's info is associated. When information
+     * from the customer depends on the transaction (e.g., more information is required for larger amounts)
+     */
+    public ?string $transactionId = null;
+
+    /**
      * @var StandardKYCFields|null kyc data.
      */
     public ?StandardKYCFields $KYCFields = null;

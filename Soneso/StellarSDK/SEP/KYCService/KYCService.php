@@ -88,6 +88,9 @@ class KYCService
         if ($request->type) {
             $queryParameters += ["type" => $request->type];
         }
+        if ($request->transactionId) {
+            $queryParameters += ["transaction_id" => $request->transactionId];
+        }
         if ($request->lang) {
             $queryParameters += ["lang" => $request->lang];
         }
@@ -118,6 +121,9 @@ class KYCService
         }
         if ($request->type) {
             $fields += ["type" => $request->type];
+        }
+        if ($request->transactionId) {
+            $fields += ["transaction_id" => $request->transactionId];
         }
         if ($request->KYCFields?->naturalPersonKYCFields) {
             $fields = array_merge($fields, $request->KYCFields?->naturalPersonKYCFields->fields());
