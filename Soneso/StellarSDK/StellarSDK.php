@@ -25,6 +25,7 @@ use Soneso\StellarSDK\Requests\PaymentsRequestBuilder;
 use Soneso\StellarSDK\Requests\RootRequestBuilder;
 use Soneso\StellarSDK\Requests\StrictReceivePathsRequestBuilder;
 use Soneso\StellarSDK\Requests\StrictSendPathsRequestBuilder;
+use Soneso\StellarSDK\Requests\SubmitAsyncTransactionRequestBuilder;
 use Soneso\StellarSDK\Requests\SubmitTransactionRequestBuilder;
 use Soneso\StellarSDK\Requests\TradeAggregationsRequestBuilder;
 use Soneso\StellarSDK\Requests\TradesRequestBuilder;
@@ -37,6 +38,7 @@ use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolResponse;
 use Soneso\StellarSDK\Responses\Offers\OfferResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\Responses\Root\RootResponse;
+use Soneso\StellarSDK\Responses\Transaction\SubmitAsyncTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 
@@ -87,7 +89,6 @@ class StellarSDK
         $this->serverUri = $uri;
         $this->httpClient = new Client([
             'base_uri' => $uri,
-            'exceptions' => false,
         ]);
     }
     
@@ -269,13 +270,66 @@ class StellarSDK
     }
 
     /**
-     * @throws HorizonRequestException
+     * Submits a synchronous transaction to the network. Unlike the asynchronous version 'submitAsyncTransaction',
+     * which relays the response from core directly back to the user, this endpoint blocks and waits for the transaction
+     * to be ingested in Horizon.
+     *
+     * @param AbstractTransaction $transaction the transaction to be submitted.
+     * @return SubmitTransactionResponse the response received from Horizon.
+     * @throws HorizonRequestException if there was a problem, such as an error response from Horizon. The details of the problem can be found within the exception object.
      */
     public function submitTransaction(AbstractTransaction $transaction) : SubmitTransactionResponse {
         $builder = new SubmitTransactionRequestBuilder($this->httpClient);
         $builder->setTransaction($transaction);
         return $builder->execute();
     }
+
+    /**
+     * Submits a synchronous transaction envelope xdr base 64 string to the network.
+     * Unlike the asynchronous version 'submitAsyncTransactionEnvelopeXdrBase64',
+     * which relays the response from core directly back to the user, this endpoint blocks and waits for the transaction
+     * to be ingested in Horizon.
+     * @param string $transactionEnvelopeXdrBase64 transaction envelope xdr base 64 string to be submitted to the network.
+     * @return SubmitTransactionResponse the response received from Horizon.
+     * @throws HorizonRequestException if there was a problem, such as an error response from Horizon. The details of the problem can be found within the exception object.
+     */
+    public function submitTransactionEnvelopeXdrBase64(string $transactionEnvelopeXdrBase64) : SubmitTransactionResponse {
+        $builder = new SubmitTransactionRequestBuilder($this->httpClient);
+        $builder->setTransactionEnvelopeXdrBase64($transactionEnvelopeXdrBase64);
+        return $builder->execute();
+    }
+
+    /**
+     * Submits an asynchronous transaction to the network. Unlike the synchronous version 'submitTransaction',
+     * which blocks and waits for the transaction to be ingested in Horizon, this endpoint relays the response from
+     * core directly back to the user.
+     *
+     * @param AbstractTransaction $transaction the transaction to be submitted.
+     * @return SubmitAsyncTransactionResponse the response received from Horizon.
+     * @throws HorizonRequestException if there was a problem, such as an error response from Horizon. The details of the problem can be found within the exception object.
+     */
+    public function submitAsyncTransaction(AbstractTransaction $transaction) : SubmitAsyncTransactionResponse {
+        $builder = new SubmitAsyncTransactionRequestBuilder($this->httpClient);
+        $builder->setTransaction($transaction);
+        return $builder->execute();
+    }
+
+    /**
+     * Submits an asynchronous transaction envelope xdr base 64 string to the network.
+     * Unlike the synchronous version 'submitTransactionEnvelopeXdrBase64',
+     * which blocks and waits for the transaction to be ingested in Horizon, this endpoint relays the response from
+     * core directly back to the user.
+     *
+     * @param string $transactionEnvelopeXdrBase64 transaction envelope xdr base 64 string to be submitted to the network.
+     * @return SubmitAsyncTransactionResponse the response received from Horizon.
+     * @throws HorizonRequestException if there was a problem, such as an error response from Horizon. The details of the problem can be found within the exception object.
+     */
+    public function submitAsyncTransactionEnvelopeXdrBase64(string $transactionEnvelopeXdrBase64) : SubmitAsyncTransactionResponse {
+        $builder = new SubmitAsyncTransactionRequestBuilder($this->httpClient);
+        $builder->setTransactionEnvelopeXdrBase64($transactionEnvelopeXdrBase64);
+        return $builder->execute();
+    }
+
 
     /**
      * SEP-029 implementation. See https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md

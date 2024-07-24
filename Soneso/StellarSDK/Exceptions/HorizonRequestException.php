@@ -20,6 +20,7 @@ class HorizonRequestException extends \ErrorException
     private ?int $statusCode = null;
     private ?string $retryAfter = null;
     private ?HorizonErrorResponse $horizonErrorResponse = null;
+    public ?ResponseInterface $httpResponse = null;
 
     /**
      * @return string
@@ -54,6 +55,14 @@ class HorizonRequestException extends \ErrorException
     }
 
     /**
+     * @return ResponseInterface|null
+     */
+    public function getHttpResponse(): ?ResponseInterface
+    {
+        return $this->httpResponse;
+    }
+
+    /**
      * @return HorizonErrorResponse|null
      */
     public function getHorizonErrorResponse(): ?HorizonErrorResponse
@@ -66,6 +75,7 @@ class HorizonRequestException extends \ErrorException
         $result =  new HorizonRequestException($e->getMessage(), $e);
         $result->requestedUrl = $requestedUrl;
         $result->httpMethod = $httpMethod;
+        $result->httpResponse = $httpResponse;
         if ($httpResponse != null) {
             $result->statusCode = $httpResponse->getStatusCode();
         }
@@ -73,17 +83,17 @@ class HorizonRequestException extends \ErrorException
         if ($e instanceof RequestException && $e->getResponse()) {
             // print($e->getResponse()->getBody()->__toString() . PHP_EOL);
             $httpResponse = $e->getResponse();
+            $result->httpResponse = $httpResponse;
             $result->statusCode = $httpResponse->getStatusCode();
-            $decoded = null;
             $decoded = json_decode($e->getResponse()->getBody()->__toString(), true);
-            if ($decoded != null && $e instanceof BadResponseException) {
+            if ($decoded != null && $e instanceof BadResponseException && isset($decoded['type'])) {
                 $errorResponse = HorizonErrorResponse::fromJson($decoded);
                 $errorResponse->setHeaders($e->getResponse()->getHeaders());
                 $result->horizonErrorResponse = $errorResponse;
                 $result->message = $errorResponse->getDetail();
             }
         }
-        if ($httpResponse != null && 429 == $result->statusCode) {
+        if ($httpResponse != null && 429 === $httpResponse->getStatusCode()) {
             $headerArr = $httpResponse->getHeader("Retry-After");
             $count = count($headerArr);
             if ($count > 0) {

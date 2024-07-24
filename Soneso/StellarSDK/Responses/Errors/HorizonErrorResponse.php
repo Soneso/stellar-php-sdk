@@ -11,12 +11,16 @@ use Soneso\StellarSDK\Responses\Response;
 
 class HorizonErrorResponse extends Response
 {
-    private string $type;
-    private string $title;
-    private int $status;
-    private string $detail;
-    private ?string $instance = null;
-    private ?HorizonErrorResponseExtras $extras = null;
+    public string $type;
+    public string $title;
+    public int $status;
+    public string $detail;
+    public ?string $instance = null;
+    public ?HorizonErrorResponseExtras $extras = null;
+    /**
+     * @var array<string, mixed>|null all extras from the response as an array.
+     */
+    public ?array $extrasJson = null;
 
     /**
      * The type of Status Code returned (URL to lookup for more information).
@@ -72,6 +76,15 @@ class HorizonErrorResponse extends Response
         return $this->instance;
     }
 
+    /**
+     * @return array<string,mixed>|null
+     */
+    public function getExtrasJson(): ?array
+    {
+        return $this->extrasJson;
+    }
+
+
     protected function loadFromJson(array $json) : void {
 
         if (isset($json['type'])) $this->type = $json['type'];
@@ -80,6 +93,7 @@ class HorizonErrorResponse extends Response
         if (isset($json['detail'])) $this->detail = $json['detail'];
         if (isset($json['instance'])) $this->instance = $json['instance'];
         if (isset($json['extras'])) $this->extras = HorizonErrorResponseExtras::fromJson($json['extras']);
+        if (isset($json['extras'])) $this->extrasJson = $json['extras'];
     }
 
     public static function fromJson(array $json) : HorizonErrorResponse

@@ -32,6 +32,7 @@ class RequestType
     public const OPERATIONS_PAGE = "operations_page";
     public const EFFECTS_PAGE = "effects_page";
     public const SUBMIT_TRANSACTION = "submit_transaction";
+    public const SUBMIT_ASYNC_TRANSACTION = "submit_async_transaction";
     public const FEDERATION = "federation";
     public const CHALLENGE = "challenge";
     public const GET_CUSTOMER_INFO = "get_customer_info";

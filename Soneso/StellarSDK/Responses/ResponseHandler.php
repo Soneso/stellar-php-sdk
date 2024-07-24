@@ -30,6 +30,7 @@ use Soneso\StellarSDK\Responses\Root\RootResponse;
 use Soneso\StellarSDK\Responses\TradeAggregations\TradeAggregationsPageResponse;
 use Soneso\StellarSDK\Responses\Trades\TradeResponse;
 use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
+use Soneso\StellarSDK\Responses\Transaction\SubmitAsyncTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
@@ -96,6 +97,7 @@ class ResponseHandler
             RequestType::OPERATIONS_PAGE => OperationsPageResponse::fromJson($jsonData),
             RequestType::EFFECTS_PAGE => EffectsPageResponse::fromJson($jsonData),
             RequestType::SUBMIT_TRANSACTION => SubmitTransactionResponse::fromJson($jsonData),
+            RequestType::SUBMIT_ASYNC_TRANSACTION => SubmitAsyncTransactionResponse::fromJson($jsonData, $response->getStatusCode()),
             RequestType::FEDERATION => FederationResponse::fromJson($jsonData),
             RequestType::CHALLENGE => ChallengeResponse::fromJson($jsonData),
             RequestType::GET_CUSTOMER_INFO, RequestType::PUT_CUSTOMER_VERIFICATION => GetCustomerInfoResponse::fromJson($jsonData),

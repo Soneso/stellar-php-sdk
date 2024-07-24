@@ -17,7 +17,7 @@ class FuturenetFriendBot
     static function fundTestAccount(string $accountId): bool
     {
         try {
-            $httpClient = new Client(['exceptions' => false]);
+            $httpClient = new Client();
             $url = "https://friendbot-futurenet.stellar.org?addr=" . $accountId;
             $request = new Request('GET', $url, RequestBuilder::HEADERS);
             $response = $httpClient->send($request);
