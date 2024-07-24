@@ -21,6 +21,7 @@ use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLedgerEntriesResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetNetworkResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetVersionInfoResponse;
 use Soneso\StellarSDK\Soroban\Responses\LedgerEntry;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
@@ -58,6 +59,7 @@ class SorobanServer
     private const GET_LATEST_LEDGER = "getLatestLedger";
     private const GET_EVENTS = "getEvents";
     private const GET_FEE_STATS = "getFeeStats";
+    private const GET_VERSION_INFO = "getVersionInfo";
 
     public bool $enableLogging = false;
 
@@ -120,6 +122,21 @@ class SorobanServer
         $body = $this->prepareRequest(self::GET_FEE_STATS);
         $result = $this->request($body, self::GET_FEE_STATS);
         assert($result instanceof GetFeeStatsResponse);
+        return $result;
+    }
+
+    /**
+     * Version information about the RPC and Captive core. RPC manages its own, pared-down version of Stellar Core
+     * optimized for its own subset of needs.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+     *
+     * @return GetVersionInfoResponse in case of success.
+     * @throws GuzzleException if any request problem occurs.
+     */
+    public function getVersionInfo() : GetVersionInfoResponse {
+        $body = $this->prepareRequest(self::GET_VERSION_INFO);
+        $result = $this->request($body, self::GET_VERSION_INFO);
+        assert($result instanceof GetVersionInfoResponse);
         return $result;
     }
 
@@ -365,7 +382,8 @@ class SorobanServer
             self::GET_LEDGER_ENTRIES => GetLedgerEntriesResponse::fromJson($jsonData),
             self::GET_LATEST_LEDGER => GetLatestLedgerResponse::fromJson($jsonData),
             self::GET_EVENTS => GetEventsResponse::fromJson($jsonData),
-            self::GET_FEE_STATS=> GetFeeStatsResponse::fromJson($jsonData),
+            self::GET_FEE_STATS => GetFeeStatsResponse::fromJson($jsonData),
+            self::GET_VERSION_INFO => GetVersionInfoResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };
 
