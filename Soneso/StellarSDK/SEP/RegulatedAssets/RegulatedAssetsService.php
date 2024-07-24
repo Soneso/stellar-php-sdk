@@ -45,9 +45,7 @@ class RegulatedAssetsService
         if ($httpClient != null) {
             $this->httpClient = $httpClient;
         } else {
-            $this->httpClient = new Client([
-                'http_errors' => false,
-            ]);
+            $this->httpClient = new Client();
         }
 
         if ($horizonUrl !== null) {

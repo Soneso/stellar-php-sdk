@@ -33,9 +33,7 @@ class CrossBorderPaymentsService
         if ($httpClient != null) {
             $this->httpClient = $httpClient;
         } else {
-            $this->httpClient = new Client([
-                'exceptions' => false,
-            ]);
+            $this->httpClient = new Client();
         }
     }
 
@@ -62,7 +60,7 @@ class CrossBorderPaymentsService
      * @param string $jwt jwtToken token obtained before with SEP-0010.
      * @param string|null $lang  Defaults to en. Language code specified using ISO 639-1.
      * @return SEP31InfoResponse object containing the response data on response with status 200.
-     * @throws GuzzleException
+     * @throws GuzzleException on http exceptions.
      * @throws SEP31BadRequestException on response with status 400
      * @throws SEP31UnknownResponseException on response with other, unknown status responses.
      */
@@ -71,7 +69,7 @@ class CrossBorderPaymentsService
         $url = $this->buildServiceUrl("info");
 
         $response = $this->httpClient->get($url,
-            [RequestOptions::HEADERS => $this->buildHeaders($jwt)]);
+            [RequestOptions::HEADERS => $this->buildHeaders($jwt), 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();

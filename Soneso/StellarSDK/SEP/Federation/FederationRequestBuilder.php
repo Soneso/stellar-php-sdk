@@ -34,15 +34,19 @@ class FederationRequestBuilder extends RequestBuilder
 
     /**
      * Requests specific <code>url</code> and returns {@link FederationResponse}.
-     * @throws HorizonRequestException
+     * @return FederationResponse in case of success.
+     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      */
     public function request(string $url) : FederationResponse {
-        return parent::executeRequest($url,RequestType::FEDERATION);
+        $response = parent::executeRequest($url,RequestType::FEDERATION);
+        assert($response instanceof FederationResponse);
+        return $response;
     }
 
     /**
      *  Build and execute request.
-     *  @throws HorizonRequestException
+     * @return FederationResponse in case of success.
+     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      */
     public function execute() : FederationResponse {
         return $this->request($this->buildUrl());

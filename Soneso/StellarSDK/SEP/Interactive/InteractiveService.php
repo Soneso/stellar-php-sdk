@@ -35,9 +35,7 @@ class InteractiveService
             $this->serviceAddress = substr($this->serviceAddress, 0, -1);
         }
         if ($httpClient === null) {
-            $this->httpClient = new Client([
-                'exceptions' => false,
-            ]);
+            $this->httpClient = new Client();
         } else {
             $this->httpClient = $httpClient;
         }

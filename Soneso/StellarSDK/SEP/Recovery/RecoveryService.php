@@ -30,9 +30,7 @@ class RecoveryService
         if ($httpClient != null) {
             $this->httpClient = $httpClient;
         } else {
-            $this->httpClient = new Client([
-                'exceptions' => false,
-            ]);
+            $this->httpClient = new Client();
         }
     }
 

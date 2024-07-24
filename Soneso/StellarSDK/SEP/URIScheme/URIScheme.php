@@ -52,9 +52,7 @@ class URIScheme
 
     public function __construct()
     {
-        $this->httpClient = new Client([
-            'exceptions' => false,
-        ]);
+        $this->httpClient = new Client();
     }
 
     public function generateSignTransactionURI(string $transactionEnvelopeXdrBase64,

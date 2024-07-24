@@ -11,6 +11,7 @@ namespace Soneso\StellarSDK\SEP\Federation;
 use Exception;
 use GuzzleHttp\Client;
 use InvalidArgumentException;
+use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 class Federation {
@@ -37,7 +38,6 @@ class Federation {
 
         $httpClient = new Client([
             'base_uri' => $federationServer,
-            'exceptions' => false,
         ]);
 
         $requestBuilder = (new FederationRequestBuilder($httpClient))->forStringToLookUp($address)->forType("name");
@@ -45,24 +45,24 @@ class Federation {
     }
 
     /**
-     * @throws Exception
+     * @return FederationResponse in case of success.
+     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      */
     public static function resolveStellarAccountId(string $accountId, string $federationServerUrl) : FederationResponse {
         $httpClient = new Client([
             'base_uri' => $federationServerUrl,
-            'exceptions' => false,
         ]);
         $requestBuilder = (new FederationRequestBuilder($httpClient))->forStringToLookUp($accountId)->forType("id");
         return $requestBuilder->execute();
     }
 
     /**
-     * @throws Exception
+     * @return FederationResponse in case of success.
+     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      */
     public static function resolveStellarTransactionId(string $accountId, string $federationServerUrl) : FederationResponse {
         $httpClient = new Client([
             'base_uri' => $federationServerUrl,
-            'exceptions' => false,
         ]);
         $requestBuilder = (new FederationRequestBuilder($httpClient))->forStringToLookUp($accountId)->forType("txid");
         return $requestBuilder->execute();
@@ -71,12 +71,14 @@ class Federation {
     /**
      * Resolves a stellar forward.
      * The url of the federation server and the forward query parameters have to be provided.
-     * @throws Exception
+     *
+     * @return FederationResponse in case of success.
+     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
+     * /
      */
     public static function resolveForward(array $queryParameters, string $federationServerUrl) : FederationResponse {
         $httpClient = new Client([
             'base_uri' => $federationServerUrl,
-            'exceptions' => false,
         ]);
         $requestBuilder = (new FederationRequestBuilder($httpClient))->forType("forward")->forQueryParameters($queryParameters);
         return $requestBuilder->execute();

@@ -51,9 +51,7 @@ class WebAuth
         $this->serverHomeDomain = $serverHomeDomain;
 
         if ($httpClient === null) {
-            $this->httpClient = new Client([
-                'exceptions' => false,
-            ]);
+            $this->httpClient = new Client();
         } else {
             $this->httpClient = $httpClient;
         }
