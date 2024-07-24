@@ -24,6 +24,8 @@ use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Responses\Operations\InvokeHostFunctionOperationResponse;
 use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Requests\GetTransactionsRequest;
+use Soneso\StellarSDK\Soroban\Requests\PaginationOptions;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\Requests\TopicFilter;
 use Soneso\StellarSDK\Soroban\Requests\TopicFilters;
@@ -128,6 +130,33 @@ class SorobanTest extends TestCase
         $this->assertNotNull($getVersionInfoResponse->buildTimeStamp);
         $this->assertNotNull($getVersionInfoResponse->captiveCoreVersion);
         $this->assertNotNull($getVersionInfoResponse->protocolVersion);
+
+        // get transactions
+        $latestLedgerResponse = $this->server->getLatestLedger();
+        assertNotNull($latestLedgerResponse->sequence);
+        $startLedger = $latestLedgerResponse->sequence - 20;
+        $paginationOptions = new PaginationOptions(limit: 2);
+        $getTransactionsRequest = new GetTransactionsRequest(
+            startLedger: $startLedger,
+            paginationOptions: $paginationOptions,
+        );
+        $getTransactionsResponse = $this->server->getTransactions($getTransactionsRequest);
+        $this->assertNotNull($getTransactionsResponse->transactions);
+        $this->assertNotNull($getTransactionsResponse->latestLedger);
+        $this->assertNotNull($getTransactionsResponse->oldestLedger);
+        $this->assertNotNull($getTransactionsResponse->latestLedgerCloseTimestamp);
+        $this->assertNotNull($getTransactionsResponse->oldestLedgerCloseTimestamp);
+        $this->assertNotNull($getTransactionsResponse->cursor);
+        $this->assertGreaterThan(0, count($getTransactionsResponse->transactions));
+
+        $paginationOptions = new PaginationOptions(
+            cursor: $getTransactionsResponse->cursor,
+            limit: 2,
+        );
+        $getTransactionsRequest = new GetTransactionsRequest(paginationOptions: $paginationOptions);
+        $getTransactionsResponse = $this->server->getTransactions($getTransactionsRequest);
+        $this->assertNotNull($getTransactionsResponse->transactions);
+        $this->assertCount(2, $getTransactionsResponse->transactions);
 
         $this->restoreContractFootprint($this->server, $this->accountAKeyPair, self::HELLO_CONTRACT_PATH);
 
@@ -669,7 +698,12 @@ class SorobanTest extends TestCase
         $eventFilters = new EventFilters();
         $eventFilters->add($eventFilter);
 
-        $request = new GetEventsRequest($startLedger, $eventFilters);
+        $paginationOptions = new PaginationOptions(limit: 2);
+        $request = new GetEventsRequest(
+            startLedger: $startLedger,
+            filters: $eventFilters,
+            paginationOptions: $paginationOptions,
+        );
         $response = $this->server->getEvents($request);
         $this->assertGreaterThan(0, count($response->events));
 

@@ -13,6 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
+use Soneso\StellarSDK\Soroban\Requests\GetTransactionsRequest;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetFeeStatsResponse;
@@ -21,6 +22,7 @@ use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLedgerEntriesResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetNetworkResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetTransactionsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetVersionInfoResponse;
 use Soneso\StellarSDK\Soroban\Responses\LedgerEntry;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
@@ -55,6 +57,7 @@ class SorobanServer
     private const SIMULATE_TRANSACTION = "simulateTransaction";
     private const SEND_TRANSACTION = "sendTransaction";
     private const GET_TRANSACTION = "getTransaction";
+    private const GET_TRANSACTIONS = "getTransactions";
     private const GET_LEDGER_ENTRIES = "getLedgerEntries";
     private const GET_LATEST_LEDGER = "getLatestLedger";
     private const GET_EVENTS = "getEvents";
@@ -186,6 +189,20 @@ class SorobanServer
         $body = $this->prepareRequest(self::GET_TRANSACTION, ['hash' => $transactionId]);
         $result = $this->request($body, self::GET_TRANSACTION);
         assert($result instanceof GetTransactionResponse);
+        return $result;
+    }
+
+    /**
+     * The getTransactions method returns a detailed list of transactions starting from the user specified starting
+     * point that you can paginate as long as the pages fall within the history retention of their corresponding RPC provider.
+     * @param GetTransactionsRequest $request request data.
+     * @return GetTransactionsResponse response in case of success.
+     * @throws GuzzleException if any request problem occurs.
+     */
+    public function getTransactions(GetTransactionsRequest $request) : GetTransactionsResponse {
+        $body = $this->prepareRequest(self::GET_TRANSACTIONS, $request->getRequestParams());
+        $result = $this->request($body, self::GET_TRANSACTIONS);
+        assert($result instanceof GetTransactionsResponse);
         return $result;
     }
 
@@ -379,6 +396,7 @@ class SorobanServer
             self::SIMULATE_TRANSACTION => SimulateTransactionResponse::fromJson($jsonData),
             self::SEND_TRANSACTION => SendTransactionResponse::fromJson($jsonData),
             self::GET_TRANSACTION => GetTransactionResponse::fromJson($jsonData),
+            self::GET_TRANSACTIONS => GetTransactionsResponse::fromJson($jsonData),
             self::GET_LEDGER_ENTRIES => GetLedgerEntriesResponse::fromJson($jsonData),
             self::GET_LATEST_LEDGER => GetLatestLedgerResponse::fromJson($jsonData),
             self::GET_EVENTS => GetEventsResponse::fromJson($jsonData),

@@ -14,12 +14,12 @@ class GetEventsRequest
 {
 
     /**
-     * @var int $startLedger Ledger sequence number to fetch events after (inclusive).
+     * @var int|null $startLedger Ledger sequence number to fetch events after (inclusive).
      * The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
      * or greater than the latest ledger seen by this node. If a cursor is included in the request,
      * startLedger must be omitted.
      */
-    public int $startLedger;
+    public ?int $startLedger = null;
 
     /**
      * @var EventFilters|null List of filters for the returned events. Events matching any of the filters are included.
@@ -35,7 +35,7 @@ class GetEventsRequest
 
     /**
      * Constructor.
-     * @param int $startLedger Ledger sequence number to fetch events after (inclusive).
+     * @param int|null $startLedger Ledger sequence number to fetch events after (inclusive).
      *  The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
      *  or greater than the latest ledger seen by this node.
      * @param EventFilters|null $filters List of filters for the returned events. Events matching any of the filters are included.
@@ -43,7 +43,7 @@ class GetEventsRequest
      *  Maximum 5 filters are allowed per request.
      * @param PaginationOptions|null $paginationOptions for pagination.
      */
-    public function __construct(int $startLedger, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
+    public function __construct(?int $startLedger = null, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
     {
         $this->startLedger = $startLedger;
         $this->filters = $filters;
@@ -51,9 +51,13 @@ class GetEventsRequest
     }
 
     public function getRequestParams() : array {
-        $params = array(
-            'startLedger' => $this->startLedger
-        );
+        /**
+         * @var array<string,mixed> $params
+         */
+        $params = array();
+        if ($this->startLedger != null) {
+            $params['startLedger'] = $this->startLedger;
+        }
 
         if ($this->filters != null) {
             $filterParams = array();
