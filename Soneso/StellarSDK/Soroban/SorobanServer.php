@@ -15,6 +15,7 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetFeeStatsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLedgerEntriesResponse;
@@ -39,6 +40,8 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
  * This class helps you to connect to a local or remote soroban rpc server
  * and send requests to the server. It parses the results and provides
  * corresponding response objects.
+ *
+ * See: https://developers.stellar.org/docs/data/rpc/api-reference
  */
 class SorobanServer
 {
@@ -54,6 +57,7 @@ class SorobanServer
     private const GET_LEDGER_ENTRIES = "getLedgerEntries";
     private const GET_LATEST_LEDGER = "getLatestLedger";
     private const GET_EVENTS = "getEvents";
+    private const GET_FEE_STATS = "getFeeStats";
 
     public bool $enableLogging = false;
 
@@ -66,7 +70,6 @@ class SorobanServer
         $this->endpoint = $endpoint;
         $this->httpClient = new Client([
             'base_uri' => $this->endpoint,
-            'exceptions' => false,
         ]);
         $this->headers = array_merge($this->headers, RequestBuilder::HEADERS);
         $this->headers  = array_merge($this->headers, ['Content-Type' => "application/json"]);
@@ -74,57 +77,99 @@ class SorobanServer
 
     /**
      * General node health check request.
-     * @throws GuzzleException
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getHealth
+     *
+     * @return GetHealthResponse in case of success.
+     * @throws GuzzleException if any request problem occurs.
      */
     public function getHealth() : GetHealthResponse {
         $body = $this->prepareRequest(self::GET_HEALTH);
-        return $this->request($body, self::GET_HEALTH);
+        $result = $this->request($body, self::GET_HEALTH);
+        assert($result instanceof GetHealthResponse);
+        return $result;
     }
 
 
     /**
-     * Fetch information about the network.
-     * @return GetNetworkResponse
-     * @throws GuzzleException
+     * General information about the currently configured network.
+     * The response will contain all the information needed to successfully submit transactions to the network this node serves.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getNetwork
+     *
+     * @return GetNetworkResponse in case of success.
+     * @throws GuzzleException if any request problem occurs.
      */
     public function getNetwork() : GetNetworkResponse {
         $body = $this->prepareRequest(self::GET_NETWORK);
-        return $this->request($body, self::GET_NETWORK);
+        $result = $this->request($body, self::GET_NETWORK);
+        assert($result instanceof GetNetworkResponse);
+        return $result;
+    }
+
+
+    /**
+     * Statistics for charged inclusion fees. The inclusion fee statistics are calculated from the inclusion fees
+     * that were paid for the transactions to be included onto the ledger. For Soroban transactions and Stellar transactions,
+     * they each have their own inclusion fees and own surge pricing. Inclusion fees are used to prevent spam and
+     * prioritize transactions during network traffic surge.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStatsh
+     *
+     * @return GetFeeStatsResponse in case of success.
+     * @throws GuzzleException if any request problem occurs.
+     */
+    public function getFeeStats() : GetFeeStatsResponse {
+        $body = $this->prepareRequest(self::GET_FEE_STATS);
+        $result = $this->request($body, self::GET_FEE_STATS);
+        assert($result instanceof GetFeeStatsResponse);
+        return $result;
     }
 
     /**
      * Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/simulateTransaction
+     *
      * @param SimulateTransactionRequest $request request containing the transaction to submit and the resource config.
-     * @return SimulateTransactionResponse response.
-     * @throws GuzzleException
+     * @return SimulateTransactionResponse response in case of success.
+     * @throws GuzzleException if any request problem occurs.
      */
     public function simulateTransaction(SimulateTransactionRequest $request) : SimulateTransactionResponse {
         $body = $this->prepareRequest(self::SIMULATE_TRANSACTION, $request->getRequestParams());
-        return $this->request($body, self::SIMULATE_TRANSACTION);
+        $result = $this->request($body, self::SIMULATE_TRANSACTION);
+        assert($result instanceof SimulateTransactionResponse);
+        return $result;
     }
 
     /**
      * Submit a real transaction to the stellar network. This is the only way to make changes “on-chain”.
      * Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
      * Clients should call getTransactionStatus to learn about transaction success/failure.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/sendTransaction
+     *
      * @param Transaction $transaction to submit.
-     * @return SendTransactionResponse response.
-     * @throws GuzzleException
+     * @return SendTransactionResponse response in case of success.
+     * @throws GuzzleException if any request problem occurs.
      */
     public function sendTransaction(Transaction $transaction) : SendTransactionResponse {
         $body = $this->prepareRequest(self::SEND_TRANSACTION, ['transaction' => $transaction->toEnvelopeXdrBase64()]);
-        return $this->request($body, self::SEND_TRANSACTION);
+        $result = $this->request($body, self::SEND_TRANSACTION);
+        assert($result instanceof SendTransactionResponse);
+        return $result;
     }
 
     /**
-     * Clients will poll this to tell when the transaction has been completed.
+     * The getTransaction method provides details about the specified transaction.
+     * Clients are expected to periodically query this method to ascertain when a transaction has been
+     * successfully recorded on the blockchain.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransaction
+     *
      * @param String $transactionId of the transaction to be checked.
-     * @return GetTransactionResponse response.
-     * @throws GuzzleException
+     * @return GetTransactionResponse response in case of success.
+     * @throws GuzzleException if any request problem occurs.
      */
     public function getTransaction(String $transactionId) : GetTransactionResponse {
         $body = $this->prepareRequest(self::GET_TRANSACTION, ['hash' => $transactionId]);
-        return $this->request($body, self::GET_TRANSACTION);
+        $result = $this->request($body, self::GET_TRANSACTION);
+        assert($result instanceof GetTransactionResponse);
+        return $result;
     }
 
     /**
@@ -132,30 +177,54 @@ class SorobanServer
      * Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
      * This is a backup way to access your contract data which may not be available via events or simulateTransaction.
      * To fetch contract wasm byte-code, use the ContractCode ledger entry key.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgerEntries
+     *
      * @param array $base64EncodedKeys to request the ledger entry for.
-     * @return GetLedgerEntriesResponse response.
-     * @throws GuzzleException
+     * @return GetLedgerEntriesResponse response in case of success.
+     * @throws GuzzleException if any request problem occurs.
      */
     public function getLedgerEntries(array $base64EncodedKeys) : GetLedgerEntriesResponse {
         $body = $this->prepareRequest(self::GET_LEDGER_ENTRIES, ['keys' => $base64EncodedKeys]);
-        return $this->request($body, self::GET_LEDGER_ENTRIES);
+        $result = $this->request($body, self::GET_LEDGER_ENTRIES);
+        assert($result instanceof GetLedgerEntriesResponse);
+        return $result;
     }
 
+    /**
+     * For finding out the current latest known ledger of this node. This is a subset of the ledger info from Horizon.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLatestLedger
+     *
+     * @return GetLatestLedgerResponse response in case of success.
+     * @throws GuzzleException if any request problem occurs.
+     */
     public function getLatestLedger() : GetLatestLedgerResponse {
         $body = $this->prepareRequest(self::GET_LATEST_LEDGER);
-        return $this->request($body, self::GET_LATEST_LEDGER);
+        $result = $this->request($body, self::GET_LATEST_LEDGER);
+        assert($result instanceof GetLatestLedgerResponse);
+        return $result;
     }
 
+    /**
+     * Clients can request a filtered list of events emitted by a given ledger range.
+     * Soroban-RPC will support querying within a maximum 24 hours of recent ledgers.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getEvents
+     *
+     * @param GetEventsRequest $request containing the request parameters
+     * @return GetEventsResponse response in case of success.
+     * @throws GuzzleException if any request problem occurs.
+     */
     public function getEvents(GetEventsRequest $request) : GetEventsResponse {
         $body = $this->prepareRequest(self::GET_EVENTS, $request->getRequestParams());
-        return $this->request($body, self::GET_EVENTS);
+        $result = $this->request($body, self::GET_EVENTS);
+        assert($result instanceof GetEventsResponse);
+        return $result;
     }
 
     /**
      * Loads the contract source code (including source code - wasm bytes) for a given wasm id.
      * @param string $wasmId
      * @return XdrContractCodeEntry|null The contract code entry if found
-     * @throws GuzzleException
+     * @throws GuzzleException if any request problem occurs.
      */
     public function loadContractCodeForWasmId(string $wasmId) : ?XdrContractCodeEntry {
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
@@ -174,7 +243,7 @@ class SorobanServer
      * Loads the contract code entry (including source code - wasm bytes) for a given contract id.
      * @param string $contractId
      * @return XdrContractCodeEntry|null The contract code entry if found
-     * @throws GuzzleException
+     * @throws GuzzleException if any request problem occurs.
      */
     public function loadContractCodeForContractId(string $contractId) : ?XdrContractCodeEntry {
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
@@ -200,7 +269,7 @@ class SorobanServer
      * Returns null if account was not found.
      * @param string $accountId th account id to request the data for ("G...")
      * @return Account|null The account object or null if not found.
-     * @throws GuzzleException
+     * @throws GuzzleException if any request problem occurs.
      */
     public function getAccount(string $accountId): ?Account {
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
@@ -227,7 +296,7 @@ class SorobanServer
      * @param XdrContractDataDurability $durability keyspace that this ledger key belongs to, which is either
      * XdrContractDataDurability::PERSISTENT() or XdrContractDataDurability::TEMPORARY().
      * @return LedgerEntry|null Ledger Entry if found otherwise null.
-     * @throws GuzzleException
+     * @throws GuzzleException if any request problem occurs.
      */
     public function getContractData(
         string $contractId,
@@ -254,7 +323,7 @@ class SorobanServer
      * @param string $body jsonrpc 2.0 body
      * @param string $requestType the request type such as SIMULATE_TRANSACTION
      * @return SorobanRpcResponse response.
-     * @throws GuzzleException
+     * @throws GuzzleException if any request problem occurs.
      */
     private function request(string $body, string $requestType) : SorobanRpcResponse {
         $request = new Request("POST", $this->endpoint, $this->headers, $body);
@@ -296,6 +365,7 @@ class SorobanServer
             self::GET_LEDGER_ENTRIES => GetLedgerEntriesResponse::fromJson($jsonData),
             self::GET_LATEST_LEDGER => GetLatestLedgerResponse::fromJson($jsonData),
             self::GET_EVENTS => GetEventsResponse::fromJson($jsonData),
+            self::GET_FEE_STATS=> GetFeeStatsResponse::fromJson($jsonData),
             default => throw new \InvalidArgumentException(sprintf("Unknown request type: %s", $requestType)),
         };
 

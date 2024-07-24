@@ -114,6 +114,13 @@ class SorobanTest extends TestCase
         }
 
         $this->assertNotNull($getNetworkResponse->protocolVersion);
+
+        // get fee stats
+        $getFeeStatsResponse = $this->server->getFeeStats();
+        $this->assertNotNull($getFeeStatsResponse->sorobanInclusionFee);
+        $this->assertNotNull($getFeeStatsResponse->inclusionFee);
+        $this->assertNotNull($getFeeStatsResponse->latestLedger);
+
         $this->restoreContractFootprint($this->server, $this->accountAKeyPair, self::HELLO_CONTRACT_PATH);
 
         // upload contract wasm
