@@ -16,6 +16,7 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
@@ -27,6 +28,8 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
+use function PHPUnit\Framework\assertNotNull;
+use function PHPUnit\Framework\assertTrue;
 
 final class AccountTest extends TestCase
 {
@@ -310,6 +313,28 @@ final class AccountTest extends TestCase
 
         $response = $sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
+    }
+
+    public function testHorizonRequestException() {
+        //bogus invalid key
+        $accountId = 'GC3CT2B55RPLE6JX2U3SOPZFGSE5A3MYFBFYAXSQCJ5BBYJX5HIBTNIX';
+        $sdk = StellarSDK::getTestNetInstance();
+
+        $thrown = false;
+        try {
+            $sdk->requestAccount($accountId);
+        } catch (HorizonRequestException $e) {
+            $horizonResponse = $e->getHorizonErrorResponse();
+            assertNotNull($horizonResponse);
+            print($horizonResponse->title . ':' . $horizonResponse->detail . PHP_EOL);
+            $extras = $horizonResponse->getExtrasJson();
+            assertNotNull($extras);
+            foreach ($extras as $key => $value) {
+                print($key . " = " . $value . PHP_EOL);
+            }
+            $thrown = true;
+        }
+        assertTrue($thrown);
     }
 }
 
