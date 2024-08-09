@@ -17,7 +17,7 @@ class ClaimableBalanceResponse extends Response
     private string $amount;
     private string $sponsor;
     private int $lastModifiedLedger;
-    private string $lastModifiedTime;
+    private ?string $lastModifiedTime = null;
     private string $pagingToken;
     private ClaimantsResponse $claimants;
     private ClaimableBalanceLinksResponse $links;
@@ -63,9 +63,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return string
+     * @return string | null
      */
-    public function getLastModifiedTime(): string
+    public function getLastModifiedTime(): ?string
     {
         return $this->lastModifiedTime;
     }
