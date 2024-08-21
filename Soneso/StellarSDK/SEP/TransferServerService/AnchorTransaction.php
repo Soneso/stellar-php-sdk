@@ -153,6 +153,16 @@ class AnchorTransaction
     public ?string $completedAt = null;
 
     /**
+     * @var string|null $userActionRequiredBy (optional) The date and time by when the user action is required.
+     *  In certain statuses, such as pending_user_transfer_start or incomplete, anchor waits for the user action and
+     *  user_action_required_by field should be used to show the time anchors gives for the user to make an action
+     *  before transaction will automatically be moved into a different status (such as expired or to be refunded).
+     *  user_action_required_by should only be specified for statuses where user action is required, and omitted for
+     *  all other. Anchor should specify the action waited on using message or more_info_url.
+     */
+    public ?string $userActionRequiredBy = null;
+
+    /**
      * @var string|null $stellarTransactionId (optional) transaction_id on Stellar network of the transfer that either
      * completed the deposit or started the withdrawal.
      */
@@ -257,6 +267,12 @@ class AnchorTransaction
      * @param string|null $startedAt (optional) Start date and time of transaction - UTC ISO 8601 string.
      * @param string|null $updatedAt (optional) The date and time of transaction reaching the current status.
      * @param string|null $completedAt (optional) Completion date and time of transaction - UTC ISO 8601 string.
+     * @param string|null $userActionRequiredBy (optional) The date and time by when the user action is required.
+     * In certain statuses, such as pending_user_transfer_start or incomplete, anchor waits for the user action and
+     * user_action_required_by field should be used to show the time anchors gives for the user to make an action
+     * before transaction will automatically be moved into a different status (such as expired or to be refunded).
+     * user_action_required_by should only be specified for statuses where user action is required, and omitted for
+     * all other. Anchor should specify the action waited on using message or more_info_url.
      * @param string|null $stellarTransactionId (optional) transaction_id on Stellar network of the transfer that either
      * completed the deposit or started the withdrawal.
      * @param string|null $externalTransactionId (optional) ID of transaction on external network that either started
@@ -307,6 +323,7 @@ class AnchorTransaction
         ?string $startedAt = null,
         ?string $updatedAt = null,
         ?string $completedAt = null,
+        ?string $userActionRequiredBy = null,
         ?string $stellarTransactionId = null,
         ?string $externalTransactionId = null,
         ?string $message = null,
@@ -342,6 +359,7 @@ class AnchorTransaction
         $this->startedAt = $startedAt;
         $this->updatedAt = $updatedAt;
         $this->completedAt = $completedAt;
+        $this->userActionRequiredBy = $userActionRequiredBy;
         $this->stellarTransactionId = $stellarTransactionId;
         $this->externalTransactionId = $externalTransactionId;
         $this->message = $message;
@@ -384,6 +402,7 @@ class AnchorTransaction
         if (isset($json['started_at'])) $result->startedAt = $json['started_at'];
         if (isset($json['updated_at'])) $result->updatedAt = $json['updated_at'];
         if (isset($json['completed_at'])) $result->completedAt = $json['completed_at'];
+        if (isset($json['user_action_required_by'])) $result->userActionRequiredBy = $json['user_action_required_by'];
         if (isset($json['stellar_transaction_id'])) $result->stellarTransactionId = $json['stellar_transaction_id'];
         if (isset($json['external_transaction_id'])) $result->externalTransactionId = $json['external_transaction_id'];
         if (isset($json['message'])) $result->message = $json['message'];
