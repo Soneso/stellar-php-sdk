@@ -159,6 +159,12 @@ class WithdrawExchangeRequest
     public ?string $locationId = null;
 
     /**
+     * @var array<string,string>|null  (optional) can be used to provide extra fields for the request.
+     * E.g. required fields from the /info endpoint that are not covered by the standard parameters.
+     */
+    public ?array $extraFields = null;
+
+    /**
      * @var string|null $jwt jwt token previously received from the anchor via the SEP-10 authentication flow.
      */
     public ?string $jwt = null;
@@ -219,6 +225,8 @@ class WithdrawExchangeRequest
      * off-chain id is know to the client, but the relationship between this id and the user's Stellar account is
      * not known to the Anchor.
      * @param string|null $locationId (optional) id of the chosen location to pick up cash
+     * @param array<string,string>|null $extraFields (optional) can be used to provide extra fields for the request.
+     * E.g. required fields from the /info endpoint that are not covered by the standard parameters.
      * @param string|null $jwt jwt previously received from the anchor via the SEP-10 authentication flow
      */
     public function __construct(
@@ -241,6 +249,7 @@ class WithdrawExchangeRequest
         ?string $refundMemoType = null,
         ?string $customerId = null,
         ?string $locationId = null,
+        ?array $extraFields = null,
         ?string $jwt = null)
     {
         $this->sourceAsset = $sourceAsset;
@@ -262,6 +271,7 @@ class WithdrawExchangeRequest
         $this->refundMemoType = $refundMemoType;
         $this->customerId = $customerId;
         $this->locationId = $locationId;
+        $this->extraFields = $extraFields;
         $this->jwt = $jwt;
     }
 

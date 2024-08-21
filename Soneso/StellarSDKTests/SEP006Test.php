@@ -236,6 +236,7 @@ class SEP006Test extends TestCase
             $this->assertEquals("USD", $query_array["asset_code"]);
             $this->assertEquals($this->accountId, $query_array["account"]);
             $this->assertEquals("123.123", $query_array["amount"]);
+            $this->assertEquals('test', $query_array["extra_field"]);
             return $request;
         }));
 
@@ -244,6 +245,7 @@ class SEP006Test extends TestCase
             assetCode: "USD",
             account: $this->accountId,
             amount: "123.123",
+            extraFields:  ['extra_field' => 'test'],
             jwt: $this->jwtToken,
         );
         $response = $transferService->deposit($request);
@@ -430,6 +432,7 @@ class SEP006Test extends TestCase
             $this->assertEquals("crypto", $query_array["type"]);
             $this->assertEquals("120.0", $query_array["amount"]);
             $this->assertEquals($this->accountId, $query_array["account"]);
+            $this->assertEquals("test", $query_array["extra_field"]);
             $this->assertEquals(
                 "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK",
                 $query_array["dest"]
@@ -444,6 +447,7 @@ class SEP006Test extends TestCase
             dest: "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK",
             account: $this->accountId,
             amount: "120.0",
+            extraFields: ['extra_field' => 'test'],
             jwt: $this->jwtToken,
         );
 
@@ -479,6 +483,7 @@ class SEP006Test extends TestCase
             $this->assertEquals("999", $query_array["location_id"]);
             $this->assertEquals("282837", $query_array["quote_id"]);
             $this->assertEquals("100", $query_array["amount"]);
+            $this->assertEquals("test", $query_array["extra_field"]);
             return $request;
         }));
 
@@ -490,6 +495,7 @@ class SEP006Test extends TestCase
             account: 'GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ',
             quoteId: '282837',
             locationId: '999',
+            extraFields: ['extra_field' => 'test'],
             jwt: $this->jwtToken,
         );
         $response = $transferService->depositExchange($request);
@@ -528,6 +534,7 @@ class SEP006Test extends TestCase
             $this->assertEquals("700", $query_array["amount"]);
             $this->assertEquals("282837", $query_array["quote_id"]);
             $this->assertEquals("999", $query_array["location_id"]);
+            $this->assertEquals("test", $query_array["extra_field"]);
             return $request;
         }));
 
@@ -539,6 +546,7 @@ class SEP006Test extends TestCase
             type: 'bank_account',
             quoteId: '282837',
             locationId: '999',
+            extraFields: ['extra_field' => 'test'],
             jwt: $this->jwtToken,
         );
 

@@ -126,6 +126,12 @@ class DepositRequest
     public ?string $locationId = null;
 
     /**
+     * @var array<string,string>|null  (optional) can be used to provide extra fields for the request.
+     * E.g. required fields from the /info endpoint that are not covered by the standard parameters.
+     */
+    public ?array $extraFields = null;
+
+    /**
      * Constructor
      * @param string $assetCode The code of the on-chain asset the user wants to get from the Anchor
      * after doing an off-chain deposit. The value passed must match one of the
@@ -169,6 +175,8 @@ class DepositRequest
      * id is know to the client, but the relationship between this id and the user's Stellar account is not known
      * to the Anchor.
      * @param string|null $locationId (optional) id of the chosen location to drop off cash.
+     * @param array<string,string>|null $extraFields (optional) can be used to provide extra fields for the request.
+     * E.g. required fields from the /info endpoint that are not covered by the standard parameters.
      * @param string|null $jwt jwt token previously received from the anchor via the SEP-10 authentication flow.
      */
     public function __construct(
@@ -187,6 +195,7 @@ class DepositRequest
         ?string $claimableBalanceSupported = null,
         ?string $customerId = null,
         ?string $locationId = null,
+        ?array $extraFields = null,
         ?string $jwt = null)
     {
         $this->assetCode = $assetCode;
@@ -204,6 +213,7 @@ class DepositRequest
         $this->claimableBalanceSupported = $claimableBalanceSupported;
         $this->customerId = $customerId;
         $this->locationId = $locationId;
+        $this->extraFields = $extraFields;
         $this->jwt = $jwt;
     }
 
