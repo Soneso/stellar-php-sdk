@@ -123,6 +123,50 @@ class Memo
         }
     }
 
+    /**
+     * Returns the type of this memo as a string.
+     * Possible values are 'id', 'text', 'hash', 'none' and 'return'.
+     *
+     * @return string type of this memo as a string.
+     */
+    public function typeAsString(): string
+    {
+        return match ($this->type) {
+            XdrMemoType::MEMO_ID => 'id',
+            XdrMemoType::MEMO_TEXT => 'text',
+            XdrMemoType::MEMO_HASH => 'hash',
+            XdrMemoType::MEMO_NONE => 'none',
+            XdrMemoType::MEMO_RETURN => 'return',
+            default => 'unknown',
+        };
+    }
+
+    /**
+     * Returns the value of this memo as a string. It this memo has no value it returns null.
+     *
+     * @return string|null the value of this memo as a string if any. If the memo type is 'return' or 'hash' it
+     * returns a base 64 encoded string of the memo value. If the memo type is 'text' it just returns the value.
+     * If the memo type is 'id' it returns the string representation of the int value. If the memo typ is 'none',
+     * it returns null.
+     */
+    public function valueAsString(): ?string
+    {
+        if ($this->value === null) {
+            return null;
+        }
+        switch ($this->type) {
+            case static::MEMO_TYPE_TEXT:
+                return $this->getValue();
+            case static::MEMO_TYPE_RETURN:
+            case static::MEMO_TYPE_HASH:
+                return base64_encode($this->value);
+            case static::MEMO_TYPE_ID:
+                return strval($this->getValue());
+            default:
+                return null;
+        }
+    }
+
     public function toXdr() : XdrMemo
     {
         $xdrMemoType = new XdrMemoType($this->type);
