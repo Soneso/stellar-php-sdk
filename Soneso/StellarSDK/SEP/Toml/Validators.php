@@ -29,7 +29,13 @@ class Validators extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<Validator>
+     */
     public function toArray() : array {
+        /**
+         * @var array<Validator> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

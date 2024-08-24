@@ -29,7 +29,13 @@ class Principals extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<PointOfContact>
+     */
     public function toArray() : array {
+        /**
+         * @var array<PointOfContact> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

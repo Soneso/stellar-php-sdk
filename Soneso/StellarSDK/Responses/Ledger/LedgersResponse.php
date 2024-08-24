@@ -33,6 +33,9 @@ class LedgersResponse extends \IteratorIterator {
      * @return array<LedgerResponse>
      */
     public function toArray() : array {
+        /**
+         * @var array<LedgerResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

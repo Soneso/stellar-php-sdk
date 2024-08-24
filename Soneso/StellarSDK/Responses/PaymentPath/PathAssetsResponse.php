@@ -36,6 +36,9 @@ class PathAssetsResponse extends \IteratorIterator
      * @return array<Asset>
      */
     public function toArray() : array {
+        /**
+         * @var array<Asset> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

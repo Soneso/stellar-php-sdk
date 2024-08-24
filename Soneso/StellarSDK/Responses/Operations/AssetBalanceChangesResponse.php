@@ -29,7 +29,13 @@ class AssetBalanceChangesResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<AssetBalanceChangeResponse>
+     */
     public function toArray() : array {
+        /**
+         * @var array<AssetBalanceChangeResponse> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

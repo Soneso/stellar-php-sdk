@@ -29,7 +29,13 @@ class SimulateTransactionResults extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<SimulateTransactionResult>
+     */
     public function toArray() : array {
+        /**
+         * @var array<SimulateTransactionResult> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

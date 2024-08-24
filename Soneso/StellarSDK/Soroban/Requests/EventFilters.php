@@ -35,6 +35,9 @@ class EventFilters extends \IteratorIterator
      * @return array<EventFilter>
      */
     public function toArray() : array {
+        /**
+         * @var array<EventFilter> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

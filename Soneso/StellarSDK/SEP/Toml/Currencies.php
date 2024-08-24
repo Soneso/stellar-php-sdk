@@ -29,7 +29,13 @@ class Currencies extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<Currency>
+     */
     public function toArray() : array {
+        /**
+         * @var array<Currency> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);

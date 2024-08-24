@@ -37,6 +37,9 @@ class TopicFilters extends \IteratorIterator
      * @return array<TopicFilter> list of topic filters.
      */
     public function toArray() : array {
+        /**
+         * @var array<TopicFilter> $result
+         */
         $result = array();
         foreach($this as $value) {
             array_push($result, $value);
