@@ -14,7 +14,7 @@ class XdrPathPaymentStrictSendOperation
     private BigInteger $sendAmount;
     private XdrMuxedAccount $destination;
     private XdrAsset $destAsset;
-    private BigInteger $destAmount;
+    private BigInteger $destMin;
     /**
      * @var array<XdrAsset>
      */
@@ -25,15 +25,15 @@ class XdrPathPaymentStrictSendOperation
      * @param BigInteger $sendAmount
      * @param XdrMuxedAccount $destination
      * @param XdrAsset $destAsset
-     * @param BigInteger $destAmount
+     * @param BigInteger $destMin
      * @param array<XdrAsset> $path
      */
-    public function __construct(XdrAsset $sendAsset, BigInteger $sendAmount, XdrMuxedAccount $destination, XdrAsset $destAsset, BigInteger $destAmount, array $path) {
+    public function __construct(XdrAsset $sendAsset, BigInteger $sendAmount, XdrMuxedAccount $destination, XdrAsset $destAsset, BigInteger $destMin, array $path) {
         $this->sendAsset = $sendAsset;
         $this->sendAmount = $sendAmount;
         $this->destination = $destination;
         $this->destAsset = $destAsset;
-        $this->destAmount = $destAmount;
+        $this->destMin = $destMin;
         $this->path = $path;
     }
 
@@ -72,9 +72,9 @@ class XdrPathPaymentStrictSendOperation
     /**
      * @return BigInteger
      */
-    public function getDestAmount(): BigInteger
+    public function getDestMin(): BigInteger
     {
-        return $this->destAmount;
+        return $this->destMin;
     }
 
     /**
@@ -90,7 +90,7 @@ class XdrPathPaymentStrictSendOperation
         $bytes .= XdrEncoder::bigInteger64($this->sendAmount);
         $bytes .= $this->destination->encode();
         $bytes .= $this->destAsset->encode();
-        $bytes .= XdrEncoder::bigInteger64($this->destAmount);
+        $bytes .= XdrEncoder::bigInteger64($this->destMin);
         $bytes .= XdrEncoder::integer32(count($this->path));
         foreach ($this->path as $asset) {
             if ($asset instanceof XdrAsset) {
@@ -105,12 +105,12 @@ class XdrPathPaymentStrictSendOperation
         $sendAmount = $xdr->readBigInteger64();
         $destination = XdrMuxedAccount::decode($xdr);
         $destAsset = XdrAsset::decode($xdr);
-        $destAmount = $xdr->readBigInteger64();
+        $destMin = $xdr->readBigInteger64();
         $path = array();
         $count = $xdr->readInteger32();
         for ($i = 0; $i < $count; $i++) {
             array_push($path, XdrAsset::decode($xdr));
         }
-        return new XdrPathPaymentStrictSendOperation($sendAsset, $sendAmount, $destination, $destAsset,$destAmount, $path);
+        return new XdrPathPaymentStrictSendOperation($sendAsset, $sendAmount, $destination, $destAsset, $destMin, $path);
     }
 }

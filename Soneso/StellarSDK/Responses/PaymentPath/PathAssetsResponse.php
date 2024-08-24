@@ -32,6 +32,9 @@ class PathAssetsResponse extends \IteratorIterator
         return $this->getInnerIterator()->count();
     }
 
+    /**
+     * @return array<Asset>
+     */
     public function toArray() : array {
         $result = array();
         foreach($this as $value) {

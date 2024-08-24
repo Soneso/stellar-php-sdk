@@ -99,14 +99,14 @@ class PathPaymentStrictSendOperation extends AbstractOperation
         $sendAsset = Asset::fromXdr($xdrOp->getSendAsset());
         $destination = MuxedAccount::fromXdr($xdrOp->getDestination());
         $destAsset = Asset::fromXdr($xdrOp->getDestAsset());
-        $destAmount = AbstractOperation::fromXdrAmount($xdrOp->getDestAmount());
+        $destMin = AbstractOperation::fromXdrAmount($xdrOp->getDestMin());
         $path = array();
         foreach ($xdrOp->getPath() as $pathAsset) {
             if ($pathAsset instanceof XdrAsset) {
                 array_push($path, Asset::fromXdr($pathAsset));
             }
         }
-        return new PathPaymentStrictSendOperation($sendAsset, $sendAmount, $destination, $destAsset, $destAmount, $path);
+        return new PathPaymentStrictSendOperation($sendAsset, $sendAmount, $destination, $destAsset, $destMin, $path);
     }
 
     public function toOperationBody(): XdrOperationBody
@@ -115,7 +115,7 @@ class PathPaymentStrictSendOperation extends AbstractOperation
         $xdrSendAmount = AbstractOperation::toXdrAmount($this->sendAmount);
         $xdrDestination = $this->destination->toXdr();
         $xdrDestAsset = $this->destAsset->toXdr();
-        $xdrDestAmount = AbstractOperation::toXdrAmount($this->destMin);
+        $xdrDestMin = AbstractOperation::toXdrAmount($this->destMin);
         $xdrPath = array();
         if ($this->path) {
             $count = count($this->path);
@@ -126,7 +126,7 @@ class PathPaymentStrictSendOperation extends AbstractOperation
                 }
             }
         }
-        $op = new XdrPathPaymentStrictSendOperation($xdrSendAsset, $xdrSendAmount, $xdrDestination, $xdrDestAsset, $xdrDestAmount, $xdrPath);
+        $op = new XdrPathPaymentStrictSendOperation($xdrSendAsset, $xdrSendAmount, $xdrDestination, $xdrDestAsset, $xdrDestMin, $xdrPath);
         $type = new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_SEND);
         $result = new XdrOperationBody($type);
         $result->setPathPaymentStrictSendOp($op);

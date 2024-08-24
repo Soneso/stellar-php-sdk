@@ -94,7 +94,7 @@ class PathPaymentStrictReceiveOperation extends AbstractOperation
     }
 
     public static function fromXdrOperation(XdrPathPaymentStrictReceiveOperation $xdrOp): PathPaymentStrictReceiveOperation {
-        $sendAmount = AbstractOperation::fromXdrAmount($xdrOp->getSendAmount());
+        $sendMax = AbstractOperation::fromXdrAmount($xdrOp->getSendMax());
         $sendAsset = Asset::fromXdr($xdrOp->getSendAsset());
         $destination = MuxedAccount::fromXdr($xdrOp->getDestination());
         $destAsset = Asset::fromXdr($xdrOp->getDestAsset());
@@ -105,12 +105,12 @@ class PathPaymentStrictReceiveOperation extends AbstractOperation
                array_push($path, Asset::fromXdr($pathAsset));
             }
         }
-        return new PathPaymentStrictReceiveOperation($sendAsset, $sendAmount, $destination, $destAsset, $destAmount, $path);
+        return new PathPaymentStrictReceiveOperation($sendAsset, $sendMax, $destination, $destAsset, $destAmount, $path);
     }
 
     public function toOperationBody(): XdrOperationBody {
         $xdrSendAsset = $this->sendAsset->toXdr();
-        $xdrSendAmount = AbstractOperation::toXdrAmount($this->sendMax);
+        $xdrSendMax = AbstractOperation::toXdrAmount($this->sendMax);
         $xdrDestination = $this->destination->toXdr();
         $xdrDestAsset = $this->destAsset->toXdr();
         $xdrDestAmount = AbstractOperation::toXdrAmount($this->destAmount);
@@ -124,7 +124,7 @@ class PathPaymentStrictReceiveOperation extends AbstractOperation
                 }
             }
         }
-        $op = new XdrPathPaymentStrictReceiveOperation($xdrSendAsset, $xdrSendAmount, $xdrDestination, $xdrDestAsset, $xdrDestAmount, $xdrPath);
+        $op = new XdrPathPaymentStrictReceiveOperation($xdrSendAsset, $xdrSendMax, $xdrDestination, $xdrDestAsset, $xdrDestAmount, $xdrPath);
         $type = new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE);
         $result = new XdrOperationBody($type);
         $result->setPathPaymentStrictReceiveOp($op);

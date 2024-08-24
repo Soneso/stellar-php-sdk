@@ -11,7 +11,7 @@ use phpseclib3\Math\BigInteger;
 class XdrPathPaymentStrictReceiveOperation
 {
     private XdrAsset $sendAsset;
-    private BigInteger $sendAmount;
+    private BigInteger $sendMax;
     private XdrMuxedAccount $destination;
     private XdrAsset $destAsset;
     private BigInteger $destAmount;
@@ -22,15 +22,15 @@ class XdrPathPaymentStrictReceiveOperation
 
     /**
      * @param XdrAsset $sendAsset
-     * @param BigInteger $sendAmount
+     * @param BigInteger $sendMax
      * @param XdrMuxedAccount $destination
      * @param XdrAsset $destAsset
      * @param BigInteger $destAmount
      * @param array<XdrAsset> $path
      */
-    public function __construct(XdrAsset $sendAsset, BigInteger $sendAmount, XdrMuxedAccount $destination, XdrAsset $destAsset, BigInteger $destAmount, array $path) {
+    public function __construct(XdrAsset $sendAsset, BigInteger $sendMax, XdrMuxedAccount $destination, XdrAsset $destAsset, BigInteger $destAmount, array $path) {
         $this->sendAsset = $sendAsset;
-        $this->sendAmount = $sendAmount;
+        $this->sendMax = $sendMax;
         $this->destination = $destination;
         $this->destAsset = $destAsset;
         $this->destAmount = $destAmount;
@@ -48,9 +48,9 @@ class XdrPathPaymentStrictReceiveOperation
     /**
      * @return BigInteger
      */
-    public function getSendAmount(): BigInteger
+    public function getSendMax(): BigInteger
     {
-        return $this->sendAmount;
+        return $this->sendMax;
     }
 
     /**
@@ -87,7 +87,7 @@ class XdrPathPaymentStrictReceiveOperation
 
     public function encode() : string {
         $bytes = $this->sendAsset->encode();
-        $bytes .= XdrEncoder::bigInteger64($this->sendAmount);
+        $bytes .= XdrEncoder::bigInteger64($this->sendMax);
         $bytes .= $this->destination->encode();
         $bytes .= $this->destAsset->encode();
         $bytes .= XdrEncoder::bigInteger64($this->destAmount);
@@ -102,7 +102,7 @@ class XdrPathPaymentStrictReceiveOperation
     public static function decode(XdrBuffer $xdr) : XdrPathPaymentStrictReceiveOperation {
 
         $sendAsset = XdrAsset::decode($xdr);
-        $sendAmount = $xdr->readBigInteger64();
+        $sendMax = $xdr->readBigInteger64();
         $destination = XdrMuxedAccount::decode($xdr);
         $destAsset = XdrAsset::decode($xdr);
         $destAmount = $xdr->readBigInteger64();
@@ -111,6 +111,6 @@ class XdrPathPaymentStrictReceiveOperation
         for ($i = 0; $i < $count; $i++) {
             array_push($path, XdrAsset::decode($xdr));
         }
-        return new XdrPathPaymentStrictReceiveOperation($sendAsset, $sendAmount, $destination, $destAsset,$destAmount, $path);
+        return new XdrPathPaymentStrictReceiveOperation($sendAsset, $sendMax, $destination, $destAsset, $destAmount, $path);
     }
 }
