@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Requests\RequestBuilder;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
 use Soneso\StellarSDK\Soroban\Requests\GetTransactionsRequest;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
@@ -295,6 +296,40 @@ class SorobanServer
             }
         }
         return null;
+    }
+
+    /**
+     * Loads contract source byte code for the given contract id and extracts
+     * the information (Environment Meta, Contract Spec, Contract Meta).
+     * @param string $contractId the id of the contract to load and parse the information from.
+     * @return SorobanContractInfo|null The contract info or null if the contract was not found.
+     * @throws SorobanContractParserException if parsing of the byte code failed.
+     * @throws GuzzleException if any request problem occurs.
+     */
+    public function loadContractInfoForContractId(string $contractId) :?SorobanContractInfo {
+        $contractCodeEntry =  self::loadContractCodeForContractId($contractId);
+        if ($contractCodeEntry === null) {
+            return null;
+        }
+        $byteCode = $contractCodeEntry->code->value;
+        return SorobanContractParser::parseContractByteCode($byteCode);
+    }
+
+    /**
+     * Loads contract source byte code for the given wasm id and extracts
+     * the information (Environment Meta, Contract Spec, Contract Meta).
+     * @param string $wasmId the wasm id of the contract to load and parse the information from.
+     * @return SorobanContractInfo|null The contract info or null if the contract was not found.
+     * @throws SorobanContractParserException if parsing of the byte code failed.
+     * @throws GuzzleException if any request problem occurs.
+     */
+    public function loadContractInfoForWasmId(string $wasmId) :?SorobanContractInfo {
+        $contractCodeEntry =  self::loadContractCodeForWasmId($wasmId);
+        if ($contractCodeEntry === null) {
+            return null;
+        }
+        $byteCode = $contractCodeEntry->code->value;
+        return SorobanContractParser::parseContractByteCode($byteCode);
     }
 
     /**

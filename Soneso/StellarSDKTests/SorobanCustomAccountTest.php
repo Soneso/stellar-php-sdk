@@ -51,7 +51,6 @@ class SorobanCustomAccountTest extends TestCase
     private string $testOn = 'testnet'; // 'futurenet'
     private Network $network;
     private SorobanServer $server;
-    private StellarSDK $sdk;
 
     public function setUp(): void
     {
@@ -61,12 +60,10 @@ class SorobanCustomAccountTest extends TestCase
             $this->network = Network::testnet();
             $this->server = new SorobanServer(self::TESTNET_SERVER_URL);
             $this->server->enableLogging = true;
-            $this->sdk = StellarSDK::getTestNetInstance();
         } elseif ($this->testOn === 'futurenet') {
             $this->network = Network::futurenet();
             $this->server = new SorobanServer(self::FUTURENET_SERVER_URL);
             $this->server->enableLogging = true;
-            $this->sdk = StellarSDK::getFutureNetInstance();
         }
     }
 
@@ -104,6 +101,11 @@ class SorobanCustomAccountTest extends TestCase
         $accountContractId = $deployAccRes[1];
         //print("accountContractWasmId : " . $accountContractWasmId . PHP_EOL);
         //print("accountContractId : " . $accountContractId . PHP_EOL);
+
+        $contractInfo = $this->server->loadContractInfoForContractId($accountContractId);
+        $this->assertNotNull($contractInfo);
+        $this->assertTrue(count($contractInfo->specEntries) > 0);
+        $this->assertTrue(count($contractInfo->metaEntries) > 0);
 
         $deployTokRes = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
         $tokenAContractId = $deployTokRes[1];

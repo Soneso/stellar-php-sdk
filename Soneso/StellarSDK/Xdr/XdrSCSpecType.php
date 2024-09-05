@@ -15,7 +15,7 @@ class XdrSCSpecType
     // Types with no parameters.
     const SC_SPEC_TYPE_BOOL = 1;
     const SC_SPEC_TYPE_VOID = 2;
-    const SC_SPEC_TYPE_STATUS = 3;
+    const SC_SPEC_TYPE_ERROR = 3;
     const SC_SPEC_TYPE_U32 = 4;
     const SC_SPEC_TYPE_I32 = 5;
     const SC_SPEC_TYPE_U64 = 6;
@@ -59,8 +59,8 @@ class XdrSCSpecType
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_VOID);
     }
 
-    public static function STATUS() :  XdrSCSpecType {
-        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_STATUS);
+    public static function ERROR() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_ERROR);
     }
 
     public static function U32() :  XdrSCSpecType {

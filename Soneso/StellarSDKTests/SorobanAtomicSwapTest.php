@@ -102,10 +102,20 @@ class SorobanAtomicSwapTest extends TestCase
         $atomicSwapContractId = $this->deployContract($this->server,self::SWAP_CONTRACT_PATH, $adminKeyPair);
         print("atomic swap cid: " . $atomicSwapContractId . PHP_EOL);
 
+        $contractInfo = $this->server->loadContractInfoForContractId($atomicSwapContractId);
+        $this->assertNotNull($contractInfo);
+        $this->assertTrue(count($contractInfo->specEntries) > 0);
+        $this->assertTrue(count($contractInfo->metaEntries) > 0);
+
         $tokenAContractId = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
         print("token a cid: " . StrKey::encodeContractIdHex($tokenAContractId) . PHP_EOL);
         $tokenBContractId = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
         print("token b cid: " . StrKey::encodeContractIdHex($tokenBContractId) . PHP_EOL);
+
+        $contractInfo = $this->server->loadContractInfoForContractId($tokenBContractId);
+        $this->assertNotNull($contractInfo);
+        $this->assertTrue(count($contractInfo->specEntries) > 0);
+        $this->assertTrue(count($contractInfo->metaEntries) > 0);
 
         $this->createToken($this->server, $adminKeyPair, $tokenAContractId, "TokenA", "TokenA");
         $this->createToken($this->server, $adminKeyPair, $tokenBContractId, "TokenB", "TokenB");

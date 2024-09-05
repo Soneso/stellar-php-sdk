@@ -31,7 +31,7 @@ class XdrSCSpecUDTUnionCaseTupleV0
 
     public function encode(): string {
         $bytes = XdrEncoder::string($this->doc);
-        $bytes = XdrEncoder::string($this->name);
+        $bytes .= XdrEncoder::string($this->name);
         $bytes .= XdrEncoder::integer32(count($this->type));
         foreach($this->type as $val) {
             if ($val instanceof XdrSCSpecTypeDef) {

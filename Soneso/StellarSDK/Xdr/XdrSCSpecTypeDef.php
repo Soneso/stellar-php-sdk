@@ -80,7 +80,7 @@ class XdrSCSpecTypeDef
     }
 
     public static function STATUS() : XdrSCSpecTypeDef {
-        return new XdrSCSpecTypeDef(XdrSCSpecType::STATUS());
+        return new XdrSCSpecTypeDef(XdrSCSpecType::ERROR());
     }
 
     public static function U32() : XdrSCSpecTypeDef {
@@ -146,7 +146,7 @@ class XdrSCSpecTypeDef
             case XdrSCSpecType::SC_SPEC_TYPE_VAL:
             case XdrSCSpecType::SC_SPEC_TYPE_BOOL:
             case XdrSCSpecType::SC_SPEC_TYPE_VOID:
-            case XdrSCSpecType::SC_SPEC_TYPE_STATUS:
+            case XdrSCSpecType::SC_SPEC_TYPE_ERROR:
             case XdrSCSpecType::SC_SPEC_TYPE_U32:
             case XdrSCSpecType::SC_SPEC_TYPE_I32:
             case XdrSCSpecType::SC_SPEC_TYPE_U64:
@@ -193,7 +193,7 @@ class XdrSCSpecTypeDef
             case XdrSCSpecType::SC_SPEC_TYPE_VAL:
             case XdrSCSpecType::SC_SPEC_TYPE_BOOL:
             case XdrSCSpecType::SC_SPEC_TYPE_VOID:
-            case XdrSCSpecType::SC_SPEC_TYPE_STATUS:
+            case XdrSCSpecType::SC_SPEC_TYPE_ERROR:
             case XdrSCSpecType::SC_SPEC_TYPE_U32:
             case XdrSCSpecType::SC_SPEC_TYPE_I32:
             case XdrSCSpecType::SC_SPEC_TYPE_U64:

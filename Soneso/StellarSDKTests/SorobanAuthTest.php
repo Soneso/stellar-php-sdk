@@ -91,6 +91,11 @@ class SorobanAuthTest extends TestCase
 
         $contractId = $this->deployContract($this->server, self::AUTH_CONTRACT_PATH, $invokerKeyPair);
 
+        $contractInfo = $this->server->loadContractInfoForContractId($contractId);
+        $this->assertNotNull($contractInfo);
+        $this->assertTrue(count($contractInfo->specEntries) > 0);
+        $this->assertTrue(count($contractInfo->metaEntries) > 0);
+
         // submitter and invoker use are the same
         // no need to sign auth
 

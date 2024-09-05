@@ -298,12 +298,22 @@ class SorobanTest extends TestCase
         $helloContractId = $statusResponse->getCreatedContractId();
         $this->assertNotNull($helloContractId);
 
-        print("contract id: " . $helloContractId . PHP_EOL);
+        print("contract id: " . StrKey::encodeContractIdHex($helloContractId) . PHP_EOL);
 
         $contractCodeEntry =  $this->server->loadContractCodeForContractId($helloContractId);
         $this->assertNotNull($contractCodeEntry);
         $loadedSourceCode = $contractCodeEntry->code->value;
         $this->assertEquals($contractCode, $loadedSourceCode);
+
+        $contractInfo = $this->server->loadContractInfoForContractId($helloContractId);
+        $this->assertNotNull($contractInfo);
+        $this->assertTrue(count($contractInfo->specEntries) > 0);
+        $this->assertTrue(count($contractInfo->metaEntries) > 0);
+
+        $contractInfo = $this->server->loadContractInfoForWasmId($helloContractWasmId);
+        $this->assertNotNull($contractInfo);
+        $this->assertTrue(count($contractInfo->specEntries) > 0);
+        $this->assertTrue(count($contractInfo->metaEntries) > 0);
 
         sleep(5);
 
@@ -641,6 +651,11 @@ class SorobanTest extends TestCase
     {
 
         $contractId = $this->deployContract($this->server, self::EVENTS_CONTRACT_PATH, $this->accountAKeyPair);
+
+        $contractInfo = $this->server->loadContractInfoForContractId(StrKey::encodeContractIdHex($contractId));
+        $this->assertNotNull($contractInfo);
+        $this->assertTrue(count($contractInfo->specEntries) > 0);
+        $this->assertTrue(count($contractInfo->metaEntries) > 0);
 
         sleep(3);
 
