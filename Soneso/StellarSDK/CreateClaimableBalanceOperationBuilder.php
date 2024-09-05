@@ -16,6 +16,12 @@ class CreateClaimableBalanceOperationBuilder
     private string $amount;
     private ?MuxedAccount $sourceAccount = null;
 
+    /**
+     * Constructor.
+     * @param array<Claimant> $claimants the claimants that can claim the claimable balance.
+     * @param Asset $asset the asset to claim.
+     * @param string $amount amount of the asset to claim.
+     */
     public function __construct(array $claimants, Asset $asset, string $amount) {
         $this->claimants = $claimants;
         $this->asset = $asset;

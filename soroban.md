@@ -399,7 +399,7 @@ Find the complete code [here](https://github.com/Soneso/stellar-php-sdk/blob/mai
 
 You can find the working code and more in the [Soroban Test](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/SorobanTest.php), [Soroban Auth Test](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAuthTest.php) and [Atomic Swap Test](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanAtomicSwapTest.php) of the PHP SDK. The wasm byte-code files can be found in the [test/wasm](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests/wasm/) folder.
 
-Because Soroban and the PHP SDK support for Soroban are in development, errors may occur. For a better understanding of an error you can enable the ```SorobanServer``` logging:
+For a better understanding of an error you can enable the ```SorobanServer``` logging:
 
 ```php
 $server->enableLogging = true;
@@ -408,3 +408,35 @@ This will log the responses received from the Soroban-RPC server.
 
 If you find any issues please report them [here](https://github.com/Soneso/stellar-php-sdk/issues). It will help us to improve the SDK.
 
+### Soroban contract parser
+
+The soroban contract parser allows you to access the contract info stored in the contract bytecode.
+You can access the environment metadata, contract spec and contract meta.
+
+The environment metadata holds the interface version that should match the version of the soroban environment host functions supported.
+
+The contract spec contains a `XdrSCSpecEntry` for every function, struct, and union exported by the contract.
+
+In the contract meta, contracts may store any metadata in the entries that can be used by applications and tooling off-network.
+
+You can access the parser directly if you have the contract bytecode:
+
+```php
+$contractByteCode = file_get_contents("path to .wasm file");
+$contractInfo = SorobanContractParser::parseContractByteCode($contractByteCode);
+```
+
+Or you can use `SorobanServer` methods to load the contract code form the network and parse it.
+
+By contract id:
+```php
+ $contractInfo = $server->loadContractInfoForContractId($contractId);
+```
+
+By wasm id:
+```php
+$contractInfo = $server->loadContractInfoForWasmId($contractWasmId);
+```
+
+The parser returns a `SorobanContractInfo` object containing the parsed data.
+In [SorobanParserTest.php](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanParserTest.php) you can find a detailed example of how you can access the parsed data.
