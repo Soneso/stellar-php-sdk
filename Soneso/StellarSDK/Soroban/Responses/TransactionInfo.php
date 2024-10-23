@@ -42,9 +42,9 @@ class TransactionInfo
      */
     public int $ledger;
     /**
-     * @var int $createdAt The unix timestamp of when the transaction was included in the ledger.
+     * @var string $createdAt The unix timestamp of when the transaction was included in the ledger.
      */
-    public int $createdAt;
+    public string $createdAt;
     /**
      * @var array<string>|null (optional) A base64 encoded slice of xdr.DiagnosticEvent.
      * This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
@@ -64,7 +64,7 @@ class TransactionInfo
      * @param string $resultXdr A base64 encoded string of the raw TransactionResult XDR struct for this transaction.
      * @param string $resultMetaXdr A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
      * @param int $ledger The sequence number of the ledger which included the transaction.
-     * @param int $createdAt The unix timestamp of when the transaction was included in the ledger.
+     * @param string $createdAt The unix timestamp of when the transaction was included in the ledger.
      * @param string $txHash hex-encoded transaction hash string.
      * @param array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
      * This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
@@ -77,7 +77,7 @@ class TransactionInfo
         string $resultXdr,
         string $resultMetaXdr,
         int $ledger,
-        int $createdAt,
+        string $createdAt,
         string $txHash,
         ?array $diagnosticEventsXdr = null,
     )
