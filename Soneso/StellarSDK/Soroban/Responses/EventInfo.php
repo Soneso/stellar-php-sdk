@@ -40,11 +40,6 @@ class EventInfo
     public string $id;
 
     /**
-     * @var string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
-     */
-    public string $pagingToken;
-
-    /**
      * @var array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
      */
     public array $topic;
@@ -70,7 +65,6 @@ class EventInfo
      * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time.
      * @param string $contractId StrKey representation of the contract address that emitted this event. ("C...").
      * @param string $id Unique identifier for this event.
-     * @param string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
      * @param array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
      * @param string $value The emitted body value of the event (serialized in a base64 xdr string).
      * @param bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
@@ -82,7 +76,6 @@ class EventInfo
         string $ledgerClosedAt,
         string $contractId,
         string $id,
-        string $pagingToken,
         array $topic,
         string $value,
         bool $inSuccessfulContractCall,
@@ -94,7 +87,6 @@ class EventInfo
         $this->ledgerClosedAt = $ledgerClosedAt;
         $this->contractId = $contractId;
         $this->id = $id;
-        $this->pagingToken = $pagingToken;
         $this->topic = $topic;
         $this->value = $value;
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;
@@ -108,7 +100,6 @@ class EventInfo
         $ledgerClosedAt = $json['ledgerClosedAt'];
         $contractId = $json['contractId'];
         $id = $json['id'];
-        $pagingToken = $json['pagingToken'];
         $value = $json['value']['xdr'] ?? $json['value'];
         $topic = array();
         foreach ($json['topic'] as $val) {
@@ -122,7 +113,6 @@ class EventInfo
             $ledgerClosedAt,
             $contractId,
             $id,
-            $pagingToken,
             $topic,
             $value,
             $inSuccessfulContractCall,
@@ -208,22 +198,6 @@ class EventInfo
     public function setId(string $id): void
     {
         $this->id = $id;
-    }
-
-    /**
-     * @return string Duplicate of id field, but in the standard place for pagination tokens.
-     */
-    public function getPagingToken(): string
-    {
-        return $this->pagingToken;
-    }
-
-    /**
-     * @param string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
-     */
-    public function setPagingToken(string $pagingToken): void
-    {
-        $this->pagingToken = $pagingToken;
     }
 
     /**

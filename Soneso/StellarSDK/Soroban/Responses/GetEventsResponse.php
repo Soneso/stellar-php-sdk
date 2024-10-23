@@ -22,6 +22,11 @@ class GetEventsResponse extends SorobanRpcResponse
      */
     public ?int $latestLedger = null;
 
+    /**
+     * @var String|null $cursor for pagination
+     */
+    public ?String $cursor = null;
+
     public static function fromJson(array $json): GetEventsResponse
     {
         $result = new GetEventsResponse($json);
@@ -35,6 +40,9 @@ class GetEventsResponse extends SorobanRpcResponse
             }
             if (isset($json['result']['latestLedger'])) {
                 $result->latestLedger = $json['result']['latestLedger'];
+            }
+            if (isset($json['result']['cursor'])) {
+                $result->cursor = $json['result']['cursor'];
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -72,6 +80,22 @@ class GetEventsResponse extends SorobanRpcResponse
     public function setLatestLedger(?int $latestLedger): void
     {
         $this->latestLedger = $latestLedger;
+    }
+
+    /**
+     * @return String|null cursor for pagination
+     */
+    public function getCursor(): ?string
+    {
+        return $this->cursor;
+    }
+
+    /**
+     * @param String|null $cursor for pagination
+     */
+    public function setCursor(?string $cursor): void
+    {
+        $this->cursor = $cursor;
     }
 
 }
