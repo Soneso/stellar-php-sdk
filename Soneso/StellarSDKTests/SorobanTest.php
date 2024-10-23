@@ -182,8 +182,6 @@ class SorobanTest extends TestCase
         $this->assertEquals(1, $simulateResponse->results->count());
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
-        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
 
         $transactionData = $simulateResponse->transactionData;
@@ -270,8 +268,6 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getSorobanAuth());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
-        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
 
         // set the transaction data + fee  + auth and sign
@@ -383,8 +379,6 @@ class SorobanTest extends TestCase
         $this->assertEquals(1, $simulateResponse->results->count());
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
-        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
 
         // set the transaction data  + fee and sign
@@ -474,8 +468,6 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getSorobanAuth());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
-        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
         if ($this->testOn === 'futurenet') {
             $this->assertNotNull($simulateResponse->stateChanges);
@@ -484,10 +476,6 @@ class SorobanTest extends TestCase
             $after = $stateChange->getAfterXdr();
             assertNotNull($after);
         }
-
-        /*print("Cost cpu: " . $simulateResponse->cost->cpuInsns . PHP_EOL);
-        print("Cost mem: " . $simulateResponse->cost->memBytes . PHP_EOL);
-        print("min res fee: " . $simulateResponse->minResourceFee . PHP_EOL);*/
 
         // set the transaction data and sign
         $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
@@ -587,8 +575,6 @@ class SorobanTest extends TestCase
         $this->assertNotNull($simulateResponse->results->toArray()[0]->getResultValue());
         $this->assertNotNull($simulateResponse->getTransactionData());
         $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, $simulateResponse->cost->cpuInsns);
-        $this->assertGreaterThan(1, $simulateResponse->cost->memBytes);
         $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
 
 
