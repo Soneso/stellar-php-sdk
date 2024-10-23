@@ -16,10 +16,8 @@ class AssetResponse extends Response
     private string $pagingToken;
     private AssetAccountsResponse $accounts;
     private AssetBalancesResponse $balances;
-    private string $amount;
     private string $claimableBalancesAmount;
     private string $liquidityPoolsAmount;
-    private int $numAccounts;
     private int $numClaimableBalances;
     private int $numLiquidityPools;
     private ?int $numContracts = null;
@@ -80,14 +78,6 @@ class AssetResponse extends Response
     /**
      * @return string
      */
-    public function getAmount(): string
-    {
-        return $this->amount;
-    }
-
-    /**
-     * @return string
-     */
     public function getClaimableBalancesAmount(): string
     {
         return $this->claimableBalancesAmount;
@@ -99,14 +89,6 @@ class AssetResponse extends Response
     public function getLiquidityPoolsAmount(): string
     {
         return $this->liquidityPoolsAmount;
-    }
-
-    /**
-     * @return int
-     */
-    public function getNumAccounts(): int
-    {
-        return $this->numAccounts;
     }
 
     /**
@@ -201,12 +183,10 @@ class AssetResponse extends Response
         if (isset($json['paging_token'])) $this->pagingToken = $json['paging_token'];
         if (isset($json['accounts'])) $this->accounts = AssetAccountsResponse::fromJson($json['accounts']);
         if (isset($json['balances'])) $this->balances = AssetBalancesResponse::fromJson($json['balances']);
-        if (isset($json['amount'])) $this->amount = $json['amount'];
         if (isset($json['claimable_balances_amount'])) $this->claimableBalancesAmount = $json['claimable_balances_amount'];
         if (isset($json['liquidity_pools_amount'])) $this->liquidityPoolsAmount = $json['liquidity_pools_amount'];
         if (isset($json['contracts_amount'])) $this->contractsAmount = $json['contracts_amount'];
         if (isset($json['archived_contracts_amount'])) $this->archivedContractsAmount = $json['archived_contracts_amount'];
-        if (isset($json['num_accounts'])) $this->numAccounts = $json['num_accounts'];
         if (isset($json['num_claimable_balances'])) $this->numClaimableBalances = $json['num_claimable_balances'];
         if (isset($json['num_liquidity_pools'])) $this->numLiquidityPools = $json['num_liquidity_pools'];
         if (isset($json['num_contracts'])) $this->numContracts = $json['num_contracts'];

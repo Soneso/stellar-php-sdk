@@ -41,8 +41,7 @@ class TransactionResponse extends Response
     private string $resultMetaXdrBase64;
     private ?XdrTransactionMeta $resultMetaXdr = null;
     private ?string $feeMetaXdrBase64 = null; // todo resolve
-    private ?array $feeMetaXdr = null; //
-    private ?string $validAfter = null; // [XdrLedgerEntryChange]
+    private ?array $feeMetaXdr = null;
     private TransactionSignaturesResponse $signatures;
     private ?FeeBumpTransactionResponse $feeBumpTransactionResponse = null;
     private ?InnerTransactionResponse $innerTransactionResponse = null;
@@ -226,14 +225,6 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string|null
-     */
-    public function getValidAfter(): ?string
-    {
-        return $this->validAfter;
-    }
-
-    /**
      * @return TransactionSignaturesResponse
      */
     public function getSignatures(): TransactionSignaturesResponse
@@ -338,7 +329,6 @@ class TransactionResponse extends Response
                 array_push($this->feeMetaXdr, XdrLedgerEntryChange::decode($xdrBuffer));
             }
         }
-        if (isset($json['valid_after'])) $this->validAfter = $json['valid_after'];
 
         if (isset($json['memo_type'])) {
             $memoTypeStr = $json['memo_type'];
