@@ -52,6 +52,11 @@ class TransactionInfo
     public ?array $diagnosticEventsXdr = null;
 
     /**
+     * @var string $txHash hex-encoded transaction hash string.
+    */
+    public string $txHash;
+
+    /**
      * @param string $status Indicates whether the transaction was successful or not.
      * @param int $applicationOrder The 1-based index of the transaction among all transactions included in the ledger.
      * @param bool $feeBump Indicates whether the transaction was fee bumped.
@@ -60,6 +65,7 @@ class TransactionInfo
      * @param string $resultMetaXdr A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
      * @param int $ledger The sequence number of the ledger which included the transaction.
      * @param int $createdAt The unix timestamp of when the transaction was included in the ledger.
+     * @param string $txHash hex-encoded transaction hash string.
      * @param array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
      * This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
      */
@@ -72,6 +78,7 @@ class TransactionInfo
         string $resultMetaXdr,
         int $ledger,
         int $createdAt,
+        string $txHash,
         ?array $diagnosticEventsXdr = null,
     )
     {
@@ -83,6 +90,7 @@ class TransactionInfo
         $this->resultMetaXdr = $resultMetaXdr;
         $this->ledger = $ledger;
         $this->createdAt = $createdAt;
+        $this->txHash = $txHash;
         $this->diagnosticEventsXdr = $diagnosticEventsXdr;
     }
 
@@ -109,9 +117,8 @@ class TransactionInfo
             $json['resultMetaXdr'],
             $json['ledger'],
             $json['createdAt'],
+            $json['txHash'],
             $diagnosticEventsXdr,
         );
     }
-
-
 }
