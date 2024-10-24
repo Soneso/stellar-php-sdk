@@ -171,8 +171,9 @@ if (GetTransactionResponse::STATUS_SUCCESS == $status) {
   $contractId = $statusResponse->getContractId();
 }
 ```
-
 Success!
+
+With the introduction of protocol 22, contracts with constructor can also be created. The `CreateContractWithConstructorHostFunction` object is used to create the operation.
 
 #### Get Ledger Entries
 
