@@ -30,12 +30,6 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     public ?int $minResourceFee = null;
 
     /**
-     * @var SimulateTransactionCost $cost (optional) - The cost object is legacy, inaccurate, and will be
-     * deprecated in future RPC releases. Please decode transactionData XDR to retrieve the correct resources.
-     */
-    public SimulateTransactionCost $cost;
-
-    /**
      * @var SimulateTransactionResults|null This object will only have one element: the result for the Host
      * Function invocation. Only present on successful simulation (i.e. no error) of InvokeHostFunction operations.
      */
@@ -89,9 +83,6 @@ class SimulateTransactionResponse extends SorobanRpcResponse
                     $value = SimulateTransactionResult::fromJson($jsonValue);
                     $result->results->add($value);
                 }
-            }
-            if (isset($json['result']['cost'])) {
-                $result->cost = SimulateTransactionCost::fromJson($json['result']['cost']);
             }
             if (isset($json['result']['latestLedger'])) {
                 $result->latestLedger = $json['result']['latestLedger'];
@@ -248,24 +239,6 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     public function setResultError(?string $resultError): void
     {
         $this->resultError = $resultError;
-    }
-
-    /**
-     * @return SimulateTransactionCost (optional) - The cost object is legacy, inaccurate, and will be
-     *  deprecated in future RPC releases. Please decode transactionData XDR to retrieve the correct resources.
-     */
-    public function getCost(): SimulateTransactionCost
-    {
-        return $this->cost;
-    }
-
-    /**
-     * @param SimulateTransactionCost $cost (optional) - The cost object is legacy, inaccurate, and will be
-     *  deprecated in future RPC releases. Please decode transactionData XDR to retrieve the correct resources.
-     */
-    public function setCost(SimulateTransactionCost $cost): void
-    {
-        $this->cost = $cost;
     }
 
     /**

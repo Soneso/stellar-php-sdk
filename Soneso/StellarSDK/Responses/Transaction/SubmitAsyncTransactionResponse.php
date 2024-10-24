@@ -45,7 +45,12 @@ class SubmitAsyncTransactionResponse extends Response
     {
         $txStatus = $json['tx_status'];
         $hash = $json['hash'];
-        $errorResultXdrBase64 = isset($json['error_result_xdr_base64']) ? $json['error_result_xdr_base64'] : null;
+        $errorResultXdrBase64 = null;
+        if (isset($json['errorResultXdr'])) {
+            $errorResultXdrBase64 = $json['errorResultXdr']; // protocol < 22
+        } else if (isset($json['error_result_xdr'])) {
+            $errorResultXdrBase64 = $json['error_result_xdr']; // protocol 22
+        }
         return new SubmitAsyncTransactionResponse(
             txStatus: $txStatus,
             hash: $hash,

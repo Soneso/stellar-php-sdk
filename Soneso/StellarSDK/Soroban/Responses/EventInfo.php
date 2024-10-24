@@ -35,14 +35,14 @@ class EventInfo
     public string $contractId;
 
     /**
+     * @var ?string $pagingToken for paging if protocol version < 22 (Duplicate of id field, but in the standard place for pagination tokens)
+     */
+    public ?string $pagingToken = null;
+
+    /**
      * @var string $id Unique identifier for this event.
      */
     public string $id;
-
-    /**
-     * @var string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
-     */
-    public string $pagingToken;
 
     /**
      * @var array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
@@ -70,7 +70,6 @@ class EventInfo
      * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time.
      * @param string $contractId StrKey representation of the contract address that emitted this event. ("C...").
      * @param string $id Unique identifier for this event.
-     * @param string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
      * @param array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
      * @param string $value The emitted body value of the event (serialized in a base64 xdr string).
      * @param bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
@@ -82,11 +81,11 @@ class EventInfo
         string $ledgerClosedAt,
         string $contractId,
         string $id,
-        string $pagingToken,
         array $topic,
         string $value,
         bool $inSuccessfulContractCall,
         string $txHash,
+        ?string $pagingToken = null,
     )
     {
         $this->type = $type;
@@ -94,11 +93,11 @@ class EventInfo
         $this->ledgerClosedAt = $ledgerClosedAt;
         $this->contractId = $contractId;
         $this->id = $id;
-        $this->pagingToken = $pagingToken;
         $this->topic = $topic;
         $this->value = $value;
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;
         $this->txHash = $txHash;
+        $this->pagingToken = $pagingToken;
     }
 
     public static function fromJson(array $json): EventInfo
@@ -108,7 +107,6 @@ class EventInfo
         $ledgerClosedAt = $json['ledgerClosedAt'];
         $contractId = $json['contractId'];
         $id = $json['id'];
-        $pagingToken = $json['pagingToken'];
         $value = $json['value']['xdr'] ?? $json['value'];
         $topic = array();
         foreach ($json['topic'] as $val) {
@@ -116,17 +114,21 @@ class EventInfo
         }
         $inSuccessfulContractCall = $json['inSuccessfulContractCall'];
         $txHash = $json['txHash'];
+        $pagingToken = null;
+        if (isset($json['pagingToken'])) {
+            $pagingToken = $json['pagingToken']; // protocol < 22
+        }
         return new EventInfo(
             $type,
             $ledger,
             $ledgerClosedAt,
             $contractId,
             $id,
-            $pagingToken,
             $topic,
             $value,
             $inSuccessfulContractCall,
             $txHash,
+            pagingToken: $pagingToken
         );
     }
 
@@ -211,22 +213,6 @@ class EventInfo
     }
 
     /**
-     * @return string Duplicate of id field, but in the standard place for pagination tokens.
-     */
-    public function getPagingToken(): string
-    {
-        return $this->pagingToken;
-    }
-
-    /**
-     * @param string $pagingToken Duplicate of id field, but in the standard place for pagination tokens.
-     */
-    public function setPagingToken(string $pagingToken): void
-    {
-        $this->pagingToken = $pagingToken;
-    }
-
-    /**
      * @return array<String> List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
      */
     public function getTopic(): array
@@ -279,6 +265,38 @@ class EventInfo
     public function setInSuccessfulContractCall(bool $inSuccessfulContractCall): void
     {
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;
+    }
+
+    /**
+     * @return string|null for paging, only available for protocol version < 22
+     */
+    public function getPagingToken(): ?string
+    {
+        return $this->pagingToken;
+    }
+
+    /**
+     * @param string|null $pagingToken for paging, only for protocol version < 22
+     */
+    public function setPagingToken(?string $pagingToken): void
+    {
+        $this->pagingToken = $pagingToken;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTxHash(): string
+    {
+        return $this->txHash;
+    }
+
+    /**
+     * @param string $txHash
+     */
+    public function setTxHash(string $txHash): void
+    {
+        $this->txHash = $txHash;
     }
 
 }

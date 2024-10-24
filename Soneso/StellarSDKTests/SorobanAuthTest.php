@@ -9,8 +9,8 @@ namespace Soneso\StellarSDKTests;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
-use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
@@ -49,7 +49,7 @@ class SorobanAuthTest extends TestCase
     const TESTNET_SERVER_URL = "https://soroban-testnet.stellar.org";
     const FUTURENET_SERVER_URL = "https://rpc-futurenet.stellar.org";
 
-    private string $testOn = 'testnet'; // 'futurenet'
+    private string $testOn = 'futurenet'; // testnet
     private Network $network;
     private SorobanServer $server;
     private StellarSDK $sdk;
@@ -465,7 +465,7 @@ class SorobanAuthTest extends TestCase
         $this->bumpContractCodeFootprint($server, $submitterKp, $wasmId, 100000);
 
         // create contract
-        $createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($submitterId), $wasmId);
+        $createContractHostFunction = new CreateContractWithConstructorHostFunction(Address::fromAccountId($submitterId), $wasmId, []);
         $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
         $op = $builder->build();
 

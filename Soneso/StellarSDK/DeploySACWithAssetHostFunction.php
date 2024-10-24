@@ -34,15 +34,25 @@ class DeploySACWithAssetHostFunction extends HostFunction
      */
     public static function fromXdr(XdrHostFunction $xdr) : DeploySACWithAssetHostFunction {
         $type = $xdr->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $xdr->createContract == null
-            || $xdr->createContract->contractIDPreimage->type->value != XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET
-            || $xdr->createContract->executable->type->value != XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+        if ($type->value !== XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT &&
+            $type->value !== XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2) {
             throw new Exception("Invalid argument");
         }
 
-        $xdrAsset = $xdr->createContract->contractIDPreimage->asset;
-        if ($xdrAsset == null) {
-            throw new Exception("invalid argument");
+        $preimage = $xdr->createContract !== null ? $xdr->createContract->contractIDPreimage :
+            ($xdr->createContractV2 !== null ? $xdr->createContractV2->contractIDPreimage : null);
+        $executableTypeValue = $xdr->createContract !== null ? $xdr->createContract->executable->type->value :
+            ($xdr->createContractV2 !== null ? $xdr->createContractV2->executable->type->value : null);
+        $xdrAsset = $xdr->createContract !== null ? $xdr->createContract->contractIDPreimage->asset :
+            ($xdr->createContractV2 !== null ? $xdr->createContractV2->contractIDPreimage->asset : null);
+
+        if($preimage === null || $executableTypeValue === null || $xdrAsset === null) {
+            throw new Exception("Invalid argument");
+        }
+
+        if ($preimage->type->value !== XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET ||
+            $executableTypeValue !== XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+            throw new Exception("Invalid argument");
         }
 
         return new DeploySACWithAssetHostFunction(Asset::fromXdr($xdrAsset));

@@ -39,19 +39,28 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction
      */
     public static function fromXdr(XdrHostFunction $xdr) : DeploySACWithSourceAccountHostFunction {
         $type = $xdr->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $xdr->createContract == null
-            || $xdr->createContract->contractIDPreimage->type->value != XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS
-            || $xdr->createContract->executable->type->value != XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+        if ($type->value !== XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT &&
+            $type->value !== XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2) {
             throw new Exception("Invalid argument");
         }
 
-        $xdrAddress = $xdr->createContract->contractIDPreimage->address;
+        $preimage = $xdr->createContract !== null ? $xdr->createContract->contractIDPreimage :
+            ($xdr->createContractV2 !== null ? $xdr->createContractV2->contractIDPreimage : null);
+        $executableTypeValue = $xdr->createContract != null ? $xdr->createContract->executable->type->value :
+            ($xdr->createContractV2 !== null ? $xdr->createContractV2->executable->type->value : null);
+        $xdrAddress = $xdr->createContract !== null ? $xdr->createContract->contractIDPreimage->address :
+            ($xdr->createContractV2 !== null ? $xdr->createContractV2->contractIDPreimage->address : null);
 
-        if ($xdrAddress == null) {
-            throw new Exception("invalid argument");
+        if($preimage === null || $executableTypeValue === null || $xdrAddress === null) {
+            throw new Exception("Invalid argument");
         }
 
-        return new DeploySACWithSourceAccountHostFunction(Address::fromXdr($xdrAddress), $xdr->createContract->contractIDPreimage->salt);
+        if ($preimage->type->value !== XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS ||
+            $executableTypeValue !== XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+            throw new Exception("Invalid argument");
+        }
+
+        return new DeploySACWithSourceAccountHostFunction(Address::fromXdr($xdrAddress), $preimage->salt);
     }
 
     /**

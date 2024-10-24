@@ -67,6 +67,23 @@ class InvokeHostFunctionOperation extends AbstractOperation
                     return new InvokeHostFunctionOperation(DeploySACWithAssetHostFunction::fromXdr($xdrFunction), $auth);
                 }
                 break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                $createContractV2 = $xdrFunction->createContractV2;
+                if ($createContractV2 == null) {
+                    throw new Exception("invalid argument");
+                }
+                $contractIdPreimageTypeVal = $createContractV2->contractIDPreimage->type->value;
+                $executableTypeValue = $createContractV2->executable->type->value;
+                if ($contractIdPreimageTypeVal == XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS) {
+                    if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM) {
+                        return new InvokeHostFunctionOperation(CreateContractWithConstructorHostFunction::fromXdr($xdrFunction), $auth);
+                    } else if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET){
+                        return new InvokeHostFunctionOperation(DeploySACWithSourceAccountHostFunction::fromXdr($xdrFunction), $auth);
+                    }
+                } else if ($executableTypeValue == XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET) {
+                    return new InvokeHostFunctionOperation(DeploySACWithAssetHostFunction::fromXdr($xdrFunction), $auth);
+                }
+                break;
         }
         throw new Exception("invalid argument");
     }
