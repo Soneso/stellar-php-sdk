@@ -93,6 +93,7 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
+use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
@@ -932,6 +933,24 @@ class TxRep
         return new XdrCreateContractArgs($preimage, $executable);
     }
 
+    private static function getCreateContractV2Args($prefix, array $map): XdrCreateContractArgsV2
+    {
+        $preimage = self::getContractIDPreimage($prefix . 'contractIDPreimage.', $map);
+        $executable = self::getContractExecutable($prefix . 'executable.', $map);
+        $argsLen = self::getInt($prefix . 'constructorArgs.len', $map);
+        /**
+         * @var array<XdrSCVal> $arguments
+         */
+        $arguments = array();
+
+        for ($i = 0; $i < $argsLen; $i++) {
+            $next = self::getSCVal($prefix . 'constructorArgs[' . $i . '].', $map);
+            array_push($arguments, $next);
+        }
+
+        return new XdrCreateContractArgsV2($preimage, $executable, $arguments);
+    }
+
     private static function getInvokeContractArgs($prefix, array $map): XdrInvokeContractArgs
     {
         $address = self::getSCAddress($prefix . 'contractAddress.', $map);
@@ -959,6 +978,9 @@ class TxRep
             case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT':
                 $args = self::getCreateContractArgs($prefix . 'createContract.', $map);
                 return XdrHostFunction::forCreatingContractWithArgs($args);
+            case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2':
+                $args = self::getCreateContractV2Args($prefix . 'createContractV2.', $map);
+                return XdrHostFunction::forCreatingContractV2WithArgs($args);
             case 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM':
                 $wasm = self::getString($prefix . 'wasm', $map);
                 return XdrHostFunction::forUploadContractWasm(hex2bin($wasm));
@@ -1000,6 +1022,9 @@ class TxRep
         } else if ("SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN" === $type) {
             $args = self::getCreateContractArgs($prefix . 'createContractHostFn.', $map);
             return XdrSorobanAuthorizedFunction::forCreateContractArgs($args);
+        } else if ("SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN" === $type) {
+            $args = self::getCreateContractV2Args($prefix . 'createContractV2HostFn.', $map);
+            return XdrSorobanAuthorizedFunction::forCreateContractArgsV2($args);
         } else {
             throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
         }
@@ -2828,6 +2853,9 @@ class TxRep
              } else if ($hostFunctionXdr->type->value == XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT) {
                  $lines += [$fnPrefix.'type' => 'HOST_FUNCTION_TYPE_CREATE_CONTRACT'];
                  $lines = array_merge($lines, self::getCreateContractArgsTx($fnPrefix.'createContract.', $hostFunctionXdr->createContract));
+             } else if ($hostFunctionXdr->type->value == XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2) {
+                 $lines += [$fnPrefix.'type' => 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2'];
+                 $lines = array_merge($lines, self::getCreateContractV2ArgsTx($fnPrefix.'createContractV2.', $hostFunctionXdr->createContractV2));
              } else if ($hostFunctionXdr->type->value == XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM) {
                  $lines += [$fnPrefix.'type' => 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM'];
                  $lines += [$fnPrefix.'wasm' => bin2hex($hostFunctionXdr->wasm->value)];
@@ -3108,6 +3136,20 @@ class TxRep
         $lines = array_merge($lines, self::getContractIDPreimageTx($prefix.'contractIDPreimage.', $args->contractIDPreimage));
         return array_merge($lines, self::getContractExecutableTx($prefix.'executable.', $args->executable));
     }
+
+    private static function getCreateContractV2ArgsTx(string $prefix, XdrCreateContractArgsV2 $args) : array {
+        $lines = array();
+        $lines = array_merge($lines, self::getContractIDPreimageTx($prefix.'contractIDPreimage.', $args->contractIDPreimage));
+        $lines = array_merge($lines, self::getContractExecutableTx($prefix.'executable.', $args->executable));
+        $lines += [$prefix . 'constructorArgs.len' => strval(count($args->args))];
+        $index = 0;
+        foreach ($args->constructorArgs as $val) {
+            $lines = array_merge($lines, self::getSCValTx($prefix.'constructorArgs['.$index.'].', $val));
+            $index++;
+        }
+        return $lines;
+    }
+
     private static function getInvokeContractArgsTx(string $prefix, XdrInvokeContractArgs $args) : array {
         $lines = array();
         $lines = array_merge($lines, self::getSCAddressTx($prefix.'contractAddress.', $args->contractAddress));
@@ -3154,6 +3196,10 @@ class TxRep
             case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
                 $lines += [$prefix . 'type' => 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN'];
                 $lines = array_merge($lines, self::getCreateContractArgsTx($prefix.'createContractHostFn.', $function->createContractHostFn));
+                break;
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+                $lines += [$prefix . 'type' => 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN'];
+                $lines = array_merge($lines, self::getCreateContractV2ArgsTx($prefix.'createContractV2HostFn.', $function->createContractV2HostFn));
                 break;
         }
         return $lines;

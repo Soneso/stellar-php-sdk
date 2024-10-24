@@ -348,7 +348,7 @@ class SorobanCustomAccountTest extends TestCase
         sleep(5);
         $result = array();
 
-        //$this->restoreContractFootprint($server, $submitterKp, $pathToCode);
+        $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
 
         // upload contract wasm
         $contractCode = file_get_contents($pathToCode, false);

@@ -42,17 +42,29 @@ class GetVersionInfoResponse extends SorobanRpcResponse
             if (isset($json['result']['version'])) {
                 $result->version = $json['result']['version'];
             }
-            if (isset($json['result']['commitHash'])) {
-                $result->commitHash = $json['result']['commitHash'];
+            if (isset($json['result']['commit_hash'])) {
+                $result->commitHash = $json['result']['commit_hash']; // protocol < 22
             }
-            if (isset($json['result']['buildTimestamp'])) {
-                $result->buildTimeStamp = $json['result']['buildTimestamp'];
+            else if (isset($json['result']['commitHash'])) {
+                $result->commitHash = $json['result']['commitHash']; // protocol 22
+            }
+            if (isset($json['result']['build_time_stamp'])) {
+                $result->buildTimeStamp = $json['result']['build_time_stamp']; // protocol < 22
+            }
+            else if (isset($json['result']['buildTimestamp'])) {
+                $result->buildTimeStamp = $json['result']['buildTimestamp']; // protocol 22
+            }
+            if (isset($json['result']['captive_core_version'])) {
+                $result->captiveCoreVersion = $json['result']['captive_core_version']; // protocol < 22
             }
             if (isset($json['result']['captiveCoreVersion'])) {
-                $result->captiveCoreVersion = $json['result']['captiveCoreVersion'];
+                $result->captiveCoreVersion = $json['result']['captiveCoreVersion']; // protocol 22
+            }
+            if (isset($json['result']['protocol_version'])) {
+                $result->protocolVersion = $json['result']['protocol_version']; // protocol < 22
             }
             if (isset($json['result']['protocolVersion'])) {
-                $result->protocolVersion = $json['result']['protocolVersion'];
+                $result->protocolVersion = $json['result']['protocolVersion']; // protocol 22
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);

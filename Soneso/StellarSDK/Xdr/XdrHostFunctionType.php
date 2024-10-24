@@ -13,6 +13,7 @@ class XdrHostFunctionType
     const HOST_FUNCTION_TYPE_INVOKE_CONTRACT = 0;
     const HOST_FUNCTION_TYPE_CREATE_CONTRACT = 1;
     const HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM = 2;
+    const HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 = 3;
 
     public function __construct(int $value)
     {
@@ -44,6 +45,10 @@ class XdrHostFunctionType
 
     public static function CREATE_CONTRACT() :  XdrHostFunctionType {
         return new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+    }
+
+    public static function CREATE_CONTRACT_V2() :  XdrHostFunctionType {
+        return new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
     }
 
     public static function UPLOAD_CONTRACT_WASM() :  XdrHostFunctionType {

@@ -13,6 +13,7 @@ class XdrHostFunction
     public XdrHostFunctionType $type;
     public ?XdrInvokeContractArgs $invokeContract = null;
     public ?XdrCreateContractArgs $createContract = null;
+    public ?XdrCreateContractArgsV2 $createContractV2 = null;
     public ?XdrDataValueMandatory $wasm = null;
 
     /**
@@ -37,6 +38,9 @@ class XdrHostFunction
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
                 $bytes .= $this->wasm->encode();
                 break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                $bytes .= $this->createContractV2->encode();
+                break;
         }
         return $bytes;
     }
@@ -52,6 +56,9 @@ class XdrHostFunction
                 break;
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
                 $result->wasm = XdrDataValueMandatory::decode($xdr);
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                $result->createContractV2 = XdrCreateContractArgsV2::decode($xdr);
                 break;
         }
         return $result;
@@ -80,6 +87,24 @@ class XdrHostFunction
         return $result;
     }
 
+    /**
+     * @param XdrSCAddress $address
+     * @param string $wasmIdHex
+     * @param string $salt
+     * @param array<XdrSCVal> $constructorArgs
+     * @return XdrHostFunction
+     */
+    public static function forCreatingContractV2(XdrSCAddress $address, string $wasmIdHex, string $salt, array $constructorArgs) :  XdrHostFunction {
+        $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT_V2());
+        $cId = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+        $cId->address = $address;
+        $cId->salt = $salt;
+        $cCode = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM());
+        $cCode->wasmIdHex = $wasmIdHex;
+        $result->createContractV2 = new XdrCreateContractArgsV2($cId, $cCode, $constructorArgs);
+        return $result;
+    }
+
     public static function forDeploySACWithSourceAccount(XdrSCAddress $address, string $salt) :  XdrHostFunction {
         $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
         $cId = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
@@ -102,6 +127,12 @@ class XdrHostFunction
     public static function forCreatingContractWithArgs(XdrCreateContractArgs $args) :  XdrHostFunction {
         $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
         $result->createContract = $args;
+        return $result;
+    }
+
+    public static function forCreatingContractV2WithArgs(XdrCreateContractArgsV2 $args) :  XdrHostFunction {
+        $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT_V2());
+        $result->createContractV2 = $args;
         return $result;
     }
 
@@ -169,4 +200,19 @@ class XdrHostFunction
         $this->wasm = $wasm;
     }
 
+    /**
+     * @return XdrCreateContractArgsV2|null
+     */
+    public function getCreateContractV2(): ?XdrCreateContractArgsV2
+    {
+        return $this->createContractV2;
+    }
+
+    /**
+     * @param XdrCreateContractArgsV2|null $createContractV2
+     */
+    public function setCreateContractV2(?XdrCreateContractArgsV2 $createContractV2): void
+    {
+        $this->createContractV2 = $createContractV2;
+    }
 }

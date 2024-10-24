@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Soroban;
 
 use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
+use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunction;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType;
@@ -21,22 +22,24 @@ class SorobanAuthorizedFunction
 {
     public ?XdrInvokeContractArgs $contractFn = null;
     public ?XdrCreateContractArgs $createContractHostFn = null;
+    public ?XdrCreateContractArgsV2 $createContractV2HostFn = null;
 
     /**
      * @param XdrInvokeContractArgs|null $contractFn
      * @param XdrCreateContractArgs|null $createContractHostFn
      */
-    public function __construct(?XdrInvokeContractArgs $contractFn = null, ?XdrCreateContractArgs $createContractHostFn = null)
+    public function __construct(
+        ?XdrInvokeContractArgs $contractFn = null,
+        ?XdrCreateContractArgs $createContractHostFn = null,
+        ?XdrCreateContractArgsV2 $createContractV2HostFn = null)
     {
-        if ($contractFn == null && $createContractHostFn == null) {
-            throw new InvalidArgumentException("Invalid arguments");
-        }
-        if ($contractFn != null && $createContractHostFn != null) {
+        if ($contractFn == null && $createContractHostFn == null && $createContractV2HostFn == null) {
             throw new InvalidArgumentException("Invalid arguments");
         }
 
         $this->contractFn = $contractFn;
         $this->createContractHostFn = $createContractHostFn;
+        $this->createContractV2HostFn = $createContractV2HostFn;
     }
 
     public static function forContractFunction(Address $contractAddress, string $functionName, array $args = array()) : SorobanAuthorizedFunction {
@@ -48,11 +51,17 @@ class SorobanAuthorizedFunction
         return new SorobanAuthorizedFunction(null, $createContractHostFn);
     }
 
+    public static function forCreateContractWithConstructorFunction(XdrCreateContractArgsV2 $createContractV2HostFn) : SorobanAuthorizedFunction {
+        return new SorobanAuthorizedFunction(null, null, $createContractV2HostFn);
+    }
+
     public static function fromXdr(XdrSorobanAuthorizedFunction $xdr) : SorobanAuthorizedFunction {
         if ($xdr->type->value == XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN && $xdr->contractFn != null) {
             return new SorobanAuthorizedFunction($xdr->contractFn);
+        } else if ($xdr->type->value == XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN && $xdr->createContractHostFn != null) {
+            return new SorobanAuthorizedFunction(null, $xdr->createContractHostFn);
         }
-        return new SorobanAuthorizedFunction(null, $xdr->createContractHostFn);
+        return new SorobanAuthorizedFunction(null, null, $xdr->createContractV2HostFn);
     }
 
     public function toXdr(): XdrSorobanAuthorizedFunction {
@@ -60,9 +69,13 @@ class SorobanAuthorizedFunction
             $af = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN());
             $af->contractFn = $this->contractFn;
             return $af;
+        } else if ($this->createContractHostFn != null) {
+            $af = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN());
+            $af->createContractHostFn = $this->createContractHostFn;
+            return $af;
         }
-        $af = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN());
-        $af->createContractHostFn = $this->createContractHostFn;
+        $af = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN());
+        $af->createContractV2HostFn = $this->createContractV2HostFn;
         return $af;
     }
 
@@ -96,6 +109,22 @@ class SorobanAuthorizedFunction
     public function setCreateContractHostFn(?XdrCreateContractArgs $createContractHostFn): void
     {
         $this->createContractHostFn = $createContractHostFn;
+    }
+
+    /**
+     * @return XdrCreateContractArgsV2|null
+     */
+    public function getCreateContractV2HostFn(): ?XdrCreateContractArgsV2
+    {
+        return $this->createContractV2HostFn;
+    }
+
+    /**
+     * @param XdrCreateContractArgsV2|null $createContractV2HostFn
+     */
+    public function setCreateContractV2HostFn(?XdrCreateContractArgsV2 $createContractV2HostFn): void
+    {
+        $this->createContractV2HostFn = $createContractV2HostFn;
     }
 
 }

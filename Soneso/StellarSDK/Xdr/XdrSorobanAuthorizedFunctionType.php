@@ -12,6 +12,7 @@ class XdrSorobanAuthorizedFunctionType
 
     const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN = 0;
     const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN = 1;
+    const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN = 2;
 
     public function __construct(int $value)
     {
@@ -43,5 +44,9 @@ class XdrSorobanAuthorizedFunctionType
 
     public static function SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN() : XdrSorobanAuthorizedFunctionType {
         return new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN);
+    }
+
+    public static function SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN() : XdrSorobanAuthorizedFunctionType {
+        return new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN);
     }
 }

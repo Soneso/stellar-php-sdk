@@ -12,6 +12,7 @@ class XdrSorobanAuthorizedFunction
     public XdrSorobanAuthorizedFunctionType $type;
     public ?XdrInvokeContractArgs $contractFn;
     public ?XdrCreateContractArgs $createContractHostFn = null;
+    public ?XdrCreateContractArgsV2 $createContractV2HostFn = null;
 
     /**
      * @param XdrSorobanAuthorizedFunctionType $type
@@ -32,6 +33,9 @@ class XdrSorobanAuthorizedFunction
             case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
                 $bytes .= $this->createContractHostFn->encode();
                 break;
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+                $bytes .= $this->createContractV2HostFn->encode();
+                break;
         }
         return $bytes;
     }
@@ -44,6 +48,9 @@ class XdrSorobanAuthorizedFunction
                 break;
             case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
                 $result->createContractHostFn = XdrCreateContractArgs::decode($xdr);
+                break;
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+                $result->createContractV2HostFn = XdrCreateContractArgsV2::decode($xdr);
                 break;
         }
         return $result;
@@ -58,6 +65,12 @@ class XdrSorobanAuthorizedFunction
     public static function forCreateContractArgs(XdrCreateContractArgs $args): XdrSorobanAuthorizedFunction {
         $result = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN());
         $result->createContractHostFn = $args;
+        return $result;
+    }
+
+    public static function forCreateContractArgsV2(XdrCreateContractArgsV2 $args): XdrSorobanAuthorizedFunction {
+        $result = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN());
+        $result->createContractV2HostFn = $args;
         return $result;
     }
 
@@ -107,6 +120,22 @@ class XdrSorobanAuthorizedFunction
     public function setCreateContractHostFn(?XdrCreateContractArgs $createContractHostFn): void
     {
         $this->createContractHostFn = $createContractHostFn;
+    }
+
+    /**
+     * @return XdrCreateContractArgsV2|null
+     */
+    public function getCreateContractV2HostFn(): ?XdrCreateContractArgsV2
+    {
+        return $this->createContractV2HostFn;
+    }
+
+    /**
+     * @param XdrCreateContractArgsV2|null $createContractV2HostFn
+     */
+    public function setCreateContractV2HostFn(?XdrCreateContractArgsV2 $createContractV2HostFn): void
+    {
+        $this->createContractV2HostFn = $createContractV2HostFn;
     }
 
 }

@@ -97,7 +97,7 @@ class GetTransactionResponse extends SorobanRpcResponse
     public ?string $resultMetaXdr = null;
 
     /**
-     * @var string|null $txHash hex-encoded transaction hash string.
+     * @var string|null $txHash hex-encoded transaction hash string. Only available for protocol version >= 22
     */
     public ?string $txHash = null;
 
@@ -142,7 +142,7 @@ class GetTransactionResponse extends SorobanRpcResponse
                 $result->resultMetaXdr = $json['result']['resultMetaXdr'];
             }
             if (isset($json['result']['txHash'])) {
-                $result->txHash = $json['result']['txHash'];
+                $result->txHash = $json['result']['txHash']; // protocol version >= 22
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -342,7 +342,7 @@ class GetTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null hex-encoded transaction hash string.
+     * @return string|null hex-encoded transaction hash string. Only available for protocol version >= 22
     */
     public function getTxHash(): ?string
     {
@@ -350,7 +350,7 @@ class GetTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param string|null $txHash hex-encoded transaction hash string.
+     * @param string|null $txHash hex-encoded transaction hash string. Only for protocol version >= 22
      */
     public function setTxHash(?string $txHash): void
     {

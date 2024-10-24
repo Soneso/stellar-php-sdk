@@ -52,9 +52,9 @@ class TransactionInfo
     public ?array $diagnosticEventsXdr = null;
 
     /**
-     * @var string $txHash hex-encoded transaction hash string.
+     * @var ?string $txHash hex-encoded transaction hash string. Only available for protocol version >= 22
     */
-    public string $txHash;
+    public ?string $txHash;
 
     /**
      * @param string $status Indicates whether the transaction was successful or not.
@@ -65,7 +65,7 @@ class TransactionInfo
      * @param string $resultMetaXdr A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
      * @param int $ledger The sequence number of the ledger which included the transaction.
      * @param string $createdAt The unix timestamp of when the transaction was included in the ledger.
-     * @param string $txHash hex-encoded transaction hash string.
+     * @param string|null $txHash hex-encoded transaction hash string. Only available for protocol version >= 22
      * @param array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
      * This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
      */
@@ -78,7 +78,7 @@ class TransactionInfo
         string $resultMetaXdr,
         int $ledger,
         string $createdAt,
-        string $txHash,
+        ?string $txHash = null,
         ?array $diagnosticEventsXdr = null,
     )
     {
@@ -108,6 +108,11 @@ class TransactionInfo
             }
         }
 
+        $txHash = null;
+        if (isset($json["txHash"])) {
+            $txHash = $json["txHash"]; // protocol version >= 22
+        }
+
         return new TransactionInfo(
             $json['status'],
             $json['applicationOrder'],
@@ -116,9 +121,9 @@ class TransactionInfo
             $json['resultXdr'],
             $json['resultMetaXdr'],
             $json['ledger'],
-            $json['createdAt'],
-            $json['txHash'],
-            $diagnosticEventsXdr,
+            strval($json['createdAt']),
+            txHash: $txHash,
+            diagnosticEventsXdr: $diagnosticEventsXdr,
         );
     }
 }

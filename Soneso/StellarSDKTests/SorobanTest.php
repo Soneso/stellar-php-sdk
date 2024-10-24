@@ -134,7 +134,7 @@ class SorobanTest extends TestCase
         // get transactions
         $latestLedgerResponse = $this->server->getLatestLedger();
         assertNotNull($latestLedgerResponse->sequence);
-        $startLedger = $latestLedgerResponse->sequence - 20;
+        $startLedger = $latestLedgerResponse->sequence - 200;
         $paginationOptions = new PaginationOptions(limit: 2);
         $getTransactionsRequest = new GetTransactionsRequest(
             startLedger: $startLedger,

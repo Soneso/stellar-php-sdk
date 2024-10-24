@@ -35,6 +35,11 @@ class EventInfo
     public string $contractId;
 
     /**
+     * @var ?string $pagingToken for paging if protocol version < 22 (Duplicate of id field, but in the standard place for pagination tokens)
+     */
+    public ?string $pagingToken = null;
+
+    /**
      * @var string $id Unique identifier for this event.
      */
     public string $id;
@@ -80,6 +85,7 @@ class EventInfo
         string $value,
         bool $inSuccessfulContractCall,
         string $txHash,
+        ?string $pagingToken = null,
     )
     {
         $this->type = $type;
@@ -91,6 +97,7 @@ class EventInfo
         $this->value = $value;
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;
         $this->txHash = $txHash;
+        $this->pagingToken = $pagingToken;
     }
 
     public static function fromJson(array $json): EventInfo
@@ -107,6 +114,10 @@ class EventInfo
         }
         $inSuccessfulContractCall = $json['inSuccessfulContractCall'];
         $txHash = $json['txHash'];
+        $pagingToken = null;
+        if (isset($json['pagingToken'])) {
+            $pagingToken = $json['pagingToken']; // protocol < 22
+        }
         return new EventInfo(
             $type,
             $ledger,
@@ -117,6 +128,7 @@ class EventInfo
             $value,
             $inSuccessfulContractCall,
             $txHash,
+            pagingToken: $pagingToken
         );
     }
 
@@ -253,6 +265,38 @@ class EventInfo
     public function setInSuccessfulContractCall(bool $inSuccessfulContractCall): void
     {
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;
+    }
+
+    /**
+     * @return string|null for paging, only available for protocol version < 22
+     */
+    public function getPagingToken(): ?string
+    {
+        return $this->pagingToken;
+    }
+
+    /**
+     * @param string|null $pagingToken for paging, only for protocol version < 22
+     */
+    public function setPagingToken(?string $pagingToken): void
+    {
+        $this->pagingToken = $pagingToken;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTxHash(): string
+    {
+        return $this->txHash;
+    }
+
+    /**
+     * @param string $txHash
+     */
+    public function setTxHash(string $txHash): void
+    {
+        $this->txHash = $txHash;
     }
 
 }
