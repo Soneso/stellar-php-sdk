@@ -35,9 +35,9 @@ class EventInfo
     public string $contractId;
 
     /**
-     * @var ?string $pagingToken for paging if protocol version < 22 (Duplicate of id field, but in the standard place for pagination tokens)
+     * @var string $pagingToken for paging
      */
-    public ?string $pagingToken = null;
+    public string $pagingToken;
 
     /**
      * @var string $id Unique identifier for this event.
@@ -74,6 +74,7 @@ class EventInfo
      * @param string $value The emitted body value of the event (serialized in a base64 xdr string).
      * @param bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
      * @param string $txHash The transaction which triggered this event.
+     * @param string $pagingToken For paging.
      */
     public function __construct(
         string $type,
@@ -85,7 +86,7 @@ class EventInfo
         string $value,
         bool $inSuccessfulContractCall,
         string $txHash,
-        ?string $pagingToken = null,
+        string $pagingToken,
     )
     {
         $this->type = $type;
@@ -114,9 +115,9 @@ class EventInfo
         }
         $inSuccessfulContractCall = $json['inSuccessfulContractCall'];
         $txHash = $json['txHash'];
-        $pagingToken = null;
+        $pagingToken = $id;
         if (isset($json['pagingToken'])) {
-            $pagingToken = $json['pagingToken']; // protocol < 22
+            $pagingToken = $json['pagingToken'];
         }
         return new EventInfo(
             $type,
@@ -268,17 +269,17 @@ class EventInfo
     }
 
     /**
-     * @return string|null for paging, only available for protocol version < 22
+     * @return string for paging
      */
-    public function getPagingToken(): ?string
+    public function getPagingToken(): string
     {
         return $this->pagingToken;
     }
 
     /**
-     * @param string|null $pagingToken for paging, only for protocol version < 22
+     * @param string $pagingToken for paging
      */
-    public function setPagingToken(?string $pagingToken): void
+    public function setPagingToken(string $pagingToken): void
     {
         $this->pagingToken = $pagingToken;
     }
