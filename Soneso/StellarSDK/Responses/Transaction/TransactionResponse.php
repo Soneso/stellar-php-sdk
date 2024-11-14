@@ -38,7 +38,7 @@ class TransactionResponse extends Response
     private XdrTransactionEnvelope $envelopeXdr;
     private string $resultXdrBase64;
     private XdrTransactionResult $resultXdr;
-    private string $resultMetaXdrBase64;
+    private ?string $resultMetaXdrBase64 = null;
     private ?XdrTransactionMeta $resultMetaXdr = null;
     private ?string $feeMetaXdrBase64 = null; // todo resolve
     private ?array $feeMetaXdr = null;
@@ -281,9 +281,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * @return ?string
      */
-    public function getResultMetaXdrBase64(): string
+    public function getResultMetaXdrBase64(): ?string
     {
         return $this->resultMetaXdrBase64;
     }

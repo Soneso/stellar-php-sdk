@@ -20,7 +20,10 @@ class TestUtils
     public static function resultDeAndEncodingTest(TestCase $testCase, AbstractTransaction $transaction, SubmitTransactionResponse $response) {
         // check decoding & encoding
         $meta = $response->getResultMetaXdr();
-        $testCase->assertEquals($response->getResultMetaXdrBase64(), $meta->toBase64Xdr());
+        $responseMeta = $response->getResultMetaXdrBase64();
+        if ($responseMeta !== null && $meta !== null) {
+            $testCase->assertEquals($responseMeta, $meta->toBase64Xdr());
+        }
         $envelopeBase64 = $response->getEnvelopeXdrBase64();
         $testCase->assertEquals($envelopeBase64, $transaction->toEnvelopeXdrBase64());
         $result = $response->getResultXdr();
