@@ -49,7 +49,7 @@ class SorobanAuthTest extends TestCase
     const TESTNET_SERVER_URL = "https://soroban-testnet.stellar.org";
     const FUTURENET_SERVER_URL = "https://rpc-futurenet.stellar.org";
 
-    private string $testOn = 'futurenet'; // testnet
+    private string $testOn = 'testnet'; // futurenet
     private Network $network;
     private SorobanServer $server;
     private StellarSDK $sdk;
@@ -165,9 +165,10 @@ class SorobanAuthTest extends TestCase
         $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
-        $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
-        //$this->assertEquals($meta, $metaXdr->toBase64Xdr());
-
+        if ($meta !== null) {
+            $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+            $this->assertEquals($meta, $metaXdr->toBase64Xdr());
+        }
     }
 
     /**
@@ -284,8 +285,10 @@ class SorobanAuthTest extends TestCase
         $meta = $transactionResponse->getResultMetaXdrBase64();
 
         // parsing meta is working
-        $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
-        //$this->assertEquals($meta, $metaXdr->toBase64Xdr());
+        if ($meta !== null) {
+            $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
+            $this->assertEquals($meta, $metaXdr->toBase64Xdr());
+        }
     }
 
 
