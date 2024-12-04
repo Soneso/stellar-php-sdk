@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests;
 
+use Exception;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
@@ -61,6 +62,14 @@ class SEP012Test extends TestCase
 
     private function requestPutCustomerVerification() : string  {
         return "{\"id\": \"d1ce2f48-3ff1-495d-9240-7a50d806cfed\",\"status\": \"ACCEPTED\",\"provided_fields\": {   \"mobile_number\": {      \"description\": \"phone number of the customer\",      \"type\": \"string\",      \"status\": \"ACCEPTED\"   }}}";
+    }
+
+    private function requestPostCustomerFile() : string  {
+        return "{\"file_id\": \"file_d3d54529-6683-4341-9b66-4ac7d7504238\", \"content_type\": \"image/jpeg\", \"size\": 4089371,\"customer_id\": \"2bf95490-db23-442d-a1bd-c6fd5efb584e\"}";
+    }
+
+    private function requestGetCustomerFiles() : string  {
+        return "{\"files\": [{\"file_id\": \"file_d5c67b4c-173c-428c-baab-944f4b89a57f\", \"content_type\": \"image/png\",\"size\": 6134063,\"customer_id\": \"2bf95490-db23-442d-a1bd-c6fd5efb584e\"        },        {          \"file_id\": \"file_d3d54529-6683-4341-9b66-4ac7d7504238\",          \"content_type\": \"image/jpeg\",          \"size\": 4089371,          \"customer_id\": \"2bf95490-db23-442d-a1bd-c6fd5efb584e\"        }      ]}";
     }
 
     public function testGetCustomerInfoSuccess(): void {
@@ -523,5 +532,115 @@ class SEP012Test extends TestCase
         $response = $kycService->putCustomerCallback($request);
         $this->assertNotNull($response);
         $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testPostCustomerFile(): void
+    {
+        $kycService = new KYCService($this->serviceAddress);
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestPostCustomerFile())
+        ]);
+
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
+            $headers = $request->getHeaders();
+            $auth = $headers["Authorization"][0];
+            $this->assertEquals("Bearer " . $this->jwtToken, $auth);
+            $this->assertEquals("POST", $request->getMethod());
+            $body = $request->getBody()->__toString();
+            // print($body . PHP_EOL);
+            $this->assertTrue(str_contains($body, "file"));
+            return $request;
+        }));
+
+        $kycService->setMockHandlerStack($stack);
+        $fileBytes = random_bytes(2000);
+        $response = $kycService->postCustomerFile($fileBytes, $this->jwtToken);
+        $this->assertNotNull($response);
+        $this->assertEquals("file_d3d54529-6683-4341-9b66-4ac7d7504238", $response->fileId);
+        $this->assertEquals("image/jpeg", $response->contentType);
+        $this->assertEquals(4089371, $response->size);
+        $this->assertEquals("2bf95490-db23-442d-a1bd-c6fd5efb584e", $response->customerId);
+
+        $mock = new MockHandler([
+            new Response(413, ['X-Foo' => 'Bar'], "")
+        ]);
+
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
+            $headers = $request->getHeaders();
+            $auth = $headers["Authorization"][0];
+            $this->assertEquals("Bearer " . $this->jwtToken, $auth);
+            $this->assertEquals("POST", $request->getMethod());
+            $body = $request->getBody()->__toString();
+            // print($body . PHP_EOL);
+            $this->assertTrue(str_contains($body, "file"));
+            return $request;
+        }));
+
+        $kycService->setMockHandlerStack($stack);
+        $fileBytes = random_bytes(2000);
+        try {
+            $kycService->postCustomerFile($fileBytes, $this->jwtToken);
+            $this->fail("should not reach here");
+        } catch (Exception $e) {
+            $this->assertEquals(413, $e->getCode());
+        }
+    }
+
+    public function testGetCustomerFiles(): void {
+        $kycService = new KYCService($this->serviceAddress);
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestGetCustomerFiles())
+        ]);
+
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
+            $headers = $request->getHeaders();
+            $auth = $headers["Authorization"][0];
+            $this->assertEquals("Bearer ".$this->jwtToken, $auth);
+            parse_str($request->getUri()->getQuery(), $query_array);
+            $this->assertEquals("test_file_id", $query_array["file_id"]);
+            $this->assertEquals("test_customer_id", $query_array["customer_id"]);
+            return $request;
+        }));
+
+        $kycService->setMockHandlerStack($stack);
+        $response = $kycService->getCustomerFiles($this->jwtToken, "test_file_id", "test_customer_id");
+        $files = $response->files;
+        $this->assertCount(2, $files);
+        $firstFile = $files[0];
+        $this->assertEquals("file_d5c67b4c-173c-428c-baab-944f4b89a57f", $firstFile->fileId);
+        $this->assertEquals("image/png", $firstFile->contentType);
+        $this->assertEquals(6134063, $firstFile->size);
+        $this->assertEquals("2bf95490-db23-442d-a1bd-c6fd5efb584e", $firstFile->customerId);
+
+        $secondFile = $files[1];
+        $this->assertEquals("file_d3d54529-6683-4341-9b66-4ac7d7504238", $secondFile->fileId);
+        $this->assertEquals("image/jpeg", $secondFile->contentType);
+        $this->assertEquals(4089371, $secondFile->size);
+        $this->assertEquals("2bf95490-db23-442d-a1bd-c6fd5efb584e", $secondFile->customerId);
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], '{"files": []}')
+        ]);
+
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
+            $headers = $request->getHeaders();
+            $auth = $headers["Authorization"][0];
+            $this->assertEquals("Bearer ".$this->jwtToken, $auth);
+            parse_str($request->getUri()->getQuery(), $query_array);
+            return $request;
+        }));
+        $kycService->setMockHandlerStack($stack);
+        $response = $kycService->getCustomerFiles($this->jwtToken);
+        $files = $response->files;
+        $this->assertCount(0, $files);
     }
 }

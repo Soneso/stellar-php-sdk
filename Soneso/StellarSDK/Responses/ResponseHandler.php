@@ -40,6 +40,8 @@ use Soneso\StellarSDK\SEP\Interactive\SEP24InfoResponse;
 use Soneso\StellarSDK\SEP\Interactive\SEP24InteractiveResponse;
 use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionResponse;
 use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionsResponse;
+use Soneso\StellarSDK\SEP\KYCService\CustomerFileResponse;
+use Soneso\StellarSDK\SEP\KYCService\GetCustomerFilesResponse;
 use Soneso\StellarSDK\SEP\KYCService\GetCustomerInfoResponse;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoResponse;
 use Soneso\StellarSDK\SEP\TransferServerService\AnchorTransactionResponse;
@@ -102,6 +104,8 @@ class ResponseHandler
             RequestType::CHALLENGE => ChallengeResponse::fromJson($jsonData),
             RequestType::GET_CUSTOMER_INFO, RequestType::PUT_CUSTOMER_VERIFICATION => GetCustomerInfoResponse::fromJson($jsonData),
             RequestType::PUT_CUSTOMER_INFO => PutCustomerInfoResponse::fromJson($jsonData),
+            RequestType::POST_CUSTOMER_FILE => CustomerFileResponse::fromJson($jsonData),
+            RequestType::GET_CUSTOMER_FILES => GetCustomerFilesResponse::fromJson($jsonData),
             RequestType::ANCHOR_INFO => InfoResponse::fromJson($jsonData),
             RequestType::ANCHOR_DEPOSIT => DepositResponse::fromJson($jsonData),
             RequestType::ANCHOR_WITHDRAW => WithdrawResponse::fromJson($jsonData),

@@ -262,6 +262,43 @@ class KYCService
         ]);
     }
 
+    /**
+     * Passing binary fields such as photo_id_front or organization.photo_proof_address in PUT /customer requests must be done using the multipart/form-data content type. This is acceptable in most cases, but multipart/form-data does not support nested data structures such as arrays or sub-objects.
+     * This endpoint is intended to decouple requests containing binary fields from requests containing nested data structures, supported by content types such as application/json. This endpoint is optional and only needs to be supported if the use case requires accepting nested data structures in PUT /customer requests.
+     * Once a file has been uploaded using this endpoint, it's file_id can be used in subsequent PUT /customer requests. The field name for the file_id should be the appropriate SEP-9 field followed by _file_id. For example, if file_abc is returned as a file_id from POST /customer/files, it can be used in a PUT /customer
+     * See:  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
+     * @param string $fileBytes bytes of the file to be posted
+     * @param string $jwt jwt token obtained by sep-10
+     * @return CustomerFileResponse response
+     * @throws GuzzleException in case of error.
+     */
+    public function postCustomerFile(string $fileBytes, string $jwt) : CustomerFileResponse {
+        $requestBuilder = new PostCustomerFileRequestBuilder($this->httpClient, $this->serviceAddress, $fileBytes, $jwt);
+        return $requestBuilder->execute();
+    }
+
+    /**
+     * Requests info about the uploaded files via postCustomerFile
+     * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-file
+     * @param String $jwt jwt token obtained by sep-10
+     * @param string|null $fileId (optional) The fileId returned from a previous postCustomerFile request. The response's files list will contain a single object if this parameter is used.
+     * @param string|null $customerId (optional) The id returned from a previous putCustomerInfo request. The response should include all files uploaded for the specified customer.
+     * @return GetCustomerFilesResponse response containing the file objects if any.
+     * @throws GuzzleException in case of error.
+     */
+    public function getCustomerFiles(String $jwt, ?string $fileId = null, ?string $customerId = null) : GetCustomerFilesResponse {
+        $requestBuilder = new GetCustomerFilesRequestBuilder($this->httpClient, $this->serviceAddress, $jwt);
+        $queryParameters = array();
+        if ($fileId !== null) {
+            $queryParameters += ["file_id" => $fileId];
+        }
+        if ($customerId !== null) {
+            $queryParameters += ["customer_id" => $customerId];
+        }
+        $requestBuilder = $requestBuilder->forQueryParameters($queryParameters);
+        return $requestBuilder->execute();
+    }
+
     public function setMockHandlerStack(HandlerStack $handlerStack) {
         $this->httpClient = new Client(['handler' => $handlerStack]);
     }
