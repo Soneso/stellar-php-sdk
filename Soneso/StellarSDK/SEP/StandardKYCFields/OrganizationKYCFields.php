@@ -86,6 +86,9 @@ class OrganizationKYCFields
     /// Financial Account Fields
     public ?FinancialAccountKYCFields $financialAccountKYCFields = null;
 
+    /// Card Fields
+    public ?CardKYCFields $cardKYCFields = null;
+
     /**
      * @return array<array-key, mixed>
      */
@@ -143,6 +146,10 @@ class OrganizationKYCFields
         if ($this->financialAccountKYCFields !== null) {
             $financialFields = $this->financialAccountKYCFields->fields(self::KEY_PREFIX);
             $fields = array_merge($fields, $financialFields);
+        }
+        if ($this->cardKYCFields !== null) {
+            $cardFields = $this->cardKYCFields->fields();
+            $fields = array_merge($fields, $cardFields);
         }
         return $fields;
     }

@@ -21,6 +21,7 @@ class NaturalPersonKYCFields
     public const POSTAL_CODE_KEY = 'postal_code';
     public const ADDRESS_KEY = 'address';
     public const MOBILE_NUMBER_KEY = 'mobile_number';
+    public const MOBILE_NUMBER_FORMAT_KEY = 'mobile_number_format';
     public const EMAIL_ADDRESS_KEY = 'email_address';
     public const BIRTH_DATE_KEY = 'birth_date';
     public const BIRTH_PLACE_KEY = 'birth_place';
@@ -72,8 +73,11 @@ class NaturalPersonKYCFields
     /// Entire address (country, state, postal code, street address, etc...) as a multi-line string
     public ?string $address = null;
 
-    /// Mobile phone number with country code, in E.164 format
+    /// Mobile phone number with country code (default E.164)
     public ?string $mobileNumber = null;
+
+    /// Expected format of the mobile_number field. E.g.: E.164, hash, etc... In case this field is not specified, receiver will assume it's in E.164 format
+    public ?string $mobileNumberFormat = null;
 
     /// Email address
     public ?string $emailAddress = null;
@@ -150,6 +154,9 @@ class NaturalPersonKYCFields
     /// Financial Account Fields
     public ?FinancialAccountKYCFields $financialAccountKYCFields = null;
 
+    /// Card Fields
+    public ?CardKYCFields $cardKYCFields = null;
+
     public function fields() : array {
         /**
          * @var array<array-key, mixed> $fields
@@ -181,6 +188,9 @@ class NaturalPersonKYCFields
         }
         if ($this->mobileNumber) {
             $fields += [ self::MOBILE_NUMBER_KEY => $this->mobileNumber ];
+        }
+        if ($this->mobileNumberFormat) {
+            $fields += [ self::MOBILE_NUMBER_FORMAT_KEY => $this->mobileNumberFormat ];
         }
         if ($this->emailAddress) {
             $fields += [ self::EMAIL_ADDRESS_KEY => $this->emailAddress ];
@@ -240,6 +250,11 @@ class NaturalPersonKYCFields
         if ($this->financialAccountKYCFields !== null) {
             $financialFields = $this->financialAccountKYCFields->fields();
             $fields = array_merge($fields, $financialFields);
+        }
+
+        if ($this->cardKYCFields !== null) {
+            $cardFields = $this->cardKYCFields->fields();
+            $fields = array_merge($fields, $cardFields);
         }
 
         return $fields;
