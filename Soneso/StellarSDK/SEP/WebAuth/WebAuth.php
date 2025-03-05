@@ -86,8 +86,13 @@ class WebAuth
      * @param array $signers list of signers (keypairs including secret seed) of the client account
      * @param int|null $memo optional, ID memo of the client account if muxed and accountId starts with G
      * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
-     * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml
-     * @param KeyPair|null $clientDomainKeyPair optional, KeyPair of the client domain account including the seed (mandatory and used for signing the transaction if client domain is provided)
+     * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml. If clientDomain is provided,
+     * you also need to provide the clientDomainKeyPair or a clientDomainSigningCallback for client domain transaction signing.
+     * @param KeyPair|null $clientDomainKeyPair optional, KeyPair of the client domain account including the seed (used for signing the transaction if client domain is provided)
+     * @param callable|null $clientDomainSigningCallback optional, a function used for signing the transaction if client domain is provided.
+     * The function must accept a string as parameter representing the base64 encoded transaction envelope that needs to be signed. After signing it with the client domain account,
+     * the function must return the signed transaction as base64 encoded transaction envelope. This is useful if you don't want or cannot provide the clientDomainKeyPair, e.g. if the signing
+     * occurs on a different server.
      * @return string JWT token.
      * @throws ChallengeValidationError
      * @throws ChallengeValidationErrorInvalidHomeDomain
@@ -103,21 +108,46 @@ class WebAuth
      * @throws SubmitCompletedChallengeTimeoutResponseException
      * @throws SubmitCompletedChallengeUnknownResponseException
      * @throws GuzzleException|ChallengeRequestErrorResponse|ChallengeValidationErrorInvalidOperationType
+     * @throws InvalidArgumentException
      */
-    public function jwtToken(string $clientAccountId, array $signers, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null, ?KeyPair $clientDomainKeyPair = null) : string {
+    public function jwtToken(string $clientAccountId,
+                             array $signers,
+                             ?int $memo = null,
+                             ?string $homeDomain = null,
+                             ?string $clientDomain = null,
+                             ?KeyPair $clientDomainKeyPair = null,
+                             ?callable $clientDomainSigningCallback = null) : string {
 
         // get the challenge transaction from the web auth server
-        $transaction = $this->getChallenge($clientAccountId,$memo, $homeDomain, $clientDomain);
+        $transaction = $this->getChallenge($clientAccountId, $memo, $homeDomain, $clientDomain);
 
+        $clientDomainSignerAccountId = null;
+        if ($clientDomain != null) {
+            if ($clientDomainKeyPair != null) {
+                $clientDomainSignerAccountId = $clientDomainKeyPair?->getAccountId();
+            } else if ($clientDomainSigningCallback != null) {
+                try {
+                    $toml = StellarToml::fromDomain($clientDomain);
+                    $clientDomainSignerAccountId = $toml->generalInformation?->signingKey;
+                    if ($clientDomainSignerAccountId == null) {
+                        throw new Exception("Could not find signing key in stellar.toml");
+                    }
+                } catch (Exception $e) {
+                    throw new InvalidArgumentException("Invalid client domain: " . $e->getMessage());
+                }
+            } else {
+                throw new InvalidArgumentException("Client domain key pair or Client domain signing callback is missing");
+            }
+        }
         // validate the transaction received from the web auth server.
-        $this->validateChallenge($transaction, $clientAccountId, $clientDomainKeyPair?->getAccountId(), $this->gracePeriod, $memo);
+        $this->validateChallenge($transaction, $clientAccountId, $clientDomainSignerAccountId, $this->gracePeriod, $memo);
 
         if ($clientDomainKeyPair) {
             array_push($signers, $clientDomainKeyPair);
         }
 
         // sign the transaction received from the web auth server using the provided user/client keypair by parameter.
-        $signedTransaction = $this->signTransaction($transaction, $signers);
+        $signedTransaction = $this->signTransaction($transaction, $signers, $clientDomainSigningCallback);
 
         // request the jwt token by sending back the signed challenge transaction to the web auth server.
         return $this->sendSignedChallengeTransaction($signedTransaction);
@@ -159,13 +189,22 @@ class WebAuth
     }
 
     /**
-     * @param string $challengeTransaction
-     * @param array $signers
-     * @return string
-     * @throws ChallengeValidationError
+     * Decodes and signs the challenge transaction with the provided signer key pairs. If a clientDomainSigningCallback is provided,
+     * the callback will be called to also sign the transaction.
+     * @param string $challengeTransaction the base64 encoded transaction envelope to sign.
+     * @param array<KeyPair> $signers the key pairs of the signers to sign the transaction with.
+     * @param callable|null $clientDomainSigningCallback optional, a function used for signing the transaction if client domain is provided.
+     *  The function must accept a string as parameter representing the base64 encoded transaction envelope that needs to be signed. After signing it with the client domain account,
+     *  the function must return the signed transaction as base64 encoded transaction envelope.
+     * @return string the signed transaction as base64 encoded transaction envelope
+     * @throws ChallengeValidationError if the given base64 encoded transaction envelope has an invalid envelope type.
      */
-    private function signTransaction(string $challengeTransaction, array $signers) : string {
-        $res = base64_decode($challengeTransaction);
+    private function signTransaction(string $challengeTransaction, array $signers, ?callable $clientDomainSigningCallback = null) : string {
+        $b64TxEnvelopeToSign = $challengeTransaction;
+        if ($clientDomainSigningCallback != null) {
+            $b64TxEnvelopeToSign = $clientDomainSigningCallback($challengeTransaction);
+        }
+        $res = base64_decode($b64TxEnvelopeToSign);
         $xdr = new XdrBuffer($res);
         $envelopeXdr = XdrTransactionEnvelope::decode($xdr);
         if ($envelopeXdr->getType()->getValue() != XdrEnvelopeType::ENVELOPE_TYPE_TX) {

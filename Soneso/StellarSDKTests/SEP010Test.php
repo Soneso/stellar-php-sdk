@@ -8,6 +8,7 @@ namespace Soneso\StellarSDKTests;
 
 use DateTime;
 use ErrorException;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
@@ -15,6 +16,7 @@ use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\Response;
+use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -26,6 +28,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperation;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestErrorResponse;
+use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationError;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidHomeDomain;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoType;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoValue;
@@ -38,6 +41,9 @@ use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidWebAuthDomain;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
 
 class SEP010Test extends TestCase
@@ -618,4 +624,60 @@ class SEP010Test extends TestCase
         $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair], clientDomain:"place.domain.com", clientDomainKeyPair: $clientDomainAccountKeyPair);
         $this->assertEquals($this->successJWTToken, $jwtToken);
     }
+
+    public function testWithStellarTestAnchor(): void {
+        $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
+
+        // default
+        $userKeyPair = KeyPair::random();
+        $userAccountId = $userKeyPair->getAccountId();
+        $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        $this->assertNotEmpty($jwt);
+
+        // client domain with key signing
+        $userKeyPair = KeyPair::random();
+        $userAccountId = $userKeyPair->getAccountId();
+        $clientDomain = "server-signer.replit.app";
+        $clientDomainSignerKeyPair = KeyPair::fromSeed("SBRSOOURG2E24VGDR6NKZJMBOSOHVT6GV7EECUR3ZBE7LGSSVYN5VMOG");
+        $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair], clientDomain: $clientDomain, clientDomainKeyPair: $clientDomainSignerKeyPair);
+        $this->assertNotEmpty($jwt);
+
+        // client domain with local signing callback
+        $userKeyPair = KeyPair::random();
+        $userAccountId = $userKeyPair->getAccountId();
+        $callback = function (string $b64EncodedEnvelope) {
+            $tx = AbstractTransaction::fromEnvelopeBase64XdrString($b64EncodedEnvelope);
+            $clientDomainSignerKeyPair = KeyPair::fromSeed("SBRSOOURG2E24VGDR6NKZJMBOSOHVT6GV7EECUR3ZBE7LGSSVYN5VMOG");
+            $tx->sign($clientDomainSignerKeyPair, Network::testnet());
+            return $tx->toEnvelopeXdrBase64();
+        };
+        $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair], clientDomain: $clientDomain, clientDomainSigningCallback: $callback);
+        $this->assertNotEmpty($jwt);
+
+        // client domain with remote signing callback
+        $userKeyPair = KeyPair::random();
+        $userAccountId = $userKeyPair->getAccountId();
+        // server signer src: https://replit.com/@crogobete/ServerSigner#main.py
+        $callback = function (string $b64EncodedEnvelope) {
+            $headers = ['Authorization' => "Bearer 987654321"];
+            $httpClient = new Client();
+            $url = "https://server-signer.replit.app/sign";
+            $params = ['transaction' => $b64EncodedEnvelope, 'network_passphrase' => 'Test SDF Network ; September 2015'];
+            $response = $httpClient->request('POST', $url, [
+                "json" => $params,
+                "headers" => $headers
+            ]);
+            $content = $response->getBody()->__toString();
+            $jsonData = @json_decode($content, true);
+            if (isset($jsonData['transaction'])) {
+                return $jsonData['transaction'];
+            } else {
+                throw new Exception("Invalid server response");
+            }
+        };
+        $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair],
+            clientDomain: $clientDomain, clientDomainSigningCallback: $callback);
+        $this->assertNotEmpty($jwt);
+    }
+
 }
