@@ -86,7 +86,6 @@ class SorobanAuthorizationEntry
         } else {
             $this->credentials->addressCredentials->signature = XdrSCVal::forVec([$sigVal]);
         }
-         $signature->toXdrSCVal();
     }
 
     /**

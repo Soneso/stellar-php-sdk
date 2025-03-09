@@ -38,6 +38,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
+use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 
 // see: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
@@ -148,14 +149,9 @@ class SorobanAuthTest extends TestCase
         $this->assertNotNull($statusResponse);
         $this->assertNotNull($statusResponse->getResultValue());
 
-        // user friendly
         $resVal = $statusResponse->getResultValue();
-        $map = $resVal->getMap();
-        if ($map != null && count($map) > 0) {
-            foreach ($map as $entry) {
-                print("{" . $entry->key->address->accountId->getAccountId() . ", " . strval($entry->val->u32) . "}".PHP_EOL);
-            }
-        }
+        assertNotNull($resVal);
+        assertEquals(3, $resVal->u32);
 
         sleep(3);
         // check horizon response decoding.
@@ -204,7 +200,7 @@ class SorobanAuthTest extends TestCase
         $invokerAddress = Address::fromAccountId($invokerId);
 
         $functionName = "increment";
-        $args = [$invokerAddress->toXdrSCVal(), XdrSCVal::forU32(3)];
+        $args = [$invokerAddress->toXdrSCVal(), XdrSCVal::forU32(4)];
 
         // simulate first to get the transaction data and resource fee + auth
 
@@ -268,14 +264,9 @@ class SorobanAuthTest extends TestCase
         $this->assertNotNull($statusResponse);
         $this->assertNotNull($statusResponse->getResultValue());
 
-        // user friendly
         $resVal = $statusResponse->getResultValue();
-        $map = $resVal->getMap();
-        if ($map != null && count($map) > 0) {
-            foreach ($map as $entry) {
-                print("{" . $entry->key->address->accountId->getAccountId() . ", " . strval($entry->val->u32) . "}".PHP_EOL);
-            }
-        }
+        assertNotNull($resVal);
+        assertEquals(4, $resVal->u32);
 
         sleep(5);
         // check horizon response decoding.
