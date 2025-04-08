@@ -100,7 +100,7 @@ class SorobanAtomicSwapTest extends TestCase
         print("bob: " . $bobKeyPair->getSecretSeed() .  " : " . $bobKeyPair->getAccountId(). PHP_EOL);
 
         $atomicSwapContractId = $this->deployContract($this->server,self::SWAP_CONTRACT_PATH, $adminKeyPair);
-        print("atomic swap cid: " . $atomicSwapContractId . PHP_EOL);
+        print("atomic swap cid: " . StrKey::encodeContractIdHex($atomicSwapContractId) . PHP_EOL);
 
         $contractInfo = $this->server->loadContractInfoForContractId($atomicSwapContractId);
         $this->assertNotNull($contractInfo);
