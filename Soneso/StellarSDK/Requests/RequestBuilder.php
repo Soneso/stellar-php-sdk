@@ -84,7 +84,7 @@ abstract class RequestBuilder
     
     public function buildUrl() : string {
         $implodedSegments = implode("/", $this->segments);
-        $result = "/" . $implodedSegments . "?" . http_build_query($this->queryParameters);
+        $result = $implodedSegments . "?" . http_build_query($this->queryParameters);
         //print($result . PHP_EOL);
         return $result;
     }
