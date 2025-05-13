@@ -194,11 +194,9 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
  *              return SorobanAuthorizationEntry::fromBase64Xdr($signedBase64Entry);
  *       },
  * );
- *
+ *  ```
  * To see an even more complicated example, where Alice swaps with Bob but the
  *  transaction is invoked by yet another party, check out in the SorobanClientTest.testAtomicSwap()
- *  ```
- *
  */
 class AssembledTransaction
 {
@@ -302,6 +300,7 @@ class AssembledTransaction
         $tx->raw->setTimeBounds(new TimeBounds((new DateTime())->modify("- 10 seconds"),
             (new DateTime())->modify("+ " . $tx->options->methodOptions->timeoutInSeconds ." seconds")));
         $tx->raw->addOperation($operation);
+        $tx->raw->setMaxOperationFee($tx->options->methodOptions->fee);
         if ($options->methodOptions->simulate) {
             $tx->simulate();
         }
@@ -333,11 +332,16 @@ class AssembledTransaction
             $result = $this->restoreFootprint($this->simulationResponse->restorePreamble);
             if ($result->status === GetTransactionResponse::STATUS_SUCCESS) {
                 $sourceAccount = $this->getSourceAccount();
-                $contract = new Contract($this->options->clientOptions->contractId);
+
                 $this->raw = new TransactionBuilder(sourceAccount: $sourceAccount);
                 $this->raw->setTimeBounds(new TimeBounds((new DateTime())->modify("- 10 seconds"),
                     (new DateTime())->modify("+ " . $this->options->methodOptions->timeoutInSeconds ." seconds")));
-                $this->raw->addOperation($contract->call($this->options->method, $this->options->arguments));
+
+                $invokeContractHostFunction = new InvokeContractHostFunction($this->options->clientOptions->contractId,
+                    $this->options->method, $this->options->arguments);
+                $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
+
+                $this->raw->addOperation($builder->build());
                 $this->simulate();
             }
             throw new Exception("Automatic restore failed! You set 'restore: true' but the 

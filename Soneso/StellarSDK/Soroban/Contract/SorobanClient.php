@@ -202,7 +202,7 @@ class SorobanClient
      * If you want to force signing and submission even if it is a read only call set `force`to true.
      *
      *
-     * @param string $name the name of the method to invoke. Will thor an exception if the method does not exist.
+     * @param string $name the name of the method to invoke. Will throw an exception if the method does not exist.
      * @param array<XdrSCVal>|null $args the arguments to pass to the method call.
      * @param bool $force forces signing and sending even if it is a read call. Default: false.
      * @param MethodOptions|null $methodOptions method options for fine-tuning the call
@@ -254,7 +254,8 @@ class SorobanClient
             clientOptions: $this->options,
             methodOptions: $methodOptions ?? new MethodOptions(),
             method: $name,
-            arguments: $args);
+            arguments: $args,
+            enableServerLogging: $this->options->enableServerLogging);
         return AssembledTransaction::build($options);
     }
 

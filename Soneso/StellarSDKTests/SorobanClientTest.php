@@ -161,10 +161,10 @@ class SorobanClientTest  extends TestCase
         $this->mint($tokenBClient, $adminKeyPair, $bobId, 10000000000000);
         print("Alice and Bob funded");
 
-        $aliceTokenABalance = $this->readBalance($aliceId, $tokenAClient, $adminKeyPair);
+        $aliceTokenABalance = $this->readBalance($aliceId, $tokenAClient);
         $this->assertEquals(10000000000000, $aliceTokenABalance);
 
-        $bobTokenBBalance = $this->readBalance($bobId, $tokenBClient, $adminKeyPair);
+        $bobTokenBBalance = $this->readBalance($bobId, $tokenBClient);
         $this->assertEquals(10000000000000, $bobTokenBBalance);
 
 
@@ -291,12 +291,11 @@ class SorobanClientTest  extends TestCase
 
     }
 
-    private function readBalance(String $forAccountId, SorobanClient $tokenClient, Keypair $submitterKp) : int
+    private function readBalance(String $forAccountId, SorobanClient $tokenClient) : int
     {
         sleep(5);
 
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $submitterId = $submitterKp->getAccountId();
 
         $address = Address::fromAccountId($forAccountId)->toXdrSCVal();
         $methodName = "balance";
