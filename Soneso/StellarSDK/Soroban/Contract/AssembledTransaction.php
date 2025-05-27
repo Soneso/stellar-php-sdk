@@ -169,7 +169,7 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
  * If you have Bob's secret key, you can sign it right away with:
  *
  * ```php
- * $bobsKeyPair = $bobsKeypair = KeyPair::fromSeed('S...')
+ * $bobsKeyPair = KeyPair::fromSeed('S...')
  * $tx->signAuthEntries(signerKeyPair: $bobsKeyPair);
  * ```
  * But if you don't have Bob's private key, and e.g. need to send it to another server for signing,
@@ -213,6 +213,7 @@ class AssembledTransaction
      *  $tx = $client->buildInvokeMethodTx(name: 'myWriteMethod', args: $args, methodOptions: $methodOptions);
      *  $tx->raw->addMemo(Memo::text("Hello!"));
      *  $tx->simulate();
+     *  ```
      */
     public ?TransactionBuilder $raw = null;
 
@@ -358,7 +359,7 @@ class AssembledTransaction
      *  Sign the transaction with the private key of the `sourceAccountKeyPair` provided with the options previously.
      *  If you did not previously provide one that has a private key, you need to include one now.
      *  After signing, this method will send the transaction to the network and wait max. options->timoutInSeconds to complete.
-     *  If not completed after options->timoutInSeconds it will throw an exception. Otherwise, returns the `GetTransactionResponse`.
+     *  If not completed after options->timeoutInSeconds it will throw an exception. Otherwise, returns the `GetTransactionResponse`.
      *
      * @param KeyPair|null $sourceAccountKeyPair If you did not provide a $sourceAccountKeyPair with private key in the options you must do it now.
      * @param bool $force Force signing and sending even if it is a read call. Default false.
@@ -436,19 +437,19 @@ class AssembledTransaction
     }
 
     /**
-     * Signs and updates the auth entries related to the public key of the $signerKeypair provided.
+     * Signs and updates the auth entries related to the public key of the $signerKeyPair provided.
      *
      * @param KeyPair $signerKeyPair The keypair of the signer for the auth entry.
-     *  By default, this function will sign all auth entries that are connected to the signerKeyPair public key by using SorobanAuthorizationEntry.sign().
+     *  By default, this function will sign all auth entries that are connected to the signerKeyPair public key by using SorobanAuthorizationEntry->sign().
      *  The signerKeyPair must contain the private key for signing for this default case. If you don't have the signer's private key, provide the signers
      *  KeyPair containing only the public key and provide a callback function for signing by using the $authorizeEntryCallback parameter.
      * @param callable|null $authorizeEntryCallback an optional callback used to sign the auth entry.
-     *  By default, the function will use SorobanAuthorizationEntry.sign(). If you need to sign on another server or
-     *  if you have a pro use-case and need to use your own function rather than the default `SorobanAuthorizationEntry.sign()`
+     *  By default, the function will use SorobanAuthorizationEntry->sign(). If you need to sign on another server or
+     *  if you have a pro use-case and need to use your own function rather than the default `SorobanAuthorizationEntry->sign()`
      *  function you can do that by providing a callback function here! Your function needs to take following arguments: (SorobanAuthorizationEntry $entry, Network $network)
      *  and it must return the signed SorobanAuthorizationEntry.
      * @param int|null $validUntilLedgerSeq When to set each auth entry to expire. Could be any number of blocks in
-     *  the future. Can be supplied as a promise or a raw number. Default: current sequence + 100 blocks (about 8.3 minutes from now).
+     *  the future. Default: current sequence + 100 blocks (about 8.3 minutes from now).
      *
      * @return void
      * @throws GuzzleException

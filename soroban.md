@@ -4,7 +4,6 @@
 
 The following shows you how to use the PHP SDK to interact with Soroban. 
 
-
 ## Quick Start
 
 PHP SDK Soroban support allows you to deploy and to invoke Soroban smart contracts.
@@ -124,7 +123,7 @@ $result = $client->invokeMethod(name: "hello", args: [XdrSCVal::forSymbol("frien
 
 It will return the result of the method invocation as a `XdrSCVal` object.
 
-For more advanced usecases where you need to manipulate the transaction (e.g. add memo, additional signers, etc.) you can
+For more advanced use cases where you need to manipulate the transaction (e.g. add memo, additional signers, etc.) you can
 obtain the [`AssembledTransaction`](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDK/Soroban/Contract/AssembledTransaction.php) before sending it to the Soroban RPC Server
 as follows:
 
@@ -587,7 +586,7 @@ $builder = new InvokeHostFunctionOperationBuilder($hostFunction);
 $operation = $builder->build();
 ```
 
-#### Soroban Authorization
+### Soroban Authorization
 
 The PHP SDK provides support for the [Soroban Authorization Framework](https://soroban.stellar.org/docs/fundamentals-and-concepts/authorization).
 

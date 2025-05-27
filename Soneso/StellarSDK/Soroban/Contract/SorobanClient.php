@@ -73,12 +73,16 @@ class SorobanClient
      * by using the loaded contract info.
      *
      * @throws GuzzleException
-     * @throws Exception
+     * @throws Exception if the contract info could not be loaded.
      */
     public static function forClientOptions(ClientOptions $options) : SorobanClient {
         $server = new SorobanServer($options->rpcUrl);
         $info = $server->loadContractInfoForContractId($options->contractId);
-        return new SorobanClient($info->specEntries, $options);
+        if ($info != null) {
+            return new SorobanClient($info->specEntries, $options);
+        } else {
+            throw new Exception("Could not load contract info for the contract: {$options->contractId}");
+        }
     }
 
 
