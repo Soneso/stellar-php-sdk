@@ -22,7 +22,7 @@ class Federation {
      * @return FederationResponse
      * @throws Exception
      */
-    public static function resolveStellarAddress(string $address) : FederationResponse {
+    public static function resolveStellarAddress(string $address, ?Client $httpClient = null) : FederationResponse {
         if (!str_contains($address, "*")) {
             throw new InvalidArgumentException("Invalid federation address: " . $address);
         }
@@ -36,11 +36,11 @@ class Federation {
             throw new Exception("no federation server found for domain: " . $domain);
         }
 
-        $httpClient = new Client([
+        $client = $httpClient != null ? $httpClient : new Client([
             'base_uri' => $federationServer,
         ]);
 
-        $requestBuilder = (new FederationRequestBuilder($httpClient))->forStringToLookUp($address)->forType("name");
+        $requestBuilder = (new FederationRequestBuilder($client))->forStringToLookUp($address)->forType("name");
         return $requestBuilder->execute();
     }
 
@@ -48,11 +48,11 @@ class Federation {
      * @return FederationResponse in case of success.
      * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      */
-    public static function resolveStellarAccountId(string $accountId, string $federationServerUrl) : FederationResponse {
-        $httpClient = new Client([
+    public static function resolveStellarAccountId(string $accountId, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
+        $client = $httpClient != null ? $httpClient : new Client([
             'base_uri' => $federationServerUrl,
         ]);
-        $requestBuilder = (new FederationRequestBuilder($httpClient))->forStringToLookUp($accountId)->forType("id");
+        $requestBuilder = (new FederationRequestBuilder($client))->forStringToLookUp($accountId)->forType("id");
         return $requestBuilder->execute();
     }
 
@@ -60,11 +60,11 @@ class Federation {
      * @return FederationResponse in case of success.
      * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      */
-    public static function resolveStellarTransactionId(string $accountId, string $federationServerUrl) : FederationResponse {
-        $httpClient = new Client([
+    public static function resolveStellarTransactionId(string $txId, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
+        $client = $httpClient != null ? $httpClient : new Client([
             'base_uri' => $federationServerUrl,
         ]);
-        $requestBuilder = (new FederationRequestBuilder($httpClient))->forStringToLookUp($accountId)->forType("txid");
+        $requestBuilder = (new FederationRequestBuilder($client))->forStringToLookUp($txId)->forType("txid");
         return $requestBuilder->execute();
     }
 
@@ -76,11 +76,11 @@ class Federation {
      * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      * /
      */
-    public static function resolveForward(array $queryParameters, string $federationServerUrl) : FederationResponse {
-        $httpClient = new Client([
+    public static function resolveForward(array $queryParameters, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
+        $client = $httpClient != null ? $httpClient : new Client([
             'base_uri' => $federationServerUrl,
         ]);
-        $requestBuilder = (new FederationRequestBuilder($httpClient))->forType("forward")->forQueryParameters($queryParameters);
+        $requestBuilder = (new FederationRequestBuilder($client))->forType("forward")->forQueryParameters($queryParameters);
         return $requestBuilder->execute();
     }
 
