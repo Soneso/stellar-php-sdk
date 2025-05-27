@@ -6,12 +6,21 @@
 
 namespace Soneso\StellarSDK\SEP\Federation;
 
+use GuzzleHttp\Client;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 
 class FederationRequestBuilder extends RequestBuilder
 {
+
+    private string $serviceAddress;
+
+    public function __construct(Client $httpClient, string $serviceAddress)
+    {
+        $this->serviceAddress = $serviceAddress;
+        parent::__construct($httpClient);
+    }
 
     public function forType(string $type) : FederationRequestBuilder {
         $this->queryParameters["type"] = $type;
@@ -29,7 +38,11 @@ class FederationRequestBuilder extends RequestBuilder
     }
 
     public function buildUrl() : string {
-        return "?" . http_build_query($this->queryParameters);
+        $url = $this->serviceAddress;
+        if (count($this->queryParameters) > 0) {
+            $url .= '?' . http_build_query($this->queryParameters);
+        }
+        return $url;
     }
 
     /**

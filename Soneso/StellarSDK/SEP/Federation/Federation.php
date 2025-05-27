@@ -30,17 +30,15 @@ class Federation {
         $array = explode("*",$address);
         $domain = $array[count($array) - 1];
         $stellarToml = StellarToml::fromDomain($domain);
-        $federationServer = $stellarToml->getGeneralInformation()->federationServer;
+        $federationServerUrl = $stellarToml->getGeneralInformation()->federationServer;
 
-        if (!$federationServer) {
+        if (!$federationServerUrl) {
             throw new Exception("no federation server found for domain: " . $domain);
         }
 
-        $client = $httpClient != null ? $httpClient : new Client([
-            'base_uri' => $federationServer,
-        ]);
+        $client = $httpClient != null ? $httpClient : new Client();
 
-        $requestBuilder = (new FederationRequestBuilder($client))->forStringToLookUp($address)->forType("name");
+        $requestBuilder = (new FederationRequestBuilder($client, $federationServerUrl))->forStringToLookUp($address)->forType("name");
         return $requestBuilder->execute();
     }
 
@@ -49,10 +47,8 @@ class Federation {
      * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      */
     public static function resolveStellarAccountId(string $accountId, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
-        $client = $httpClient != null ? $httpClient : new Client([
-            'base_uri' => $federationServerUrl,
-        ]);
-        $requestBuilder = (new FederationRequestBuilder($client))->forStringToLookUp($accountId)->forType("id");
+        $client = $httpClient != null ? $httpClient : new Client();
+        $requestBuilder = (new FederationRequestBuilder($client, $federationServerUrl))->forStringToLookUp($accountId)->forType("id");
         return $requestBuilder->execute();
     }
 
@@ -61,10 +57,8 @@ class Federation {
      * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
      */
     public static function resolveStellarTransactionId(string $txId, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
-        $client = $httpClient != null ? $httpClient : new Client([
-            'base_uri' => $federationServerUrl,
-        ]);
-        $requestBuilder = (new FederationRequestBuilder($client))->forStringToLookUp($txId)->forType("txid");
+        $client = $httpClient != null ? $httpClient : new Client();
+        $requestBuilder = (new FederationRequestBuilder($client, $federationServerUrl))->forStringToLookUp($txId)->forType("txid");
         return $requestBuilder->execute();
     }
 
@@ -77,10 +71,8 @@ class Federation {
      * /
      */
     public static function resolveForward(array $queryParameters, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
-        $client = $httpClient != null ? $httpClient : new Client([
-            'base_uri' => $federationServerUrl,
-        ]);
-        $requestBuilder = (new FederationRequestBuilder($client))->forType("forward")->forQueryParameters($queryParameters);
+        $client = $httpClient != null ? $httpClient : new Client();
+        $requestBuilder = (new FederationRequestBuilder($client, $federationServerUrl))->forType("forward")->forQueryParameters($queryParameters);
         return $requestBuilder->execute();
     }
 
