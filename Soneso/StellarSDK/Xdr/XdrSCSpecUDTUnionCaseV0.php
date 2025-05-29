@@ -49,6 +49,18 @@ class XdrSCSpecUDTUnionCaseV0
         return $result;
     }
 
+    public static function forVoidCase(XdrSCSpecUDTUnionCaseVoidV0 $case) : XdrSCSpecUDTUnionCaseV0 {
+        $result = new XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind::forVoid());
+        $result->voidCase = $case;
+        return $result;
+    }
+
+    public static function forTupleCase(XdrSCSpecUDTUnionCaseTupleV0 $case) : XdrSCSpecUDTUnionCaseV0 {
+        $result = new XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind::forTuple());
+        $result->tupleCase = $case;
+        return $result;
+    }
+
     /**
      * @return XdrSCSpecUDTUnionCaseV0Kind
      */

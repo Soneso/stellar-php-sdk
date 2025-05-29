@@ -18,6 +18,14 @@ class XdrSCSpecUDTUnionCaseV0Kind
         $this->value = $value;
     }
 
+    public static function forVoid() {
+        return new XdrSCSpecUDTUnionCaseV0Kind(self::SC_SPEC_UDT_UNION_CASE_VOID_V0);
+    }
+
+    public static function forTuple() {
+        return new XdrSCSpecUDTUnionCaseV0Kind(self::SC_SPEC_UDT_UNION_CASE_TUPLE_V0);
+    }
+
     /**
      * @return int
      */

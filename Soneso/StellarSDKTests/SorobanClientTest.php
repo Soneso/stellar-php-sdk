@@ -13,14 +13,33 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
+use Soneso\StellarSDK\Soroban\Contract\ContractSpec;
 use Soneso\StellarSDK\Soroban\Contract\DeployRequest;
 use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
+use Soneso\StellarSDK\Soroban\Contract\NativeUnionVal;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
+use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeBytesN;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeDef;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeMap;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeOption;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeTuple;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeUDT;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeVec;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTEnumCaseV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTEnumV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructFieldV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseTupleV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseVoidV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
+use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 
@@ -62,6 +81,16 @@ class SorobanClientTest  extends TestCase
         self::assertCount(2, $result->vec);
         $resultVal = $result->vec[0]->sym . ", " . $result->vec[1]->sym;
         self::assertEquals("Hello, John", $resultVal);
+
+        // contract spec test
+        $spec = new ContractSpec($client->getSpecEntries());
+        $args = $spec->funcArgsToXdrSCValues(name: "hello",args: ["to" => "Maria"]);
+        self::assertCount(1, $args);
+        $result = $client->invokeMethod(name: "hello", args: $args);
+        assertNotNull($result->vec);
+        self::assertCount(2, $result->vec);
+        $resultVal = $result->vec[0]->sym . ", " . $result->vec[1]->sym;
+        self::assertEquals("Hello, Maria", $resultVal);
     }
 
     public function testAuthContract()
@@ -91,8 +120,9 @@ class SorobanClientTest  extends TestCase
         // submitter and invoker use are the same
         // no need to sign auth
 
-        $invokerAddress = Address::fromAccountId($this->sourceAccountKeyPair->getAccountId());
-        $args = [$invokerAddress->toXdrSCVal(), XdrSCVal::forU32(3)];
+        $invokerAccountId = $this->sourceAccountKeyPair->getAccountId();
+        $spec = new ContractSpec($client->getSpecEntries());
+        $args = $spec->funcArgsToXdrSCValues(name: $methodName, args: ["user" => $invokerAccountId, "value" => 3]);
         $result = $client->invokeMethod(name: $methodName, args: $args);
         assertEquals(3, $result->u32);
 
@@ -102,8 +132,10 @@ class SorobanClientTest  extends TestCase
         $invokerKeyPair = KeyPair::random();
         FriendBot::fundTestAccount($invokerKeyPair->getAccountId());
 
-        $invokerAddress = Address::fromAccountId($invokerKeyPair->getAccountId());
-        $args = [$invokerAddress->toXdrSCVal(), XdrSCVal::forU32(4)];
+        $invokerAccountId = $invokerKeyPair->getAccountId();
+        $args = $spec->funcArgsToXdrSCValues(name: $methodName,
+            args: ["user" => $invokerAccountId, "value" => 4]);
+
         try {
             $client->invokeMethod(name: $methodName, args: $args);
             self::fail("should not reach here!");
@@ -118,6 +150,7 @@ class SorobanClientTest  extends TestCase
         $result = $response->getResultValue();
         assertNotNull($result);
         assertEquals(4, $result->u32);
+
     }
 
     public function testAtomicSwap()
@@ -167,25 +200,19 @@ class SorobanClientTest  extends TestCase
         $bobTokenBBalance = $this->readBalance($bobId, $tokenBClient);
         $this->assertEquals(10000000000000, $bobTokenBBalance);
 
-
-        $amountA = XdrSCVal::forI128(new XdrInt128Parts(0,1000));
-        $minBForA = XdrSCVal::forI128(new XdrInt128Parts(0,4500));
-
-        $amountB = XdrSCVal::forI128(new XdrInt128Parts(0,5000));
-        $minAForB = XdrSCVal::forI128(new XdrInt128Parts(0,950));
-
         $swapMethodName = "swap";
 
-        $args = [
-            Address::fromAccountId($aliceId)->toXdrSCVal(),
-            Address::fromAccountId($bobId)->toXdrSCVal(),
-            Address::fromContractId($tokenAContractId)->toXdrSCVal(),
-            Address::fromContractId($tokenBContractId)->toXdrSCVal(),
-            $amountA,
-            $minBForA,
-            $amountB,
-            $minAForB
-        ];
+        $spec = new ContractSpec($atomicSwapClient->getSpecEntries());
+        $args = $spec->funcArgsToXdrSCValues(name: $swapMethodName, args: [
+            "a" => $aliceId,
+            "b" => $bobId,
+            "token_a" => $tokenAContractId,
+            "token_b" => $tokenBContractId,
+            "amount_a" => 1000,
+            "min_b_for_a" => 4500,
+            "amount_b" => 5000,
+            "min_a_for_b" => 950
+        ]);
 
         $tx = $atomicSwapClient->buildInvokeMethodTx(name: $swapMethodName, args: $args);
 
@@ -220,8 +247,210 @@ class SorobanClientTest  extends TestCase
         $result = $response->getResultValue();
         $this->assertEquals(XdrSCValType::SCV_VOID, $result->type->value);
         print("Swap done");
+
+        // small spec functions test
+        $spec = new ContractSpec($tokenAClient->getSpecEntries());
+        $functions = $spec->funcs();
+        $this->assertCount(13, $functions);
+        $func = $spec->getFunc("initialize");
+        $this->assertEquals("initialize", $func->name);
     }
 
+    public function testNativeToXdrSCVal() {
+        // void
+        $def = XdrSCSpecTypeDef::VOID();
+        $spec = new ContractSpec([]);
+        $val = $spec->nativeToXdrSCVal(null, $def);
+        $this->assertEquals(XdrSCValType::SCV_VOID, $val->type->value);
+
+        // address
+        $keyPair = KeyPair::random();
+        $accountId = $keyPair->getAccountId();
+        $contractId = "CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D";
+        $def = XdrSCSpecTypeDef::ADDRESS();
+        $val = $spec->nativeToXdrSCVal(Address::fromAccountId($accountId), $def);
+        $this->assertEquals(XdrSCValType::SCV_ADDRESS, $val->type->value);
+        $val = $spec->nativeToXdrSCVal($accountId, $def);
+        $this->assertEquals(XdrSCValType::SCV_ADDRESS, $val->type->value);
+        $val = $spec->nativeToXdrSCVal(Address::fromContractId($contractId), $def);
+        $this->assertEquals(XdrSCValType::SCV_ADDRESS, $val->type->value);
+        $val = $spec->nativeToXdrSCVal($contractId, $def);
+        $this->assertEquals(XdrSCValType::SCV_ADDRESS, $val->type->value);
+
+        // vec
+        $def = XdrSCSpecTypeDef::forVec(new XdrSCSpecTypeVec(elementType: XdrSCSpecTypeDef::SYMBOL()));
+        $val = $spec->nativeToXdrSCVal(["a", "b"], $def);
+        $this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+        $this->assertCount(2, $val->vec);
+
+        // map
+        $map = new XdrSCSpecTypeMap(keyType: XdrSCSpecTypeDef::STRING(), valueType: XdrSCSpecTypeDef::ADDRESS());
+        $def = XdrSCSpecTypeDef::forMap($map);
+        $val = $spec->nativeToXdrSCVal(["a" => $accountId, "b" => $contractId], $def);
+        $this->assertEquals(XdrSCValType::SCV_MAP, $val->type->value);
+        $this->assertCount(2, $val->map);
+
+        // tuple
+        $tuple = new XdrSCSpecTypeTuple(valueTypes: [XdrSCSpecTypeDef::STRING(), XdrSCSpecTypeDef::BOOL()]);
+        $def = XdrSCSpecTypeDef::forTuple($tuple);
+        $val = $spec->nativeToXdrSCVal(["a", true], $def);
+        $this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+        $this->assertCount(2, $val->vec);
+
+        // numbers
+        $def = XdrSCSpecTypeDef::U32();
+        $val = $spec->nativeToXdrSCVal(12, $def);
+        $this->assertEquals(XdrSCValType::SCV_U32, $val->type->value);
+        $this->assertEquals(12, $val->u32);
+
+        $def = XdrSCSpecTypeDef::I32();
+        $val = $spec->nativeToXdrSCVal(-12, $def);
+        $this->assertEquals(XdrSCValType::SCV_I32, $val->type->value);
+        $this->assertEquals(-12, $val->i32);
+
+        $def = XdrSCSpecTypeDef::U64();
+        $val = $spec->nativeToXdrSCVal(112, $def);
+        $this->assertEquals(XdrSCValType::SCV_U64, $val->type->value);
+        $this->assertEquals(112, $val->u64);
+
+        $def = XdrSCSpecTypeDef::I64();
+        $val = $spec->nativeToXdrSCVal(-112, $def);
+        $this->assertEquals(XdrSCValType::SCV_I64, $val->type->value);
+        $this->assertEquals(-112, $val->i64);
+
+        // for > 128 only 64 positive numbers are supported
+        $def = XdrSCSpecTypeDef::U128();
+        $val = $spec->nativeToXdrSCVal(1112, $def);
+        $this->assertEquals(XdrSCValType::SCV_U128, $val->type->value);
+        $this->assertEquals(1112, $val->u128->lo);
+
+        // bigger numbers must be passed as xdrscval
+        $val = $spec->nativeToXdrSCVal(XdrSCVal::forU128(new XdrUInt128Parts(hi: 1230, lo:81881)), $def);
+        $this->assertEquals(XdrSCValType::SCV_U128, $val->type->value);
+        $this->assertEquals(1230, $val->u128->hi);
+        $this->assertEquals(81881, $val->u128->lo);
+
+        $def = XdrSCSpecTypeDef::I128();
+        $val = $spec->nativeToXdrSCVal(2112, $def);
+        $this->assertEquals(XdrSCValType::SCV_I128, $val->type->value);
+        $this->assertEquals(2112, $val->i128->lo);
+
+        $val = $spec->nativeToXdrSCVal(XdrSCVal::forI128(new XdrInt128Parts(hi: -1230, lo:81881)), $def);
+        $this->assertEquals(XdrSCValType::SCV_I128, $val->type->value);
+        $this->assertEquals(-1230, $val->i128->hi);
+        $this->assertEquals(81881, $val->i128->lo);
+
+        $def = XdrSCSpecTypeDef::U256();
+        $val = $spec->nativeToXdrSCVal(3112, $def);
+        $this->assertEquals(XdrSCValType::SCV_U256, $val->type->value);
+        $this->assertEquals(3112, $val->u256->loLo);
+
+        $def = XdrSCSpecTypeDef::I256();
+        $val = $spec->nativeToXdrSCVal(3112, $def);
+        $this->assertEquals(XdrSCValType::SCV_I256, $val->type->value);
+        $this->assertEquals(3112, $val->i256->loLo);
+
+        // strings (bytes, bytesN, string, symbol, address)
+        $def = XdrSCSpecTypeDef::BYTES();
+        $val = $spec->nativeToXdrSCVal($keyPair->getPublicKey(), $def);
+        $this->assertEquals(XdrSCValType::SCV_BYTES, $val->type->value);
+
+        $def = XdrSCSpecTypeDef::forBytesN(new XdrSCSpecTypeBytesN(n:32));
+        $val = $spec->nativeToXdrSCVal($keyPair->getPublicKey(), $def);
+        $this->assertEquals(XdrSCValType::SCV_BYTES, $val->type->value);
+
+        $def = XdrSCSpecTypeDef::STRING();
+        $val = $spec->nativeToXdrSCVal("hello this is a text", $def);
+        $this->assertEquals(XdrSCValType::SCV_STRING, $val->type->value);
+
+        $def = XdrSCSpecTypeDef::SYMBOL();
+        $val = $spec->nativeToXdrSCVal("XLM", $def);
+        $this->assertEquals(XdrSCValType::SCV_SYMBOL, $val->type->value);
+
+        $def = XdrSCSpecTypeDef::ADDRESS();
+        $val = $spec->nativeToXdrSCVal($accountId, $def);
+        $this->assertEquals(XdrSCValType::SCV_ADDRESS, $val->type->value);
+        $val = $spec->nativeToXdrSCVal($contractId, $def);
+        $this->assertEquals(XdrSCValType::SCV_ADDRESS, $val->type->value);
+
+        // bool
+        $def = XdrSCSpecTypeDef::BOOL();
+        $val = $spec->nativeToXdrSCVal(false, $def);
+        $this->assertEquals(XdrSCValType::SCV_BOOL, $val->type->value);
+
+        // void
+        $def = XdrSCSpecTypeDef::VOID();
+        $val = $spec->nativeToXdrSCVal(null, $def);
+        $this->assertEquals(XdrSCValType::SCV_VOID, $val->type->value);
+
+        // option
+        $def = XdrSCSpecTypeDef::forOption(new XdrSCSpecTypeOption(valueType: XdrSCSpecTypeDef::STRING()));
+        $val = $spec->nativeToXdrSCVal("a string", $def);
+        $this->assertEquals(XdrSCValType::SCV_STRING, $val->type->value);
+        $val = $spec->nativeToXdrSCVal(null, $def);
+        $this->assertEquals(XdrSCValType::SCV_VOID, $val->type->value);
+
+        // UDT (enum, struct, union)
+
+        // enum
+        $cases = [
+            new XdrSCSpecUDTEnumCaseV0(doc:"", name:"a", value:1),
+            new XdrSCSpecUDTEnumCaseV0(doc:"", name:"b", value:2),
+            new XdrSCSpecUDTEnumCaseV0(doc:"", name:"c", value:3),
+        ];
+        $enum = new XdrSCSpecUDTEnumV0(doc: "", lib: "", name: "myEnum", cases: $cases);
+        $entry = XdrSCSpecEntry::forUDTEnumV0($enum);
+        $spec = new ContractSpec(entries:[$entry]);
+        $def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myEnum"));
+        $val = $spec->nativeToXdrSCVal(2, $def);
+        $this->assertEquals(XdrSCValType::SCV_U32, $val->type->value);
+        $this->assertEquals(2, $val->u32);
+
+        // struct
+        $fields = [
+            new XdrSCSpecUDTStructFieldV0(doc:"", name:"field1", type: XdrSCSpecTypeDef::U32()),
+            new XdrSCSpecUDTStructFieldV0(doc:"", name:"field2", type: XdrSCSpecTypeDef::U32()),
+            new XdrSCSpecUDTStructFieldV0(doc:"", name:"field3", type: XdrSCSpecTypeDef::U32()),
+        ];
+        $struct = new XdrSCSpecUDTStructV0(doc:"", lib:"", name:"myStruct", fields: $fields);
+        $entry = XdrSCSpecEntry::forUDTStructV0($struct);
+        $spec = new ContractSpec(entries:[$entry]);
+        $def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myStruct"));
+        $val = $spec->nativeToXdrSCVal(["field1" => 1,"field2" => 2,"field3" => 3], $def);
+        $this->assertEquals(XdrSCValType::SCV_MAP, $val->type->value);
+        $this->assertCount(3, $val->map);
+
+        // field names are all numeric
+        $fields = [
+            new XdrSCSpecUDTStructFieldV0(doc:"", name:"1", type: XdrSCSpecTypeDef::STRING()),
+            new XdrSCSpecUDTStructFieldV0(doc:"", name:"2", type: XdrSCSpecTypeDef::STRING()),
+            new XdrSCSpecUDTStructFieldV0(doc:"", name:"3", type: XdrSCSpecTypeDef::STRING()),
+        ];
+        $numericStruct = new XdrSCSpecUDTStructV0(doc:"", lib:"", name:"myNumericStruct", fields: $fields);
+        $entry = XdrSCSpecEntry::forUDTStructV0($numericStruct);
+        $spec = new ContractSpec(entries:[$entry]);
+        $def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myNumericStruct"));
+        $val = $spec->nativeToXdrSCVal(["one","two","three"], $def);
+        $this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+        $this->assertCount(3, $val->vec);
+
+        // union
+        $unionCases = [
+            XdrSCSpecUDTUnionCaseV0::forVoidCase(new XdrSCSpecUDTUnionCaseVoidV0(doc:"", name:"voidCase")),
+            XdrSCSpecUDTUnionCaseV0::forTupleCase(new XdrSCSpecUDTUnionCaseTupleV0(doc:"", name:"tupleCase",
+                type:[XdrSCSpecTypeDef::STRING(), XdrSCSpecTypeDef::U32()]))
+        ];
+        $union = new XdrSCSpecUDTUnionV0(doc:"", lib:"", name:"myUnion", cases:$unionCases);
+        $entry = XdrSCSpecEntry::forUDTUnionV0($union);
+        $spec = new ContractSpec(entries:[$entry]);
+        $def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myUnion"));
+        $val = $spec->nativeToXdrSCVal(new NativeUnionVal("voidCase"), $def);
+        $this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+        $this->assertCount(1, $val->vec); // only key
+        $val = $spec->nativeToXdrSCVal(new NativeUnionVal("tupleCase", values: ["a", 4]), $def);
+        $this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+        $this->assertCount(3, $val->vec); // key + 2 values (a,4)
+    }
 
     /**
      * @throws GuzzleException
@@ -262,13 +491,15 @@ class SorobanClientTest  extends TestCase
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
         $submitterId = $submitterKp->getAccountId();
 
-        $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
         $methodName = "initialize";
 
-        $tokenName = XdrSCVal::forString($name);
-        $tokenSymbol = XdrSCVal::forString($symbol);
-
-        $args = [$adminAddress, XdrSCVal::forU32(8), $tokenName, $tokenSymbol];
+        $spec = new ContractSpec($tokenClient->getSpecEntries());
+        $args = $spec->funcArgsToXdrSCValues(name: $methodName, args: [
+            "admin" => Address::fromAccountId($submitterId),
+            "decimal" => 8,
+            "name" => $name,
+            "symbol" => $symbol
+        ]);
 
         $tokenClient->invokeMethod(name: $methodName, args: $args);
     }
@@ -282,9 +513,12 @@ class SorobanClientTest  extends TestCase
 
         $methodName = "mint";
 
-        $toAddress = Address::fromAccountId($toAccountId)->toXdrSCVal();
-        $amountValue = XdrSCVal::forI128(new XdrInt128Parts(0,$amount));
-        $args = [$toAddress, $amountValue];
+        $spec = new ContractSpec($tokenClient->getSpecEntries());
+        $args = $spec->funcArgsToXdrSCValues(name: $methodName, args: [
+            "to" => $toAccountId,
+            "amount" => $amount
+        ]);
+
         $tx = $tokenClient->buildInvokeMethodTx(name: $methodName, args: $args);
         $tx->signAuthEntries(signerKeyPair: $adminKp);
         $tx->signAndSend();
@@ -297,10 +531,12 @@ class SorobanClientTest  extends TestCase
 
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
 
-        $address = Address::fromAccountId($forAccountId)->toXdrSCVal();
         $methodName = "balance";
 
-        $args = [$address];
+        $spec = new ContractSpec($tokenClient->getSpecEntries());
+        $args = $spec->funcArgsToXdrSCValues(name: $methodName, args: [
+            "id" => $forAccountId
+        ]);
 
         $resultVal = $tokenClient->invokeMethod(name: $methodName, args: $args);
         return $resultVal->i128->lo;
