@@ -302,6 +302,396 @@ $tx->signAuthEntries(signerKeyPair: $bobPublicKeyPair,
 To see an even more complicated example, where Alice swaps with Bob but the
 transaction is invoked by yet another party, check out the [`SorobanClientTest.testAtomicSwap`](https://github.com/Soneso/stellar-php-sdk/blob/7d2d3e30258035db04a73de3a3c5e74ea6fad264/Soneso/StellarSDKTests/SorobanClientTest.php#L123) test case.
 
+## Contract Spec
+
+The `ContractSpec` class offers a range of useful functions based on the contract spec entries of a contract.
+It can be used to find specific entries from the contract specification and, more importantly,
+to easily prepare the arguments to invoke the contract functions.
+
+The class is initialized with the contract spec entries from the soroban client:
+
+```php
+$spec = new ContractSpec($atomicSwapClient->getSpecEntries());
+```
+
+After initialization, certain spec entries or functions can be found, for example:
+
+```php
+$functions = $spec->funcs();
+$func = $spec->getFunc("swap");
+$unionEntry = $spec->findEntry("myUnion");
+```
+
+More important, however, is the ability to easily prepare the arguments for invoking contract functions.
+The arguments for invoking the functions must be of type `XdrSCVal`. 
+
+These can either be constructed manually or with the support of the `ContractSpec` class.
+
+Example of manual construction:
+
+ ```php
+$swapMethodName = "swap";
+
+$amountA = XdrSCVal::forI128(new XdrInt128Parts(0,1000));
+$minBForA = XdrSCVal::forI128(new XdrInt128Parts(0,4500));
+
+$amountB = XdrSCVal::forI128(new XdrInt128Parts(0,5000));
+$minAForB = XdrSCVal::forI128(new XdrInt128Parts(0,950));
+
+$args = [
+          Address::fromAccountId($aliceAccountId)->toXdrSCVal(),
+          Address::fromAccountId($bobAccountId)->toXdrSCVal(),
+          Address::fromContractId($tokenAContractId)->toXdrSCVal(),
+          Address::fromContractId($tokenBContractId)->toXdrSCVal(),
+          $amountA,
+          $minBForA,
+          $amountB,
+          $minAForB,
+        ];
+```
+
+Example using the `ContractSpec` class:
+
+```php
+$args = $spec->funcArgsToXdrSCValues(name: $swapMethodName, args: [
+            "a" => $aliceId,
+            "b" => $bobId,
+            "token_a" => $tokenAContractId,
+            "token_b" => $tokenBContractId,
+            "amount_a" => 1000,
+            "min_b_for_a" => 4500,
+            "amount_b" => 5000,
+            "min_a_for_b" => 950
+        ]);
+```
+
+The conversion of native values to `XdrSCVal` is based on the contract spec entries of the contract
+and can be done via the method `funcArgsToXdrSCValues` or individually via the method `nativeToXdrSCVal(mixed $val, XdrSCSpecTypeDef $ty)`:
+
+```php
+// examples for nativeToXdrSCVal:
+
+$def = XdrSCSpecTypeDef::ADDRESS(); // self defined
+$val = $spec->nativeToXdrSCVal("CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D", $def);
+
+// or
+$def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myStruct")); // myStruct is in the spec entries of the contract.
+$val = $spec->nativeToXdrSCVal(["field1" => 1,"field2" => 2,"field3" => 3], $def);
+
+// example for funcArgsToXdrSCValues:
+$args = $spec->funcArgsToXdrSCValues("myFunc", [
+    "admin" => "CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D" 
+]);
+```
+
+### Supported values
+
+Next, we will go through the individual supported value types using examples. 
+We will use the `nativeToXdrSCVal` method for a better understanding. 
+Of course, these also apply to the method `funcArgsToXdrSCValues` where the type definitions are 
+already included in the spec of the contract function. 
+
+For our examples, we will create the type definitions ourselves in order to better explain the context.
+
+#### Void
+
+To obtain an `XdrScVal` of type void, the native value `null` can be passed:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::VOID();
+
+// convert null to XdrScVal of type void
+$val = $spec->nativeToXdrSCVal(null, $def);
+$this->assertEquals(XdrSCValType::SCV_VOID, $val->type->value);
+```
+
+#### Addresses 
+
+To obtain an `XDRSCVal` object of type address, either a string or an `Address` object can be passed.
+Both account ids and contract ids are supported.
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::ADDRESS();
+
+// convert
+$accountId = "GB6AXVJOIWOEOH4EA6ZT24ZJ5XNVOQUJK4PBAEOFNG44VKROWLDA65DB"
+$val = $spec->nativeToXdrSCVal($accountId, $def);
+
+$contractId = "CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D";
+$val = $spec->nativeToXdrSCVal($accountId, $def);
+
+// or
+$address = Address::fromAccountId($accountId);
+$val = $spec->nativeToXdrSCVal($address, $def);
+
+$address = Address::fromAccountId($contractId);
+$val = $spec->nativeToXdrSCVal($address, $def);
+```
+
+#### Vectors
+
+To obtain an `XDRSCVal` object of type vec, an array of native values must be passed:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::forVec(new XdrSCSpecTypeVec(elementType: XdrSCSpecTypeDef::SYMBOL()));
+
+// convert
+$val = $spec->nativeToXdrSCVal(["a", "b"], $def);
+$this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+$this->assertCount(2, $val->vec);
+```
+
+#### Maps
+
+To obtain an `XDRSCVal` object of type map, an array of native key value pairs must be passed:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$map = new XdrSCSpecTypeMap(keyType: XdrSCSpecTypeDef::STRING(), valueType: XdrSCSpecTypeDef::ADDRESS());
+$def = XdrSCSpecTypeDef::forMap($map);
+
+// convert
+$val = $spec->nativeToXdrSCVal(["a" => $accountId, "b" => $contractId], $def);
+$this->assertEquals(XdrSCValType::SCV_MAP, $val->type->value);
+```
+
+Since PHP only accepts `int` or `string` as key values, only `int` or `string` can be accepted as native input keys here.
+If a resulting key must be an `XdrSCVal` object that cannot be constructed from an `int` or `string`, 
+the `XdrSCVal` object of type map must be constructed manually (or separately) and cannot be obtained 
+via the `nativeToXdrSCVal` function (e.g. key of type bool, union, other map or vec).
+
+For the function `funcArgsToXdrSCValues`, the manually (or separately) constructed `XdrSCVal` object of 
+type map must be passed in the list of arguments if its kay can not be constructed from int or string.
+
+#### Tuple
+
+To obtain an `XDRSCVal` object of type tuple, an array of native values must be passed:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$tuple = new XdrSCSpecTypeTuple(valueTypes: [XdrSCSpecTypeDef::STRING(), XdrSCSpecTypeDef::BOOL()]);
+$def = XdrSCSpecTypeDef::forTuple($tuple);
+
+// convert
+$val = $spec->nativeToXdrSCVal(["a", true], $def);
+$this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+```
+
+#### Numbers
+
+To obtain an `XDRSCVal` object of type u32, i32, u64, i64, a native int values must be passed:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::U32();
+
+// convert
+$val = $spec->nativeToXdrSCVal(12, $def);
+$this->assertEquals(XdrSCValType::SCV_U32, $val->type->value);
+
+$def = XdrSCSpecTypeDef::I32();
+$val = $spec->nativeToXdrSCVal(-12, $def);
+$this->assertEquals(XdrSCValType::SCV_I32, $val->type->value);
+
+$def = XdrSCSpecTypeDef::U64();
+$val = $spec->nativeToXdrSCVal(112, $def);
+$this->assertEquals(XdrSCValType::SCV_U64, $val->type->value);
+
+$def = XdrSCSpecTypeDef::I64();
+$val = $spec->nativeToXdrSCVal(-112, $def);
+$this->assertEquals(XdrSCValType::SCV_I64, $val->type->value);
+```
+
+`XDRSCVal` objects of type u128, i128, u256 and i256 are only supported for positive native int values (<= i64):
+
+```php
+// for > 128 only 64 positive numbers are supported
+$def = XdrSCSpecTypeDef::U128();
+$val = $spec->nativeToXdrSCVal(1112, $def);
+$this->assertEquals(XdrSCValType::SCV_U128, $val->type->value);
+$this->assertEquals(1112, $val->u128->lo);
+
+$def = XdrSCSpecTypeDef::I128();
+$val = $spec->nativeToXdrSCVal(2112, $def);
+$this->assertEquals(XdrSCValType::SCV_I128, $val->type->value);
+$this->assertEquals(2112, $val->i128->lo);
+
+$def = XdrSCSpecTypeDef::U256();
+$val = $spec->nativeToXdrSCVal(3112, $def);
+$this->assertEquals(XdrSCValType::SCV_U256, $val->type->value);
+$this->assertEquals(3112, $val->u256->loLo);
+
+$def = XdrSCSpecTypeDef::I256();
+$val = $spec->nativeToXdrSCVal(3112, $def);
+$this->assertEquals(XdrSCValType::SCV_I256, $val->type->value);
+$this->assertEquals(3112, $val->i256->loLo);
+
+// bigger, or negative numbers must be passed as XdrSCVal to funcArgsToXdrSCValues
+
+$args= $spec->funcArgsToXdrSCValues("myFunc", [
+        "bob" => $accountId, 
+        "amount" => XdrSCVal::forI128(new XdrInt128Parts(hi: -1230, lo:81881))
+    ]);
+```
+
+#### Bytes and BytesN
+
+`XDRSCVal` objects of type bytes or bytesN, are constructed from native strings (containing the bytes):
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::BYTES();
+
+// convert
+$val = $spec->nativeToXdrSCVal($keyPair->getPublicKey(), $def);
+$this->assertEquals(XdrSCValType::SCV_BYTES, $val->type->value);
+
+$def = XdrSCSpecTypeDef::forBytesN(new XdrSCSpecTypeBytesN(n:32));
+$val = $spec->nativeToXdrSCVal($keyPair->getPublicKey(), $def);
+$this->assertEquals(XdrSCValType::SCV_BYTES, $val->type->value);
+```
+
+#### String
+
+`XDRSCVal` objects of type string, are constructed from native strings:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::STRING();
+
+// convert
+$val = $spec->nativeToXdrSCVal("hello this is a text", $def);
+$this->assertEquals(XdrSCValType::SCV_STRING, $val->type->value);
+```
+
+#### Symbol
+
+`XDRSCVal` objects of type symbol, are constructed from native strings:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::SYMBOL();
+
+// convert
+$val = $spec->nativeToXdrSCVal("XLM", $def);
+$this->assertEquals(XdrSCValType::SCV_SYMBOL, $val->type->value);
+```
+
+#### Bool
+
+`XDRSCVal` objects of type bool, are constructed from native bool:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::BOOL();
+
+// convert
+$val = $spec->nativeToXdrSCVal(false, $def);
+$this->assertEquals(XdrSCValType::SCV_BOOL, $val->type->value);
+```
+
+#### Option
+
+optional `XDRSCVal` objects:
+
+```php
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+$def = XdrSCSpecTypeDef::forOption(new XdrSCSpecTypeOption(valueType: XdrSCSpecTypeDef::STRING()));
+
+// convert
+$val = $spec->nativeToXdrSCVal("a string", $def);
+$this->assertEquals(XdrSCValType::SCV_STRING, $val->type->value);
+$val = $spec->nativeToXdrSCVal(null, $def);
+$this->assertEquals(XdrSCValType::SCV_VOID, $val->type->value);
+```
+
+#### User defined types (enum, struct union)
+
+***Enum:***
+```php
+// prepare (this is not needed for funcArgsToXdrSCValues)
+$cases = [
+    new XdrSCSpecUDTEnumCaseV0(doc:"", name:"a", value:1),
+    new XdrSCSpecUDTEnumCaseV0(doc:"", name:"b", value:2),
+    new XdrSCSpecUDTEnumCaseV0(doc:"", name:"c", value:3),
+];
+$enum = new XdrSCSpecUDTEnumV0(doc: "", lib: "", name: "myEnum", cases: $cases);
+$entry = XdrSCSpecEntry::forUDTEnumV0($enum);
+$spec = new ContractSpec(entries:[$entry]);
+$def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myEnum"));
+
+// convert
+$val = $spec->nativeToXdrSCVal(2, $def);
+$this->assertEquals(XdrSCValType::SCV_U32, $val->type->value);
+$this->assertEquals(2, $val->u32);
+```
+
+***Struct (non-numeric fields):***
+```php
+// prepare (this is not needed for funcArgsToXdrSCValues)
+$fields = [
+    new XdrSCSpecUDTStructFieldV0(doc:"", name:"field1", type: XdrSCSpecTypeDef::U32()),
+    new XdrSCSpecUDTStructFieldV0(doc:"", name:"field2", type: XdrSCSpecTypeDef::U32()),
+    new XdrSCSpecUDTStructFieldV0(doc:"", name:"field3", type: XdrSCSpecTypeDef::U32()),
+];
+$struct = new XdrSCSpecUDTStructV0(doc:"", lib:"", name:"myStruct", fields: $fields);
+$entry = XdrSCSpecEntry::forUDTStructV0($struct);
+$spec = new ContractSpec(entries:[$entry]);
+$def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myStruct"));
+
+// convert
+$val = $spec->nativeToXdrSCVal(["field1" => 1,"field2" => 2,"field3" => 3], $def);
+$this->assertEquals(XdrSCValType::SCV_MAP, $val->type->value);
+$this->assertCount(3, $val->map);
+```
+
+***Struct (all fields are numeric):***
+```php
+// prepare (this is not needed for funcArgsToXdrSCValues)
+$fields = [
+    new XdrSCSpecUDTStructFieldV0(doc:"", name:"1", type: XdrSCSpecTypeDef::STRING()),
+    new XdrSCSpecUDTStructFieldV0(doc:"", name:"2", type: XdrSCSpecTypeDef::STRING()),
+    new XdrSCSpecUDTStructFieldV0(doc:"", name:"3", type: XdrSCSpecTypeDef::STRING()),
+];
+$numericStruct = new XdrSCSpecUDTStructV0(doc:"", lib:"", name:"myNumericStruct", fields: $fields);
+$entry = XdrSCSpecEntry::forUDTStructV0($numericStruct);
+$spec = new ContractSpec(entries:[$entry]);
+$def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myNumericStruct"));
+
+// convert
+$val = $spec->nativeToXdrSCVal(["one","two","three"], $def);
+$this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+$this->assertCount(3, $val->vec);
+```
+
+***Union:***
+```php
+// prepare (this is not needed for funcArgsToXdrSCValues)
+$unionCases = [
+    XdrSCSpecUDTUnionCaseV0::forVoidCase(new XdrSCSpecUDTUnionCaseVoidV0(doc:"", name:"voidCase")),
+    XdrSCSpecUDTUnionCaseV0::forTupleCase(new XdrSCSpecUDTUnionCaseTupleV0(doc:"", name:"tupleCase",
+        type:[XdrSCSpecTypeDef::STRING(), XdrSCSpecTypeDef::U32()]))
+];
+$union = new XdrSCSpecUDTUnionV0(doc:"", lib:"", name:"myUnion", cases:$unionCases);
+$entry = XdrSCSpecEntry::forUDTUnionV0($union);
+$spec = new ContractSpec(entries:[$entry]);
+$def = XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT(name: "myUnion"));
+
+// convert
+$val = $spec->nativeToXdrSCVal(new NativeUnionVal("voidCase"), $def);
+$this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+$this->assertCount(1, $val->vec); // only key
+
+$val = $spec->nativeToXdrSCVal(new NativeUnionVal("tupleCase", values: ["a", 4]), $def);
+$this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
+$this->assertCount(3, $val->vec); // key + 2 values (a,4)
+```
+
+The above examples can be found in the `SorobanClientTest.php` of the SDK.
+
 ## Interacting with Soroban without using the SorobanClient
 
 The [`SorobanClient`](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDK/Soroban/Contract/SorobanClient.php) was introduced as a usability improvement, that allows you to easily 

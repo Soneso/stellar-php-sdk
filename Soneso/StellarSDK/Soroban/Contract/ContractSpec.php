@@ -74,6 +74,9 @@ class ContractSpec
 
     /**
      * Converts native arguments to XdrSCVal values for calling a contract function.
+     * You can find a documentation of the supported values in the sdk soroban doc:
+     * https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md
+     *
      * @param string $name name of the function
      * @param array<string, mixed> $args the arguments e.g. ["arg1 name" => "value1, "arg2 name", 1234]
      * @return array<XdrSCVal> the converted arguments for calling the contract function (ordered by position)
@@ -137,6 +140,8 @@ class ContractSpec
 
     /**
      * Converts a native PHP value to an XdrSCVal based on the given type.
+     * You can find a documentation of the supported values in the sdk soroban doc:
+     * https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md
      *
      * @param mixed $val native PHP value.
      * @param XdrSCSpecTypeDef $ty the expected type.
