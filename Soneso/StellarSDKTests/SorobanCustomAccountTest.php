@@ -286,18 +286,8 @@ class SorobanCustomAccountTest extends TestCase
         $readLimitKey->contractData = new XdrLedgerKeyContractData($addr, XdrSCVal::forSymbol("SpendMax"),
             XdrContractDataDurability::PERSISTENT());
 
-        $execKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
-        $execKey->contractData = new XdrLedgerKeyContractData($addr, XdrSCVal::forLedgerKeyContractInstance(),
-            XdrContractDataDurability::PERSISTENT());
-
-        $accContractCodeKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-        $accContractCodeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($accContractWasmId));
-
         array_push($transactionData->resources->footprint->readOnly , $readOwnersKey);
         array_push($transactionData->resources->footprint->readOnly , $readLimitKey);
-        array_push($transactionData->resources->footprint->readOnly , $execKey);
-        array_push($transactionData->resources->footprint->readOnly , $accContractCodeKey);
-
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($transactionData);
