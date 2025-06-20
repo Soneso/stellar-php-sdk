@@ -23,10 +23,15 @@ class XdrConfigSettingEntry
     public ?XdrStateArchivalSettings $stateArchivalSettings = null;
     public ?XdrConfigSettingContractExecutionLanesV0 $contractExecutionLanes = null;
     /**
-     * @var array<int>|null
+     * @var array<int>|null $liveSorobanStateSizeWindow [uint64]
      */
-    public ?array $bucketListSizeWindow = null; // [uint64]
+    public ?array $liveSorobanStateSizeWindow = null; // [uint64]
     public ?XdrEvictionIterator $evictionIterator = null;
+
+    public ?XdrConfigSettingContractParallelComputeV0 $contractParallelCompute = null;
+    public ?XdrConfigSettingContractLedgerCostExtV0 $contractLedgerCostExt = null;
+    public ?XdrConfigSettingSCPTiming $contractSCPTiming = null;
+
     /**
      * @param XdrConfigSettingID $configSettingID
      */
@@ -75,14 +80,23 @@ class XdrConfigSettingEntry
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
                 $bytes .= $this->contractExecutionLanes->encode();
                 break;
-            case XdrConfigSettingID::CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW:
-                $bytes .= XdrEncoder::integer32(count($this->bucketListSizeWindow));
-                foreach($this->bucketListSizeWindow as $val) {
+            case XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
+                $bytes .= XdrEncoder::integer32(count($this->liveSorobanStateSizeWindow));
+                foreach($this->liveSorobanStateSizeWindow as $val) {
                     $bytes .= XdrEncoder::unsignedInteger64($val);
                 }
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR:
                 $bytes .= $this->evictionIterator->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
+                $bytes .= $this->contractParallelCompute->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
+                $bytes .= $this->contractLedgerCostExt->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING:
+                $bytes .= $this->contractSCPTiming->encode();
                 break;
         }
         return $bytes;
@@ -128,16 +142,25 @@ class XdrConfigSettingEntry
             case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
                 $result->contractExecutionLanes = XdrConfigSettingContractExecutionLanesV0::decode($xdr);
                 break;
-            case XdrConfigSettingID::CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW:
+            case XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
                 $valCount = $xdr->readInteger32();
                 $entriesArr = array();
                 for ($i = 0; $i < $valCount; $i++) {
-                    array_push($entriesArr, $xdr->readUnsignedInteger64());
+                    $entriesArr[] = $xdr->readUnsignedInteger64();
                 }
-                $result->bucketListSizeWindow = $entriesArr;
+                $result->liveSorobanStateSizeWindow = $entriesArr;
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR:
                 $result->evictionIterator = XdrEvictionIterator::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
+                $result->contractParallelCompute = XdrConfigSettingContractParallelComputeV0::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
+                $result->contractLedgerCostExt = XdrConfigSettingContractLedgerCostExtV0::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING:
+                $result->contractSCPTiming = XdrConfigSettingSCPTiming::decode($xdr);
                 break;
         }
         return $result;
@@ -352,22 +375,6 @@ class XdrConfigSettingEntry
     }
 
     /**
-     * @return array<int>|null
-     */
-    public function getBucketListSizeWindow(): ?array
-    {
-        return $this->bucketListSizeWindow;
-    }
-
-    /**
-     * @param array<int>|null $bucketListSizeWindow
-     */
-    public function setBucketListSizeWindow(?array $bucketListSizeWindow): void
-    {
-        $this->bucketListSizeWindow = $bucketListSizeWindow;
-    }
-
-    /**
      * @return XdrEvictionIterator|null
      */
     public function getEvictionIterator(): ?XdrEvictionIterator
@@ -381,6 +388,70 @@ class XdrConfigSettingEntry
     public function setEvictionIterator(?XdrEvictionIterator $evictionIterator): void
     {
         $this->evictionIterator = $evictionIterator;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getLiveSorobanStateSizeWindow(): ?array
+    {
+        return $this->liveSorobanStateSizeWindow;
+    }
+
+    /**
+     * @param array|null $liveSorobanStateSizeWindow
+     */
+    public function setLiveSorobanStateSizeWindow(?array $liveSorobanStateSizeWindow): void
+    {
+        $this->liveSorobanStateSizeWindow = $liveSorobanStateSizeWindow;
+    }
+
+    /**
+     * @return XdrConfigSettingContractParallelComputeV0|null
+     */
+    public function getContractParallelCompute(): ?XdrConfigSettingContractParallelComputeV0
+    {
+        return $this->contractParallelCompute;
+    }
+
+    /**
+     * @param XdrConfigSettingContractParallelComputeV0|null $contractParallelCompute
+     */
+    public function setContractParallelCompute(?XdrConfigSettingContractParallelComputeV0 $contractParallelCompute): void
+    {
+        $this->contractParallelCompute = $contractParallelCompute;
+    }
+
+    /**
+     * @return XdrConfigSettingContractLedgerCostExtV0|null
+     */
+    public function getContractLedgerCostExt(): ?XdrConfigSettingContractLedgerCostExtV0
+    {
+        return $this->contractLedgerCostExt;
+    }
+
+    /**
+     * @param XdrConfigSettingContractLedgerCostExtV0|null $contractLedgerCostExt
+     */
+    public function setContractLedgerCostExt(?XdrConfigSettingContractLedgerCostExtV0 $contractLedgerCostExt): void
+    {
+        $this->contractLedgerCostExt = $contractLedgerCostExt;
+    }
+
+    /**
+     * @return XdrConfigSettingSCPTiming|null
+     */
+    public function getContractSCPTiming(): ?XdrConfigSettingSCPTiming
+    {
+        return $this->contractSCPTiming;
+    }
+
+    /**
+     * @param XdrConfigSettingSCPTiming|null $contractSCPTiming
+     */
+    public function setContractSCPTiming(?XdrConfigSettingSCPTiming $contractSCPTiming): void
+    {
+        $this->contractSCPTiming = $contractSCPTiming;
     }
 
 }

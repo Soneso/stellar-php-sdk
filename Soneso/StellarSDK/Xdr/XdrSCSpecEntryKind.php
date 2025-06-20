@@ -15,6 +15,7 @@ class XdrSCSpecEntryKind
     const SC_SPEC_ENTRY_UDT_UNION_V0 = 2;
     const SC_SPEC_ENTRY_UDT_ENUM_V0 = 3;
     const SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 = 4;
+    const SC_SPEC_ENTRY_EVENT_V0 = 5;
 
     public function __construct(int $value)
     {
@@ -39,6 +40,10 @@ class XdrSCSpecEntryKind
 
     public static function UDT_ERROR_ENUM_V0 () :  XdrSCSpecEntryKind {
         return new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0);
+    }
+
+    public static function EVENT_V0 () :  XdrSCSpecEntryKind {
+        return new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0);
     }
 
     /**

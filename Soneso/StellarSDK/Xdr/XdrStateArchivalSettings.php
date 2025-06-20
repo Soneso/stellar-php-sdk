@@ -14,8 +14,8 @@ class XdrStateArchivalSettings
     public int $persistentRentRateDenominator; // int64
     public int $tempRentRateDenominator; // int64
     public int $maxEntriesToArchive; // uint32
-    public int $bucketListSizeWindowSampleSize; // uint32
-    public int $bucketListWindowSamplePeriod; // uint32
+    public int $liveSorobanStateSizeWindowSampleSize; // uint32
+    public int $liveSorobanStateSizeWindowSamplePeriod; // uint32
     public int $evictionScanSize; // uint32
     public int $startingEvictionScanLevel; // uint32
 
@@ -26,8 +26,8 @@ class XdrStateArchivalSettings
      * @param int $persistentRentRateDenominator
      * @param int $tempRentRateDenominator
      * @param int $maxEntriesToArchive
-     * @param int $bucketListSizeWindowSampleSize
-     * @param int $bucketListWindowSamplePeriod
+     * @param int $liveSorobanStateSizeWindowSampleSize
+     * @param int $liveSorobanStateSizeWindowSamplePeriod
      * @param int $evictionScanSize
      * @param int $startingEvictionScanLevel
      */
@@ -38,8 +38,8 @@ class XdrStateArchivalSettings
         int $persistentRentRateDenominator,
         int $tempRentRateDenominator,
         int $maxEntriesToArchive,
-        int $bucketListSizeWindowSampleSize,
-        int $bucketListWindowSamplePeriod,
+        int $liveSorobanStateSizeWindowSampleSize,
+        int $liveSorobanStateSizeWindowSamplePeriod,
         int $evictionScanSize,
         int $startingEvictionScanLevel,
     )
@@ -50,8 +50,8 @@ class XdrStateArchivalSettings
         $this->persistentRentRateDenominator = $persistentRentRateDenominator;
         $this->tempRentRateDenominator = $tempRentRateDenominator;
         $this->maxEntriesToArchive = $maxEntriesToArchive;
-        $this->bucketListSizeWindowSampleSize = $bucketListSizeWindowSampleSize;
-        $this->bucketListWindowSamplePeriod = $bucketListWindowSamplePeriod;
+        $this->liveSorobanStateSizeWindowSampleSize = $liveSorobanStateSizeWindowSampleSize;
+        $this->liveSorobanStateSizeWindowSamplePeriod = $liveSorobanStateSizeWindowSamplePeriod;
         $this->evictionScanSize = $evictionScanSize;
         $this->startingEvictionScanLevel = $startingEvictionScanLevel;
     }
@@ -64,8 +64,8 @@ class XdrStateArchivalSettings
         $body .= XdrEncoder::integer64($this->persistentRentRateDenominator);
         $body .= XdrEncoder::integer64($this->tempRentRateDenominator);
         $body .= XdrEncoder::unsignedInteger32($this->maxEntriesToArchive);
-        $body .= XdrEncoder::unsignedInteger32($this->bucketListSizeWindowSampleSize);
-        $body .= XdrEncoder::unsignedInteger32($this->bucketListWindowSamplePeriod);
+        $body .= XdrEncoder::unsignedInteger32($this->liveSorobanStateSizeWindowSampleSize);
+        $body .= XdrEncoder::unsignedInteger32($this->liveSorobanStateSizeWindowSamplePeriod);
         $body .= XdrEncoder::unsignedInteger32($this->evictionScanSize);
         $body .= XdrEncoder::unsignedInteger32($this->startingEvictionScanLevel);
         return $body;
@@ -94,166 +94,6 @@ class XdrStateArchivalSettings
             $evictionScanSize,
             $startingEvictionScanLevel,
         );
-    }
-
-    /**
-     * @return int
-     */
-    public function getStartingEvictionScanLevel(): int
-    {
-        return $this->startingEvictionScanLevel;
-    }
-
-    /**
-     * @param int $startingEvictionScanLevel
-     */
-    public function setStartingEvictionScanLevel(int $startingEvictionScanLevel): void
-    {
-        $this->startingEvictionScanLevel = $startingEvictionScanLevel;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMaxEntryTTL(): int
-    {
-        return $this->maxEntryTTL;
-    }
-
-    /**
-     * @param int $maxEntryTTL
-     */
-    public function setMaxEntryTTL(int $maxEntryTTL): void
-    {
-        $this->maxEntryTTL = $maxEntryTTL;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMinTemporaryTTL(): int
-    {
-        return $this->minTemporaryTTL;
-    }
-
-    /**
-     * @param int $minTemporaryTTL
-     */
-    public function setMinTemporaryTTL(int $minTemporaryTTL): void
-    {
-        $this->minTemporaryTTL = $minTemporaryTTL;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMinPersistentTTL(): int
-    {
-        return $this->minPersistentTTL;
-    }
-
-    /**
-     * @param int $minPersistentTTL
-     */
-    public function setMinPersistentTTL(int $minPersistentTTL): void
-    {
-        $this->minPersistentTTL = $minPersistentTTL;
-    }
-
-    /**
-     * @return int
-     */
-    public function getPersistentRentRateDenominator(): int
-    {
-        return $this->persistentRentRateDenominator;
-    }
-
-    /**
-     * @param int $persistentRentRateDenominator
-     */
-    public function setPersistentRentRateDenominator(int $persistentRentRateDenominator): void
-    {
-        $this->persistentRentRateDenominator = $persistentRentRateDenominator;
-    }
-
-    /**
-     * @return int
-     */
-    public function getTempRentRateDenominator(): int
-    {
-        return $this->tempRentRateDenominator;
-    }
-
-    /**
-     * @param int $tempRentRateDenominator
-     */
-    public function setTempRentRateDenominator(int $tempRentRateDenominator): void
-    {
-        $this->tempRentRateDenominator = $tempRentRateDenominator;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMaxEntriesToArchive(): int
-    {
-        return $this->maxEntriesToArchive;
-    }
-
-    /**
-     * @param int $maxEntriesToArchive
-     */
-    public function setMaxEntriesToArchive(int $maxEntriesToArchive): void
-    {
-        $this->maxEntriesToArchive = $maxEntriesToArchive;
-    }
-
-    /**
-     * @return int
-     */
-    public function getBucketListSizeWindowSampleSize(): int
-    {
-        return $this->bucketListSizeWindowSampleSize;
-    }
-
-    /**
-     * @param int $bucketListSizeWindowSampleSize
-     */
-    public function setBucketListSizeWindowSampleSize(int $bucketListSizeWindowSampleSize): void
-    {
-        $this->bucketListSizeWindowSampleSize = $bucketListSizeWindowSampleSize;
-    }
-
-    /**
-     * @return int
-     */
-    public function getBucketListWindowSamplePeriod(): int
-    {
-        return $this->bucketListWindowSamplePeriod;
-    }
-
-    /**
-     * @param int $bucketListWindowSamplePeriod
-     */
-    public function setBucketListWindowSamplePeriod(int $bucketListWindowSamplePeriod): void
-    {
-        $this->bucketListWindowSamplePeriod = $bucketListWindowSamplePeriod;
-    }
-
-    /**
-     * @return int
-     */
-    public function getEvictionScanSize(): int
-    {
-        return $this->evictionScanSize;
-    }
-
-    /**
-     * @param int $evictionScanSize
-     */
-    public function setEvictionScanSize(int $evictionScanSize): void
-    {
-        $this->evictionScanSize = $evictionScanSize;
     }
 
 }

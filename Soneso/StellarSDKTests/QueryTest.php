@@ -152,7 +152,7 @@ class QueryTest extends TestCase
     {
         $sdk = StellarSDK::getTestNetInstance();
         // get balance id from ClaimableBalancesTest
-        $bId = "0000000007ff76906a9f06deb888dcfe89d3d26d1ed4f3ca88af20a8e66664e807fd8cb6";
+        $bId = "00000000289919660550d92b56c1b96b248f613ea300a3b572bf547b89194facd35e1132";
         $response = $sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getOperations()->count() == 1);
         $response = $sdk->transactions()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();

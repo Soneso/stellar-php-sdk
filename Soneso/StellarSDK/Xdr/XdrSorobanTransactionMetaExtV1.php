@@ -62,17 +62,17 @@ class XdrSorobanTransactionMetaExtV1
 
     public function encode(): string {
         $bytes = $this->ext->encode();
-        $bytes .= XdrEncoder::unsignedInteger64($this->totalNonRefundableResourceFeeCharged);
-        $bytes .= XdrEncoder::unsignedInteger64($this->totalRefundableResourceFeeCharged);
-        $bytes .= XdrEncoder::unsignedInteger64($this->rentFeeCharged);
+        $bytes .= XdrEncoder::integer64($this->totalNonRefundableResourceFeeCharged);
+        $bytes .= XdrEncoder::integer64($this->totalRefundableResourceFeeCharged);
+        $bytes .= XdrEncoder::integer64($this->rentFeeCharged);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrSorobanTransactionMetaExtV1 {
         $ext = XdrExtensionPoint::decode($xdr);
-        $totalNonRefundableResourceFeeCharged = $xdr->readUnsignedInteger64();
-        $totalRefundableResourceFeeCharged = $xdr->readUnsignedInteger64();
-        $rentFeeCharged = $xdr->readUnsignedInteger64();
+        $totalNonRefundableResourceFeeCharged = $xdr->readInteger64();
+        $totalRefundableResourceFeeCharged = $xdr->readInteger64();
+        $rentFeeCharged = $xdr->readInteger64();
 
         return new XdrSorobanTransactionMetaExtV1(
             $ext,

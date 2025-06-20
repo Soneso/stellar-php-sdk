@@ -183,7 +183,10 @@ class GetTransactionResponse extends SorobanRpcResponse
         }
 
         $meta = XdrTransactionMeta::fromBase64Xdr($this->resultMetaXdr);
-        return $meta->v3?->sorobanMeta?->returnValue;
+        if ($meta->v3 != null) {
+            return $meta->v3->sorobanMeta?->returnValue;
+        }
+        return $meta->v4?->sorobanMeta?->returnValue;
     }
 
     private function getBinHex(): ?string {

@@ -36,7 +36,6 @@ use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperation;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
-use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperation;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -46,8 +45,6 @@ use Soneso\StellarSDK\EndSponsoringFutureReservesOperationBuilder;
 use Soneso\StellarSDK\ExtendFootprintTTLOperation;
 use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
-use Soneso\StellarSDK\HostFunction;
-use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\LedgerBounds;
 use Soneso\StellarSDK\LiquidityPoolDepositOperation;
@@ -76,12 +73,10 @@ use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\SetTrustLineFlagsOperation;
 use Soneso\StellarSDK\SetTrustLineFlagsOperationBuilder;
-use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\TransactionPreconditions;
-use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
@@ -96,7 +91,6 @@ use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
-use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
@@ -128,6 +122,7 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
@@ -1183,8 +1178,9 @@ class TxRep
             return XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL();
         } else if ("CONFIG_SETTING_CONTRACT_EXECUTION_LANES" === $type) {
             return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES();
-        } else if ("CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW" === $type) {
-            return XdrConfigSettingID::CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW();
+        } else if ("CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW" === $type ||
+            "CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW();
         } else if ("CONFIG_SETTING_EVICTION_ITERATOR" === $type) {
             return XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR();
         } else {
@@ -1216,9 +1212,14 @@ class TxRep
     private static function getSorobanResources(String $prefix, array $map): XdrSorobanResources {
         $footprint = self::getFootprint($prefix . 'footprint.', $map);
         $instructions = self::getInt($prefix . 'instructions', $map);
-        $readBytes = self::getInt($prefix . 'readBytes', $map);
+        if (self::getClearValue($prefix . 'readBytes', $map) !== null) {
+            $diskReadBytes = self::getInt($prefix . 'readBytes', $map);
+        } else {
+            $diskReadBytes = self::getInt($prefix . 'diskReadBytes', $map);
+        }
+
         $writeBytes= self::getInt($prefix . 'writeBytes', $map);
-        return new XdrSorobanResources($footprint, $instructions, $readBytes, $writeBytes);
+        return new XdrSorobanResources($footprint, $instructions, $diskReadBytes, $writeBytes);
     }
 
     private static function getSorobanTransactionData(String $prefix, array $map): ?XdrSorobanTransactionData {
@@ -1226,7 +1227,7 @@ class TxRep
         if ($v === 1) {
             $resources = self::getSorobanResources($prefix . 'sorobanData.resources.', $map);
             $resourcesFee = self::getInt($prefix . 'sorobanData.resourceFee', $map);
-            return new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, $resourcesFee);
+            return new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), $resources, $resourcesFee);
         }
         return null;
     }
@@ -3141,7 +3142,7 @@ class TxRep
         $lines = array();
         $lines = array_merge($lines, self::getContractIDPreimageTx($prefix.'contractIDPreimage.', $args->contractIDPreimage));
         $lines = array_merge($lines, self::getContractExecutableTx($prefix.'executable.', $args->executable));
-        $lines += [$prefix . 'constructorArgs.len' => strval(count($args->args))];
+        $lines += [$prefix . 'constructorArgs.len' => strval(count($args->constructorArgs))];
         $index = 0;
         foreach ($args->constructorArgs as $val) {
             $lines = array_merge($lines, self::getSCValTx($prefix.'constructorArgs['.$index.'].', $val));
@@ -3295,7 +3296,7 @@ class TxRep
         $lines = array();
         $lines = array_merge($lines, self::getFootprintTx($prefix.'footprint.', $resources->footprint));
         $lines += [$prefix . 'instructions' => strval($resources->instructions)];
-        $lines += [$prefix . 'readBytes' => strval($resources->readBytes)];
+        $lines += [$prefix . 'diskReadBytes' => strval($resources->diskReadBytes)];
         $lines += [$prefix . 'writeBytes' => strval($resources->writeBytes)];
         return $lines;
     }

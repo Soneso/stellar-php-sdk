@@ -12,6 +12,9 @@ class XdrSCAddressType
 
     const SC_ADDRESS_TYPE_ACCOUNT = 0;
     const SC_ADDRESS_TYPE_CONTRACT = 1;
+    const SC_ADDRESS_TYPE_MUXED_ACCOUNT = 2;
+    const SC_ADDRESS_TYPE_CLAIMABLE_BALANCE = 3;
+    const SC_ADDRESS_TYPE_LIQUIDITY_POOL = 4;
 
     public function __construct(int $value)
     {
@@ -43,5 +46,17 @@ class XdrSCAddressType
 
     public static function SC_ADDRESS_TYPE_CONTRACT() :  XdrSCAddressType {
         return new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT);
+    }
+
+    public static function SC_ADDRESS_TYPE_MUXED_ACCOUNT() :  XdrSCAddressType {
+        return new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT);
+    }
+
+    public static function SC_ADDRESS_TYPE_CLAIMABLE_BALANCE() :  XdrSCAddressType {
+        return new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+    }
+
+    public static function SC_ADDRESS_TYPE_LIQUIDITY_POOL() :  XdrSCAddressType {
+        return new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL);
     }
 }

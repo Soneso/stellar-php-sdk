@@ -9,16 +9,16 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrSorobanTransactionData
 {
-    public XdrExtensionPoint $ext;
+    public XdrSorobanTransactionDataExt $ext;
     public XdrSorobanResources $resources;
     public int $resourceFee; // Portion of transaction `fee` allocated to refundable fees.
 
     /**
-     * @param XdrExtensionPoint $ext
+     * @param XdrSorobanTransactionDataExt $ext
      * @param XdrSorobanResources $resources
      * @param int $resourceFee
      */
-    public function __construct(XdrExtensionPoint $ext, XdrSorobanResources $resources, int $resourceFee)
+    public function __construct(XdrSorobanTransactionDataExt $ext, XdrSorobanResources $resources, int $resourceFee)
     {
         $this->ext = $ext;
         $this->resources = $resources;
@@ -34,7 +34,7 @@ class XdrSorobanTransactionData
     }
 
     public static function decode(XdrBuffer $xdr) : XdrSorobanTransactionData {
-        $ext = XdrExtensionPoint::decode($xdr);
+        $ext = XdrSorobanTransactionDataExt::decode($xdr);
         $resources = XdrSorobanResources::decode($xdr);
         $resourceFee = $xdr->readInteger64();
 
@@ -84,18 +84,19 @@ class XdrSorobanTransactionData
     }
 
     /**
-     * @return XdrExtensionPoint
+     * @return XdrSorobanTransactionDataExt
      */
-    public function getExt(): XdrExtensionPoint
+    public function getExt(): XdrSorobanTransactionDataExt
     {
         return $this->ext;
     }
 
     /**
-     * @param XdrExtensionPoint $ext
+     * @param XdrSorobanTransactionDataExt $ext
      */
-    public function setExt(XdrExtensionPoint $ext): void
+    public function setExt(XdrSorobanTransactionDataExt $ext): void
     {
         $this->ext = $ext;
     }
+
 }

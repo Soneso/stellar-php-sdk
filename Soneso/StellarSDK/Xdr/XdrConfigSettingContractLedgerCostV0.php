@@ -9,144 +9,205 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrConfigSettingContractLedgerCostV0
 {
 
-    public int $ledgerMaxReadLedgerEntries;
-    public int $ledgerMaxReadBytes;
-    public int $ledgerMaxWriteLedgerEntries;
-    public int $ledgerMaxWriteBytes;
-    public int $txMaxReadLedgerEntries;
-    public int $txMaxReadBytes;
-    public int $txMaxWriteLedgerEntries;
-    public int $txMaxWriteBytes;
-    public int $feeReadLedgerEntry;
-    public int $feeWriteLedgerEntry;
-    public int $feeRead1KB;
-    public int $bucketListTargetSizeBytes;
-    public int $writeFee1KBBucketListLow;
-    public int $writeFee1KBBucketListHigh;
-    public int $bucketListWriteFeeGrowthFactor;
+    /**
+     * @var int $ledgerMaxDiskReadLedgerEntries (uint32) Maximum number of disk entry read operations per ledger
+     */
+    public int $ledgerMaxDiskReadLedgerEntries;
 
     /**
-     * @param int $ledgerMaxReadLedgerEntries Maximum number of ledger entry read operations per ledger
-     * @param int $ledgerMaxReadBytes Maximum number of bytes that can be read per ledger
-     * @param int $ledgerMaxWriteLedgerEntries Maximum number of ledger entry write operations per ledger
-     * @param int $ledgerMaxWriteBytes Maximum number of bytes that can be written per ledger
-     * @param int $txMaxReadLedgerEntries Maximum number of ledger entry read operations per transaction
-     * @param int $txMaxReadBytes Maximum number of bytes that can be read per transaction
-     * @param int $txMaxWriteLedgerEntries Maximum number of ledger entry write operations per transaction
-     * @param int $txMaxWriteBytes Maximum number of bytes that can be written per transaction
-     * @param int $feeReadLedgerEntry Fee per ledger entry read
-     * @param int $feeWriteLedgerEntry Fee per ledger entry write
-     * @param int $feeRead1KB Fee for reading 1KB
-     * @param int $bucketListTargetSizeBytes Write fee grows linearly until bucket list reaches this size
-     * @param int $writeFee1KBBucketListLow Fee per 1KB write when the bucket list is empty
-     * @param int $writeFee1KBBucketListHigh  Fee per 1KB write when the bucket list has reached `bucketListTargetSizeBytes`
-     * @param int $bucketListWriteFeeGrowthFactor Write fee multiplier for any additional data past the first `bucketListTargetSizeBytes`
+     * @var int $ledgerMaxDiskReadBytes (uint32) Maximum number of bytes of disk reads that can be performed per ledger
      */
-    public function __construct(int $ledgerMaxReadLedgerEntries, int $ledgerMaxReadBytes,
+    public int $ledgerMaxDiskReadBytes;
+
+    /**
+     * @var int $ledgerMaxWriteLedgerEntries (uint32) Maximum number of ledger entry write operations per ledger
+     */
+    public int $ledgerMaxWriteLedgerEntries;
+
+    /**
+     * @var int $ledgerMaxWriteBytes (uint32) Maximum number of bytes that can be written per ledger
+     */
+    public int $ledgerMaxWriteBytes;
+
+
+    /**
+     * @var int $txMaxDiskReadEntries (uint32) Maximum number of disk entry read operations per transaction
+     */
+    public int $txMaxDiskReadEntries;
+
+
+    /**
+     * @var int $txMaxDiskReadBytes (uint32) Maximum number of bytes of disk reads that can be performed per transaction
+     */
+    public int $txMaxDiskReadBytes;
+
+    /**
+     * @var int $txMaxWriteLedgerEntries (uint32) Maximum number of ledger entry write operations per transaction
+     */
+    public int $txMaxWriteLedgerEntries;
+
+    /**
+     * @var int $txMaxWriteBytes (uint32) Maximum number of bytes that can be written per transaction
+     */
+    public int $txMaxWriteBytes;
+
+    /**
+     * @var int $feeDiskReadLedgerEntry (int64) Fee per disk ledger entry read
+     */
+    public int $feeDiskReadLedgerEntry;
+
+    /**
+     * @var int $feeWriteLedgerEntry (int64) Fee per ledger entry write
+     */
+    public int $feeWriteLedgerEntry;
+
+    /**
+     * @var int $feeDiskRead1KB (int64) Fee for reading 1KB disk
+     */
+    public int $feeDiskRead1KB;
+
+    /**
+     * @var int $sorobanStateTargetSizeBytes (int64) Rent fee grows linearly until soroban state reaches this size
+     */
+    public int $sorobanStateTargetSizeBytes;
+
+    /**
+     * @var int $rentFee1KBSorobanStateSizeLow (int64) Fee per 1KB rent when the soroban state is empty
+     */
+    public int $rentFee1KBSorobanStateSizeLow;
+
+    /**
+     * @var int $rentFee1KBSorobanStateSizeHigh (int64) Fee per 1KB rent when the soroban state has reached `sorobanStateTargetSizeBytes`
+     */
+    public int $rentFee1KBSorobanStateSizeHigh;
+
+    /**
+     * @var int $sorobanStateRentFeeGrowthFactor (uint32) Rent fee multiplier for any additional data past the first `sorobanStateTargetSizeBytes`
+     */
+    public int $sorobanStateRentFeeGrowthFactor;
+
+    /**
+     * @param int $ledgerMaxDiskReadLedgerEntries (uint32) Maximum number of disk entry read operations per ledger
+     * @param int $ledgerMaxDiskReadBytes (uint32) Maximum number of bytes of disk reads that can be performed per ledger
+     * @param int $ledgerMaxWriteLedgerEntries (uint32) Maximum number of ledger entry write operations per ledger
+     * @param int $ledgerMaxWriteBytes (uint32) Maximum number of bytes that can be written per ledger
+     * @param int $txMaxDiskReadEntries (uint32) Maximum number of disk entry read operations per transaction
+     * @param int $txMaxDiskReadBytes (uint32) Maximum number of bytes of disk reads that can be performed per transaction
+     * @param int $txMaxWriteLedgerEntries (uint32) Maximum number of ledger entry write operations per transaction
+     * @param int $txMaxWriteBytes (uint32) Maximum number of bytes that can be written per transaction
+     * @param int $feeDiskReadLedgerEntry (int64) Fee per disk ledger entry read
+     * @param int $feeWriteLedgerEntry (int64) Fee per ledger entry write
+     * @param int $feeDiskRead1KB (int64) Fee for reading 1KB disk
+     * @param int $sorobanStateTargetSizeBytes (int64) Rent fee grows linearly until soroban state reaches this size
+     * @param int $rentFee1KBSorobanStateSizeLow (int64) Fee per 1KB rent when the soroban state is empty
+     * @param int $rentFee1KBSorobanStateSizeHigh (int64) Fee per 1KB rent when the soroban state has reached `sorobanStateTargetSizeBytes`
+     * @param int $sorobanStateRentFeeGrowthFactor (uint32) Rent fee multiplier for any additional data past the first `sorobanStateTargetSizeBytes`
+     */
+    public function __construct(int $ledgerMaxDiskReadLedgerEntries, int $ledgerMaxDiskReadBytes,
                                 int $ledgerMaxWriteLedgerEntries, int $ledgerMaxWriteBytes,
-                                int $txMaxReadLedgerEntries, int $txMaxReadBytes,
+                                int $txMaxDiskReadEntries, int $txMaxDiskReadBytes,
                                 int $txMaxWriteLedgerEntries, int $txMaxWriteBytes,
-                                int $feeReadLedgerEntry, int $feeWriteLedgerEntry,
-                                int $feeRead1KB, int $bucketListTargetSizeBytes, int $writeFee1KBBucketListLow,
-                                int $writeFee1KBBucketListHigh, int $bucketListWriteFeeGrowthFactor)
+                                int $feeDiskReadLedgerEntry, int $feeWriteLedgerEntry,
+                                int $feeDiskRead1KB, int $sorobanStateTargetSizeBytes, int $rentFee1KBSorobanStateSizeLow,
+                                int $rentFee1KBSorobanStateSizeHigh, int $sorobanStateRentFeeGrowthFactor)
     {
-        $this->ledgerMaxReadLedgerEntries = $ledgerMaxReadLedgerEntries;
-        $this->ledgerMaxReadBytes = $ledgerMaxReadBytes;
+        $this->ledgerMaxDiskReadLedgerEntries = $ledgerMaxDiskReadLedgerEntries;
+        $this->ledgerMaxDiskReadBytes = $ledgerMaxDiskReadBytes;
         $this->ledgerMaxWriteLedgerEntries = $ledgerMaxWriteLedgerEntries;
         $this->ledgerMaxWriteBytes = $ledgerMaxWriteBytes;
-        $this->txMaxReadLedgerEntries = $txMaxReadLedgerEntries;
-        $this->txMaxReadBytes = $txMaxReadBytes;
+        $this->txMaxDiskReadEntries = $txMaxDiskReadEntries;
+        $this->txMaxDiskReadBytes = $txMaxDiskReadBytes;
         $this->txMaxWriteLedgerEntries = $txMaxWriteLedgerEntries;
         $this->txMaxWriteBytes = $txMaxWriteBytes;
-        $this->feeReadLedgerEntry = $feeReadLedgerEntry;
+        $this->feeDiskReadLedgerEntry = $feeDiskReadLedgerEntry;
         $this->feeWriteLedgerEntry = $feeWriteLedgerEntry;
-        $this->feeRead1KB = $feeRead1KB;
-        $this->bucketListTargetSizeBytes = $bucketListTargetSizeBytes;
-        $this->writeFee1KBBucketListLow = $writeFee1KBBucketListLow;
-        $this->writeFee1KBBucketListHigh = $writeFee1KBBucketListHigh;
-        $this->bucketListWriteFeeGrowthFactor = $bucketListWriteFeeGrowthFactor;
+        $this->feeDiskRead1KB = $feeDiskRead1KB;
+        $this->sorobanStateTargetSizeBytes = $sorobanStateTargetSizeBytes;
+        $this->rentFee1KBSorobanStateSizeLow = $rentFee1KBSorobanStateSizeLow;
+        $this->rentFee1KBSorobanStateSizeHigh = $rentFee1KBSorobanStateSizeHigh;
+        $this->sorobanStateRentFeeGrowthFactor = $sorobanStateRentFeeGrowthFactor;
     }
 
 
     public function encode(): string {
-        $bytes = XdrEncoder::unsignedInteger32($this->ledgerMaxReadLedgerEntries);
-        $bytes .= XdrEncoder::unsignedInteger32($this->ledgerMaxReadBytes);
+        $bytes = XdrEncoder::unsignedInteger32($this->ledgerMaxDiskReadLedgerEntries);
+        $bytes .= XdrEncoder::unsignedInteger32($this->ledgerMaxDiskReadBytes);
         $bytes .= XdrEncoder::unsignedInteger32($this->ledgerMaxWriteLedgerEntries);
         $bytes .= XdrEncoder::unsignedInteger32($this->ledgerMaxWriteBytes);
-        $bytes .= XdrEncoder::unsignedInteger32($this->txMaxReadLedgerEntries);
-        $bytes .= XdrEncoder::unsignedInteger32($this->txMaxReadBytes);
+        $bytes .= XdrEncoder::unsignedInteger32($this->txMaxDiskReadEntries);
+        $bytes .= XdrEncoder::unsignedInteger32($this->txMaxDiskReadBytes);
         $bytes .= XdrEncoder::unsignedInteger32($this->txMaxWriteLedgerEntries);
         $bytes .= XdrEncoder::unsignedInteger32($this->txMaxWriteBytes);
-        $bytes .= XdrEncoder::integer64($this->feeReadLedgerEntry);
+        $bytes .= XdrEncoder::integer64($this->feeDiskReadLedgerEntry);
         $bytes .= XdrEncoder::integer64($this->feeWriteLedgerEntry);
-        $bytes .= XdrEncoder::integer64($this->feeRead1KB);
-        $bytes .= XdrEncoder::integer64($this->bucketListTargetSizeBytes);
-        $bytes .= XdrEncoder::integer64($this->writeFee1KBBucketListLow);
-        $bytes .= XdrEncoder::integer64($this->writeFee1KBBucketListHigh);
-        $bytes .= XdrEncoder::unsignedInteger32($this->bucketListWriteFeeGrowthFactor);
+        $bytes .= XdrEncoder::integer64($this->feeDiskRead1KB);
+        $bytes .= XdrEncoder::integer64($this->sorobanStateTargetSizeBytes);
+        $bytes .= XdrEncoder::integer64($this->rentFee1KBSorobanStateSizeLow);
+        $bytes .= XdrEncoder::integer64($this->rentFee1KBSorobanStateSizeHigh);
+        $bytes .= XdrEncoder::unsignedInteger32($this->sorobanStateRentFeeGrowthFactor);
 
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr) : XdrConfigSettingContractLedgerCostV0 {
-        $ledgerMaxReadLedgerEntries = $xdr->readUnsignedInteger32();
-        $ledgerMaxReadBytes = $xdr->readUnsignedInteger32();
+        $ledgerMaxDiskReadEntries = $xdr->readUnsignedInteger32();
+        $ledgerMaxDiskReadBytes = $xdr->readUnsignedInteger32();
         $ledgerMaxWriteLedgerEntries = $xdr->readUnsignedInteger32();
         $ledgerMaxWriteBytes = $xdr->readUnsignedInteger32();
-        $txMaxReadLedgerEntries = $xdr->readUnsignedInteger32();
-        $txMaxReadBytes = $xdr->readUnsignedInteger32();
+        $txMaxDiskReadEntries = $xdr->readUnsignedInteger32();
+        $txMaxDiskReadBytes = $xdr->readUnsignedInteger32();
         $txMaxWriteLedgerEntries = $xdr->readUnsignedInteger32();
         $txMaxWriteBytes = $xdr->readUnsignedInteger32();
 
-        $feeReadLedgerEntry = $xdr->readInteger64();
+        $feeDiskReadLedgerEntry = $xdr->readInteger64();
         $feeWriteLedgerEntry = $xdr->readInteger64();
-        $feeRead1KB = $xdr->readInteger64();
-        $bucketListTargetSizeBytes = $xdr->readInteger64();
-        $writeFee1KBBucketListLow = $xdr->readInteger64();
-        $writeFee1KBBucketListHigh = $xdr->readInteger64();
+        $feeDiskRead1KB = $xdr->readInteger64();
+        $sorobanStateTargetSizeBytes = $xdr->readInteger64();
+        $rentFee1KBSorobanStateSizeLow = $xdr->readInteger64();
+        $rentFee1KBSorobanStateSizeHigh = $xdr->readInteger64();
 
-        $bucketListWriteFeeGrowthFactor = $xdr->readUnsignedInteger32();
+        $sorobanStateRentFeeGrowthFactor = $xdr->readUnsignedInteger32();
 
-        return new XdrConfigSettingContractLedgerCostV0($ledgerMaxReadLedgerEntries, $ledgerMaxReadBytes,
+        return new XdrConfigSettingContractLedgerCostV0($ledgerMaxDiskReadEntries, $ledgerMaxDiskReadBytes,
                                 $ledgerMaxWriteLedgerEntries, $ledgerMaxWriteBytes,
-                                $txMaxReadLedgerEntries, $txMaxReadBytes,
+                                $txMaxDiskReadEntries, $txMaxDiskReadBytes,
                                 $txMaxWriteLedgerEntries, $txMaxWriteBytes,
-                                $feeReadLedgerEntry, $feeWriteLedgerEntry,
-                                $feeRead1KB, $bucketListTargetSizeBytes,
-                                $writeFee1KBBucketListLow, $writeFee1KBBucketListHigh,
-                                $bucketListWriteFeeGrowthFactor);
+                                $feeDiskReadLedgerEntry, $feeWriteLedgerEntry,
+                                $feeDiskRead1KB, $sorobanStateTargetSizeBytes,
+                                $rentFee1KBSorobanStateSizeLow, $rentFee1KBSorobanStateSizeHigh,
+                                $sorobanStateRentFeeGrowthFactor);
     }
 
     /**
      * @return int
      */
-    public function getLedgerMaxReadLedgerEntries(): int
+    public function getLedgerMaxDiskReadLedgerEntries(): int
     {
-        return $this->ledgerMaxReadLedgerEntries;
+        return $this->ledgerMaxDiskReadLedgerEntries;
     }
 
     /**
-     * @param int $ledgerMaxReadLedgerEntries
+     * @param int $ledgerMaxDiskReadLedgerEntries
      */
-    public function setLedgerMaxReadLedgerEntries(int $ledgerMaxReadLedgerEntries): void
+    public function setLedgerMaxDiskReadLedgerEntries(int $ledgerMaxDiskReadLedgerEntries): void
     {
-        $this->ledgerMaxReadLedgerEntries = $ledgerMaxReadLedgerEntries;
+        $this->ledgerMaxDiskReadLedgerEntries = $ledgerMaxDiskReadLedgerEntries;
     }
 
     /**
      * @return int
      */
-    public function getLedgerMaxReadBytes(): int
+    public function getLedgerMaxDiskReadBytes(): int
     {
-        return $this->ledgerMaxReadBytes;
+        return $this->ledgerMaxDiskReadBytes;
     }
 
     /**
-     * @param int $ledgerMaxReadBytes
+     * @param int $ledgerMaxDiskReadBytes
      */
-    public function setLedgerMaxReadBytes(int $ledgerMaxReadBytes): void
+    public function setLedgerMaxDiskReadBytes(int $ledgerMaxDiskReadBytes): void
     {
-        $this->ledgerMaxReadBytes = $ledgerMaxReadBytes;
+        $this->ledgerMaxDiskReadBytes = $ledgerMaxDiskReadBytes;
     }
 
     /**
@@ -184,33 +245,33 @@ class XdrConfigSettingContractLedgerCostV0
     /**
      * @return int
      */
-    public function getTxMaxReadLedgerEntries(): int
+    public function getTxMaxDiskReadEntries(): int
     {
-        return $this->txMaxReadLedgerEntries;
+        return $this->txMaxDiskReadEntries;
     }
 
     /**
-     * @param int $txMaxReadLedgerEntries
+     * @param int $txMaxDiskReadEntries
      */
-    public function setTxMaxReadLedgerEntries(int $txMaxReadLedgerEntries): void
+    public function setTxMaxDiskReadEntries(int $txMaxDiskReadEntries): void
     {
-        $this->txMaxReadLedgerEntries = $txMaxReadLedgerEntries;
+        $this->txMaxDiskReadEntries = $txMaxDiskReadEntries;
     }
 
     /**
      * @return int
      */
-    public function getTxMaxReadBytes(): int
+    public function getTxMaxDiskReadBytes(): int
     {
-        return $this->txMaxReadBytes;
+        return $this->txMaxDiskReadBytes;
     }
 
     /**
-     * @param int $txMaxReadBytes
+     * @param int $txMaxDiskReadBytes
      */
-    public function setTxMaxReadBytes(int $txMaxReadBytes): void
+    public function setTxMaxDiskReadBytes(int $txMaxDiskReadBytes): void
     {
-        $this->txMaxReadBytes = $txMaxReadBytes;
+        $this->txMaxDiskReadBytes = $txMaxDiskReadBytes;
     }
 
     /**
@@ -248,17 +309,17 @@ class XdrConfigSettingContractLedgerCostV0
     /**
      * @return int
      */
-    public function getFeeReadLedgerEntry(): int
+    public function getFeeDiskReadLedgerEntry(): int
     {
-        return $this->feeReadLedgerEntry;
+        return $this->feeDiskReadLedgerEntry;
     }
 
     /**
-     * @param int $feeReadLedgerEntry
+     * @param int $feeDiskReadLedgerEntry
      */
-    public function setFeeReadLedgerEntry(int $feeReadLedgerEntry): void
+    public function setFeeDiskReadLedgerEntry(int $feeDiskReadLedgerEntry): void
     {
-        $this->feeReadLedgerEntry = $feeReadLedgerEntry;
+        $this->feeDiskReadLedgerEntry = $feeDiskReadLedgerEntry;
     }
 
     /**
@@ -280,81 +341,80 @@ class XdrConfigSettingContractLedgerCostV0
     /**
      * @return int
      */
-    public function getFeeRead1KB(): int
+    public function getFeeDiskRead1KB(): int
     {
-        return $this->feeRead1KB;
+        return $this->feeDiskRead1KB;
     }
 
     /**
-     * @param int $feeRead1KB
+     * @param int $feeDiskRead1KB
      */
-    public function setFeeRead1KB(int $feeRead1KB): void
+    public function setFeeDiskRead1KB(int $feeDiskRead1KB): void
     {
-        $this->feeRead1KB = $feeRead1KB;
-    }
-
-    /**
-     * @return int
-     */
-    public function getBucketListTargetSizeBytes(): int
-    {
-        return $this->bucketListTargetSizeBytes;
-    }
-
-    /**
-     * @param int $bucketListTargetSizeBytes
-     */
-    public function setBucketListTargetSizeBytes(int $bucketListTargetSizeBytes): void
-    {
-        $this->bucketListTargetSizeBytes = $bucketListTargetSizeBytes;
+        $this->feeDiskRead1KB = $feeDiskRead1KB;
     }
 
     /**
      * @return int
      */
-    public function getWriteFee1KBBucketListLow(): int
+    public function getSorobanStateTargetSizeBytes(): int
     {
-        return $this->writeFee1KBBucketListLow;
+        return $this->sorobanStateTargetSizeBytes;
     }
 
     /**
-     * @param int $writeFee1KBBucketListLow
+     * @param int $sorobanStateTargetSizeBytes
      */
-    public function setWriteFee1KBBucketListLow(int $writeFee1KBBucketListLow): void
+    public function setSorobanStateTargetSizeBytes(int $sorobanStateTargetSizeBytes): void
     {
-        $this->writeFee1KBBucketListLow = $writeFee1KBBucketListLow;
-    }
-
-    /**
-     * @return int
-     */
-    public function getWriteFee1KBBucketListHigh(): int
-    {
-        return $this->writeFee1KBBucketListHigh;
-    }
-
-    /**
-     * @param int $writeFee1KBBucketListHigh
-     */
-    public function setWriteFee1KBBucketListHigh(int $writeFee1KBBucketListHigh): void
-    {
-        $this->writeFee1KBBucketListHigh = $writeFee1KBBucketListHigh;
+        $this->sorobanStateTargetSizeBytes = $sorobanStateTargetSizeBytes;
     }
 
     /**
      * @return int
      */
-    public function getBucketListWriteFeeGrowthFactor(): int
+    public function getRentFee1KBSorobanStateSizeLow(): int
     {
-        return $this->bucketListWriteFeeGrowthFactor;
+        return $this->rentFee1KBSorobanStateSizeLow;
     }
 
     /**
-     * @param int $bucketListWriteFeeGrowthFactor
+     * @param int $rentFee1KBSorobanStateSizeLow
      */
-    public function setBucketListWriteFeeGrowthFactor(int $bucketListWriteFeeGrowthFactor): void
+    public function setRentFee1KBSorobanStateSizeLow(int $rentFee1KBSorobanStateSizeLow): void
     {
-        $this->bucketListWriteFeeGrowthFactor = $bucketListWriteFeeGrowthFactor;
+        $this->rentFee1KBSorobanStateSizeLow = $rentFee1KBSorobanStateSizeLow;
     }
 
+    /**
+     * @return int
+     */
+    public function getRentFee1KBSorobanStateSizeHigh(): int
+    {
+        return $this->rentFee1KBSorobanStateSizeHigh;
+    }
+
+    /**
+     * @param int $rentFee1KBSorobanStateSizeHigh
+     */
+    public function setRentFee1KBSorobanStateSizeHigh(int $rentFee1KBSorobanStateSizeHigh): void
+    {
+        $this->rentFee1KBSorobanStateSizeHigh = $rentFee1KBSorobanStateSizeHigh;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSorobanStateRentFeeGrowthFactor(): int
+    {
+        return $this->sorobanStateRentFeeGrowthFactor;
+    }
+
+    /**
+     * @param int $sorobanStateRentFeeGrowthFactor
+     */
+    public function setSorobanStateRentFeeGrowthFactor(int $sorobanStateRentFeeGrowthFactor): void
+    {
+        $this->sorobanStateRentFeeGrowthFactor = $sorobanStateRentFeeGrowthFactor;
+    }
 }

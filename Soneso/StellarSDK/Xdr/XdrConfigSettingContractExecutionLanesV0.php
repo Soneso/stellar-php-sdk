@@ -8,10 +8,13 @@ namespace Soneso\StellarSDK\Xdr;
 
 class XdrConfigSettingContractExecutionLanesV0
 {
+    /**
+     * @var int $ledgerMaxTxCount maximum number of Soroban transactions per ledger (uint32)
+     */
     public int $ledgerMaxTxCount; // uint32
 
     /**
-     * @param int $ledgerMaxTxCount
+     * @param int $ledgerMaxTxCount maximum number of Soroban transactions per ledger (uint32)
      */
     public function __construct(int $ledgerMaxTxCount)
     {

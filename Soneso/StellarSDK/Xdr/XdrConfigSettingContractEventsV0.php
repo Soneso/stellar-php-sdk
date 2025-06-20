@@ -6,14 +6,24 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+/**
+ * Contract event-related settings.
+ */
 class XdrConfigSettingContractEventsV0
 {
+    /**
+     * @var int $txMaxContractEventsSizeBytes (uint32) Maximum size of events that a contract call can emit.
+     */
     public int $txMaxContractEventsSizeBytes;
+
+    /**
+     * @var int $feeContractEvents1KB (int64) Fee for generating 1KB of contract events.
+     */
     public int $feeContractEvents1KB;
 
     /**
-     * @param int $txMaxContractEventsSizeBytes
-     * @param int $feeContractEvents1KB
+     * @param int $txMaxContractEventsSizeBytes (uint32) Maximum size of events that a contract call can emit.
+     * @param int $feeContractEvents1KB (int64) Fee for generating 1KB of contract events.
      */
     public function __construct(int $txMaxContractEventsSizeBytes, int $feeContractEvents1KB)
     {

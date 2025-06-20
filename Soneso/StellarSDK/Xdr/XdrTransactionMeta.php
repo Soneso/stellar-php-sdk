@@ -16,6 +16,7 @@ class XdrTransactionMeta
     public ?XdrTransactionMetaV1 $v1 = null;
     public ?XdrTransactionMetaV2 $v2 = null;
     public ?XdrTransactionMetaV3 $v3 = null;
+    public ?XdrTransactionMetaV4 $v4 = null;
     /**
      * @param int $v
      */
@@ -46,6 +47,9 @@ class XdrTransactionMeta
             case 3:
                 $bytes .= $this->v3->encode();
                 break;
+            case 4:
+                $bytes .= $this->v4->encode();
+                break;
         }
         return $bytes;
     }
@@ -70,6 +74,9 @@ class XdrTransactionMeta
                 break;
             case 3:
                 $result->v3 = XdrTransactionMetaV3::decode($xdr);
+                break;
+            case 4:
+                $result->v4 = XdrTransactionMetaV4::decode($xdr);
                 break;
         }
         return $result;
@@ -163,6 +170,22 @@ class XdrTransactionMeta
     public function setV3(?XdrTransactionMetaV3 $v3): void
     {
         $this->v3 = $v3;
+    }
+
+    /**
+     * @return XdrTransactionMetaV4|null
+     */
+    public function getV4(): ?XdrTransactionMetaV4
+    {
+        return $this->v4;
+    }
+
+    /**
+     * @param XdrTransactionMetaV4|null $v4
+     */
+    public function setV4(?XdrTransactionMetaV4 $v4): void
+    {
+        $this->v4 = $v4;
     }
 
 }

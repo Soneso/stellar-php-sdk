@@ -30,6 +30,7 @@ class XdrSCSpecType
     const SC_SPEC_TYPE_STRING = 16;
     const SC_SPEC_TYPE_SYMBOL = 17;
     const SC_SPEC_TYPE_ADDRESS = 19;
+    const SC_SPEC_TYPE_MUXED_ADDRESS = 20;
 
     // Types with parameters.
     const SC_SPEC_TYPE_OPTION = 1000;
@@ -118,6 +119,10 @@ class XdrSCSpecType
 
     public static function ADDRESS() :  XdrSCSpecType {
         return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS);
+    }
+
+    public static function MUXED_ADDRESS() :  XdrSCSpecType {
+        return new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS);
     }
 
     public static function OPTION() :  XdrSCSpecType {

@@ -22,8 +22,11 @@ class XdrConfigSettingID
     const CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES = 9;
     const CONFIG_SETTING_STATE_ARCHIVAL = 10;
     const CONFIG_SETTING_CONTRACT_EXECUTION_LANES = 11;
-    const CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW = 12;
+    const CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW = 12;
     const CONFIG_SETTING_EVICTION_ITERATOR = 13;
+    const CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 = 14;
+    const CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 = 15;
+    const CONFIG_SETTING_SCP_TIMING = 16;
 
     public function __construct(int $value)
     {
@@ -78,12 +81,24 @@ class XdrConfigSettingID
         return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES);
     }
 
-    public static function CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW() : XdrConfigSettingID {
-        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW);
+    public static function CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW);
     }
 
     public static function CONFIG_SETTING_EVICTION_ITERATOR() : XdrConfigSettingID {
         return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0);
+    }
+
+    public static function CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0);
+    }
+
+    public static function CONFIG_SETTING_SCP_TIMING() : XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING);
     }
 
     /**

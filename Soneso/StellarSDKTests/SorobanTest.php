@@ -44,7 +44,6 @@ use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
-use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
@@ -52,6 +51,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use function PHPUnit\Framework\assertNotNull;
 
@@ -914,7 +914,7 @@ class SorobanTest extends TestCase
 
         $footprint = new XdrLedgerFootprint($readOnly, $readWrite);
         $resources = new XdrSorobanResources($footprint, 0,0,0);
-        $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
+        $transactionData = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), $resources, 0);
 
         $transaction->setSorobanTransactionData($transactionData) ;
         //$resourceConfig = new ResourceConfig(4000000);

@@ -15,6 +15,7 @@ class XdrSCSpecEntry
     public ?XdrSCSpecUDTUnionV0 $udtUnionV0 = null;
     public ?XdrSCSpecUDTEnumV0 $udtEnumV0 = null;
     public ?XdrSCSpecUDTErrorEnumV0 $udtErrorEnumV0 = null;
+    public ?XdrSCSpecEventV0 $eventV0 = null;
 
     /**
      * @param XdrSCSpecEntryKind $type
@@ -43,6 +44,9 @@ class XdrSCSpecEntry
             case XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
                 $bytes .= $this->udtErrorEnumV0->encode();
                 break;
+            case XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0:
+                $bytes .= $this->eventV0->encode();
+                break;
         }
         return $bytes;
     }
@@ -64,6 +68,9 @@ class XdrSCSpecEntry
                 break;
             case XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
                 $result->udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0::decode($xdr);
+                break;
+            case XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0:
+                $result->eventV0 = XdrSCSpecEventV0::decode($xdr);
                 break;
         }
         return $result;
@@ -95,6 +102,12 @@ class XdrSCSpecEntry
     public static function forUDTErrorEnumV0(XdrSCSpecUDTErrorEnumV0 $errorEnum) :  XdrSCSpecEntry {
         $entry = new XdrSCSpecEntry(XdrSCSpecEntryKind::UDT_ERROR_ENUM_V0());
         $entry->udtErrorEnumV0 = $errorEnum;
+        return $entry;
+    }
+
+    public static function forEventV0(XdrSCSpecEventV0 $event) :  XdrSCSpecEntry {
+        $entry = new XdrSCSpecEntry(XdrSCSpecEntryKind::EVENT_V0());
+        $entry->eventV0 = $event;
         return $entry;
     }
 
@@ -202,6 +215,22 @@ class XdrSCSpecEntry
     public function setUdtErrorEnumV0(?XdrSCSpecUDTErrorEnumV0 $udtErrorEnumV0): void
     {
         $this->udtErrorEnumV0 = $udtErrorEnumV0;
+    }
+
+    /**
+     * @return XdrSCSpecEventV0|null
+     */
+    public function getEventV0(): ?XdrSCSpecEventV0
+    {
+        return $this->eventV0;
+    }
+
+    /**
+     * @param XdrSCSpecEventV0|null $eventV0
+     */
+    public function setEventV0(?XdrSCSpecEventV0 $eventV0): void
+    {
+        $this->eventV0 = $eventV0;
     }
 
 }

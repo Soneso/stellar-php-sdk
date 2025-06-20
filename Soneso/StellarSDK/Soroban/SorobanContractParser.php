@@ -120,7 +120,8 @@ class SorobanContractParser
                     $entry->type->value === XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0 ||
                     $entry->type->value === XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0 ||
                     $entry->type->value === XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0 ||
-                    $entry->type->value === XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0) {
+                    $entry->type->value === XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 ||
+                    $entry->type->value === XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0) {
 
                     array_push($result, $entry);
                     $entryBytes = $entry->encode();

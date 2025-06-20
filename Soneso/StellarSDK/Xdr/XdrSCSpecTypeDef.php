@@ -139,6 +139,10 @@ class XdrSCSpecTypeDef
         return new XdrSCSpecTypeDef(XdrSCSpecType::ADDRESS());
     }
 
+    public static function MUXED_ADDRESS() : XdrSCSpecTypeDef {
+        return new XdrSCSpecTypeDef(XdrSCSpecType::MUXED_ADDRESS());
+    }
+
     public function encode(): string {
         $bytes = $this->type->encode();
 
@@ -161,6 +165,7 @@ class XdrSCSpecTypeDef
             case XdrSCSpecType::SC_SPEC_TYPE_STRING:
             case XdrSCSpecType::SC_SPEC_TYPE_SYMBOL:
             case XdrSCSpecType::SC_SPEC_TYPE_ADDRESS:
+            case XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS:
                 break;
             case XdrSCSpecType::SC_SPEC_TYPE_OPTION:
                 $bytes .= $this->option->encode();
@@ -208,6 +213,7 @@ class XdrSCSpecTypeDef
             case XdrSCSpecType::SC_SPEC_TYPE_STRING:
             case XdrSCSpecType::SC_SPEC_TYPE_SYMBOL:
             case XdrSCSpecType::SC_SPEC_TYPE_ADDRESS:
+            case XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS:
                 break;
             case XdrSCSpecType::SC_SPEC_TYPE_OPTION:
                 $result->option = XdrSCSpecTypeOption::decode($xdr);

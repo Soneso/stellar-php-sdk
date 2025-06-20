@@ -20,14 +20,12 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
-use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
-use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
@@ -37,6 +35,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractData;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use function PHPUnit\Framework\assertNotNull;
 
 class SorobanCustomAccountTest extends TestCase
@@ -196,7 +195,7 @@ class SorobanCustomAccountTest extends TestCase
         $transactionData = $simulateResponse->getTransactionData();
 
         // add some resources because preflight can not take __check_auth into account
-        $transactionData->resources->readBytes *= 2;
+        $transactionData->resources->diskReadBytes *= 2;
         $transactionData->resources->instructions *= 3;
         $transactionData->resourceFee += 1200800;
         $simulateResponse->minResourceFee += 1200800;
@@ -271,7 +270,7 @@ class SorobanCustomAccountTest extends TestCase
         $transactionData = $simulateResponse->getTransactionData();
 
         // add some resources because preflight can not take __check_auth into account
-        $transactionData->resources->readBytes *= 2;
+        $transactionData->resources->diskReadBytes *= 2;
         $transactionData->resources->instructions *= 3;
         $transactionData->resourceFee += 1200800;
         $simulateResponse->minResourceFee += 1200800;
@@ -636,7 +635,7 @@ class SorobanCustomAccountTest extends TestCase
 
         $footprint = new XdrLedgerFootprint($readOnly, $readWrite);
         $resources = new XdrSorobanResources($footprint, 0,0,0);
-        $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
+        $transactionData = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), $resources, 0);
 
         $transaction->setSorobanTransactionData($transactionData);
         $request = new SimulateTransactionRequest($transaction);

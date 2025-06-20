@@ -6,6 +6,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+/**
+ * "Compute" settings for contracts (instructions and memory).
+ */
 class XdrConfigSettingContractComputeV0
 {
     // Maximum instructions per ledger

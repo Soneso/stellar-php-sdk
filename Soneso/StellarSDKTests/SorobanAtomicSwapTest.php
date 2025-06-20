@@ -27,7 +27,6 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
-use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
@@ -37,6 +36,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use function PHPUnit\Framework\assertNotNull;
 
 // See https://developers.stellar.org/docs/smart-contracts/example-contracts/atomic-swap
@@ -515,7 +515,7 @@ class SorobanAtomicSwapTest extends TestCase
 
         $footprint = new XdrLedgerFootprint($readOnly, $readWrite);
         $resources = new XdrSorobanResources($footprint, 0,0,0);
-        $transactionData = new XdrSorobanTransactionData(new XdrExtensionPoint(0), $resources, 0);
+        $transactionData = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), $resources, 0);
 
         $transaction->setSorobanTransactionData($transactionData) ;
         $request = new SimulateTransactionRequest($transaction);
