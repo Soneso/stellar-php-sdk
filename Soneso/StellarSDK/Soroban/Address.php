@@ -7,14 +7,13 @@
 namespace Soneso\StellarSDK\Soroban;
 
 use RuntimeException;
-use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
  * Represents a single address in the Stellar network.
- * An address can represent an account or a contract.
+ * An address can represent an account, contract, muxed account, claimable balance, or liquidity pool.
  *
  * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization#address
  */
@@ -22,35 +21,69 @@ class Address
 {
     public const TYPE_ACCOUNT = 0;
     public const TYPE_CONTRACT = 1;
+    public const TYPE_MUXED_ACCOUNT = 2;
+    public const TYPE_CLAIMABLE_BALANCE = 3;
+    public const TYPE_LIQUIDITY_POOL = 4;
 
     /**
-     * @var int $type type of address. Can be 0 (account) or 1 (contract).
+     * @var int $type type of address. Can be TYPE_ACCOUNT (0), TYPE_CONTRACT (1),
+     * TYPE_MUXED_ACCOUNT (2), TYPE_CLAIMABLE_BALANCE (3), TYPE_LIQUIDITY_POOL (4).
+     *
      */
     public int $type;
 
     /**
-     * @var string|null $accountId only present if type is 0 (account)
+     * @var string|null $accountId only present if type is TYPE_ACCOUNT (0). ("G...")
      */
     public ?string $accountId = null;
 
     /**
-     * @var string|null $contractId hex representation of the contract id. Only present if type is 1 (contract).
+     * @var string|null $contractId hex representation of the contract id. Only present if type is TYPE_CONTRACT (1).
      * If the StrKey representation is needed ("C..."), it can be encoded with StrKey::encodeContractIdHex($contractId)
      */
     public ?string $contractId = null;
 
     /**
-     * @param int $type type of address. can be 0 (account) or 1 (contract).
-     * @param string|null $accountId required if type is 0 (account), otherwise null
-     * @param string|null $contractId hex representation. required if type is 1 (contract).
+     * @var string|null $muxedAccountId ("M...") - only present if type is TYPE_MUXED_ACCOUNT (2).
+     */
+    public ?string $muxedAccountId = null;
+
+    /**
+     * @var string|null $claimableBalanceId only present if type is TYPE_CLAIMABLE_BALANCE (3).
+     */
+    public ?string $claimableBalanceId = null;
+
+    /**
+     * @var string|null $liquidityPoolId only present if type is TYPE_LIQUIDITY_POOL (4).
+     */
+    public ?string $liquidityPoolId = null;
+
+    /**
+     * @param int $type type of address. can be one of TYPE_ACCOUNT (0), TYPE_CONTRACT (1),
+     * TYPE_MUXED_ACCOUNT (2), TYPE_CLAIMABLE_BALANCE (3), TYPE_LIQUIDITY_POOL (4).
+     * @param string|null $accountId required if type is TYPE_ACCOUNT (0), otherwise null
+     * @param string|null $contractId hex representation. Required if type is TYPE_CONTRACT (1).
+     * @param string|null $muxedAccountId required if type is TYPE_MUXED_ACCOUNT (2), otherwise null
+     * @param string|null $claimableBalanceId required if type is TYPE_CLAIMABLE_BALANCE (3), otherwise null
+     * @param string|null $liquidityPoolId required if type is TYPE_LIQUIDITY_POOL (4), otherwise null
+     *
      * If you have a StrKey representation of the contract id ("C..."),
      * you can decode it to hex with StrKey::decodeContractIdHex($contractId)
      */
-    public function __construct(int $type, ?string $accountId = null, ?string $contractId = null)
+    public function __construct(int $type,
+                                ?string $accountId = null,
+                                ?string $contractId = null,
+                                ?string $muxedAccountId = null,
+                                ?string $claimableBalanceId = null,
+                                ?string $liquidityPoolId = null,
+    )
     {
         $this->type = $type;
         $this->accountId = $accountId;
         $this->contractId = $contractId;
+        $this->muxedAccountId = $muxedAccountId;
+        $this->claimableBalanceId = $claimableBalanceId;
+        $this->liquidityPoolId = $liquidityPoolId;
     }
 
     /**
@@ -73,6 +106,15 @@ class Address
     }
 
     /**
+     * Creates a new instance of Address from the given muxed account id ("M...")
+     * @param string $muxedAccountId the muxed account id to create the Address object from ("M...")
+     * @return Address the created Address object.
+     */
+    public static function fromMuxedAccountId(string $muxedAccountId) : Address {
+        return new Address(Address::TYPE_MUXED_ACCOUNT, muxedAccountId:$muxedAccountId);
+    }
+
+    /**
      * Creates an Address object from the given XdrSCAddress object.
      * @param XdrSCAddress $xdrAddress the xdr object to create the Address object from.
      * @return Address the created Address object.
@@ -83,7 +125,13 @@ class Address
             return new Address(Address::TYPE_ACCOUNT, accountId: $xdrAddress->accountId->getAccountId());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT) {
             return new Address(Address::TYPE_CONTRACT, contractId: $xdrAddress->contractId);
-        } else {
+        } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT) {
+            return new Address(Address::TYPE_MUXED_ACCOUNT, muxedAccountId: $xdrAddress->muxedAccount->getAccountId());
+        } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE) {
+            return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $xdrAddress->getClaimableBalanceId());
+        } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
+            return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $xdrAddress->getLiquidityPoolId());
+        }else {
             throw new RuntimeException("unknown XdrSCAddress type " . $xdrAddress->type->value);
         }
     }
@@ -95,20 +143,34 @@ class Address
     public function toXdr(): XdrSCAddress {
         if ($this->type == Address::TYPE_ACCOUNT) {
             if ($this->accountId != null) {
-                $xdr = new XdrSCAddress(XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT());
-                $xdr->accountId = XdrAccountID::fromAccountId($this->accountId);
-                return $xdr;
+                return XdrSCAddress::forAccountId($this->accountId);
             } else {
                 throw new RuntimeException("accountId is null");
             }
         }
         else if ($this->type == Address::TYPE_CONTRACT) {
             if ($this->contractId != null) {
-                $xdr = new XdrSCAddress(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT());
-                $xdr->contractId = $this->contractId;
-                return $xdr;
+                return XdrSCAddress::forContractId($this->contractId);
             } else {
                 throw new RuntimeException("contractId is null");
+            }
+        } else if ($this->type == Address::TYPE_MUXED_ACCOUNT) {
+            if ($this->muxedAccountId != null) {
+                return XdrSCAddress::forAccountId($this->muxedAccountId);
+            } else {
+                throw new RuntimeException("muxedAccountId is null");
+            }
+        } else if ($this->type == Address::TYPE_CLAIMABLE_BALANCE) {
+            if ($this->claimableBalanceId != null) {
+                return XdrSCAddress::forClaimableBalanceId($this->claimableBalanceId);
+            } else {
+                throw new RuntimeException("claimableBalanceId is null");
+            }
+        } else if ($this->type == Address::TYPE_LIQUIDITY_POOL) {
+            if ($this->liquidityPoolId != null) {
+                return XdrSCAddress::forLiquidityPoolId($this->liquidityPoolId);
+            } else {
+                throw new RuntimeException("liquidityPoolId is null");
             }
         } else {
             throw new RuntimeException("unknown address type " . $this->type);
@@ -169,5 +231,53 @@ class Address
     public function setContractId(?string $contractId): void
     {
         $this->contractId = $contractId;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMuxedAccountId(): ?string
+    {
+        return $this->muxedAccountId;
+    }
+
+    /**
+     * @param string|null $muxedAccountId
+     */
+    public function setMuxedAccountId(?string $muxedAccountId): void
+    {
+        $this->muxedAccountId = $muxedAccountId;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getClaimableBalanceId(): ?string
+    {
+        return $this->claimableBalanceId;
+    }
+
+    /**
+     * @param string|null $claimableBalanceId
+     */
+    public function setClaimableBalanceId(?string $claimableBalanceId): void
+    {
+        $this->claimableBalanceId = $claimableBalanceId;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLiquidityPoolId(): ?string
+    {
+        return $this->liquidityPoolId;
+    }
+
+    /**
+     * @param string|null $liquidityPoolId
+     */
+    public function setLiquidityPoolId(?string $liquidityPoolId): void
+    {
+        $this->liquidityPoolId = $liquidityPoolId;
     }
 }
