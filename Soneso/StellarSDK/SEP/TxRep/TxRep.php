@@ -121,6 +121,7 @@ use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
+use Soneso\StellarSDK\Xdr\XdrSorobanResourcesExtV0;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
@@ -686,6 +687,15 @@ class TxRep
         } else if ("SC_ADDRESS_TYPE_CONTRACT" == $type) {
             $contractId = self::getString($prefix . 'contractId', $map);
             return XdrSCAddress::forContractId($contractId);
+        } else if ("SC_ADDRESS_TYPE_MUXED_ACCOUNT" == $type) {
+            $muxedAccountId = self::getString($prefix . 'muxedAccount', $map);
+            return XdrSCAddress::forAccountId($muxedAccountId);
+        } else if ("SC_ADDRESS_TYPE_CLAIMABLE_BALANCE" == $type) {
+            $claimableBalanceId = self::getString($prefix . 'claimableBalanceId.balanceID.v0', $map);
+            return XdrSCAddress::forClaimableBalanceId($claimableBalanceId);
+        } else if ("SC_ADDRESS_TYPE_LIQUIDITY_POOL" == $type) {
+            $liquidityPoolId = self::getString($prefix . 'liquidityPoolId', $map);
+            return XdrSCAddress::forLiquidityPoolId($liquidityPoolId);
         } else {
             throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
         }
@@ -1183,7 +1193,13 @@ class TxRep
             return XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW();
         } else if ("CONFIG_SETTING_EVICTION_ITERATOR" === $type) {
             return XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR();
-        } else {
+        } else if ("CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0();
+        } else if ("CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0();
+        } else if ("CONFIG_SETTING_SCP_TIMING" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING();
+        }else {
             throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
         }
     }
@@ -1224,12 +1240,28 @@ class TxRep
 
     private static function getSorobanTransactionData(String $prefix, array $map): ?XdrSorobanTransactionData {
         $v = self::getInt($prefix . 'ext.v', $map);
-        if ($v === 1) {
-            $resources = self::getSorobanResources($prefix . 'sorobanData.resources.', $map);
-            $resourcesFee = self::getInt($prefix . 'sorobanData.resourceFee', $map);
-            return new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), $resources, $resourcesFee);
+        if ($v !== 1) {
+            return null;
         }
-        return null;
+        $ext = new XdrSorobanTransactionDataExt(0);
+        if (self::getClearValue($prefix . 'sorobanData.ext.v', $map) !== null &&
+            self::getInt($prefix . 'sorobanData.ext.v', $map) === 1) {
+
+            /**
+             * @var array<int> $archivedEntries
+             */
+            $archivedEntries = array();
+            $len = self::getInt($prefix . 'sorobanData.ext.archivedSorobanEntries.len', $map);
+            for ($i = 0; $i < $len; $i++) {
+                $next = self::getInt($prefix . 'sorobanData.ext.archivedSorobanEntries[' . $i . '].', $map);
+                $archivedEntries[] = $next;
+            }
+            $ext = new XdrSorobanTransactionDataExt(discriminant: 1,
+                resourceExt: new XdrSorobanResourcesExtV0($archivedEntries));
+        }
+        $resources = self::getSorobanResources($prefix . 'sorobanData.resources.', $map);
+        $resourcesFee = self::getInt($prefix . 'sorobanData.resourceFee', $map);
+        return new XdrSorobanTransactionData($ext, $resources, $resourcesFee);
     }
 
     private static function getAccountId(string $key, array $map): String {
@@ -2890,6 +2922,19 @@ class TxRep
                 $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_CONTRACT'];
                 $lines += [$prefix . 'contractId' => StrKey::encodeContractIdHex($address->getContractId())];
                 break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_MUXED_ACCOUNT'];
+                $lines += [$prefix . 'muxedAccount' => $address->muxedAccount->getAccountId()];
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE'];
+                $lines += [$prefix . 'claimableBalanceId.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
+                $lines += [$prefix . 'claimableBalanceId.balanceID.v0' => $address->getClaimableBalanceId()];
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_LIQUIDITY_POOL'];
+                $lines += [$prefix . 'liquidityPoolId' => $address->getLiquidityPoolId()];
+                break;
         }
         return $lines;
     }
@@ -3302,7 +3347,18 @@ class TxRep
     }
     private static function getSorobanTransactionDataTx(string $prefix, XdrSorobanTransactionData $data) : array {
         $lines = array();
-        $lines += [$prefix . 'ext.v' => '0'];
+        if ($data->ext->discriminant === 1) {
+            $lines += [$prefix . 'ext.v' => '1'];
+            $lines += [$prefix . 'ext.archivedSorobanEntries.len' => strval(count($data->ext->resourceExt->archivedSorobanEntries))];
+            $index = 0;
+            foreach ($data->ext->resourceExt->archivedSorobanEntries as $val) {
+                $lines += [$prefix.'ext.archivedSorobanEntries['.$index.'].' => strval($val)];
+                $index++;
+            }
+        } else {
+            $lines += [$prefix . 'ext.v' => '0'];
+        }
+
         $lines = array_merge($lines, self::getSorobanResourcesTx($prefix.'resources.', $data->resources));
         $lines += [$prefix . 'resourceFee' => strval($data->resourceFee)];
         return $lines;
