@@ -56,7 +56,7 @@ class Signer
     public static function preAuthTxHash(String $preAuthTxKey) : XdrSignerKey {
         $signerKey = new XdrSignerKey();
         $signerKey->setType(new XdrSignerKeyType(XdrSignerKeyType::PRE_AUTH_TX));
-        $signerKey->setPreAuthTx(StrKey::decodePreAuth($preAuthTxKey));
+        $signerKey->setPreAuthTx(StrKey::decodePreAuthTx($preAuthTxKey));
         return $signerKey;
     }
 

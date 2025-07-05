@@ -114,7 +114,7 @@ class RevokeSponsorshipOperationBuilder
 
         $this->signerKey = new XdrSignerKey();
         $this->signerKey->setType(new XdrSignerKeyType(XdrSignerKeyType::PRE_AUTH_TX));
-        $this->signerKey->setPreAuthTx(StrKey::decodePreAuth($preAuthTx));
+        $this->signerKey->setPreAuthTx(StrKey::decodePreAuthTx($preAuthTx));
         $this->signerAccount = $signerAccountId;
         return $this;
     }

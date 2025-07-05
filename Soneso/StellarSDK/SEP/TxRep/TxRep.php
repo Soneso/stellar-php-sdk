@@ -511,7 +511,7 @@ class TxRep
                 } else if (str_starts_with($key, 'T')) {
                     $signer = new XdrSignerKey();
                     $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::PRE_AUTH_TX));
-                    $signer->setPreAuthTx(StrKey::decodePreAuth($key));
+                    $signer->setPreAuthTx(StrKey::decodePreAuthTx($key));
                     array_push($extraSigners, $signer);
                 } else if (str_starts_with($key, 'X')) {
                     $signer = new XdrSignerKey();
@@ -2060,7 +2060,7 @@ class TxRep
             } else if (str_starts_with($key, 'T')) {
                 $signer = new XdrSignerKey();
                 $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::PRE_AUTH_TX));
-                $signer->setPreAuthTx(StrKey::decodePreAuth($key));
+                $signer->setPreAuthTx(StrKey::decodePreAuthTx($key));
             } else if (str_starts_with($key, 'X')) {
                 $signer = new XdrSignerKey();
                 $signer->setType(new XdrSignerKeyType(XdrSignerKeyType::HASH_X));
@@ -2573,7 +2573,7 @@ class TxRep
                     if ($signer->getType()->getValue() == XdrSignerKeyType::ED25519) {
                         $lines += [$precondPrefix.'extraSigners['.strval($index).']' => StrKey::encodeAccountId($signer->getEd25519())];
                     } else if ($signer->getType()->getValue() == XdrSignerKeyType::PRE_AUTH_TX) {
-                        $lines += [$precondPrefix.'extraSigners['.strval($index).']' => StrKey::encodePreAuth($signer->getPreAuthTx())];
+                        $lines += [$precondPrefix.'extraSigners['.strval($index).']' => StrKey::encodePreAuthTx($signer->getPreAuthTx())];
                     } else if ($signer->getType()->getValue() == XdrSignerKeyType::HASH_X) {
                         $lines += [$precondPrefix.'extraSigners['.strval($index).']' => StrKey::encodeSha256Hash($signer->getHashX())];
                     } else if ($signer->getType()->getValue() == XdrSignerKeyType::ED25519_SIGNED_PAYLOAD) {
@@ -2748,7 +2748,7 @@ class TxRep
                 if ($signer->getType()->getValue() == XdrSignerKeyType::ED25519) {
                     $lines += [$prefix.'signer.key' => StrKey::encodeAccountId($signer->getEd25519())];
                 } else if ($signer->getType()->getValue() == XdrSignerKeyType::PRE_AUTH_TX) {
-                    $lines += [$prefix.'signer.key' => StrKey::encodePreAuth($signer->getPreAuthTx())];
+                    $lines += [$prefix.'signer.key' => StrKey::encodePreAuthTx($signer->getPreAuthTx())];
                 } else if ($signer->getType()->getValue() == XdrSignerKeyType::HASH_X) {
                     $lines += [$prefix.'signer.key' => StrKey::encodeSha256Hash($signer->getHashX())];
                 }
@@ -2843,7 +2843,7 @@ class TxRep
                 if($signerKey->getEd25519() != null) {
                     $lines += [$prefix.'signer.signerKey' => StrKey::encodeAccountId($signerKey->getEd25519())];
                 } else if($signerKey->getPreAuthTx() != null) {
-                    $lines += [$prefix.'signer.signerKey' => StrKey::encodePreAuth($signerKey->getPreAuthTx())];
+                    $lines += [$prefix.'signer.signerKey' => StrKey::encodePreAuthTx($signerKey->getPreAuthTx())];
                 } else if($signerKey->getHashX() != null) {
                     $lines += [$prefix.'signer.signerKey' => StrKey::encodeSha256Hash($signerKey->getHashX())];
                 }

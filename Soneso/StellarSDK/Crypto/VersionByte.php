@@ -15,4 +15,6 @@ class VersionByte
     const SHA256_HASH = 23 << 3; //X
     const SIGNED_PAYLOAD = 15 << 3; // P
     const CONTRACT_ID = 2 << 3; // C
+    const LIQUIDITY_POOL_ID = 11 << 3; // L
+    const CLAIMABLE_BALANCE_ID = 1 << 3; // B
 }
