@@ -10,12 +10,10 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
-use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
@@ -29,14 +27,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
-use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
-use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
-use Soneso\StellarSDK\Xdr\XdrLedgerKey;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
-use Soneso\StellarSDK\Xdr\XdrSorobanResources;
-use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
-use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
@@ -302,126 +293,8 @@ class SorobanAuthTest extends TestCase
         return $statusResponse;
     }
 
-    private function restoreContractFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $contractCodePath) : void {
-        sleep(5);
-
-        $contractCode = file_get_contents($contractCodePath, false);
-        $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
-        $op = (new InvokeHostFunctionOperationBuilder($uploadContractHostFunction))->build();
-
-        $accountAId = $accountKeyPair->getAccountId();
-        $account = $this->server->getAccount($accountAId);
-        assertNotNull($account);
-        $transaction = (new TransactionBuilder($account))
-            ->addOperation($op)->build();
-
-        $request = new SimulateTransactionRequest($transaction);
-        $simulateResponse = $server->simulateTransaction($request);
-
-        $this->assertNull($simulateResponse->error);
-        $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->getTransactionData());
-
-        $transactionData = $simulateResponse->getTransactionData();
-        $transactionData->resources->footprint->readWrite = $transactionData->resources->footprint->readWrite + $transactionData->resources->footprint->readOnly;
-        $transactionData->resources->footprint->readOnly = array();
-
-        $account = $this->server->getAccount($accountAId);
-        assertNotNull($account);
-        $restoreOp = (new RestoreFootprintOperationBuilder())->build();
-        $transaction = (new TransactionBuilder($account))
-            ->addOperation($restoreOp)->build();
-
-        $transaction->setSorobanTransactionData($transactionData) ;
-        $request = new SimulateTransactionRequest($transaction);
-        $simulateResponse = $server->simulateTransaction($request);
-
-        $this->assertNull($simulateResponse->error);
-        $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->getTransactionData());
-        $this->assertNotNull($simulateResponse->getMinResourceFee());
-
-        // set the transaction data + fee and sign
-        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addResourceFee($simulateResponse->getMinResourceFee());
-        $transaction->sign($accountKeyPair, $this->network);
-
-        // check transaction xdr encoding back and forth
-        $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
-        $this->assertEquals($transctionEnvelopeXdr,
-            Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
-
-        // send the transaction
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNull($sendResponse->error);
-        $this->assertNotNull($sendResponse->hash);
-        $this->assertNotNull($sendResponse->status);
-        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
-
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        $this->assertNotNull($statusResponse);
-        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
-    }
-
-    private function bumpContractCodeFootprint(SorobanServer $server, KeyPair $accountKeyPair, string $wasmId, int $extendTo) : void {
-        sleep(5);
-
-        $builder = new ExtendFootprintTTLOperationBuilder($extendTo);
-        $bumpOp = $builder->build();
-
-        $accountAId = $accountKeyPair->getAccountId();
-        $account = $this->server->getAccount($accountAId);
-        assertNotNull($account);
-        $transaction = (new TransactionBuilder($account))
-            ->addOperation($bumpOp)->build();
-
-        $readOnly = array();
-        $readWrite = array();
-        $codeKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-        $codeKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
-        array_push($readOnly, $codeKey);
-
-        $footprint = new XdrLedgerFootprint($readOnly, $readWrite);
-        $resources = new XdrSorobanResources($footprint, 0,0,0);
-        $transactionData = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), $resources, 0);
-
-        $transaction->setSorobanTransactionData($transactionData) ;
-        $request = new SimulateTransactionRequest($transaction);
-        $simulateResponse = $server->simulateTransaction($request);
-
-        $this->assertNull($simulateResponse->error);
-        $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->getTransactionData());
-        $this->assertNotNull($simulateResponse->getMinResourceFee());
-
-        // set the transaction data + fee and sign
-        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addResourceFee($simulateResponse->getMinResourceFee());
-        $transaction->sign($accountKeyPair, $this->network);
-
-        // check transaction xdr encoding back and forth
-        $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
-        $this->assertEquals($transctionEnvelopeXdr,
-            Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
-
-        // send the transaction
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNull($sendResponse->error);
-        $this->assertNotNull($sendResponse->hash);
-        $this->assertNotNull($sendResponse->status);
-        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
-
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        $this->assertNotNull($statusResponse);
-        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
-    }
-
     private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : String {
         sleep(5);
-
-        $this->restoreContractFootprint($server, $submitterKp, $pathToCode);
 
         // upload contract wasm
         $contractCode = file_get_contents($pathToCode, false);
@@ -455,8 +328,6 @@ class SorobanAuthTest extends TestCase
         $this->assertNotNull($statusResponse);
         $wasmId = $statusResponse->getWasmId();
         $this->assertNotNull($wasmId);
-
-        $this->bumpContractCodeFootprint($server, $submitterKp, $wasmId, 100000);
 
         // create contract
         $createContractHostFunction = new CreateContractWithConstructorHostFunction(Address::fromAccountId($submitterId), $wasmId, []);

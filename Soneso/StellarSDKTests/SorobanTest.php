@@ -158,8 +158,6 @@ class SorobanTest extends TestCase
         $this->assertNotNull($getTransactionsResponse->transactions);
         $this->assertCount(2, $getTransactionsResponse->transactions);
 
-        $this->restoreContractFootprint($this->server, $this->accountAKeyPair, self::HELLO_CONTRACT_PATH);
-
         // upload contract wasm
         $contractCode = file_get_contents(self::HELLO_CONTRACT_PATH, false);
         $uploadContractHostFunction = new UploadContractWasmHostFunction($contractCode);
@@ -360,6 +358,9 @@ class SorobanTest extends TestCase
         $this->assertNotNull($contractDataEntryResponse->entries[0]->key);
         $this->assertNotNull($contractDataEntryResponse->entries[0]->lastModifiedLedgerSeq);
         $this->assertNotNull($contractDataEntryResponse->entries[0]->getLedgerEntryDataXdr());
+
+        // test restore
+        $this->restoreContractFootprint($this->server, $this->accountAKeyPair, self::HELLO_CONTRACT_PATH);
 
         // invoke contract
         $argVal = XdrSCVal::forSymbol("friend");
@@ -757,8 +758,6 @@ class SorobanTest extends TestCase
 
     private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : String {
         sleep(5);
-
-        $this->restoreContractFootprint($this->server, $submitterKp, $pathToCode);
 
         // upload contract wasm
         $contractCode = file_get_contents($pathToCode, false);
