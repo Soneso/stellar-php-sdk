@@ -28,16 +28,26 @@ class SimulateTransactionRequest
     public ?ResourceConfig $resourceConfig = null;
 
     /**
+     * @var string|null $authMode Support for non-root authorization. Only available for protocol >= 23
+     * Possible values: "enforce" | "record" | "record_allow_nonroot"
+    */
+    public ?string $authMode = null;
+
+
+    /**
      * @param Transaction $transaction The transaction to be submitted. In order for the RPC server to successfully
      * simulate a Stellar transaction, the provided transaction must contain only a single operation of the
      * type invokeHostFunction.
      * @param ResourceConfig|null $resourceConfig Contains configuration for how resources will be calculated when simulating
      * transactions.
+     * @param string|null $authMode Support for non-root authorization. Only available for protocol >= 23
+     *  Possible values: "enforce" | "record" | "record_allow_nonroot"
      */
-    public function __construct(Transaction $transaction, ?ResourceConfig $resourceConfig = null)
+    public function __construct(Transaction $transaction, ?ResourceConfig $resourceConfig = null, ?string $authMode = null)
     {
         $this->transaction = $transaction;
         $this->resourceConfig = $resourceConfig;
+        $this->authMode = $authMode;
     }
 
     public function getRequestParams() : array {
@@ -47,6 +57,9 @@ class SimulateTransactionRequest
 
         if ($this->resourceConfig != null) {
             $params['resourceConfig'] = $this->resourceConfig->getRequestParams();
+        }
+        if ($this->authMode != null) {
+            $params['authMode'] = $this->authMode;
         }
         return $params;
     }
@@ -87,6 +100,22 @@ class SimulateTransactionRequest
     public function setResourceConfig(?ResourceConfig $resourceConfig): void
     {
         $this->resourceConfig = $resourceConfig;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAuthMode(): ?string
+    {
+        return $this->authMode;
+    }
+
+    /**
+     * @param string|null $authMode
+     */
+    public function setAuthMode(?string $authMode): void
+    {
+        $this->authMode = $authMode;
     }
 
 }

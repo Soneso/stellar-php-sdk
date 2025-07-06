@@ -101,6 +101,11 @@ class GetTransactionResponse extends SorobanRpcResponse
     */
     public ?string $txHash = null;
 
+    /**
+     * @var TransactionEvents|null $events events for the transaction. Only available for protocol version >= 23
+     */
+    public ?TransactionEvents $events = null;
+
     public static function fromJson(array $json) : GetTransactionResponse {
         $result = new GetTransactionResponse($json);
         if (isset($json['result'])) {
@@ -143,6 +148,9 @@ class GetTransactionResponse extends SorobanRpcResponse
             }
             if (isset($json['result']['txHash'])) {
                 $result->txHash = $json['result']['txHash']; // protocol version >= 22
+            }
+            if (isset($json['result']['events'])) {
+                $result->events = TransactionEvents::fromJson($json['result']['events']); // protocol version >= 23
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);

@@ -36,22 +36,30 @@ class LedgerEntry
     public ?int $liveUntilLedgerSeq = null;
 
     /**
+     * @var string|null $ext The entry's "Ext" field. Only available for protocol version >= 23
+     */
+    public ?string $ext = null;
+
+    /**
      * @param string $key The key of the ledger entry (serialized in a base64 xdr string).
      * @param string $xdr The current value of the given ledger entry (serialized in a base64 xdr string).
      * @param int $lastModifiedLedgerSeq The ledger sequence number of the last time this entry was updated.
      * @param int|null $liveUntilLedgerSeq Sequence number of the ledger.
+     * @param string|null $ext The entry's "Ext" field. Only available for protocol version >= 23
      */
     public function __construct(
         string $key,
         string $xdr,
         int $lastModifiedLedgerSeq,
         ?int $liveUntilLedgerSeq = null,
+        ?string $ext = null,
     )
     {
         $this->key = $key;
         $this->xdr = $xdr;
         $this->lastModifiedLedgerSeq = $lastModifiedLedgerSeq;
         $this->liveUntilLedgerSeq = $liveUntilLedgerSeq;
+        $this->ext = $ext;
     }
 
     public static function fromJson(array $json): LedgerEntry
@@ -63,7 +71,11 @@ class LedgerEntry
         if (isset($json['liveUntilLedgerSeq'])) {
             $liveUntilLedgerSeq = $json['liveUntilLedgerSeq'];
         }
-        return new LedgerEntry($key, $xdr, $lastModifiedLedgerSeq, $liveUntilLedgerSeq);
+        $ext = null;
+        if (isset($json['ext'])) {
+            $ext = $json['ext'];
+        }
+        return new LedgerEntry($key, $xdr, $lastModifiedLedgerSeq, $liveUntilLedgerSeq, $ext);
     }
 
     /**
@@ -143,6 +155,22 @@ class LedgerEntry
     public function setLiveUntilLedgerSeq(?int $liveUntilLedgerSeq): void
     {
         $this->liveUntilLedgerSeq = $liveUntilLedgerSeq;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getExt(): ?string
+    {
+        return $this->ext;
+    }
+
+    /**
+     * @param string|null $ext
+     */
+    public function setExt(?string $ext): void
+    {
+        $this->ext = $ext;
     }
 
 }

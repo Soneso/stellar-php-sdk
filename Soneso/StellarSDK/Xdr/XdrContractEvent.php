@@ -54,4 +54,14 @@ class XdrContractEvent
         return new XdrContractEvent($ext, $hash, $type, $body);
     }
 
+    public static function fromBase64Xdr(String $base64Xdr) : XdrContractEvent {
+        $xdr = base64_decode($base64Xdr);
+        $xdrBuffer = new XdrBuffer($xdr);
+        return XdrContractEvent::decode($xdrBuffer);
+    }
+
+    public function toBase64Xdr() : String {
+        return base64_encode($this->encode());
+    }
+
 }

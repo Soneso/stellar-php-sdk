@@ -57,6 +57,11 @@ class TransactionInfo
     public ?string $txHash;
 
     /**
+     * @var TransactionEvents|null $events events for the transaction. Only available for protocol version >= 23
+     */
+    public ?TransactionEvents $events = null;
+
+    /**
      * @param string $status Indicates whether the transaction was successful or not.
      * @param int $applicationOrder The 1-based index of the transaction among all transactions included in the ledger.
      * @param bool $feeBump Indicates whether the transaction was fee bumped.
@@ -66,9 +71,10 @@ class TransactionInfo
      * @param int $ledger The sequence number of the ledger which included the transaction.
      * @param int $createdAt The unix timestamp of when the transaction was included in the ledger.
      * @param string|null $txHash hex-encoded transaction hash string. Only available for protocol version >= 22
-     * @param array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
+     * @param array<string>|null $diagnosticEventsXdr (optional, deprecated) A base64 encoded slice of xdr.DiagnosticEvent.
      * This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
-     */
+     * @param TransactionEvents|null $events events for the transaction. Only available for protocol version >= 23
+    */
     public function __construct(
         string $status,
         int $applicationOrder,
@@ -80,6 +86,7 @@ class TransactionInfo
         int $createdAt,
         ?string $txHash = null,
         ?array $diagnosticEventsXdr = null,
+        ?TransactionEvents $events = null,
     )
     {
         $this->status = $status;
@@ -92,6 +99,7 @@ class TransactionInfo
         $this->createdAt = $createdAt;
         $this->txHash = $txHash;
         $this->diagnosticEventsXdr = $diagnosticEventsXdr;
+        $this->events = $events;
     }
 
     public static function fromJson(array $json): TransactionInfo
@@ -113,6 +121,11 @@ class TransactionInfo
             $txHash = $json["txHash"]; // protocol version >= 22
         }
 
+        $events = null;
+        if (isset($json["events"])) {
+            $events = $json["events"]; // protocol version >= 23
+        }
+
         return new TransactionInfo(
             $json['status'],
             $json['applicationOrder'],
@@ -124,6 +137,7 @@ class TransactionInfo
             (int)$json['createdAt'],
             txHash: $txHash,
             diagnosticEventsXdr: $diagnosticEventsXdr,
+            events: $events,
         );
     }
 }
