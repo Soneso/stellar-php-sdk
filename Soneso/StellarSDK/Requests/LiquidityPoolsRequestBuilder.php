@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolsPageResponse;
@@ -27,7 +28,11 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder
      */
     public function forPoolId(string $liquidityPoolID) : LiquidityPoolResponse
     {
-        $this->setSegments("liquidity_pools", $liquidityPoolID);
+        $idHex = $liquidityPoolID;
+        if (str_starts_with($idHex, "L")) {
+            $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+        }
+        $this->setSegments("liquidity_pools", $idHex);
         return parent::executeRequest($this->buildUrl(), RequestType::SINGLE_LIQUIDITY_POOL);
     }
 

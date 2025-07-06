@@ -58,7 +58,11 @@ class XdrSCAddress
                 $bytes .= $xdr->encode();
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-                $poolIdBytes = pack("H*", $this->liquidityPoolId);
+                $idHex = $this->liquidityPoolId;
+                if (str_starts_with($idHex, "L")) {
+                    $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+                }
+                $poolIdBytes = pack("H*", $idHex);
                 if (strlen($poolIdBytes) > 32) {
                     $poolIdBytes = substr($poolIdBytes, -32);
                 }

@@ -12,6 +12,7 @@ use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Responses\Effects\ClaimableBalanceCreatedEffectResponse;
 use Soneso\StellarSDK\StellarSDK;
@@ -69,14 +70,16 @@ class ClaimableBalancesTest extends TestCase
         }
         $this->assertNotEquals("", $bId);
         print($bId . PHP_EOL);
+        print(StrKey::encodeClaimableBalanceIdHex($bId) . PHP_EOL);
         $requestBuilder = $sdk->claimableBalances()->forClaimant($fistClaimantId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getClaimableBalances()->count() > 0);
 
         $cb = $response->getClaimableBalances()->toArray()[0];
         FriendBot::fundTestAccount($fistClaimantId);
-
-        $opc = new ClaimClaimableBalanceOperationBuilder($cb->getBalanceId());
+        // test also strkey claimable balance id
+        $strKeyBalanceId = StrKey::encodeClaimableBalanceIdHex($cb->getBalanceId());
+        $opc = new ClaimClaimableBalanceOperationBuilder($strKeyBalanceId);
         $claimant = $sdk->requestAccount($fistClaimantId);
         $transaction = (new TransactionBuilder($claimant))
             ->addOperation($opc->build())->build();

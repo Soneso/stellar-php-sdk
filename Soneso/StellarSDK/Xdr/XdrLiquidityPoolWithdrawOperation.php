@@ -9,6 +9,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrLiquidityPoolWithdrawOperation
 {
@@ -65,7 +66,11 @@ class XdrLiquidityPoolWithdrawOperation
 
 
     public function encode(): string {
-        $poolIdBytes = pack("H*", $this->liquidityPoolID);
+        $idHex = $this->liquidityPoolID;
+        if (str_starts_with($idHex, "L")) {
+            $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+        }
+        $poolIdBytes = pack("H*", $idHex);
         if (strlen($poolIdBytes) > 32) {
             $poolIdBytes = substr($poolIdBytes, -32);
         }

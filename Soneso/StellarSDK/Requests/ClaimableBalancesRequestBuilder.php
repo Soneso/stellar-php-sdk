@@ -4,6 +4,7 @@ namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalanceResponse;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalancesPageResponse;
@@ -27,7 +28,11 @@ class ClaimableBalancesRequestBuilder  extends RequestBuilder
      * @throws HorizonRequestException
      */
     public function claimableBalance(string $claimableBalanceId) : ClaimableBalanceResponse {
-        $this->setSegments("claimable_balances", $claimableBalanceId);
+        $idHex = $claimableBalanceId;
+        if (str_starts_with($idHex, "B")) {
+            $idHex = StrKey::decodeClaimableBalanceIdHex($idHex);
+        }
+        $this->setSegments("claimable_balances", $idHex);
         return parent::executeRequest($this->buildUrl(),RequestType::SINGLE_CLAIMABLE_BALANCE);
     }
 

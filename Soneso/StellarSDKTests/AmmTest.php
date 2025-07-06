@@ -13,6 +13,7 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\AssetTypePoolShare;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
 use Soneso\StellarSDK\LiquidityPoolWithdrawOperationBuilder;
 use Soneso\StellarSDK\Network;
@@ -117,7 +118,9 @@ class AmmTest extends TestCase
         $nativeLiquidityPoolId = $response->getLiquidityPools()->toArray()[0]->getPoolId();
 
         // TEST DEPOSIT NON NATIVE
-        $op = (new LiquidityPoolDepositOperationBuilder($nonNativeLiquidityPoolId,"250.0","250.0",
+        // test also strkey liquidity pool id
+        $nonNativeStrKeyPoolId = StrKey::encodeLiquidityPoolIdHex($nonNativeLiquidityPoolId);
+        $op = (new LiquidityPoolDepositOperationBuilder($nonNativeStrKeyPoolId,"250.0","250.0",
             Price::fromString("1.0"),Price::fromString("2.0")))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($op)->build();
@@ -128,7 +131,8 @@ class AmmTest extends TestCase
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // TEST DEPOSIT NATIVE
-        $op = (new LiquidityPoolDepositOperationBuilder($nativeLiquidityPoolId,"250.0","250.0",
+        $nativeStrKeyPoolId = StrKey::encodeLiquidityPoolIdHex($nativeLiquidityPoolId);
+        $op = (new LiquidityPoolDepositOperationBuilder($nativeStrKeyPoolId,"250.0","250.0",
             Price::fromString("1.0"),Price::fromString("2.0")))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($op)->build();
@@ -138,7 +142,7 @@ class AmmTest extends TestCase
         $this->assertTrue($response->isSuccessful());
 
         // TEST WITHDRAW NON NATIVE
-        $op = (new LiquidityPoolWithdrawOperationBuilder($nonNativeLiquidityPoolId, "100", "100","100"))->build();
+        $op = (new LiquidityPoolWithdrawOperationBuilder($nonNativeStrKeyPoolId, "100", "100","100"))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($op)->build();
         $transaction->sign($sourceAccountKeyPair, Network::testnet());
@@ -148,7 +152,7 @@ class AmmTest extends TestCase
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // TEST WITHDRAW  NATIVE
-        $op = (new LiquidityPoolWithdrawOperationBuilder($nativeLiquidityPoolId, "1", "1","1"))->build();
+        $op = (new LiquidityPoolWithdrawOperationBuilder($nativeStrKeyPoolId, "1", "1","1"))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($op)->build();
         $transaction->sign($sourceAccountKeyPair, Network::testnet());
@@ -158,8 +162,7 @@ class AmmTest extends TestCase
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // QUERY TESTING
-
-        $requestBuilder = $sdk->effects()->forLiquidityPool($nonNativeLiquidityPoolId)->limit(4)->order("asc");
+        $requestBuilder = $sdk->effects()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(4)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getEffects()->count() == 4);
         $effectsArray = $response->getEffects()->toArray();
@@ -168,7 +171,7 @@ class AmmTest extends TestCase
         $this->assertTrue($effectsArray[2] instanceof LiquidityPoolDepositedEffectResponse);
         $this->assertTrue($effectsArray[3] instanceof LiquidityPoolWithdrewEffectResponse);
 
-        $requestBuilder = $sdk->transactions()->forLiquidityPool($nonNativeLiquidityPoolId)->limit(1)->order("asc");
+        $requestBuilder = $sdk->transactions()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(1)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getTransactions()->count() == 1);
 
@@ -177,7 +180,7 @@ class AmmTest extends TestCase
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getEffects()->count() > 0);
 
-        $requestBuilder = $sdk->operations()->forLiquidityPool($nonNativeLiquidityPoolId)->limit(3)->order("asc");
+        $requestBuilder = $sdk->operations()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(3)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getOperations()->count() == 3);
         $operationsArray = $response->getOperations()->toArray();
@@ -185,11 +188,11 @@ class AmmTest extends TestCase
         $this->assertTrue($operationsArray[1] instanceof LiquidityPoolDepositOperationResponse);
         $this->assertTrue($operationsArray[2] instanceof LiquidityPoolWithdrawOperationResponse);
 
-        $lp = $sdk->requestLiquidityPool($nonNativeLiquidityPoolId);
+        $lp = $sdk->requestLiquidityPool($nonNativeStrKeyPoolId);
         $this->assertTrue($lp->getFee() == 30);
         $this->assertTrue($lp->getPoolId() == $nonNativeLiquidityPoolId);
 
-        $requestBuilder = $sdk->transactions()->forLiquidityPool($nonNativeLiquidityPoolId)->limit(1)->order("asc");
+        $requestBuilder = $sdk->transactions()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(1)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getTransactions()->count() == 1);
 
@@ -230,7 +233,7 @@ class AmmTest extends TestCase
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->trades()->forLiquidityPool($nonNativeLiquidityPoolId)->order("asc");
+        $requestBuilder = $sdk->trades()->forLiquidityPool($nonNativeStrKeyPoolId)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getTrades()->count() > 0);
         $this->assertTrue($response->getTrades()->toArray()[0]->getBaseLiquidityPoolId() == $nonNativeLiquidityPoolId);

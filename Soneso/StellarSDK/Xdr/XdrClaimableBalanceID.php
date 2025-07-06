@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrClaimableBalanceID
 {
 
@@ -43,7 +45,11 @@ class XdrClaimableBalanceID
 
     public function encode() : string {
         $bytes = $this->type->encode();
-        $balanceIdBytes = pack("H*", $this->hash);
+        $idHex = $this->hash;
+        if (str_starts_with($idHex, "B")) {
+            $idHex = StrKey::decodeClaimableBalanceIdHex($idHex);
+        }
+        $balanceIdBytes = pack("H*", $idHex);
         if (strlen($balanceIdBytes) > 32) {
             $balanceIdBytes = substr($balanceIdBytes, -32);
         }

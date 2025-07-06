@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrLedgerKey
 {
     public XdrLedgerEntryType $type;
@@ -32,13 +34,24 @@ class XdrLedgerKey
             XdrLedgerEntryType::OFFER => $this->offer->encode(),
             XdrLedgerEntryType::DATA => $this->data->encode(),
             XdrLedgerEntryType::CLAIMABLE_BALANCE => $this->balanceID->encode(),
-            XdrLedgerEntryType::LIQUIDITY_POOL => XdrEncoder::opaqueFixed(hex2bin($this->liquidityPoolID), 32),
+            XdrLedgerEntryType::LIQUIDITY_POOL => XdrEncoder::opaqueFixed($this->getLiquidityPoolIdBin(), 32),
             XdrLedgerEntryType::CONTRACT_DATA => $this->contractData->encode(),
             XdrLedgerEntryType::CONTRACT_CODE => $this->contractCode->encode(),
             XdrLedgerEntryType::CONFIG_SETTING => $this->configSetting->encode(),
             XdrLedgerEntryType::TTL => $this->ttl->encode(),
         };
         return $bytes;
+    }
+
+    private function getLiquidityPoolIdBin() : ?string {
+        if ($this->liquidityPoolID === null) {
+            return null;
+        }
+        $idHex = $this->liquidityPoolID;
+        if (str_starts_with($idHex, "L")) {
+            $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+        }
+        return hex2bin($idHex);
     }
 
     public static function decode(XdrBuffer $xdr) : XdrLedgerKey {
@@ -138,7 +151,7 @@ class XdrLedgerKey
     }
 
     public static function forTTL(string $keyHash) : XdrLedgerKey {
-        $result = new XdrLedgerKey(XdrLedgerEntryType::TTL);
+        $result = new XdrLedgerKey(XdrLedgerEntryType::EXPIRATION());
         $result->ttl = new XdrLedgerKeyTTL($keyHash);
         return $result;
     }

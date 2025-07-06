@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
@@ -53,7 +54,11 @@ class OperationsRequestBuilder extends RequestBuilder
      * @see <a href="https://developers.stellar.org/api/resources/claimablebalances/operations/">Operations for ClaimableBalance</a>
      */
     public function forClaimableBalance(string $claimableBalanceId) : OperationsRequestBuilder {
-        $this->setSegments("claimable_balances", $claimableBalanceId, "operations");
+        $idHex = $claimableBalanceId;
+        if (str_starts_with($idHex, "B")) {
+            $idHex = StrKey::decodeClaimableBalanceIdHex($idHex);
+        }
+        $this->setSegments("claimable_balances", $idHex, "operations");
         return $this;
     }
 
@@ -86,7 +91,11 @@ class OperationsRequestBuilder extends RequestBuilder
      * @see <a href="https://developers.stellar.org/api/resources/liquiditypools/operations/">Operations for Liquidity Pool</a>
      */
     public function forLiquidityPool(string $liquidityPoolId) : OperationsRequestBuilder {
-        $this->setSegments("liquidity_pools", $liquidityPoolId, "operations");
+        $idHex = $liquidityPoolId;
+        if (str_starts_with($idHex, "L")) {
+            $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+        }
+        $this->setSegments("liquidity_pools", $idHex, "operations");
         return $this;
     }
 

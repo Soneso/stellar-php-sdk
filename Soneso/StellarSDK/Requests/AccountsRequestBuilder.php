@@ -9,11 +9,10 @@ namespace Soneso\StellarSDK\Requests;
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Responses\Account\AccountResponse;
 use Soneso\StellarSDK\Responses\Account\AccountsPageResponse;
-use Soneso\StellarSDK\Responses\Errors\TooManyRequestsException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
-use Soneso\StellarSDK\Responses\Response;
 
 class AccountsRequestBuilder extends RequestBuilder
 {
@@ -82,7 +81,11 @@ class AccountsRequestBuilder extends RequestBuilder
             throw new \RuntimeException("cannot set both sponsor and liquidity_pool");
         }
 
-        $this->queryParameters[AccountsRequestBuilder::LIQUIDITY_POOL_PARAMETER_NAME] = $liquidityPoolId;
+        $idHex = $liquidityPoolId;
+        if (str_starts_with($idHex, "L")) {
+            $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+        }
+        $this->queryParameters[AccountsRequestBuilder::LIQUIDITY_POOL_PARAMETER_NAME] = $idHex;
         return $this;
     }
 

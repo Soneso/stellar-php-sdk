@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Requests;
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
 
@@ -87,7 +88,11 @@ class TradesRequestBuilder extends RequestBuilder
      * @see <a href="https://developers.stellar.org/api/resources/liquiditypools/trades/">Trades for Liquidity Pool</a>
      */
     public function forLiquidityPool(string $liquidityPoolId) : TradesRequestBuilder {
-        $this->setSegments("liquidity_pools", $liquidityPoolId, "trades");
+        $idHex = $liquidityPoolId;
+        if (str_starts_with($idHex, "L")) {
+            $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+        }
+        $this->setSegments("liquidity_pools", $idHex, "trades");
         return $this;
     }
 

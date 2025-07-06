@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Effects\EffectResponse;
 use Soneso\StellarSDK\Responses\Effects\EffectsPageResponse;
@@ -59,7 +60,11 @@ class EffectsRequestBuilder extends RequestBuilder
      * @see <a href="https://developers.stellar.org/api/resources/liquiditypools/effects/">Effects for Liquidity Pool</a>
      */
     public function forLiquidityPool(string $liquidityPoolId) : EffectsRequestBuilder {
-        $this->setSegments("liquidity_pools", $liquidityPoolId, "effects");
+        $idHex = $liquidityPoolId;
+        if (str_starts_with($idHex, "L")) {
+            $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+        }
+        $this->setSegments("liquidity_pools", $idHex, "effects");
         return $this;
     }
     /**

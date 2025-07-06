@@ -12,7 +12,6 @@ use RuntimeException;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
-use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
@@ -78,8 +77,7 @@ class RevokeSponsorshipOperationBuilder
             throw new RuntimeException("can not revoke multiple entries per builder");
         }
         $this->ledgerKey = new XdrLedgerKey(new XdrLedgerEntryType(XdrLedgerEntryType::CLAIMABLE_BALANCE));
-
-        $bId = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), $balanceId);
+        $bId = XdrClaimableBalanceID::forClaimableBalanceId($balanceId);
         $this->ledgerKey->setBalanceID($bId);
         return $this;
     }

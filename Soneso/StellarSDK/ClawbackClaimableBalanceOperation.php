@@ -7,7 +7,6 @@
 namespace Soneso\StellarSDK;
 
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
-use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType;
 use Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
@@ -35,8 +34,7 @@ class ClawbackClaimableBalanceOperation extends AbstractOperation
 
     public function toOperationBody(): XdrOperationBody
     {
-        $type = new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0);
-        $bId = new XdrClaimableBalanceID($type, $this->balanceId);
+        $bId = XdrClaimableBalanceID::forClaimableBalanceId($this->balanceId);
         $op = new XdrClawbackClaimableBalanceOperation($bId);
         $type = new XdrOperationType(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE);
         $result = new XdrOperationBody($type);
