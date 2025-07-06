@@ -15,6 +15,7 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     public string $address;
     public string $salt;
     public ?AssetBalanceChangesResponse $assetBalanceChanges = null;
+    public ?string $destinationMuxedId = null; // a uint64
 
     protected function loadFromJson(array $json) : void {
         $this->function = $json['function'];
@@ -34,6 +35,9 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
                 $value = AssetBalanceChangeResponse::fromJson($jsonValue);
                 $this->assetBalanceChanges->add($value);
             }
+        }
+        if (isset($json['destination_muxed_id'])) {
+            $this->destinationMuxedId = $json['destination_muxed_id'];
         }
 
         parent::loadFromJson($json);
@@ -123,6 +127,22 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     public function setAssetBalanceChanges(?AssetBalanceChangesResponse $assetBalanceChanges): void
     {
         $this->assetBalanceChanges = $assetBalanceChanges;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDestinationMuxedId(): ?string
+    {
+        return $this->destinationMuxedId;
+    }
+
+    /**
+     * @param string|null $destinationMuxedId
+     */
+    public function setDestinationMuxedId(?string $destinationMuxedId): void
+    {
+        $this->destinationMuxedId = $destinationMuxedId;
     }
 
 }

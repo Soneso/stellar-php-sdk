@@ -7,7 +7,6 @@
 namespace Soneso\StellarSDK\Responses\Transaction;
 
 use Soneso\StellarSDK\Responses\Response;
-use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 
 class SubmitAsyncTransactionResponse extends Response
 {
@@ -19,25 +18,18 @@ class SubmitAsyncTransactionResponse extends Response
     public string $txStatus;
     public string $hash;
     public int $httpStatusCode;
-    public ?string $errorResultXdrBase64 = null;
-    public ?XdrTransactionResult $errorResult = null;
 
     /**
      * Constructor.
      * @param string $txStatus Status of the transaction submission. Possible values: [ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER]
      * @param string $hash Hash of the transaction.
      * @param int $httpStatusCode The HTTP status code of the response obtained from Horizon.
-     * @param string|null $errorResultXdrBase64 TransactionResult XDR string which is present only if the submission status from core is an ERROR.
      */
-    public function __construct(string $txStatus, string $hash, int $httpStatusCode, ?string $errorResultXdrBase64 = null)
+    public function __construct(string $txStatus, string $hash, int $httpStatusCode)
     {
         $this->txStatus = $txStatus;
         $this->hash = $hash;
         $this->httpStatusCode = $httpStatusCode;
-        $this->errorResultXdrBase64 = $errorResultXdrBase64;
-        if ($errorResultXdrBase64 !== null) {
-            $this->errorResult = XdrTransactionResult::fromBase64Xdr($errorResultXdrBase64);
-        }
     }
 
 
@@ -45,17 +37,10 @@ class SubmitAsyncTransactionResponse extends Response
     {
         $txStatus = $json['tx_status'];
         $hash = $json['hash'];
-        $errorResultXdrBase64 = null;
-        if (isset($json['errorResultXdr'])) {
-            $errorResultXdrBase64 = $json['errorResultXdr']; // protocol < 22
-        } else if (isset($json['error_result_xdr'])) {
-            $errorResultXdrBase64 = $json['error_result_xdr']; // protocol 22
-        }
         return new SubmitAsyncTransactionResponse(
             txStatus: $txStatus,
             hash: $hash,
             httpStatusCode: $httpResponseStatusCode,
-            errorResultXdrBase64: $errorResultXdrBase64,
         );
     }
 }
