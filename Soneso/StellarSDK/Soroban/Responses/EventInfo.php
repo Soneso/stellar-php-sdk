@@ -6,8 +6,6 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
-use Soneso\StellarSDK\Xdr\XdrSCVal;
-
 /**
  * Part of the getEvents request.
  * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
@@ -35,11 +33,6 @@ class EventInfo
     public string $contractId;
 
     /**
-     * @var string $pagingToken for paging
-     */
-    public string $pagingToken;
-
-    /**
      * @var string $id Unique identifier for this event.
      */
     public string $id;
@@ -55,14 +48,26 @@ class EventInfo
     public string $value;
 
     /**
-     * @var bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
+     * @var bool|null $inSuccessfulContractCall (deprecated) If true the event was emitted during a successful contract call.
      */
-    public bool $inSuccessfulContractCall;
+    public ?bool $inSuccessfulContractCall;
 
     /**
      * @var string $txHash The transaction which triggered this event.
      */
     public string $txHash;
+
+    // starting from protocol 23 opIndex, txIndex will be filled.
+    /**
+     * @var int|null $opIndex operation index, only available for protocol >= 23
+     */
+    public ?int $opIndex = null;
+
+    /**
+     * @var int|null $txIndex transaction index, only available for protocol >= 23
+     */
+    public ?int $txIndex = null;
+
 
     /**
      * @param string $type The type of event emission. Possible values: contract, diagnostic, system.
@@ -72,9 +77,10 @@ class EventInfo
      * @param string $id Unique identifier for this event.
      * @param array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
      * @param string $value The emitted body value of the event (serialized in a base64 xdr string).
-     * @param bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
+     * @param bool|null $inSuccessfulContractCall If true the event was emitted during a successful contract call.
      * @param string $txHash The transaction which triggered this event.
-     * @param string $pagingToken For paging.
+     * @param int|null $opIndex operation index.
+     * @param int|null $txIndex transaction index.
      */
     public function __construct(
         string $type,
@@ -84,9 +90,10 @@ class EventInfo
         string $id,
         array $topic,
         string $value,
-        bool $inSuccessfulContractCall,
+        ?bool $inSuccessfulContractCall,
         string $txHash,
-        string $pagingToken,
+        ?int $opIndex = null,
+        ?int $txIndex = null,
     )
     {
         $this->type = $type;
@@ -98,7 +105,8 @@ class EventInfo
         $this->value = $value;
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;
         $this->txHash = $txHash;
-        $this->pagingToken = $pagingToken;
+        $this->opIndex = $opIndex;
+        $this->txIndex = $txIndex;
     }
 
     public static function fromJson(array $json): EventInfo
@@ -113,12 +121,23 @@ class EventInfo
         foreach ($json['topic'] as $val) {
             $topic[] = $val;
         }
-        $inSuccessfulContractCall = $json['inSuccessfulContractCall'];
-        $txHash = $json['txHash'];
-        $pagingToken = $id;
-        if (isset($json['pagingToken'])) {
-            $pagingToken = $json['pagingToken'];
+        $inSuccessfulContractCall = null;
+        if (isset($json['inSuccessfulContractCall'])) {
+            $inSuccessfulContractCall = $json['inSuccessfulContractCall'];
         }
+
+        $txHash = $json['txHash'];
+
+        $opIndex = null;
+        if (isset($json['opIndex'])) {
+            $opIndex = $json['opIndex'];
+        }
+
+        $txIndex = null;
+        if (isset($json['txIndex'])) {
+            $txIndex = $json['txIndex'];
+        }
+
         return new EventInfo(
             $type,
             $ledger,
@@ -129,12 +148,13 @@ class EventInfo
             $value,
             $inSuccessfulContractCall,
             $txHash,
-            pagingToken: $pagingToken
+            opIndex: $opIndex,
+            txIndex: $txIndex
         );
     }
 
     /**
-     * @return string The type of event emission. Possible values: contract, diagnostic, system.
+     * @return string
      */
     public function getType(): string
     {
@@ -142,7 +162,7 @@ class EventInfo
     }
 
     /**
-     * @param string $type The type of event emission. Possible values: contract, diagnostic, system.
+     * @param string $type
      */
     public function setType(string $type): void
     {
@@ -150,7 +170,7 @@ class EventInfo
     }
 
     /**
-     * @return int Sequence number of the ledger in which this event was emitted.
+     * @return int
      */
     public function getLedger(): int
     {
@@ -158,7 +178,7 @@ class EventInfo
     }
 
     /**
-     * @param int $ledger Sequence number of the ledger in which this event was emitted.
+     * @param int $ledger
      */
     public function setLedger(int $ledger): void
     {
@@ -166,7 +186,7 @@ class EventInfo
     }
 
     /**
-     * @return string ISO-8601 timestamp of the ledger closing time.
+     * @return string
      */
     public function getLedgerClosedAt(): string
     {
@@ -174,7 +194,7 @@ class EventInfo
     }
 
     /**
-     * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time.
+     * @param string $ledgerClosedAt
      */
     public function setLedgerClosedAt(string $ledgerClosedAt): void
     {
@@ -182,7 +202,7 @@ class EventInfo
     }
 
     /**
-     * @return string StrKey representation of the contract address that emitted this event. ("C...").
+     * @return string
      */
     public function getContractId(): string
     {
@@ -190,7 +210,7 @@ class EventInfo
     }
 
     /**
-     * @param string $contractId StrKey representation of the contract address that emitted this event. ("C...").
+     * @param string $contractId
      */
     public function setContractId(string $contractId): void
     {
@@ -198,7 +218,7 @@ class EventInfo
     }
 
     /**
-     * @return string Unique identifier for this event.
+     * @return string
      */
     public function getId(): string
     {
@@ -206,7 +226,7 @@ class EventInfo
     }
 
     /**
-     * @param string $id Unique identifier for this event.
+     * @param string $id
      */
     public function setId(string $id): void
     {
@@ -214,7 +234,7 @@ class EventInfo
     }
 
     /**
-     * @return array<String> List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
+     * @return array
      */
     public function getTopic(): array
     {
@@ -222,7 +242,7 @@ class EventInfo
     }
 
     /**
-     * @param array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
+     * @param array $topic
      */
     public function setTopic(array $topic): void
     {
@@ -230,14 +250,7 @@ class EventInfo
     }
 
     /**
-     * @return XdrSCVal The emitted body value of the event.
-     */
-    public function getValueXdr(): XdrSCVal {
-        return XdrSCVal::fromBase64Xdr($this->value);
-    }
-
-    /**
-     * @return string The emitted body value of the event (serialized in a base64 xdr string).
+     * @return string
      */
     public function getValue(): string
     {
@@ -245,7 +258,7 @@ class EventInfo
     }
 
     /**
-     * @param string $value The emitted body value of the event (serialized in a base64 xdr string).
+     * @param string $value
      */
     public function setValue(string $value): void
     {
@@ -253,35 +266,19 @@ class EventInfo
     }
 
     /**
-     * @return bool If true the event was emitted during a successful contract call.
+     * @return bool|null
      */
-    public function isInSuccessfulContractCall(): bool
+    public function getInSuccessfulContractCall(): ?bool
     {
         return $this->inSuccessfulContractCall;
     }
 
     /**
-     * @param bool $inSuccessfulContractCall If true the event was emitted during a successful contract call.
+     * @param bool|null $inSuccessfulContractCall
      */
-    public function setInSuccessfulContractCall(bool $inSuccessfulContractCall): void
+    public function setInSuccessfulContractCall(?bool $inSuccessfulContractCall): void
     {
         $this->inSuccessfulContractCall = $inSuccessfulContractCall;
-    }
-
-    /**
-     * @return string for paging
-     */
-    public function getPagingToken(): string
-    {
-        return $this->pagingToken;
-    }
-
-    /**
-     * @param string $pagingToken for paging
-     */
-    public function setPagingToken(string $pagingToken): void
-    {
-        $this->pagingToken = $pagingToken;
     }
 
     /**
@@ -300,4 +297,35 @@ class EventInfo
         $this->txHash = $txHash;
     }
 
+    /**
+     * @return int|null
+     */
+    public function getOpIndex(): ?int
+    {
+        return $this->opIndex;
+    }
+
+    /**
+     * @param int|null $opIndex
+     */
+    public function setOpIndex(?int $opIndex): void
+    {
+        $this->opIndex = $opIndex;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getTxIndex(): ?int
+    {
+        return $this->txIndex;
+    }
+
+    /**
+     * @param int|null $txIndex
+     */
+    public function setTxIndex(?int $txIndex): void
+    {
+        $this->txIndex = $txIndex;
+    }
 }
