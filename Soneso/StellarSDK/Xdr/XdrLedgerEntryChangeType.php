@@ -14,6 +14,7 @@ class XdrLedgerEntryChangeType
     const LEDGER_ENTRY_UPDATED = 1;
     const LEDGER_ENTRY_REMOVED = 2;
     const LEDGER_ENTRY_STATE = 3;
+    const LEDGER_ENTRY_RESTORED = 4;
 
     public function __construct(int $value)
     {
@@ -37,5 +38,25 @@ class XdrLedgerEntryChangeType
     {
         $value = $xdr->readInteger32();
         return new XdrLedgerEntryChangeType($value);
+    }
+
+    public static function CREATED() : XdrLedgerEntryChangeType {
+        return new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_CREATED);
+    }
+
+    public static function UPDATED() : XdrLedgerEntryChangeType {
+        return new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_UPDATED);
+    }
+
+    public static function REMOVED() : XdrLedgerEntryChangeType {
+        return new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_REMOVED);
+    }
+
+    public static function STATE() : XdrLedgerEntryChangeType {
+        return new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_STATE);
+    }
+
+    public static function RESTORED() : XdrLedgerEntryChangeType {
+        return new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_RESTORED);
     }
 }

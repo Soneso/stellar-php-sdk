@@ -14,6 +14,7 @@ class XdrLedgerEntryChange
     public ?XdrLedgerEntry $updated = null;
     public ?XdrLedgerKey $removed = null;
     public ?XdrLedgerEntry $state = null;
+    public ?XdrLedgerEntry $restored = null;
 
     /**
      * @param XdrLedgerEntryChangeType $type
