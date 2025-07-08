@@ -8,7 +8,7 @@ namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AbstractTransaction;
-use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;on;
+use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryChange;
 use function PHPUnit\Framework\assertEquals;

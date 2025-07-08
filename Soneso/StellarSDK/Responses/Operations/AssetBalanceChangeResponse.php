@@ -15,6 +15,7 @@ class AssetBalanceChangeResponse
     public string $from;
     public string $to;
     public string $amount;
+    public ?string $destinationMuxedId = null; // a uint64
 
     protected function loadFromJson(array $json) : void {
         $this->assetType = $json['asset_type'];
@@ -29,6 +30,9 @@ class AssetBalanceChangeResponse
         $this->from = $json['from'];
         $this->to = $json['to'];
         $this->amount = $json['amount'];
+        if (isset($json['destination_muxed_id'])) {
+            $this->destinationMuxedId = $json['destination_muxed_id'];
+        }
     }
 
     public static function fromJson(array $json) : AssetBalanceChangeResponse {
@@ -147,6 +151,22 @@ class AssetBalanceChangeResponse
     public function setAmount(string $amount): void
     {
         $this->amount = $amount;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDestinationMuxedId(): ?string
+    {
+        return $this->destinationMuxedId;
+    }
+
+    /**
+     * @param string|null $destinationMuxedId
+     */
+    public function setDestinationMuxedId(?string $destinationMuxedId): void
+    {
+        $this->destinationMuxedId = $destinationMuxedId;
     }
 
 }
