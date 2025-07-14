@@ -12,7 +12,7 @@ class AssetBalanceChangeResponse
     public ?string $assetCode = null;
     public ?string $assetIssuer = null;
     public string $type;
-    public string $from;
+    public ?string $from = null;
     public string $to;
     public string $amount;
     public ?string $destinationMuxedId = null; // a uint64
@@ -27,7 +27,9 @@ class AssetBalanceChangeResponse
             $this->assetIssuer = $json['asset_issuer'];
         }
         $this->type = $json['type'];
-        $this->from = $json['from'];
+        if (isset($json['from'])) {
+            $this->from = $json['from'];
+        }
         $this->to = $json['to'];
         $this->amount = $json['amount'];
         if (isset($json['destination_muxed_id'])) {
@@ -106,17 +108,17 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getFrom(): string
+    public function getFrom(): ?string
     {
         return $this->from;
     }
 
     /**
-     * @param string $from
+     * @param string|null $from
      */
-    public function setFrom(string $from): void
+    public function setFrom(?string $from): void
     {
         $this->from = $from;
     }
