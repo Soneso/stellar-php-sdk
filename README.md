@@ -13,7 +13,7 @@ The Soneso open source Stellar SDK for PHP provides APIs to build and sign trans
 
 ## Protocol 23 release candidate
 
-```composer require soneso/stellar-php-sdk:1.8.0beta1```
+```composer require soneso/stellar-php-sdk:1.8.0beta2```
 
 ## Quick Start
 
