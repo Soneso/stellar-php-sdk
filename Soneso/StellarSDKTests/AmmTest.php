@@ -30,12 +30,27 @@ use Soneso\StellarSDK\Responses\Operations\LiquidityPoolWithdrawOperationRespons
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class AmmTest extends TestCase
 {
+    private string $testOn = 'testnet'; // 'futurenet'
+    private Network $network;
+    private StellarSDK $sdk;
+
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
+
     public function testAmm(): void
     {
-
         // SET UP TEST
         $sdk = StellarSDK::getTestNetInstance();
 
@@ -51,49 +66,56 @@ class AmmTest extends TestCase
         $assetB= new AssetTypeCreditAlphanum12("PHPSTAR", $assetBIssueAccountId);
         $assetNative = Asset::native();
 
-        FriendBot::fundTestAccount($sourceAccountId);
-        FriendBot::fundTestAccount($assetAIssueAccountId);
-        FriendBot::fundTestAccount($assetBIssueAccountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($sourceAccountId);
+            FriendBot::fundTestAccount($assetAIssueAccountId);
+            FriendBot::fundTestAccount($assetBIssueAccountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($sourceAccountId);
+            FuturenetFriendBot::fundTestAccount($assetAIssueAccountId);
+            FuturenetFriendBot::fundTestAccount($assetBIssueAccountId);
+        }
 
-        $sourceAccount = $sdk->requestAccount($sourceAccountId);
+
+        $sourceAccount = $this->sdk->requestAccount($sourceAccountId);
 
         $ctOpB1 = (new ChangeTrustOperationBuilder($assetA, "98398398293"))->build();
         $ctOpB2 = (new ChangeTrustOperationBuilder($assetB, "98398398293"))->build();
 
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($ctOpB1)->addOperation($ctOpB2)->build();
-        $transaction->sign($sourceAccountKeyPair, Network::testnet());
+        $transaction->sign($sourceAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         $pop1 = (new PaymentOperationBuilder($sourceAccountId, $assetA, "19999191"))->setSourceAccount($assetAIssueAccountId)->build();
         $pop2 = (new PaymentOperationBuilder($sourceAccountId, $assetB, "19999191"))->setSourceAccount($assetBIssueAccountId)->build();
 
-        $sourceAccount = $sdk->requestAccount($assetAIssueAccountId);
+        $sourceAccount = $this->sdk->requestAccount($assetAIssueAccountId);
 
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($pop1)->addOperation($pop2)->build();
-        $transaction->sign($assetAIssueAccountKeyPair, Network::testnet());
-        $transaction->sign($assetBIssueAccountKeyPair, Network::testnet());
+        $transaction->sign($assetAIssueAccountKeyPair, $this->network);
+        $transaction->sign($assetBIssueAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
         $this->assertTrue($response->isSuccessful());
 
         // TEST CREATE POOL SHARE TRUSTLINE NON NATIVE
-        $sourceAccount = $sdk->requestAccount($sourceAccountId);
+        $sourceAccount = $this->sdk->requestAccount($sourceAccountId);
         $poolShareAsset = new AssetTypePoolShare($assetA, $assetB);
         $chOp = (new ChangeTrustOperationBuilder($poolShareAsset, "98398398293"))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($chOp)->build();
-        $transaction->sign($sourceAccountKeyPair, Network::testnet());
+        $transaction->sign($sourceAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->liquidityPools()->forReserves(Asset::canonicalForm($assetA),
+        $requestBuilder = $this->sdk->liquidityPools()->forReserves(Asset::canonicalForm($assetA),
             Asset::canonicalForm($assetB))->limit(4)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getLiquidityPools()->count() > 0);
@@ -105,12 +127,12 @@ class AmmTest extends TestCase
         $chOp = (new ChangeTrustOperationBuilder($poolShareAsset, "98398398293"))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($chOp)->build();
-        $transaction->sign($sourceAccountKeyPair, Network::testnet());
+        $transaction->sign($sourceAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
-        $requestBuilder = $sdk->liquidityPools()->forReserves(Asset::canonicalForm($assetNative),
+        $requestBuilder = $this->sdk->liquidityPools()->forReserves(Asset::canonicalForm($assetNative),
             Asset::canonicalForm($assetB))->limit(4)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getLiquidityPools()->count() > 0);
@@ -124,9 +146,9 @@ class AmmTest extends TestCase
             Price::fromString("1.0"),Price::fromString("2.0")))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($op)->build();
-        $transaction->sign($sourceAccountKeyPair, Network::testnet());
+        $transaction->sign($sourceAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -136,18 +158,18 @@ class AmmTest extends TestCase
             Price::fromString("1.0"),Price::fromString("2.0")))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($op)->build();
-        $transaction->sign($sourceAccountKeyPair, Network::testnet());
+        $transaction->sign($sourceAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         // TEST WITHDRAW NON NATIVE
         $op = (new LiquidityPoolWithdrawOperationBuilder($nonNativeStrKeyPoolId, "100", "100","100"))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($op)->build();
-        $transaction->sign($sourceAccountKeyPair, Network::testnet());
+        $transaction->sign($sourceAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -155,14 +177,14 @@ class AmmTest extends TestCase
         $op = (new LiquidityPoolWithdrawOperationBuilder($nativeStrKeyPoolId, "1", "1","1"))->build();
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($op)->build();
-        $transaction->sign($sourceAccountKeyPair, Network::testnet());
+        $transaction->sign($sourceAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // QUERY TESTING
-        $requestBuilder = $sdk->effects()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(4)->order("asc");
+        $requestBuilder = $this->sdk->effects()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(4)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getEffects()->count() == 4);
         $effectsArray = $response->getEffects()->toArray();
@@ -171,16 +193,16 @@ class AmmTest extends TestCase
         $this->assertTrue($effectsArray[2] instanceof LiquidityPoolDepositedEffectResponse);
         $this->assertTrue($effectsArray[3] instanceof LiquidityPoolWithdrewEffectResponse);
 
-        $requestBuilder = $sdk->transactions()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(1)->order("asc");
+        $requestBuilder = $this->sdk->transactions()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(1)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getTransactions()->count() == 1);
 
         $tr  = $response->getTransactions()->toArray()[0];
-        $requestBuilder = $sdk->effects()->forTransaction($tr->getHash())->limit(3)->order("asc");
+        $requestBuilder = $this->sdk->effects()->forTransaction($tr->getHash())->limit(3)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getEffects()->count() > 0);
 
-        $requestBuilder = $sdk->operations()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(3)->order("asc");
+        $requestBuilder = $this->sdk->operations()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(3)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getOperations()->count() == 3);
         $operationsArray = $response->getOperations()->toArray();
@@ -188,11 +210,11 @@ class AmmTest extends TestCase
         $this->assertTrue($operationsArray[1] instanceof LiquidityPoolDepositOperationResponse);
         $this->assertTrue($operationsArray[2] instanceof LiquidityPoolWithdrawOperationResponse);
 
-        $lp = $sdk->requestLiquidityPool($nonNativeStrKeyPoolId);
+        $lp = $this->sdk->requestLiquidityPool($nonNativeStrKeyPoolId);
         $this->assertTrue($lp->getFee() == 30);
         $this->assertTrue($lp->getPoolId() == $nonNativeLiquidityPoolId);
 
-        $requestBuilder = $sdk->transactions()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(1)->order("asc");
+        $requestBuilder = $this->sdk->transactions()->forLiquidityPool($nonNativeStrKeyPoolId)->limit(1)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getTransactions()->count() == 1);
 
@@ -202,38 +224,43 @@ class AmmTest extends TestCase
         $accYKp = KeyPair::random();
         $accYId = $accYKp->getAccountId();
 
-        FriendBot::fundTestAccount($accXId);
-        FriendBot::fundTestAccount($accYId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accXId);
+            FriendBot::fundTestAccount($accYId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accXId);
+            FuturenetFriendBot::fundTestAccount($accYId);
+        }
 
-        $accX = $sdk->requestAccount($accXId);
+        $accX = $this->sdk->requestAccount($accXId);
         $ctOpB1 = (new ChangeTrustOperationBuilder($assetA, "98398398293"))->setSourceAccount($accXId)->build();
         $ctOpB2 = (new ChangeTrustOperationBuilder($assetB, "98398398293"))->setSourceAccount($accYId)->build();
 
         $transaction = (new TransactionBuilder($accX))
             ->addOperation($ctOpB1)->addOperation($ctOpB2)->build();
-        $transaction->sign($accXKp, Network::testnet());
-        $transaction->sign($accYKp, Network::testnet());
+        $transaction->sign($accXKp, $this->network);
+        $transaction->sign($accYKp, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         $pop1 = (new PaymentOperationBuilder($accXId, $assetA, "19999191"))->setSourceAccount($assetAIssueAccountId)->build();
-        $sourceAccount = $sdk->requestAccount($assetAIssueAccountId);
+        $sourceAccount = $this->sdk->requestAccount($assetAIssueAccountId);
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($pop1)->build();
-        $transaction->sign($assetAIssueAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($assetAIssueAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         $opb = new PathPaymentStrictSendOperationBuilder($assetA,"10", $accYId, $assetB, "1");
         $transaction = (new TransactionBuilder($accX))
             ->addOperation($opb->build())->build();
-        $transaction->sign($accXKp, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($accXKp, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->trades()->forLiquidityPool($nonNativeStrKeyPoolId)->order("asc");
+        $requestBuilder = $this->sdk->trades()->forLiquidityPool($nonNativeStrKeyPoolId)->order("asc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getTrades()->count() > 0);
         $this->assertTrue($response->getTrades()->toArray()[0]->getBaseLiquidityPoolId() == $nonNativeLiquidityPoolId);

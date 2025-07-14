@@ -27,29 +27,47 @@ use Soneso\StellarSDK\SetTrustLineFlagsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrTrustLineFlags;
 
 class ClawbackTest extends TestCase
 {
+    private string $testOn = 'testnet'; // 'futurenet'
+    private Network $network;
+    private StellarSDK $sdk;
+
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
     public function testClawbackAndClaimableBalanceClawback(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
 
         $masterAccountKeyPair = KeyPair::random();
         $masterAccountId = $masterAccountKeyPair->getAccountId();
-        FriendBot::fundTestAccount($masterAccountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($masterAccountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($masterAccountId);
+        }
 
         $destinationAccountKeyPair = KeyPair::random();
         $destinationAccountId = $destinationAccountKeyPair->getAccountId();
 
-        $masterAccount = $sdk->requestAccount($masterAccountId);
+        $masterAccount = $this->sdk->requestAccount($masterAccountId);
         $createAccountBuilder = new CreateAccountOperationBuilder($destinationAccountId, "100");
         $transaction = (new TransactionBuilder($masterAccount))
             ->addOperation($createAccountBuilder->build())->build();
 
-        $transaction->sign($masterAccountKeyPair, Network::testnet());
+        $transaction->sign($masterAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -60,41 +78,41 @@ class ClawbackTest extends TestCase
         $transaction = (new TransactionBuilder($masterAccount))
             ->addOperation($createAccountBuilder->build())->build();
 
-        $transaction->sign($masterAccountKeyPair, Network::testnet());
+        $transaction->sign($masterAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $skyIssuerAccount = $sdk->requestAccount($skyIssuerAccountId);
+        $skyIssuerAccount = $this->sdk->requestAccount($skyIssuerAccountId);
         $setOp = (new SetOptionsOperationBuilder())->setSetFlags(AccountFlag::AUTH_CLAWBACK_ENABLED_FLAG | AccountFlag::AUTH_REVOCABLE_FLAG)->build();
         $transaction = (new TransactionBuilder($skyIssuerAccount))
             ->addOperation($setOp)->build();
-        $transaction->sign($skyIssuerAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($skyIssuerAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $sky = new AssetTypeCreditAlphanum4("SKY", $skyIssuerAccountId);
         $limit = "10000";
-        $destinationAccount = $sdk->requestAccount($destinationAccountId);
+        $destinationAccount = $this->sdk->requestAccount($destinationAccountId);
         $ctOp = (new ChangeTrustOperationBuilder($sky, $limit))->build();
         $transaction = (new TransactionBuilder($destinationAccount))
             ->addOperation($ctOp)->build();
-        $transaction->sign($destinationAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($destinationAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $payOp = (new PaymentOperationBuilder($destinationAccountId, $sky, "100"))->build();
         $transaction = (new TransactionBuilder($skyIssuerAccount))
             ->addOperation($payOp)->build();
-        $transaction->sign($skyIssuerAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($skyIssuerAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $destinationAccount = $sdk->requestAccount($destinationAccountId);
+        $destinationAccount = $this->sdk->requestAccount($destinationAccountId);
         $found = false;
         foreach($destinationAccount->getBalances() as $balance) {
             if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == "SKY") {
@@ -109,12 +127,12 @@ class ClawbackTest extends TestCase
         $clawbackOp = (new ClawbackOperationBuilder($sky, $destMuxed, "80"))->build();
         $transaction = (new TransactionBuilder($skyIssuerAccount))
             ->addOperation($clawbackOp)->build();
-        $transaction->sign($skyIssuerAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($skyIssuerAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $destinationAccount = $sdk->requestAccount($destinationAccountId);
+        $destinationAccount = $this->sdk->requestAccount($destinationAccountId);
         $found = false;
         foreach($destinationAccount->getBalances() as $balance) {
             if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == "SKY") {
@@ -131,17 +149,17 @@ class ClawbackTest extends TestCase
         $transaction = (new TransactionBuilder($masterAccount))
             ->addOperation($createAccountBuilder->build())->build();
 
-        $transaction->sign($masterAccountKeyPair, Network::testnet());
+        $transaction->sign($masterAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $claimantAccount = $sdk->requestAccount($claimantAccountId);
+        $claimantAccount = $this->sdk->requestAccount($claimantAccountId);
         $transaction = (new TransactionBuilder($claimantAccount))
             ->addOperation($ctOp)->build();
-        $transaction->sign($claimantAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($claimantAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -161,12 +179,12 @@ class ClawbackTest extends TestCase
         $cCBOp = (new CreateClaimableBalanceOperationBuilder($claimants, $sky, "10.00"))->build();
         $transaction = (new TransactionBuilder($destinationAccount))
             ->addOperation($cCBOp)->build();
-        $transaction->sign($destinationAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($destinationAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->claimableBalances()->forClaimant($claimantAccountId);
+        $requestBuilder = $this->sdk->claimableBalances()->forClaimant($claimantAccountId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getClaimableBalances()->count() > 0);
 
@@ -175,17 +193,17 @@ class ClawbackTest extends TestCase
         $clawbackOp = (new ClawbackClaimableBalanceOperationBuilder($balanceId))->build();
         $transaction = (new TransactionBuilder($skyIssuerAccount))
             ->addOperation($clawbackOp)->build();
-        $transaction->sign($skyIssuerAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($skyIssuerAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->claimableBalances()->forClaimant($claimantAccountId);
+        $requestBuilder = $this->sdk->claimableBalances()->forClaimant($claimantAccountId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getClaimableBalances()->count() == 0);
 
 
-        $requestBuilder = $sdk->effects()->forAccount($skyIssuerAccountId)->limit(5)->order("desc");
+        $requestBuilder = $this->sdk->effects()->forAccount($skyIssuerAccountId)->limit(5)->order("desc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getEffects()->count() > 0);
 
@@ -202,12 +220,12 @@ class ClawbackTest extends TestCase
         $setTrustlineFlagsOp = (new SetTrustLineFlagsOperationBuilder($claimantAccountId, $sky, XdrTrustLineFlags::TRUSTLINE_CLAWBACK_ENABLED_FLAG, 0))->build();
         $transaction = (new TransactionBuilder($skyIssuerAccount))
             ->addOperation($setTrustlineFlagsOp)->build();
-        $transaction->sign($skyIssuerAccountKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($skyIssuerAccountKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->effects()->forAccount($skyIssuerAccountId)->limit(5)->order("desc");
+        $requestBuilder = $this->sdk->effects()->forAccount($skyIssuerAccountId)->limit(5)->order("desc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getEffects()->count() > 0);
 
@@ -220,7 +238,7 @@ class ClawbackTest extends TestCase
         }
         $this->assertTrue($ok);
 
-        $claimantAccount = $sdk->requestAccount($claimantAccountId);
+        $claimantAccount = $this->sdk->requestAccount($claimantAccountId);
         $ok = false;
         foreach($claimantAccount->getBalances() as $balance) {
             if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == "SKY"

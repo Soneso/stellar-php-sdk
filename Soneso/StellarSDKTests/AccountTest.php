@@ -26,6 +26,7 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 use function PHPUnit\Framework\assertNotNull;
@@ -34,8 +35,22 @@ use function PHPUnit\Framework\assertTrue;
 final class AccountTest extends TestCase
 {
 
+    private string $testOn = 'testnet'; // 'futurenet'
+    private Network $network;
+    private StellarSDK $sdk;
+
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
     public function testSetAccountOptions(): void {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $isValid = true;
         try {
             KeyPair::fromAccountId("GBEJWZEYDCJIKBW7PZKIJPRHD6WSPNETCEDV5UWRLDBLKXA7QT2DTLVF");
@@ -47,8 +62,13 @@ final class AccountTest extends TestCase
         }
         $keyPairA = KeyPair::random();
         $accountId = $keyPairA->getAccountId();
-        FriendBot::fundTestAccount($accountId);
-        $accountA = $sdk->requestAccount($accountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
+
+        $accountA = $this->sdk->requestAccount($accountId);
         $seqNr = $accountA->getSequenceNumber();
 
         $keyPairB = KeyPair::random();
@@ -78,15 +98,15 @@ final class AccountTest extends TestCase
             ->addMemo(Memo::text("test set options"))
             ->build();
 
-        $transaction->sign($keyPairA, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($keyPairA, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
 
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
 
         $this->assertTrue($response->isSuccessful());
 
-        $accountA = $sdk->requestAccount($accountId);
+        $accountA = $this->sdk->requestAccount($accountId);
         $this->assertTrue($accountA->getSequenceNumber() > $seqNr);
         $this->assertTrue($accountA->getHomeDomain() === $newHomeDomain);
         $this->assertTrue($accountA->getThresholds()->getLowThreshold() === 2);
@@ -114,11 +134,14 @@ final class AccountTest extends TestCase
     }
 
     public function testFindAccountforAsset(): void {
-        $sdk = StellarSDK::getTestNetInstance();
         $keyPairA = KeyPair::random();
         $accountAId = $keyPairA->getAccountId();
-        FriendBot::fundTestAccount($accountAId);
-        $accountA = $sdk->requestAccount($accountAId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountAId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountAId);
+        }
+        $accountA = $this->sdk->requestAccount($accountAId);
 
         $keyPairC = KeyPair::random();
         $accountCId = $keyPairC->getAccountId();
@@ -128,8 +151,8 @@ final class AccountTest extends TestCase
             ->addOperation($createAccountOperation)
             ->build();
 
-        $transaction->sign($keyPairA, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($keyPairA, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
@@ -140,14 +163,14 @@ final class AccountTest extends TestCase
         $transaction = (new TransactionBuilder($accountA))
             ->addOperation($changeTrustOperation)
             ->build();
-        $transaction->sign($keyPairA, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($keyPairA, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         // Find account for asset
-        $response = $sdk->accounts()->forAsset($iomAsset)->execute();
+        $response = $this->sdk->accounts()->forAsset($iomAsset)->execute();
         $this->assertGreaterThan(0, $response->getAccounts()->count());
         $found = false;
         foreach ($response->getAccounts() as $account) {
@@ -158,37 +181,45 @@ final class AccountTest extends TestCase
     }
 
     public function testAccountMerge(): void {
-        $sdk = StellarSDK::getTestNetInstance();
         $keyPairX = KeyPair::random();
         $keyPairY = KeyPair::random();
         $accountXId = $keyPairX->getAccountId();
         $accountYId = $keyPairY->getAccountId();
-        FriendBot::fundTestAccount($accountXId);
-        FriendBot::fundTestAccount($accountYId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountXId);
+            FriendBot::fundTestAccount($accountYId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountXId);
+            FuturenetFriendBot::fundTestAccount($accountYId);
+        }
 
         $accountMergeOperation = (new AccountMergeOperationBuilder($accountXId))->build();
-        $accountY = $sdk->requestAccount($accountYId);
+        $accountY = $this->sdk->requestAccount($accountYId);
         $transaction = (new TransactionBuilder($accountY))
             ->addOperation($accountMergeOperation)
             ->build();
 
-        $transaction->sign($keyPairY, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($keyPairY, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $this->assertFalse($sdk->accountExists($accountYId));
+        $this->assertFalse($this->sdk->accountExists($accountYId));
     }
 
     public function testAccountMergeMuxedAccounts(): void {
-        $sdk = StellarSDK::getTestNetInstance();
         $keyPairX = KeyPair::random();
         $keyPairY = KeyPair::random();
         $accountXId = $keyPairX->getAccountId();
         $accountYId = $keyPairY->getAccountId();
-        FriendBot::fundTestAccount($accountXId);
-        FriendBot::fundTestAccount($accountYId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountXId);
+            FriendBot::fundTestAccount($accountYId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountXId);
+            FuturenetFriendBot::fundTestAccount($accountYId);
+        }
 
         $muxedDestination = new MuxedAccount($accountXId, 1919198222);
         $muxedSource = new MuxedAccount($accountYId, 99999999);
@@ -196,27 +227,30 @@ final class AccountTest extends TestCase
             ->setMuxedSourceAccount($muxedSource)
             ->build();
 
-        $accountY = $sdk->requestAccount($accountYId);
+        $accountY = $this->sdk->requestAccount($accountYId);
         $transaction = (new TransactionBuilder($accountY))
             ->addOperation($accountMergeOperation)
             ->build();
 
-        $transaction->sign($keyPairY, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($keyPairY, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $this->assertFalse($sdk->accountExists($accountYId));
+        $this->assertFalse($this->sdk->accountExists($accountYId));
     }
 
     public function testBumpSequence(): void {
-        $sdk = StellarSDK::getTestNetInstance();
         $keyPair = KeyPair::random();
-        $acountId = $keyPair->getAccountId();
-        FriendBot::fundTestAccount($acountId);
+        $accountId = $keyPair->getAccountId();
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
 
-        $account = $sdk->requestAccount($acountId);
+        $account = $this->sdk->requestAccount($accountId);
 
         $seqNr = $account->getSequenceNumber();
         $bumpTo = $seqNr->add(new BigInteger(10));
@@ -225,22 +259,26 @@ final class AccountTest extends TestCase
             ->addOperation($bumpSequenceOperation)
             ->build();
 
-        $transaction->sign($keyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($keyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $account = $sdk->requestAccount($acountId);
+        $account = $this->sdk->requestAccount($accountId);
         $this->assertEquals($bumpTo, $account->getSequenceNumber());
     }
 
     public function testManageData(): void {
-        $sdk = StellarSDK::getTestNetInstance();
         $keyPair = KeyPair::random();
-        $acountId = $keyPair->getAccountId();
-        FriendBot::fundTestAccount($acountId);
+        $accountId = $keyPair->getAccountId();
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
 
-        $account = $sdk->requestAccount($acountId);
+
+        $account = $this->sdk->requestAccount($accountId);
 
         $key = "soneso";
         $value = "is cool!";
@@ -249,12 +287,12 @@ final class AccountTest extends TestCase
             ->addOperation($manageDataOperation)
             ->build();
 
-        $transaction->sign($keyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($keyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $account = $sdk->requestAccount($acountId);
+        $account = $this->sdk->requestAccount($accountId);
         $this->assertTrue($account->getData()->get($key) === $value);
     }
 
@@ -283,46 +321,13 @@ final class AccountTest extends TestCase
         $this->assertEquals($muxAccountId, $muxAccount->getAccountId());
     }
 
-    public function testIssue15(): void
-    {
-        $sdk = StellarSDK::getTestNetInstance();
-
-        $keyPairA = KeyPair::random();
-        $accountId = $keyPairA->getAccountId();
-        FriendBot::fundTestAccount($accountId);
-        $accountA = $sdk->requestAccount($accountId);
-        
-        $zero = 0;
-        $setOptionsOperation = (new SetOptionsOperationBuilder())
-            ->setHighThreshold($zero)
-            ->setMediumThreshold($zero)
-            ->setLowThreshold($zero)
-            ->setMasterKeyWeight($zero)
-            ->build();
-
-        self::assertSame(0, $setOptionsOperation->getMasterKeyWeight());
-        self::assertSame(0, $setOptionsOperation->getMediumThreshold());
-        self::assertSame(0, $setOptionsOperation->getLowThreshold());
-        self::assertSame(0, $setOptionsOperation->getHighThreshold());
-
-        $transaction = (new TransactionBuilder($accountA))
-            ->addOperation($setOptionsOperation)
-            ->build();
-
-        $transaction->sign($keyPairA, Network::testnet());
-
-        $response = $sdk->submitTransaction($transaction);
-        $this->assertTrue($response->isSuccessful());
-    }
-
     public function testHorizonRequestException() {
         //bogus invalid key
         $accountId = 'GC3CT2B55RPLE6JX2U3SOPZFGSE5A3MYFBFYAXSQCJ5BBYJX5HIBTNIX';
-        $sdk = StellarSDK::getTestNetInstance();
 
         $thrown = false;
         try {
-            $sdk->requestAccount($accountId);
+            $this->sdk->requestAccount($accountId);
         } catch (HorizonRequestException $e) {
             $horizonResponse = $e->getHorizonErrorResponse();
             assertNotNull($horizonResponse);

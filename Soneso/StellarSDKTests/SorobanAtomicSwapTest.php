@@ -19,7 +19,6 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
-use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
@@ -44,7 +43,6 @@ class SorobanAtomicSwapTest extends TestCase
     private string $testOn = 'testnet'; // 'futurenet'
     private Network $network;
     private SorobanServer $server;
-    private StellarSDK $sdk;
 
     public function setUp(): void
     {
@@ -54,12 +52,10 @@ class SorobanAtomicSwapTest extends TestCase
             $this->network = Network::testnet();
             $this->server = new SorobanServer(self::TESTNET_SERVER_URL);
             $this->server->enableLogging = true;
-            $this->sdk = StellarSDK::getTestNetInstance();
         } elseif ($this->testOn === 'futurenet') {
             $this->network = Network::futurenet();
             $this->server = new SorobanServer(self::FUTURENET_SERVER_URL);
             $this->server->enableLogging = true;
-            $this->sdk = StellarSDK::getFutureNetInstance();
         }
         sleep(5);
     }

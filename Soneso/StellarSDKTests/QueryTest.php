@@ -27,18 +27,38 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class QueryTest extends TestCase
 {
+    private string $testOn = 'testnet'; // 'futurenet'
+    private Network $network;
+    private StellarSDK $sdk;
+
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
+
     public function testQueryAccounts(): void
     {
 
-        $sdk = StellarSDK::getTestNetInstance();
+
         $accountKeyPair = KeyPair::random();
         $accountId = $accountKeyPair->getAccountId();
-        FriendBot::fundTestAccount($accountId);
-        $account = $sdk->requestAccount($accountId);
-        $requestBuilder = $sdk->accounts()->forSigner($accountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
+        $account = $this->sdk->requestAccount($accountId);
+        $requestBuilder = $this->sdk->accounts()->forSigner($accountId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getAccounts()->toArray()[0]->getAccountId() == $accountId);
 
@@ -62,19 +82,19 @@ class QueryTest extends TestCase
         }
 
         $transaction = $transactionBuilder->build();
-        $transaction->sign($accountKeyPair, Network::testnet());
+        $transaction->sign($accountKeyPair, $this->network);
         foreach ($testKeyPairs as $kp) {
-            $transaction->sign($kp, Network::testnet());
+            $transaction->sign($kp, $this->network);
         }
-        $submitResponse = $sdk->submitTransaction($transaction);
+        $submitResponse = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($submitResponse->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
-        $requestBuilder = $sdk->accounts()->forSigner($accountId);
+        $requestBuilder = $this->sdk->accounts()->forSigner($accountId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getAccounts()->count() == 4);
 
-        $requestBuilder = $sdk->accounts()->forSigner($accountId)->limit(2)->order("desc");
+        $requestBuilder = $this->sdk->accounts()->forSigner($accountId)->limit(2)->order("desc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getAccounts()->count() == 2);
 
@@ -88,58 +108,58 @@ class QueryTest extends TestCase
         }
 
         $transaction = $transactionBuilder->build();
-        $transaction->sign($accountKeyPair, Network::testnet());
-        $submitResponse = $sdk->submitTransaction($transaction);
+        $transaction->sign($accountKeyPair, $this->network);
+        $submitResponse = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($submitResponse->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
-        $requestBuilder = $sdk->accounts()->forAsset($astroDollar);
+        $requestBuilder = $this->sdk->accounts()->forAsset($astroDollar);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getAccounts()->count() == 4);
 
-        $requestBuilder = $sdk->accounts()->forAsset($astroDollar)->limit(2)->order("desc");;
+        $requestBuilder = $this->sdk->accounts()->forAsset($astroDollar)->limit(2)->order("desc");;
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getAccounts()->count() == 2);
     }
 
     public function testQueryAssets(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
-        $response = $sdk->assets()->forAssetCode("ASTRO")->limit(5)->order("desc")->execute();
+
+        $response = $this->sdk->assets()->forAssetCode("ASTRO")->limit(5)->order("desc")->execute();
         $this->assertTrue($response->getAssets()->count() > 0);
         $this->assertTrue($response->getAssets()->count() < 6);
         $issuer = $response->getAssets()->toArray()[0]->getAssetIssuer();
-        $response = $sdk->assets()->forAssetIssuer($issuer)->limit(5)->order("desc")->execute();
+        $response = $this->sdk->assets()->forAssetIssuer($issuer)->limit(5)->order("desc")->execute();
         $this->assertTrue($response->getAssets()->count() > 0);
         $this->assertTrue($response->getAssets()->count() < 6);
     }
 
     public function testQueryEffects(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
-        $response = $sdk->assets()->forAssetCode("ASTRO")->limit(5)->order("desc")->execute();
+
+        $response = $this->sdk->assets()->forAssetCode("ASTRO")->limit(5)->order("desc")->execute();
         $this->assertTrue($response->getAssets()->count() > 0);
         $this->assertTrue($response->getAssets()->count() < 6);
         $issuer = $response->getAssets()->toArray()[0]->getAssetIssuer();
-        $response = $sdk->effects()->forAccount($issuer)->limit(3)->order("asc")->execute();
+        $response = $this->sdk->effects()->forAccount($issuer)->limit(3)->order("asc")->execute();
         $this->assertTrue($response->getEffects()->count() > 0);
         $this->assertTrue($response->getEffects()->count() < 4);
-        $response = $sdk->ledgers()->limit(1)->order("desc")->execute();
+        $response = $this->sdk->ledgers()->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getLedgers()->count() == 1);
         $ledgerSeq = $response->getLedgers()->toArray()[0]->getSequence();
-        $response = $sdk->effects()->forLedger($ledgerSeq->toString())->limit(3)->order("asc")->execute();
+        $response = $this->sdk->effects()->forLedger($ledgerSeq->toString())->limit(3)->order("asc")->execute();
         $this->assertTrue($response->getEffects()->count() > 0);
-        $response = $sdk->transactions()->forLedger($ledgerSeq->toString())->limit(1)->order("desc")->execute();
+        $response = $this->sdk->transactions()->forLedger($ledgerSeq->toString())->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getTransactions()->count() > 0);
         $trHash = $response->getTransactions()->toArray()[0]->getHash();
-        $response = $sdk->effects()->forTransaction($trHash)->limit(3)->order("asc")->execute();
+        $response = $this->sdk->effects()->forTransaction($trHash)->limit(3)->order("asc")->execute();
         $this->assertTrue($response->getEffects()->count() > 0);
-        $response = $sdk->operations()->forLedger($ledgerSeq->toString())->limit(10)->order("desc")->execute();
+        $response = $this->sdk->operations()->forLedger($ledgerSeq->toString())->limit(10)->order("desc")->execute();
         $this->assertTrue($response->getOperations()->count() > 0);
         $found = false;
         foreach ($response->getOperations() as $op) {
             $opId = $op->getOperationId();
-            $response = $sdk->effects()->forOperation($opId)->limit(3)->order("asc")->execute();
+            $response = $this->sdk->effects()->forOperation($opId)->limit(3)->order("asc")->execute();
             if ($response->getEffects()->count() > 0) {
                 $found = true;
                 break;
@@ -150,51 +170,56 @@ class QueryTest extends TestCase
 
     public function testQueryForClaimableBalance(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
+
         // get balance id from ClaimableBalancesTest
-        $bId = "0000000083c6f64600ba6bc3d026b98547d1f881046d24395ad3079bbcb6181f09c637f3";
-        $response = $sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
+        $bId = "00000000de30b713d2e86fc04eadd61cee6c2c69b08f83aec283fc9e77b6a5b252393239";
+        $response = $this->sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getOperations()->count() == 1);
-        $response = $sdk->transactions()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
+        $response = $this->sdk->transactions()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getTransactions()->count() == 1);
 
-        $bId = "BAAAAAAAQPDPMRQAXJV4HUBGXGCUPUPYQECG2JBZLLJQPG54WYMB6COGG7ZS5ZQ";
-        $response = $sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
+        $bId = "BAAAAAAA3YYLOE6S5BX4ATVN2YOO43BMNGYI7A5OYKB7ZHTXW2S3EURZGI43W3A";
+        $response = $this->sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getOperations()->count() == 1);
     }
 
     public function testQueryLedgers(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
-        $response = $sdk->ledgers()->limit(1)->order("desc")->execute();
+
+        $response = $this->sdk->ledgers()->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getLedgers()->count() == 1);
         $seq = $response->getLedgers()->toArray()[0]->getSequence()->toString();
-        $response = $sdk->requestLedger($seq);
+        $response = $this->sdk->requestLedger($seq);
         $this->assertEquals($response->getSequence()->toString(), $seq);
     }
 
     public function testQueryOffersAndOrderBook(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $issuerKp = KeyPair::random();
         $issuerAccountId = $issuerKp->getAccountId();
         $buyerKp = KeyPair::random();
         $buyerAccountId = $buyerKp->getAccountId();
 
-        FriendBot::fundTestAccount($buyerAccountId);
-        $buyerAccount = $sdk->requestAccount($buyerAccountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($buyerAccountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($buyerAccountId);
+        }
+
+        $buyerAccount = $this->sdk->requestAccount($buyerAccountId);
         $createAccount = (new CreateAccountOperationBuilder($issuerAccountId, "100"))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($createAccount)->build();
-        $transaction->sign($buyerKp, Network::testnet());
-        $submitResponse = $sdk->submitTransaction($transaction);
+        $transaction->sign($buyerKp, $this->network);
+        $submitResponse = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($submitResponse->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
         $astroDollar = new AssetTypeCreditAlphanum12("ASTRO", $issuerAccountId);
         $ctob = (new ChangeTrustOperationBuilder($astroDollar, "10000"))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ctob)->build();
-        $transaction->sign($buyerKp, Network::testnet());
-        $submitResponse = $sdk->submitTransaction($transaction);
+        $transaction->sign($buyerKp, $this->network);
+        $submitResponse = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($submitResponse->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
@@ -203,12 +228,12 @@ class QueryTest extends TestCase
 
         $ms = (new ManageBuyOfferOperationBuilder(Asset::native(),$astroDollar, $amountBuying, $price))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($ms)->build();
-        $transaction->sign($buyerKp, Network::testnet());
-        $submitResponse = $sdk->submitTransaction($transaction);
+        $transaction->sign($buyerKp, $this->network);
+        $submitResponse = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($submitResponse->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $submitResponse);
 
-        $response = $sdk->offers()->forAccount($buyerAccountId)->execute();
+        $response = $this->sdk->offers()->forAccount($buyerAccountId)->execute();
         $this->assertTrue($response->getOffers()->count() == 1);
         $offer = $response->getOffers()->toArray()[0];
         $this->assertTrue($offer->getBuying()->getCode() == $astroDollar->getCode());
@@ -220,12 +245,12 @@ class QueryTest extends TestCase
         $this->assertTrue($r == intval($amountBuying));
         $this->assertTrue($offer->getSeller() == $buyerAccountId);
 
-        $offers = $sdk->offers()->forBuyingAsset($astroDollar)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forBuyingAsset($astroDollar)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
         $offer2 = $response->getOffers()->toArray()[0];
         $this->assertEquals($offer->getOfferId(), $offer2->getOfferId());
 
-        $response = $sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
+        $response = $this->sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
         $offerAmount = floatval($response->getAsks()->toArray()[0]->getAmount());
         $offerPrice = floatval($response->getAsks()->toArray()[0]->getPrice());
         $r = round($offerPrice * $offerAmount);
@@ -236,8 +261,8 @@ class QueryTest extends TestCase
 
     public function testQueryRoot(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
-        $response = $sdk->root();
+
+        $response = $this->sdk->root();
         $this->assertGreaterThan(17, $response->getCurrentProtocolVersion());
         $this->assertGreaterThan(17, $response->getCoreSupportedProtocolVersion());
         $this->assertTrue(str_starts_with($response->getHorizonVersion(),"2"));
@@ -247,13 +272,18 @@ class QueryTest extends TestCase
         $this->assertNotNull($response->getHistoryLatestLedgerClosedAt());
         $this->assertNotNull($response->getHistoryElderLedger());
         $this->assertNotNull($response->getCoreLatestLedger());
-        $this->assertEquals("Test SDF Network ; September 2015", $response->getNetworkPassphrase());
+        if ($this->testOn == 'testnet') {
+            $this->assertEquals("Test SDF Network ; September 2015", $response->getNetworkPassphrase());
+        } elseif($this->testOn == 'futurenet') {
+            $this->assertEquals("Test SDF Future Network ; October 2022", $response->getNetworkPassphrase());
+        }
+
     }
 
     public function testQueryFeeStats(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
-        $response = $sdk->requestFeeStats();
+
+        $response = $this->sdk->requestFeeStats();
         $this->assertGreaterThan(0,strlen($response->getLastLedger()));
         $this->assertGreaterThan(0,strlen($response->getLastLedgerBaseFee()));
         $this->assertGreaterThan(0,strlen($response->getLedgerCapacityUsage()));
@@ -291,8 +321,8 @@ class QueryTest extends TestCase
 
     public function testPaging(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
-        $response = $sdk->ledgers()->execute();
+
+        $response = $this->sdk->ledgers()->execute();
         $this->assertTrue($response->getLedgers()->count() > 0);
         $next = $response->getNextPage();
         $this->assertNotNull($next);
@@ -303,7 +333,7 @@ class QueryTest extends TestCase
         $count = $prev->getLedgers()->count();
         $this->assertEquals($response->getLedgers()->toArray()[0]->getHash(), $prev->getLedgers()->toArray()[$count - 1]->getHash());
 
-        $response = $sdk->transactions()->execute();
+        $response = $this->sdk->transactions()->execute();
         $this->assertTrue($response->getTransactions()->count() > 0);
         $next = $response->getNextPage();
         $this->assertNotNull($next);
@@ -314,7 +344,7 @@ class QueryTest extends TestCase
         $count = $prev->getTransactions()->count();
         $this->assertEquals($response->getTransactions()->toArray()[0]->getHash(), $prev->getTransactions()->toArray()[$count - 1]->getHash());
 
-        $response = $sdk->operations()->execute();
+        $response = $this->sdk->operations()->execute();
         $this->assertTrue($response->getOperations()->count() > 0);
         $next = $response->getNextPage();
         $this->assertNotNull($next);
@@ -328,18 +358,23 @@ class QueryTest extends TestCase
 
 
     public function testStreamPayments():void {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $keypair1 = KeyPair::random();
         $keypair2 = KeyPair::random();
         $acc1Id = $keypair1->getAccountId();
         $acc2Id = $keypair2->getAccountId();
-        FriendBot::fundTestAccount($acc1Id);
-        FriendBot::fundTestAccount($acc2Id);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($acc1Id);
+            FriendBot::fundTestAccount($acc2Id);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($acc1Id);
+            FuturenetFriendBot::fundTestAccount($acc2Id);
+        }
 
         $pid = pcntl_fork();
 
         if ($pid == 0) {
-            $sdk->payments()->forAccount($acc2Id)->cursor("now")->stream(function(OperationResponse $payment) {
+            $this->sdk->payments()->forAccount($acc2Id)->cursor("now")->stream(function(OperationResponse $payment) {
                 printf('Payment operation %s id %s' . PHP_EOL, get_class($payment), $payment->getOperationId());
                 if ($payment instanceof PaymentOperationResponse && floatval($payment->getAmount()) == 100.00) {
                     exit(1);
@@ -347,13 +382,13 @@ class QueryTest extends TestCase
             });
         }
 
-        $acc1 = $sdk->requestAccount($acc1Id);
+        $acc1 = $this->sdk->requestAccount($acc1Id);
         $paymentOperation = (new PaymentOperationBuilder($acc2Id, Asset::native(), "100"))->build();
         $transaction = (new TransactionBuilder($acc1))
             ->addOperation($paymentOperation)
             ->build();
-        $transaction->sign($keypair1, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($keypair1, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
 
         while (pcntl_waitpid(0, $status) != -1) {
@@ -365,10 +400,10 @@ class QueryTest extends TestCase
 
     public function testStreamOperations(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $found = false;
         try {
-            $sdk->operations()->cursor("now")->stream(function(OperationResponse $operation) {
+            $this->sdk->operations()->cursor("now")->stream(function(OperationResponse $operation) {
                 printf('Operation id %s' . PHP_EOL, $operation->getOperationId());
                 if ($operation instanceof CreateAccountOperationResponse) {
                     throw new Exception("stop");
@@ -384,10 +419,10 @@ class QueryTest extends TestCase
 
     public function testStreamLedgers(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $found = false;
         try {
-            $sdk->ledgers()->cursor("now")->stream(function(LedgerResponse $ledger) {
+            $this->sdk->ledgers()->cursor("now")->stream(function(LedgerResponse $ledger) {
                 printf('Ledger sequence %s' . PHP_EOL, $ledger->getSequence()->toString());
                 throw new Exception("stop");
             });
@@ -403,10 +438,10 @@ class QueryTest extends TestCase
 
     public function testStreamTransactions(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $found = false;
         try {
-            $sdk->transactions()->cursor("now")->stream(function(TransactionResponse $transaction) {
+            $this->sdk->transactions()->cursor("now")->stream(function(TransactionResponse $transaction) {
                 printf('transaction hash %s' . PHP_EOL, $transaction->getHash());
                 throw new Exception("stop");
             });
@@ -420,10 +455,10 @@ class QueryTest extends TestCase
 
     public function testStreamEffects(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $found = false;
         try {
-            $sdk->effects()->cursor("now")->stream(function(EffectResponse $effect) {
+            $this->sdk->effects()->cursor("now")->stream(function(EffectResponse $effect) {
                 printf('Effect id %s' . PHP_EOL, $effect->getEffectId());
                 throw new Exception("stop");
             });

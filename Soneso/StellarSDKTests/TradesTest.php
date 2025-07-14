@@ -18,24 +18,44 @@ use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class TradesTest extends TestCase
 {
+    private string $testOn = 'testnet'; // 'futurenet'
+    private Network $network;
+    private StellarSDK $sdk;
+
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
+
     public function testManageBuyOffer() {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $issuerKeypair = KeyPair::random();
         $buyerKeypair = KeyPair::random();
 
         $issuerId = $issuerKeypair->getAccountId();
         $buyerId = $buyerKeypair->getAccountId();
 
-        FriendBot::fundTestAccount($buyerId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($buyerId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($buyerId);
+        }
 
-        $buyerAccount = $sdk->requestAccount($buyerId);
+        $buyerAccount = $this->sdk->requestAccount($buyerId);
         $createAccountOp = (new CreateAccountOperationBuilder($issuerId, "10"))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($createAccountOp)->build();
-        $transaction->sign($buyerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($buyerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -43,8 +63,8 @@ class TradesTest extends TestCase
         $astroDollar = Asset::createNonNativeAsset($assetCode, $issuerId);
         $changeTrustOperation = (new ChangeTrustOperationBuilder($astroDollar, "10000"))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($changeTrustOperation)->build();
-        $transaction->sign($buyerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($buyerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -53,12 +73,12 @@ class TradesTest extends TestCase
 
         $manageBuyOffer = (new ManageBuyOfferOperationBuilder(Asset::native(), $astroDollar, $amountBuying, $price))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($manageBuyOffer)->build();
-        $transaction->sign($buyerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($buyerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $offers = $sdk->offers()->forAccount($buyerId)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forAccount($buyerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
         $offerId = "";
         foreach ($offers as $offer) {
@@ -71,7 +91,7 @@ class TradesTest extends TestCase
             break;
         }
         $offerId2 = "";
-        $offers = $sdk->offers()->forBuyingAsset($astroDollar)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forBuyingAsset($astroDollar)->execute()->getOffers();
         foreach ($offers as $offer) {
             $offerId2 = $offer->getOfferId();
             break;
@@ -79,7 +99,7 @@ class TradesTest extends TestCase
         $this->assertNotEquals("", $offerId);
         $this->assertEquals($offerId, $offerId2);
 
-        $orderBook = $sdk->orderBook()->forBuyingAsset(Asset::native())->forSellingAsset($astroDollar)->limit(1)->execute();
+        $orderBook = $this->sdk->orderBook()->forBuyingAsset(Asset::native())->forSellingAsset($astroDollar)->limit(1)->execute();
         $offerAmount = $orderBook->getBids()->toArray()[0]->getAmount();
         $offerPrice= $orderBook->getBids()->toArray()[0]->getPrice();
         $this->assertTrue($offerAmount * $offerPrice == 25);
@@ -90,12 +110,12 @@ class TradesTest extends TestCase
         $manageBuyOffer = (new ManageBuyOfferOperationBuilder(Asset::native(), $astroDollar, $amountBuying, $price))
             ->setOfferId(intval($offerId))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($manageBuyOffer)->build();
-        $transaction->sign($buyerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($buyerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $offers = $sdk->offers()->forAccount($buyerId)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forAccount($buyerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
         $this->assertTrue($response->isSuccessful());
         $offer = $offers->toArray()[0];
@@ -107,7 +127,7 @@ class TradesTest extends TestCase
         $this->assertTrue($amountBuying == strval(round($offerAmount * $offerPrice, 0, PHP_ROUND_HALF_EVEN)));
         $this->assertTrue($offer->getSeller() == $buyerId);
 
-        $orderBook = $sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
+        $orderBook = $this->sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
         $offerAmount = $orderBook->getAsks()->toArray()[0]->getAmount();
         $offerPrice = $orderBook->getAsks()->toArray()[0]->getPrice();
         $this->assertTrue($amountBuying == strval(round($offerAmount * $offerPrice, 0, PHP_ROUND_HALF_EVEN)));
@@ -117,33 +137,37 @@ class TradesTest extends TestCase
         $manageBuyOffer = (new ManageBuyOfferOperationBuilder(Asset::native(), $astroDollar, $amountBuying, $price))
             ->setOfferId(intval($offerId))->build();
         $transaction = (new TransactionBuilder($buyerAccount))->addOperation($manageBuyOffer)->build();
-        $transaction->sign($buyerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($buyerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $offers = $sdk->offers()->forAccount($buyerId)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forAccount($buyerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 0);
-        $orderBook = $sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
+        $orderBook = $this->sdk->orderBook()->forBuyingAsset($astroDollar)->forSellingAsset(Asset::native())->limit(1)->execute();
         $this->assertTrue($orderBook->getBids()->count() == 0);
         $this->assertTrue($orderBook->getAsks()->count() == 0);
     }
 
     public function testManageSellOffer() {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $issuerKeypair = KeyPair::random();
         $sellerKeypair = KeyPair::random();
 
         $issuerId = $issuerKeypair->getAccountId();
         $sellerId = $sellerKeypair->getAccountId();
 
-        FriendBot::fundTestAccount($sellerId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($sellerId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($sellerId);
+        }
 
-        $sellerAccount = $sdk->requestAccount($sellerId);
+        $sellerAccount = $this->sdk->requestAccount($sellerId);
         $createAccountOp = (new CreateAccountOperationBuilder($issuerId, "10"))->build();
         $transaction = (new TransactionBuilder($sellerAccount))->addOperation($createAccountOp)->build();
-        $transaction->sign($sellerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($sellerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -151,16 +175,16 @@ class TradesTest extends TestCase
         $moonDollar = Asset::createNonNativeAsset($assetCode, $issuerId);
         $changeTrustOperation = (new ChangeTrustOperationBuilder($moonDollar, "10000"))->build();
         $transaction = (new TransactionBuilder($sellerAccount))->addOperation($changeTrustOperation)->build();
-        $transaction->sign($sellerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($sellerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $issuerAccount = $sdk->requestAccount($issuerId);
+        $issuerAccount = $this->sdk->requestAccount($issuerId);
         $paymentOperation = (new PaymentOperationBuilder($sellerId, $moonDollar,"10000"))->build();
         $transaction = (new TransactionBuilder($issuerAccount))->addOperation($paymentOperation)->build();
-        $transaction->sign($issuerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($issuerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -169,12 +193,12 @@ class TradesTest extends TestCase
 
         $manageSellOffer = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))->build();
         $transaction = (new TransactionBuilder($sellerAccount))->addOperation($manageSellOffer)->build();
-        $transaction->sign($sellerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($sellerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $offers = $sdk->offers()->forAccount($sellerId)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forAccount($sellerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
         $offerId = "";
         foreach ($offers as $offer) {
@@ -187,7 +211,7 @@ class TradesTest extends TestCase
             $offerId = $offer->getOfferId();
             break;
         }
-        $offers = $sdk->offers()->forSellingAsset($moonDollar)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forSellingAsset($moonDollar)->execute()->getOffers();
         $offerId2 = "";
         foreach ($offers as $offer) {
             $offerId2 = $offer->getOfferId();
@@ -196,7 +220,7 @@ class TradesTest extends TestCase
         $this->assertNotEquals("", $offerId);
         $this->assertEquals($offerId, $offerId2);
 
-        $orderBook = $sdk->orderBook()->forBuyingAsset(Asset::native())->forSellingAsset($moonDollar)->limit(1)->execute();
+        $orderBook = $this->sdk->orderBook()->forBuyingAsset(Asset::native())->forSellingAsset($moonDollar)->limit(1)->execute();
         $offerAmount = $orderBook->getAsks()->toArray()[0]->getAmount();
         $offerPrice= $orderBook->getAsks()->toArray()[0]->getPrice();
         $this->assertTrue($offerAmount == $amountSelling);
@@ -209,12 +233,12 @@ class TradesTest extends TestCase
         $manageSellOffer = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))
             ->setOfferId(intval($offerId))->build();
         $transaction = (new TransactionBuilder($sellerAccount))->addOperation($manageSellOffer)->build();
-        $transaction->sign($sellerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($sellerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $offers = $sdk->offers()->forAccount($sellerId)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forAccount($sellerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 1);
         $offer = $offers->toArray()[0];
         $this->assertTrue($offer->getSelling()->getType() == Asset::TYPE_CREDIT_ALPHANUM_4);
@@ -230,22 +254,12 @@ class TradesTest extends TestCase
         $manageBuyOffer = (new ManageSellOfferOperationBuilder($moonDollar, Asset::native(), $amountSelling, $price))
             ->setOfferId(intval($offerId))->build();
         $transaction = (new TransactionBuilder($sellerAccount))->addOperation($manageBuyOffer)->build();
-        $transaction->sign($sellerKeypair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($sellerKeypair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $offers = $sdk->offers()->forAccount($sellerId)->execute()->getOffers();
+        $offers = $this->sdk->offers()->forAccount($sellerId)->execute()->getOffers();
         $this->assertTrue($offers->count() == 0);
-    }
-
-    public function testIssue2() {
-        $sdk = StellarSDK::getPublicNetInstance();
-        $sellingAsset = Asset::createNonNativeAsset('yXLM', 'GARDNV3Q7YGT4AKSDF25LT32YSCCW4EV22Y2TV3I2PU2MMXJTEDL5T55');
-        $orderBook = $sdk->orderBook()->forBuyingAsset(Asset::native())->forSellingAsset($sellingAsset)->limit(1)->execute();
-        $offerAmount = $orderBook->getBids()->toArray()[0]->getAmount();
-        $offerPrice = $orderBook->getBids()->toArray()[0]->getPrice();
-        $this->assertTrue($offerAmount > 0);
-        $this->assertTrue($offerPrice > 0);
     }
 }

@@ -20,6 +20,7 @@ use Soneso\StellarSDK\Soroban\Contract\NativeUnionVal;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeBytesN;
@@ -45,12 +46,14 @@ use function PHPUnit\Framework\assertNotNull;
 
 class SorobanClientTest  extends TestCase
 {
-    const TESTNET_SERVER_URL = "https://soroban-testnet.stellar.org";
     const HELLO_CONTRACT_PATH = './wasm/soroban_hello_world_contract.wasm';
     const AUTH_CONTRACT_PATH = './wasm/soroban_auth_contract.wasm';
     const SWAP_CONTRACT_PATH = './wasm/soroban_atomic_swap_contract.wasm';
     const TOKEN_CONTRACT_PATH = './wasm/soroban_token_contract.wasm';
+    const TESTNET_RPC_URL = "https://soroban-testnet.stellar.org";
+    const FUTURENET_RPC_URL = "https://rpc-futurenet.stellar.org";
 
+    private string $testOn = 'testnet'; // 'futurenet'
     private Network $network;
     private KeyPair $sourceAccountKeyPair;
 
@@ -58,10 +61,15 @@ class SorobanClientTest  extends TestCase
     {
         // Turn on error reporting
         error_reporting(E_ALL);
-        $this->network = Network::testnet();
         $this->sourceAccountKeyPair = KeyPair::random();
         print("Signer seed: " . $this->sourceAccountKeyPair->getSecretSeed() . PHP_EOL);
-        FriendBot::fundTestAccount($this->sourceAccountKeyPair->getAccountId());
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            FriendBot::fundTestAccount($this->sourceAccountKeyPair->getAccountId());
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            FuturenetFriendBot::fundTestAccount($this->sourceAccountKeyPair->getAccountId());
+        }
     }
 
     public function testHelloContract() {
@@ -102,11 +110,12 @@ class SorobanClientTest  extends TestCase
         print("Deployed auth contract contract id: {$deployedClient->getContractId()}" . PHP_EOL);
 
         // just a small test to check if it can load by contract id
+        $rpcUrl = $this->testOn == "testnet" ? self::TESTNET_RPC_URL: self::FUTURENET_RPC_URL;
         $client = SorobanClient::forClientOptions(new ClientOptions(
             sourceAccountKeyPair: $this->sourceAccountKeyPair,
             contractId: $deployedClient->getContractId(),
             network: $this->network,
-            rpcUrl: self::TESTNET_SERVER_URL,
+            rpcUrl: $rpcUrl,
             enableServerLogging: true)
         );
         assertEquals($deployedClient->getContractId(), $client->getContractId());
@@ -130,7 +139,11 @@ class SorobanClientTest  extends TestCase
         // we need to sign the auth entry
 
         $invokerKeyPair = KeyPair::random();
-        FriendBot::fundTestAccount($invokerKeyPair->getAccountId());
+        if ($this->testOn === 'testnet') {
+            FriendBot::fundTestAccount($invokerKeyPair->getAccountId());
+        } elseif ($this->testOn === 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($invokerKeyPair->getAccountId());
+        }
 
         $invokerAccountId = $invokerKeyPair->getAccountId();
         $args = $spec->funcArgsToXdrSCValues(name: $methodName,
@@ -167,9 +180,15 @@ class SorobanClientTest  extends TestCase
         $bobKeyPair = KeyPair::random();
         $bobId = $bobKeyPair->getAccountId();
 
-        FriendBot::fundTestAccount($adminKeyPair->getAccountId());
-        FriendBot::fundTestAccount($aliceId);
-        FriendBot::fundTestAccount($bobId);
+        if ($this->testOn === 'testnet') {
+            FriendBot::fundTestAccount($adminKeyPair->getAccountId());
+            FriendBot::fundTestAccount($aliceId);
+            FriendBot::fundTestAccount($bobId);
+        } elseif ($this->testOn === 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($adminKeyPair->getAccountId());
+            FuturenetFriendBot::fundTestAccount($aliceId);
+            FuturenetFriendBot::fundTestAccount($bobId);
+        }
 
         print("admin: " . $adminKeyPair->getSecretSeed() .  " : " . $adminKeyPair->getAccountId(). PHP_EOL);
         print("alice: " . $aliceKeyPair->getSecretSeed() .  " : " . $aliceKeyPair->getAccountId(). PHP_EOL);
@@ -458,9 +477,10 @@ class SorobanClientTest  extends TestCase
     private function installContract(string $path): string {
         $contractCode = file_get_contents($path, false);
 
+        $rpcUrl = $this->testOn == "testnet" ? self::TESTNET_RPC_URL: self::FUTURENET_RPC_URL;
         $installRequest = new InstallRequest(
             wasmBytes: $contractCode,
-            rpcUrl: self::TESTNET_SERVER_URL,
+            rpcUrl: $rpcUrl,
             network: $this->network,
             sourceAccountKeyPair: $this->sourceAccountKeyPair,
             enableServerLogging: true
@@ -473,8 +493,9 @@ class SorobanClientTest  extends TestCase
      * @throws GuzzleException
      */
     private function deployContract(string $wasmHash): SorobanClient {
+        $rpcUrl = $this->testOn == "testnet" ? self::TESTNET_RPC_URL: self::FUTURENET_RPC_URL;
         $deployRequest = new DeployRequest(
-            rpcUrl: self::TESTNET_SERVER_URL,
+            rpcUrl: $rpcUrl,
             network: $this->network,
             sourceAccountKeyPair: $this->sourceAccountKeyPair,
             wasmHash: $wasmHash,

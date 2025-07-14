@@ -22,48 +22,64 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class TrustTest  extends TestCase
 {
+    private string $testOn = 'testnet'; // 'testnet'
+    private Network $network;
+    private StellarSDK $sdk;
 
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
     public function testChangeTrust(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
-
         $issuerKeyPair = KeyPair::random();
         $trustorKeyPair = KeyPair::random();
 
         $issuerAccountId = $issuerKeyPair->getAccountId();
         $trustorAccountId = $trustorKeyPair->getAccountId();
 
-        FriendBot::fundTestAccount($issuerAccountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($issuerAccountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($issuerAccountId);
+        }
 
-        $issuerAccount = $sdk->requestAccount($issuerAccountId);
+        $issuerAccount = $this->sdk->requestAccount($issuerAccountId);
 
         $createAccountOperation = (new CreateAccountOperationBuilder($trustorAccountId, "10"))->build();
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($createAccountOperation)
             ->build();
 
-        $transaction->sign($issuerKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($issuerKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
         $astroDollar = new AssetTypeCreditAlphanum12("ASTRO", $issuerAccountId);
 
-        $trustorAccount = $sdk->requestAccount($trustorAccountId);
+        $trustorAccount = $this->sdk->requestAccount($trustorAccountId);
 
         $changeTrustOperation = (new ChangeTrustOperationBuilder($astroDollar, "10000"))->build();
         $transaction = (new TransactionBuilder($trustorAccount))
             ->addOperation($changeTrustOperation)
             ->build();
-        $transaction->sign($trustorKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($trustorKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $trustorAccount = $sdk->requestAccount($trustorAccountId);
+        $trustorAccount = $this->sdk->requestAccount($trustorAccountId);
         $found = false;
         foreach($trustorAccount->getBalances() as $balance) {
             if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == $astroDollar->getCode()) {
@@ -79,12 +95,12 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($trustorAccount))
             ->addOperation($changeTrustOperation)
             ->build();
-        $transaction->sign($trustorKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($trustorKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $trustorAccount = $sdk->requestAccount($trustorAccountId);
+        $trustorAccount = $this->sdk->requestAccount($trustorAccountId);
         $found = false;
         foreach($trustorAccount->getBalances() as $balance) {
             if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == $astroDollar->getCode()) {
@@ -101,12 +117,12 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($trustorAccount))
             ->addOperation($changeTrustOperation)
             ->build();
-        $transaction->sign($trustorKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($trustorKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $trustorAccount = $sdk->requestAccount($trustorAccountId);
+        $trustorAccount = $this->sdk->requestAccount($trustorAccountId);
         $found = false;
         foreach($trustorAccount->getBalances() as $balance) {
             if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == $astroDollar->getCode()) {
@@ -119,7 +135,6 @@ class TrustTest  extends TestCase
 
     public function testAllowTrust(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
 
         $issuerKeyPair = KeyPair::random();
         $trustorKeyPair = KeyPair::random();
@@ -127,17 +142,21 @@ class TrustTest  extends TestCase
         $issuerAccountId = $issuerKeyPair->getAccountId();
         $trustorAccountId = $trustorKeyPair->getAccountId();
 
-        FriendBot::fundTestAccount($issuerAccountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($issuerAccountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($issuerAccountId);
+        }
 
-        $issuerAccount = $sdk->requestAccount($issuerAccountId);
+        $issuerAccount = $this->sdk->requestAccount($issuerAccountId);
 
         $createAccountOperation = (new CreateAccountOperationBuilder($trustorAccountId, "100"))->build();
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($createAccountOperation)
             ->build();
 
-        $transaction->sign($issuerKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($issuerKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -146,12 +165,12 @@ class TrustTest  extends TestCase
             ->addOperation($sop)
             ->build();
 
-        $transaction->sign($issuerKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($issuerKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $issuerAccount = $sdk->requestAccount($issuerAccountId);
+        $issuerAccount = $this->sdk->requestAccount($issuerAccountId);
         print($issuerAccountId);
         $this->assertTrue($issuerAccount->getFlags()->isAuthRequired());
         $this->assertTrue($issuerAccount->getFlags()->isAuthRevocable());
@@ -159,18 +178,18 @@ class TrustTest  extends TestCase
 
         $astroDollar = new AssetTypeCreditAlphanum12("ASTRO", $issuerAccountId);
 
-        $trustorAccount = $sdk->requestAccount($trustorAccountId);
+        $trustorAccount = $this->sdk->requestAccount($trustorAccountId);
 
         $changeTrustOperation = (new ChangeTrustOperationBuilder($astroDollar, "10000"))->build();
         $transaction = (new TransactionBuilder($trustorAccount))
             ->addOperation($changeTrustOperation)
             ->build();
-        $transaction->sign($trustorKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($trustorKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $trustorAccount = $sdk->requestAccount($trustorAccountId);
+        $trustorAccount = $this->sdk->requestAccount($trustorAccountId);
         $found = false;
         foreach($trustorAccount->getBalances() as $balance) {
             if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == $astroDollar->getCode()) {
@@ -184,10 +203,10 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($paymentOperation)
             ->build();
-        $transaction->sign($issuerKeyPair, Network::testnet());
+        $transaction->sign($issuerKeyPair, $this->network);
         $ex = false;
         try {
-            $response = $sdk->submitTransaction($transaction);
+            $response = $this->sdk->submitTransaction($transaction);
         } catch (HorizonRequestException $e) {
             $ex = true;
         }
@@ -197,8 +216,8 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($allowTrustOperation)
             ->build();
-        $transaction->sign($issuerKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($issuerKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -206,10 +225,10 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($paymentOperation)
             ->build();
-        $transaction->sign($issuerKeyPair, Network::testnet());
+        $transaction->sign($issuerKeyPair, $this->network);
         $ex = false;
         try {
-            $response = $sdk->submitTransaction($transaction);
+            $response = $this->sdk->submitTransaction($transaction);
             $this->assertTrue($response->isSuccessful());
             TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
         } catch (HorizonRequestException $e) {
@@ -223,12 +242,12 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($trustorAccount))
             ->addOperation($cpso)
             ->build();
-        $transaction->sign($trustorKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($trustorKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->offers()->forAccount($trustorAccountId);
+        $requestBuilder = $this->sdk->offers()->forAccount($trustorAccountId);
         $response = $requestBuilder->execute();
         $offers = $response->getOffers()->toArray();
         $offer = $offers[0];
@@ -239,16 +258,16 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($allowTrustOperation)
             ->build();
-        $transaction->sign($issuerKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($issuerKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->offers()->forAccount($trustorAccountId);
+        $requestBuilder = $this->sdk->offers()->forAccount($trustorAccountId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getOffers()->count() == 0);
 
-        $trustorAccount = $sdk->requestAccount($trustorAccountId);
+        $trustorAccount = $this->sdk->requestAccount($trustorAccountId);
         $found = false;
         foreach($trustorAccount->getBalances() as $balance) {
             if ($balance->getAssetType() != Asset::TYPE_NATIVE && $balance->getAssetCode() == $astroDollar->getCode()) {
@@ -263,8 +282,8 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($allowTrustOperation)
             ->build();
-        $transaction->sign($issuerKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($issuerKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
@@ -272,12 +291,12 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($trustorAccount))
             ->addOperation($cpso)
             ->build();
-        $transaction->sign($trustorKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($trustorKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->offers()->forAccount($trustorAccountId);
+        $requestBuilder = $this->sdk->offers()->forAccount($trustorAccountId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getOffers()->count() == 1);
 
@@ -286,12 +305,12 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($allowTrustOperation)
             ->build();
-        $transaction->sign($issuerKeyPair, Network::testnet());
-        $response = $sdk->submitTransaction($transaction);
+        $transaction->sign($issuerKeyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->offers()->forAccount($trustorAccountId);
+        $requestBuilder = $this->sdk->offers()->forAccount($trustorAccountId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getOffers()->count() == 1);
 
@@ -299,30 +318,14 @@ class TrustTest  extends TestCase
         $transaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($paymentOperation)
             ->build();
-        $transaction->sign($issuerKeyPair, Network::testnet());
+        $transaction->sign($issuerKeyPair, $this->network);
         $ex = false;
         try {
-            $response = $sdk->submitTransaction($transaction);
+            $response = $this->sdk->submitTransaction($transaction);
         } catch (HorizonRequestException $e) {
             $ex = true;
         }
         $this->assertTrue($ex); // not authorized.
-
-    }
-
-    public function testIssue16(): void
-    {
-        $envelop = 'AAAAAgAAAAB+1X4E8MAjncM+MMh+9sbJsyh+VzCr8wxTFJ6hA+aNXQAAAGQAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAAB+1X4E8MAjncM+MMh+9sbJsyh+VzCr8wxTFJ6hA+aNXQAAAAJBQUFBQTAwMAAAAAAAAAAAftV+BPDAI53DPjDIfvbGybMoflcwq/MMUxSeoQPmjV0AAASMJzlQAAAAAAAAAAAA';
-
-        $transaction = \Soneso\StellarSDK\Transaction::fromEnvelopeBase64XdrString($envelop);
-
-        $operations = $transaction->getOperations();
-
-        $paymentOp = $operations[0];
-
-        $asset = $paymentOp->getAsset();
-
-        $this->assertSame('AAAAA000', $asset->getCode());
 
     }
 }

@@ -17,19 +17,39 @@ use Soneso\StellarSDK\Responses\Transaction\SubmitAsyncTransactionResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 use function PHPUnit\Framework\assertTrue;
 
 class SubmitAsyncTransactionTest  extends TestCase
 {
+    private string $testOn = 'testnet'; // 'futurenet'
+    private Network $network;
+    private StellarSDK $sdk;
+
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
+
     public function testSubmitAsyncSuccess(): void {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        FriendBot::fundTestAccount($accountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
 
-        $account = $sdk->requestAccount($accountId);
+        $account = $this->sdk->requestAccount($accountId);
 
         $seqNr = $account->getSequenceNumber();
         $bumpTo = $seqNr->add(new BigInteger(10));
@@ -38,23 +58,28 @@ class SubmitAsyncTransactionTest  extends TestCase
             ->addOperation($bumpSequenceOperation)
             ->build();
 
-        $transaction->sign($keyPair, Network::testnet());
-        $response = $sdk->submitAsyncTransaction($transaction);
+        $transaction->sign($keyPair, $this->network);
+        $response = $this->sdk->submitAsyncTransaction($transaction);
         $this->assertEquals(SubmitAsyncTransactionResponse::TX_STATUS_PENDING, $response->txStatus);
 
         // wait a couple of seconds for the ledger to close
         sleep(5);
-        $transactionResponse = $sdk->requestTransaction($response->hash);
+        $transactionResponse = $this->sdk->requestTransaction($response->hash);
         $this->assertTrue($transactionResponse->isSuccessful());
     }
 
     public function testSubmitAsyncDuplicate(): void {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        FriendBot::fundTestAccount($accountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
 
-        $account = $sdk->requestAccount($accountId);
+
+        $account = $this->sdk->requestAccount($accountId);
 
         $seqNr = $account->getSequenceNumber();
         $bumpTo = $seqNr->add(new BigInteger(10));
@@ -63,27 +88,32 @@ class SubmitAsyncTransactionTest  extends TestCase
             ->addOperation($bumpSequenceOperation)
             ->build();
 
-        $transaction->sign($keyPair, Network::testnet());
-        $response = $sdk->submitAsyncTransaction($transaction);
+        $transaction->sign($keyPair, $this->network);
+        $response = $this->sdk->submitAsyncTransaction($transaction);
         $this->assertEquals(SubmitAsyncTransactionResponse::TX_STATUS_PENDING, $response->txStatus, );
         sleep(1);
-        $response = $sdk->submitAsyncTransaction($transaction);
+        $response = $this->sdk->submitAsyncTransaction($transaction);
         $this->assertEquals(SubmitAsyncTransactionResponse::TX_STATUS_DUPLICATE, $response->txStatus);
         $this->assertEquals(409, $response->httpStatusCode);
 
         // wait a couple of seconds for the ledger to close
         sleep(5);
-        $transactionResponse = $sdk->requestTransaction($response->hash);
+        $transactionResponse = $this->sdk->requestTransaction($response->hash);
         $this->assertTrue($transactionResponse->isSuccessful());
     }
 
     public function testSubmitAsyncMalformed(): void {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        FriendBot::fundTestAccount($accountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
 
-        $account = $sdk->requestAccount($accountId);
+
+        $account = $this->sdk->requestAccount($accountId);
 
         $seqNr = $account->getSequenceNumber();
         $bumpTo = $seqNr->add(new BigInteger(10));
@@ -92,13 +122,13 @@ class SubmitAsyncTransactionTest  extends TestCase
             ->addOperation($bumpSequenceOperation)
             ->build();
 
-        $transaction->sign($keyPair, Network::testnet());
+        $transaction->sign($keyPair, $this->network);
         $txEnvelopeXdrBase64 = $transaction->toEnvelopeXdrBase64();
         $txEnvelopeXdrBase64 = substr($txEnvelopeXdrBase64, -5);
 
         $thrown = false;
         try {
-            $sdk->submitAsyncTransactionEnvelopeXdrBase64($txEnvelopeXdrBase64);
+            $this->sdk->submitAsyncTransactionEnvelopeXdrBase64($txEnvelopeXdrBase64);
         } catch (HorizonRequestException $e) {
             assertEquals(400, $e->getStatusCode());
             $horizonErrorResponse = $e->getHorizonErrorResponse();
@@ -111,10 +141,15 @@ class SubmitAsyncTransactionTest  extends TestCase
     }
 
     public function testSubmitAsyncError(): void {
-        $sdk = StellarSDK::getTestNetInstance();
+
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        FriendBot::fundTestAccount($accountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
+
 
         $account = new Account($accountId, new BigInteger(1000000));
 
@@ -125,8 +160,8 @@ class SubmitAsyncTransactionTest  extends TestCase
             ->addOperation($bumpSequenceOperation)
             ->build();
 
-        $transaction->sign($keyPair, Network::testnet());
-        $response = $sdk->submitAsyncTransaction($transaction);
+        $transaction->sign($keyPair, $this->network);
+        $response = $this->sdk->submitAsyncTransaction($transaction);
         $this->assertEquals(SubmitAsyncTransactionResponse::TX_STATUS_ERROR, $response->txStatus);
         $this->assertEquals(400, $response->httpStatusCode);
 

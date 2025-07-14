@@ -18,17 +18,35 @@ use Soneso\StellarSDK\Responses\Effects\ClaimableBalanceCreatedEffectResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class ClaimableBalancesTest extends TestCase
 {
 
+    private string $testOn = 'futurenet'; // 'futurenet'
+    private Network $network;
+    private StellarSDK $sdk;
+
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
     public function testClaimableBalance(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
 
         $sourceAccountKeyPair = KeyPair::random();
         $sourceAccountId = $sourceAccountKeyPair->getAccountId();
-        FriendBot::fundTestAccount($sourceAccountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($sourceAccountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($sourceAccountId);
+        }
 
         $firstClaimantKp = KeyPair::random();
         $fistClaimantId = $firstClaimantKp->getAccountId();
@@ -47,17 +65,17 @@ class ClaimableBalancesTest extends TestCase
         array_push($claimants, $secondClaimant);
         $opb = new CreateClaimableBalanceOperationBuilder($claimants, Asset::native(), "12.33");
 
-        $sourceAccount = $sdk->requestAccount($sourceAccountId);
+        $sourceAccount = $this->sdk->requestAccount($sourceAccountId);
         $transaction = (new TransactionBuilder($sourceAccount))
             ->addOperation($opb->build())->build();
 
-        $transaction->sign($sourceAccountKeyPair, Network::testnet());
+        $transaction->sign($sourceAccountKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
 
-        $requestBuilder = $sdk->effects()->forAccount($sourceAccountId)->limit(5)->order("desc");
+        $requestBuilder = $this->sdk->effects()->forAccount($sourceAccountId)->limit(5)->order("desc");
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getEffects()->count() > 0);
 
@@ -71,22 +89,26 @@ class ClaimableBalancesTest extends TestCase
         $this->assertNotEquals("", $bId);
         print($bId . PHP_EOL);
         print(StrKey::encodeClaimableBalanceIdHex($bId) . PHP_EOL);
-        $requestBuilder = $sdk->claimableBalances()->forClaimant($fistClaimantId);
+        $requestBuilder = $this->sdk->claimableBalances()->forClaimant($fistClaimantId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getClaimableBalances()->count() > 0);
 
         $cb = $response->getClaimableBalances()->toArray()[0];
-        FriendBot::fundTestAccount($fistClaimantId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($fistClaimantId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($fistClaimantId);
+        }
         // test also strkey claimable balance id
         $strKeyBalanceId = StrKey::encodeClaimableBalanceIdHex($cb->getBalanceId());
         $opc = new ClaimClaimableBalanceOperationBuilder($strKeyBalanceId);
-        $claimant = $sdk->requestAccount($fistClaimantId);
+        $claimant = $this->sdk->requestAccount($fistClaimantId);
         $transaction = (new TransactionBuilder($claimant))
             ->addOperation($opc->build())->build();
 
-        $transaction->sign($firstClaimantKp, Network::testnet());
+        $transaction->sign($firstClaimantKp, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
     }

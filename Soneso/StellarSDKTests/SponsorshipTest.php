@@ -26,18 +26,37 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 
 class SponsorshipTest extends TestCase
 {
+    private string $testOn = 'testnet'; // 'futurenet'
+    private Network $network;
+    private StellarSDK $sdk;
+
+    public function setUp(): void
+    {
+        if ($this->testOn === 'testnet') {
+            $this->network = Network::testnet();
+            $this->sdk = StellarSDK::getTestNetInstance();
+        } elseif ($this->testOn === 'futurenet') {
+            $this->network = Network::futurenet();
+            $this->sdk = StellarSDK::getFutureNetInstance();
+        }
+    }
+
     public function testSponsorship(): void
     {
-        $sdk = StellarSDK::getTestNetInstance();
 
         $masterAccountKeyPair = KeyPair::random();
         $masterAccountId = $masterAccountKeyPair->getAccountId();
-        FriendBot::fundTestAccount($masterAccountId);
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($masterAccountId);
+        } elseif($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($masterAccountId);
+        }
 
         $accountAKeyPair = KeyPair::random();
         $accountAId = $accountAKeyPair->getAccountId();
@@ -66,7 +85,7 @@ class SponsorshipTest extends TestCase
         $revokeTrustlineSpBuilder = (new RevokeSponsorshipOperationBuilder())->revokeTrustlineSponsorship($accountAId, $richAsset);
         $revokeSignerSpBuilder = (new RevokeSponsorshipOperationBuilder())->revokeEd25519Signer($accountAId, $masterAccountId);
 
-        $masterAccount = $sdk->requestAccount($masterAccountId);
+        $masterAccount = $this->sdk->requestAccount($masterAccountId);
         $transaction = (new TransactionBuilder($masterAccount))
             ->addOperation($beginSponsoringBuilder->build())
             ->addOperation($createAccountBuilder->build())
@@ -83,10 +102,10 @@ class SponsorshipTest extends TestCase
             ->addOperation($revokeSignerSpBuilder->build())
             ->addMemo(Memo::text("sponsor"))->build();
 
-        $transaction->sign($masterAccountKeyPair, Network::testnet());
-        $transaction->sign($accountAKeyPair, Network::testnet());
+        $transaction->sign($masterAccountKeyPair, $this->network);
+        $transaction->sign($accountAKeyPair, $this->network);
 
-        $response = $sdk->submitTransaction($transaction);
+        $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
     }
