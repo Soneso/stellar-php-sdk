@@ -123,7 +123,7 @@ class TransactionInfo
 
         $events = null;
         if (isset($json["events"])) {
-            $events = $json["events"]; // protocol version >= 23
+            $events = TransactionEvents::fromJson($json["events"]); // protocol version >= 23
         }
 
         return new TransactionInfo(
