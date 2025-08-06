@@ -136,6 +136,14 @@ class Address
         }
     }
 
+    public static function fromXdrSCVal(XdrSCVal $val) : Address {
+        if ($val->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT && $val->address !== null) {
+            return self::fromXdr($val->address);
+        } else {
+            throw new RuntimeException("Given XdrSCVal is not of type address.");
+        }
+    }
+
     /**
      * Converts this object to its XDR representation.
      * @return XdrSCAddress

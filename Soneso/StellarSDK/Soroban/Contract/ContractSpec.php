@@ -256,21 +256,69 @@ class ContractSpec
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I64) {
                 return XdrSCVal::forI64($val);
             }
-            if ($val >= 0) {
-                if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U128) {
-                    return XdrSCVal::forU128(new XdrUInt128Parts(hi:0, lo:$val));
-                }
-                if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I128) {
-                    return XdrSCVal::forI128(new XdrInt128Parts(hi:0, lo:$val));
-                }
-                if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U256) {
-                    return XdrSCVal::forU256(new XdrUInt256Parts(0,0,0, $val));
-                }
-                if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I256) {
-                    return XdrSCVal::forI256(new XdrInt256Parts(0,0,0, $val));
-                }
+            // For 128-bit and 256-bit types, use BigInt methods which handle all integer values
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U128) {
+                return XdrSCVal::forU128BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I128) {
+                return XdrSCVal::forI128BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U256) {
+                return XdrSCVal::forU256BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I256) {
+                return XdrSCVal::forI256BigInt($val);
             }
             throw new InvalidArgumentException("Invalid type for val of type int.");
+        }
+
+        // Handle GMP resources and string BigInt values for U128, I128, U256, I256
+        if ((is_resource($val) && get_resource_type($val) === 'GMP integer') || 
+            (is_object($val) && $val instanceof \GMP)) {
+            
+            // Handle BigInt values for 128-bit and 256-bit types
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U128) {
+                return XdrSCVal::forU128BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I128) {
+                return XdrSCVal::forI128BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U256) {
+                return XdrSCVal::forU256BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I256) {
+                return XdrSCVal::forI256BigInt($val);
+            }
+        }
+        
+        // Handle numeric strings for BigInt types
+        if (is_string($val) && preg_match('/^-?\d+$/', $val)) {
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U128) {
+                return XdrSCVal::forU128BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I128) {
+                return XdrSCVal::forI128BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U256) {
+                return XdrSCVal::forU256BigInt($val);
+            }
+            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I256) {
+                return XdrSCVal::forI256BigInt($val);
+            }
+        }
+
+        // Handle XdrUInt128Parts and XdrInt128Parts directly for backward compatibility
+        if ($val instanceof XdrUInt128Parts && $type->value === XdrSCSpecType::SC_SPEC_TYPE_U128) {
+            return XdrSCVal::forU128($val);
+        }
+        if ($val instanceof XdrInt128Parts && $type->value === XdrSCSpecType::SC_SPEC_TYPE_I128) {
+            return XdrSCVal::forI128($val);
+        }
+        if ($val instanceof XdrUInt256Parts && $type->value === XdrSCSpecType::SC_SPEC_TYPE_U256) {
+            return XdrSCVal::forU256($val);
+        }
+        if ($val instanceof XdrInt256Parts && $type->value === XdrSCSpecType::SC_SPEC_TYPE_I256) {
+            return XdrSCVal::forI256($val);
         }
 
         if (is_string($val)) {

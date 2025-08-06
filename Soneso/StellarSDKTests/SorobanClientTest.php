@@ -22,6 +22,7 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
+use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeBytesN;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeDef;
@@ -469,6 +470,130 @@ class SorobanClientTest  extends TestCase
         $val = $spec->nativeToXdrSCVal(new NativeUnionVal("tupleCase", values: ["a", 4]), $def);
         $this->assertEquals(XdrSCValType::SCV_VEC, $val->type->value);
         $this->assertCount(3, $val->vec); // key + 2 values (a,4)
+
+        // Test BigInt functionality for U128
+        print(PHP_EOL . "=== Testing BigInt functionality ===" . PHP_EOL);
+        
+        // U128 - test with small integer
+        $def = XdrSCSpecTypeDef::U128();
+        $val = $spec->nativeToXdrSCVal(42, $def);
+        $this->assertEquals(XdrSCValType::SCV_U128, $val->type->value);
+        $this->assertEquals(0, $val->u128->hi);
+        $this->assertEquals(42, $val->u128->lo);
+        print("✓ U128 with small integer" . PHP_EOL);
+        
+        // U128 - test with string BigInt
+        $bigValue = "340282366920938463463374607431768211455"; // Max U128
+        $val = $spec->nativeToXdrSCVal($bigValue, $def);
+        $this->assertEquals(XdrSCValType::SCV_U128, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals($bigValue, gmp_strval($bigInt));
+        print("✓ U128 with max value string" . PHP_EOL);
+        
+        // U128 - test with GMP object
+        $gmpValue = gmp_init("123456789012345678901234567890");
+        $val = $spec->nativeToXdrSCVal($gmpValue, $def);
+        $this->assertEquals(XdrSCValType::SCV_U128, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals("123456789012345678901234567890", gmp_strval($bigInt));
+        print("✓ U128 with GMP object" . PHP_EOL);
+        
+        // I128 - test with negative value
+        $def = XdrSCSpecTypeDef::I128();
+        $val = $spec->nativeToXdrSCVal(-12345, $def);
+        $this->assertEquals(XdrSCValType::SCV_I128, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals("-12345", gmp_strval($bigInt));
+        print("✓ I128 with negative integer" . PHP_EOL);
+        
+        // I128 - test with large negative string
+        $negativeValue = "-85070591730234615865843651857942052863";
+        $val = $spec->nativeToXdrSCVal($negativeValue, $def);
+        $this->assertEquals(XdrSCValType::SCV_I128, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals($negativeValue, gmp_strval($bigInt));
+        print("✓ I128 with large negative string" . PHP_EOL);
+        
+        // U256 - test with small integer
+        $def = XdrSCSpecTypeDef::U256();
+        $val = $spec->nativeToXdrSCVal(999, $def);
+        $this->assertEquals(XdrSCValType::SCV_U256, $val->type->value);
+        $this->assertEquals(0, $val->u256->hiHi);
+        $this->assertEquals(0, $val->u256->hiLo);
+        $this->assertEquals(0, $val->u256->loHi);
+        $this->assertEquals(999, $val->u256->loLo);
+        print("✓ U256 with small integer" . PHP_EOL);
+        
+        // U256 - test with huge string value
+        $hugeValue = "99999999999999999999999999999999999999999999999999999999999999999999999999";
+        $val = $spec->nativeToXdrSCVal($hugeValue, $def);
+        $this->assertEquals(XdrSCValType::SCV_U256, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals($hugeValue, gmp_strval($bigInt));
+        print("✓ U256 with huge string value" . PHP_EOL);
+        
+        // U256 - test with GMP power of 2
+        $powerOf2 = gmp_pow(2, 200);
+        $val = $spec->nativeToXdrSCVal($powerOf2, $def);
+        $this->assertEquals(XdrSCValType::SCV_U256, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals(gmp_strval($powerOf2), gmp_strval($bigInt));
+        print("✓ U256 with GMP 2^200" . PHP_EOL);
+        
+        // I256 - test with negative value
+        $def = XdrSCSpecTypeDef::I256();
+        $val = $spec->nativeToXdrSCVal(-999999, $def);
+        $this->assertEquals(XdrSCValType::SCV_I256, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals("-999999", gmp_strval($bigInt));
+        print("✓ I256 with negative integer" . PHP_EOL);
+        
+        // I256 - test with large negative GMP
+        $largeNegative = gmp_neg(gmp_pow(2, 200));
+        $val = $spec->nativeToXdrSCVal($largeNegative, $def);
+        $this->assertEquals(XdrSCValType::SCV_I256, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals(gmp_strval($largeNegative), gmp_strval($bigInt));
+        print("✓ I256 with negative GMP 2^200" . PHP_EOL);
+        
+        // Test backward compatibility with XdrUInt128Parts
+        $def = XdrSCSpecTypeDef::U128();
+        $parts = new XdrUInt128Parts(12345, 67890);
+        $val = $spec->nativeToXdrSCVal($parts, $def);
+        $this->assertEquals(XdrSCValType::SCV_U128, $val->type->value);
+        $this->assertEquals(12345, $val->u128->hi);
+        $this->assertEquals(67890, $val->u128->lo);
+        print("✓ Backward compatibility with XdrUInt128Parts" . PHP_EOL);
+        
+        // Test backward compatibility with XdrInt256Parts
+        $def = XdrSCSpecTypeDef::I256();
+        $parts = new XdrInt256Parts(1, 2, 3, 4);
+        $val = $spec->nativeToXdrSCVal($parts, $def);
+        $this->assertEquals(XdrSCValType::SCV_I256, $val->type->value);
+        $this->assertEquals(1, $val->i256->hiHi);
+        $this->assertEquals(2, $val->i256->hiLo);
+        $this->assertEquals(3, $val->i256->loHi);
+        $this->assertEquals(4, $val->i256->loLo);
+        print("✓ Backward compatibility with XdrInt256Parts" . PHP_EOL);
+        
+        // Test roundtrip conversion
+        $def = XdrSCSpecTypeDef::U128();
+        $originalValue = "123456789012345678901234567890123456";
+        $val = $spec->nativeToXdrSCVal($originalValue, $def);
+        $roundtrip = $val->toBigInt();
+        $this->assertEquals($originalValue, gmp_strval($roundtrip));
+        print("✓ Roundtrip conversion for U128" . PHP_EOL);
+        
+        // Test error handling - this should work now with BigInt support
+        $def = XdrSCSpecTypeDef::I128();
+        $largeStringValue = "99999999999999999999999999999";
+        $val = $spec->nativeToXdrSCVal($largeStringValue, $def);
+        $this->assertEquals(XdrSCValType::SCV_I128, $val->type->value);
+        $bigInt = $val->toBigInt();
+        $this->assertEquals($largeStringValue, gmp_strval($bigInt));
+        print("✓ Large string values now work with BigInt support" . PHP_EOL);
+        
+        print("=== All BigInt tests passed! ===" . PHP_EOL);
     }
 
     /**
@@ -502,6 +627,250 @@ class SorobanClientTest  extends TestCase
             enableServerLogging: true
         );
         return SorobanClient::deploy($deployRequest);
+    }
+
+    /**
+     * Test hello contract with ContractSpec
+     * Demonstrates the simplified approach using ContractSpec for automatic type conversion
+     */
+    public function testHelloContractWithContractSpec() {
+        $helloContractWasmHash = $this->installContract(self::HELLO_CONTRACT_PATH);
+        print("Installed hello contract wasm hash: {$helloContractWasmHash}" . PHP_EOL);
+
+        $client = $this->deployContract($helloContractWasmHash);
+        print("Deployed hello contract contract id: {$client->getContractId()}" . PHP_EOL);
+
+        $methodNames = $client->getMethodNames();
+        self::assertCount(1, $methodNames);
+        assertEquals("hello", $methodNames[0]);
+
+        // Using ContractSpec for automatic type conversion (new approach)
+        $contractSpec = $client->getContractSpec();
+        
+        // Demonstrate ContractSpec capabilities
+        $functions = $contractSpec->funcs();
+        print("Contract functions: " . implode(", ", array_map(fn($f) => $f->name, $functions)) . PHP_EOL);
+        
+        $helloFunc = $contractSpec->getFunc("hello");
+        assertNotNull($helloFunc);
+        assertEquals("hello", $helloFunc->name);
+        print("Found hello function with " . count($helloFunc->inputs) . " inputs" . PHP_EOL);
+        
+        // Convert arguments using ContractSpec - this is the key improvement!
+        // Instead of: [XdrSCVal::forSymbol("Maria")]
+        // We can use: ["to" => "Maria"]
+        $args = $contractSpec->funcArgsToXdrSCValues("hello", ["to" => "Maria"]);
+        
+        $result = $client->invokeMethod(name: "hello", args: $args);
+        assertNotNull($result->vec);
+        self::assertCount(2, $result->vec);
+        assertNotNull($result->vec[0]->sym);
+        assertNotNull($result->vec[1]->sym);
+        $resultValue = $result->vec[0]->sym . ", " . $result->vec[1]->sym;
+        assertEquals("Hello, Maria", $resultValue);
+        
+        print("✓ Hello contract test with ContractSpec passed!" . PHP_EOL);
+    }
+
+    /**
+     * Test auth contract with ContractSpec
+     * Shows the difference between manual and ContractSpec approach
+     */
+    public function testAuthContractWithContractSpec() {
+        $authContractWasmHash = $this->installContract(self::AUTH_CONTRACT_PATH);
+        print("Installed auth contract wasm hash: {$authContractWasmHash}" . PHP_EOL);
+
+        $client = $this->deployContract($authContractWasmHash);
+        print("Deployed auth contract contract id: {$client->getContractId()}" . PHP_EOL);
+
+        $methodNames = $client->getMethodNames();
+        self::assertCount(1, $methodNames);
+        assertEquals("increment", $methodNames[0]);
+
+        // Demonstrate ContractSpec usage with auth contract
+        $contractSpec = $client->getContractSpec();
+        
+        // Show the difference between manual and ContractSpec approach
+        print("=== Manual XdrSCVal Creation (Original) ===" . PHP_EOL);
+        $invokerAddress = Address::fromAccountId($this->sourceAccountKeyPair->getAccountId());
+        $manualArgs = [$invokerAddress->toXdrSCVal(), XdrSCVal::forU32(5)];
+        $manualResult = $client->invokeMethod(name: "increment", args: $manualArgs);
+        assertNotNull($manualResult->u32);
+        assertEquals(5, $manualResult->u32);
+        print("Manual result: {$manualResult->u32}" . PHP_EOL);
+
+        print("=== ContractSpec Approach (New) ===" . PHP_EOL);
+        // Much simpler and more readable!
+        $specArgs = $contractSpec->funcArgsToXdrSCValues("increment", [
+            "user" => $this->sourceAccountKeyPair->getAccountId(),  // String account ID -> automatically converts to Address
+            "value" => 7                                            // int -> automatically converts to u32
+        ]);
+        $specResult = $client->invokeMethod(name: "increment", args: $specArgs);
+        assertNotNull($specResult->u32);
+        assertEquals(12, $specResult->u32); // 5 + 7
+        print("ContractSpec result: {$specResult->u32}" . PHP_EOL);
+        
+        print("✓ Auth contract test with ContractSpec passed!" . PHP_EOL);
+        print("✓ ContractSpec made the code cleaner and more intuitive!" . PHP_EOL);
+    }
+
+    /**
+     * Test atomic swap with ContractSpec
+     * Demonstrates how ContractSpec simplifies complex contract interactions
+     */
+    public function testAtomicSwapWithContractSpec() {
+        $swapContractWasmHash = $this->installContract(self::SWAP_CONTRACT_PATH);
+        print("Installed swap contract wasm hash: {$swapContractWasmHash}" . PHP_EOL);
+
+        $tokenContractWasmHash = $this->installContract(self::TOKEN_CONTRACT_PATH);
+        print("Installed token contract wasm hash: {$tokenContractWasmHash}" . PHP_EOL);
+
+        $adminKeyPair = KeyPair::random();
+        $aliceKeyPair = KeyPair::random();
+        $aliceId = $aliceKeyPair->getAccountId();
+        $bobKeyPair = KeyPair::random();
+        $bobId = $bobKeyPair->getAccountId();
+
+        if ($this->testOn === 'testnet') {
+            FriendBot::fundTestAccount($adminKeyPair->getAccountId());
+            FriendBot::fundTestAccount($aliceId);
+            FriendBot::fundTestAccount($bobId);
+        } else {
+            FuturenetFriendBot::fundTestAccount($adminKeyPair->getAccountId());
+            FuturenetFriendBot::fundTestAccount($aliceId);
+            FuturenetFriendBot::fundTestAccount($bobId);
+        }
+
+        $atomicSwapClient = $this->deployContract($swapContractWasmHash);
+        print("Deployed atomic swap contract contract id: {$atomicSwapClient->getContractId()}" . PHP_EOL);
+
+        $tokenAClient = $this->deployContract($tokenContractWasmHash);
+        $tokenAContractId = $tokenAClient->getContractId();
+        print("Deployed token A contract contract id: {$tokenAContractId}" . PHP_EOL);
+
+        $tokenBClient = $this->deployContract($tokenContractWasmHash);
+        $tokenBContractId = $tokenBClient->getContractId();
+        print("Deployed token B contract contract id: {$tokenBContractId}" . PHP_EOL);
+
+        // Use ContractSpec for token operations
+        print("=== Creating tokens with ContractSpec ===" . PHP_EOL);
+        $this->createTokenWithSpec($tokenAClient, $adminKeyPair, "TokenA", "TokenA");
+        $this->createTokenWithSpec($tokenBClient, $adminKeyPair, "TokenB", "TokenB");
+        print("✓ Tokens created using ContractSpec" . PHP_EOL);
+
+        print("=== Minting tokens with ContractSpec ===" . PHP_EOL);
+        $this->mintWithSpec($tokenAClient, $adminKeyPair, $aliceId, "10000000000000");
+        $this->mintWithSpec($tokenBClient, $adminKeyPair, $bobId, "10000000000000");
+        print("✓ Alice and Bob funded using ContractSpec" . PHP_EOL);
+
+        $aliceTokenABalance = $this->readBalanceWithSpec($aliceId, $tokenAClient);
+        assertEquals("10000000000000", $aliceTokenABalance);
+
+        $bobTokenBBalance = $this->readBalanceWithSpec($bobId, $tokenBClient);
+        assertEquals("10000000000000", $bobTokenBBalance);
+        print("✓ Balances verified using ContractSpec" . PHP_EOL);
+
+        print("=== Demonstrating ContractSpec for complex atomic swap ===" . PHP_EOL);
+        print("--- Manual XdrSCVal creation (original approach) ---" . PHP_EOL);
+        $manualAmountA = XdrSCVal::forI128BigInt(1000);
+        $manualMinBForA = XdrSCVal::forI128BigInt(4500);
+        $manualAmountB = XdrSCVal::forI128BigInt(5000);
+        $manualMinAForB = XdrSCVal::forI128BigInt(950);
+
+        $manualArgs = [
+            Address::fromAccountId($aliceId)->toXdrSCVal(),
+            Address::fromAccountId($bobId)->toXdrSCVal(),
+            Address::fromContractId($tokenAContractId)->toXdrSCVal(),
+            Address::fromContractId($tokenBContractId)->toXdrSCVal(),
+            $manualAmountA,
+            $manualMinBForA,
+            $manualAmountB,
+            $manualMinAForB
+        ];
+        print("Manual args count: " . count($manualArgs) . PHP_EOL);
+
+        print("--- ContractSpec approach (new approach) ---" . PHP_EOL);
+        // This is MUCH cleaner and more readable!
+        $contractSpec = $atomicSwapClient->getContractSpec();
+        $specArgs = $contractSpec->funcArgsToXdrSCValues("swap", [
+            "a" => $aliceId,                    // String -> Address (automatic)
+            "b" => $bobId,                      // String -> Address (automatic)
+            "token_a" => $tokenAContractId,     // String -> Address (automatic)
+            "token_b" => $tokenBContractId,     // String -> Address (automatic)
+            "amount_a" => 1000,                 // int -> i128 (automatic)
+            "min_b_for_a" => 4500,             // int -> i128 (automatic)
+            "amount_b" => 5000,                 // int -> i128 (automatic)
+            "min_a_for_b" => 950                // int -> i128 (automatic)
+        ]);
+        print("ContractSpec args count: " . count($specArgs) . PHP_EOL);
+        print("✓ ContractSpec automatically converted 8 parameters with correct types" . PHP_EOL);
+
+        // Build and execute the transaction using ContractSpec args
+        $tx = $atomicSwapClient->buildInvokeMethodTx(name: "swap", args: $specArgs);
+
+        $whoElseNeedsToSign = $tx->needsNonInvokerSigningBy();
+        self::assertCount(2, $whoElseNeedsToSign);
+        self::assertContains($aliceId, $whoElseNeedsToSign);
+        self::assertContains($bobId, $whoElseNeedsToSign);
+
+        $tx->signAuthEntries(signerKeyPair: $aliceKeyPair);
+        print("✓ Signed by Alice" . PHP_EOL);
+
+        $tx->signAuthEntries(signerKeyPair: $bobKeyPair);
+        print("✓ Signed by Bob" . PHP_EOL);
+
+        $response = $tx->signAndSend();
+        $result = $response->getResultValue();
+        assertNotNull($result);
+        assertEquals(XdrSCValType::SCV_VOID, $result->type->value);
+        
+        print("✓ Atomic swap completed successfully using ContractSpec!" . PHP_EOL);
+        print("✓ ContractSpec made complex contract invocation much simpler and more readable" . PHP_EOL);
+    }
+
+    /**
+     * ContractSpec version of createToken function for comparison
+     */
+    private function createTokenWithSpec(SorobanClient $tokenClient, KeyPair $submitterKp, string $name, string $symbol): void {
+        // Using ContractSpec - much simpler!
+        $args = $tokenClient->getContractSpec()->funcArgsToXdrSCValues("initialize", [
+            "admin" => $submitterKp->getAccountId(),  // String -> Address automatic conversion
+            "decimal" => 0,                           // int -> u32 automatic conversion
+            "name" => $name,                          // String -> String (direct)
+            "symbol" => $symbol                       // String -> String (direct)
+        ]);
+
+        $tokenClient->invokeMethod(name: "initialize", args: $args);
+    }
+
+    /**
+     * ContractSpec version of mint function for comparison
+     */
+    private function mintWithSpec(SorobanClient $tokenClient, KeyPair $adminKp, string $toAccountId, string $amount): void {
+        // Using ContractSpec - automatic type conversion!
+        $args = $tokenClient->getContractSpec()->funcArgsToXdrSCValues("mint", [
+            "to" => $toAccountId,  // String -> Address automatic conversion
+            "amount" => $amount    // string -> i128 automatic conversion using BigInt
+        ]);
+
+        $tx = $tokenClient->buildInvokeMethodTx(name: "mint", args: $args);
+        $tx->signAuthEntries(signerKeyPair: $adminKp);
+        $tx->signAndSend();
+    }
+
+    /**
+     * ContractSpec version of readBalance function for comparison
+     */
+    private function readBalanceWithSpec(string $forAccountId, SorobanClient $tokenClient): string {
+        // Using ContractSpec - cleaner argument passing!
+        $args = $tokenClient->getContractSpec()->funcArgsToXdrSCValues("balance", [
+            "id" => $forAccountId  // String -> Address automatic conversion
+        ]);
+        
+        $resultValue = $tokenClient->invokeMethod(name: "balance", args: $args);
+        assertNotNull($resultValue->i128);
+        // Return as string to handle large numbers
+        return gmp_strval($resultValue->toBigInt());
     }
 
     /**

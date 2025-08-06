@@ -8,13 +8,15 @@
 		}
 	},
 	"require" : {
+		"php": ">=8.0",
 		"guzzlehttp/guzzle" : "~7.3",
 		"christian-riesen/base32" : "~1.6",
 		"paragonie/sodium_compat" : "~1.17",
 		"phpseclib/phpseclib" : "^3.0",
 		"yosymfony/toml" : "~1.0",
       	"ext-bcmath": "*",
-		"ext-pcntl": "*"
+		"ext-pcntl": "*",
+		"ext-gmp": "*"
     },
 	"license" : "Apache-2.0",
 	"authors" : [{

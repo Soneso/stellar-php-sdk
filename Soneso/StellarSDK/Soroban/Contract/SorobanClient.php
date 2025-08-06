@@ -193,6 +193,16 @@ class SorobanClient
     }
 
     /**
+     * Gets the contract specification utility.
+     * This can be used for advanced type conversion and contract introspection.
+     * @return ContractSpec
+     */
+    public function getContractSpec(): ContractSpec
+    {
+        return new ContractSpec($this->specEntries);
+    }
+
+    /**
      * @return ClientOptions client options for interacting with soroban.
      */
     public function getOptions(): ClientOptions
