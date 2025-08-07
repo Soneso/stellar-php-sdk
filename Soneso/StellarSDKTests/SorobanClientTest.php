@@ -42,6 +42,10 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
+use Soneso\StellarSDKTests\bindings\AtomicSwapContract;
+use Soneso\StellarSDKTests\bindings\AuthContract;
+use Soneso\StellarSDKTests\bindings\HelloContract;
+use Soneso\StellarSDKTests\bindings\TokenContract;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 
@@ -673,6 +677,42 @@ class SorobanClientTest  extends TestCase
     }
 
     /**
+     * Test hello contract with contract binding
+     * Uses generated PHP binding for the hello contract
+     */
+    public function testHelloContractWithBinding() {
+        $helloContractWasmHash = $this->installContract(self::HELLO_CONTRACT_PATH);
+        print("Installed hello contract wasm hash: {$helloContractWasmHash}" . PHP_EOL);
+        
+        $deployedClient = $this->deployContract($helloContractWasmHash);
+        print("Deployed hello contract contract id: {$deployedClient->getContractId()}" . PHP_EOL);
+        
+        // Create HelloContract instance using the contract binding
+        $rpcUrl = $this->testOn == "testnet" ? self::TESTNET_RPC_URL : self::FUTURENET_RPC_URL;
+        $helloContract = HelloContract::forClientOptions(new ClientOptions(
+            sourceAccountKeyPair: $this->sourceAccountKeyPair,
+            contractId: $deployedClient->getContractId(),
+            network: $this->network,
+            rpcUrl: $rpcUrl,
+            enableServerLogging: true
+        ));
+        
+        // Verify contract ID matches
+        assertEquals($deployedClient->getContractId(), $helloContract->getContractId());
+        
+        // Call hello method using the contract binding
+        $result = $helloContract->hello(to: "ContractBinding");
+        
+        // Verify the result
+        self::assertCount(2, $result);
+        $resultValue = $result[0] . ", " . $result[1];
+        assertEquals("Hello, ContractBinding", $resultValue);
+        
+        print("✓ HelloContract binding successfully invoked hello method" . PHP_EOL);
+        print("✓ Result: {$resultValue}" . PHP_EOL);
+    }
+
+    /**
      * Test auth contract with ContractSpec
      * Shows the difference between manual and ContractSpec approach
      */
@@ -712,6 +752,47 @@ class SorobanClientTest  extends TestCase
         
         print("✓ Auth contract test with ContractSpec passed!" . PHP_EOL);
         print("✓ ContractSpec made the code cleaner and more intuitive!" . PHP_EOL);
+    }
+
+    /**
+     * Test auth contract with contract binding
+     * Uses generated PHP binding for the auth contract
+     */
+    public function testAuthContractWithBinding() {
+        $authContractWasmHash = $this->installContract(self::AUTH_CONTRACT_PATH);
+        print("Installed auth contract wasm hash: {$authContractWasmHash}" . PHP_EOL);
+        
+        $deployedClient = $this->deployContract($authContractWasmHash);
+        print("Deployed auth contract contract id: {$deployedClient->getContractId()}" . PHP_EOL);
+        
+        // Create AuthContract instance using the contract binding
+        $rpcUrl = $this->testOn == "testnet" ? self::TESTNET_RPC_URL : self::FUTURENET_RPC_URL;
+        $authContract = AuthContract::forClientOptions(new ClientOptions(
+            sourceAccountKeyPair: $this->sourceAccountKeyPair,
+            contractId: $deployedClient->getContractId(),
+            network: $this->network,
+            rpcUrl: $rpcUrl,
+            enableServerLogging: true
+        ));
+        
+        // Verify contract ID matches
+        assertEquals($deployedClient->getContractId(), $authContract->getContractId());
+        
+        // Test 1: submitter and invoker are the same (no need to sign auth)
+        $user = Address::fromAccountId($this->sourceAccountKeyPair->getAccountId());
+        $value = 5;
+        $result = $authContract->increment(user: $user, value: $value);
+        
+        assertEquals(5, $result);
+        print("✓ First increment: {$result}" . PHP_EOL);
+        
+        // Test 2: increment again
+        $result2 = $authContract->increment(user: $user, value: 7);
+        
+        assertEquals(12, $result2); // 5 + 7
+        print("✓ Second increment: {$result2}" . PHP_EOL);
+        
+        print("✓ AuthContract binding successfully tested!" . PHP_EOL);
     }
 
     /**
@@ -826,6 +907,210 @@ class SorobanClientTest  extends TestCase
         
         print("✓ Atomic swap completed successfully using ContractSpec!" . PHP_EOL);
         print("✓ ContractSpec made complex contract invocation much simpler and more readable" . PHP_EOL);
+    }
+
+    /**
+     * Test atomic swap with contract bindings
+     * Uses generated PHP bindings for token and atomic swap contracts
+     * Demonstrates the use of build methods for transaction manipulation
+     */
+    public function testAtomicSwapContractWithBinding() {
+        $swapContractWasmHash = $this->installContract(self::SWAP_CONTRACT_PATH);
+        print("Installed swap contract wasm hash: {$swapContractWasmHash}" . PHP_EOL);
+        
+        $tokenContractWasmHash = $this->installContract(self::TOKEN_CONTRACT_PATH);
+        print("Installed token contract wasm hash: {$tokenContractWasmHash}" . PHP_EOL);
+        
+        $adminKeyPair = KeyPair::random();
+        $aliceKeyPair = KeyPair::random();
+        $aliceId = $aliceKeyPair->getAccountId();
+        $bobKeyPair = KeyPair::random();
+        $bobId = $bobKeyPair->getAccountId();
+        
+        if ($this->testOn === 'testnet') {
+            FriendBot::fundTestAccount($adminKeyPair->getAccountId());
+            FriendBot::fundTestAccount($aliceId);
+            FriendBot::fundTestAccount($bobId);
+        } else {
+            FuturenetFriendBot::fundTestAccount($adminKeyPair->getAccountId());
+            FuturenetFriendBot::fundTestAccount($aliceId);
+            FuturenetFriendBot::fundTestAccount($bobId);
+        }
+        
+        // Deploy contracts
+        $atomicSwapDeployed = $this->deployContract($swapContractWasmHash);
+        print("Deployed atomic swap contract contract id: {$atomicSwapDeployed->getContractId()}" . PHP_EOL);
+        
+        $tokenADeployed = $this->deployContract($tokenContractWasmHash);
+        $tokenAContractId = $tokenADeployed->getContractId();
+        print("Deployed token A contract contract id: {$tokenAContractId}" . PHP_EOL);
+        
+        $tokenBDeployed = $this->deployContract($tokenContractWasmHash);
+        $tokenBContractId = $tokenBDeployed->getContractId();
+        print("Deployed token B contract contract id: {$tokenBContractId}" . PHP_EOL);
+        
+        // Create contract binding instances
+        $rpcUrl = $this->testOn == "testnet" ? self::TESTNET_RPC_URL : self::FUTURENET_RPC_URL;
+        
+        $atomicSwapContract = AtomicSwapContract::forClientOptions(new ClientOptions(
+            sourceAccountKeyPair: $this->sourceAccountKeyPair,
+            contractId: $atomicSwapDeployed->getContractId(),
+            network: $this->network,
+            rpcUrl: $rpcUrl,
+            enableServerLogging: true
+        ));
+        
+        $tokenAContract = TokenContract::forClientOptions(new ClientOptions(
+            sourceAccountKeyPair: $adminKeyPair,
+            contractId: $tokenAContractId,
+            network: $this->network,
+            rpcUrl: $rpcUrl,
+            enableServerLogging: true
+        ));
+        
+        $tokenBContract = TokenContract::forClientOptions(new ClientOptions(
+            sourceAccountKeyPair: $adminKeyPair,
+            contractId: $tokenBContractId,
+            network: $this->network,
+            rpcUrl: $rpcUrl,
+            enableServerLogging: true
+        ));
+        
+        // Initialize tokens using bindings
+        print("=== Initializing tokens with contract bindings ===" . PHP_EOL);
+        $adminAddress = Address::fromAccountId($adminKeyPair->getAccountId());
+        
+        $tokenAContract->initialize(
+            admin: $adminAddress,
+            decimal: 7,
+            name: "TokenA",
+            symbol: "TokenA"
+        );
+        print("✓ Token A initialized" . PHP_EOL);
+        
+        $tokenBContract->initialize(
+            admin: $adminAddress,
+            decimal: 7,
+            name: "TokenB",
+            symbol: "TokenB"
+        );
+        print("✓ Token B initialized" . PHP_EOL);
+        
+        // Mint tokens using bindings with build methods
+        print("=== Minting tokens using build methods ===" . PHP_EOL);
+        $aliceAddress = Address::fromAccountId($aliceId);
+        $bobAddress = Address::fromAccountId($bobId);
+        
+        // Build mint transaction for Alice
+        $mintAliceTx = $tokenAContract->buildMintTx(
+            to: $aliceAddress,
+            amount: "10000000000000"
+        );
+        // The build method allows inspection and manipulation before sending
+        print("✓ Built mint transaction for Alice using buildMintTx()" . PHP_EOL);
+        $mintAliceTx->signAndSend();
+        print("✓ Minted Token A to Alice" . PHP_EOL);
+        
+        // Build mint transaction for Bob
+        $mintBobTx = $tokenBContract->buildMintTx(
+            to: $bobAddress,
+            amount: "10000000000000"
+        );
+        $mintBobTx->signAndSend();
+        print("✓ Minted Token B to Bob" . PHP_EOL);
+        
+        sleep(5); // Wait for state to settle
+        
+        // Check balances using bindings
+        print("=== Checking balances ===" . PHP_EOL);
+        
+        // Check with direct method
+        $aliceTokenABalance = $tokenAContract->balance(id: $aliceAddress);
+        assertEquals("10000000000000", $aliceTokenABalance);
+        print("✓ Alice Token A balance: 10000000000000" . PHP_EOL);
+        
+        $bobTokenBBalance = $tokenBContract->balance(id: $bobAddress);
+        assertEquals("10000000000000", $bobTokenBBalance);
+        print("✓ Bob Token B balance: 10000000000000" . PHP_EOL);
+        
+        // Perform atomic swap using NEW build method
+        print("=== Performing atomic swap with buildSwapTx method ===" . PHP_EOL);
+        
+        // Prepare addresses for the swap
+        $tokenAAddress = Address::fromContractId($tokenAContractId);
+        $tokenBAddress = Address::fromContractId($tokenBContractId);
+        
+        // Use the NEW buildSwapTx method from the generated binding!
+        $swapTx = $atomicSwapContract->buildSwapTx(
+            a: $aliceAddress,
+            b: $bobAddress,
+            token_a: $tokenAAddress,
+            token_b: $tokenBAddress,
+            amount_a: "1000",
+            min_b_for_a: "4500",
+            amount_b: "5000",
+            min_a_for_b: "950"
+        );
+        
+        print("✓ Built swap transaction using buildSwapTx()" . PHP_EOL);
+        
+        // Check who needs to sign
+        $whoElseNeedsToSign = $swapTx->needsNonInvokerSigningBy();
+        self::assertCount(2, $whoElseNeedsToSign);
+        self::assertContains($aliceId, $whoElseNeedsToSign);
+        self::assertContains($bobId, $whoElseNeedsToSign);
+        print("✓ Transaction requires signatures from Alice and Bob" . PHP_EOL);
+        
+        // Sign auth entries
+        $swapTx->signAuthEntries(signerKeyPair: $aliceKeyPair);
+        print("✓ Signed by Alice" . PHP_EOL);
+        
+        $swapTx->signAuthEntries(signerKeyPair: $bobKeyPair);
+        print("✓ Signed by Bob" . PHP_EOL);
+        
+        // Send the transaction
+        $response = $swapTx->signAndSend();
+        $result = $response->getResultValue();
+        assertNotNull($result);
+        assertEquals(XdrSCValType::SCV_VOID, $result->type->value);
+        
+        print("✓ Atomic swap completed successfully using buildSwapTx()!" . PHP_EOL);
+        
+        sleep(5); // Wait for state to settle
+        
+        // Verify final balances after swap
+        print("=== Verifying final balances after swap ===" . PHP_EOL);
+        
+        // Alice should have received Token B
+        $aliceTokenBBalance = $tokenBContract->balance(id: $aliceAddress);
+        $aliceTokenBExpected = gmp_strval(gmp_sub(gmp_init("4500"), gmp_init("0"))); // 5000 Token B
+        assertEquals($aliceTokenBExpected, $aliceTokenBBalance);
+        print("✓ Alice Token B balance after swap: {$aliceTokenBBalance}" . PHP_EOL);
+        
+        // Bob should have received Token A
+        $bobTokenABalance = $tokenAContract->balance(id: $bobAddress);
+        $bobTokenAExpected = gmp_strval(gmp_sub(gmp_init("950"), gmp_init("0"))); // 1000 Token A
+        assertEquals($bobTokenAExpected, $bobTokenABalance);
+        print("✓ Bob Token A balance after swap: {$bobTokenABalance}" . PHP_EOL);
+        
+        // Alice's Token A should be reduced
+        $aliceTokenAFinal = $tokenAContract->balance(id: $aliceAddress);
+        $aliceTokenAExpected = gmp_strval(gmp_sub(gmp_init("10000000000000"), gmp_init("950")));
+        assertEquals($aliceTokenAExpected, $aliceTokenAFinal);
+        print("✓ Alice Token A balance reduced to: {$aliceTokenAFinal}" . PHP_EOL);
+        
+        // Bob's Token B should be reduced
+        $bobTokenBFinal = $tokenBContract->balance(id: $bobAddress);
+        $bobTokenBExpected = gmp_strval(gmp_sub(gmp_init("10000000000000"), gmp_init("4500")));
+        assertEquals($bobTokenBExpected, $bobTokenBFinal);
+        print("✓ Bob Token B balance reduced to: {$bobTokenBFinal}" . PHP_EOL);
+        
+        print("=== Summary ===" . PHP_EOL);
+        print("✓ Successfully demonstrated buildSwapTx() method" . PHP_EOL);
+        print("✓ Transaction inspection before sending" . PHP_EOL);
+        print("✓ Multi-party authorization handling" . PHP_EOL);
+        print("✓ Contract bindings provide type-safe, clean interface" . PHP_EOL);
+        print("✓ Build methods enable advanced transaction workflows" . PHP_EOL);
     }
 
     /**
