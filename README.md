@@ -241,3 +241,6 @@ More examples can be found in the [tests](https://github.com/Soneso/stellar-php-
 ### Soroban support
 
 This SDK provides [support for Soroban](https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md). 
+
+### DeepWiki
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
