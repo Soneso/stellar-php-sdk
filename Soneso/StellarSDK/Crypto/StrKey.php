@@ -265,6 +265,11 @@ class StrKey
      * @return string strkey claimable balance id (B...).
      */
     public static function encodeClaimableBalanceId(string $data) : string {
+        if (strlen($data) == 32) {
+            // we need to add the discriminant (0)
+            $prefixed = pack("C", 0) . $data;
+            return static::encodeCheck(VersionByte::CLAIMABLE_BALANCE_ID, $prefixed);
+        }
         return static::encodeCheck(VersionByte::CLAIMABLE_BALANCE_ID, $data);
     }
 
@@ -274,7 +279,7 @@ class StrKey
      * @return string strkey representation of the claimable balance id (B...).
      */
     public static function encodeClaimableBalanceIdHex(string $claimableBalanceId) : string {
-        return static::encodeCheck(VersionByte::CLAIMABLE_BALANCE_ID, hex2bin($claimableBalanceId));
+        return self::encodeClaimableBalanceId(hex2bin($claimableBalanceId));
     }
 
     /**

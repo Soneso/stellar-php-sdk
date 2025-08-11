@@ -234,11 +234,16 @@ Let's consider an Atomic Swap contract. Alice wants to give some of her Token A 
  ```php
 $swapMethodName = "swap";
 
-$amountA = XdrSCVal::forI128(new XdrInt128Parts(0,1000));
-$minBForA = XdrSCVal::forI128(new XdrInt128Parts(0,4500));
+// Using the new BigInt support - much simpler!
+$amountA = XdrSCVal::forI128BigInt(1000);
+$minBForA = XdrSCVal::forI128BigInt(4500);
 
-$amountB = XdrSCVal::forI128(new XdrInt128Parts(0,5000));
-$minAForB = XdrSCVal::forI128(new XdrInt128Parts(0,950));
+$amountB = XdrSCVal::forI128BigInt(5000);
+$minAForB = XdrSCVal::forI128BigInt(950);
+
+// Or using the legacy method (still supported)
+// $amountA = XdrSCVal::forI128(new XdrInt128Parts(0,1000));
+// $minBForA = XdrSCVal::forI128(new XdrInt128Parts(0,4500));
 
 $args = [
           Address::fromAccountId($aliceAccountId)->toXdrSCVal(),
@@ -332,11 +337,16 @@ Example of manual construction:
  ```php
 $swapMethodName = "swap";
 
-$amountA = XdrSCVal::forI128(new XdrInt128Parts(0,1000));
-$minBForA = XdrSCVal::forI128(new XdrInt128Parts(0,4500));
+// Using the new BigInt support - much simpler!
+$amountA = XdrSCVal::forI128BigInt(1000);
+$minBForA = XdrSCVal::forI128BigInt(4500);
 
-$amountB = XdrSCVal::forI128(new XdrInt128Parts(0,5000));
-$minAForB = XdrSCVal::forI128(new XdrInt128Parts(0,950));
+$amountB = XdrSCVal::forI128BigInt(5000);
+$minAForB = XdrSCVal::forI128BigInt(950);
+
+// Or using the legacy method (still supported)
+// $amountA = XdrSCVal::forI128(new XdrInt128Parts(0,1000));
+// $minBForA = XdrSCVal::forI128(new XdrInt128Parts(0,4500));
 
 $args = [
           Address::fromAccountId($aliceAccountId)->toXdrSCVal(),
@@ -505,36 +515,53 @@ $val = $spec->nativeToXdrSCVal(-112, $def);
 $this->assertEquals(XdrSCValType::SCV_I64, $val->type->value);
 ```
 
-`XDRSCVal` objects of type u128, i128, u256 and i256 are only supported for positive native int values (<= i64):
+##### BigInt Support for 128-bit and 256-bit Integers
+
+The SDK now provides full BigInt support for handling 128-bit and 256-bit integers (u128, i128, u256, i256) that exceed PHP's native integer range. You can use GMP resources, strings, or small integers:
 
 ```php
-// for > 128 only 64 positive numbers are supported
+// Using string representation for large numbers
 $def = XdrSCSpecTypeDef::U128();
-$val = $spec->nativeToXdrSCVal(1112, $def);
+$val = $spec->nativeToXdrSCVal("123456789012345678901234567890", $def);
 $this->assertEquals(XdrSCValType::SCV_U128, $val->type->value);
-$this->assertEquals(1112, $val->u128->lo);
 
-$def = XdrSCSpecTypeDef::I128();
-$val = $spec->nativeToXdrSCVal(2112, $def);
-$this->assertEquals(XdrSCValType::SCV_I128, $val->type->value);
-$this->assertEquals(2112, $val->i128->lo);
-
+// Using GMP for calculations
+$bigValue = gmp_pow(2, 100);
 $def = XdrSCSpecTypeDef::U256();
-$val = $spec->nativeToXdrSCVal(3112, $def);
+$val = $spec->nativeToXdrSCVal($bigValue, $def);
 $this->assertEquals(XdrSCValType::SCV_U256, $val->type->value);
-$this->assertEquals(3112, $val->u256->loLo);
 
+// Small integers work as before
+$def = XdrSCSpecTypeDef::I128();
+$val = $spec->nativeToXdrSCVal(42, $def);
+$this->assertEquals(XdrSCValType::SCV_I128, $val->type->value);
+
+// Negative values for signed types
 $def = XdrSCSpecTypeDef::I256();
-$val = $spec->nativeToXdrSCVal(3112, $def);
+$val = $spec->nativeToXdrSCVal("-999999999999999999999999999999", $def);
 $this->assertEquals(XdrSCValType::SCV_I256, $val->type->value);
-$this->assertEquals(3112, $val->i256->loLo);
 
-// bigger, or negative numbers must be passed as XdrSCVal to funcArgsToXdrSCValues
+// Direct BigInt methods on XdrSCVal
+$u128Val = XdrSCVal::forU128BigInt("340282366920938463463374607431768211455"); // Max U128
+$i128Val = XdrSCVal::forI128BigInt("-170141183460469231731687303715884105728"); // Min I128
+$u256Val = XdrSCVal::forU256BigInt(gmp_pow(2, 200));
+$i256Val = XdrSCVal::forI256BigInt(gmp_neg(gmp_pow(2, 200)));
 
-$args= $spec->funcArgsToXdrSCValues("myFunc", [
-        "bob" => $accountId, 
-        "amount" => XdrSCVal::forI128(new XdrInt128Parts(hi: -1230, lo:81881))
-    ]);
+// Converting back to BigInt
+$bigInt = $u128Val->toBigInt(); // Returns GMP resource
+echo gmp_strval($bigInt); // Print as string
+
+// Using with ContractSpec function calls
+$args = $spec->funcArgsToXdrSCValues("myFunc", [
+    "bob" => $accountId,
+    "amount" => "123456789012345678901234567890" // Automatically converted to I128
+]);
+
+// Legacy method still supported for backward compatibility
+$args = $spec->funcArgsToXdrSCValues("myFunc", [
+    "bob" => $accountId, 
+    "amount" => XdrSCVal::forI128(new XdrInt128Parts(hi: -1230, lo:81881))
+]);
 ```
 
 #### Bytes and BytesN

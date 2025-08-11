@@ -6,7 +6,9 @@
 
 namespace Soneso\StellarSDK\Soroban;
 
+use Exception;
 use RuntimeException;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -106,6 +108,26 @@ class Address
     }
 
     /**
+     * Creates a new instance of Address from the given liquidity pool id.
+     * @param string $liquidityPoolId hex representation. If you have a str key liquidity pool id,
+     * you can decode it to hex with StrKey::decodeLiquidityPoolIdHex($liquidityPoolId)
+     * @return Address the created Address object.
+     */
+    public static function fromLiquidityPoolId(string $liquidityPoolId) : Address {
+        return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $liquidityPoolId);
+    }
+
+    /**
+     * Creates a new instance of Address from the given claimable balance id.
+     * @param string $claimableBalanceId hex representation. If you have a str key claimable balance id,
+     * you can decode it to hex with StrKey::decodeClaimableBalanceIdHex($claimableBalanceId)
+     * @return Address the created Address object.
+     */
+    public static function fromClaimableBalanceId(string $claimableBalanceId) : Address {
+        return new Address(Address::TYPE_LIQUIDITY_POOL, claimableBalanceId: $claimableBalanceId);
+    }
+
+    /**
      * Creates a new instance of Address from the given muxed account id ("M...")
      * @param string $muxedAccountId the muxed account id to create the Address object from ("M...")
      * @return Address the created Address object.
@@ -142,6 +164,62 @@ class Address
         } else {
             throw new RuntimeException("Given XdrSCVal is not of type address.");
         }
+    }
+
+    /**
+     * Tries to convert a given id to an Address. The given id can be a contract id,
+     * an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
+     * If not, returns null.
+     * @param string $id a contract id, an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
+     * @return Address|null The address if could be converted.
+     */
+    public static function fromAnyId(string $id) : ?Address {
+        if (ctype_xdigit($id)) { // is hex string
+            try {
+                $strKeyContractId = StrKey::encodeContractIdHex($id);
+                if (StrKey::isValidContractId($strKeyContractId)) {
+                    return Address::fromContractId($id);
+                }
+            } catch (Exception $e) {}
+            try {
+                $strKeyLiquidityPoolId = StrKey::encodeLiquidityPoolIdHex($id);
+                if (StrKey::isValidLiquidityPoolId($strKeyLiquidityPoolId)) {
+                    return Address::fromLiquidityPoolId($id);
+                }
+            } catch (Exception $e) {}
+
+            try {
+                $strKeyClaimableBalanceId = StrKey::encodeClaimableBalanceIdHex($id);
+                if (StrKey::isValidClaimableBalanceId($strKeyClaimableBalanceId)) {
+                    return Address::fromClaimableBalanceId($id);
+                }
+            } catch (Exception $e) {}
+        } else {
+            if (StrKey::isValidAccountId($id)) {
+                return Address::fromAccountId($id);
+            }
+            if (StrKey::isValidMuxedAccountId($id)) {
+                return Address::fromMuxedAccountId($id);
+            }
+            if (StrKey::isValidContractId($id)) {
+                return Address::fromContractId(StrKey::decodeContractIdHex($id));
+            }
+            if (StrKey::isValidClaimableBalanceId($id)) {
+                return Address::fromClaimableBalanceId(StrKey::decodeClaimableBalanceIdHex($id));
+            }
+            if (StrKey::isValidLiquidityPoolId($id)) {
+                return Address::fromLiquidityPoolId(StrKey::decodeLiquidityPoolIdHex($id));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the StrKey representation of the address.
+     * @throws Exception
+     */
+    public function toStrKey() : string {
+        return $this->toXdr()->toStrKey();
     }
 
     /**

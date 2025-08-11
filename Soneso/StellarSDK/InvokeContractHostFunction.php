@@ -15,6 +15,11 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 class InvokeContractHostFunction extends HostFunction
 {
+    /**
+     * @var string $contractId can be any type that can be converted to an address.
+     * E.g. hex contract id, StrKey contract id, hex claimable balance id, StrKey claimable balance id, etc.
+     * Use Address::fromAny($contractId) to get the exact type.
+     */
     public string $contractId;
     public string $functionName;
     /**
@@ -40,7 +45,9 @@ class InvokeContractHostFunction extends HostFunction
         if ($this->arguments != null) {
             $args = array_merge($args, $this->arguments);
         }
-        $invokeArgs = new XdrInvokeContractArgs(Address::fromContractId($this->contractId)->toXdr(),
+        // allow all kinds of addresses
+        $address = Address::fromAnyId($this->contractId);
+        $invokeArgs = new XdrInvokeContractArgs($address->toXdr(),
             $this->functionName,$args);
         return XdrHostFunction::forInvokingContractWithArgs($invokeArgs);
     }
@@ -53,8 +60,8 @@ class InvokeContractHostFunction extends HostFunction
         if ($invokeContract == null) {
             throw new Exception("Invalid argument");
         }
-
-        $contractId = Address::fromXdr($invokeContract->contractAddress)->contractId;
+        // allow all types of addresses
+        $contractId = $invokeContract->contractAddress->toStrKey();
         $functionName = $invokeContract->functionName;
         $args= $invokeContract->getArgs();
 

@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Exception;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
@@ -78,6 +79,9 @@ class XdrSCAddress
             case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
                 $result->accountId = XdrAccountID::decode($xdr);
                 break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+                $result->muxedAccount = XdrMuxedAccountMed25519::decode($xdr);
+                break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
                 $result->contractId = bin2hex($xdr->readOpaqueFixed(32));
                 break;
@@ -140,6 +144,36 @@ class XdrSCAddress
         $res->liquidityPoolId = $liquidityPoolId;
         return $res;
     }
+
+    /**
+     * Returns the StrKey representation of the address.
+     * @throws Exception
+     */
+    public function toStrKey() : string {
+        switch ($this->type->value) {
+            case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
+                return $this->accountId->getAccountId();
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                if (str_starts_with($this->contractId, "C")) {
+                    return $this->contractId;
+                }
+                return StrKey::encodeContractIdHex($this->contractId);
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+                return $this->muxedAccount->getAccountId();
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+                if (str_starts_with($this->claimableBalanceId, "B")) {
+                    return $this->claimableBalanceId;
+                }
+                return StrKey::encodeClaimableBalanceIdHex($this->claimableBalanceId);
+            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                if (str_starts_with($this->liquidityPoolId, "L")) {
+                    return $this->liquidityPoolId;
+                }
+                return StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolId);
+        }
+        throw new Exception("unknown address type: " . $this->type->value);
+    }
+
 
     /**
      * @return XdrSCAddressType
