@@ -719,6 +719,82 @@ $this->assertCount(3, $val->vec); // key + 2 values (a,4)
 
 The above examples can be found in the `SorobanClientTest.php` of the SDK.
 
+## Contract Bindings
+
+For an even more streamlined development experience, you can generate type-safe PHP contract bindings using the [stellar-contract-bindings](https://github.com/lightsail-network/stellar-contract-bindings) tool. This tool generates PHP classes from your contract specifications that provide:
+
+- **Type-safe method calls** with proper PHP types for all parameters
+- **Automatic type conversion** between PHP and Soroban types
+- **Simplified API** that feels natural
+
+### Generating Contract Bindings
+
+To generate PHP bindings for a deployed contract, you can use the `stellar-contract-bindings` tool:
+
+```bash
+# Install the tool
+pip install stellar-contract-bindings
+
+# Generate bindings for a deployed contract
+stellar-contract-bindings php \
+  --contract-id YOUR_CONTRACT_ID \
+  --rpc-url https://soroban-testnet.stellar.org \
+  --output ./generated  \
+  --namespace MyApp\\Contracts \
+  --class-name MyContractClient
+```
+
+This will generate a PHP file with:
+- A main contract client class
+- Type definitions for all structs, enums, and unions defined in the contract
+- Methods for each contract function with proper type hints
+
+Hint: You can also use the Contract Bindings [Web Interface](https://stellar-contract-bindings.fly.dev/) to generate the bindings.
+
+### Using Generated Bindings
+
+```php
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
+use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
+use MyApp\Contracts\MyContractClient; // Import the generated bindings
+
+// Initialize
+$sourceKeyPair = KeyPair::fromAccountId("GD5KKP3LHUDXLDCGKP55NLEOEHMS3Z4BS6IDDZFCYU3BDXUZTBWL7JNF");
+// or: $sourceKeyPair = KeyPair::fromSeed("S...")
+
+// Create client instance
+$options = new ClientOptions(
+    sourceAccountKeyPair: $sourceKeyPair,
+    contractId: "CDOAW6D7NXAPOCO7TFAWZNJHK62E3IYRGNRVX3VOXNKNVOXCLLPJXQCF",
+    network: Network::public(),
+    rpcUrl: "https://mainnet.sorobanrpc.com"
+);
+
+$client = MyContractClient::forClientOptions($options);
+
+// Call contract method directly
+try {
+    $result = $client->hello("World");
+    echo "Contract response: " . $result . "\n";
+} catch (Exception $e) {
+    echo "Error calling contract: " . $e->getMessage() . "\n";
+}
+
+// Or build an assembled transaction for more control
+$methodOptions = new MethodOptions();
+$assembledTx = $client->buildHelloTx("World", $methodOptions);
+```
+
+### Generated Bindings examples
+
+For examples of using generated bindings, see [SorobanClientTest.php](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDKTests/SorobanClientTest.php), 
+particularly the binding test functions:
+- `testHelloContractWithBinding()` - Simple contract interaction
+- `testAuthContractWithBinding()` - Authorization handling
+- `testAtomicSwapContractWithBinding()` - Complex multi-contract interaction
+
 ## Interacting with Soroban without using the SorobanClient
 
 The [`SorobanClient`](https://github.com/Soneso/stellar-php-sdk/blob/main/Soneso/StellarSDK/Soroban/Contract/SorobanClient.php) was introduced as a usability improvement, that allows you to easily 

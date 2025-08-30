@@ -23,7 +23,7 @@ use Soneso\StellarSDK\Util\FuturenetFriendBot;
 class ClaimableBalancesTest extends TestCase
 {
 
-    private string $testOn = 'futurenet'; // 'futurenet'
+    private string $testOn = 'testnet'; // 'futurenet'
     private Network $network;
     private StellarSDK $sdk;
 
