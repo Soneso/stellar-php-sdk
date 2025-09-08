@@ -1,7 +1,7 @@
 
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
-![v1.8.2](https://img.shields.io/badge/v1.8.2-green.svg)
+![v1.8.2](https://img.shields.io/badge/v1.8.2-green.svg) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
 
 The Soneso open source Stellar SDK for PHP provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
@@ -242,5 +242,18 @@ More examples can be found in the [tests](https://github.com/Soneso/stellar-php-
 
 This SDK provides [support for Soroban](https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md). 
 
-### DeepWiki
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
+### Feedback & Feature Requests
+
+We’d love to hear from you! 
+If you’re using this SDK in your project, your feedback is incredibly valuable for helping us improve.
+
+- ✅ What’s working well?
+- ⚡ What could be improved?
+- 🌟 Any features you’d like to see in the future?
+
+Please share your thoughts in [GitHub Discussions](https://github.com/Soneso/stellar-php-sdk/discussions),  
+or open an issue directly:
+- [🐞 Bug Report](https://github.com/Soneso/stellar-php-sdk/issues/new?template=bug_report.yml)
+- [🌟 Feature Request](https://github.com/Soneso/stellar-php-sdk/issues/new?template=feature_request.yml)
+
+Even a couple of quick notes go a long way — thank you for helping us make the SDK better for the whole Stellar community! 🙏

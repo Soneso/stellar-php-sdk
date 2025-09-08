@@ -53,7 +53,7 @@ body:
     attributes:
       label: "SDK Version"
       description: "Which version of the SDK are you using?"
-      placeholder: "Example: v10.2.0"
+      placeholder: "Example: 1.8.2"
 
   - type: input
     id: phpversion
