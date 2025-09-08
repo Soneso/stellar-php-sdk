@@ -251,9 +251,20 @@ If you’re using this SDK in your project, your feedback is incredibly valuable
 - ⚡ What could be improved?
 - 🌟 Any features you’d like to see in the future?
 
-Please share your thoughts in [GitHub Discussions](https://github.com/Soneso/stellar-php-sdk/discussions),  
+Please share your thoughts in [Discussions](https://github.com/Soneso/stellar-php-sdk/discussions),  
 or open an issue directly:
 - [🐞 Bug Report](https://github.com/Soneso/stellar-php-sdk/issues/new?template=bug_report.yml)
 - [🌟 Feature Request](https://github.com/Soneso/stellar-php-sdk/issues/new?template=feature_request.yml)
 
 Even a couple of quick notes go a long way — thank you for helping us make the SDK better for the whole Stellar community! 🙏
+
+### Contributing
+
+Contributions are welcome! There are several ways you can help improve this SDK:
+
+- 🐞 [Report bugs](https://github.com/Soneso/stellar-php-sdk/issues/new?template=bug_report.yml)
+- 🌟 [Request features](https://github.com/Soneso/stellar-php-sdk/issues/new?template=feature_request.yml)
+- 💬 Share your ideas in [Discussions](https://github.com/Soneso/stellar-php-sdk/discussions)
+- 🔧 Submit a Pull Request with code improvements
+
+Please check out our [Contributing Guide](./CONTRIBUTING.md) for details. 🙏
