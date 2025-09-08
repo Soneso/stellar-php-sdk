@@ -1,0 +1,71 @@
+name: "Bug Report"
+description: Report a bug or unexpected behavior in the PHP Stellar SDK
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ Thanks for helping us improve the SDK!  
+        Please provide as much detail as possible so we can reproduce and fix the issue.  
+
+  - type: input
+    id: summary
+    attributes:
+      label: "Bug Summary"
+      description: "Briefly describe the issue."
+      placeholder: "Example: Transaction fails when submitting XDR"
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to Reproduce"
+      description: "List the steps needed to reproduce the problem."
+      placeholder: |
+        1. Create a transaction with...
+        2. Submit to Horizon
+        3. See error message
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "What did you expect to happen?"
+      placeholder: "Example: The transaction should be accepted by Horizon."
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual Behavior"
+      description: "What actually happened?"
+      placeholder: "Example: Horizon returns 400 Bad Request."
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Error Messages / Logs"
+      description: "Paste any relevant error messages or logs."
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: "SDK Version"
+      description: "Which version of the SDK are you using?"
+      placeholder: "Example: v10.2.0"
+
+  - type: input
+    id: phpversion
+    attributes:
+      label: "PHP Version"
+      description: "Which version of PHP are you using?"
+      placeholder: "Example: 8.2.10"
+
+  - type: input
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Tell us about your environment (OS, web server, etc.)."
+      placeholder: "Example: Ubuntu 22.04, Apache, PHP-FPM"
+
