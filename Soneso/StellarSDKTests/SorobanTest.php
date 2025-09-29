@@ -716,6 +716,7 @@ class SorobanTest extends TestCase
         $paginationOptions = new PaginationOptions(limit: 2);
         $request = new GetEventsRequest(
             startLedger: $startLedger,
+            endLedger: $startLedger + 5,
             filters: $eventFilters,
             paginationOptions: $paginationOptions,
         );

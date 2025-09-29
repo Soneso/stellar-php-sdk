@@ -22,6 +22,12 @@ class GetEventsRequest
     public ?int $startLedger = null;
 
     /**
+     * @var int|null $endLedger Ledger sequence number represents the end of search window (exclusive).
+     * If a cursor is included in the request, endLedger must be omitted.
+     */
+    public ?int $endLedger = null;
+
+    /**
      * @var EventFilters|null List of filters for the returned events. Events matching any of the filters are included.
      * To match a filter, an event must match both a contractId and a topic.
      * Maximum 5 filters are allowed per request.
@@ -37,15 +43,18 @@ class GetEventsRequest
      * Constructor.
      * @param int|null $startLedger Ledger sequence number to fetch events after (inclusive).
      *  The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
-     *  or greater than the latest ledger seen by this node.
+     *  or greater than the latest ledger seen by this node. If a cursor is included in the request, startLedger must be omitted.
+     * @param int|null $endLedger Ledger sequence number represents the end of search window (exclusive).
+     *  If a cursor is included in the request, endLedger must be omitted.
      * @param EventFilters|null $filters List of filters for the returned events. Events matching any of the filters are included.
      *  To match a filter, an event must match both a contractId and a topic.
      *  Maximum 5 filters are allowed per request.
      * @param PaginationOptions|null $paginationOptions for pagination.
      */
-    public function __construct(?int $startLedger = null, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
+    public function __construct(?int $startLedger = null, ?int $endLedger = null, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
     {
         $this->startLedger = $startLedger;
+        $this->endLedger = $endLedger;
         $this->filters = $filters;
         $this->paginationOptions = $paginationOptions;
     }
@@ -57,6 +66,10 @@ class GetEventsRequest
         $params = array();
         if ($this->startLedger != null) {
             $params['startLedger'] = $this->startLedger;
+        }
+
+        if ($this->endLedger != null) {
+            $params['endLedger'] = $this->endLedger;
         }
 
         if ($this->filters != null) {
@@ -74,20 +87,43 @@ class GetEventsRequest
     }
 
     /**
-     * @return int
+     * @return int|null Ledger sequence number to fetch events after (inclusive).
      */
-    public function getStartLedger(): int
+    public function getStartLedger(): ?int
     {
         return $this->startLedger;
     }
 
     /**
-     * @param int $startLedger
+     * @param int|null $startLedger Ledger sequence number to fetch events after (inclusive).
+     *  The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
+     *  or greater than the latest ledger seen by this node. If a cursor is included in the request,
+     *  startLedger must be omitted.
+     * @return void
      */
-    public function setStartLedger(int $startLedger): void
+    public function setStartLedger(?int $startLedger): void
     {
         $this->startLedger = $startLedger;
     }
+
+    /**
+     * @return int|null Ledger sequence number represents the end of search window (exclusive).
+     */
+    public function getEndLedger(): ?int
+    {
+        return $this->endLedger;
+    }
+
+    /**
+     * @param int|null $endLedger Ledger sequence number represents the end of search window (exclusive).
+     *  If a cursor is included in the request, endLedger must be omitted.
+     * @return void
+     */
+    public function setEndLedger(?int $endLedger): void
+    {
+        $this->endLedger = $endLedger;
+    }
+
 
     /**
      * @return EventFilters|null

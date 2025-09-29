@@ -9,7 +9,7 @@ The Soneso open source Stellar SDK for PHP provides APIs to build and sign trans
 
 ## Latest stable release
 
-```composer require soneso/stellar-php-sdk:1.8.2```
+```composer require soneso/stellar-php-sdk:1.8.3```
 
 ## Quick Start
 
