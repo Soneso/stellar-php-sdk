@@ -12,6 +12,7 @@ class RequestType
     public const FEE_STATS = "fee_stats";
     public const ORDER_BOOK = "order_book";
     public const SINGLE_ACCOUNT = "account_single";
+    public const ACCOUNT_DATA_VALUE = "account_data_value";
     public const ACCOUNTS_PAGE = "accounts_page";
     public const ASSETS_PAGE = "assets_page";
     public const SINGLE_LEDGER = "ledger_single";

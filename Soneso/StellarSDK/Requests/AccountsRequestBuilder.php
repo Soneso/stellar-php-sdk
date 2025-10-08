@@ -7,10 +7,12 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Responses\Account\AccountResponse;
+use Soneso\StellarSDK\Responses\Account\AccountDataValueResponse;
 use Soneso\StellarSDK\Responses\Account\AccountsPageResponse;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 
@@ -35,6 +37,60 @@ class AccountsRequestBuilder extends RequestBuilder
     public function account(string $accountId) : AccountResponse {
       $this->setSegments("accounts", $accountId);
       return parent::executeRequest($this->buildUrl(),RequestType::SINGLE_ACCOUNT);
+    }
+
+    /**
+     * Requests <code>GET /accounts/{account}/data/{key}</code>
+     * Returns the value of a single data entry for an account.
+     * @param string $accountId Public key of the account
+     * @param string $key The data entry key to fetch
+     * @return AccountDataValueResponse
+     * @throws HorizonRequestException
+     * @see <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-data-by-account-id">Account Data Details</a>
+     */
+    public function accountData(string $accountId, string $key) : AccountDataValueResponse {
+        $this->setSegments("accounts", $accountId, "data", $key);
+        return parent::executeRequest($this->buildUrl(), RequestType::ACCOUNT_DATA_VALUE);
+    }
+
+    /**
+     * Streams AccountResponse objects for a specific account to $callback
+     *
+     * This method provides real-time updates by streaming the /accounts/{account_id} endpoint
+     * directly. Horizon uses polling-based streaming: it polls the account endpoint every few
+     * seconds and sends SSE events when the account state changes.
+     *
+     * The callback receives AccountResponse objects whenever the account is updated (e.g., after
+     * transactions, balance changes, data entries, etc.).
+     *
+     * $callback should have arguments:
+     *  AccountResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $accountId = "GDQJUTQYK2MQX2VGDR2FYWLIYAQIEGXTQVTFEMGH2BEWFG4BRUY4CKI7";
+     * $sdk->accounts()->streamAccount($accountId, function(AccountResponse $account) {
+     *     printf('Account %s updated - Sequence: %s, Balance: %s XLM' . PHP_EOL,
+     *         $account->getAccountId(),
+     *         $account->getSequenceNumber(),
+     *         $account->getBalances()->getNativeBalance()->getBalance()
+     *     );
+     * });
+     *
+     * @param string $accountId Public key of the account to stream
+     * @param callable|null $callback Callback function to receive AccountResponse objects
+     * @throws GuzzleException
+     * @throws HorizonRequestException
+     * @see <a href="https://developers.stellar.org/api/resources/accounts/single/">Account Details</a>
+     */
+    public function streamAccount(string $accountId, ?callable $callback = null)
+    {
+        $this->setSegments("accounts", $accountId);
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = AccountResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
     }
 
     public function forSigner(string $signer) : AccountsRequestBuilder {

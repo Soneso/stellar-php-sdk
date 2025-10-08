@@ -341,5 +341,164 @@ final class AccountTest extends TestCase
         }
         assertTrue($thrown);
     }
+
+    public function testAccountDataEndpoint(): void {
+        // Create a new test account
+        $keyPair = KeyPair::random();
+        $accountId = $keyPair->getAccountId();
+
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif ($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
+
+        // Load account
+        $account = $this->sdk->requestAccount($accountId);
+
+        // Add a data entry
+        $dataKey = "testKey";
+        $dataValue = "testValue";
+
+        $manageDataOp = (new ManageDataOperationBuilder($dataKey, $dataValue))->build();
+        $transaction = (new TransactionBuilder($account))
+            ->addOperation($manageDataOp)
+            ->build();
+
+        $transaction->sign($keyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // Wait for transaction to be processed
+        sleep(3);
+
+        // Test fetching the data entry using the accountData endpoint
+        $dataResponse = $this->sdk->accounts()->accountData($accountId, $dataKey);
+
+        // Verify base64-encoded value
+        $encodedValue = $dataResponse->getValue();
+        $this->assertNotNull($encodedValue);
+        $this->assertNotEmpty($encodedValue);
+
+        // Verify decoded value matches original
+        $decodedValue = $dataResponse->getDecodedValue();
+        $this->assertEquals($dataValue, $decodedValue);
+
+        // Test non-existent key (should throw exception)
+        $thrown = false;
+        try {
+            $this->sdk->accounts()->accountData($accountId, "nonExistentKey");
+        } catch (HorizonRequestException $e) {
+            $this->assertEquals(404, $e->getStatusCode());
+            $thrown = true;
+        }
+        $this->assertTrue($thrown);
+
+        // Clean up: delete the data entry
+        $account = $this->sdk->requestAccount($accountId);
+        $deleteDataOp = (new ManageDataOperationBuilder($dataKey, null))->build();
+        $transaction = (new TransactionBuilder($account))
+            ->addOperation($deleteDataOp)
+            ->build();
+
+        $transaction->sign($keyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // Verify deletion - should throw 404
+        sleep(3);
+        $thrown = false;
+        try {
+            $this->sdk->accounts()->accountData($accountId, $dataKey);
+        } catch (HorizonRequestException $e) {
+            $this->assertEquals(404, $e->getStatusCode());
+            $thrown = true;
+        }
+        $this->assertTrue($thrown);
+    }
+
+    public function testStreamAccount(): void {
+        // Create and fund test account
+        $keyPair = KeyPair::random();
+        $accountId = $keyPair->getAccountId();
+
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif ($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
+
+        // Get initial account state
+        $initialAccount = $this->sdk->requestAccount($accountId);
+        $initialSequence = $initialAccount->getSequenceNumber();
+
+        $pid = pcntl_fork();
+
+        if ($pid == 0) {
+            // Child process - stream account changes
+            try {
+                $streamSdk = $this->testOn === 'testnet'
+                    ? StellarSDK::getTestNetInstance()
+                    : StellarSDK::getFutureNetInstance();
+
+                $updateCount = 0;
+
+                $streamSdk->accounts()->streamAccount($accountId, function($account) use ($initialSequence, &$updateCount) {
+                    $updateCount++;
+
+                    // Skip initial state
+                    if ($updateCount == 1) {
+                        return;
+                    }
+
+                    // Check if sequence number increased (transaction processed)
+                    if ($account->getSequenceNumber()->compare($initialSequence) > 0) {
+                        // print("Success" .PHP_EOL);
+                        exit(1); // Success
+                    }
+                });
+            } catch (Exception $e) {
+                exit(0); // Failure
+            }
+        } else {
+            // Parent process - wait for stream to initialize
+            sleep(8);
+
+            // Submit transaction to trigger account update
+            $account = $this->sdk->requestAccount($accountId);
+            $manageDataOp = (new ManageDataOperationBuilder("test_stream", "streaming_test"))->build();
+            $transaction = (new TransactionBuilder($account))
+                ->addOperation($manageDataOp)
+                ->build();
+
+            $transaction->sign($keyPair, $this->network);
+            $response = $this->sdk->submitTransaction($transaction);
+            $this->assertTrue($response->isSuccessful());
+
+            // Wait for child to detect update (max 60 seconds for Horizon polling)
+            $timeout = 60;
+            $elapsed = 0;
+            $status = 0;
+
+            while ($elapsed < $timeout) {
+                $result = pcntl_waitpid($pid, $status, WNOHANG);
+                if ($result > 0) {
+                    break;
+                }
+                sleep(1);
+                $elapsed++;
+            }
+
+            // print("ELAPSED: " . $elapsed . PHP_EOL);
+            if ($elapsed >= $timeout) {
+                posix_kill($pid, SIGKILL);
+                pcntl_waitpid($pid, $status);
+                $this->fail('Stream test timed out - Horizon did not detect account update');
+            }
+
+            $exitStatus = pcntl_wexitstatus($status);
+            $this->assertEquals(1, $exitStatus, 'Stream should have detected account update');
+        }
+    }
 }
 

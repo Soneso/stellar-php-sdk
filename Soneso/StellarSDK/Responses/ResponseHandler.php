@@ -15,6 +15,7 @@ use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalanceResponse;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalancesPageResponse;
 use Soneso\StellarSDK\Responses\Effects\EffectsPageResponse;
 use Soneso\StellarSDK\Responses\Account\AccountResponse;
+use Soneso\StellarSDK\Responses\Account\AccountDataValueResponse;
 use Soneso\StellarSDK\Responses\FeeStats\FeeStatsResponse;
 use Soneso\StellarSDK\Responses\Ledger\LedgerResponse;
 use Soneso\StellarSDK\Responses\Ledger\LedgersPageResponse;
@@ -77,6 +78,7 @@ class ResponseHandler
         $horizonResponse = match ($requestType) {
             RequestType::ROOT => RootResponse::fromJson($jsonData),
             RequestType::SINGLE_ACCOUNT => AccountResponse::fromJson($jsonData),
+            RequestType::ACCOUNT_DATA_VALUE => AccountDataValueResponse::fromJson($jsonData),
             RequestType::ACCOUNTS_PAGE => AccountsPageResponse::fromJson($jsonData),
             RequestType::ASSETS_PAGE => AssetsPageResponse::fromJson($jsonData),
             RequestType::SINGLE_LEDGER => LedgerResponse::fromJson($jsonData),
