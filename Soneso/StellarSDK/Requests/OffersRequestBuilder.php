@@ -8,6 +8,7 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
@@ -143,5 +144,29 @@ class OffersRequestBuilder  extends RequestBuilder
      */
     public function execute() : OffersPageResponse {
         return $this->request($this->buildUrl());
+    }
+
+    /**
+     * Streams Offer objects to $callback
+     *
+     * $callback should have arguments:
+     *  OfferResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $sdk->offers()->forAccount("GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B")->cursor("now")->stream(function(OfferResponse $offer) {
+     * printf('Offer id %s' . PHP_EOL, $offer->getOfferId());
+     * });
+     *
+     * @param callable|null $callback
+     * @throws GuzzleException
+     */
+    public function stream(?callable $callback = null)
+    {
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = OfferResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
     }
 }

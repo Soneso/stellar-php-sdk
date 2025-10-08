@@ -7,10 +7,12 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\Responses\Trades\TradeResponse;
 use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
 
 class TradesRequestBuilder extends RequestBuilder
@@ -149,5 +151,35 @@ class TradesRequestBuilder extends RequestBuilder
      */
     public function execute() : TradesPageResponse {
         return $this->request($this->buildUrl());
+    }
+
+    /**
+     * Streams TradeResponse objects to $callback
+     *
+     * $callback should have arguments:
+     *  TradeResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $sdk->trades()->cursor("now")->stream(function(TradeResponse $trade) {
+     *     printf('Trade ID: %s, Amount: %s %s for %s %s' . PHP_EOL,
+     *         $trade->getId(),
+     *         $trade->getBaseAmount(),
+     *         $trade->getBaseAssetCode() ?? 'XLM',
+     *         $trade->getCounterAmount(),
+     *         $trade->getCounterAssetCode() ?? 'XLM'
+     *     );
+     * });
+     *
+     * @param callable|null $callback
+     * @throws GuzzleException
+     */
+    public function stream(?callable $callback = null)
+    {
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = TradeResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
     }
 }

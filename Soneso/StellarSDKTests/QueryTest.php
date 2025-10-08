@@ -469,5 +469,44 @@ class QueryTest extends TestCase
         }
         $this->assertTrue($found);
     }
+
+    public function testStreamOffers(): void
+    {
+
+        // First, get an account that has offers
+        $response = $this->sdk->offers()->limit(1)->execute();
+        $this->assertTrue($response->getOffers()->count() > 0, "No offers found on testnet");
+        $accountId = $response->getOffers()->toArray()[0]->getSeller();
+
+        $found = false;
+        try {
+            $this->sdk->offers()->forAccount($accountId)->stream(function($offer) {
+                printf('Offer id %s' . PHP_EOL, $offer->getOfferId());
+                throw new Exception("stop");
+            });
+        } catch (Exception $e) {
+            if ($e->getMessage() == "stop") {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testStreamTrades(): void
+    {
+
+        $found = false;
+        try {
+            $this->sdk->trades()->stream(function($trade) {
+                printf('Trade id %s' . PHP_EOL, $trade->getId());
+                throw new Exception("stop");
+            });
+        } catch (Exception $e) {
+            if ($e->getMessage() == "stop") {
+                $found = true;
+            }
+        }
+        $this->assertTrue($found);
+    }
 }
 
