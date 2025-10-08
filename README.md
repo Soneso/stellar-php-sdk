@@ -238,9 +238,15 @@ More examples can be found in the [tests](https://github.com/Soneso/stellar-php-
 - [SEP-0038: Quotes](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
 - [SEP-0031: Cross Border Payments](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md)
 
-### Soroban support
 
-This SDK provides [support for Soroban](https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md). 
+### Soroban Support
+
+This SDK offers full support for **Soroban**, the smart contract platform integrated into the Stellar network.
+
+Detailed documentation on using Soroban with this SDK is available [here](https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md).
+
+A practical example of Soroban integration can be seen in [Equillar](https://github.com/icolomina/equillar), an open-source investment platform built with PHP and Symfony. Equillar demonstrates how the PHP Stellar SDK can be used to connect to and interact with Soroban smart contracts that manage investment-related operations.
+
 
 ### Feedback & Feature Requests
 
