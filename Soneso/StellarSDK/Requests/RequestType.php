@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Requests;
 class RequestType
 {
     public const ROOT = "root";
+    public const HEALTH = "health";
     public const FEE_STATS = "fee_stats";
     public const ORDER_BOOK = "order_book";
     public const SINGLE_ACCOUNT = "account_single";

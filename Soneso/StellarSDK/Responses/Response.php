@@ -16,15 +16,20 @@ abstract class Response
     protected ?Client $httpClient = null;
 
     public function setHeaders(array $headers) : void {
-        
+        // PSR-7 getHeaders() returns headers as arrays of values (e.g., ['100'] not '100')
+        // We need to extract the first value from the array before converting to int
+
         if (array_key_exists("X-Ratelimit-Limit", $headers)) {
-            $this->rateLimitLimit = (int)$headers["X-Ratelimit-Limit"];
+            $value = $headers["X-Ratelimit-Limit"];
+            $this->rateLimitLimit = (int)(is_array($value) ? ($value[0] ?? null) : $value);
         }
         if (array_key_exists("X-Ratelimit-Remaining", $headers)) {
-            $this->rateLimitRemaining = (int)$headers["X-Ratelimit-Remaining"];
+            $value = $headers["X-Ratelimit-Remaining"];
+            $this->rateLimitRemaining = (int)(is_array($value) ? ($value[0] ?? null) : $value);
         }
         if (array_key_exists("X-Ratelimit-Reset", $headers)) {
-            $this->rateLimitReset = (int)$headers["X-Ratelimit-Reset"];
+            $value = $headers["X-Ratelimit-Reset"];
+            $this->rateLimitReset = (int)(is_array($value) ? ($value[0] ?? null) : $value);
         }
     }
     

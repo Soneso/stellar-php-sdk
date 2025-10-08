@@ -16,6 +16,7 @@ use Soneso\StellarSDK\Requests\ClaimableBalancesRequestBuilder;
 use Soneso\StellarSDK\Requests\EffectsRequestBuilder;
 use Soneso\StellarSDK\Requests\FeeStatsRequestBuilder;
 use Soneso\StellarSDK\Requests\FindPathsRequestBuilder;
+use Soneso\StellarSDK\Requests\HealthRequestBuilder;
 use Soneso\StellarSDK\Requests\LedgersRequestBuilder;
 use Soneso\StellarSDK\Requests\LiquidityPoolsRequestBuilder;
 use Soneso\StellarSDK\Requests\OffersRequestBuilder;
@@ -33,6 +34,7 @@ use Soneso\StellarSDK\Requests\TransactionsRequestBuilder;
 use Soneso\StellarSDK\Responses\Account\AccountResponse;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalanceResponse;
 use Soneso\StellarSDK\Responses\FeeStats\FeeStatsResponse;
+use Soneso\StellarSDK\Responses\Health\HealthResponse;
 use Soneso\StellarSDK\Responses\Ledger\LedgerResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolResponse;
 use Soneso\StellarSDK\Responses\Offers\OfferResponse;
@@ -107,6 +109,15 @@ class StellarSDK
     public function root() : RootResponse {
         $requestBuilder = new RootRequestBuilder($this->httpClient);
         return $requestBuilder->getRoot($this->serverUri);
+    }
+
+    /**
+     * Requests the health status of the Horizon server and returns {@link HealthResponse}.
+     * @throws HorizonRequestException
+     */
+    public function health() : HealthResponse {
+        $requestBuilder = new HealthRequestBuilder($this->httpClient);
+        return $requestBuilder->getHealth();
     }
 
     public function accounts() : AccountsRequestBuilder {

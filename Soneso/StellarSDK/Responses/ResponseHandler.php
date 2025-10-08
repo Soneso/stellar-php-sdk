@@ -17,6 +17,7 @@ use Soneso\StellarSDK\Responses\Effects\EffectsPageResponse;
 use Soneso\StellarSDK\Responses\Account\AccountResponse;
 use Soneso\StellarSDK\Responses\Account\AccountDataValueResponse;
 use Soneso\StellarSDK\Responses\FeeStats\FeeStatsResponse;
+use Soneso\StellarSDK\Responses\Health\HealthResponse;
 use Soneso\StellarSDK\Responses\Ledger\LedgerResponse;
 use Soneso\StellarSDK\Responses\Ledger\LedgersPageResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolResponse;
@@ -77,6 +78,7 @@ class ResponseHandler
 
         $horizonResponse = match ($requestType) {
             RequestType::ROOT => RootResponse::fromJson($jsonData),
+            RequestType::HEALTH => HealthResponse::fromJson($jsonData),
             RequestType::SINGLE_ACCOUNT => AccountResponse::fromJson($jsonData),
             RequestType::ACCOUNT_DATA_VALUE => AccountDataValueResponse::fromJson($jsonData),
             RequestType::ACCOUNTS_PAGE => AccountsPageResponse::fromJson($jsonData),
