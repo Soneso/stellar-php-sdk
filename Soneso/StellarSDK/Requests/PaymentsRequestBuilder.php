@@ -15,10 +15,10 @@ use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
 use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictReceiveOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictSendOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
-use Soneso\StellarSDK\Responses\Payments\PaymentsPageResponse;
 
 class PaymentsRequestBuilder extends RequestBuilder
 {
+    private const INCLUDE_FAILED_PARAMETER_NAME = "include_failed";
     private const JOIN_PARAMETER_NAME = "join";
 
     public function __construct(Client $httpClient)
@@ -72,6 +72,17 @@ class PaymentsRequestBuilder extends RequestBuilder
         } else if (array_key_exists(PaymentsRequestBuilder::JOIN_PARAMETER_NAME, $this->queryParameters)){
             unset($this->queryParameters[PaymentsRequestBuilder::JOIN_PARAMETER_NAME]);
         }
+        return $this;
+    }
+
+    /**
+     * Adds a parameter defining whether to include payments of failed transactions. By default, only payments of
+     * successful transactions are returned.
+     * @param bool $value  Set to <code>true</code> to include payments of failed transactions.
+     * @return PaymentsRequestBuilder
+     */
+    public function includeFailed(bool $value) : PaymentsRequestBuilder {
+        $this->queryParameters[PaymentsRequestBuilder::INCLUDE_FAILED_PARAMETER_NAME] = $value ? "true" : "false";
         return $this;
     }
 
