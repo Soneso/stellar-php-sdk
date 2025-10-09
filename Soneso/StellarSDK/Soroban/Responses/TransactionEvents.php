@@ -9,11 +9,6 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 class TransactionEvents
 {
     /**
-     * @var array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
-     */
-    public ?array $diagnosticEventsXdr = null;
-
-    /**
      * @var array<string>|null $transactionEventsXdr (optional) A base64 encoded slice of xdr.TransactionEvent.
      */
     public ?array $transactionEventsXdr = null;
@@ -24,33 +19,18 @@ class TransactionEvents
     public ?array $contractEventsXdr = null;
 
     /**
-     * @param array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
      * @param array<string>|null $transactionEventsXdr (optional) A base64 encoded slice of xdr.TransactionEvent.
      * @param array<array<string>>|null $contractEventsXdr (optional) A base64 encoded slice of array [xdr.ContractEvent] for each operation.
      */
-    public function __construct(?array $diagnosticEventsXdr = null,
-                                ?array $transactionEventsXdr = null,
+    public function __construct(?array $transactionEventsXdr = null,
                                 ?array $contractEventsXdr = null)
     {
-        $this->diagnosticEventsXdr = $diagnosticEventsXdr;
         $this->transactionEventsXdr = $transactionEventsXdr;
         $this->contractEventsXdr = $contractEventsXdr;
     }
 
     public static function fromJson(array $json): TransactionEvents
     {
-
-        /**
-         * @var array<string>|null $diagnosticEventsXdr
-         */
-        $diagnosticEventsXdr = null;
-        if (isset($json["diagnosticEventsXdr"])) {
-            $diagnosticEventsXdr = array();
-            foreach ($json["diagnosticEventsXdr"] as $val) {
-                $diagnosticEventsXdr[] = $val;
-            }
-        }
-
         /**
          * @var array<string>|null $transactionEventsXdr
          */
@@ -82,7 +62,6 @@ class TransactionEvents
         }
 
         return new TransactionEvents(
-            diagnosticEventsXdr: $diagnosticEventsXdr,
             transactionEventsXdr: $transactionEventsXdr,
             contractEventsXdr: $contractEventsXdr,
         );

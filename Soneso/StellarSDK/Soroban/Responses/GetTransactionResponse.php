@@ -106,6 +106,12 @@ class GetTransactionResponse extends SorobanRpcResponse
      */
     public ?TransactionEvents $events = null;
 
+    /**
+     * @var array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
+     * This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
+     */
+    public ?array $diagnosticEventsXdr = null;
+
     public static function fromJson(array $json) : GetTransactionResponse {
         $result = new GetTransactionResponse($json);
         if (isset($json['result'])) {
@@ -151,6 +157,13 @@ class GetTransactionResponse extends SorobanRpcResponse
             }
             if (isset($json['result']['events'])) {
                 $result->events = TransactionEvents::fromJson($json['result']['events']); // protocol version >= 23
+            }
+            if (isset($json['result']['diagnosticEventsXdr'])) {
+                $diagnosticEventsXdr = array();
+                foreach ($json['result']['diagnosticEventsXdr'] as $val) {
+                    $diagnosticEventsXdr[] = $val;
+                }
+                $result->diagnosticEventsXdr = $diagnosticEventsXdr;
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -366,5 +379,38 @@ class GetTransactionResponse extends SorobanRpcResponse
     public function setTxHash(?string $txHash): void
     {
         $this->txHash = $txHash;
+    }
+
+    /**
+     * @return array<string>|null (optional) A base64 encoded slice of xdr.DiagnosticEvent.
+     * This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
+     */
+    public function getDiagnosticEventsXdr(): ?array
+    {
+        return $this->diagnosticEventsXdr;
+    }
+
+    /**
+     * @param array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
+     */
+    public function setDiagnosticEventsXdr(?array $diagnosticEventsXdr): void
+    {
+        $this->diagnosticEventsXdr = $diagnosticEventsXdr;
+    }
+
+    /**
+     * @return TransactionEvents|null events for the transaction. Only available for protocol version >= 23
+     */
+    public function getEvents(): ?TransactionEvents
+    {
+        return $this->events;
+    }
+
+    /**
+     * @param TransactionEvents|null $events events for the transaction. Only available for protocol version >= 23
+     */
+    public function setEvents(?TransactionEvents $events): void
+    {
+        $this->events = $events;
     }
 }
