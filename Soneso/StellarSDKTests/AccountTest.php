@@ -500,5 +500,135 @@ final class AccountTest extends TestCase
             $this->assertEquals(1, $exitStatus, 'Stream should have detected account update');
         }
     }
+
+    public function testStreamAccountData(): void {
+        // Create and fund test account
+        $keyPair = KeyPair::random();
+        $accountId = $keyPair->getAccountId();
+
+        if ($this->testOn == 'testnet') {
+            FriendBot::fundTestAccount($accountId);
+        } elseif ($this->testOn == 'futurenet') {
+            FuturenetFriendBot::fundTestAccount($accountId);
+        }
+
+        // Load account and create initial data entry
+        $account = $this->sdk->requestAccount($accountId);
+        $dataKey = "stream_test_key";
+        $initialValue = "initial_value";
+
+        $manageDataOp = (new ManageDataOperationBuilder($dataKey, $initialValue))->build();
+        $transaction = (new TransactionBuilder($account))
+            ->addOperation($manageDataOp)
+            ->build();
+
+        $transaction->sign($keyPair, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // Wait for transaction to be processed
+        sleep(5);
+
+        // Verify initial data entry exists
+        $initialData = $this->sdk->accounts()->accountData($accountId, $dataKey);
+        $this->assertEquals($initialValue, $initialData->getDecodedValue());
+
+        $pid = pcntl_fork();
+
+        if ($pid == 0) {
+            // Child process - stream account data changes
+            try {
+                $streamSdk = $this->testOn === 'testnet'
+                    ? StellarSDK::getTestNetInstance()
+                    : StellarSDK::getFutureNetInstance();
+
+                $updateCount = 0;
+                $expectedUpdatedValue = "updated_value";
+
+                $streamSdk->accounts()->streamAccountData($accountId, $dataKey, function($dataResponse) use ($expectedUpdatedValue, &$updateCount) {
+                    $updateCount++;
+
+                    // Validate response type and structure
+                    if (!($dataResponse instanceof \Soneso\StellarSDK\Responses\Account\AccountDataValueResponse)) {
+                        exit(0); // Failure - wrong response type
+                    }
+
+                    // Validate response has value
+                    $value = $dataResponse->getValue();
+                    if (empty($value)) {
+                        exit(0); // Failure - empty value
+                    }
+
+                    // Skip initial state
+                    if ($updateCount == 1) {
+                        return;
+                    }
+
+                    // Check if value was updated to expected value
+                    $decodedValue = $dataResponse->getDecodedValue();
+                    if ($decodedValue === $expectedUpdatedValue) {
+                        // print("Stream detected update: " . $decodedValue . PHP_EOL);
+                        exit(1); // Success
+                    }
+                });
+            } catch (Exception $e) {
+                // print("Stream error: " . $e->getMessage() . PHP_EOL);
+                exit(0); // Failure
+            }
+        } else {
+            // Parent process - wait for stream to initialize
+            sleep(8);
+
+            // Submit transaction to update data entry
+            $account = $this->sdk->requestAccount($accountId);
+            $updatedValue = "updated_value";
+            $updateDataOp = (new ManageDataOperationBuilder($dataKey, $updatedValue))->build();
+            $transaction = (new TransactionBuilder($account))
+                ->addOperation($updateDataOp)
+                ->build();
+
+            $transaction->sign($keyPair, $this->network);
+            $response = $this->sdk->submitTransaction($transaction);
+            $this->assertTrue($response->isSuccessful());
+
+            // Wait for child to detect update (max 60 seconds for Horizon polling)
+            $timeout = 60;
+            $elapsed = 0;
+            $status = 0;
+
+            while ($elapsed < $timeout) {
+                $result = pcntl_waitpid($pid, $status, WNOHANG);
+                if ($result > 0) {
+                    break;
+                }
+                sleep(1);
+                $elapsed++;
+            }
+
+            // print("ELAPSED: " . $elapsed . PHP_EOL);
+            if ($elapsed >= $timeout) {
+                posix_kill($pid, SIGKILL);
+                pcntl_waitpid($pid, $status);
+                $this->fail('Stream test timed out - Horizon did not detect account data update');
+            }
+
+            $exitStatus = pcntl_wexitstatus($status);
+            $this->assertEquals(1, $exitStatus, 'Stream should have detected account data update');
+
+            // Clean up: verify final state and delete data entry
+            $finalData = $this->sdk->accounts()->accountData($accountId, $dataKey);
+            $this->assertEquals($updatedValue, $finalData->getDecodedValue());
+
+            $account = $this->sdk->requestAccount($accountId);
+            $deleteDataOp = (new ManageDataOperationBuilder($dataKey, null))->build();
+            $transaction = (new TransactionBuilder($account))
+                ->addOperation($deleteDataOp)
+                ->build();
+
+            $transaction->sign($keyPair, $this->network);
+            $response = $this->sdk->submitTransaction($transaction);
+            $this->assertTrue($response->isSuccessful());
+        }
+    }
 }
 

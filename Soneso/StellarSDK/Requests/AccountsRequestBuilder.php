@@ -93,6 +93,44 @@ class AccountsRequestBuilder extends RequestBuilder
         });
     }
 
+    /**
+     * Streams AccountDataValueResponse objects for a specific account data entry to $callback
+     *
+     * This method provides real-time updates by streaming the /accounts/{account_id}/data/{key}
+     * endpoint. Horizon uses polling-based streaming: it polls the endpoint every few seconds
+     * and sends SSE events when the data value changes.
+     *
+     * The callback receives AccountDataValueResponse objects whenever the data entry value
+     * is updated (e.g., after a MANAGE_DATA operation).
+     *
+     * $callback should have arguments:
+     *  AccountDataValueResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $accountId = "GDQJUTQYK2MQX2VGDR2FYWLIYAQIEGXTQVTFEMGH2BEWFG4BRUY4CKI7";
+     * $key = "config";
+     * $sdk->accounts()->streamAccountData($accountId, $key, function(AccountDataValueResponse $data) {
+     *     printf('Data value updated: %s' . PHP_EOL, $data->getDecodedValue());
+     * });
+     *
+     * @param string $accountId Public key of the account
+     * @param string $key The data entry key to stream
+     * @param callable|null $callback Callback function to receive AccountDataValueResponse objects
+     * @throws GuzzleException
+     * @throws HorizonRequestException
+     * @see <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-data-by-account-id">Account Data Details</a>
+     */
+    public function streamAccountData(string $accountId, string $key, ?callable $callback = null): void
+    {
+        $this->setSegments("accounts", $accountId, "data", $key);
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = AccountDataValueResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
+    }
+
     public function forSigner(string $signer) : AccountsRequestBuilder {
 
         if (array_key_exists(AccountsRequestBuilder::ASSET_PARAMETER_NAME, $this->queryParameters)) {
