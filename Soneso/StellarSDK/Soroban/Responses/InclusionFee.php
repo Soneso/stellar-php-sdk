@@ -57,6 +57,10 @@ class InclusionFee
      */
     public string $p90;
     /**
+     * @var string $p95 95th nearest-rank fee percentile
+     */
+    public string $p95;
+    /**
      * @var string $p99 99th nearest-rank fee percentile
      */
     public string $p99;
@@ -82,6 +86,7 @@ class InclusionFee
      * @param string $p70 70th nearest-rank fee percentile
      * @param string $p80 80th nearest-rank fee percentile
      * @param string $p90 90th nearest-rank fee percentile
+     * @param string $p95 95th nearest-rank fee percentile
      * @param string $p99 99th nearest-rank fee percentile
      * @param string $transactionCount How many transactions are part of the distribution
      * @param int $ledgerCount How many consecutive ledgers form the distribution
@@ -99,6 +104,7 @@ class InclusionFee
         string $p70,
         string $p80,
         string $p90,
+        string $p95,
         string $p99,
         string $transactionCount,
         int $ledgerCount,
@@ -116,6 +122,7 @@ class InclusionFee
         $this->p70 = $p70;
         $this->p80 = $p80;
         $this->p90 = $p90;
+        $this->p95 = $p95;
         $this->p99 = $p99;
         $this->transactionCount = $transactionCount;
         $this->ledgerCount = $ledgerCount;
@@ -136,6 +143,7 @@ class InclusionFee
             $json['p70'],
             $json['p80'],
             $json['p90'],
+            $json['p95'],
             $json['p99'],
             $json['transactionCount'],
             $json['ledgerCount'],
