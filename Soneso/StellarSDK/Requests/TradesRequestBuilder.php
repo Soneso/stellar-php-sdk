@@ -36,6 +36,12 @@ class TradesRequestBuilder extends RequestBuilder
         parent::__construct($httpClient, "trades");
     }
 
+    /**
+     * Builds request to <code>GET /trades</code> filtered by offer_id query parameter.
+     * @param string $offerId Offer ID for which to get trades
+     * @return TradesRequestBuilder
+     * @see <a href="https://developers.stellar.org/api/resources/trades/list/">List All Trades</a>
+     */
     public function forOffer(string $offerId) : TradesRequestBuilder {
         $this->queryParameters[TradesRequestBuilder::OFFER_ID_PARAMETER_NAME] = $offerId;
         return $this;

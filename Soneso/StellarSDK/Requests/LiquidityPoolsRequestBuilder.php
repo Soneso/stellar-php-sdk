@@ -15,6 +15,7 @@ use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolsPageResponse;
 class LiquidityPoolsRequestBuilder extends RequestBuilder
 {
     private const RESERVES_PARAMETER_NAME = "reserves";
+    private const ACCOUNT_PARAMETER_NAME = "account";
 
     public function __construct(Client $httpClient)
     {
@@ -45,6 +46,18 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder
      */
     public function forReserves(string ...$reserves) : LiquidityPoolsRequestBuilder {
         $this->queryParameters[LiquidityPoolsRequestBuilder::RESERVES_PARAMETER_NAME] = implode(",", $reserves);
+        return $this;
+    }
+
+    /**
+     * Returns all liquidity pools the specified account is participating in.
+     *
+     * @param string $accountId Account ID to filter liquidity pools
+     * @return LiquidityPoolsRequestBuilder current instance
+     * @see <a href="https://developers.stellar.org/docs/data/apis/horizon/api-reference/list-liquidity-pools">LiquidityPools</a>
+     */
+    public function forAccount(string $accountId) : LiquidityPoolsRequestBuilder {
+        $this->queryParameters[LiquidityPoolsRequestBuilder::ACCOUNT_PARAMETER_NAME] = $accountId;
         return $this;
     }
 
