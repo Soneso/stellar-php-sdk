@@ -723,6 +723,15 @@ class SorobanTest extends TestCase
         $response = $this->server->getEvents($request);
         $this->assertGreaterThan(0, count($response->events));
 
+        // Verify the new fields are populated
+        $this->assertNotNull($response->oldestLedger);
+        $this->assertGreaterThan(0, $response->oldestLedger);
+        $this->assertNotNull($response->latestLedgerCloseTime);
+        $this->assertGreaterThan(0, $response->latestLedgerCloseTime);
+        $this->assertNotNull($response->oldestLedgerCloseTime);
+        $this->assertGreaterThan(0, $response->oldestLedgerCloseTime);
+        $this->assertLessThanOrEqual($response->latestLedger, $response->oldestLedger);
+
     }
 
     public function testSorobanTransactionEventsParsing(): void

@@ -27,6 +27,21 @@ class GetEventsResponse extends SorobanRpcResponse
      */
     public ?String $cursor = null;
 
+    /**
+     * @var int|null $oldestLedger The sequence number of the oldest ledger in the search range.
+     */
+    public ?int $oldestLedger = null;
+
+    /**
+     * @var int|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time.
+     */
+    public ?int $latestLedgerCloseTime = null;
+
+    /**
+     * @var int|null $oldestLedgerCloseTime Unix timestamp of the oldest ledger close time.
+     */
+    public ?int $oldestLedgerCloseTime = null;
+
     public static function fromJson(array $json): GetEventsResponse
     {
         $result = new GetEventsResponse($json);
@@ -43,6 +58,15 @@ class GetEventsResponse extends SorobanRpcResponse
             }
             if (isset($json['result']['cursor'])) {
                 $result->cursor = $json['result']['cursor']; // protocol >= 22
+            }
+            if (isset($json['result']['oldestLedger'])) {
+                $result->oldestLedger = $json['result']['oldestLedger'];
+            }
+            if (isset($json['result']['latestLedgerCloseTime'])) {
+                $result->latestLedgerCloseTime = (int)$json['result']['latestLedgerCloseTime'];
+            }
+            if (isset($json['result']['oldestLedgerCloseTime'])) {
+                $result->oldestLedgerCloseTime = (int)$json['result']['oldestLedgerCloseTime'];
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -96,6 +120,54 @@ class GetEventsResponse extends SorobanRpcResponse
     public function setCursor(?string $cursor): void
     {
         $this->cursor = $cursor;
+    }
+
+    /**
+     * @return int|null The sequence number of the oldest ledger in the search range.
+     */
+    public function getOldestLedger(): ?int
+    {
+        return $this->oldestLedger;
+    }
+
+    /**
+     * @param int|null $oldestLedger The sequence number of the oldest ledger in the search range.
+     */
+    public function setOldestLedger(?int $oldestLedger): void
+    {
+        $this->oldestLedger = $oldestLedger;
+    }
+
+    /**
+     * @return int|null Unix timestamp of the latest ledger close time.
+     */
+    public function getLatestLedgerCloseTime(): ?int
+    {
+        return $this->latestLedgerCloseTime;
+    }
+
+    /**
+     * @param int|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time.
+     */
+    public function setLatestLedgerCloseTime(?int $latestLedgerCloseTime): void
+    {
+        $this->latestLedgerCloseTime = $latestLedgerCloseTime;
+    }
+
+    /**
+     * @return int|null Unix timestamp of the oldest ledger close time.
+     */
+    public function getOldestLedgerCloseTime(): ?int
+    {
+        return $this->oldestLedgerCloseTime;
+    }
+
+    /**
+     * @param int|null $oldestLedgerCloseTime Unix timestamp of the oldest ledger close time.
+     */
+    public function setOldestLedgerCloseTime(?int $oldestLedgerCloseTime): void
+    {
+        $this->oldestLedgerCloseTime = $oldestLedgerCloseTime;
     }
 
 }
