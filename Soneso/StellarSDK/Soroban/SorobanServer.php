@@ -14,6 +14,7 @@ use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
+use Soneso\StellarSDK\Soroban\Requests\GetLedgersRequest;
 use Soneso\StellarSDK\Soroban\Requests\GetTransactionsRequest;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
@@ -21,6 +22,7 @@ use Soneso\StellarSDK\Soroban\Responses\GetFeeStatsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetHealthResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetLedgerEntriesResponse;
+use Soneso\StellarSDK\Soroban\Responses\GetLedgersResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetNetworkResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionsResponse;
@@ -59,6 +61,7 @@ class SorobanServer
     private const SEND_TRANSACTION = "sendTransaction";
     private const GET_TRANSACTION = "getTransaction";
     private const GET_TRANSACTIONS = "getTransactions";
+    private const GET_LEDGERS = "getLedgers";
     private const GET_LEDGER_ENTRIES = "getLedgerEntries";
     private const GET_LATEST_LEDGER = "getLatestLedger";
     private const GET_EVENTS = "getEvents";
@@ -204,6 +207,22 @@ class SorobanServer
         $body = $this->prepareRequest(self::GET_TRANSACTIONS, $request->getRequestParams());
         $result = $this->request($body, self::GET_TRANSACTIONS);
         assert($result instanceof GetTransactionsResponse);
+        return $result;
+    }
+
+    /**
+     * The getLedgers method returns a detailed list of ledgers starting from the user-specified startLedger.
+     * Fetches ledger metadata and header information for a range of ledgers. Supports pagination.
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+     *
+     * @param GetLedgersRequest $request The request parameters.
+     * @return GetLedgersResponse The response containing ledger information.
+     * @throws GuzzleException if any request problem occurs.
+     */
+    public function getLedgers(GetLedgersRequest $request) : GetLedgersResponse {
+        $body = $this->prepareRequest(self::GET_LEDGERS, $request->getRequestParams());
+        $result = $this->request($body, self::GET_LEDGERS);
+        assert($result instanceof GetLedgersResponse);
         return $result;
     }
 
@@ -432,6 +451,7 @@ class SorobanServer
             self::SEND_TRANSACTION => SendTransactionResponse::fromJson($jsonData),
             self::GET_TRANSACTION => GetTransactionResponse::fromJson($jsonData),
             self::GET_TRANSACTIONS => GetTransactionsResponse::fromJson($jsonData),
+            self::GET_LEDGERS => GetLedgersResponse::fromJson($jsonData),
             self::GET_LEDGER_ENTRIES => GetLedgerEntriesResponse::fromJson($jsonData),
             self::GET_LATEST_LEDGER => GetLatestLedgerResponse::fromJson($jsonData),
             self::GET_EVENTS => GetEventsResponse::fromJson($jsonData),

@@ -24,6 +24,7 @@ use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Responses\Operations\InvokeHostFunctionOperationResponse;
 use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Requests\GetLedgersRequest;
 use Soneso\StellarSDK\Soroban\Requests\GetTransactionsRequest;
 use Soneso\StellarSDK\Soroban\Requests\PaginationOptions;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
@@ -984,5 +985,80 @@ class SorobanTest extends TestCase
         $statusResponse = $this->pollStatus($this->server, $sendResponse->hash);
         $this->assertNotNull($statusResponse);
         $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
+    }
+
+    public function testGetLedgers(): void
+    {
+        // Get the latest ledger first
+        $latestLedgerResponse = $this->server->getLatestLedger();
+        $this->assertNotNull($latestLedgerResponse);
+        $this->assertNotNull($latestLedgerResponse->sequence);
+        $this->assertNull($latestLedgerResponse->error);
+
+        // Calculate a start ledger a few ledgers back
+        $startLedger = $latestLedgerResponse->sequence - 10;
+
+        // Test basic getLedgers request with pagination limit
+        $paginationOptions = new PaginationOptions(limit: 3);
+        $request = new GetLedgersRequest(
+            startLedger: $startLedger,
+            paginationOptions: $paginationOptions
+        );
+        $response = $this->server->getLedgers($request);
+
+        // Assert response is not null and has no error
+        $this->assertNotNull($response);
+        $this->assertNull($response->error);
+
+        // Assert ledgers array is not empty and respects limit
+        $this->assertNotNull($response->ledgers);
+        $this->assertIsArray($response->ledgers);
+        $this->assertGreaterThan(0, count($response->ledgers));
+        $this->assertLessThanOrEqual(3, count($response->ledgers));
+
+        // Assert all required fields are populated
+        $this->assertNotNull($response->latestLedger);
+        $this->assertGreaterThan(0, $response->latestLedger);
+        $this->assertNotNull($response->latestLedgerCloseTime);
+        $this->assertGreaterThan(0, $response->latestLedgerCloseTime);
+        $this->assertNotNull($response->oldestLedger);
+        $this->assertGreaterThan(0, $response->oldestLedger);
+        $this->assertNotNull($response->oldestLedgerCloseTime);
+        $this->assertGreaterThan(0, $response->oldestLedgerCloseTime);
+        $this->assertNotNull($response->cursor);
+
+        // Assert each LedgerInfo has required fields
+        foreach ($response->ledgers as $ledgerInfo) {
+            $this->assertNotNull($ledgerInfo->hash);
+            $this->assertIsString($ledgerInfo->hash);
+            $this->assertGreaterThan(0, strlen($ledgerInfo->hash));
+
+            $this->assertNotNull($ledgerInfo->sequence);
+            $this->assertGreaterThan(0, $ledgerInfo->sequence);
+
+            $this->assertNotNull($ledgerInfo->ledgerCloseTime);
+            $this->assertIsString($ledgerInfo->ledgerCloseTime);
+            $this->assertGreaterThan(0, strlen($ledgerInfo->ledgerCloseTime));
+        }
+
+        // Test pagination by using cursor from first response
+        // Only test if cursor is not at the latest ledger (to avoid boundary errors)
+        if ($response->cursor !== null && intval($response->cursor) < $response->latestLedger) {
+            $paginationOptions = new PaginationOptions(
+                cursor: $response->cursor,
+                limit: 2
+            );
+            $paginatedRequest = new \Soneso\StellarSDK\Soroban\Requests\GetLedgersRequest(
+                paginationOptions: $paginationOptions
+            );
+            $paginatedResponse = $this->server->getLedgers($paginatedRequest);
+
+            // Assert paginated response
+            $this->assertNotNull($paginatedResponse);
+            $this->assertNull($paginatedResponse->error);
+            $this->assertNotNull($paginatedResponse->ledgers);
+            $this->assertGreaterThan(0, count($paginatedResponse->ledgers));
+            $this->assertLessThanOrEqual(2, count($paginatedResponse->ledgers));
+        }
     }
 }
