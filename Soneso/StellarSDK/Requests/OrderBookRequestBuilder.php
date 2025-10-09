@@ -8,6 +8,7 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
@@ -100,5 +101,38 @@ class OrderBookRequestBuilder extends RequestBuilder
      */
     public function execute() : OrderBookResponse {
         return $this->request($this->buildUrl());
+    }
+
+    /**
+     * Streams OrderBookResponse objects to $callback
+     *
+     * $callback should have arguments:
+     *  OrderBookResponse
+     *
+     * For example:
+     *
+     * $sdk = StellarSDK::getTestNetInstance();
+     * $buyingAsset = Asset::native();
+     * $sellingAsset = Asset::createNonNativeAsset("USD", "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX");
+     * $sdk->orderBook()
+     *     ->forBuyingAsset($buyingAsset)
+     *     ->forSellingAsset($sellingAsset)
+     *     ->cursor("now")
+     *     ->stream(function(OrderBookResponse $orderBook) {
+     *         printf('Order Book - Bids: %d, Asks: %d' . PHP_EOL,
+     *             $orderBook->getBids()->count(),
+     *             $orderBook->getAsks()->count()
+     *         );
+     *     });
+     *
+     * @param callable|null $callback
+     * @throws GuzzleException
+     */
+    public function stream(?callable $callback = null)
+    {
+        $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
+            $parsedObject = OrderBookResponse::fromJson($rawData);
+            $callback($parsedObject);
+        });
     }
 }
