@@ -34,6 +34,12 @@ class GeneralInformation
     /// The endpoint used for SEP-10 Web Authentication.
     public ?string $webAuthEndpoint = null;
 
+    /// The endpoint used for SEP-45 Web Authentication.
+    public ?string $webAuthForContractsEndpoint = null;
+
+    /// The web authentication contract ID for SEP-45 Web Authentication.
+    public ?string $webAuthContractId = null;
+
     /// The signing key is used for SEP-3 Compliance Protocol (deprecated) and SEP-10 Authentication Protocol.
     public ?string $signingKey = null;
 

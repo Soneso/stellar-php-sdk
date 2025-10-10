@@ -51,6 +51,12 @@ class StellarToml
         if (isset($object->WEB_AUTH_ENDPOINT)) {
             $this->generalInformation->webAuthEndpoint = $object->WEB_AUTH_ENDPOINT;
         }
+        if (isset($object->WEB_AUTH_FOR_CONTRACTS_ENDPOINT)) {
+            $this->generalInformation->webAuthForContractsEndpoint = $object->WEB_AUTH_FOR_CONTRACTS_ENDPOINT;
+        }
+        if (isset($object->WEB_AUTH_CONTRACT_ID)) {
+            $this->generalInformation->webAuthContractId = $object->WEB_AUTH_CONTRACT_ID;
+        }
         if (isset($object->SIGNING_KEY)) {
             $this->generalInformation->signingKey = $object->SIGNING_KEY;
         }
@@ -246,6 +252,9 @@ class StellarToml
         }
         if (array_key_exists("issuer", $item)) {
             $currency->issuer = $item["issuer"];
+        }
+        if (array_key_exists("contract", $item)) {
+            $currency->contract = $item["contract"];
         }
         if (array_key_exists("status", $item)) {
             $currency->status = $item["status"];

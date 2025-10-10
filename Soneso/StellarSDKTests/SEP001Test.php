@@ -17,6 +17,8 @@ class SEP001Test extends TestCase
           FEDERATION_SERVER="https://stellarid.io/federation/"
           AUTH_SERVER="https://api.domain.com/auth"
           TRANSFER_SERVER="https://api.domain.com"
+          WEB_AUTH_FOR_CONTRACTS_ENDPOINT="https://api.domain.com/auth/contracts"
+          WEB_AUTH_CONTRACT_ID="CBVH4IOVPXTUJQYQW3AOGPYOYGPUWTQWMHFMQJRJFUIHRXFYTHDWJHQD"
           SIGNING_KEY="GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3"
           HORIZON_URL="https://horizon.domain.com"
           ACCOUNTS=[
@@ -55,6 +57,7 @@ class SEP001Test extends TestCase
           [[CURRENCIES]]
           code="USD"
           issuer="GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM"
+          contract="CDPVHIWNB7WO3QUXCNWSWBUFPK47TU6BWRFKCKJL6ADYJYG4JNPBPKUW"
           display_decimals=2
     
           [[CURRENCIES]]
@@ -128,6 +131,8 @@ class SEP001Test extends TestCase
         $this->assertNull($generalInformation->transferServerSep24);
         $this->assertNull($generalInformation->kYCServer);
         $this->assertNull($generalInformation->webAuthEndpoint);
+        $this->assertEquals("https://api.domain.com/auth/contracts", $generalInformation->webAuthForContractsEndpoint);
+        $this->assertEquals("CBVH4IOVPXTUJQYQW3AOGPYOYGPUWTQWMHFMQJRJFUIHRXFYTHDWJHQD", $generalInformation->webAuthContractId);
         $this->assertEquals("GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3", $generalInformation->signingKey);
         $this->assertEquals("https://horizon.domain.com", $generalInformation->horizonUrl);
         $this->assertTrue(in_array("GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3", $generalInformation->accounts));
@@ -178,6 +183,7 @@ class SEP001Test extends TestCase
         if ($firstCurrency instanceof Currency) {
             $this->assertEquals("USD", $firstCurrency->code);
             $this->assertEquals("GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM", $firstCurrency->issuer);
+            $this->assertEquals("CDPVHIWNB7WO3QUXCNWSWBUFPK47TU6BWRFKCKJL6ADYJYG4JNPBPKUW", $firstCurrency->contract);
             $this->assertEquals(2, $firstCurrency->displayDecimals);
         }
         $secondCurrency = $currencies[1];
@@ -248,6 +254,8 @@ class SEP001Test extends TestCase
         $this->assertNull($generalInformation->transferServerSep24);
         $this->assertNull($generalInformation->kYCServer);
         $this->assertNull($generalInformation->webAuthEndpoint);
+        $this->assertNull($generalInformation->webAuthForContractsEndpoint);
+        $this->assertNull($generalInformation->webAuthContractId);
         $this->assertEquals("GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3", $generalInformation->signingKey);
         $this->assertEquals("https://horizon.domain.com", $generalInformation->horizonUrl);
         $this->assertTrue(in_array("GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3", $generalInformation->accounts));
@@ -295,6 +303,7 @@ class SEP001Test extends TestCase
         if ($firstCurrency instanceof Currency) {
             $this->assertEquals("USD", $firstCurrency->code);
             $this->assertEquals("GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM", $firstCurrency->issuer);
+            $this->assertNull($firstCurrency->contract);
             $this->assertEquals(2, $firstCurrency->displayDecimals);
         }
         $secondCurrency = $currencies[1];
