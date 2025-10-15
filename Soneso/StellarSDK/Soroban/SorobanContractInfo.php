@@ -34,6 +34,13 @@ class SorobanContractInfo
     public array $metaEntries;
 
     /**
+     * @var array<string> $supportedSeps List of SEP numbers that this contract claims to support.
+     * Extracted from meta entries with key "sep" as defined in SEP-47.
+     * SEP-47: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0047.md
+     */
+    public array $supportedSeps;
+
+    /**
      * @param int $envInterfaceVersion Environment interface number from Environment Meta.
      * @param array<XdrSCSpecEntry> $specEntries Contract Spec Entries.
      * @param array<string,string> $metaEntries Contract Meta Entries. Key => Value pairs.
@@ -47,6 +54,39 @@ class SorobanContractInfo
         $this->envInterfaceVersion = $envInterfaceVersion;
         $this->specEntries = $specEntries;
         $this->metaEntries = $metaEntries;
+
+        // Parse supported SEPs from meta entries (SEP-47)
+        // Meta entries with key "sep" contain comma-separated SEP numbers
+        $this->supportedSeps = $this->parseSupportedSeps($metaEntries);
+    }
+
+    /**
+     * Parse supported SEP numbers from meta entries.
+     * According to SEP-47, contracts can indicate which SEPs they support
+     * through meta entries with key "sep" containing comma-separated SEP numbers.
+     * Multiple "sep" entries are concatenated.
+     *
+     * @param array<string,string> $metaEntries Contract Meta Entries
+     * @return array<string> List of SEP numbers (e.g., ["41", "40"])
+     */
+    private function parseSupportedSeps(array $metaEntries): array
+    {
+        $sepNumbers = [];
+
+        // Look for all meta entries with key "sep"
+        foreach ($metaEntries as $key => $value) {
+            if ($key === 'sep') {
+                // Parse comma-separated SEP numbers
+                $seps = array_map('trim', explode(',', $value));
+                foreach ($seps as $sep) {
+                    if (!empty($sep) && !in_array($sep, $sepNumbers)) {
+                        $sepNumbers[] = $sep;
+                    }
+                }
+            }
+        }
+
+        return $sepNumbers;
     }
 
 

@@ -192,6 +192,56 @@ class SorobanParserTest extends TestCase
         }
     }
 
+    /**
+     * Test SorobanContractInfo supportedSeps parsing (SEP-47).
+     * SEP-47 defines how contracts expose which SEPs they support via meta entries.
+     */
+    public function testSupportedSepsParsing(): void
+    {
+        // Test with multiple SEPs (SEP-47 format: comma-separated numbers)
+        $metaWithMultipleSeps = [
+            'sep' => '1,10,24',
+            'other' => 'value'
+        ];
+        $info1 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithMultipleSeps);
+        $this->assertEquals(['1', '10', '24'], $info1->supportedSeps);
+
+        // Test with single SEP
+        $metaWithSingleSep = ['sep' => '47'];
+        $info2 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithSingleSep);
+        $this->assertEquals(['47'], $info2->supportedSeps);
+
+        // Test with no SEP meta entry
+        $metaWithoutSep = ['other' => 'value'];
+        $info3 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithoutSep);
+        $this->assertEmpty($info3->supportedSeps);
+
+        // Test with empty SEP value
+        $metaWithEmptySep = ['sep' => ''];
+        $info4 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithEmptySep);
+        $this->assertEmpty($info4->supportedSeps);
+
+        // Test with SEPs containing extra spaces
+        $metaWithSpaces = ['sep' => '  1  ,  2  ,  3  '];
+        $info5 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithSpaces);
+        $this->assertEquals(['1', '2', '3'], $info5->supportedSeps);
+
+        // Test with trailing/leading commas
+        $metaWithCommas = ['sep' => ',41,40,'];
+        $info6 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithCommas);
+        $this->assertEquals(['41', '40'], $info6->supportedSeps);
+
+        // Test with duplicate SEPs (should be deduplicated)
+        $metaWithDuplicates = ['sep' => '1,10,1,24,10'];
+        $info7 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithDuplicates);
+        $this->assertEquals(['1', '10', '24'], $info7->supportedSeps);
+
+        // Test with real-world example from SEP-47 spec
+        $metaRealWorld = ['sep' => '41,40'];
+        $info8 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaRealWorld);
+        $this->assertEquals(['41', '40'], $info8->supportedSeps);
+    }
+
     private function getSpecTypeInfo(XdrSCSpecTypeDef $specType) : string {
         switch ($specType->type->value) {
             case XdrSCSpecType::SC_SPEC_TYPE_VAL:
