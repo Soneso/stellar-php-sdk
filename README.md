@@ -247,6 +247,10 @@ Detailed documentation on using Soroban with this SDK is available [here](https:
 
 A practical example of Soroban integration can be seen in [Equillar](https://github.com/icolomina/equillar), an open-source investment platform built with PHP and Symfony. Equillar demonstrates how the PHP Stellar SDK can be used to connect to and interact with Soroban smart contracts that manage investment-related operations.
 
+## Compatibility matrices
+- [Horizon API compatibility matrix](https://github.com/Soneso/stellar-php-sdk/blob/main/compatibility/horizon/COMPATIBILITY_MATRIX.md)
+- [RPC API compatibility matrix](https://github.com/Soneso/stellar-php-sdk/blob/main/compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md)
+- [SEP support compatibility matrices](https://github.com/Soneso/stellar-php-sdk/tree/main/compatibility/sep)
 
 ### Feedback & Feature Requests
 
