@@ -1,6 +1,6 @@
 # SEP-0009 (Standard KYC Fields) Compatibility Matrix
 
-**Generated:** 2025-10-10 13:15:48
+**Generated:** 2025-10-16 15:08:10
 
 **SEP Version:** N/A
 **SEP Status:** Active

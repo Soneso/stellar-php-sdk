@@ -1,7 +1,7 @@
 
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
-![v1.8.5](https://img.shields.io/badge/v1.8.5-green.svg) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
+![v1.8.6](https://img.shields.io/badge/v1.8.6-green.svg) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
 
 The Soneso open source Stellar SDK for PHP provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
@@ -9,7 +9,7 @@ The Soneso open source Stellar SDK for PHP provides APIs to build and sign trans
 
 ## Latest stable release
 
-```composer require soneso/stellar-php-sdk:1.8.5```
+```composer require soneso/stellar-php-sdk:1.8.6```
 
 ## Quick Start
 

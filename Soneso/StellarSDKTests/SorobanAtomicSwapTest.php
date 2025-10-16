@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -94,18 +95,25 @@ class SorobanAtomicSwapTest extends TestCase
         $this->assertTrue(count($contractInfo->specEntries) > 0);
         $this->assertTrue(count($contractInfo->metaEntries) > 0);
 
-        $tokenAContractId = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
+        $adminAddress = Address::fromAccountId($adminKeyPair->getAccountId())->toXdrSCVal();
+        $tokenName = XdrSCVal::forString("TokenA");
+        $tokenSymbol = XdrSCVal::forString("TokenA");
+        $decimal = XdrSCVal::forU32(8);
+
+        $tokenAContractId = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair,
+            constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
         print("token a cid: " . StrKey::encodeContractIdHex($tokenAContractId) . PHP_EOL);
-        $tokenBContractId = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
+
+        $tokenName = XdrSCVal::forString("TokenB");
+        $tokenSymbol = XdrSCVal::forString("TokenB");
+        $tokenBContractId = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair,
+            constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
         print("token b cid: " . StrKey::encodeContractIdHex($tokenBContractId) . PHP_EOL);
 
         $contractInfo = $this->server->loadContractInfoForContractId($tokenBContractId);
         $this->assertNotNull($contractInfo);
         $this->assertTrue(count($contractInfo->specEntries) > 0);
         $this->assertTrue(count($contractInfo->metaEntries) > 0);
-
-        $this->createToken($this->server, $adminKeyPair, $tokenAContractId, "TokenA", "TokenA");
-        $this->createToken($this->server, $adminKeyPair, $tokenBContractId, "TokenB", "TokenB");
 
         $this->mint($this->server, $adminKeyPair, $tokenAContractId, $aliceId, 10000000000000);
         $this->mint($this->server, $adminKeyPair, $tokenBContractId, $bobId, 10000000000000);
@@ -200,7 +208,7 @@ class SorobanAtomicSwapTest extends TestCase
         $this->assertEquals(XdrSCValType::SCV_VOID, $result->type->value);
     }
 
-    private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : String {
+    private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp, ?array $constructorArgs = null) : String {
         sleep(5);
 
         // upload contract wasm
@@ -237,7 +245,12 @@ class SorobanAtomicSwapTest extends TestCase
         $this->assertNotNull($wasmId);
 
         // create contract
-        $createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($submitterId), $wasmId);
+        if ($constructorArgs != null) {
+            $createContractHostFunction = new CreateContractWithConstructorHostFunction(Address::fromAccountId($submitterId), $wasmId, $constructorArgs);
+        } else {
+            $createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($submitterId), $wasmId);
+        }
+
         $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
         $op = $builder->build();
 
@@ -267,48 +280,6 @@ class SorobanAtomicSwapTest extends TestCase
         $contractId = $statusResponse->getCreatedContractId();
         $this->assertNotNull($contractId);
         return $contractId;
-    }
-
-    private function createToken(SorobanServer $server, Keypair $submitterKp, String $contractId, String $name, String $symbol) : void
-    {
-        // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $submitterId = $submitterKp->getAccountId();
-
-        $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
-        $functionName = "initialize";
-
-        $tokenName = XdrSCVal::forString($name);
-        $tokenSymbol = XdrSCVal::forString($symbol);
-
-        $args = [$adminAddress, XdrSCVal::forU32(8), $tokenName, $tokenSymbol];
-
-        $invokeContractHostFunction = new InvokeContractHostFunction($contractId, $functionName, $args);
-        $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
-        $op = $builder->build();
-
-        sleep(5);
-        // reload account for sequence number
-        $account = $this->server->getAccount($submitterId);
-        assertNotNull($account);
-        $transaction = (new TransactionBuilder($account))
-            ->addOperation($op)->build();
-
-        $request = new SimulateTransactionRequest($transaction);
-        $simulateResponse = $server->simulateTransaction($request);
-
-        // set the transaction data  + fee and sign
-        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, $this->network);
-
-        // send the transaction
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
-
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
     private function mint(SorobanServer $server, Keypair $submitterKp, String $contractId, String $toAccountId, int $amount) : void

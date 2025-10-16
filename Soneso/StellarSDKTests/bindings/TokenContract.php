@@ -116,20 +116,18 @@ class TokenContractAllowanceValue
  */
 class TokenContractDataKey
 {
-    public const ALLOWANCE = 'Allowance', BALANCE = 'Balance', NONCE = 'Nonce', STATE = 'State', ADMIN = 'Admin';
+    public const ALLOWANCE = 'Allowance', BALANCE = 'Balance', STATE = 'State', ADMIN = 'Admin';
 
     public string $kind;
     public ?TokenContractAllowanceDataKey $allowance = null;
     public ?Address $balance = null;
-    public ?Address $nonce = null;
     public ?Address $state = null;
 
-    public function __construct(string $kind, ?TokenContractAllowanceDataKey $allowance = null, ?Address $balance = null, ?Address $nonce = null, ?Address $state = null)
+    public function __construct(string $kind, ?TokenContractAllowanceDataKey $allowance = null, ?Address $balance = null, ?Address $state = null)
     {
         $this->kind = $kind;
         $this->allowance = $allowance;
         $this->balance = $balance;
-        $this->nonce = $nonce;
         $this->state = $state;
     }
 
@@ -145,11 +143,6 @@ class TokenContractDataKey
                 return XdrSCVal::forVec([
                     XdrSCVal::forSymbol($this->kind),
                     $this->balance->toXdrSCVal()
-                ]);
-            case self::NONCE:
-                return XdrSCVal::forVec([
-                    XdrSCVal::forSymbol($this->kind),
-                    $this->nonce->toXdrSCVal()
                 ]);
             case self::STATE:
                 return XdrSCVal::forVec([
@@ -187,14 +180,6 @@ class TokenContractDataKey
                 return new self(
                     self::BALANCE,
                     balance: Address::fromXdrSCVal($val->vec[1])
-                );
-            case 'Nonce':
-                if (count($val->vec) !== 2) {
-                    throw new Exception("Invalid union value for Nonce: expected 2 elements");
-                }
-                return new self(
-                    self::NONCE,
-                    nonce: Address::fromXdrSCVal($val->vec[1])
                 );
             case 'State':
                 if (count($val->vec) !== 2) {
@@ -285,7 +270,7 @@ class TokenContract
 
     /**
      * Creates a new TokenContract for the given contract ID
-     * @param ClientOptions $options Client options for the contract
+     * @param ClientOptions $options Client options for the TokenContract
      * @return TokenContract
      * @throws Exception
      * @throws GuzzleException
@@ -321,73 +306,6 @@ class TokenContract
     public function getContractSpec(): ContractSpec
     {
         return $this->client->getContractSpec();
-    }
-
-    /**
-     * Invoke the initialize method
-     *
-     * @param Address $admin
-     * @param int $decimal
-     * @param string $name
-     * @param string $symbol
-     * @param MethodOptions|null $methodOptions Options for transaction
-     * @return void
-     * @throws Exception
-     * @throws GuzzleException
-     */
-    public function initialize(
-        Address $admin,
-        int $decimal,
-        string $name,
-        string $symbol,
-        ?MethodOptions $methodOptions = null
-    ): void {
-        $args = [
-            $admin->toXdrSCVal(),
-            XdrSCVal::forU32($decimal),
-            XdrSCVal::forString($name),
-            XdrSCVal::forString($symbol)
-        ];
-
-        $result = $this->client->invokeMethod(
-            name: 'initialize',
-            args: $args,
-            methodOptions: $methodOptions
-        );
-    }
-
-    /**
-     * Build an AssembledTransaction for the initialize method.
-     * This is useful if you need to manipulate the transaction before signing and sending.
-     *
-     * @param Address $admin
-     * @param int $decimal
-     * @param string $name
-     * @param string $symbol
-     * @param MethodOptions|null $methodOptions Options for transaction
-     * @return AssembledTransaction
-     * @throws Exception
-     * @throws GuzzleException
-     */
-    public function buildInitializeTx(
-        Address $admin,
-        int $decimal,
-        string $name,
-        string $symbol,
-        ?MethodOptions $methodOptions = null
-    ): AssembledTransaction {
-        $args = [
-            $admin->toXdrSCVal(),
-            XdrSCVal::forU32($decimal),
-            XdrSCVal::forString($name),
-            XdrSCVal::forString($symbol)
-        ];
-
-        return $this->client->buildInvokeMethodTx(
-            name: 'initialize',
-            args: $args,
-            methodOptions: $methodOptions
-        );
     }
 
     /**
@@ -671,7 +589,7 @@ class TokenContract
      * Invoke the transfer method
      *
      * @param Address $from
-     * @param Address $to
+     * @param Address $to_muxed
      * @param string $amount
      * @param MethodOptions|null $methodOptions Options for transaction
      * @return void
@@ -680,13 +598,13 @@ class TokenContract
      */
     public function transfer(
         Address $from,
-        Address $to,
+        Address $to_muxed,
         string $amount,
         ?MethodOptions $methodOptions = null
     ): void {
         $args = [
             $from->toXdrSCVal(),
-            $to->toXdrSCVal(),
+            $to_muxed->toXdrSCVal(),
             XdrSCVal::forI128BigInt($amount)
         ];
 
@@ -702,7 +620,7 @@ class TokenContract
      * This is useful if you need to manipulate the transaction before signing and sending.
      *
      * @param Address $from
-     * @param Address $to
+     * @param Address $to_muxed
      * @param string $amount
      * @param MethodOptions|null $methodOptions Options for transaction
      * @return AssembledTransaction
@@ -711,13 +629,13 @@ class TokenContract
      */
     public function buildTransferTx(
         Address $from,
-        Address $to,
+        Address $to_muxed,
         string $amount,
         ?MethodOptions $methodOptions = null
     ): AssembledTransaction {
         $args = [
             $from->toXdrSCVal(),
-            $to->toXdrSCVal(),
+            $to_muxed->toXdrSCVal(),
             XdrSCVal::forI128BigInt($amount)
         ];
 

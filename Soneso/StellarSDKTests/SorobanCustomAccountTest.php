@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -106,11 +107,17 @@ class SorobanCustomAccountTest extends TestCase
         $this->assertTrue(count($contractInfo->specEntries) > 0);
         $this->assertTrue(count($contractInfo->metaEntries) > 0);
 
-        $deployTokRes = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair);
+        $adminAddress = Address::fromAccountId($adminKeyPair->getAccountId())->toXdrSCVal();
+        $tokenName = XdrSCVal::forString("TokenA");
+        $tokenSymbol = XdrSCVal::forString("TokenA");
+        $decimal = XdrSCVal::forU32(8);
+
+        $deployTokRes = $this->deployContract($this->server,self::TOKEN_CONTRACT_PATH, $adminKeyPair,
+            constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
+
         $tokenAContractId = $deployTokRes[1];
 
         //print("tokenAContractId: " . $tokenAContractId . PHP_EOL);
-        $this->createToken($this->server, $adminKeyPair, $tokenAContractId, "TokenA", "TokenA");
 
         $accountContractAddressXdrSCVal = Address::fromContractId($accountContractId)->toXdrSCVal();
         $this->mint($this->server, $adminKeyPair, $tokenAContractId, $accountContractAddressXdrSCVal, 10000000000000);
@@ -195,10 +202,10 @@ class SorobanCustomAccountTest extends TestCase
         $transactionData = $simulateResponse->getTransactionData();
 
         // add some resources because preflight can not take __check_auth into account
-        $transactionData->resources->diskReadBytes *= 2;
-        $transactionData->resources->instructions *= 3;
-        $transactionData->resourceFee += 1200800;
-        $simulateResponse->minResourceFee += 1200800;
+        $transactionData->resources->diskReadBytes *= 3;
+        $transactionData->resources->instructions *= 4;
+        $transactionData->resourceFee += 1500800;
+        $simulateResponse->minResourceFee += 1500800;
 
         // set the transaction data  + fee and sign
         $transaction->setSorobanTransactionData($transactionData);
@@ -270,10 +277,10 @@ class SorobanCustomAccountTest extends TestCase
         $transactionData = $simulateResponse->getTransactionData();
 
         // add some resources because preflight can not take __check_auth into account
-        $transactionData->resources->diskReadBytes *= 2;
-        $transactionData->resources->instructions *= 3;
-        $transactionData->resourceFee += 1200800;
-        $simulateResponse->minResourceFee += 1200800;
+        $transactionData->resources->diskReadBytes *= 3;
+        $transactionData->resources->instructions *= 4;
+        $transactionData->resourceFee += 1500800;
+        $simulateResponse->minResourceFee += 1500800;
 
         // we need to extend the footprint, so that __check_auth can read from storage
         $readOwnersKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
@@ -333,7 +340,7 @@ class SorobanCustomAccountTest extends TestCase
         }
     }
 
-    private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp) : array {
+    private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp, ?array $constructorArgs = null) : array {
         sleep(5);
         $result = array();
 
@@ -376,7 +383,12 @@ class SorobanCustomAccountTest extends TestCase
         $this->bumpContractCodeFootprint($server, $submitterKp, $wasmId, 100000);
 
         // create contract
-        $createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($submitterId), $wasmId);
+        if ($constructorArgs != null) {
+            $createContractHostFunction = new CreateContractWithConstructorHostFunction(Address::fromAccountId($submitterId), $wasmId, $constructorArgs);
+        } else {
+            $createContractHostFunction = new CreateContractHostFunction(Address::fromAccountId($submitterId), $wasmId);
+        }
+
         $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
         $op = $builder->build();
 
@@ -407,48 +419,6 @@ class SorobanCustomAccountTest extends TestCase
         $this->assertNotNull($contractId);
         array_push($result, $contractId);
         return $result;
-    }
-
-    private function createToken(SorobanServer $server, Keypair $submitterKp, String $contractId, String $name, String $symbol) : void
-    {
-        // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $submitterId = $submitterKp->getAccountId();
-
-        $adminAddress = Address::fromAccountId($submitterId)->toXdrSCVal();
-        $functionName = "initialize";
-
-        $tokenName = XdrSCVal::forString($name);
-        $tokenSymbol = XdrSCVal::forString($symbol);
-
-        $args = [$adminAddress, XdrSCVal::forU32(8), $tokenName, $tokenSymbol];
-
-        $invokeContractHostFunction = new InvokeContractHostFunction($contractId, $functionName, $args);
-        $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
-        $op = $builder->build();
-
-        sleep(5);
-        // reload account for sequence number
-        $account = $this->server->getAccount($submitterId);
-        assertNotNull($account);
-        $transaction = (new TransactionBuilder($account))
-            ->addOperation($op)->build();
-
-        $request = new SimulateTransactionRequest($transaction);
-        $simulateResponse = $server->simulateTransaction($request);
-
-        // set the transaction data  + fee and sign
-        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->sign($submitterKp, $this->network);
-
-        // send the transaction
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
-
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
     private function mint(SorobanServer $server, Keypair $submitterKp, String $contractId, XdrSCVal $toAddress, int $amount) : void

@@ -4,9 +4,9 @@
 
 | Property | Value |
 |----------|-------|
-| **SDK Version** | 1.8.5 |
+| **SDK Version** | 1.8.6 |
 | **Compatible Horizon Version** | 23.0.0 (stellar-) |
-| **Last Updated** | October 10, 2025 |
+| **Last Updated** | October 16, 2025 |
 | **Overall Coverage** | 100.0% (Fully Supported) |
 | **Total Endpoints Analyzed** | 50 |
 
@@ -207,10 +207,10 @@
 ## Document Information
 
 ### Generation Details
-- **Generated On**: 2025-10-10 01:09:52 UTC
+- **Generated On**: 2025-10-16 17:06:53 UTC
 - **Data Sources**: 
   - Horizon API: Official Stellar Horizon documentation
-  - PHP SDK: Source code analysis of Stellar PHP SDK v1.8.5
+  - PHP SDK: Source code analysis of Stellar PHP SDK v1.8.6
 
 ### How to Use This Matrix
 

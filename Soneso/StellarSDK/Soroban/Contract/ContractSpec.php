@@ -17,9 +17,11 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecFunctionV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecType;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeDef;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTEnumV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTErrorEnumV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecEventV0;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
@@ -70,6 +72,91 @@ class ContractSpec
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the XDR UDT struct entries from the spec.
+     * @return array<XdrSCSpecUDTStructV0>
+     */
+    public function udtStructs() : array {
+        /**
+         * @var array<XdrSCSpecUDTStructV0> $result
+         */
+        $result = array();
+        foreach ($this->entries as $entry) {
+            if($entry->type->value == XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0 && $entry->udtStructV0 !== null) {
+                $result[] = $entry->udtStructV0;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Gets the XDR UDT union entries from the spec.
+     * @return array<XdrSCSpecUDTUnionV0>
+     */
+    public function udtUnions() : array {
+        /**
+         * @var array<XdrSCSpecUDTUnionV0> $result
+         */
+        $result = array();
+        foreach ($this->entries as $entry) {
+            if($entry->type->value == XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0 && $entry->udtUnionV0 !== null) {
+                $result[] = $entry->udtUnionV0;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Gets the XDR UDT enum entries from the spec.
+     * @return array<XdrSCSpecUDTEnumV0>
+     */
+    public function udtEnums() : array {
+        /**
+         * @var array<XdrSCSpecUDTEnumV0> $result
+         */
+        $result = array();
+        foreach ($this->entries as $entry) {
+            if($entry->type->value == XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0 && $entry->udtEnumV0 !== null) {
+                $result[] = $entry->udtEnumV0;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Gets the XDR UDT error enum entries from the spec.
+     * @return array<XdrSCSpecUDTErrorEnumV0>
+     */
+    public function udtErrorEnums() : array {
+        /**
+         * @var array<XdrSCSpecUDTErrorEnumV0> $result
+         */
+        $result = array();
+        foreach ($this->entries as $entry) {
+            if($entry->type->value == XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 && $entry->udtErrorEnumV0 !== null) {
+                $result[] = $entry->udtErrorEnumV0;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Gets the XDR event entries from the spec.
+     * @return array<XdrSCSpecEventV0>
+     */
+    public function events() : array {
+        /**
+         * @var array<XdrSCSpecEventV0> $result
+         */
+        $result = array();
+        foreach ($this->entries as $entry) {
+            if($entry->type->value == XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0 && $entry->eventV0 !== null) {
+                $result[] = $entry->eventV0;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -131,6 +218,10 @@ class ContractSpec
                 }
             } else if  ($entry->udtErrorEnumV0 !== null) {
                 if ($entry->udtErrorEnumV0->name === $name) {
+                    return $entry;
+                }
+            } else if  ($entry->eventV0 !== null) {
+                if ($entry->eventV0->name === $name) {
                     return $entry;
                 }
             }

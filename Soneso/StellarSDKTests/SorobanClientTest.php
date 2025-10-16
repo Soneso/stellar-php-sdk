@@ -202,17 +202,20 @@ class SorobanClientTest  extends TestCase
         $atomicSwapClient = $this->deployContract($swapContractWasmHash);
         print("Deployed atomic swap contract contract id: {$atomicSwapClient->getContractId()}" . PHP_EOL);
 
-        $tokenAClient = $this->deployContract($tokenContractWasmHash);
+        $adminAddress = Address::fromAccountId($adminKeyPair->getAccountId())->toXdrSCVal();
+        $tokenName = XdrSCVal::forString("TokenA");
+        $tokenSymbol = XdrSCVal::forString("TokenA");
+        $decimal = XdrSCVal::forU32(8);
+
+        $tokenAClient = $this->deployContract($tokenContractWasmHash, constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
         $tokenAContractId = $tokenAClient->getContractId();
         print("Deployed token A contract contract id: {$tokenAContractId}" . PHP_EOL);
 
-        $tokenBClient = $this->deployContract($tokenContractWasmHash);
+        $tokenName = XdrSCVal::forString("TokenB");
+        $tokenSymbol = XdrSCVal::forString("TokenB");
+        $tokenBClient = $this->deployContract($tokenContractWasmHash, constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
         $tokenBContractId = $tokenBClient->getContractId();
         print("Deployed token B contract contract id: {$tokenBContractId}" . PHP_EOL);
-
-        $this->createToken($tokenAClient, $adminKeyPair,"TokenA", "TokenA");
-        $this->createToken($tokenBClient, $adminKeyPair, "TokenB", "TokenB");
-        print("Tokens created");
 
         $this->mint($tokenAClient, $adminKeyPair, $aliceId, 10000000000000);
         $this->mint($tokenBClient, $adminKeyPair, $bobId, 10000000000000);
@@ -276,8 +279,8 @@ class SorobanClientTest  extends TestCase
         $spec = new ContractSpec($tokenAClient->getSpecEntries());
         $functions = $spec->funcs();
         $this->assertCount(13, $functions);
-        $func = $spec->getFunc("initialize");
-        $this->assertEquals("initialize", $func->name);
+        $func = $spec->getFunc("mint");
+        $this->assertEquals("mint", $func->name);
     }
 
     public function testNativeToXdrSCVal() {
@@ -619,15 +622,19 @@ class SorobanClientTest  extends TestCase
     }
 
     /**
+     * @param string $wasmHash wasm id
+     * @param array<XdrSCVal>|null $constructorArgs Constructor/Initialization Args for the contract's `__constructor` method.
+     * @return SorobanClient
      * @throws GuzzleException
      */
-    private function deployContract(string $wasmHash): SorobanClient {
+    private function deployContract(string $wasmHash, ?array $constructorArgs = null): SorobanClient {
         $rpcUrl = $this->testOn == "testnet" ? self::TESTNET_RPC_URL: self::FUTURENET_RPC_URL;
         $deployRequest = new DeployRequest(
             rpcUrl: $rpcUrl,
             network: $this->network,
             sourceAccountKeyPair: $this->sourceAccountKeyPair,
             wasmHash: $wasmHash,
+            constructorArgs: $constructorArgs,
             enableServerLogging: true
         );
         return SorobanClient::deploy($deployRequest);
@@ -825,19 +832,22 @@ class SorobanClientTest  extends TestCase
         $atomicSwapClient = $this->deployContract($swapContractWasmHash);
         print("Deployed atomic swap contract contract id: {$atomicSwapClient->getContractId()}" . PHP_EOL);
 
-        $tokenAClient = $this->deployContract($tokenContractWasmHash);
+        $adminAddress = Address::fromAccountId($adminKeyPair->getAccountId())->toXdrSCVal();
+        $tokenName = XdrSCVal::forString("TokenA");
+        $tokenSymbol = XdrSCVal::forString("TokenA");
+        $decimal = XdrSCVal::forU32(8);
+
+        $tokenAClient = $this->deployContract($tokenContractWasmHash, constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
         $tokenAContractId = $tokenAClient->getContractId();
         print("Deployed token A contract contract id: {$tokenAContractId}" . PHP_EOL);
 
-        $tokenBClient = $this->deployContract($tokenContractWasmHash);
+        $tokenName = XdrSCVal::forString("TokenB");
+        $tokenSymbol = XdrSCVal::forString("TokenB");
+        $tokenBClient = $this->deployContract($tokenContractWasmHash, constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
         $tokenBContractId = $tokenBClient->getContractId();
         print("Deployed token B contract contract id: {$tokenBContractId}" . PHP_EOL);
 
         // Use ContractSpec for token operations
-        print("=== Creating tokens with ContractSpec ===" . PHP_EOL);
-        $this->createTokenWithSpec($tokenAClient, $adminKeyPair, "TokenA", "TokenA");
-        $this->createTokenWithSpec($tokenBClient, $adminKeyPair, "TokenB", "TokenB");
-        print("✓ Tokens created using ContractSpec" . PHP_EOL);
 
         print("=== Minting tokens with ContractSpec ===" . PHP_EOL);
         $this->mintWithSpec($tokenAClient, $adminKeyPair, $aliceId, "10000000000000");
@@ -940,12 +950,19 @@ class SorobanClientTest  extends TestCase
         // Deploy contracts
         $atomicSwapDeployed = $this->deployContract($swapContractWasmHash);
         print("Deployed atomic swap contract contract id: {$atomicSwapDeployed->getContractId()}" . PHP_EOL);
-        
-        $tokenADeployed = $this->deployContract($tokenContractWasmHash);
+
+        $adminAddress = Address::fromAccountId($adminKeyPair->getAccountId())->toXdrSCVal();
+        $tokenName = XdrSCVal::forString("TokenA");
+        $tokenSymbol = XdrSCVal::forString("TokenA");
+        $decimal = XdrSCVal::forU32(8);
+
+        $tokenADeployed = $this->deployContract($tokenContractWasmHash, constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
         $tokenAContractId = $tokenADeployed->getContractId();
         print("Deployed token A contract contract id: {$tokenAContractId}" . PHP_EOL);
-        
-        $tokenBDeployed = $this->deployContract($tokenContractWasmHash);
+
+        $tokenName = XdrSCVal::forString("TokenB");
+        $tokenSymbol = XdrSCVal::forString("TokenB");
+        $tokenBDeployed = $this->deployContract($tokenContractWasmHash, constructorArgs: [$adminAddress, $decimal, $tokenName, $tokenSymbol]);
         $tokenBContractId = $tokenBDeployed->getContractId();
         print("Deployed token B contract contract id: {$tokenBContractId}" . PHP_EOL);
         
@@ -975,26 +992,6 @@ class SorobanClientTest  extends TestCase
             rpcUrl: $rpcUrl,
             enableServerLogging: true
         ));
-        
-        // Initialize tokens using bindings
-        print("=== Initializing tokens with contract bindings ===" . PHP_EOL);
-        $adminAddress = Address::fromAccountId($adminKeyPair->getAccountId());
-        
-        $tokenAContract->initialize(
-            admin: $adminAddress,
-            decimal: 7,
-            name: "TokenA",
-            symbol: "TokenA"
-        );
-        print("✓ Token A initialized" . PHP_EOL);
-        
-        $tokenBContract->initialize(
-            admin: $adminAddress,
-            decimal: 7,
-            name: "TokenB",
-            symbol: "TokenB"
-        );
-        print("✓ Token B initialized" . PHP_EOL);
         
         // Mint tokens using bindings with build methods
         print("=== Minting tokens using build methods ===" . PHP_EOL);
@@ -1114,21 +1111,6 @@ class SorobanClientTest  extends TestCase
     }
 
     /**
-     * ContractSpec version of createToken function for comparison
-     */
-    private function createTokenWithSpec(SorobanClient $tokenClient, KeyPair $submitterKp, string $name, string $symbol): void {
-        // Using ContractSpec - much simpler!
-        $args = $tokenClient->getContractSpec()->funcArgsToXdrSCValues("initialize", [
-            "admin" => $submitterKp->getAccountId(),  // String -> Address automatic conversion
-            "decimal" => 0,                           // int -> u32 automatic conversion
-            "name" => $name,                          // String -> String (direct)
-            "symbol" => $symbol                       // String -> String (direct)
-        ]);
-
-        $tokenClient->invokeMethod(name: "initialize", args: $args);
-    }
-
-    /**
      * ContractSpec version of mint function for comparison
      */
     private function mintWithSpec(SorobanClient $tokenClient, KeyPair $adminKp, string $toAccountId, string $amount): void {
@@ -1156,27 +1138,6 @@ class SorobanClientTest  extends TestCase
         assertNotNull($resultValue->i128);
         // Return as string to handle large numbers
         return gmp_strval($resultValue->toBigInt());
-    }
-
-    /**
-     * @throws GuzzleException
-     */
-    private function createToken(SorobanClient $tokenClient, Keypair $submitterKp, String $name, String $symbol) : void
-    {
-        // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        $submitterId = $submitterKp->getAccountId();
-
-        $methodName = "initialize";
-
-        $spec = new ContractSpec($tokenClient->getSpecEntries());
-        $args = $spec->funcArgsToXdrSCValues(name: $methodName, args: [
-            "admin" => Address::fromAccountId($submitterId),
-            "decimal" => 8,
-            "name" => $name,
-            "symbol" => $symbol
-        ]);
-
-        $tokenClient->invokeMethod(name: $methodName, args: $args);
     }
 
     /**

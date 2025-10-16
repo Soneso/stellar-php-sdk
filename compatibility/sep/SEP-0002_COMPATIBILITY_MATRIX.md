@@ -1,6 +1,6 @@
 # SEP-0002 (Federation protocol) Compatibility Matrix
 
-**Generated:** 2025-10-10 13:15:47
+**Generated:** 2025-10-16 15:08:09
 
 **SEP Version:** N/A
 **SEP Status:** Final

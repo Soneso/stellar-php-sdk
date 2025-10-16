@@ -1,6 +1,6 @@
 # SEP-0024 (Hosted Deposit and Withdrawal) Compatibility Matrix
 
-**Generated:** 2025-10-10 13:59:00
+**Generated:** 2025-10-16 15:08:23
 
 **SEP Version:** N/A
 **SEP Status:** Active

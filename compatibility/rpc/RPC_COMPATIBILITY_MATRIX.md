@@ -4,8 +4,8 @@
 
 This document provides a comprehensive compatibility matrix for the Stellar PHP SDK's implementation of the Stellar RPC (Soroban RPC) API. The RPC uses JSON-RPC 2.0 protocol to enable interaction with Soroban smart contracts on the Stellar network.
 
-**Last Updated:** October 10, 2025
-**SDK Version:** 1.8.5
+**Last Updated:** October 16, 2025
+**SDK Version:** 1.8.6
 **RPC Version:** v23.0.4
 **Protocol Version:** 23
 
@@ -404,10 +404,10 @@ The RPC interface is simpler and more focused than Horizon, consisting of only 1
 ## Document Information
 
 ### Generation Details
-- **Generated On**: 2025-10-10 01:09:44 UTC
+- **Generated On**: 2025-10-16 17:07:27 UTC
 - **Data Sources**: 
   - Stellar RPC: Official Stellar RPC documentation
-  - PHP SDK: Source code analysis of Stellar PHP SDK v1.8.5
+  - PHP SDK: Source code analysis of Stellar PHP SDK v1.8.6
 
 ### How to Use This Matrix
 
@@ -463,7 +463,7 @@ The SDK is **production-ready** for Soroban smart contract development, with the
 ---
 
 **Document Version:** 2.0
-**Generated:** October 10, 2025
+**Generated:** October 16, 2025
 **Maintainer:** Stellar PHP SDK Team
 **License:** Apache 2.0
 
