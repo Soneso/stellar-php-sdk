@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Util;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
+use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 
 class FuturenetFriendBot
@@ -21,7 +22,7 @@ class FuturenetFriendBot
             $url = "https://friendbot-futurenet.stellar.org?addr=" . $accountId;
             $request = new Request('GET', $url, RequestBuilder::HEADERS);
             $response = $httpClient->send($request);
-            if ($response->getStatusCode() == 200) {
+            if ($response->getStatusCode() == NetworkConstants::HTTP_OK) {
                 return true;
             }
         } catch (GuzzleException $e) {

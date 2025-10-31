@@ -256,4 +256,83 @@ final class StellarConstants
      * @see https://github.com/stellar/stellar-protocol/blob/master/core/cap-0023.md
      */
     public const CLAIMABLE_BALANCE_DECODED_LENGTH = 33;
+
+    // ============================================================================
+    // STROOP AND AMOUNT CONVERSIONS
+    // ============================================================================
+    // Constants related to Stellar's currency unit conversions.
+    //
+    // Reference: Stellar Protocol - Asset specification
+    // @see https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/assets
+
+    /**
+     * Stroop scale factor for converting between XLM and stroops.
+     *
+     * 1 XLM = 10,000,000 stroops (10 million)
+     * This is the fundamental unit conversion in Stellar.
+     * Stroops are the smallest unit of XLM, similar to satoshis in Bitcoin.
+     *
+     * Unit: stroops per XLM
+     *
+     * Example:
+     * - 1 XLM = 10,000,000 stroops
+     * - 0.1 XLM = 1,000,000 stroops
+     * - 100 stroops = 0.00001 XLM (minimum base fee)
+     *
+     * @see https://developers.stellar.org/docs/learn/fundamentals/fees-resource-limits-metering
+     */
+    public const STROOP_SCALE = 10000000;
+
+    // ============================================================================
+    // TRANSACTION LIMITS
+    // ============================================================================
+    // Constants related to transaction construction and validation.
+    //
+    // Reference: Stellar Protocol - Transaction specification
+    // @see https://developers.stellar.org/docs/learn/fundamentals/transactions
+
+    /**
+     * Maximum number of operations allowed in a single transaction.
+     *
+     * Stellar protocol limits transactions to 100 operations maximum.
+     * This ensures transactions remain within reasonable size limits
+     * and can be processed efficiently by validators.
+     *
+     * Unit: count (number of operations)
+     *
+     * Note: The total transaction fee is calculated as:
+     * total_fee = base_fee × number_of_operations
+     *
+     * Reference: Stellar Protocol - Transaction specification
+     * @see https://developers.stellar.org/docs/learn/fundamentals/transactions
+     */
+    public const MAX_OPERATIONS_PER_TRANSACTION = 100;
+
+    // ============================================================================
+    // SOROBAN AND LEDGER CONSTANTS
+    // ============================================================================
+    // Constants related to Soroban smart contracts and ledger management.
+    //
+    // Reference: Soroban documentation
+    // @see https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
+
+    /**
+     * Default ledger expiration offset for Soroban transactions.
+     *
+     * When setting ledger bounds for Soroban transactions, this offset
+     * is added to the current ledger sequence to determine expiration.
+     *
+     * Default: current sequence + 100 blocks (approximately 8.3 minutes)
+     * - Average ledger close time: ~5 seconds
+     * - 100 ledgers ≈ 8.3 minutes
+     *
+     * Unit: ledger blocks
+     *
+     * Note: This provides a reasonable validity window for contract
+     * invocations while preventing stale transactions.
+     *
+     * Reference: Soroban documentation - State archival
+     * @see https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
+     */
+    public const DEFAULT_LEDGER_EXPIRATION_OFFSET = 100;
 }

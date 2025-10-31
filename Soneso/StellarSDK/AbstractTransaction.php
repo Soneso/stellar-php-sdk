@@ -7,6 +7,7 @@
 
 namespace Soneso\StellarSDK;
 
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
@@ -16,7 +17,6 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
 abstract class AbstractTransaction
 {
-    const MIN_BASE_FEE = 100;
     /**
      * @var array<XdrDecoratedSignature> $signatures
      */

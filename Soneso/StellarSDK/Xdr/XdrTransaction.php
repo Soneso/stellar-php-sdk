@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 use Soneso\StellarSDK\AbstractTransaction;
+use Soneso\StellarSDK\Constants\StellarConstants;
 
 class XdrTransaction
 {
@@ -45,7 +46,7 @@ class XdrTransaction
         $this->sequenceNumber = $sequenceNumber;
         $this->operations = $operations;
         if ($fee == null) {
-            $this->fee = AbstractTransaction::MIN_BASE_FEE;
+            $this->fee = StellarConstants::MIN_BASE_FEE_STROOPS;
         } else {
             $this->fee = $fee;
         }

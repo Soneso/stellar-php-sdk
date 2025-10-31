@@ -138,4 +138,65 @@ final class NetworkConstants
      * @see https://tools.ietf.org/html/rfc7231#section-6.6.4
      */
     public const HTTP_SERVICE_UNAVAILABLE = 503;
+
+    // ============================================================================
+    // TRANSACTION TIMING CONSTANTS
+    // ============================================================================
+    // Constants related to transaction validity windows and timing.
+    //
+    // Reference: Stellar Protocol - Transaction specification
+    // @see https://developers.stellar.org/docs/learn/fundamentals/transactions
+
+    /**
+     * Default time bounds offset in seconds.
+     *
+     * Used for transaction validity windows to account for clock drift
+     * between client and server. Transactions are typically given a
+     * validity window that starts slightly in the past to account for
+     * minor time discrepancies.
+     *
+     * Default: 10 seconds before current time
+     *
+     * Unit: seconds
+     *
+     * Example:
+     * - Start time: current_time - 10 seconds
+     * - End time: current_time + timeout
+     *
+     * This prevents transactions from being rejected due to minor
+     * clock synchronization issues between client and network nodes.
+     *
+     * Reference: Transaction time bounds best practices
+     * @see https://developers.stellar.org/docs/learn/fundamentals/transactions/transaction-data-structures
+     */
+    public const DEFAULT_TIME_BOUNDS_OFFSET_SECONDS = 10;
+
+    // ============================================================================
+    // SOROBAN CONTRACT CONSTANTS
+    // ============================================================================
+    // Constants related to Soroban smart contract invocations.
+    //
+    // Reference: Soroban documentation
+    // @see https://developers.stellar.org/docs/learn/smart-contract-internals
+
+    /**
+     * Default timeout for Soroban contract method calls in seconds.
+     *
+     * This defines the maximum time a transaction remains valid after
+     * submission. After this timeout, the transaction will no longer
+     * be accepted by the network.
+     *
+     * Default: 300 seconds (5 minutes)
+     *
+     * Unit: seconds
+     *
+     * Note: This timeout represents the transaction validity window,
+     * not the actual execution time. Most contract invocations complete
+     * within a few seconds, but the longer window allows for network
+     * congestion and retry scenarios.
+     *
+     * Reference: Soroban transaction lifecycle
+     * @see https://developers.stellar.org/docs/learn/smart-contract-internals/transaction-simulation
+     */
+    public const DEFAULT_SOROBAN_TIMEOUT_SECONDS = 300;
 }

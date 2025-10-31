@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\AbstractTransaction;
+use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Transaction\SubmitAsyncTransactionResponse;
 
@@ -58,11 +59,11 @@ class SubmitAsyncTransactionRequestBuilder extends RequestBuilder
         } catch (HorizonRequestException $e) {
             $httpResponse = $e->getHttpResponse();
             if ($httpResponse != null && (
-                $httpResponse->getStatusCode() === 400 ||
-                $httpResponse->getStatusCode() === 403 ||
-                $httpResponse->getStatusCode() === 409 ||
-                $httpResponse->getStatusCode() === 500 ||
-                $httpResponse->getStatusCode() === 503
+                $httpResponse->getStatusCode() === NetworkConstants::HTTP_BAD_REQUEST ||
+                $httpResponse->getStatusCode() === NetworkConstants::HTTP_FORBIDDEN ||
+                $httpResponse->getStatusCode() === NetworkConstants::HTTP_CONFLICT ||
+                $httpResponse->getStatusCode() === NetworkConstants::HTTP_INTERNAL_SERVER_ERROR ||
+                $httpResponse->getStatusCode() === NetworkConstants::HTTP_SERVICE_UNAVAILABLE
                 )
             ) {
                 $decoded = json_decode($httpResponse->getBody()->__toString(), true);

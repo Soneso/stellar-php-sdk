@@ -10,6 +10,7 @@ namespace Soneso\StellarSDK;
 use Exception;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
@@ -27,7 +28,7 @@ use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
  */
 class Transaction extends AbstractTransaction
 {
-    private int $fee = AbstractTransaction::MIN_BASE_FEE;
+    private int $fee = StellarConstants::MIN_BASE_FEE_STROOPS;
     private BigInteger $sequenceNumber;
     private MuxedAccount $sourceAccount;
     /**
@@ -64,7 +65,7 @@ class Transaction extends AbstractTransaction
         }
 
         if ($fee == null) {
-            $this->fee = AbstractTransaction::MIN_BASE_FEE * count($operations);
+            $this->fee = StellarConstants::MIN_BASE_FEE_STROOPS * count($operations);
         } else {
             $this->fee = $fee;
         }

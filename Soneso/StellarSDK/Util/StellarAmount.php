@@ -6,14 +6,13 @@
 
 namespace Soneso\StellarSDK\Util;
 
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use phpseclib3\Math\BigInteger;
 
 
 class StellarAmount
 {
-    const STROOP_SCALE = 10000000; // 10 million, 7 zeroes
-    
     protected BigInteger $stroops;
     protected BigInteger $stroopScaleBignum;
     protected BigInteger $maxSignedStroops64; // The largest amount of stroops that can fit in a signed int64
@@ -46,7 +45,7 @@ class StellarAmount
      */
     public function __construct(BigInteger $stroops)
     {
-        $this->stroopScaleBignum = new BigInteger(static::STROOP_SCALE);
+        $this->stroopScaleBignum = new BigInteger(StellarConstants::STROOP_SCALE);
         $this->maxSignedStroops64 = new BigInteger('9223372036854775807');
         $this->stroops = $stroops;
         
@@ -77,7 +76,7 @@ class StellarAmount
 
         // Everything to the left of the decimal point
         if ($parts[0]) {
-            $unscaledAmountLeft = (new BigInteger($parts[0]))->multiply(new BigInteger(static::STROOP_SCALE));
+            $unscaledAmountLeft = (new BigInteger($parts[0]))->multiply(new BigInteger(StellarConstants::STROOP_SCALE));
             $unscaledAmount = $unscaledAmount->add($unscaledAmountLeft);
         }
 

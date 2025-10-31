@@ -191,4 +191,88 @@ final class CryptoConstants
      */
     public const SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES = 4;
 
+
+    // ============================================================================
+    // HD WALLET KEY DERIVATION CONSTANTS (BIP32)
+    // ============================================================================
+    // Constants related to hierarchical deterministic wallet key derivation
+    // as defined in BIP32 specification.
+    //
+    // Reference: BIP32 specification
+    // @see https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+
+    /**
+     * Length of BIP32 chain code in bytes.
+     *
+     * Chain codes are used in HD wallet key derivation and are
+     * always 32 bytes as defined by BIP32. The chain code is combined
+     * with the private key to derive child keys.
+     *
+     * Unit: bytes
+     *
+     * Reference: BIP32 specification
+     * @see https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+     */
+    public const CHAIN_CODE_LENGTH_BYTES = 32;
+
+    /**
+     * BIP32 hardened derivation minimum index.
+     *
+     * In BIP32 HD wallets, indices >= 2^31 (0x80000000) indicate
+     * hardened key derivation. Hardened derivation prevents child
+     * public keys from being derived from the parent public key,
+     * providing additional security.
+     *
+     * Hexadecimal: 0x80000000
+     * Decimal: 2147483648
+     * Binary: 10000000 00000000 00000000 00000000
+     *
+     * Reference: BIP32 specification - Hardened keys
+     * @see https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-ckd-functions
+     */
+    public const BIP32_HARDENED_MINIMUM_INDEX = 0x80000000;
+
+    /**
+     * Length of HMAC key part in HD wallet derivation.
+     *
+     * When performing HMAC-SHA512 during BIP32 key derivation, the 64-byte
+     * output is split into two 32-byte parts. The first 32 bytes are used
+     * as the child key material.
+     *
+     * Unit: bytes
+     *
+     * Reference: BIP32 specification - Key derivation
+     * @see https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-ckd-functions
+     */
+    public const HMAC_KEY_PART_LENGTH = 32;
+
+    /**
+     * Offset for HMAC chain part in HD wallet derivation.
+     *
+     * When performing HMAC-SHA512 during BIP32 key derivation, the 64-byte
+     * output is split into two 32-byte parts. The second 32 bytes (at offset 32)
+     * are used as the child chain code.
+     *
+     * Unit: bytes (offset)
+     *
+     * Reference: BIP32 specification - Key derivation
+     * @see https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-ckd-functions
+     */
+    public const HMAC_CHAIN_PART_OFFSET = 32;
+
+    /**
+     * BIP32 key padding byte for hardened derivation.
+     *
+     * When deriving hardened child keys in BIP32, a 0x00 byte is prepended
+     * to the private key before HMAC hashing. This ensures hardened keys
+     * cannot be derived from the public key.
+     *
+     * Hexadecimal: 0x00
+     * Decimal: 0
+     *
+     * Reference: BIP32 specification - Hardened key derivation
+     * @see https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-ckd-functions
+     */
+    public const KEY_PADDING_BYTE = 0x00;
+
 }

@@ -7,6 +7,8 @@
 namespace Soneso\StellarSDK\Soroban\Contract;
 
 use Soneso\StellarSDK\AbstractTransaction;
+use Soneso\StellarSDK\Constants\StellarConstants;
+use Soneso\StellarSDK\Constants\NetworkConstants;
 
 /**
  * Options for a smart contract method invocation.
@@ -45,8 +47,8 @@ class MethodOptions
      * @param bool $restore If true, will automatically attempt to restore the transaction if there
      *   are archived entries that need renewal. Default false.
      */
-    public function __construct(int $fee = AbstractTransaction::MIN_BASE_FEE,
-                                int $timeoutInSeconds = 300,
+    public function __construct(int $fee = StellarConstants::MIN_BASE_FEE_STROOPS,
+                                int $timeoutInSeconds = NetworkConstants::DEFAULT_SOROBAN_TIMEOUT_SECONDS,
                                 bool $simulate = true,
                                 bool $restore = true)
     {

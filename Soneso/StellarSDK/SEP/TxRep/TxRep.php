@@ -13,6 +13,7 @@ use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\AbstractOperation;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\AccountMergeOperation;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\AccountMergeOperationBuilder;
 use Soneso\StellarSDK\AllowTrustOperation;
 use Soneso\StellarSDK\AllowTrustOperationBuilder;
@@ -345,8 +346,8 @@ class TxRep
             throw new InvalidArgumentException('invalid ' . $prefix . 'operations.len');
         }
         $nrOfOperations = (int)$operationsLen;
-        if ($nrOfOperations > 100) {
-            throw new InvalidArgumentException('invalid ' . $prefix . 'operations.len - greater than 100');
+        if ($nrOfOperations > StellarConstants::MAX_OPERATIONS_PER_TRANSACTION) {
+            throw new InvalidArgumentException('invalid ' . $prefix . 'operations.len - greater than ' . StellarConstants::MAX_OPERATIONS_PER_TRANSACTION);
         }
 
         for ($i = 0; $i < $nrOfOperations; $i++) {

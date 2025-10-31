@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Constants\StellarConstants;
 
 class FeeBumpTransactionBuilder
 {
@@ -29,8 +30,8 @@ class FeeBumpTransactionBuilder
     }
 
     public function setBaseFee(int $baseFee) : FeeBumpTransactionBuilder {
-        if ($baseFee < AbstractTransaction::MIN_BASE_FEE) {
-            throw new InvalidArgumentException("base fee can not be smaller than ".AbstractTransaction::MIN_BASE_FEE);
+        if ($baseFee < StellarConstants::MIN_BASE_FEE_STROOPS) {
+            throw new InvalidArgumentException("base fee can not be smaller than ".StellarConstants::MIN_BASE_FEE_STROOPS);
         }
         $innerBaseFee = $this->inner->getFee();
         $nrOfOperations = count($this->inner->getOperations());
