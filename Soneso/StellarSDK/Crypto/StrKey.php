@@ -11,6 +11,8 @@ use Base32\Base32;
 use Exception;
 use InvalidArgumentException;
 use ParagonIE\Sodium\Core\Ed25519;
+use Soneso\StellarSDK\Constants\CryptoConstants;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\SignedPayloadSigner;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrSignedPayload;
@@ -265,7 +267,7 @@ class StrKey
      * @return string strkey claimable balance id (B...).
      */
     public static function encodeClaimableBalanceId(string $data) : string {
-        if (strlen($data) == 32) {
+        if (strlen($data) === StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES) {
             // we need to add the discriminant (0)
             $prefixed = pack("C", 0) . $data;
             return static::encodeCheck(VersionByte::CLAIMABLE_BALANCE_ID, $prefixed);
@@ -366,22 +368,22 @@ class StrKey
             case VersionByte::SHA256_HASH:
             case VersionByte::CONTRACT_ID:
             case VersionByte::LIQUIDITY_POOL_ID:
-                if (strlen($data) != 56) {
+                if (strlen($data) !== CryptoConstants::STRKEY_ACCOUNT_ID_LENGTH) {
                     return false;
                 }
                 break;
             case VersionByte::MUXED_ACCOUNT_ID:
-                if (strlen($data) != 69) {
+                if (strlen($data) !== CryptoConstants::STRKEY_MUXED_ACCOUNT_ID_LENGTH) {
                     return false;
                 }
                 break;
             case VersionByte::SIGNED_PAYLOAD:
-                if (strlen($data) < 56 || strlen($data) > 165) {
+                if (strlen($data) < CryptoConstants::STRKEY_SIGNED_PAYLOAD_MIN_LENGTH || strlen($data) > CryptoConstants::STRKEY_SIGNED_PAYLOAD_MAX_LENGTH) {
                     return false;
                 }
                 break;
             case VersionByte::CLAIMABLE_BALANCE_ID:
-                if (strlen($data) != 58) {
+                if (strlen($data) !== CryptoConstants::STRKEY_CLAIMABLE_BALANCE_LENGTH) {
                     return false;
                 }
                 break;
@@ -397,15 +399,15 @@ class StrKey
                 case VersionByte::SHA256_HASH:
                 case VersionByte::CONTRACT_ID:
                 case VersionByte::LIQUIDITY_POOL_ID:
-                    return strlen($decoded) === 32;
+                    return strlen($decoded) === StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES;
                 case VersionByte::MUXED_ACCOUNT_ID:
-                    return strlen($decoded) === 40; // +8 bytes for the ID
+                    return strlen($decoded) === StellarConstants::MUXED_ACCOUNT_DECODED_LENGTH;
                 case VersionByte::SIGNED_PAYLOAD:
                     // 32 for the signer, +4 for the payload size, then either +4 for the
                     // min or +64 for the max payload
-                    return strlen($decoded) >= 32 + 4 + 4 && strlen($decoded) <= 32 + 4 + 64;
+                    return strlen($decoded) >= StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES + CryptoConstants::SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES + StellarConstants::SIGNED_PAYLOAD_MIN_LENGTH_BYTES && strlen($decoded) <= StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES + CryptoConstants::SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES + StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES;
                 case VersionByte::CLAIMABLE_BALANCE_ID:
-                    return strlen($decoded) === 32 + 1; // +1 byte for discriminant
+                    return strlen($decoded) === StellarConstants::CLAIMABLE_BALANCE_DECODED_LENGTH;
                 default:
                     return false;
             }
@@ -455,8 +457,8 @@ class StrKey
      */
     private static function calculateChecksum(string $data) : string
     {
-        $crc = 0x0000;
-        $polynomial = 0x1021;
+        $crc = CryptoConstants::CRC16_INITIAL;
+        $polynomial = CryptoConstants::CRC16_POLYNOMIAL;
 
         foreach (str_split($data) as $byte) {
             $byte = ord($byte);
@@ -469,7 +471,7 @@ class StrKey
             }
         }
 
-        return pack('v', $crc & 0xffff);
+        return pack('v', $crc & CryptoConstants::CRC16_MASK);
     }
 
     private static function verifyChecksum(string $expectedChecksum, string $data) : bool {

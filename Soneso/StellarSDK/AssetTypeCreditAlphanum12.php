@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK;
 
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12;
@@ -18,7 +19,7 @@ class AssetTypeCreditAlphanum12 extends AssetTypeCreditAlphanum
 
     public function __construct(string $code, string $issuer) {
         $codeLen = strlen($code);
-        if ($codeLen < 5 || $codeLen > 12) {
+        if ($codeLen < StellarConstants::ASSET_CODE_ALPHANUMERIC_12_MIN_LENGTH || $codeLen > StellarConstants::ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
             throw new \RuntimeException("invalid asset code length: " . $codeLen);
         }
         parent::__construct($code, $issuer);

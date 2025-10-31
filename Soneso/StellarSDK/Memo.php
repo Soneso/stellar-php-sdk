@@ -8,6 +8,7 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 
@@ -119,7 +120,7 @@ class Memo
             if ($this->value > PHP_INT_MAX) throw new InvalidArgumentException(sprintf('value cannot be larger than %s', PHP_INT_MAX));
         }
         if ($this->type == static::MEMO_TYPE_HASH || $this->type == static::MEMO_TYPE_RETURN) {
-            if (strlen($this->value) != 32) throw new InvalidArgumentException(sprintf('hash values must be 32 bytes, got %s bytes', strlen($this->value)));
+            if (strlen($this->value) !== StellarConstants::MEMO_HASH_LENGTH) throw new InvalidArgumentException(sprintf('hash values must be %s bytes, got %s bytes', StellarConstants::MEMO_HASH_LENGTH, strlen($this->value)));
         }
     }
 
