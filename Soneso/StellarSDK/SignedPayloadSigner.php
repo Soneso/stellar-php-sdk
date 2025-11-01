@@ -8,6 +8,7 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 
@@ -16,8 +17,6 @@ use Soneso\StellarSDK\Xdr\XdrAccountID;
  */
 class SignedPayloadSigner
 {
-
-    const SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH = 64;
 
     private XdrAccountID $signerAccountId;
     private String $payload; // byte[]
@@ -28,8 +27,8 @@ class SignedPayloadSigner
      */
     public function __construct(XdrAccountID $signerAccountId, string $payload)
     {
-        if (strlen($payload) > SignedPayloadSigner::SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH) {
-            throw new InvalidArgumentException(sprintf("invalid payload length, must be less than  %s", SignedPayloadSigner::SIGNED_PAYLOAD_MAX_PAYLOAD_LENGTH));
+        if (strlen($payload) > StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
+            throw new InvalidArgumentException(sprintf("invalid payload length, must be less than  %s", StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES));
         }
         $this->payload = $payload;
         $this->signerAccountId = $signerAccountId;

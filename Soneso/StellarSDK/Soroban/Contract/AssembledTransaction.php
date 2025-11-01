@@ -10,6 +10,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use Exception;
 use DateTime;
 use Soneso\StellarSDK\Account;
+use Soneso\StellarSDK\Constants\NetworkConstants;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
@@ -298,7 +300,7 @@ class AssembledTransaction
         $tx = new AssembledTransaction(options: $options);
         $account = $tx->getSourceAccount();
         $tx->raw = new TransactionBuilder(sourceAccount: $account);
-        $tx->raw->setTimeBounds(new TimeBounds((new DateTime())->modify("- 10 seconds"),
+        $tx->raw->setTimeBounds(new TimeBounds((new DateTime())->modify("- " . NetworkConstants::DEFAULT_TIME_BOUNDS_OFFSET_SECONDS . " seconds"),
             (new DateTime())->modify("+ " . $tx->options->methodOptions->timeoutInSeconds ." seconds")));
         $tx->raw->addOperation($operation);
         $tx->raw->setMaxOperationFee($tx->options->methodOptions->fee);
@@ -335,7 +337,7 @@ class AssembledTransaction
                 $sourceAccount = $this->getSourceAccount();
 
                 $this->raw = new TransactionBuilder(sourceAccount: $sourceAccount);
-                $this->raw->setTimeBounds(new TimeBounds((new DateTime())->modify("- 10 seconds"),
+                $this->raw->setTimeBounds(new TimeBounds((new DateTime())->modify("- " . NetworkConstants::DEFAULT_TIME_BOUNDS_OFFSET_SECONDS . " seconds"),
                     (new DateTime())->modify("+ " . $this->options->methodOptions->timeoutInSeconds ." seconds")));
 
                 $invokeContractHostFunction = new InvokeContractHostFunction($this->options->clientOptions->contractId,
@@ -481,7 +483,7 @@ class AssembledTransaction
             if ($getLatestLedgerResponse->sequence === null) {
                 throw new Exception("Could not fetch latest ledger sequence from server");
             }
-            $expirationLedger = $getLatestLedgerResponse->sequence + 100;
+            $expirationLedger = $getLatestLedgerResponse->sequence + StellarConstants::DEFAULT_LEDGER_EXPIRATION_OFFSET;
         }
 
         $ops = $this->tx->getOperations();
@@ -623,7 +625,7 @@ class AssembledTransaction
         $sourceAccount = $restoreTx->getSourceAccount();
         $restoreTx->raw = (new TransactionBuilder(sourceAccount: $sourceAccount))->addOperation($restoreOp)
             ->setMaxOperationFee($fee)
-            ->setTimeBounds(new TimeBounds((new DateTime())->modify("- 10 seconds"),
+            ->setTimeBounds(new TimeBounds((new DateTime())->modify("- " . NetworkConstants::DEFAULT_TIME_BOUNDS_OFFSET_SECONDS . " seconds"),
                 (new DateTime())->modify("+ " . $restoreTx->options->methodOptions->timeoutInSeconds ." seconds")));
         $restoreTx->tx = $restoreTx->raw->build();
         $restoreTx->tx->setSorobanTransactionData($transactionData);

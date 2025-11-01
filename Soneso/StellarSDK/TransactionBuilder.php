@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Constants\StellarConstants;
 
 /**
  * Builds a new Transaction object.
@@ -107,9 +108,9 @@ class TransactionBuilder
      * @return TransactionBuilder Builder object so you can chain methods.
      */
     public function setMaxOperationFee(int $maxOperationFee) : TransactionBuilder {
-        if ($maxOperationFee < AbstractTransaction::MIN_BASE_FEE) {
+        if ($maxOperationFee < StellarConstants::MIN_BASE_FEE_STROOPS) {
             throw new InvalidArgumentException(
-                "maxOperationFee cannot be smaller than the BASE_FEE (" . AbstractTransaction::MIN_BASE_FEE . ") : " . $maxOperationFee);
+                "maxOperationFee cannot be smaller than the BASE_FEE (" . StellarConstants::MIN_BASE_FEE_STROOPS . ") : " . $maxOperationFee);
         }
         $this->maxOperationFee = $maxOperationFee;
         return $this;
@@ -120,7 +121,7 @@ class TransactionBuilder
      */
     public function build() : Transaction {
         if ($this->maxOperationFee == null) {
-            $this->maxOperationFee =  AbstractTransaction::MIN_BASE_FEE;
+            $this->maxOperationFee =  StellarConstants::MIN_BASE_FEE_STROOPS;
         }
 
         $fee = count($this->operations) * $this->maxOperationFee;

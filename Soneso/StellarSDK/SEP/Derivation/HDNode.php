@@ -7,6 +7,8 @@
 
 namespace Soneso\StellarSDK\SEP\Derivation;
 
+use Soneso\StellarSDK\Constants\CryptoConstants;
+use Soneso\StellarSDK\Constants\StellarConstants;
 
 /**
  * A Hierarchical Deterministic node for use with Stellar
@@ -14,7 +16,6 @@ namespace Soneso\StellarSDK\SEP\Derivation;
  */
 class HDNode
 {
-    const HARDENED_MINIMUM_INDEX = 0x80000000;
 
     /**
      * @var string
@@ -37,8 +38,8 @@ class HDNode
         $hmac = hash_hmac('sha512', $entropy, 'ed25519 seed', true);
 
         return new HDNode(
-            substr($hmac, 0, 32),
-            substr($hmac, 32, 32)
+            substr($hmac, 0, CryptoConstants::HMAC_KEY_PART_LENGTH),
+            substr($hmac, CryptoConstants::HMAC_CHAIN_PART_OFFSET, CryptoConstants::HMAC_KEY_PART_LENGTH)
         );
     }
 
@@ -50,8 +51,8 @@ class HDNode
      */
     public function __construct(string $privateKeyBytes, string $chainCodeBytes)
     {
-        if (strlen($privateKeyBytes) != 32) throw new \InvalidArgumentException('Private key must be 32 bytes');
-        if (strlen($chainCodeBytes) != 32) throw new \InvalidArgumentException('Chain code must be 32 bytes');
+        if (strlen($privateKeyBytes) != StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES) throw new \InvalidArgumentException('Private key must be 32 bytes');
+        if (strlen($chainCodeBytes) != CryptoConstants::CHAIN_CODE_LENGTH_BYTES) throw new \InvalidArgumentException('Chain code must be 32 bytes');
 
         $this->privateKeyBytes = $privateKeyBytes;
         $this->chainCodeBytes = $chainCodeBytes;
@@ -63,18 +64,18 @@ class HDNode
      */
     public function derive(int $index) : HDNode
     {
-        $index = intval($index) + intval(static::HARDENED_MINIMUM_INDEX);
-        if ($index < static::HARDENED_MINIMUM_INDEX) throw new \InvalidArgumentException('Only hardened indexes are supported');
+        $index = intval($index) + intval(CryptoConstants::BIP32_HARDENED_MINIMUM_INDEX);
+        if ($index < CryptoConstants::BIP32_HARDENED_MINIMUM_INDEX) throw new \InvalidArgumentException('Only hardened indexes are supported');
 
         // big-endian unsigned long (4 bytes)
         $indexBytes = pack('N', $index);
-        $key = pack('C', 0x00) . $this->privateKeyBytes . $indexBytes;
+        $key = pack('C', CryptoConstants::KEY_PADDING_BYTE) . $this->privateKeyBytes . $indexBytes;
 
         $hmac = hash_hmac('sha512', $key, $this->chainCodeBytes, true);
 
         return new HDNode(
-            substr($hmac, 0, 32),
-            substr($hmac, 32, 32)
+            substr($hmac, 0, CryptoConstants::HMAC_KEY_PART_LENGTH),
+            substr($hmac, CryptoConstants::HMAC_CHAIN_PART_OFFSET, CryptoConstants::HMAC_KEY_PART_LENGTH)
         );
     }
 

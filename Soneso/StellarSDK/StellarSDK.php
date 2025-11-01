@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK;
 
 
 use GuzzleHttp\Client;
+use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Requests\AccountsRequestBuilder;
 use Soneso\StellarSDK\Requests\AssetsRequestBuilder;
@@ -204,7 +205,7 @@ class StellarSDK
         try {
             $account = $this->requestAccount($accountId);
         } catch (HorizonRequestException $e) {
-            if ($e->getStatusCode() == 404) {
+            if ($e->getStatusCode() == NetworkConstants::HTTP_NOT_FOUND) {
                 return false;
             }
             throw $e;

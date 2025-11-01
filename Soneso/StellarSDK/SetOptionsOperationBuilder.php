@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
 /**
@@ -79,7 +80,7 @@ class SetOptionsOperationBuilder
 
     /**
      * Sets the weight of the master key.
-     * @param int $masterKeyWeight Number between 0 and 255
+     * @param int $masterKeyWeight Number between StellarConstants::THRESHOLD_MIN and StellarConstants::THRESHOLD_MAX
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setMasterKeyWeight(int $masterKeyWeight) : SetOptionsOperationBuilder {
@@ -88,8 +89,8 @@ class SetOptionsOperationBuilder
     }
 
     /**
-     * A number from 0-255 representing the threshold this account sets on all operations it performs that have a low threshold.
-     * @param int $lowThreshold Number between 0 and 255
+     * A number from StellarConstants::THRESHOLD_MIN to StellarConstants::THRESHOLD_MAX representing the threshold this account sets on all operations it performs that have a low threshold.
+     * @param int $lowThreshold Number between StellarConstants::THRESHOLD_MIN and StellarConstants::THRESHOLD_MAX
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setLowThreshold(int $lowThreshold) : SetOptionsOperationBuilder {
@@ -98,8 +99,8 @@ class SetOptionsOperationBuilder
     }
 
     /**
-     * A number from 0-255 representing the threshold this account sets on all operations it performs that have a medium threshold.
-     * @param int $mediumThreshold Number between 0 and 255
+     * A number from StellarConstants::THRESHOLD_MIN to StellarConstants::THRESHOLD_MAX representing the threshold this account sets on all operations it performs that have a medium threshold.
+     * @param int $mediumThreshold Number between StellarConstants::THRESHOLD_MIN and StellarConstants::THRESHOLD_MAX
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setMediumThreshold(int $mediumThreshold) : SetOptionsOperationBuilder {
@@ -108,8 +109,8 @@ class SetOptionsOperationBuilder
     }
 
     /**
-     * A number from 0-255 representing the threshold this account sets on all operations it performs that have a high threshold.
-     * @param int $highThreshold Number between 0 and 255
+     * A number from StellarConstants::THRESHOLD_MIN to StellarConstants::THRESHOLD_MAX representing the threshold this account sets on all operations it performs that have a high threshold.
+     * @param int $highThreshold Number between StellarConstants::THRESHOLD_MIN and StellarConstants::THRESHOLD_MAX
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setHighThreshold(int $highThreshold) : SetOptionsOperationBuilder {
@@ -119,12 +120,12 @@ class SetOptionsOperationBuilder
 
     /**
      * Sets the account's home domain address used in <a href="https://www.stellar.org/developers/learn/concepts/federation.html" target="_blank">Federation</a>.
-     * @param string $homeDomain A string of the address which can be up to 32 characters.
+     * @param string $homeDomain A string of the address which can be up to StellarConstants::HOME_DOMAIN_MAX_LENGTH characters.
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setHomeDomain(string $homeDomain) : SetOptionsOperationBuilder {
-        if(strlen($homeDomain) > 32) {
-            throw new InvalidArgumentException("Home domain must be <= 32 characters");
+        if(strlen($homeDomain) > StellarConstants::HOME_DOMAIN_MAX_LENGTH) {
+            throw new InvalidArgumentException("Home domain must be <= " . StellarConstants::HOME_DOMAIN_MAX_LENGTH . " characters");
         }
         $this->homeDomain = $homeDomain;
         return $this;
@@ -133,12 +134,12 @@ class SetOptionsOperationBuilder
     /**
      * Add, update, or remove a signer from the account. Signer is deleted if the weight = 0;
      * @param XdrSignerKey $signerKey The signer key. Use {@link Signer} helper to create this object.
-     * @param int $weight The weight to attach to the signer (0-255).
+     * @param int $weight The weight to attach to the signer (StellarConstants::THRESHOLD_MIN to StellarConstants::THRESHOLD_MAX).
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setSigner(XdrSignerKey $signerKey, int $weight) : SetOptionsOperationBuilder {
         $this->signerKey = $signerKey;
-        $this->signerWeight = $weight & 0xFF;
+        $this->signerWeight = $weight & StellarConstants::SIGNER_WEIGHT_MASK;
         return $this;
     }
 

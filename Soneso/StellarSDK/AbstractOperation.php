@@ -15,8 +15,6 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 abstract class AbstractOperation
 {
-    const STROOP_SCALE = 10000000;
-
     private ?MuxedAccount $sourceAccount = null;
 
     /**

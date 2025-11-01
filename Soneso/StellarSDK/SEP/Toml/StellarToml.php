@@ -10,6 +10,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
+use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Yosymfony\Toml\Toml;
 
@@ -210,7 +211,7 @@ class StellarToml
         try {
             $request = new Request('GET', $url, RequestBuilder::HEADERS);
             $response = $client->send($request);
-            if ($response->getStatusCode() != 200) {
+            if ($response->getStatusCode() != NetworkConstants::HTTP_OK) {
                 throw new Exception("Stellar toml not found. Response status code ". $response->getStatusCode());
             }
             return new StellarToml((string)$response->getBody());
@@ -229,7 +230,7 @@ class StellarToml
         try {
             $request = new Request('GET', $toml, RequestBuilder::HEADERS);
             $response = $httpClient->send($request);
-            if ($response->getStatusCode() != 200) {
+            if ($response->getStatusCode() != NetworkConstants::HTTP_OK) {
                 throw new Exception("Currency toml not found. Response status code ". $response->getStatusCode());
             }
             $item = Toml::Parse((string)$response->getBody());

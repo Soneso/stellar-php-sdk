@@ -8,6 +8,7 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
@@ -45,9 +46,9 @@ abstract class Asset {
 
     public static function createNonNativeAsset(string $code, string $issuer) : AssetTypeCreditAlphanum {
         $codeLen = strlen($code);
-        if ($codeLen >= 1 && $codeLen <= 4) {
+        if ($codeLen >= StellarConstants::ASSET_CODE_MIN_LENGTH && $codeLen <= StellarConstants::ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
             return new AssetTypeCreditAlphanum4($code, $issuer);
-        } else if ($codeLen > 4 && $codeLen <= 12) {
+        } else if ($codeLen > StellarConstants::ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH && $codeLen <= StellarConstants::ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
             return new AssetTypeCreditAlphanum12($code, $issuer);
         } else {
             throw new \RuntimeException("invalid asset code length: " . $codeLen);
@@ -71,9 +72,9 @@ abstract class Asset {
             if (count($components) == 2) {
                 $code = $components[0];
                 $issuer = $components[1];
-                if (strlen($code) <= 4) {
+                if (strlen($code) <= StellarConstants::ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
                     return new AssetTypeCreditAlphanum4($code, $issuer);
-                } else if (strlen($code) <= 12) {
+                } else if (strlen($code) <= StellarConstants::ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
                     return new AssetTypeCreditAlphanum12($code, $issuer);
                 }
             }
