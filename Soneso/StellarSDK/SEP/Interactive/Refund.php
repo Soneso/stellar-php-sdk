@@ -8,6 +8,22 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents refund information for a SEP-24 transaction
+ *
+ * This class encapsulates refund details for deposit or withdrawal transactions
+ * that have been partially or fully refunded. It includes the total refunded amount,
+ * associated fees, and a breakdown of individual refund payments.
+ *
+ * Refunds may occur when a transaction fails, is cancelled, or when the anchor
+ * needs to return funds to the user. The refund object provides full transparency
+ * about the refund process including any fees charged for processing the refunds.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see SEP24Transaction For the parent transaction containing refunds
+ * @see RefundPayment For individual refund payment details
+ */
 class Refund extends Response
 {
 

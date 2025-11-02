@@ -14,6 +14,30 @@ use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
+/**
+ * Implements SEP-12 Customer Information and KYC API
+ *
+ * This class provides methods for managing customer information and Know Your Customer
+ * (KYC) data through the SEP-12 protocol. It enables anchors to collect and verify
+ * customer information required for regulatory compliance, particularly for deposit,
+ * withdrawal, and cross-border payment operations.
+ *
+ * The service supports operations to:
+ * - Retrieve required KYC fields for a customer
+ * - Submit customer information for verification
+ * - Check the status of customer verification
+ * - Upload supporting documents (ID scans, proof of address, etc.)
+ * - Update customer information
+ * - Register callback URLs for status notifications
+ *
+ * Customer information can be linked to Stellar accounts, memo values (for shared
+ * accounts), or anchor-assigned customer IDs. The anchor validates submitted data
+ * and returns the verification status (accepted, pending, rejected, needs info).
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 Specification
+ * @see StellarToml For discovering the KYC service endpoint
+ */
 class KYCService
 {
     private string $serviceAddress;

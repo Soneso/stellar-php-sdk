@@ -8,6 +8,28 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents a SEP-24 hosted deposit/withdrawal transaction
+ *
+ * This class encapsulates the complete state of an interactive deposit or withdrawal
+ * transaction as defined by SEP-24 (Hosted Deposit and Withdrawal). It contains all
+ * transaction details including status, amounts, timestamps, and transfer information
+ * for both deposit and withdrawal operations.
+ *
+ * SEP-24 enables anchors to provide an interactive user experience for deposit and
+ * withdrawal flows, typically through a web interface. This class represents the
+ * transaction data returned by the anchor during transaction queries and status updates.
+ *
+ * The transaction can represent either a deposit (external asset to Stellar) or a
+ * withdrawal (Stellar asset to external system), with transaction-specific fields
+ * available depending on the kind of operation.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see InteractiveService For initiating SEP-24 transactions
+ * @see SEP24DepositRequest For deposit request parameters
+ * @see SEP24WithdrawRequest For withdrawal request parameters
+ */
 class SEP24Transaction extends Response
 {
     /**
@@ -555,6 +577,26 @@ class SEP24Transaction extends Response
     public function setUpdatedAt(?string $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
+    }
+
+    /**
+     * Gets the deadline by when user action is required
+     *
+     * @return string|null The date and time by when user action is required. UTC ISO 8601 string. Only specified for statuses where user action is required.
+     */
+    public function getUserActionRequiredBy(): ?string
+    {
+        return $this->userActionRequiredBy;
+    }
+
+    /**
+     * Sets the deadline by when user action is required
+     *
+     * @param string|null $userActionRequiredBy The date and time by when user action is required. UTC ISO 8601 string.
+     */
+    public function setUserActionRequiredBy(?string $userActionRequiredBy): void
+    {
+        $this->userActionRequiredBy = $userActionRequiredBy;
     }
 
     /**

@@ -27,6 +27,29 @@ use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
+/**
+ * Implements SEP-10 Web Authentication protocol
+ *
+ * This class provides a complete implementation of the SEP-10 (Stellar Web Authentication)
+ * protocol, which enables wallets and clients to prove they control a Stellar account by
+ * signing a challenge transaction provided by an anchor's authentication server.
+ *
+ * The authentication flow consists of three steps:
+ * 1. Request a challenge transaction from the server
+ * 2. Sign the challenge with the client's private key(s)
+ * 3. Submit the signed challenge back to the server to receive a JWT token
+ *
+ * The JWT token can then be used to authenticate subsequent requests to other SEP
+ * services such as SEP-24 (hosted deposits/withdrawals), SEP-31 (cross-border payments),
+ * or SEP-12 (KYC). The token typically has a limited validity period.
+ *
+ * This implementation supports standard accounts, muxed accounts, and client domain
+ * verification for non-custodial wallets.
+ *
+ * @package Soneso\StellarSDK\SEP\WebAuth
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md SEP-10 Specification
+ * @see StellarToml For discovering the auth endpoint
+ */
 class WebAuth
 {
     private string $authEndpoint;
@@ -89,10 +112,10 @@ class WebAuth
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml. If clientDomain is provided,
      * you also need to provide the clientDomainKeyPair or a clientDomainSigningCallback for client domain transaction signing.
      * @param KeyPair|null $clientDomainKeyPair optional, KeyPair of the client domain account including the seed (used for signing the transaction if client domain is provided)
-     * @param callable|null $clientDomainSigningCallback optional, a function used for signing the transaction if client domain is provided.
-     * The function must accept a string as parameter representing the base64 encoded transaction envelope that needs to be signed. After signing it with the client domain account,
-     * the function must return the signed transaction as base64 encoded transaction envelope. This is useful if you don't want or cannot provide the clientDomainKeyPair, e.g. if the signing
-     * occurs on a different server.
+     * @param callable|null $clientDomainSigningCallback Optional callback for SEP-10 client domain verification when signing cannot be performed locally.
+     * The callback receives a base64-encoded transaction envelope XDR string and must return the same transaction signed by the client domain account
+     * as a base64-encoded transaction envelope XDR string. Used when the client domain signing key is not available locally (e.g., signing occurs on a separate server).
+     * Callback signature: function(string $transactionXdr): string
      * @return string JWT token.
      * @throws ChallengeValidationError
      * @throws ChallengeValidationErrorInvalidHomeDomain
@@ -193,9 +216,10 @@ class WebAuth
      * the callback will be called to also sign the transaction.
      * @param string $challengeTransaction the base64 encoded transaction envelope to sign.
      * @param array<KeyPair> $signers the key pairs of the signers to sign the transaction with.
-     * @param callable|null $clientDomainSigningCallback optional, a function used for signing the transaction if client domain is provided.
-     *  The function must accept a string as parameter representing the base64 encoded transaction envelope that needs to be signed. After signing it with the client domain account,
-     *  the function must return the signed transaction as base64 encoded transaction envelope.
+     * @param callable|null $clientDomainSigningCallback Optional callback for SEP-10 client domain verification when signing cannot be performed locally.
+     * The callback receives a base64-encoded transaction envelope XDR string and must return the same transaction signed by the client domain account
+     * as a base64-encoded transaction envelope XDR string. Used when the client domain signing key is not available locally (e.g., signing occurs on a separate server).
+     * Callback signature: function(string $transactionXdr): string
      * @return string the signed transaction as base64 encoded transaction envelope
      * @throws ChallengeValidationError if the given base64 encoded transaction envelope has an invalid envelope type.
      */

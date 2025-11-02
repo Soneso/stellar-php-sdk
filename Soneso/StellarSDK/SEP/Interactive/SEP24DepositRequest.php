@@ -8,6 +8,31 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
 
+/**
+ * Request parameters for initiating a SEP-24 interactive deposit
+ *
+ * This class represents the request payload for starting an interactive deposit
+ * flow as defined by SEP-24 (Hosted Deposit and Withdrawal). It contains all the
+ * parameters needed to initiate a deposit from an external payment system to the
+ * Stellar network.
+ *
+ * A deposit transfers assets from an off-chain source (e.g., bank account, crypto
+ * exchange) to the user's Stellar account. The user provides the external funds to
+ * the anchor, and the anchor credits the equivalent Stellar asset to the user's
+ * account. This request initiates the interactive flow where the user provides
+ * deposit details through the anchor's web interface.
+ *
+ * Required fields include the JWT authentication token and asset code. Optional
+ * fields allow pre-filling the interactive form with known information like amount,
+ * source asset, destination account, memo, and KYC details to streamline the user
+ * experience.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see InteractiveService For executing deposit requests
+ * @see SEP24Transaction For the transaction response
+ * @see StandardKYCFields For KYC data structure
+ */
 class SEP24DepositRequest
 {
     /**

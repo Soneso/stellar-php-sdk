@@ -8,6 +8,22 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents deposit configuration for a specific asset in SEP-24
+ *
+ * This class contains the deposit parameters and constraints for a single asset
+ * as returned by the SEP-24 /info endpoint. It specifies whether deposits are
+ * enabled, amount limits, and the fee structure for deposit operations.
+ *
+ * The fee structure can include a fixed fee, percentage-based fee, or both, along
+ * with a minimum fee threshold. If the fee schedule is too complex to express with
+ * these simple fields, the anchor should omit them and implement the /fee endpoint.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see SEP24InfoResponse For the parent info response
+ * @see InteractiveService::info() For retrieving asset information
+ */
 class SEP24DepositAsset extends Response
 {
     /**

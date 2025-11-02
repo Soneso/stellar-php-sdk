@@ -8,6 +8,22 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents additional features supported by the anchor for SEP-24 operations
+ *
+ * This class contains flags indicating which optional features the anchor supports
+ * for deposit and withdrawal operations. These features enhance the flexibility of
+ * the anchor's service but are not required by the SEP-24 specification.
+ *
+ * Account creation support allows the anchor to create new Stellar accounts for users
+ * who don't yet have one. Claimable balance support enables the anchor to send deposit
+ * funds as claimable balances, which is useful for recipients without established
+ * trustlines to the deposited asset.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see SEP24InfoResponse For the parent info response
+ */
 class FeatureFlags extends Response
 {
     /**

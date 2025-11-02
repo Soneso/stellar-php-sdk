@@ -8,6 +8,23 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents an individual refund payment within a SEP-24 transaction refund
+ *
+ * This class encapsulates details of a single refund payment that is part of a
+ * larger transaction refund. When an anchor refunds a transaction, they may split
+ * the refund into multiple payments. Each payment is tracked separately with its
+ * own identifier, amount, and fee.
+ *
+ * The payment ID can be either a Stellar transaction hash (for on-chain refunds)
+ * or an external payment reference (for off-chain refunds like bank transfers).
+ * This allows tracking of refunds regardless of the payment method used.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see Refund For the parent refund object containing payment list
+ * @see SEP24Transaction For the parent transaction
+ */
 class RefundPayment extends Response
 {
 

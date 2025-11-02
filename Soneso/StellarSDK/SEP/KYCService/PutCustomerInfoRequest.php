@@ -8,6 +8,29 @@ namespace Soneso\StellarSDK\SEP\KYCService;
 
 use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
 
+/**
+ * Request parameters for submitting or updating customer information via SEP-12
+ *
+ * This class represents the request payload for submitting customer KYC information
+ * to the anchor's SEP-12 endpoint. It is used to register new customers, update
+ * existing customer data, or provide additional information requested by the anchor.
+ *
+ * The request can include standard KYC fields (name, address, date of birth, etc.)
+ * as defined in SEP-9, as well as custom fields specific to the anchor's requirements.
+ * File uploads such as ID scans or proof of address documents can also be included.
+ *
+ * Customers can be identified by an anchor-assigned ID from a previous submission,
+ * or by their Stellar account with optional memo for shared accounts. When updating
+ * information, the customer ID should be provided to ensure the correct record is
+ * updated.
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md SEP-9 Standard KYC Fields
+ * @see KYCService::putCustomerInfo() For executing this request
+ * @see PutCustomerInfoResponse For the response structure
+ * @see StandardKYCFields For standard field definitions
+ */
 class PutCustomerInfoRequest
 {
     /**
