@@ -13,12 +13,40 @@ use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Transaction\SubmitAsyncTransactionResponse;
 
+/**
+ * Builds requests for submitting transactions asynchronously to Horizon
+ *
+ * This class provides methods to submit signed transactions to the Stellar network
+ * asynchronously. Unlike synchronous submission, async submission returns immediately
+ * without waiting for the transaction to be included in a ledger.
+ *
+ * Async submission is useful for high-throughput scenarios where you don't need to
+ * wait for transaction confirmation. The response indicates whether the transaction
+ * was accepted for processing, but not whether it succeeded in the ledger.
+ *
+ * Usage Examples:
+ *
+ * // Submit a signed transaction asynchronously
+ * $response = $sdk->submitAsyncTransaction()
+ *     ->setTransaction($signedTransaction)
+ *     ->execute();
+ *
+ * // Check async submission status
+ * if ($response->getTxStatus() === "PENDING") {
+ *     echo "Transaction submitted: " . $response->getHash() . PHP_EOL;
+ *     // Poll transaction status separately
+ * }
+ *
+ * @package Soneso\StellarSDK\Requests
+ * @see SubmitAsyncTransactionResponse For the response format
+ * @see https://developers.stellar.org/api/resources/transactions/async-post Horizon API Submit Async Transaction
+ */
 class SubmitAsyncTransactionRequestBuilder extends RequestBuilder
 {
-
     /**
-     * Constructor.
-     * @param Client $httpClient the http client to be used for to submit the request.
+     * Constructor
+     *
+     * @param Client $httpClient The HTTP client used for making requests to Horizon
      */
     public function __construct(Client $httpClient)
     {
@@ -28,7 +56,7 @@ class SubmitAsyncTransactionRequestBuilder extends RequestBuilder
     /**
      * Use this method to set the transaction object to be submitted.
      * It will be used to build a transaction envelope xdr base64 string that will be submitted to the network.
-     * @param AbstractTransaction $transaction transaction to be submitted to the network.
+     * @param AbstractTransaction $transaction Transaction to be submitted to the network.
      * @return $this
      */
     public function setTransaction(AbstractTransaction $transaction): SubmitAsyncTransactionRequestBuilder {
@@ -37,7 +65,7 @@ class SubmitAsyncTransactionRequestBuilder extends RequestBuilder
 
     /**
      * Use this method to set the base 64 encoded transaction envelope to be submitted to the network.
-     * @param string $txEnvelopeXdrBase64 the base 64 encoded transaction envelope to be submitted to the network.
+     * @param string $txEnvelopeXdrBase64 The base 64 encoded transaction envelope to be submitted to the network.
      * @return $this
      */
     public function setTransactionEnvelopeXdrBase64(string $txEnvelopeXdrBase64): SubmitAsyncTransactionRequestBuilder {
@@ -47,8 +75,8 @@ class SubmitAsyncTransactionRequestBuilder extends RequestBuilder
 
     /**
      * Execute the request.
-     * @param string $url The url of the request to be executed.
-     * @return SubmitAsyncTransactionResponse the response from Horizon in case of success.
+     * @param string $url The URL of the request to be executed.
+     * @return SubmitAsyncTransactionResponse The response from Horizon in case of success.
      * @throws HorizonRequestException If there was a problem. E.g. Horizon responded with an error response. The details of the problem can be found within the exception object.
      */
     public function request(string $url): SubmitAsyncTransactionResponse {

@@ -15,6 +15,46 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Offers\OfferResponse;
 use Soneso\StellarSDK\Responses\Offers\OffersPageResponse;
 
+/**
+ * Builds requests for the offers endpoint in Horizon
+ *
+ * This class provides methods to query offers on the Stellar network. Offers are orders
+ * to buy or sell assets on the decentralized exchange. They specify the asset being sold,
+ * the asset being bought, the price, and the amount.
+ *
+ * Query Methods:
+ * - offer(): Fetch a single offer by ID
+ * - forAccount(): Get all offers created by a specific account
+ * - forSponsor(): Filter by sponsor account
+ * - forSeller(): Filter by the account selling assets
+ * - forSellingAsset(): Filter by the asset being sold
+ * - forBuyingAsset(): Filter by the asset being bought
+ *
+ * Offers can be combined with forSellingAsset() and forBuyingAsset() to analyze
+ * specific trading pairs in the order book.
+ *
+ * Usage Examples:
+ *
+ * // Get a specific offer
+ * $offer = $sdk->offers()->offer("123456");
+ *
+ * // Get all offers for an account
+ * $offers = $sdk->offers()
+ *     ->forAccount("GDAT5...")
+ *     ->execute();
+ *
+ * // Get offers for a trading pair
+ * $selling = Asset::native();
+ * $buying = Asset::createNonNativeAsset("USD", "GBBD...");
+ * $offers = $sdk->offers()
+ *     ->forSellingAsset($selling)
+ *     ->forBuyingAsset($buying)
+ *     ->execute();
+ *
+ * @package Soneso\StellarSDK\Requests
+ * @see OffersPageResponse For the response format
+ * @see https://developers.stellar.org/api/resources/offers Horizon API Offers endpoint
+ */
 class OffersRequestBuilder  extends RequestBuilder
 {
     private const SPONSOR_PARAMETER_NAME = "sponsor";
@@ -26,6 +66,11 @@ class OffersRequestBuilder  extends RequestBuilder
     private const SELLING_ASSET_CODE_PARAMETER_NAME = "selling_asset_code";
     private const SELLING_ASSET_ISSUER_PARAMETER_NAME = "selling_asset_issuer";
 
+    /**
+     * Constructor
+     *
+     * @param Client $httpClient The HTTP client used for making requests to Horizon
+     */
     public function __construct(Client $httpClient)
     {
         parent::__construct($httpClient, "offers");
@@ -33,7 +78,7 @@ class OffersRequestBuilder  extends RequestBuilder
 
     /**
      * The offer details endpoint provides information on a single offer.
-     * @param string $offerId specifies which offer to load.
+     * @param string $offerId Specifies which offer to load.
      * @return OfferResponse The offer details.
      * @throws HorizonRequestException
      */
@@ -46,7 +91,7 @@ class OffersRequestBuilder  extends RequestBuilder
      * Builds request to <code>GET /accounts/{account}/offers</code>
      * @param string $accountId ID of the account for which to get payments.
      * @return OffersRequestBuilder
-     * @see <a href="https://developers.stellar.org/api/resources/accounts/offers/">Offers for Account</a>
+     * @see https://developers.stellar.org/api/resources/accounts/offers/ Offers for Account
      */
     public function forAccount(string $accountId) : OffersRequestBuilder {
         $this->setSegments("accounts", $accountId, "offers");
@@ -55,7 +100,7 @@ class OffersRequestBuilder  extends RequestBuilder
 
     /**
      * Returns all offers sponsored by a given account.
-     * @param string $sponsor sponsor Account ID of the sponsor.
+     * @param string $sponsor Account ID of the sponsor.
      * @return OffersRequestBuilder current instance
      */
     public function forSponsor(string $sponsor) : OffersRequestBuilder {
@@ -76,7 +121,7 @@ class OffersRequestBuilder  extends RequestBuilder
     /**
      * Returns all offers selling an asset.
      *
-     * @param Asset $asset The Asset being sold.
+     * @param Asset $asset The asset being sold.
      * @return OffersRequestBuilder current instance
      */
     public function forSellingAsset(Asset $asset) : OffersRequestBuilder {
@@ -91,7 +136,7 @@ class OffersRequestBuilder  extends RequestBuilder
     /**
      * Returns all offers buying an asset.
      *
-     * @param Asset $asset The Asset being bought.
+     * @param Asset $asset The asset being bought.
      * @return OffersRequestBuilder current instance
      */
     public function forBuyingAsset(Asset $asset) : OffersRequestBuilder {
@@ -106,8 +151,8 @@ class OffersRequestBuilder  extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see <a href="https://developers.stellar.org/api/introduction/pagination/">Page documentation</a>
-     * @param string cursor
+     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @param string $cursor
      */
     public function cursor(string $cursor) : OffersRequestBuilder {
         return parent::cursor($cursor);
@@ -117,7 +162,7 @@ class OffersRequestBuilder  extends RequestBuilder
      * Sets <code>limit</code> parameter on the request.
      * It defines maximum number of records to return.
      * For range and default values check documentation of the endpoint requested.
-     * @param int number maximum number of records to return
+     * @param int $number Maximum number of records to return
      */
     public function limit(int $number) : OffersRequestBuilder {
         return parent::limit($number);
@@ -125,7 +170,7 @@ class OffersRequestBuilder  extends RequestBuilder
 
     /**
      * Sets <code>order</code> parameter on the request.
-     * @param string direction "asc" or "desc"
+     * @param string $direction "asc" or "desc"
      */
     public function order(string $direction = "asc") : OffersRequestBuilder {
         return parent::order($direction);

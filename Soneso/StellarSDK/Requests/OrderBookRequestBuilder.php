@@ -15,6 +15,43 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
 use Soneso\StellarSDK\Responses\OrderBook\OrderBookResponse;
 
+/**
+ * Builds requests for the order book endpoint in Horizon
+ *
+ * This class provides methods to query the order book for a specific asset pair on the
+ * Stellar decentralized exchange. The order book displays all buy (bid) and sell (ask)
+ * offers for the trading pair, providing insight into market depth and liquidity.
+ *
+ * Query Methods:
+ * - forBuyingAsset(): Set the asset being purchased
+ * - forSellingAsset(): Set the asset being sold
+ *
+ * Both assets must be specified to retrieve an order book. The response includes lists
+ * of bids and asks with prices and amounts, enabling price discovery and market analysis.
+ *
+ * Usage Examples:
+ *
+ * // Get order book for XLM/USD trading pair
+ * $buying = Asset::native();
+ * $selling = Asset::createNonNativeAsset("USD", "GBBD...");
+ * $orderBook = $sdk->orderBook()
+ *     ->forBuyingAsset($buying)
+ *     ->forSellingAsset($selling)
+ *     ->execute();
+ *
+ * // Stream real-time order book updates
+ * $sdk->orderBook()
+ *     ->forBuyingAsset($buying)
+ *     ->forSellingAsset($selling)
+ *     ->cursor("now")
+ *     ->stream(function(OrderBookResponse $orderBook) {
+ *         echo "Bids: " . count($orderBook->getBids()) . PHP_EOL;
+ *     });
+ *
+ * @package Soneso\StellarSDK\Requests
+ * @see OrderBookResponse For the response format
+ * @see https://developers.stellar.org/api/aggregations/order-books Horizon API Order Book endpoint
+ */
 class OrderBookRequestBuilder extends RequestBuilder
 {
     private const BUYING_ASSET_TYPE_PARAMETER_NAME = "buying_asset_type";
@@ -24,7 +61,11 @@ class OrderBookRequestBuilder extends RequestBuilder
     private const SELLING_ASSET_CODE_PARAMETER_NAME = "selling_asset_code";
     private const SELLING_ASSET_ISSUER_PARAMETER_NAME = "selling_asset_issuer";
 
-
+    /**
+     * Constructor
+     *
+     * @param Client $httpClient The HTTP client used for making requests to Horizon
+     */
     public function __construct(Client $httpClient) {
         parent::__construct($httpClient, "order_book");
     }
@@ -63,8 +104,8 @@ class OrderBookRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see <a href="https://developers.stellar.org/api/introduction/pagination/">Page documentation</a>
-     * @param string cursor
+     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @param string $cursor
      */
     public function cursor(string $cursor) : OrderBookRequestBuilder {
         return parent::cursor($cursor);
@@ -74,7 +115,7 @@ class OrderBookRequestBuilder extends RequestBuilder
      * Sets <code>limit</code> parameter on the request.
      * It defines maximum number of records to return.
      * For range and default values check documentation of the endpoint requested.
-     * @param int number maximum number of records to return
+     * @param int $number Maximum number of records to return
      */
     public function limit(int $number) : OrderBookRequestBuilder {
         return parent::limit($number);
@@ -82,7 +123,7 @@ class OrderBookRequestBuilder extends RequestBuilder
 
     /**
      * Sets <code>order</code> parameter on the request.
-     * @param string direction "asc" or "desc"
+     * @param string $direction "asc" or "desc"
      */
     public function order(string $direction = "asc") : OrderBookRequestBuilder {
         return parent::order($direction);
