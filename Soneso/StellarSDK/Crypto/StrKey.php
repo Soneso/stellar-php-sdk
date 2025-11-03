@@ -22,6 +22,9 @@ use function preg_replace;
  * StrKey is a helper class that allows encoding and decoding Stellar keys
  * to/from strings, i.e. between their binary and string (i.e. "GABCD...", etc.)
  * representations.
+ *
+ * @package Soneso\StellarSDK\Crypto
+ * @see https://developers.stellar.org/docs/encyclopedia/glossary#address Address types documentation
  */
 class StrKey
 {
@@ -347,14 +350,33 @@ class StrKey
         return bin2hex(static::decodeCheck(VersionByte::LIQUIDITY_POOL_ID, $liquidityPoolId));
     }
 
+    /**
+     * Derives the public key from a private key
+     *
+     * @param string $privateKey The Ed25519 private key (32 bytes)
+     * @return string The corresponding Ed25519 public key (32 bytes)
+     * @throws \Exception If the private key is invalid or key derivation fails
+     */
     public static function publicKeyFromPrivateKey($privateKey) {
         return Ed25519::publickey_from_secretkey($privateKey);
     }
 
+    /**
+     * Derives the account ID from a secret seed
+     *
+     * @param string $seed The secret seed in strkey format (S...)
+     * @return string The account ID in strkey format (G...)
+     */
     public static function accountIdFromSeed(string $seed) : string {
         return static::accountIdFromPrivateKey(self::decodeSeed($seed));
     }
 
+    /**
+     * Derives the account ID from a private key
+     *
+     * @param string $privateKey The Ed25519 private key (32 bytes)
+     * @return string The account ID in strkey format (G...)
+     */
     public static function accountIdFromPrivateKey(string $privateKey) : string {
         $publicKey = static::publicKeyFromPrivateKey($privateKey);
         return static::encodeAccountId($publicKey);

@@ -7,13 +7,22 @@
 
 namespace Soneso\StellarSDK\Util;
 
+/**
+ * SHA-256 hash utility for Stellar operations
+ *
+ * Provides cryptographic hash functions commonly used throughout the Stellar SDK,
+ * particularly for transaction hashing, signature verification, and data integrity checks.
+ *
+ * @package Soneso\StellarSDK\Util
+ * @see https://developers.stellar.org/docs/encyclopedia/signatures-multisig Documentation on Stellar signatures
+ */
 class Hash
 {
     /**
      * Returns the raw bytes of a sha-256 hash of $data
      *
-     * @param string $data
-     * @return string
+     * @param string $data The data to hash
+     * @return string Raw binary hash output (32 bytes)
      */
     public static function generate(string $data): string
     {
@@ -23,8 +32,8 @@ class Hash
     /**
      * Returns a string representation of the sha-256 hash of $data
      *
-     * @param string $data
-     * @return string
+     * @param string $data The data to hash
+     * @return string Hexadecimal string representation of the hash (64 characters)
      */
     public static function asString(string $data): string
     {

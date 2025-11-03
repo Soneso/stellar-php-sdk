@@ -10,7 +10,18 @@ use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use phpseclib3\Math\BigInteger;
 
-
+/**
+ * Represents an amount in the Stellar network with proper precision handling
+ *
+ * Stellar amounts are represented internally as 64-bit signed integers in stroops,
+ * where 1 XLM = 10,000,000 stroops. This class handles conversion between decimal
+ * amounts and stroops while ensuring proper precision and validation.
+ *
+ * Maximum supported amount: 922337203685.4775807 XLM (9223372036854775807 stroops)
+ *
+ * @package Soneso\StellarSDK\Util
+ * @see https://developers.stellar.org/docs/encyclopedia/lumens Documentation on Lumens (XLM)
+ */
 class StellarAmount
 {
     protected BigInteger $stroops;
@@ -41,7 +52,8 @@ class StellarAmount
     /**
      * StellarAmount constructor.
      *
-     * @param BigInteger $stroops
+     * @param BigInteger $stroops The amount in stroops (1 XLM = 10,000,000 stroops)
+     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
      */
     public function __construct(BigInteger $stroops)
     {
@@ -63,11 +75,27 @@ class StellarAmount
         }
     }
 
+    /**
+     * Creates a StellarAmount from a floating point number
+     *
+     * @param float $amount The amount as a decimal number (e.g., 100.5 for 100.5 XLM)
+     * @return StellarAmount The amount object
+     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
+     */
     public static function fromFloat(float $amount) : StellarAmount {
         $amountStr = number_format($amount, 7, '.', '');
         return self::fromString($amountStr);
     }
 
+    /**
+     * Creates a StellarAmount from a decimal string
+     *
+     * Supports up to 7 decimal places. Commas and spaces are automatically removed.
+     *
+     * @param string $decimalAmount The amount as a string (e.g., "100.5" or "1,000.25")
+     * @return StellarAmount The amount object
+     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
+     */
     public static function fromString(string $decimalAmount) : StellarAmount {
         $amountStr = str_replace(',', '', $decimalAmount);
         $amountStr = str_replace(' ', '', $amountStr);
@@ -90,7 +118,9 @@ class StellarAmount
     }
     
     /**
-     * @return string
+     * Returns the decimal value as a string with 7 decimal places
+     *
+     * @return string The amount formatted as a decimal string (e.g., "100.5000000")
      */
     public function getDecimalValueAsString() : string
     {

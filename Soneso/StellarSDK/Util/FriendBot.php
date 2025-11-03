@@ -12,8 +12,25 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 
+/**
+ * Utility for funding test accounts on the Stellar test network
+ *
+ * FriendBot is a service that funds accounts on the Stellar test network with test XLM.
+ * This is useful for development and testing purposes. Do not use on the public network.
+ *
+ * @package Soneso\StellarSDK\Util
+ * @see FuturenetFriendBot For funding accounts on Futurenet
+ * @see CustomFriendBot For using a custom FriendBot endpoint
+ * @see https://developers.stellar.org/docs/tools/developer-tools#friendbot Documentation on FriendBot
+ */
 class FriendBot
 {
+    /**
+     * Funds a test account on the Stellar test network
+     *
+     * @param string $accountId The Stellar account ID (public key) to fund
+     * @return bool True if funding succeeded, false otherwise
+     */
     static function fundTestAccount(string $accountId) : bool {
         try {
             $httpClient = new Client();
