@@ -14,10 +14,21 @@ use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
- * Represents a single address in the Stellar network.
- * An address can represent an account, contract, muxed account, claimable balance, or liquidity pool.
+ * Soroban address representing accounts, contracts, and other Stellar entities
  *
- * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization#address
+ * This class represents addresses used in Soroban smart contracts for authorization and
+ * identification. An Address can represent different entity types:
+ * - Account: Regular Stellar accounts (G-prefixed addresses)
+ * - Contract: Deployed smart contracts (C-prefixed addresses)
+ * - Muxed Account: Multiplexed accounts (M-prefixed addresses)
+ * - Claimable Balance: Claimable balance IDs
+ * - Liquidity Pool: AMM liquidity pool IDs
+ *
+ * Addresses are used in authorization entries and as contract function arguments.
+ *
+ * @package Soneso\StellarSDK\Soroban
+ * @see https://developers.stellar.org/docs/learn/smart-contract-internals/authorization#address Soroban Authorization
+ * @since 1.0.0
  */
 class Address
 {

@@ -20,33 +20,49 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
- * Represents a Soroban contract and helps you to interact with the contract, such as by invoking a contract method.
+ * High-level client for interacting with deployed Soroban smart contracts
+ *
+ * This class provides a convenient interface for calling contract methods, deploying contracts,
+ * and installing contract code. It automatically handles contract spec parsing, type conversion,
+ * transaction building, simulation, and signing.
+ *
+ * The client is initialized with contract specification entries that define the available methods
+ * and types. These specs are extracted from the contract's WASM bytecode and enable type-safe
+ * method invocation with automatic conversion between PHP and Soroban types.
+ *
+ * @package Soneso\StellarSDK\Soroban\Contract
+ * @see AssembledTransaction For low-level transaction control
+ * @see ContractSpec For type conversion and spec introspection
+ * @see https://developers.stellar.org/docs/smart-contracts Soroban Smart Contracts Documentation
+ * @since 1.0.0
  */
 class SorobanClient
 {
 
     private const CONSTRUCTOR_FUNC = "__constructor";
     /**
-     * Can be obtained by parsing the contract byte code using SorobanContractParser or SorobanServer->loadContractInfoForContractId
-     * @var array<XdrSCSpecEntry> $specEntries
+     * @var array<XdrSCSpecEntry> Contract specification entries defining functions and types
      */
     private array $specEntries = array();
+
     /**
-     * @var ClientOptions $options client options for interacting with soroban.
+     * @var ClientOptions Client configuration including contract ID, network, and RPC URL
      */
     private ClientOptions $options;
 
     /**
-     * @var array<string> $methodNames contract method names extracted from the spec entries
+     * @var array<string> Cached list of contract method names
      */
     private array $methodNames = array();
 
     /**
-     * Private constructor. Use `SorobanClient::forClientOptions` or `SorobanClient::deploy` to construct a SorobanClient.
+     * Private constructor for SorobanClient
      *
-     * @param array<XdrSCSpecEntry> $specEntries of the contract. Can be obtained by parsing the contract byte code
-     * using 'SorobanContractParser' or 'SorobanServer->loadContractInfoForContractId'
-     * @param ClientOptions $options client options to be used for interacting with soroban.
+     * Use the static factory methods SorobanClient::forClientOptions or SorobanClient::deploy
+     * to create instances. The constructor extracts method names from the spec entries.
+     *
+     * @param array<XdrSCSpecEntry> $specEntries Contract specification from parsed WASM bytecode
+     * @param ClientOptions $options Client configuration
      */
     private function __construct(array $specEntries, ClientOptions $options)
     {
@@ -69,11 +85,15 @@ class SorobanClient
     }
 
     /**
-     * Loads the contract info for the contractId provided by the options, and the constructs a SorobanClient
-     * by using the loaded contract info.
+     * Creates a SorobanClient for an existing deployed contract
      *
-     * @throws GuzzleException
-     * @throws Exception if the contract info could not be loaded.
+     * Loads the contract specification from the network by fetching and parsing the contract's
+     * WASM bytecode. The spec is used for type-safe method invocation.
+     *
+     * @param ClientOptions $options Client configuration including contract ID, network, and RPC URL
+     * @return SorobanClient The initialized client ready to invoke contract methods
+     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If the contract is not found or spec parsing fails
      */
     public static function forClientOptions(ClientOptions $options) : SorobanClient {
         $server = new SorobanServer($options->rpcUrl);
@@ -87,15 +107,18 @@ class SorobanClient
 
 
     /**
-     * After deploying the contract it creates and returns a new SorobanClient for the deployed contract.
-     * The contract must be installed before calling this method. You can use `SorobanClient::install`
-     * to install the contract.
+     * Deploys a new contract instance and creates a SorobanClient for it
      *
-     * @param DeployRequest $deployRequest deploy request data
-     * @return SorobanClient the created soroban client representing the deployed contract.
+     * Creates a new contract instance from previously installed WASM code, optionally calling
+     * the contract's constructor with the provided arguments. Returns a client for the newly
+     * deployed contract.
      *
-     * @throws Exception
-     * @throws GuzzleException
+     * The contract WASM must be installed first using SorobanClient::install.
+     *
+     * @param DeployRequest $deployRequest Deployment parameters including WASM hash, constructor args, and salt
+     * @return SorobanClient The client for the newly deployed contract
+     * @throws Exception If deployment fails or contract ID cannot be extracted
+     * @throws GuzzleException If the RPC request fails
      */
     public static function deploy(DeployRequest $deployRequest) : SorobanClient {
         $sourceAddress = Address::fromAccountId($deployRequest->sourceAccountKeyPair->getAccountId());
@@ -132,14 +155,17 @@ class SorobanClient
     }
 
     /**
-     * Installs (uploads) the given contract code to soroban.
-     * If successfully it returns the wasm hash of the installed contract as a hex string.
+     * Installs contract WASM bytecode to the network
      *
-     * @param InstallRequest $installRequest request parameters.
-     * @param bool $force force singing and sending the transaction even if it is a read call. Default false.
-     * @return string The wasm hash of the installed contract as a hex string.
-     * @throws GuzzleException
-     * @throws Exception
+     * Uploads the compiled contract WASM code to the ledger, making it available for deployment.
+     * If the code is already installed (detected via simulation), the existing WASM hash is returned
+     * without submitting a transaction unless force is true.
+     *
+     * @param InstallRequest $installRequest Installation parameters including WASM bytes
+     * @param bool $force Force transaction submission even if code is already installed (default: false)
+     * @return string The WASM hash (hex-encoded) of the installed contract code
+     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If installation fails or WASM hash cannot be extracted
      */
     public static function install(InstallRequest $installRequest, bool $force = false) : string {
 
@@ -178,14 +204,18 @@ class SorobanClient
     }
 
     /**
-     * @return string contract id of the contract represented by this client.
+     * Retrieves the contract ID of the contract this client represents
+     *
+     * @return string The C-prefixed contract ID address
      */
     public function getContractId() : string {
         return $this->options->contractId;
     }
 
     /**
-     * @return array<XdrSCSpecEntry> spec entries of the contract represented by this client.
+     * Retrieves the contract specification entries
+     *
+     * @return array<XdrSCSpecEntry> Array of parsed spec entries from the contract WASM
      */
     public function getSpecEntries(): array
     {
@@ -193,9 +223,12 @@ class SorobanClient
     }
 
     /**
-     * Gets the contract specification utility.
-     * This can be used for advanced type conversion and contract introspection.
-     * @return ContractSpec
+     * Gets the contract specification utility for type conversion
+     *
+     * Returns a ContractSpec instance that can be used for advanced type conversion,
+     * function argument parsing, and contract introspection.
+     *
+     * @return ContractSpec The contract spec utility
      */
     public function getContractSpec(): ContractSpec
     {
@@ -203,7 +236,9 @@ class SorobanClient
     }
 
     /**
-     * @return ClientOptions client options for interacting with soroban.
+     * Retrieves the client options configuration
+     *
+     * @return ClientOptions The client configuration
      */
     public function getOptions(): ClientOptions
     {
@@ -211,18 +246,21 @@ class SorobanClient
     }
 
     /**
-     * Invokes a contract method. It can be used for read only calls and for read/write calls.
-     * If it is read only call it will return the result from the simulation.
-     * If you want to force signing and submission even if it is a read only call set `force`to true.
+     * Invokes a contract method with automatic read/write detection
      *
+     * This is the main method for calling contract functions. It builds and simulates the transaction,
+     * and for read-only calls returns the simulation result immediately. For state-changing calls,
+     * it signs and sends the transaction, then waits for completion and returns the result.
      *
-     * @param string $name the name of the method to invoke. Will throw an exception if the method does not exist.
-     * @param array<XdrSCVal>|null $args the arguments to pass to the method call.
-     * @param bool $force forces signing and sending even if it is a read call. Default: false.
-     * @param MethodOptions|null $methodOptions method options for fine-tuning the call
-     * @return XdrSCVal the result of the invocation.
+     * Read-only calls are detected automatically based on empty authorization and read-write footprint.
      *
-     * @throws GuzzleException
+     * @param string $name The name of the contract method to invoke
+     * @param array<XdrSCVal>|null $args Array of XDR SCVal arguments for the method (optional)
+     * @param bool $force Force signing and sending even for read-only calls (default: false)
+     * @param MethodOptions|null $methodOptions Options for simulation, fees, and timeouts (optional)
+     * @return XdrSCVal The method return value as an XDR SCVal
+     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If the method does not exist or invocation fails
      */
     public function invokeMethod(string $name, ?array $args = null, bool $force = false, ?MethodOptions $methodOptions = null) : XdrSCVal {
         $tx = $this->buildInvokeMethodTx($name, $args, $methodOptions);
@@ -249,16 +287,18 @@ class SorobanClient
     }
 
     /**
-     * Creates an {@link AssembledTransaction} for invoking the given method.
-     * This is usefully if you need to manipulate the transaction before signing and sending.
+     * Builds a transaction for invoking a contract method without sending it
      *
-     * @param string $name name of the method to invoke.
-     * @param array|null $args arguments to use for the call.
-     * @param MethodOptions|null $methodOptions options for fine-tuning the invocation.
+     * Creates and simulates an AssembledTransaction for the specified method. This is useful
+     * when you need to inspect the transaction, sign authorization entries for multi-signature
+     * workflows, or manually control the signing and sending process.
      *
-     * @return AssembledTransaction the transaction, that can be manipulated (e.g. sign auth entries) before sending to soroban.
-     *
-     * @throws GuzzleException
+     * @param string $name The name of the contract method to invoke
+     * @param array|null $args Array of XDR SCVal arguments for the method (optional)
+     * @param MethodOptions|null $methodOptions Options for simulation, fees, and timeouts (optional)
+     * @return AssembledTransaction The assembled transaction ready for signing and sending
+     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If the method does not exist or transaction building fails
      */
     public function buildInvokeMethodTx(string $name, ?array $args = null, ?MethodOptions $methodOptions = null) : AssembledTransaction {
         if(!in_array($name, $this->methodNames)) {
@@ -274,7 +314,12 @@ class SorobanClient
     }
 
     /**
-     * @return array<string> method names of the represented contract.
+     * Retrieves all available method names from the contract
+     *
+     * Returns the list of callable function names extracted from the contract specification,
+     * excluding the constructor function.
+     *
+     * @return array<string> Array of method names available for invocation
      */
     public function getMethodNames(): array
     {
