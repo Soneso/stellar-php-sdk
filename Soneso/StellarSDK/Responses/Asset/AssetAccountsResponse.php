@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\Responses\Asset;
 
+/**
+ * Represents account counts by authorization status for an asset
+ *
+ * Contains statistics about the number of accounts holding an asset, broken down by
+ * authorization status (authorized, authorized to maintain liabilities, or unauthorized).
+ * This response is part of AssetResponse and provides insights into asset distribution
+ * and trustline authorization states.
+ *
+ * @package Soneso\StellarSDK\Responses\Asset
+ * @see AssetResponse For the parent asset details
+ * @see https://developers.stellar.org/api/resources/assets Horizon Assets API
+ * @since 1.0.0
+ */
 class AssetAccountsResponse
 {
     private int $authorized;
@@ -13,7 +26,9 @@ class AssetAccountsResponse
     private int $unauthorized;
 
     /**
-     * @return int
+     * Gets the number of fully authorized accounts holding this asset
+     *
+     * @return int The count of authorized accounts
      */
     public function getAuthorized(): int
     {
@@ -21,7 +36,11 @@ class AssetAccountsResponse
     }
 
     /**
-     * @return int
+     * Gets the number of accounts authorized to maintain liabilities
+     *
+     * These accounts can maintain existing offers but cannot receive new funds.
+     *
+     * @return int The count of accounts authorized to maintain liabilities
      */
     public function getAuthorizedToMaintainLiabilities(): int
     {
@@ -29,7 +48,9 @@ class AssetAccountsResponse
     }
 
     /**
-     * @return int
+     * Gets the number of unauthorized accounts
+     *
+     * @return int The count of unauthorized accounts
      */
     public function getUnauthorized(): int
     {

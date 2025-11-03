@@ -4,6 +4,19 @@ namespace Soneso\StellarSDK\Responses\FeeStats;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents fee statistics from Horizon
+ *
+ * Contains statistical information about transaction fees including the last ledger details,
+ * base fee, capacity usage, and distributions of fees charged and max fees. This helps
+ * developers determine appropriate fee levels for transactions.
+ *
+ * @package Soneso\StellarSDK\Responses\FeeStats
+ * @see FeeChargedResponse For fee charged statistics
+ * @see MaxFeeResponse For max fee statistics
+ * @see https://developers.stellar.org/api/aggregations/fee-stats Horizon Fee Stats API
+ * @since 1.0.0
+ */
 class FeeStatsResponse extends Response
 {
     private string $lastLedger;
@@ -13,7 +26,9 @@ class FeeStatsResponse extends Response
     private MaxFeeResponse $maxFee;
 
     /**
-     * @return string
+     * Gets the sequence number of the last ledger
+     *
+     * @return string The last ledger sequence number
      */
     public function getLastLedger(): string
     {
@@ -21,7 +36,9 @@ class FeeStatsResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the base fee in stroops for the last ledger
+     *
+     * @return string The base fee amount
      */
     public function getLastLedgerBaseFee(): string
     {
@@ -29,7 +46,11 @@ class FeeStatsResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the capacity usage for the last ledger
+     *
+     * Represents the percentage of ledger capacity used.
+     *
+     * @return string The capacity usage as a string
      */
     public function getLedgerCapacityUsage(): string
     {
@@ -37,7 +58,9 @@ class FeeStatsResponse extends Response
     }
 
     /**
-     * @return FeeChargedResponse
+     * Gets the fee charged statistics
+     *
+     * @return FeeChargedResponse The fee charged distribution
      */
     public function getFeeCharged(): FeeChargedResponse
     {
@@ -45,7 +68,9 @@ class FeeStatsResponse extends Response
     }
 
     /**
-     * @return MaxFeeResponse
+     * Gets the max fee statistics
+     *
+     * @return MaxFeeResponse The max fee distribution
      */
     public function getMaxFee(): MaxFeeResponse
     {

@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\Responses\Asset;
 
+/**
+ * Represents authorization flags set on an asset
+ *
+ * Contains boolean flags indicating the authorization requirements and capabilities
+ * set by the asset issuer. These flags control trustline authorization requirements,
+ * revocability, mutability, and clawback capabilities.
+ *
+ * @package Soneso\StellarSDK\Responses\Asset
+ * @see AssetResponse For the parent asset details
+ * @see https://developers.stellar.org/api/resources/assets Horizon Assets API
+ * @since 1.0.0
+ */
 class AssetFlagsResponse
 {
 
@@ -14,18 +26,42 @@ class AssetFlagsResponse
     private bool $authImmutable;
     private bool $authClawbackEnabled;
 
+    /**
+     * Checks if authorization is required for accounts to hold this asset
+     *
+     * @return bool True if authorization is required
+     */
     public function isAuthRequired() : bool {
         return $this->authRequired;
     }
 
+    /**
+     * Checks if the issuer can revoke authorization for this asset
+     *
+     * @return bool True if authorization is revocable
+     */
     public function isAuthRevocable() : bool {
         return $this->authRevocable;
     }
 
+    /**
+     * Checks if these authorization flags are immutable
+     *
+     * When true, the flags cannot be changed by the issuer.
+     *
+     * @return bool True if authorization flags are immutable
+     */
     public function isAuthImmutable() : bool {
         return $this->authImmutable;
     }
 
+    /**
+     * Checks if clawback is enabled for this asset
+     *
+     * When true, the issuer can clawback this asset from accounts.
+     *
+     * @return bool True if clawback is enabled
+     */
     public function isAuthClawbackEnabled() : bool {
         return $this->authClawbackEnabled;
     }

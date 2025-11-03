@@ -7,6 +7,17 @@
 
 namespace Soneso\StellarSDK\Responses\Errors;
 
+/**
+ * Represents additional error information for transaction failures
+ *
+ * Contains extra details about failed transactions including XDR representations,
+ * result codes, and transaction hash. This information helps diagnose why a
+ * transaction was rejected by Stellar Core.
+ *
+ * @package Soneso\StellarSDK\Responses\Errors
+ * @see HorizonErrorResponse For the parent error response
+ * @since 1.0.0
+ */
 class HorizonErrorResponseExtras
 {
     private ?string $envelopeXdr = null;
@@ -19,8 +30,11 @@ class HorizonErrorResponseExtras
     private ?string $txHash = null;
 
     /**
-     * A base64-encoded representation of the TransactionEnvelope XDR whose failure triggered this response if available.
-     * @return string | null
+     * Gets the base64-encoded TransactionEnvelope XDR
+     *
+     * Represents the transaction envelope whose failure triggered this response.
+     *
+     * @return string|null The envelope XDR, or null if not available
      */
     public function getEnvelopeXdr(): ?string
     {
@@ -28,8 +42,11 @@ class HorizonErrorResponseExtras
     }
 
     /**
-     * A base64-encoded representation of the TransactionResult XDR returned by stellar-core when submitting this transaction if available.
-     * @return string | null
+     * Gets the base64-encoded TransactionResult XDR
+     *
+     * Represents the transaction result returned by Stellar Core when submitting this transaction.
+     *
+     * @return string|null The result XDR, or null if not available
      */
     public function getResultXdr(): ?string
     {
@@ -37,8 +54,12 @@ class HorizonErrorResponseExtras
     }
 
     /**
-     * The transaction Result Code returned by Stellar Core, which can be used to look up more information about an error in the docs if available.
-     * @return string | null
+     * Gets the transaction result code
+     *
+     * The result code returned by Stellar Core can be used to look up more information
+     * about the error in the documentation.
+     *
+     * @return string|null The transaction result code, or null if not available
      */
     public function getResultCodesTransaction(): ?string
     {
@@ -46,8 +67,12 @@ class HorizonErrorResponseExtras
     }
 
     /**
-     * An array of operation Result Codes returned by Stellar Core, which can be used to look up more information about an error in the docs if available.
-     * @return array<string> | null
+     * Gets the operation result codes
+     *
+     * An array of result codes returned by Stellar Core for each operation. These codes
+     * can be used to look up more information about errors in the documentation.
+     *
+     * @return array<string>|null The operation result codes, or null if not available
      */
     public function getResultCodesOperation(): ?array
     {
@@ -55,8 +80,11 @@ class HorizonErrorResponseExtras
     }
 
     /**
-     * The transaction hash if a transaction was submitted and if available.
-     * @return string|null
+     * Gets the transaction hash
+     *
+     * The hash of the transaction if it was submitted.
+     *
+     * @return string|null The transaction hash, or null if not available
      */
     public function getTxHash(): ?string
     {

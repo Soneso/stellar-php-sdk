@@ -9,11 +9,24 @@ namespace Soneso\StellarSDK\Responses\ClaimableBalances;
 
 use Soneso\StellarSDK\Responses\Link\LinkResponse;
 
+/**
+ * Represents HAL links for a claimable balance response
+ *
+ * @package Soneso\StellarSDK\Responses\ClaimableBalances
+ * @see ClaimableBalanceResponse For the parent claimable balance details
+ * @see LinkResponse For the link structure
+ * @since 1.0.0
+ */
 class ClaimableBalanceLinksResponse
 {
 
     private LinkResponse $self;
 
+    /**
+     * Gets the self-referencing link to this claimable balance
+     *
+     * @return LinkResponse The self link
+     */
     public function getSelf() : LinkResponse {
         return $this->self;
     }

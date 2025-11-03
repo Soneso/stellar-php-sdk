@@ -6,13 +6,28 @@
 
 namespace Soneso\StellarSDK\Responses\Asset;
 
+/**
+ * Represents total balances by authorization status for an asset
+ *
+ * Contains aggregated balance amounts for an asset, broken down by authorization status
+ * (authorized, authorized to maintain liabilities, or unauthorized). This response is
+ * part of AssetResponse and provides insights into total asset distribution across
+ * different authorization levels.
+ *
+ * @package Soneso\StellarSDK\Responses\Asset
+ * @see AssetResponse For the parent asset details
+ * @see https://developers.stellar.org/api/resources/assets Horizon Assets API
+ * @since 1.0.0
+ */
 class AssetBalancesResponse {
     private string $authorized;
     private string $authorizedToMaintainLiabilities;
     private string $unauthorized;
 
     /**
-     * @return string
+     * Gets the total balance held in fully authorized accounts
+     *
+     * @return string The total authorized balance as a string to preserve precision
      */
     public function getAuthorized(): string
     {
@@ -20,7 +35,9 @@ class AssetBalancesResponse {
     }
 
     /**
-     * @return string
+     * Gets the total balance held in accounts authorized to maintain liabilities
+     *
+     * @return string The total balance in accounts authorized to maintain liabilities
      */
     public function getAuthorizedToMaintainLiabilities(): string
     {
@@ -28,7 +45,9 @@ class AssetBalancesResponse {
     }
 
     /**
-     * @return string
+     * Gets the total balance held in unauthorized accounts
+     *
+     * @return string The total unauthorized balance
      */
     public function getUnauthorized(): string
     {

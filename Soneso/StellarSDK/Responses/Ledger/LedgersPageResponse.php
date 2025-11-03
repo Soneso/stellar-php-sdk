@@ -9,12 +9,23 @@ namespace Soneso\StellarSDK\Responses\Ledger;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
 
+/**
+ * Represents a paginated collection of ledgers from Horizon
+ *
+ * @package Soneso\StellarSDK\Responses\Ledger
+ * @see PageResponse For pagination functionality
+ * @see LedgerResponse For individual ledger details
+ * @see https://developers.stellar.org/api/resources/ledgers Horizon Ledgers API
+ * @since 1.0.0
+ */
 class LedgersPageResponse extends PageResponse
 {
     private LedgersResponse $ledgers;
 
     /**
-     * @return LedgersResponse
+     * Gets the collection of ledgers in this page
+     *
+     * @return LedgersResponse The ledgers collection
      */
     public function getLedgers(): LedgersResponse {
         return $this->ledgers;

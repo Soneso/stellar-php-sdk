@@ -8,12 +8,27 @@ namespace Soneso\StellarSDK\Responses\Asset;
 
 use Soneso\StellarSDK\Responses\Link\LinkResponse;
 
+/**
+ * Represents HAL links for an asset response
+ *
+ * Contains hypermedia links related to an asset, primarily the TOML file link.
+ * The TOML file contains additional information about the asset issuer and asset details.
+ *
+ * @package Soneso\StellarSDK\Responses\Asset
+ * @see AssetResponse For the parent asset details
+ * @see LinkResponse For the link structure
+ * @since 1.0.0
+ */
 class AssetLinksResponse
 {
     private LinkResponse $toml;
 
     /**
-     * @return LinkResponse
+     * Gets the link to the asset's TOML file
+     *
+     * The stellar.toml file contains additional asset and issuer information.
+     *
+     * @return LinkResponse The TOML file link
      */
     public function getToml(): LinkResponse {
         return $this->toml;
