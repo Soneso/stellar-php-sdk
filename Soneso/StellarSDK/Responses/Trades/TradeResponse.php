@@ -6,6 +6,35 @@
 
 namespace Soneso\StellarSDK\Responses\Trades;
 
+/**
+ * Represents a completed trade on the Stellar distributed exchange
+ *
+ * This response contains comprehensive trade execution details including the trading parties,
+ * assets exchanged, amounts, price, and trade type (orderbook or liquidity pool). Trades occur
+ * when offers match or when liquidity pools facilitate exchanges. The response distinguishes
+ * between orderbook trades (between two accounts with offers) and liquidity pool trades
+ * (between an account and an AMM pool).
+ *
+ * Key fields:
+ * - Trade ID and timestamp
+ * - Trade type (orderbook or liquidity_pool)
+ * - Base and counter accounts/offers
+ * - Assets and amounts exchanged
+ * - Trade price and direction
+ * - Liquidity pool details (if applicable)
+ *
+ * Returned by Horizon endpoints:
+ * - GET /trades - All trades
+ * - GET /accounts/{account_id}/trades - Trades for an account
+ * - GET /offers/{offer_id}/trades - Trades for a specific offer
+ * - GET /liquidity_pools/{liquidity_pool_id}/trades - Trades involving a liquidity pool
+ *
+ * @package Soneso\StellarSDK\Responses\Trades
+ * @see TradePriceResponse For trade price representation
+ * @see TradeLinksResponse For related navigation links
+ * @see https://developers.stellar.org/api/resources/trades Horizon Trades API
+ * @since 1.0.0
+ */
 class TradeResponse
 {
     private string $id;
@@ -33,7 +62,9 @@ class TradeResponse
     private TradeLinksResponse $links;
 
     /**
-     * @return string
+     * Gets the unique identifier for this trade
+     *
+     * @return string The trade ID
      */
     public function getId(): string
     {
@@ -41,7 +72,9 @@ class TradeResponse
     }
 
     /**
-     * @return string
+     * Gets the paging token for this trade in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -49,7 +82,9 @@ class TradeResponse
     }
 
     /**
-     * @return string
+     * Gets the timestamp when the ledger containing this trade was closed
+     *
+     * @return string The ledger close time in ISO 8601 format
      */
     public function getLedgerCloseTime(): string
     {
@@ -57,7 +92,9 @@ class TradeResponse
     }
 
     /**
-     * @return string
+     * Gets the type of trade (orderbook or liquidity_pool)
+     *
+     * @return string The trade type
      */
     public function getTradeType(): string
     {
@@ -65,7 +102,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the offer ID for orderbook trades (deprecated, use base/counter offer IDs)
+     *
+     * @return string|null The offer ID, or null if not an orderbook trade
      */
     public function getOfferId(): ?string
     {
@@ -73,7 +112,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the base offer ID for orderbook trades
+     *
+     * @return string|null The base offer ID, or null if not an orderbook trade
      */
     public function getBaseOfferId(): ?string
     {
@@ -81,7 +122,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the liquidity pool ID if the base side is a liquidity pool
+     *
+     * @return string|null The base liquidity pool ID, or null if not a pool trade
      */
     public function getBaseLiquidityPoolId(): ?string
     {
@@ -89,7 +132,9 @@ class TradeResponse
     }
 
     /**
-     * @return int|null
+     * Gets the liquidity pool fee in basis points
+     *
+     * @return int|null The fee in basis points, or null if not a pool trade
      */
     public function getLiquidityPoolFeeBp(): ?int
     {
@@ -97,7 +142,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the account address on the base side of the trade
+     *
+     * @return string|null The base account ID, or null if base is a liquidity pool
      */
     public function getBaseAccount(): ?string
     {
@@ -105,7 +152,9 @@ class TradeResponse
     }
 
     /**
-     * @return string
+     * Gets the amount of the base asset traded
+     *
+     * @return string The base amount
      */
     public function getBaseAmount(): string
     {
@@ -113,7 +162,9 @@ class TradeResponse
     }
 
     /**
-     * @return string
+     * Gets the asset type of the base asset
+     *
+     * @return string The base asset type
      */
     public function getBaseAssetType(): string
     {
@@ -121,7 +172,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset code of the base asset
+     *
+     * @return string|null The base asset code, or null for native assets
      */
     public function getBaseAssetCode(): ?string
     {
@@ -129,7 +182,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the issuer of the base asset
+     *
+     * @return string|null The base asset issuer, or null for native assets
      */
     public function getBaseAssetIssuer(): ?string
     {
@@ -137,7 +192,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the counter offer ID for orderbook trades
+     *
+     * @return string|null The counter offer ID, or null if not an orderbook trade
      */
     public function getCounterOfferId(): ?string
     {
@@ -145,7 +202,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the account address on the counter side of the trade
+     *
+     * @return string|null The counter account ID, or null if counter is a liquidity pool
      */
     public function getCounterAccount(): ?string
     {
@@ -153,7 +212,9 @@ class TradeResponse
     }
 
     /**
-     * @return string
+     * Gets the amount of the counter asset traded
+     *
+     * @return string The counter amount
      */
     public function getCounterAmount(): string
     {
@@ -161,7 +222,9 @@ class TradeResponse
     }
 
     /**
-     * @return string
+     * Gets the asset type of the counter asset
+     *
+     * @return string The counter asset type
      */
     public function getCounterAssetType(): string
     {
@@ -169,7 +232,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset code of the counter asset
+     *
+     * @return string|null The counter asset code, or null for native assets
      */
     public function getCounterAssetCode(): ?string
     {
@@ -177,7 +242,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the issuer of the counter asset
+     *
+     * @return string|null The counter asset issuer, or null for native assets
      */
     public function getCounterAssetIssuer(): ?string
     {
@@ -185,7 +252,9 @@ class TradeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the liquidity pool ID if the counter side is a liquidity pool
+     *
+     * @return string|null The counter liquidity pool ID, or null if not a pool trade
      */
     public function getCounterLiquidityPoolId(): ?string
     {
@@ -193,7 +262,9 @@ class TradeResponse
     }
 
     /**
-     * @return TradePriceResponse
+     * Gets the price of the trade as a rational number
+     *
+     * @return TradePriceResponse The trade price (counter units per base unit)
      */
     public function getPrice(): TradePriceResponse
     {
@@ -201,7 +272,9 @@ class TradeResponse
     }
 
     /**
-     * @return bool
+     * Indicates whether the base account was selling in this trade
+     *
+     * @return bool True if the base side was selling, false if buying
      */
     public function isBaseIsSeller(): bool
     {
@@ -209,7 +282,9 @@ class TradeResponse
     }
 
     /**
-     * @return TradeLinksResponse
+     * Gets the links to related resources for this trade
+     *
+     * @return TradeLinksResponse The navigation links
      */
     public function getLinks(): TradeLinksResponse
     {

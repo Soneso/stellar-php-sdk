@@ -10,6 +10,31 @@ namespace Soneso\StellarSDK\Responses\Ledger;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents a closed ledger in the Stellar network
+ *
+ * This response contains comprehensive ledger details including sequence number, timestamps,
+ * transaction and operation counts, fee pool information, base fees, reserves, protocol version,
+ * and the ledger header XDR. Each ledger represents a snapshot of the network state at a specific
+ * point in time, containing all successful and failed transactions processed in that ledger.
+ *
+ * Key fields:
+ * - Ledger sequence number and hash
+ * - Transaction counts (successful and failed)
+ * - Operation counts and fee pool balances
+ * - Base fee and reserve requirements
+ * - Protocol version and network configuration
+ * - Timestamps for ledger closure
+ *
+ * Returned by Horizon endpoints:
+ * - GET /ledgers/{sequence} - Single ledger details
+ * - GET /ledgers - List of ledgers
+ *
+ * @package Soneso\StellarSDK\Responses\Ledger
+ * @see LedgerLinksResponse For related navigation links
+ * @see https://developers.stellar.org/api/resources/ledgers Horizon Ledgers API
+ * @since 1.0.0
+ */
 class LedgerResponse extends Response
 {
     private string $id;
@@ -32,7 +57,9 @@ class LedgerResponse extends Response
     private LedgerLinksResponse $links;
 
     /**
-     * @return string
+     * Gets the unique identifier for this ledger
+     *
+     * @return string The ledger ID
      */
     public function getId(): string
     {
@@ -40,7 +67,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the paging token for this ledger in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -48,7 +77,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the hash of this ledger
+     *
+     * @return string The ledger hash
      */
     public function getHash(): string
     {
@@ -56,7 +87,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the hash of the previous ledger in the blockchain
+     *
+     * @return string|null The previous ledger hash, or null if this is the genesis ledger
      */
     public function getPreviousHash(): ?string
     {
@@ -64,7 +97,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return BigInteger
+     * Gets the sequence number of this ledger
+     *
+     * @return BigInteger The ledger sequence number
      */
     public function getSequence(): BigInteger
     {
@@ -72,7 +107,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return int|null
+     * Gets the number of successful transactions in this ledger
+     *
+     * @return int|null The count of successful transactions
      */
     public function getSuccessfulTransactionCount(): ?int
     {
@@ -80,7 +117,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return int|null
+     * Gets the number of failed transactions in this ledger
+     *
+     * @return int|null The count of failed transactions
      */
     public function getFailedTransactionCount(): ?int
     {
@@ -88,7 +127,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the total number of operations in this ledger
+     *
+     * @return int The operation count
      */
     public function getOperationCount(): int
     {
@@ -96,7 +137,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return int|null
+     * Gets the total number of operations in the transaction set
+     *
+     * @return int|null The transaction set operation count
      */
     public function getTxSetOperationCount(): ?int
     {
@@ -104,7 +147,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the timestamp when this ledger was closed
+     *
+     * @return string The ledger close time in ISO 8601 format
      */
     public function getClosedAt(): string
     {
@@ -112,7 +157,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the total number of lumens in existence
+     *
+     * @return string The total coins in the network
      */
     public function getTotalCoins(): string
     {
@@ -120,7 +167,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the sum of all transaction fees in the fee pool
+     *
+     * @return string The fee pool balance in stroops
      */
     public function getFeePool(): string
     {
@@ -128,7 +177,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the base fee charged per operation in this ledger
+     *
+     * @return int The base fee in stroops
      */
     public function getBaseFeeInStroops(): int
     {
@@ -136,7 +187,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the base reserve required per account
+     *
+     * @return int The base reserve in stroops
      */
     public function getBaseReserveInStroops(): int
     {
@@ -144,7 +197,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the maximum number of transactions this ledger can hold
+     *
+     * @return int The maximum transaction set size
      */
     public function getMaxTxSetSize(): int
     {
@@ -152,7 +207,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the protocol version this ledger was running
+     *
+     * @return int The protocol version number
      */
     public function getProtocolVersion(): int
     {
@@ -160,7 +217,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the base64-encoded XDR representation of the ledger header
+     *
+     * @return string The ledger header XDR
      */
     public function getHeaderXdr(): string
     {
@@ -168,7 +227,9 @@ class LedgerResponse extends Response
     }
 
     /**
-     * @return LedgerLinksResponse
+     * Gets the links to related resources for this ledger
+     *
+     * @return LedgerLinksResponse The navigation links
      */
     public function getLinks(): LedgerLinksResponse
     {

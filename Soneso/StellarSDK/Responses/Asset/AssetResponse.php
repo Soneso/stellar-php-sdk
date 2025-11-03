@@ -8,6 +8,33 @@ namespace Soneso\StellarSDK\Responses\Asset;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents an asset issued on the Stellar network
+ *
+ * This response contains comprehensive asset details including asset type, code, and issuer,
+ * account statistics, balance distributions, flags, and liquidity pool information. Assets can
+ * be native (XLM) or issued by specific accounts. The response includes usage metrics across
+ * accounts, claimable balances, liquidity pools, and smart contracts.
+ *
+ * Key fields:
+ * - Asset type, code, and issuer identification
+ * - Number of accounts holding the asset
+ * - Total balances and distribution statistics
+ * - Asset authorization flags
+ * - Claimable balance and liquidity pool amounts
+ * - Smart contract integration metrics
+ *
+ * Returned by Horizon endpoints:
+ * - GET /assets - List of all assets
+ * - GET /assets?asset_code={code}&asset_issuer={issuer} - Specific asset details
+ *
+ * @package Soneso\StellarSDK\Responses\Asset
+ * @see AssetFlagsResponse For asset authorization flags
+ * @see AssetAccountsResponse For account statistics
+ * @see AssetBalancesResponse For balance distribution
+ * @see https://developers.stellar.org/api/resources/assets Horizon Assets API
+ * @since 1.0.0
+ */
 class AssetResponse extends Response
 {
     private string $assetType;
@@ -26,7 +53,9 @@ class AssetResponse extends Response
     private AssetLinksResponse $links;
 
     /**
-     * @return string
+     * Gets the asset type (native, credit_alphanum4, or credit_alphanum12)
+     *
+     * @return string The asset type
      */
     public function getAssetType(): string
     {
@@ -34,7 +63,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the asset code for non-native assets
+     *
+     * @return string|null The asset code, or null for native assets
      */
     public function getAssetCode(): ?string
     {
@@ -42,7 +73,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the account address of the asset issuer
+     *
+     * @return string|null The issuer account ID, or null for native assets
      */
     public function getAssetIssuer(): ?string
     {
@@ -50,7 +83,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the paging token for this asset in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -58,7 +93,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return AssetAccountsResponse
+     * Gets statistics about accounts holding this asset
+     *
+     * @return AssetAccountsResponse The account statistics including authorized and unauthorized counts
      */
     public function getAccounts(): AssetAccountsResponse
     {
@@ -66,7 +103,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return AssetBalancesResponse
+     * Gets the balance distribution statistics for this asset
+     *
+     * @return AssetBalancesResponse The balance distribution across different holder tiers
      */
     public function getBalances(): AssetBalancesResponse
     {
@@ -74,7 +113,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the total amount of this asset in claimable balances
+     *
+     * @return string The claimable balances amount
      */
     public function getClaimableBalancesAmount(): string
     {
@@ -82,7 +123,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the total amount of this asset in liquidity pools
+     *
+     * @return string The liquidity pools amount
      */
     public function getLiquidityPoolsAmount(): string
     {
@@ -90,7 +133,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the number of claimable balances holding this asset
+     *
+     * @return int The count of claimable balances
      */
     public function getNumClaimableBalances(): int
     {
@@ -98,7 +143,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the number of liquidity pools containing this asset
+     *
+     * @return int The count of liquidity pools
      */
     public function getNumLiquidityPools(): int
     {
@@ -106,7 +153,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return AssetFlagsResponse
+     * Gets the authorization flags for this asset
+     *
+     * @return AssetFlagsResponse The asset flags indicating authorization requirements
      */
     public function getFlags(): AssetFlagsResponse
     {
@@ -114,7 +163,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return AssetLinksResponse
+     * Gets the links to related resources for this asset
+     *
+     * @return AssetLinksResponse The navigation links
      */
     public function getLinks(): AssetLinksResponse
     {
@@ -122,7 +173,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return int|null
+     * Gets the number of smart contracts holding this asset
+     *
+     * @return int|null The count of contracts, or null if not available
      */
     public function getNumContracts(): ?int
     {
@@ -130,7 +183,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @param int|null $numContracts
+     * Sets the number of smart contracts holding this asset
+     *
+     * @param int|null $numContracts The count of contracts
      */
     public function setNumContracts(?int $numContracts): void
     {
@@ -138,7 +193,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the total amount of this asset held in smart contracts
+     *
+     * @return string|null The contracts amount, or null if not available
      */
     public function getContractsAmount(): ?string
     {
@@ -146,7 +203,9 @@ class AssetResponse extends Response
     }
 
     /**
-     * @param string|null $contractsAmount
+     * Sets the total amount of this asset held in smart contracts
+     *
+     * @param string|null $contractsAmount The contracts amount
      */
     public function setContractsAmount(?string $contractsAmount): void
     {
