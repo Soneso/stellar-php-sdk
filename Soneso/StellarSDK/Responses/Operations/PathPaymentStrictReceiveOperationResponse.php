@@ -6,12 +6,26 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a path payment strict receive operation response from Horizon API
+ *
+ * This operation guarantees the destination receives exactly the specified amount
+ * while the source may send up to sourceMax. Extends PathPaymentOperationResponse
+ * with the maximum amount willing to be sent from source.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see PathPaymentOperationResponse Base path payment response
+ * @see https://developers.stellar.org/api/resources/operations/object/path-payment-strict-receive Horizon Path Payment Strict Receive
+ * @since 1.0.0
+ */
 class PathPaymentStrictReceiveOperationResponse extends PathPaymentOperationResponse
 {
     private string $sourceMax;
 
     /**
-     * @return string
+     * Gets the maximum amount willing to be sent from source
+     *
+     * @return string The maximum source amount
      */
     public function getSourceMax() : string
     {

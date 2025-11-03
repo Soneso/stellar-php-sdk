@@ -9,6 +9,20 @@ namespace Soneso\StellarSDK\Responses\Operations;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Responses\PaymentPath\PathAssetsResponse;
 
+/**
+ * Represents a path payment operation response from Horizon API
+ *
+ * This response is returned for path payment operations that send an asset along a payment path,
+ * converting through one or more intermediate assets. Contains source and destination amounts,
+ * assets, accounts, and the path of assets used for conversion.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see PathPaymentStrictReceiveOperationResponse For strict receive variant
+ * @see PathPaymentStrictSendOperationResponse For strict send variant
+ * @see https://developers.stellar.org/api/resources/operations/object/path-payment Horizon Path Payment Operation
+ * @since 1.0.0
+ */
 class PathPaymentOperationResponse extends OperationResponse
 {
     private string $amount;
@@ -24,7 +38,9 @@ class PathPaymentOperationResponse extends OperationResponse
     private PathAssetsResponse $path;
 
     /**
-     * @return string
+     * Gets the destination amount received
+     *
+     * @return string The amount received at destination
      */
     public function getAmount(): string
     {
@@ -32,7 +48,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the source amount sent
+     *
+     * @return string The amount sent from source
      */
     public function getSourceAmount(): string
     {
@@ -40,7 +58,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the sender account address
+     *
+     * @return string The account ID sending the payment
      */
     public function getFrom(): string
     {
@@ -48,7 +68,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed sender account if applicable
+     *
+     * @return string|null The muxed sender account address or null
      */
     public function getFromMuxed(): ?string
     {
@@ -56,7 +78,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed sender account ID if applicable
+     *
+     * @return string|null The muxed sender account ID or null
      */
     public function getFromMuxedId(): ?string
     {
@@ -64,7 +88,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the recipient account address
+     *
+     * @return string The account ID receiving the payment
      */
     public function getTo(): string
     {
@@ -72,7 +98,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed recipient account if applicable
+     *
+     * @return string|null The muxed recipient account address or null
      */
     public function getToMuxed(): ?string
     {
@@ -80,7 +108,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed recipient account ID if applicable
+     *
+     * @return string|null The muxed recipient account ID or null
      */
     public function getToMuxedId(): ?string
     {
@@ -88,7 +118,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the destination asset received
+     *
+     * @return Asset The asset type received at destination
      */
     public function getAsset(): Asset
     {
@@ -96,7 +128,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the source asset sent
+     *
+     * @return Asset The asset type sent from source
      */
     public function getSourceAsset(): Asset
     {
@@ -104,7 +138,9 @@ class PathPaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return PathAssetsResponse
+     * Gets the payment path of intermediate assets
+     *
+     * @return PathAssetsResponse The ordered list of assets in the payment path
      */
     public function getPath(): PathAssetsResponse
     {

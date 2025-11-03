@@ -6,6 +6,17 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents an account merge operation response from Horizon API
+ *
+ * This operation merges one account into another, transferring all lumens from the
+ * source account to the destination account and removing the source account from the ledger.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/account-merge Horizon Account Merge
+ * @since 1.0.0
+ */
 class AccountMergeOperationResponse extends OperationResponse
 {
     private string $account;
@@ -16,7 +27,9 @@ class AccountMergeOperationResponse extends OperationResponse
     private ?string $intoMuxedId = null;
 
     /**
-     * @return string
+     * Gets the account being merged and removed
+     *
+     * @return string The source account ID being merged
      */
     public function getAccount(): string
     {
@@ -24,7 +37,9 @@ class AccountMergeOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed source account if applicable
+     *
+     * @return string|null The muxed source account address or null
      */
     public function getAccountMuxed(): ?string
     {
@@ -32,7 +47,9 @@ class AccountMergeOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed source account ID if applicable
+     *
+     * @return string|null The muxed source account ID or null
      */
     public function getAccountMuxedId(): ?string
     {
@@ -40,7 +57,9 @@ class AccountMergeOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the destination account receiving the funds
+     *
+     * @return string The destination account ID
      */
     public function getInto(): string
     {
@@ -48,7 +67,9 @@ class AccountMergeOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed destination account if applicable
+     *
+     * @return string|null The muxed destination account address or null
      */
     public function getIntoMuxed(): ?string
     {
@@ -56,7 +77,9 @@ class AccountMergeOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed destination account ID if applicable
+     *
+     * @return string|null The muxed destination account ID or null
      */
     public function getIntoMuxedId(): ?string
     {

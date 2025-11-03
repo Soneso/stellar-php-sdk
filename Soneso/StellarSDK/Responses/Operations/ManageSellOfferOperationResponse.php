@@ -9,6 +9,17 @@ namespace Soneso\StellarSDK\Responses\Operations;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Responses\Offers\OfferPriceResponse;
 
+/**
+ * Represents a manage sell offer operation response from Horizon API
+ *
+ * This operation creates, updates, or deletes a sell offer in the Stellar DEX.
+ * Contains offer details including ID, amount, price, and the assets being bought and sold.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/manage-sell-offer Horizon Manage Sell Offer
+ * @since 1.0.0
+ */
 class ManageSellOfferOperationResponse extends OperationResponse
 {
     private string $offerId;
@@ -19,7 +30,9 @@ class ManageSellOfferOperationResponse extends OperationResponse
     private Asset $sellingAsset;
 
     /**
-     * @return string
+     * Gets the offer ID
+     *
+     * @return string The unique offer identifier, 0 if offer was deleted
      */
     public function getOfferId(): string
     {
@@ -27,7 +40,9 @@ class ManageSellOfferOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the amount of selling asset offered
+     *
+     * @return string The offer amount
      */
     public function getAmount(): string
     {
@@ -35,7 +50,9 @@ class ManageSellOfferOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the offer price as a decimal string
+     *
+     * @return string The price of 1 unit of selling asset in terms of buying asset
      */
     public function getPrice(): string
     {
@@ -43,7 +60,9 @@ class ManageSellOfferOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset being bought in this offer
+     *
+     * @return Asset The buying asset details
      */
     public function getBuyingAsset(): Asset
     {
@@ -51,7 +70,9 @@ class ManageSellOfferOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset being sold in this offer
+     *
+     * @return Asset The selling asset details
      */
     public function getSellingAsset(): Asset
     {
@@ -59,7 +80,9 @@ class ManageSellOfferOperationResponse extends OperationResponse
     }
 
     /**
-     * @return OfferPriceResponse
+     * Gets the offer price as a rational number
+     *
+     * @return OfferPriceResponse The price as numerator and denominator
      */
     public function getPriceR(): OfferPriceResponse
     {

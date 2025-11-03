@@ -6,13 +6,26 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a manage data operation response from Horizon API
+ *
+ * This operation sets, modifies, or deletes a data entry attached to an account.
+ * Contains the data entry name and value (base64-encoded).
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/manage-data Horizon Manage Data
+ * @since 1.0.0
+ */
 class ManageDataOperationResponse extends OperationResponse
 {
     private string $name;
     private string $value;
 
     /**
-     * @return string
+     * Gets the data entry name
+     *
+     * @return string The data entry key
      */
     public function getName(): string
     {
@@ -20,7 +33,9 @@ class ManageDataOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the data entry value
+     *
+     * @return string The data value (base64-encoded), or empty string if deleted
      */
     public function getValue(): string
     {

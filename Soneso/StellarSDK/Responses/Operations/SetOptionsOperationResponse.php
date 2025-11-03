@@ -6,7 +6,17 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
-
+/**
+ * Represents a set options operation response from Horizon API
+ *
+ * This operation sets various account options including thresholds, signers, home domain,
+ * inflation destination, and account flags. Contains all modified account settings.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/set-options Horizon Set Options
+ * @since 1.0.0
+ */
 class SetOptionsOperationResponse extends OperationResponse
 {
     private ?int $lowThreshold = null;
@@ -23,7 +33,9 @@ class SetOptionsOperationResponse extends OperationResponse
     private ?array $clearFlagsS = null;
 
     /**
-     * @return int|null
+     * Gets the low threshold weight
+     *
+     * @return int|null The weight for low threshold or null if not set
      */
     public function getLowThreshold(): ?int
     {
@@ -31,7 +43,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return int|null
+     * Gets the medium threshold weight
+     *
+     * @return int|null The weight for medium threshold or null if not set
      */
     public function getMedThreshold(): ?int
     {
@@ -39,7 +53,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return int|null
+     * Gets the high threshold weight
+     *
+     * @return int|null The weight for high threshold or null if not set
      */
     public function getHighThreshold(): ?int
     {
@@ -47,7 +63,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the inflation destination account
+     *
+     * @return string|null The inflation destination account ID or null if not set
      */
     public function getInflationDestination(): ?string
     {
@@ -55,7 +73,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the home domain
+     *
+     * @return string|null The home domain string or null if not set
      */
     public function getHomeDomain(): ?string
     {
@@ -63,7 +83,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the signer key being added or modified
+     *
+     * @return string|null The signer public key or null if not set
      */
     public function getSignerKey(): ?string
     {
@@ -71,7 +93,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return int|null
+     * Gets the weight of the signer
+     *
+     * @return int|null The signer weight or null if not set
      */
     public function getSignerWeight(): ?int
     {
@@ -79,7 +103,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return int|null
+     * Gets the master key weight
+     *
+     * @return int|null The master key weight or null if not set
      */
     public function getMasterKeyWeight(): ?int
     {
@@ -87,7 +113,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return array|null ?[int]
+     * Gets the flags being set as integers
+     *
+     * @return array|null Array of flag integers or null
      */
     public function getSetFlags(): ?array
     {
@@ -95,7 +123,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return array|null ?[string]
+     * Gets the flags being set as strings
+     *
+     * @return array|null Array of flag name strings or null
      */
     public function getSetFlagsS(): ?array
     {
@@ -103,7 +133,9 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return array|null ?[int]
+     * Gets the flags being cleared as integers
+     *
+     * @return array|null Array of flag integers or null
      */
     public function getClearFlags(): ?array
     {
@@ -111,12 +143,14 @@ class SetOptionsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return array|null ?[string]
+     * Gets the flags being cleared as strings
+     *
+     * @return array|null Array of flag name strings or null
      */
     public function getClearFlagsS(): ?array
     {
         return $this->clearFlagsS;
-    } // [string]
+    }
 
     protected function loadFromJson(array $json) : void {
 

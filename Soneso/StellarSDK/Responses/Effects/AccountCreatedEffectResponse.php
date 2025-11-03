@@ -6,12 +6,25 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents an account created effect response from Horizon API
+ *
+ * This effect occurs when a new account is created and funded on the Stellar network.
+ * Contains the starting balance provided to the new account.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect response
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class AccountCreatedEffectResponse extends EffectResponse
 {
     private string $startingBalance;
 
     /**
-     * @return string
+     * Gets the initial balance provided to the new account
+     *
+     * @return string The starting balance in lumens
      */
     public function getStartingBalance(): string {
         return $this->startingBalance;

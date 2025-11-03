@@ -7,6 +7,18 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a create account operation response from Horizon API
+ *
+ * This response is returned when a create account operation creates and funds a new account.
+ * Contains the starting balance, the new account address, and the funder account that created
+ * it including optional multiplexed account information.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/create-account Horizon Create Account Operation
+ * @since 1.0.0
+ */
 class CreateAccountOperationResponse extends OperationResponse
 {
     private string $startingBalance;
@@ -16,7 +28,9 @@ class CreateAccountOperationResponse extends OperationResponse
     private string $account;
 
     /**
-     * @return string
+     * Gets the newly created account address
+     *
+     * @return string The account ID that was created
      */
     public function getAccount(): string
     {
@@ -24,7 +38,9 @@ class CreateAccountOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the initial balance provided to the new account
+     *
+     * @return string The starting balance in lumens
      */
     public function getStartingBalance(): string
     {
@@ -32,7 +48,9 @@ class CreateAccountOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the funder account address that created the new account
+     *
+     * @return string The account ID that funded the creation
      */
     public function getFunder(): string
     {
@@ -40,7 +58,9 @@ class CreateAccountOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed funder account if applicable
+     *
+     * @return string|null The muxed funder account address or null
      */
     public function getFunderMuxed(): ?string
     {
@@ -48,7 +68,9 @@ class CreateAccountOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed funder account ID if applicable
+     *
+     * @return string|null The muxed funder account ID or null
      */
     public function getFunderMuxedId(): ?string
     {
