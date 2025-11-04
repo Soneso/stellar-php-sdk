@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a trustline created effect from the Stellar network
+ *
+ * This effect occurs when an account creates a new trustline to an asset.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see TrustlineEffectResponse Base trustline effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class TrustlineCreatedEffectResponse extends TrustlineEffectResponse
 {
     public static function fromJson(array $jsonData) : TrustlineCreatedEffectResponse {

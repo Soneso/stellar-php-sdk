@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a trustline removed effect from the Stellar network
+ *
+ * This effect occurs when an account removes a trustline to an asset.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see TrustlineEffectResponse Base trustline effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class TrustlineRemovedEffectResponse extends TrustlineEffectResponse
 {
     public static function fromJson(array $jsonData) : TrustlineRemovedEffectResponse {

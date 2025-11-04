@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents an account inflation destination updated effect from the Stellar network
+ *
+ * This effect occurs when an account's inflation destination is modified.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse
 {
     public static function fromJson(array $jsonData) : AccountInflationDestinationUpdatedEffectResponse {

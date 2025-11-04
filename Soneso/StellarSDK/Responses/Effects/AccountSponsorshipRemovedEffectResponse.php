@@ -6,12 +6,24 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents an account sponsorship removed effect from the Stellar network
+ *
+ * This effect occurs when sponsorship for an account's base reserve is removed.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class AccountSponsorshipRemovedEffectResponse extends EffectResponse
 {
     private string $formerSponsor;
 
     /**
-     * @return string
+     * Gets the account ID of the former sponsor
+     *
+     * @return string The former sponsor's account ID
      */
     public function getFormerSponsor(): string
     {

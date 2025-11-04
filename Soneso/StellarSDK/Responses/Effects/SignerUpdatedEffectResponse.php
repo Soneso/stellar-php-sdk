@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a signer updated effect from the Stellar network
+ *
+ * This effect occurs when a signer's properties (such as weight) are modified.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class SignerUpdatedEffectResponse extends EffectResponse
 {
     public static function fromJson(array $jsonData) : SignerUpdatedEffectResponse {

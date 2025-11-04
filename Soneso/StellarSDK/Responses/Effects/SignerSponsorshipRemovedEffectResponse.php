@@ -6,12 +6,25 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a signer sponsorship removed effect from the Stellar network
+ *
+ * This effect occurs when sponsorship for a signer's base reserve is removed.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class SignerSponsorshipRemovedEffectResponse extends EffectResponse
 {
     private string $formerSponsor;
     private string $signer;
+
     /**
-     * @return string
+     * Gets the account ID of the former sponsor
+     *
+     * @return string The former sponsor's account ID
      */
     public function getFormerSponsor(): string
     {
@@ -19,7 +32,9 @@ class SignerSponsorshipRemovedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the signer's public key
+     *
+     * @return string The signer's public key
      */
     public function getSigner(): string
     {

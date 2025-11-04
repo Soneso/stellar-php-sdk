@@ -6,12 +6,24 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a sequence bumped effect from the Stellar network
+ *
+ * This effect occurs when an account's sequence number is bumped forward.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class SequenceBumpedEffectResponse extends EffectResponse
 {
     private string $newSequence;
 
     /**
-     * @return string
+     * Gets the new sequence number
+     *
+     * @return string The new sequence number as a string
      */
     public function getNewSequence(): string
     {

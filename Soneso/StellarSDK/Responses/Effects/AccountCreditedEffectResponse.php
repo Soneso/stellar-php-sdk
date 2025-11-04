@@ -8,13 +8,25 @@ namespace Soneso\StellarSDK\Responses\Effects;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents an account credited effect from the Stellar network
+ *
+ * This effect occurs when an account receives a payment or asset transfer.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class AccountCreditedEffectResponse extends EffectResponse
 {
     private string $amount;
     private Asset $asset;
 
     /**
-     * @return string
+     * Gets the amount credited to the account
+     *
+     * @return string The amount as a string to preserve precision
      */
     public function getAmount(): string
     {
@@ -22,7 +34,9 @@ class AccountCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset that was credited
+     *
+     * @return Asset The asset credited to the account
      */
     public function getAsset(): Asset
     {

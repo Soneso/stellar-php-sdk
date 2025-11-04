@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a signer sponsorship updated effect from the Stellar network
+ *
+ * This effect occurs when a signer's sponsorship is transferred from one sponsor to another.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class SignerSponsorshipUpdatedEffectResponse extends EffectResponse
 {
     private string $newSponsor;
@@ -13,7 +23,9 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse
     private string $signer;
 
     /**
-     * @return string
+     * Gets the account ID of the new sponsor
+     *
+     * @return string The new sponsor's account ID
      */
     public function getNewSponsor(): string
     {
@@ -21,7 +33,9 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the account ID of the former sponsor
+     *
+     * @return string The former sponsor's account ID
      */
     public function getFormerSponsor(): string
     {
@@ -29,7 +43,9 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the signer's public key
+     *
+     * @return string The signer's public key
      */
     public function getSigner(): string
     {

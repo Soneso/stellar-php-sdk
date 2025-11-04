@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Base class for signer-related effects from the Stellar network
+ *
+ * This represents effects that involve changes to account signers.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see SignerCreatedEffectResponse When a signer is added
+ * @see SignerUpdatedEffectResponse When a signer is modified
+ * @see SignerRemovedEffectResponse When a signer is removed
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class SignerEffectResponse extends EffectResponse
 {
     private string $publicKey;
@@ -13,7 +26,9 @@ class SignerEffectResponse extends EffectResponse
     private ?string $key = null;
 
     /**
-     * @return string
+     * Gets the public key of the signer
+     *
+     * @return string The signer's public key
      */
     public function getPublicKey(): string
     {
@@ -21,7 +36,9 @@ class SignerEffectResponse extends EffectResponse
     }
 
     /**
-     * @return int
+     * Gets the weight of the signer
+     *
+     * @return int The signer's weight for multi-signature operations
      */
     public function getWeight(): int
     {
@@ -29,7 +46,9 @@ class SignerEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the key value if available
+     *
+     * @return string|null The key value, or null if not set
      */
     public function getKey(): ?string
     {
@@ -39,7 +58,7 @@ class SignerEffectResponse extends EffectResponse
     protected function loadFromJson(array $json) : void {
         if (isset($json['public_key'])) $this->publicKey = $json['public_key'];
         if (isset($json['weight'])) $this->weight = $json['weight'];
-        if (isset($json['key'])) $this->publicKey = $json['key'];
+        if (isset($json['key'])) $this->key = $json['key'];
         parent::loadFromJson($json);
     }
 

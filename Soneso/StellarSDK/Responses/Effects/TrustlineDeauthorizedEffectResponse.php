@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a trustline deauthorized effect from the Stellar network
+ *
+ * This effect occurs when an asset issuer revokes authorization for a trustline.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see TrustlineEffectResponse Base trustline effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class TrustlineDeauthorizedEffectResponse extends TrustlineEffectResponse
 {
     public static function fromJson(array $jsonData) : TrustlineDeauthorizedEffectResponse {

@@ -6,12 +6,24 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a data entry removed effect from the Stellar network
+ *
+ * This effect occurs when a data entry is removed from an account.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class DataRemovedEffectResponse extends EffectResponse
 {
     private string $name;
 
     /**
-     * @return string
+     * Gets the name of the removed data entry
+     *
+     * @return string The data entry name
      */
     public function getValue(): string
     {

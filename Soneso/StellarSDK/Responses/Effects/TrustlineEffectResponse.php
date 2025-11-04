@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Base class for trustline-related effects from the Stellar network
+ *
+ * This represents effects that involve changes to trustlines between accounts and assets.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see TrustlineCreatedEffectResponse When a trustline is created
+ * @see TrustlineUpdatedEffectResponse When a trustline is modified
+ * @see TrustlineRemovedEffectResponse When a trustline is removed
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class TrustlineEffectResponse extends EffectResponse
 {
     private string $limit;
@@ -15,7 +28,9 @@ class TrustlineEffectResponse extends EffectResponse
     private ?string $liquidityPoolId = null;
 
     /**
-     * @return string
+     * Gets the trustline limit
+     *
+     * @return string The maximum amount of the asset the account trusts
      */
     public function getLimit(): string
     {
@@ -23,7 +38,9 @@ class TrustlineEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the asset type
+     *
+     * @return string The asset type (native, credit_alphanum4, credit_alphanum12, or liquidity_pool_shares)
      */
     public function getAssetType(): string
     {
@@ -31,7 +48,9 @@ class TrustlineEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset code
+     *
+     * @return string|null The asset code, or null for native or liquidity pool assets
      */
     public function getAssetCode(): ?string
     {
@@ -39,7 +58,9 @@ class TrustlineEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset issuer account ID
+     *
+     * @return string|null The issuer's account ID, or null for native or liquidity pool assets
      */
     public function getAssetIssuer(): ?string
     {
@@ -47,7 +68,9 @@ class TrustlineEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the liquidity pool ID
+     *
+     * @return string|null The liquidity pool ID, or null if not a liquidity pool trustline
      */
     public function getLiquidityPoolId(): ?string
     {

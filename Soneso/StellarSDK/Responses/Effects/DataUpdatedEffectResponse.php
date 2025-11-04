@@ -6,13 +6,25 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a data entry updated effect from the Stellar network
+ *
+ * This effect occurs when a data entry's value is modified.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class DataUpdatedEffectResponse extends EffectResponse
 {
     private string $name;
     private string $value;
 
     /**
-     * @return string
+     * Gets the name of the data entry
+     *
+     * @return string The data entry name
      */
     public function getName(): string
     {
@@ -20,7 +32,9 @@ class DataUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the new value of the data entry
+     *
+     * @return string The data entry value (base64 encoded)
      */
     public function getValue(): string
     {

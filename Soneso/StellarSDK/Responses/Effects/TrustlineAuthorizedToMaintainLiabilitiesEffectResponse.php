@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a trustline authorized to maintain liabilities effect from the Stellar network
+ *
+ * This effect occurs when an asset issuer authorizes a trustline to maintain existing liabilities.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see TrustlineEffectResponse Base trustline effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse extends TrustlineEffectResponse
 {
     public static function fromJson(array $jsonData) : TrustlineAuthorizedToMaintainLiabilitiesEffectResponse {

@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents an account thresholds updated effect from the Stellar network
+ *
+ * This effect occurs when an account's signature thresholds are modified.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @since 1.0.0
+ */
 class AccountThresholdsUpdatedEffectResponse extends EffectResponse
 {
     private int $lowThreshold;
@@ -13,7 +23,9 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse
     private int $highThreshold;
 
     /**
-     * @return int
+     * Gets the low threshold value
+     *
+     * @return int The threshold for low security operations
      */
     public function getLowThreshold(): int
     {
@@ -21,7 +33,9 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return int
+     * Gets the medium threshold value
+     *
+     * @return int The threshold for medium security operations
      */
     public function getMedThreshold(): int
     {
@@ -29,7 +43,9 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return int
+     * Gets the high threshold value
+     *
+     * @return int The threshold for high security operations
      */
     public function getHighThreshold(): int
     {
