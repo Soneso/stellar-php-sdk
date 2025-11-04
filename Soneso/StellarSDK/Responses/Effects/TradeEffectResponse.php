@@ -8,6 +8,19 @@ namespace Soneso\StellarSDK\Responses\Effects;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents an effect when a trade is executed on the Stellar DEX
+ *
+ * This effect occurs when an offer is matched with a counter-offer on the order book,
+ * or when trading through a liquidity pool. Contains details about the assets and amounts
+ * exchanged. Triggered by trading operations including ManageBuyOffer, ManageSellOffer,
+ * and PathPayment operations.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse
+ * @see https://developers.stellar.org/docs/encyclopedia/liquidity-on-stellar-sdex-liquidity-pools
+ * @see https://developers.stellar.org/api/resources/effects
+ */
 class TradeEffectResponse extends EffectResponse
 {
     private string $seller;
@@ -20,7 +33,9 @@ class TradeEffectResponse extends EffectResponse
     private Asset $boughtAsset;
 
     /**
-     * @return string
+     * Gets the seller's account ID
+     *
+     * @return string The seller's account ID
      */
     public function getSeller(): string
     {
@@ -28,7 +43,9 @@ class TradeEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the seller's muxed account address if multiplexed
+     *
+     * @return string|null The muxed address, or null if not multiplexed
      */
     public function getSellerMuxed(): ?string
     {
@@ -36,7 +53,9 @@ class TradeEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the seller's muxed account ID if multiplexed
+     *
+     * @return string|null The muxed ID, or null if not multiplexed
      */
     public function getSellerMuxedId(): ?string
     {
@@ -44,7 +63,9 @@ class TradeEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the offer ID that was executed
+     *
+     * @return string The offer ID
      */
     public function getOfferId(): string
     {
@@ -52,7 +73,9 @@ class TradeEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the amount of asset sold in the trade
+     *
+     * @return string The sold amount
      */
     public function getSoldAmount(): string
     {
@@ -60,7 +83,9 @@ class TradeEffectResponse extends EffectResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset that was sold
+     *
+     * @return Asset The sold asset
      */
     public function getSoldAsset(): Asset
     {
@@ -68,7 +93,9 @@ class TradeEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the amount of asset bought in the trade
+     *
+     * @return string The bought amount
      */
     public function getBoughtAmount(): string
     {
@@ -76,7 +103,9 @@ class TradeEffectResponse extends EffectResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset that was bought
+     *
+     * @return Asset The bought asset
      */
     public function getBoughtAsset(): Asset
     {
@@ -84,6 +113,12 @@ class TradeEffectResponse extends EffectResponse
     }
 
 
+    /**
+     * Loads object data from JSON array
+     *
+     * @param array $json JSON data array
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
 
         if (isset($json['seller'])) $this->seller = $json['seller'];
@@ -108,6 +143,12 @@ class TradeEffectResponse extends EffectResponse
         parent::loadFromJson($json);
     }
 
+    /**
+     * Creates an instance from JSON data
+     *
+     * @param array $jsonData JSON data array
+     * @return TradeEffectResponse
+     */
     public static function fromJson(array $jsonData) : TradeEffectResponse {
         $result = new TradeEffectResponse();
         $result->loadFromJson($jsonData);

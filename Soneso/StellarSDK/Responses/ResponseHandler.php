@@ -54,9 +54,47 @@ use Soneso\StellarSDK\SEP\TransferServerService\InfoResponse;
 use Soneso\StellarSDK\SEP\TransferServerService\WithdrawResponse;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeResponse;
 
+/**
+ * Handles HTTP responses from Horizon API and converts them to typed response objects
+ *
+ * This class acts as a response factory and deserializer for all Horizon API requests.
+ * It takes raw HTTP responses from Guzzle, validates them, parses the JSON content, and
+ * instantiates the appropriate response class based on the request type. This central
+ * handler ensures consistent error handling and response processing across the SDK.
+ *
+ * Response Processing Flow:
+ * 1. Validates HTTP status code (handles 3xx+ errors)
+ * 2. Parses JSON response body with error handling
+ * 3. Routes to appropriate response class based on request type
+ * 4. Attaches rate limit headers and HTTP client to response
+ * 5. Returns fully hydrated, type-safe response object
+ *
+ * The handler supports all Horizon API endpoints including accounts, transactions,
+ * operations, effects, ledgers, offers, liquidity pools, and SEP protocol responses.
+ *
+ * @package Soneso\StellarSDK\Responses
+ * @see RequestType For supported request type constants
+ * @see Response Base class for all response objects
+ * @see https://developers.stellar.org/api Horizon API documentation
+ */
 class ResponseHandler
 {
 
+    /**
+     * Converts an HTTP response into a typed Horizon response object
+     *
+     * This method processes the raw HTTP response, validates the status code,
+     * parses the JSON body, and instantiates the appropriate response class
+     * based on the request type. It handles all response types from Horizon
+     * API endpoints and SEP protocol services.
+     *
+     * @param ResponseInterface $response The HTTP response from Guzzle
+     * @param string $requestType The type of request (from RequestType constants)
+     * @param Client $httpClient The HTTP client for pagination requests
+     * @return Response The typed response object with parsed data
+     * @throws \RuntimeException If HTTP status code indicates failure (3xx+)
+     * @throws \InvalidArgumentException If JSON parsing fails or request type is unknown
+     */
     public function handleResponse(ResponseInterface $response, string $requestType, Client $httpClient) : Response {
 
         $content = $response->getBody()->__toString();

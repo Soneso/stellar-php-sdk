@@ -10,6 +10,18 @@ namespace Soneso\StellarSDK\Responses\Effects;
 use Soneso\StellarSDK\Responses\LiquidityPools\ReserveResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\ReservesResponse;
 
+/**
+ * Represents an effect when liquidity pool shares are revoked by an asset issuer
+ *
+ * This effect occurs when an asset issuer claws back pool shares from a liquidity provider,
+ * typically due to regulatory requirements. The issuer must have the AUTH_CLAWBACK_ENABLED
+ * flag set. Triggered by ClawbackClaimableBalance or similar clawback operations.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse
+ * @see https://developers.stellar.org/docs/encyclopedia/liquidity-on-stellar-sdex-liquidity-pools
+ * @see https://developers.stellar.org/api/resources/effects
+ */
 class LiquidityPoolRevokedEffectResponse extends EffectResponse
 {
     private LiquidityPoolEffectResponse $liquidityPool;
@@ -17,7 +29,9 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse
     private string $sharesRevoked;
 
     /**
-     * @return LiquidityPoolEffectResponse
+     * Gets the liquidity pool details
+     *
+     * @return LiquidityPoolEffectResponse The pool information
      */
     public function getLiquidityPool(): LiquidityPoolEffectResponse
     {
@@ -25,7 +39,9 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return ReservesResponse
+     * Gets the reserves that were revoked
+     *
+     * @return ReservesResponse The revoked reserves
      */
     public function getReservesRevoked(): ReservesResponse
     {
@@ -33,13 +49,21 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the pool shares that were revoked
+     *
+     * @return string The revoked shares
      */
     public function getSharesRevoked(): string
     {
         return $this->sharesRevoked;
     }
 
+    /**
+     * Loads object data from JSON array
+     *
+     * @param array $json JSON data array
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['liquidity_pool'])) $this->liquidityPool = LiquidityPoolEffectResponse::fromJson($json['liquidity_pool']);
         if (isset($json['shares_revoked'])) $this->sharesRevoked = $json['shares_revoked'];
@@ -53,6 +77,12 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse
         parent::loadFromJson($json);
     }
 
+    /**
+     * Creates an instance from JSON data
+     *
+     * @param array $jsonData JSON data array
+     * @return LiquidityPoolRevokedEffectResponse
+     */
     public static function fromJson(array $jsonData) : LiquidityPoolRevokedEffectResponse {
         $result = new LiquidityPoolRevokedEffectResponse();
         $result->loadFromJson($jsonData);

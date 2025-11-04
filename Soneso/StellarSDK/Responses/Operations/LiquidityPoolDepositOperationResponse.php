@@ -11,6 +11,19 @@ use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolPriceResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\ReserveResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\ReservesResponse;
 
+/**
+ * Represents a liquidity pool deposit operation response from Horizon API
+ *
+ * This operation deposits assets into an automated market maker (AMM) liquidity pool, providing
+ * liquidity for trading. The depositor specifies maximum amounts of each reserve asset to deposit
+ * and acceptable price bounds. In return, they receive pool shares representing their proportional
+ * ownership of the pool. The actual deposited amounts are determined by the pool's current ratio
+ * to maintain balance.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/liquidity-pool-deposit Horizon Liquidity Pool Deposit Operation
+ */
 class LiquidityPoolDepositOperationResponse extends OperationResponse
 {
 
@@ -24,7 +37,9 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
     private string $sharesReceived;
 
     /**
-     * @return string
+     * Gets the unique identifier of the liquidity pool
+     *
+     * @return string The liquidity pool ID
      */
     public function getLiquidityPoolId(): string
     {
@@ -32,7 +47,9 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
     }
 
     /**
-     * @return ReservesResponse
+     * Gets the maximum amounts willing to deposit for each reserve
+     *
+     * @return ReservesResponse Maximum deposit amounts for pool reserves
      */
     public function getReservesMax(): ReservesResponse
     {
@@ -40,7 +57,9 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the minimum acceptable exchange rate as a decimal string
+     *
+     * @return string Minimum price threshold
      */
     public function getMinPrice(): string
     {
@@ -48,7 +67,9 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
     }
 
     /**
-     * @return LiquidityPoolPriceResponse
+     * Gets the minimum acceptable exchange rate as a rational number
+     *
+     * @return LiquidityPoolPriceResponse Minimum price as numerator/denominator
      */
     public function getMinPriceR(): LiquidityPoolPriceResponse
     {
@@ -56,7 +77,9 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the maximum acceptable exchange rate as a decimal string
+     *
+     * @return string Maximum price threshold
      */
     public function getMaxPrice(): string
     {
@@ -64,7 +87,9 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
     }
 
     /**
-     * @return LiquidityPoolPriceResponse
+     * Gets the maximum acceptable exchange rate as a rational number
+     *
+     * @return LiquidityPoolPriceResponse Maximum price as numerator/denominator
      */
     public function getMaxPriceR(): LiquidityPoolPriceResponse
     {
@@ -72,7 +97,9 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
     }
 
     /**
-     * @return ReservesResponse
+     * Gets the actual amounts deposited into each reserve
+     *
+     * @return ReservesResponse Actual deposited amounts for pool reserves
      */
     public function getReservesDeposited(): ReservesResponse
     {
@@ -80,7 +107,9 @@ class LiquidityPoolDepositOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the number of pool shares received for this deposit
+     *
+     * @return string Pool shares amount as a string to preserve precision
      */
     public function getSharesReceived(): string
     {

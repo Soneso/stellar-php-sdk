@@ -7,12 +7,25 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a clawback claimable balance operation response from Horizon API
+ *
+ * This operation claws back a claimable balance, permanently removing it from the ledger.
+ * Only the sponsor or asset issuer can perform this operation. This destroys the claimable
+ * balance entry and prevents it from being claimed by any of the authorized claimants.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/clawback-claimable-balance Horizon Clawback Claimable Balance Operation
+ */
 class ClawbackClaimableBalanceOperationResponse extends OperationResponse
 {
     private string $balanceId;
 
     /**
-     * @return string
+     * Gets the ID of the claimable balance being clawed back
+     *
+     * @return string The unique claimable balance identifier
      */
     public function getBalanceId(): string
     {

@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents an effect when a Soroban smart contract receives funds
+ *
+ * This effect occurs when assets are credited to a smart contract address in the Soroban
+ * environment. Contracts can hold and manage Stellar assets including native XLM and
+ * issued assets. Triggered by Soroban contract invocations that transfer assets.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse
+ * @see https://developers.stellar.org/docs/learn/smart-contract-internals/stellar-asset-contract
+ * @see https://developers.stellar.org/api/resources/effects
+ */
 class ContractCreditedEffectResponse extends EffectResponse
 {
     public string $contract;
@@ -14,6 +26,12 @@ class ContractCreditedEffectResponse extends EffectResponse
     public ?string $assetCode = null;
     public ?string $assetIssuer = null;
 
+    /**
+     * Loads object data from JSON array
+     *
+     * @param array $json JSON data array
+     * @return void
+     */
     protected function loadFromJson(array $json): void
     {
         $this->contract = $json['contract'];
@@ -24,6 +42,12 @@ class ContractCreditedEffectResponse extends EffectResponse
         parent::loadFromJson($json);
     }
 
+    /**
+     * Creates an instance from JSON data
+     *
+     * @param array $jsonData JSON data array
+     * @return ContractCreditedEffectResponse
+     */
     public static function fromJson(array $jsonData): ContractCreditedEffectResponse
     {
         $result = new ContractCreditedEffectResponse();
@@ -32,7 +56,9 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the contract address that was credited
+     *
+     * @return string The contract address
      */
     public function getContract(): string
     {
@@ -40,7 +66,10 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @param string $contract
+     * Sets the contract address
+     *
+     * @param string $contract The contract address
+     * @return void
      */
     public function setContract(string $contract): void
     {
@@ -48,7 +77,9 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the amount credited
+     *
+     * @return string The amount
      */
     public function getAmount(): string
     {
@@ -56,7 +87,10 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @param string $amount
+     * Sets the amount credited
+     *
+     * @param string $amount The amount
+     * @return void
      */
     public function setAmount(string $amount): void
     {
@@ -64,7 +98,9 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the asset type
+     *
+     * @return string The asset type
      */
     public function getAssetType(): string
     {
@@ -72,7 +108,10 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @param string $assetType
+     * Sets the asset type
+     *
+     * @param string $assetType The asset type
+     * @return void
      */
     public function setAssetType(string $assetType): void
     {
@@ -80,7 +119,9 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset code
+     *
+     * @return string|null The asset code, or null for native assets
      */
     public function getAssetCode(): ?string
     {
@@ -88,7 +129,10 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @param string|null $assetCode
+     * Sets the asset code
+     *
+     * @param string|null $assetCode The asset code
+     * @return void
      */
     public function setAssetCode(?string $assetCode): void
     {
@@ -96,7 +140,9 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset issuer account ID
+     *
+     * @return string|null The issuer's account ID, or null for native assets
      */
     public function getAssetIssuer(): ?string
     {
@@ -104,7 +150,10 @@ class ContractCreditedEffectResponse extends EffectResponse
     }
 
     /**
-     * @param string|null $assetIssuer
+     * Sets the asset issuer account ID
+     *
+     * @param string|null $assetIssuer The issuer's account ID
+     * @return void
      */
     public function setAssetIssuer(?string $assetIssuer): void
     {

@@ -8,6 +8,15 @@ namespace Soneso\StellarSDK\Responses\Operations;
 
 use Soneso\StellarSDK\Responses\Link\LinkResponse;
 
+/**
+ * Hypermedia links for operation resources
+ *
+ * Provides HAL-style links to related resources for an operation, including the operation
+ * itself, its effects, the parent transaction, and adjacent operations in the ledger sequence.
+ * These links enable navigation through the operation history and related data.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ */
 class OperationLinksResponse
 {
     private LinkResponse $self;
@@ -17,7 +26,9 @@ class OperationLinksResponse
     private LinkResponse $succeeds;
 
     /**
-     * @return LinkResponse
+     * Gets the link to this operation resource
+     *
+     * @return LinkResponse Link to the operation details
      */
     public function getSelf(): LinkResponse
     {
@@ -25,7 +36,9 @@ class OperationLinksResponse
     }
 
     /**
-     * @return LinkResponse
+     * Gets the link to the operation's effects
+     *
+     * @return LinkResponse Link to effects caused by this operation
      */
     public function getEffects(): LinkResponse
     {
@@ -33,7 +46,9 @@ class OperationLinksResponse
     }
 
     /**
-     * @return LinkResponse
+     * Gets the link to the parent transaction
+     *
+     * @return LinkResponse Link to the transaction containing this operation
      */
     public function getTransaction(): LinkResponse
     {
@@ -41,7 +56,9 @@ class OperationLinksResponse
     }
 
     /**
-     * @return LinkResponse
+     * Gets the link to the next operation in sequence
+     *
+     * @return LinkResponse Link to the chronologically following operation
      */
     public function getPrecedes(): LinkResponse
     {
@@ -49,7 +66,9 @@ class OperationLinksResponse
     }
 
     /**
-     * @return LinkResponse
+     * Gets the link to the previous operation in sequence
+     *
+     * @return LinkResponse Link to the chronologically preceding operation
      */
     public function getSucceeds(): LinkResponse
     {

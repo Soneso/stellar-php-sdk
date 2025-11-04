@@ -9,12 +9,23 @@ namespace Soneso\StellarSDK\Responses\Operations;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
 
+/**
+ * Paginated collection of operations from Horizon API
+ *
+ * Represents a page of operation results with embedded records and navigation links.
+ * Extends PageResponse to provide cursor-based pagination for traversing operation history.
+ * Supports retrieving next and previous pages of operations.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ */
 class OperationsPageResponse extends PageResponse
 {
     private OperationsResponse $operations;
 
     /**
-     * @return OperationsResponse
+     * Gets the collection of operations in this page
+     *
+     * @return OperationsResponse Iterable collection of operation responses
      */
     public function getOperations(): OperationsResponse {
         return $this->operations;

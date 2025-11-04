@@ -8,6 +8,27 @@ namespace Soneso\StellarSDK\Responses\Transaction;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents the response from an asynchronous transaction submission
+ *
+ * Async transaction submission allows clients to submit transactions without waiting
+ * for full validation and inclusion in the ledger. This is useful for high-throughput
+ * scenarios where immediate feedback is not required. The response includes a status
+ * indicating whether the transaction was accepted for processing.
+ *
+ * Status values:
+ * - ERROR: Transaction submission failed due to validation errors
+ * - PENDING: Transaction accepted and queued for inclusion in a future ledger
+ * - DUPLICATE: Transaction already submitted and in processing queue
+ * - TRY_AGAIN_LATER: Server temporarily unable to accept the transaction
+ *
+ * Use the transaction hash to query transaction status later via GET /transactions/{hash}.
+ *
+ * @package Soneso\StellarSDK\Responses\Transaction
+ * @see SubmitTransactionResponse For synchronous transaction submission
+ * @see https://developers.stellar.org/api/aggregations/endpoints/submit-async-transaction Submit Async Transaction
+ * @since 1.0.0
+ */
 class SubmitAsyncTransactionResponse extends Response
 {
     const TX_STATUS_ERROR = 'ERROR';
@@ -20,10 +41,11 @@ class SubmitAsyncTransactionResponse extends Response
     public int $httpStatusCode;
 
     /**
-     * Constructor.
-     * @param string $txStatus Status of the transaction submission. Possible values: [ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER]
-     * @param string $hash Hash of the transaction.
-     * @param int $httpStatusCode The HTTP status code of the response obtained from Horizon.
+     * Creates a new SubmitAsyncTransactionResponse
+     *
+     * @param string $txStatus Status of the transaction submission (ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER)
+     * @param string $hash The 64-character hexadecimal transaction hash
+     * @param int $httpStatusCode The HTTP status code from the Horizon response
      */
     public function __construct(string $txStatus, string $hash, int $httpStatusCode)
     {
@@ -32,7 +54,13 @@ class SubmitAsyncTransactionResponse extends Response
         $this->httpStatusCode = $httpStatusCode;
     }
 
-
+    /**
+     * Creates a SubmitAsyncTransactionResponse instance from JSON data
+     *
+     * @param array $json The JSON array containing async submission response data from Horizon
+     * @param int $httpResponseStatusCode The HTTP status code from the response
+     * @return SubmitAsyncTransactionResponse The parsed async transaction submission response
+     */
     public static function fromJson(array $json, int $httpResponseStatusCode) : SubmitAsyncTransactionResponse
     {
         $txStatus = $json['tx_status'];

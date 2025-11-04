@@ -7,7 +7,18 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
-
+/**
+ * Represents a claim claimable balance operation response from Horizon API
+ *
+ * This operation claims a claimable balance, transferring the balance to the claimant's account.
+ * The claimant must be one of the authorized claimants specified when the balance was created.
+ * Once claimed, the claimable balance entry is removed from the ledger and the asset is transferred
+ * to the claiming account.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/claim-claimable-balance Horizon Claim Claimable Balance Operation
+ */
 class ClaimClaimableBalanceOperationResponse extends OperationResponse
 {
     private string $balanceId;
@@ -16,7 +27,9 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse
     private ?string $claimantMuxedId = null;
 
     /**
-     * @return string
+     * Gets the ID of the claimable balance being claimed
+     *
+     * @return string The unique claimable balance identifier
      */
     public function getBalanceId(): string
     {
@@ -24,7 +37,9 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the account address claiming the balance
+     *
+     * @return string The claimant account ID
      */
     public function getClaimant(): string
     {
@@ -32,7 +47,9 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed claimant account if applicable
+     *
+     * @return string|null The muxed claimant address or null
      */
     public function getClaimantMuxed(): ?string
     {
@@ -40,7 +57,9 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed claimant account ID if applicable
+     *
+     * @return string|null The muxed claimant ID or null
      */
     public function getClaimantMuxedId(): ?string
     {

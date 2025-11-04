@@ -8,6 +8,18 @@ namespace Soneso\StellarSDK\Responses\Effects;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents an effect when a claimable balance is claimed by a claimant
+ *
+ * This effect occurs when a claimant successfully claims a claimable balance.
+ * The balance is removed from the ledger and transferred to the claimant's account.
+ * Triggered by ClaimClaimableBalance operations.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse
+ * @see https://developers.stellar.org/docs/encyclopedia/claimable-balances
+ * @see https://developers.stellar.org/api/resources/effects
+ */
 class ClaimableBalanceClaimedEffectResponse extends EffectResponse
 {
     private string $balanceId;
@@ -15,7 +27,9 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse
     private string $amount;
 
     /**
-     * @return string
+     * Gets the unique identifier of the claimed claimable balance
+     *
+     * @return string The claimable balance ID
      */
     public function getBalanceId(): string
     {
@@ -23,7 +37,9 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset that was claimed
+     *
+     * @return Asset The asset
      */
     public function getAsset(): Asset
     {
@@ -31,13 +47,21 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the amount of the asset that was claimed
+     *
+     * @return string The amount
      */
     public function getAmount(): string
     {
         return $this->amount;
     }
 
+    /**
+     * Loads object data from JSON array
+     *
+     * @param array $json JSON data array
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['balance_id'])) $this->balanceId = $json['balance_id'];
         if (isset($json['asset'])) {
@@ -50,6 +74,12 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse
         parent::loadFromJson($json);
     }
 
+    /**
+     * Creates an instance from JSON data
+     *
+     * @param array $jsonData JSON data array
+     * @return ClaimableBalanceClaimedEffectResponse
+     */
     public static function fromJson(array $jsonData) : ClaimableBalanceClaimedEffectResponse {
         $result = new ClaimableBalanceClaimedEffectResponse();
         $result->loadFromJson($jsonData);

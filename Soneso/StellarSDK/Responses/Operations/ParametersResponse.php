@@ -6,6 +6,15 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Collection of Soroban contract function parameters
+ *
+ * Provides an iterable collection of ParameterResponse objects representing all parameters
+ * passed to a smart contract function. Supports iteration, counting, and conversion to array.
+ * Used in InvokeHostFunctionOperationResponse to represent function arguments.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ */
 class ParametersResponse extends \IteratorIterator
 {
 
@@ -19,11 +28,22 @@ class ParametersResponse extends \IteratorIterator
         return parent::current();
     }
 
+    /**
+     * Adds a parameter to the collection
+     *
+     * @param ParameterResponse $response The parameter response to add
+     * @return void
+     */
     public function add(ParameterResponse $response)
     {
         $this->getInnerIterator()->append($response);
     }
 
+    /**
+     * Gets the number of parameters in the collection
+     *
+     * @return int The parameter count
+     */
     public function count(): int
     {
         return $this->getInnerIterator()->count();

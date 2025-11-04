@@ -6,6 +6,17 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Enumeration of effect type constants
+ *
+ * This class defines numeric constants for all effect types in the Stellar network.
+ * Each constant corresponds to a specific type of ledger change that can occur from
+ * operations. Used for effect type identification and deserialization.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse
+ * @see https://developers.stellar.org/api/resources/effects/effect-types
+ */
 class EffectType
 {
     public const ACCOUNT_CREATED = 0;

@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents an end sponsoring future reserves operation response from Horizon API
+ *
+ * This operation terminates an active reserve sponsorship block initiated by a begin sponsoring
+ * operation. It marks the end of the sponsored operations sequence. The account receiving sponsorship
+ * must submit this operation to accept the sponsorship. Any ledger entries created between the begin
+ * and end operations will have their reserves paid by the sponsoring account.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org/api/resources/operations/object/end-sponsoring-future-reserves Horizon End Sponsoring Future Reserves Operation
+ */
 class EndSponsoringFutureReservesOperationResponse extends OperationResponse
 {
     private string $beginSponsor;
@@ -13,7 +25,9 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse
     private ?string $beginSponsorMuxedId = null;
 
     /**
-     * @return string
+     * Gets the account that initiated the sponsorship
+     *
+     * @return string The sponsor account ID from the begin operation
      */
     public function getBeginSponsor(): string
     {
@@ -21,7 +35,9 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed sponsor account if applicable
+     *
+     * @return string|null The muxed sponsor account address or null
      */
     public function getBeginSponsorMuxed(): ?string
     {
@@ -29,7 +45,9 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed sponsor account ID if applicable
+     *
+     * @return string|null The muxed sponsor account ID or null
      */
     public function getBeginSponsorMuxedId(): ?string
     {
