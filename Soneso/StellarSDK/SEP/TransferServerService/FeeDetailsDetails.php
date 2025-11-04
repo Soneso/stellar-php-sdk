@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Represents a detailed breakdown component of a fee.
+ *
+ * Contains the name and amount for a specific fee component. Multiple instances
+ * can be used to provide a granular breakdown of total fees.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see FeeDetails
+ */
 class FeeDetailsDetails
 {
     /**

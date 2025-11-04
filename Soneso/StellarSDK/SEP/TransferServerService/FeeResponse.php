@@ -8,6 +8,20 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response from fee endpoint containing fee amount for an operation.
+ *
+ * Provides the total fee that would be charged for a specific deposit or withdrawal
+ * operation. Important when anchors have complex fee schedules that cannot be fully
+ * expressed in the info endpoint's simple fee structure.
+ *
+ * The fee is expressed in units of the asset being deposited or withdrawn.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::fee()
+ * @see FeeRequest
+ */
 class FeeResponse extends Response
 {
     /**

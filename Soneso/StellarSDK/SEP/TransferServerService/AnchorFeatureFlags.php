@@ -6,6 +6,15 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Represents optional features supported by an anchor for deposit and withdrawal operations.
+ *
+ * Contains flags indicating whether the anchor supports account creation for users
+ * and whether claimable balances can be used for deposits.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ */
 class AnchorFeatureFlags {
 
     /**
@@ -22,7 +31,7 @@ class AnchorFeatureFlags {
     public bool $claimableBalances = false;
 
     /**
-     * Constructs a new instance of AnchorTransactionInfo by using the given data.
+     * Constructs a new instance of AnchorFeatureFlags by using the given data.
      * @param array<array-key, mixed> $json the data to construct the object from.
      * @return AnchorFeatureFlags the object containing the parsed data.
      */

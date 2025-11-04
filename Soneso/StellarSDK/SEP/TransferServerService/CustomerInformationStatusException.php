@@ -8,6 +8,22 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Exception;
 
+/**
+ * Exception thrown when customer information is pending or denied.
+ *
+ * Indicates that customer information was previously submitted via SEP-12,
+ * but it is either still being processed (pending status) or was not accepted
+ * (denied status). The exception contains a response object with status details,
+ * estimated time until status change, and optional URL for more information.
+ *
+ * Client should wait for processing to complete or provide additional/corrected
+ * information as indicated by the anchor.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 KYC API
+ * @see CustomerInformationStatusResponse
+ */
 class CustomerInformationStatusException extends Exception
 {
     /**

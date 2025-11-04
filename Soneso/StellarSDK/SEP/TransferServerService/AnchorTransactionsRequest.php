@@ -8,6 +8,21 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use DateTime;
 
+/**
+ * Request parameters for querying transaction history via SEP-06.
+ *
+ * Encapsulates parameters for retrieving a list of deposit and withdrawal
+ * transactions processed by the anchor. Supports filtering by asset, account,
+ * transaction kind, and time range, plus pagination for large result sets.
+ *
+ * Required fields are assetCode and account. Optional filters enable precise
+ * querying of transaction subsets. Results can be paginated using pagingId.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::transactions()
+ * @see AnchorTransactionsResponse
+ */
 class AnchorTransactionsRequest
 {
 

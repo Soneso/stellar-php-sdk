@@ -17,7 +17,7 @@ class AnchorTransactionRequestBuilder extends RequestBuilder
     /**
      * Constructor.
      * @param Client $httpClient the client to be used for the request.
-     * @param string $serviceAddress the server address of the sep-24 service (e.g. from sep-01).
+     * @param string $serviceAddress the server address of the sep-06 service (e.g. from sep-01).
      * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication. If provided it will be used in the request header.
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)

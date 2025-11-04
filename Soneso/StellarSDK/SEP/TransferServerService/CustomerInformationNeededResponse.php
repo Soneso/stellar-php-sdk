@@ -6,6 +6,20 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Response data indicating which customer information fields are required.
+ *
+ * Contains a list of field names that must be submitted via SEP-12 KYC API
+ * before the anchor can process the deposit or withdrawal operation.
+ *
+ * This response is included in CustomerInformationNeededException when the
+ * anchor needs additional customer data.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 KYC API
+ * @see CustomerInformationNeededException
+ */
 class CustomerInformationNeededResponse
 {
     /**

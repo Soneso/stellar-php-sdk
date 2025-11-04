@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Describes anchor support and parameters for a deposit exchange asset.
+ *
+ * Contains information about whether deposit exchange operations are enabled for an asset,
+ * authentication requirements, fee structure, amount limits, and deprecated field requirements.
+ *
+ * Returned as part of the info endpoint response to indicate which assets are available
+ * for deposit-exchange operations and under what conditions.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see InfoResponse
+ */
 class DepositExchangeAsset
 {
     /**
@@ -56,7 +69,7 @@ class DepositExchangeAsset
     }
 
     /**
-     * Constructs a new instance of DepositAsset by using the given data.
+     * Constructs a new instance of DepositExchangeAsset by using the given data.
      * @param array<array-key, mixed> $json the data to construct the object from.
      * @return DepositExchangeAsset the object containing the parsed data.
      */

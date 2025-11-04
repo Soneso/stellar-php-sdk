@@ -6,6 +6,21 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Request parameters for initiating a deposit operation via SEP-06.
+ *
+ * Encapsulates all parameters needed to request deposit information from an anchor.
+ * A deposit is when a user sends an external asset to the anchor, and the anchor
+ * sends equivalent Stellar tokens to the user's account.
+ *
+ * Required fields are assetCode and account. Optional fields enable features like
+ * memos, language preferences, KYC information, and callbacks for status updates.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::deposit()
+ * @see DepositResponse
+ */
 class DepositRequest
 {
     /**

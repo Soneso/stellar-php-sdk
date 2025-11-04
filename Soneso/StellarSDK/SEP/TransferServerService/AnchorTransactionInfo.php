@@ -6,6 +6,15 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Describes the availability and requirements for the transaction endpoint.
+ *
+ * Contains information about whether the transaction endpoint is enabled and if
+ * authentication is required to access it.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ */
 class AnchorTransactionInfo {
 
     /**

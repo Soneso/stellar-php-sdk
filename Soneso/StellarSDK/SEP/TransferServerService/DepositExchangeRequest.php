@@ -6,6 +6,23 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Request parameters for cross-asset deposit with SEP-38 quote support.
+ *
+ * Encapsulates parameters for deposit operations involving currency conversion.
+ * Enables users to send one asset (e.g., BRL via bank transfer) and receive a
+ * different asset on Stellar (e.g., USDC tokens). Requires anchor support for
+ * SEP-38 quotes to determine exchange rates.
+ *
+ * Required fields include destinationAsset (what user receives), sourceAsset
+ * (what user sends), amount, and account. Optional quote_id locks in exchange rates.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see TransferServerService::depositExchange()
+ * @see DepositResponse
+ */
 class DepositExchangeRequest
 {
     /**

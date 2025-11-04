@@ -6,6 +6,21 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Describes an input field required by the anchor for deposit or withdrawal operations.
+ *
+ * Contains metadata about a field that the user needs to provide, including a description
+ * for display, whether the field is optional, and possible values to choose from.
+ *
+ * Used in asset definitions to specify what information is required for different
+ * operation types. Anchors should prefer SEP-09 standard fields where applicable.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md SEP-09 Financial Account Fields
+ * @see DepositAsset
+ * @see WithdrawAsset
+ */
 class AnchorField
 {
     /**

@@ -6,6 +6,20 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Response data indicating customer information processing status.
+ *
+ * Contains the status of previously submitted customer information (pending or denied),
+ * estimated time until status changes, and optional URL for more information.
+ *
+ * This response is included in CustomerInformationStatusException when customer
+ * information is being processed or was not accepted.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 KYC API
+ * @see CustomerInformationStatusException
+ */
 class CustomerInformationStatusResponse
 {
     /**

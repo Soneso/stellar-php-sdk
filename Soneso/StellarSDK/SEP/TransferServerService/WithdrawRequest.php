@@ -6,6 +6,22 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Request parameters for initiating a withdrawal operation via SEP-06.
+ *
+ * Encapsulates all parameters needed to request withdrawal information from an anchor.
+ * A withdrawal is when a user redeems Stellar assets for their off-chain equivalent,
+ * such as redeeming NGNT tokens for fiat NGN sent to a bank account.
+ *
+ * Required fields are assetCode and type. The type field specifies the withdrawal
+ * method (bank_account, cash, crypto, mobile, etc.). Optional fields support various
+ * destinations, refund preferences, and KYC requirements.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::withdraw()
+ * @see WithdrawResponse
+ */
 class WithdrawRequest
 {
     /**

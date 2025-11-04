@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Describes the overall refund information for a transaction.
+ *
+ * Contains the total refunded amount, total fees charged for refunds,
+ * and a list of individual refund payments.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransactionRefundPayment
+ */
 class TransactionRefunds
 {
 

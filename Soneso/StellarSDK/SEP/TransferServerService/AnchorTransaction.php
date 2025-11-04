@@ -6,6 +6,25 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Represents a single deposit or withdrawal transaction processed by an anchor.
+ *
+ * Contains comprehensive transaction details including status, amounts, fees, timestamps,
+ * account information, and any additional data needed to track or complete the transaction.
+ *
+ * Used in transaction endpoint responses to provide detailed information about specific
+ * operations. Includes support for refunds, quotes (SEP-38), and status updates.
+ *
+ * Transaction kinds: deposit, deposit-exchange, withdrawal, withdrawal-exchange.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see AnchorTransactionResponse
+ * @see AnchorTransactionsResponse
+ * @see FeeDetails
+ * @see TransactionRefunds
+ */
 class AnchorTransaction
 {
     /**
@@ -243,7 +262,7 @@ class AnchorTransaction
      * quote.fee.total if a quote_id was used.
      * @param string|null $amountFeeAsset (deprecated, optional) The asset in which fees are calculated in.
      * Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification
-     * Format. Should be equals to quote.fee.asset if a quote_id was us
+     * Format. Should be equals to quote.fee.asset if a quote_id was used.
      * @param FeeDetails|null $feeDetails Description of fee charged by the anchor. If quote_id is present, it should
      * match the referenced quote's fee object.
      * @param string|null $quoteId (optional) The ID of the quote used to create this transaction. Should be present if

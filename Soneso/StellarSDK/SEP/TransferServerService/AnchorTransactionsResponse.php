@@ -8,6 +8,21 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response from transactions endpoint containing list of deposit and withdrawal transactions.
+ *
+ * Provides transaction history for the authenticated account, including all deposit
+ * and withdrawal transactions processed by the anchor. Each transaction includes
+ * status, amounts, timestamps, and other relevant details.
+ *
+ * Results can be filtered by various criteria and paginated for large datasets.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::transactions()
+ * @see AnchorTransactionsRequest
+ * @see AnchorTransaction
+ */
 class AnchorTransactionsResponse extends Response
 {
     /**

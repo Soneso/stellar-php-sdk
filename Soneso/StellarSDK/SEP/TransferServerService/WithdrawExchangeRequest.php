@@ -6,6 +6,23 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Request parameters for cross-asset withdrawal with SEP-38 quote support.
+ *
+ * Encapsulates parameters for withdrawal operations involving currency conversion.
+ * Enables users to send one Stellar asset (e.g., USDC) and receive a different
+ * off-chain asset (e.g., NGN to bank account). Requires anchor support for
+ * SEP-38 quotes to determine exchange rates.
+ *
+ * Required fields include sourceAsset (Stellar asset to withdraw), destinationAsset
+ * (off-chain asset to receive), amount, and type. Optional quote_id locks in exchange rates.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see TransferServerService::withdrawExchange()
+ * @see WithdrawResponse
+ */
 class WithdrawExchangeRequest
 {
     /**

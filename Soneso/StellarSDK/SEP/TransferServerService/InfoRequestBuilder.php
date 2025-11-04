@@ -32,6 +32,11 @@ class InfoRequestBuilder extends RequestBuilder
         parent::__construct($httpClient);
     }
 
+    /**
+     * Append query parameters to the request.
+     * @param array<array-key, mixed> $queryParameters the query parameters to use for the get request.
+     * @return $this returns the builder, so that it can be chained.
+     */
     public function forQueryParameters(array $queryParameters) : InfoRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
         return $this;

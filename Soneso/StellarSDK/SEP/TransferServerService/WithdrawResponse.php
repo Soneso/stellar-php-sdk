@@ -8,6 +8,22 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response from withdraw endpoint containing instructions for completing the withdrawal.
+ *
+ * Provides all information needed for the user to initiate a withdrawal, including
+ * the anchor's Stellar account to send funds to, memo requirements, fee details,
+ * and any additional information needed to complete the withdrawal.
+ *
+ * Response includes transaction ID for status tracking, time estimates, and any
+ * amount limits or fees that apply to the withdrawal.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::withdraw()
+ * @see WithdrawRequest
+ * @see ExtraInfo
+ */
 class WithdrawResponse extends Response
 {
     /**

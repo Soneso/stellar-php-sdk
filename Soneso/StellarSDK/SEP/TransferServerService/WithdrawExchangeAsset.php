@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Describes anchor support and parameters for a withdrawal exchange asset.
+ *
+ * Contains information about whether withdrawal exchange operations are enabled for an asset,
+ * authentication requirements, fee structure, amount limits, and withdrawal type specifications.
+ *
+ * Returned as part of the info endpoint response to indicate which assets are available
+ * for withdraw-exchange operations and under what conditions.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see InfoResponse
+ */
 class WithdrawExchangeAsset
 {
     /**
@@ -66,7 +79,7 @@ class WithdrawExchangeAsset
     }
 
     /**
-     * Constructs a new instance of WithdrawAsset by using the given data.
+     * Constructs a new instance of WithdrawExchangeAsset by using the given data.
      * @param array<array-key, mixed> $json the data to construct the object from.
      * @return WithdrawExchangeAsset the object containing the parsed data.
      */

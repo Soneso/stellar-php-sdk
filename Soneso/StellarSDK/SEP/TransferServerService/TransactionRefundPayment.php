@@ -8,6 +8,16 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents a single refund payment made to the user.
+ *
+ * Contains details about an individual refund payment including the payment ID,
+ * type, amount, and associated fee.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransactionRefunds
+ */
 class TransactionRefundPayment
 {
 

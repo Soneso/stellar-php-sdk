@@ -6,6 +6,20 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Describes anchor support and parameters for a deposit asset.
+ *
+ * Contains information about whether deposits are enabled for an asset, authentication
+ * requirements, fee structure, amount limits, and deprecated field requirements.
+ *
+ * Returned as part of the info endpoint response to indicate which assets are available
+ * for deposit operations and under what conditions.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see InfoResponse
+ * @see AnchorField
+ */
 class DepositAsset
 {
     /**

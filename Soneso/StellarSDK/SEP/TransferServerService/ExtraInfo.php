@@ -8,6 +8,15 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Contains additional information about a transaction process.
+ *
+ * Provides optional supplementary details that can help provide more context
+ * about the status or requirements of a transfer operation.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ */
 class ExtraInfo
 {
     /**

@@ -6,6 +6,21 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Request parameters for querying individual transaction details via SEP-06.
+ *
+ * Used to retrieve detailed information about a specific transaction using one
+ * of three possible identifiers: transaction ID, Stellar transaction hash, or
+ * external transaction ID. At least one identifier must be provided.
+ *
+ * Useful for validating transactions and polling for status updates on deposits
+ * or withdrawals in progress.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::transaction()
+ * @see AnchorTransactionResponse
+ */
 class AnchorTransactionRequest {
 
     /**
