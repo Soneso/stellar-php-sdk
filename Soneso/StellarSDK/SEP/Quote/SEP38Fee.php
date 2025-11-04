@@ -6,12 +6,33 @@
 
 namespace Soneso\StellarSDK\SEP\Quote;
 
+/**
+ * Fee structure for a quote or price in SEP-38.
+ *
+ * This class represents the total fee charged for an exchange operation,
+ * including the fee amount, the asset in which it is charged, and an optional
+ * breakdown of individual fee components.
+ *
+ * @package Soneso\StellarSDK\SEP\Quote
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#fee-object-schema
+ * @see SEP38QuoteResponse
+ * @see SEP38PriceResponse
+ * @see SEP38FeeDetails
+ */
 class SEP38Fee
 {
-    public string $total;
-    public string $asset;
     /**
-     * @var array<SEP38FeeDetails>|null $details
+     * @var string $total The total fee amount.
+     */
+    public string $total;
+
+    /**
+     * @var string $asset The asset in which the fee is charged.
+     */
+    public string $asset;
+
+    /**
+     * @var array<SEP38FeeDetails>|null $details Optional detailed breakdown of fee components.
      */
     public ?array $details = null;
 
@@ -27,6 +48,12 @@ class SEP38Fee
         $this->details = $details;
     }
 
+    /**
+     * Constructs a new instance of SEP38Fee by using the given data.
+     *
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return SEP38Fee the object containing the parsed data.
+     */
     public static function fromJson(array $json) : SEP38Fee
     {
         $total = $json['total'];

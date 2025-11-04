@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
+/**
+ * Request body for initiating a cross-border payment transaction via SEP-31.
+ *
+ * This class represents the data required to submit a POST /transactions request
+ * to a Receiving Anchor. The request initiates a payment from a Sending Anchor
+ * to a Receiving Client through the Receiving Anchor's direct payment server.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#post-transactions
+ * @see CrossBorderPaymentsService::postTransactions()
+ * @see SEP31PostTransactionsResponse
+ */
 class SEP31PostTransactionsRequest
 {
     /**

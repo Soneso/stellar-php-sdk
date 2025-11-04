@@ -7,7 +7,17 @@
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
 /**
- * Holds info about an Asset that the Receiving Anchor supports receiving from the Sending Anchor.
+ * Asset information for cross-border payments including limits, fees, and KYC requirements.
+ *
+ * This class represents the configuration for a specific asset that the Receiving Anchor
+ * accepts for cross-border payments. It includes transaction amount limits, fee structures,
+ * required SEP-12 KYC types for senders and receivers, and optional SEP-38 quote integration
+ * for off-chain asset delivery.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#get-info
+ * @see SEP31InfoResponse
+ * @see SEP12TypesInfo
  */
 class SEP31ReceiveAssetInfo
 {

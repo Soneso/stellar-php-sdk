@@ -6,10 +6,32 @@
 
 namespace Soneso\StellarSDK\SEP\Quote;
 
+/**
+ * Individual fee component within a quote or price fee breakdown.
+ *
+ * This class represents a single itemized fee component, such as network fees,
+ * service fees, or processing fees. Multiple instances combine to form the
+ * complete fee structure.
+ *
+ * @package Soneso\StellarSDK\SEP\Quote
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#fee-details-schema
+ * @see SEP38Fee
+ */
 class SEP38FeeDetails
 {
+    /**
+     * @var string $name The name of the fee component.
+     */
     public string $name;
+
+    /**
+     * @var string $amount The amount of this fee component.
+     */
     public string $amount;
+
+    /**
+     * @var string|null $description Optional description of what this fee component covers.
+     */
     public ?string $description = null;
 
     /**
@@ -24,6 +46,12 @@ class SEP38FeeDetails
         $this->description = $description;
     }
 
+    /**
+     * Constructs a new instance of SEP38FeeDetails by using the given data.
+     *
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return SEP38FeeDetails the object containing the parsed data.
+     */
     public static function fromJson(array $json) : SEP38FeeDetails
     {
         $description = null;

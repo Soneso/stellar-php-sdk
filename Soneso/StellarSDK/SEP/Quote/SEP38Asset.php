@@ -6,8 +6,24 @@
 
 namespace Soneso\StellarSDK\SEP\Quote;
 
+/**
+ * Asset information including delivery methods and country availability for SEP-38.
+ *
+ * This class represents a single asset supported by an anchor's quote service,
+ * including optional delivery methods for buying and selling the asset, and
+ * country code restrictions.
+ *
+ * @package Soneso\StellarSDK\SEP\Quote
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-info
+ * @see SEP38InfoResponse
+ * @see SEP38SellDeliveryMethod
+ * @see SEP38BuyDeliveryMethod
+ */
 class SEP38Asset
 {
+    /**
+     * @var string $asset The asset identifier in Stellar Asset Identification Format or one of the allowed off-chain assets.
+     */
     public string $asset;
 
     /**
@@ -44,7 +60,12 @@ class SEP38Asset
         $this->countryCodes = $countryCodes;
     }
 
-
+    /**
+     * Constructs a new instance of SEP38Asset by using the given data.
+     *
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return SEP38Asset the object containing the parsed data.
+     */
     public static function fromJson(array $json) : SEP38Asset
     {
         $asset = $json['asset'];

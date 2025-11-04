@@ -8,6 +8,17 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
 use Exception;
 
+/**
+ * Exception thrown when additional transaction information is required.
+ *
+ * This exception is raised during POST /transactions when the Sending Anchor
+ * has not provided all required transaction fields. The fields property contains
+ * the list of missing or invalid fields that need to be supplied.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#post-transactions
+ * @see CrossBorderPaymentsService::postTransactions()
+ */
 class SEP31TransactionInfoNeededException extends Exception
 {
 

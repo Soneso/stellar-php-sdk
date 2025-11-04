@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
+/**
+ * Response from initiating a cross-border payment transaction via SEP-31.
+ *
+ * This class represents the response received from a POST /transactions request,
+ * containing the transaction ID and Stellar payment details required to send
+ * the payment to the Receiving Anchor.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#post-transactions
+ * @see CrossBorderPaymentsService::postTransactions()
+ * @see SEP31PostTransactionsRequest
+ */
 class SEP31PostTransactionsResponse
 {
     /**
@@ -48,7 +60,8 @@ class SEP31PostTransactionsResponse
 
     /**
      * Constructs a new instance of SEP31PostTransactionsResponse by using the given data.
-     * @param array<array-key, mixed> $json the data to construct the object from.\n
+     *
+     * @param array<array-key, mixed> $json the data to construct the object from.
      * @return SEP31PostTransactionsResponse the object containing the parsed data.
      */
     public static function fromJson(array $json) : SEP31PostTransactionsResponse

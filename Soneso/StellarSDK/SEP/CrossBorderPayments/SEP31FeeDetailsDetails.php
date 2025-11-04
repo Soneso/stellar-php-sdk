@@ -7,6 +7,17 @@
 
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
+/**
+ * Individual fee component within a cross-border payment transaction fee breakdown.
+ *
+ * This class represents a single fee item within the detailed fee structure,
+ * such as ACH fees, conciliation fees, or service fees. Multiple instances of
+ * this class combine to form the complete fee details.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#fee-details-object-schema
+ * @see SEP31FeeDetails
+ */
 class SEP31FeeDetailsDetails
 {
     /**

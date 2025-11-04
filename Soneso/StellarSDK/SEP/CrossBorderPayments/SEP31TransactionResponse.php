@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
+/**
+ * Details of a cross-border payment transaction retrieved via SEP-31.
+ *
+ * This class represents the full transaction state including status, amounts,
+ * fees, refunds, and payment details. It is returned when querying a specific
+ * transaction via GET /transactions/:id.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#transaction
+ * @see CrossBorderPaymentsService::getTransaction()
+ * @see SEP31FeeDetails
+ * @see SEP31Refunds
+ */
 class SEP31TransactionResponse
 {
     /**
