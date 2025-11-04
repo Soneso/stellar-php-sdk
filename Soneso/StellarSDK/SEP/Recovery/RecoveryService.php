@@ -13,7 +13,8 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 
 /**
  * Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
- * See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md" target="_blank">Account Recovery: multi-party recovery of Stellar accounts.</a>
+ *
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md SEP-30 Specification
  */
 class RecoveryService
 {

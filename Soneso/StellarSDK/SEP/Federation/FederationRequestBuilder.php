@@ -11,32 +11,72 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 
+/**
+ * Request builder for SEP-0002 federation queries.
+ *
+ * This class builds and executes federation protocol requests to resolve
+ * Stellar addresses, account IDs, transaction IDs, or perform forward lookups.
+ *
+ * @package Soneso\StellarSDK\SEP\Federation
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md
+ * @see Federation
+ * @see FederationResponse
+ */
 class FederationRequestBuilder extends RequestBuilder
 {
 
     private string $serviceAddress;
 
+    /**
+     * Constructor.
+     *
+     * @param Client $httpClient HTTP client for making requests.
+     * @param string $serviceAddress Base URL of the federation server.
+     */
     public function __construct(Client $httpClient, string $serviceAddress)
     {
         $this->serviceAddress = $serviceAddress;
         parent::__construct($httpClient);
     }
 
+    /**
+     * Sets the federation query type.
+     *
+     * @param string $type Query type ("name", "id", "txid", or "forward").
+     * @return FederationRequestBuilder This instance for method chaining.
+     */
     public function forType(string $type) : FederationRequestBuilder {
         $this->queryParameters["type"] = $type;
         return $this;
     }
 
+    /**
+     * Sets the string to look up in the federation query.
+     *
+     * @param string $stringToLookUp The address, account ID, or transaction ID to query.
+     * @return FederationRequestBuilder This instance for method chaining.
+     */
     public function forStringToLookUp(string $stringToLookUp) : FederationRequestBuilder {
         $this->queryParameters["q"] = $stringToLookUp;
         return $this;
     }
 
+    /**
+     * Adds custom query parameters for forward queries.
+     *
+     * @param array<array-key, mixed> $queryParameters Additional query parameters.
+     * @return FederationRequestBuilder This instance for method chaining.
+     */
     public function forQueryParameters(array $queryParameters) : FederationRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
         return $this;
     }
 
+    /**
+     * Builds the complete federation query URL.
+     *
+     * @return string The constructed URL with query parameters.
+     */
     public function buildUrl() : string {
         $url = $this->serviceAddress;
         if (count($this->queryParameters) > 0) {
@@ -46,9 +86,11 @@ class FederationRequestBuilder extends RequestBuilder
     }
 
     /**
-     * Requests specific <code>url</code> and returns {@link FederationResponse}.
-     * @return FederationResponse in case of success.
-     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
+     * Executes a federation request to the specified URL.
+     *
+     * @param string $url The complete URL to query.
+     * @return FederationResponse The federation response.
+     * @throws HorizonRequestException If the request fails.
      */
     public function request(string $url) : FederationResponse {
         $response = parent::executeRequest($url,RequestType::FEDERATION);
@@ -57,9 +99,10 @@ class FederationRequestBuilder extends RequestBuilder
     }
 
     /**
-     *  Build and execute request.
-     * @return FederationResponse in case of success.
-     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
+     * Builds and executes the federation request.
+     *
+     * @return FederationResponse The federation response.
+     * @throws HorizonRequestException If the request fails.
      */
     public function execute() : FederationResponse {
         return $this->request($this->buildUrl());

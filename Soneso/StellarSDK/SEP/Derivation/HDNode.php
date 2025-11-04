@@ -11,8 +11,16 @@ use Soneso\StellarSDK\Constants\CryptoConstants;
 use Soneso\StellarSDK\Constants\StellarConstants;
 
 /**
- * A Hierarchical Deterministic node for use with Stellar
+ * Hierarchical Deterministic (HD) node for Stellar key derivation.
  *
+ * This class implements BIP-32 style hierarchical deterministic key derivation
+ * for Stellar accounts. It supports the SEP-0005 standard for deriving multiple
+ * keypairs from a single seed using derivation paths like m/44'/148'/0'.
+ *
+ * @package Soneso\StellarSDK\SEP\Derivation
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
+ * @see https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+ * @see Mnemonic
  */
 class HDNode
 {
@@ -28,10 +36,10 @@ class HDNode
     protected string $chainCodeBytes;
 
     /**
-     * Returns a new master node that can be used to derive subnodes
+     * Creates a new master HD node from entropy.
      *
-     * @param string $entropy
-     * @return HDNode
+     * @param string $entropy Binary entropy (typically 64 bytes from mnemonic seed).
+     * @return HDNode A new master node that can derive child keys.
      */
     public static function newMasterNode(string $entropy) : HDNode
     {
@@ -46,8 +54,9 @@ class HDNode
     /**
      * HDNode constructor.
      *
-     * @param $privateKeyBytes (string) 32 bytes of randomly generated data for the private key
-     * @param $chainCodeBytes (string) 32 bytes of randomly generated data for deriving additional keys
+     * @param string $privateKeyBytes 32 bytes of private key material.
+     * @param string $chainCodeBytes 32 bytes of chain code for deriving child keys.
+     * @throws InvalidArgumentException If private key or chain code is not 32 bytes.
      */
     public function __construct(string $privateKeyBytes, string $chainCodeBytes)
     {
@@ -59,8 +68,11 @@ class HDNode
     }
 
     /**
-     * @param $index int automatically converted to a hardened index
-     * @return HDNode
+     * Derives a child node at the specified index.
+     *
+     * @param int $index Child index (automatically converted to hardened).
+     * @return HDNode The derived child node.
+     * @throws InvalidArgumentException If the resulting index is not hardened.
      */
     public function derive(int $index) : HDNode
     {
@@ -80,9 +92,11 @@ class HDNode
     }
 
     /**
-     * Derives a path like m/0'/1'
-     * @param string $path
-     * @return HDNode
+     * Derives a node following a BIP-32 derivation path.
+     *
+     * @param string $path Derivation path (e.g., "m/44'/148'/0'").
+     * @return HDNode The derived node.
+     * @throws InvalidArgumentException If path format is invalid.
      */
     public function derivePath(string $path) : HDNode
     {
@@ -130,7 +144,9 @@ class HDNode
     }
 
     /**
-     * @return string
+     * Gets the private key bytes for this node.
+     *
+     * @return string 32 bytes of private key material.
      */
     public function getPrivateKeyBytes() : string
     {
@@ -138,7 +154,9 @@ class HDNode
     }
 
     /**
-     * @return string
+     * Gets the chain code bytes for this node.
+     *
+     * @return string 32 bytes of chain code.
      */
     public function getChainCodeBytes() : string
     {

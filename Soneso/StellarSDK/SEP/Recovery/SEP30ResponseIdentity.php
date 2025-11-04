@@ -6,14 +6,26 @@
 
 namespace Soneso\StellarSDK\SEP\Recovery;
 
+/**
+ * Identity information in SEP-0030 account responses.
+ *
+ * This class represents identity owner information including role and
+ * authentication status for account recovery operations.
+ *
+ * @package Soneso\StellarSDK\SEP\Recovery
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md
+ * @see SEP30AccountResponse
+ */
 class SEP30ResponseIdentity
 {
     public string $role;
     public ?bool $authenticated = null;
 
     /**
-     * @param string $role
-     * @param bool|null $authenticated
+     * Constructor.
+     *
+     * @param string $role The identity role ("owner" or "other").
+     * @param bool|null $authenticated Whether the identity is authenticated.
      */
     public function __construct(string $role, ?bool $authenticated = null)
     {
@@ -21,6 +33,12 @@ class SEP30ResponseIdentity
         $this->authenticated = $authenticated;
     }
 
+    /**
+     * Constructs a SEP30ResponseIdentity from JSON data.
+     *
+     * @param array<array-key, mixed> $json The JSON data to parse.
+     * @return SEP30ResponseIdentity The constructed identity.
+     */
     public static function fromJson(array $json) : SEP30ResponseIdentity
     {
         $auth = null;
@@ -31,7 +49,9 @@ class SEP30ResponseIdentity
     }
 
     /**
-     * @return string
+     * Gets the identity role.
+     *
+     * @return string The role ("owner" or "other").
      */
     public function getRole(): string
     {
@@ -39,7 +59,9 @@ class SEP30ResponseIdentity
     }
 
     /**
-     * @param string $role
+     * Sets the identity role.
+     *
+     * @param string $role The role.
      */
     public function setRole(string $role): void
     {
@@ -47,7 +69,9 @@ class SEP30ResponseIdentity
     }
 
     /**
-     * @return bool|null
+     * Gets the authentication status.
+     *
+     * @return bool|null Whether the identity is authenticated.
      */
     public function getAuthenticated(): ?bool
     {
@@ -55,7 +79,9 @@ class SEP30ResponseIdentity
     }
 
     /**
-     * @param bool|null $authenticated
+     * Sets the authentication status.
+     *
+     * @param bool|null $authenticated Whether the identity is authenticated.
      */
     public function setAuthenticated(?bool $authenticated): void
     {

@@ -6,6 +6,17 @@
 
 namespace Soneso\StellarSDK\SEP\Recovery;
 
+/**
+ * Response containing multiple accounts from SEP-0030 recovery server.
+ *
+ * This class represents a collection of registered accounts that the JWT
+ * token allows access to via the GET /accounts endpoint.
+ *
+ * @package Soneso\StellarSDK\SEP\Recovery
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#get-accounts
+ * @see RecoveryService::accounts()
+ * @see SEP30AccountResponse
+ */
 class SEP30AccountsResponse
 {
     /**
@@ -14,13 +25,21 @@ class SEP30AccountsResponse
     public array $accounts;
 
     /**
-     * @param array<SEP30AccountResponse> $accounts
+     * Constructor.
+     *
+     * @param array<SEP30AccountResponse> $accounts Array of account responses.
      */
     public function __construct(array $accounts)
     {
         $this->accounts = $accounts;
     }
 
+    /**
+     * Constructs a SEP30AccountsResponse from JSON data.
+     *
+     * @param array<array-key, mixed> $json The JSON data to parse.
+     * @return SEP30AccountsResponse The constructed response.
+     */
     public static function fromJson(array $json) : SEP30AccountsResponse
     {
 
@@ -33,7 +52,9 @@ class SEP30AccountsResponse
     }
 
     /**
-     * @return array<SEP30AccountResponse>
+     * Gets the array of accounts.
+     *
+     * @return array<SEP30AccountResponse> The accounts list.
      */
     public function getAccounts(): array
     {
@@ -41,7 +62,9 @@ class SEP30AccountsResponse
     }
 
     /**
-     * @param array<SEP30AccountResponse> $accounts
+     * Sets the array of accounts.
+     *
+     * @param array<SEP30AccountResponse> $accounts The accounts list.
      */
     public function setAccounts(array $accounts): void
     {
