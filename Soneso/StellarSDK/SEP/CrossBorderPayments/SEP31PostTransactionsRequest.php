@@ -14,7 +14,7 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
  * to a Receiving Client through the Receiving Anchor's direct payment server.
  *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#post-transactions
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#post-transactions
  * @see CrossBorderPaymentsService::postTransactions()
  * @see SEP31PostTransactionsResponse
  */
@@ -49,6 +49,15 @@ class SEP31PostTransactionsRequest
      * @var string|null $quoteId (optional) The id returned from a SEP-38 POST /quote response.
      * If this attribute is specified, the values for the fields defined above must match the values
      * associated with the quote.
+     *
+     * SEP-38 Quote Workflow:
+     * 1. Request indicative or firm quote from Receiving Anchor's SEP-38 endpoint
+     * 2. Receive quote_id with buy_amount, sell_amount, price, and expiration
+     * 3. Include quote_id in this transaction request
+     * 4. Transaction amounts must match quote values exactly
+     * 5. For firm quotes: Submit Stellar payment before quote expires to guarantee rate
+     *
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0038.md#post-quote
      */
     public ?string $quoteId = null;
 
@@ -66,7 +75,15 @@ class SEP31PostTransactionsRequest
 
     /**
      * @var array<array-key, mixed>|null $fields (deprecated, optional) An object containing the values requested
-     * by the Receiving Anchor in the GET /info endpoint. Pass SEP-9 fields via SEP-12 PUT /customer instead.
+     * by the Receiving Anchor in the GET /info endpoint.
+     *
+     * DEPRECATED: This field is maintained for backward compatibility only and will be removed in a future version.
+     * Use SEP-12 PUT /customer to pass SEP-9 standard fields instead.
+     *
+     * Migration: Move all KYC/customer data to SEP-12 customer records before using this API.
+     *
+     * @deprecated since SEP-31 v2.5.0, use SEP-12 PUT /customer instead
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0012.md
      */
     public ?array $fields = null;
 
@@ -88,6 +105,16 @@ class SEP31PostTransactionsRequest
      * memos documentation for more information. If specified, refund_memo must also be specified.
      */
     public ?string $refundMemoType = null;
+
+    /**
+     * @var string|null $fundingMethod (optional) A method supported by the Receiving Anchor for transferring
+     * or settling assets. Must match one of the values specified in the corresponding /info response.
+     * This field is required to help the Anchor identify the necessary KYC information to collect.
+     * Added in SEP-31 v3.1.0.
+     *
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#post-transactions
+     */
+    public ?string $fundingMethod = null;
 
     /**
      * @param float $amount Amount of the Stellar asset to send to the Receiving Anchor.
@@ -115,6 +142,8 @@ class SEP31PostTransactionsRequest
      *  used to send the original payment. If specified, refund_memo_type must also be specified.
      * @param string|null $refundMemoType The type of the refund_memo. Can be id, text, or hash. See the
      *  memos documentation for more information. If specified, refund_memo must also be specified.
+     * @param string|null $fundingMethod A method supported by the Receiving Anchor for transferring
+     *  or settling assets. Must match one of the values specified in the corresponding /info response.
      */
     public function __construct(
         float $amount,
@@ -127,7 +156,8 @@ class SEP31PostTransactionsRequest
         ?array $fields = null,
         ?string $lang = null,
         ?string $refundMemo = null,
-        ?string $refundMemoType = null
+        ?string $refundMemoType = null,
+        ?string $fundingMethod = null
     )
     {
         $this->amount = $amount;
@@ -140,6 +170,7 @@ class SEP31PostTransactionsRequest
         $this->lang = $lang;
         $this->refundMemo = $refundMemo;
         $this->refundMemoType = $refundMemoType;
+        $this->fundingMethod = $fundingMethod;
     }
 
     /**
@@ -181,6 +212,9 @@ class SEP31PostTransactionsRequest
         }
         if ($this->refundMemoType !== null) {
             $result['refund_memo_type'] = $this->refundMemoType;
+        }
+        if ($this->fundingMethod !== null) {
+            $result['funding_method'] = $this->fundingMethod;
         }
 
         return $result;

@@ -15,8 +15,14 @@ use Exception;
  * not explicitly handled by the SDK. The status code and response body are
  * available in the exception message and code.
  *
+ * Common unexpected status codes:
+ * - 401 Unauthorized: Invalid or missing JWT token
+ * - 403 Forbidden: Valid JWT but insufficient permissions
+ * - 500 Internal Server Error: Server-side error
+ * - 503 Service Unavailable: Temporary service disruption
+ *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md
  * @see CrossBorderPaymentsService
  */
 class SEP31UnknownResponseException extends Exception

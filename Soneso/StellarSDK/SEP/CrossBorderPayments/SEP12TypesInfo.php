@@ -14,8 +14,8 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
  * be satisfied via SEP-12 customer registration before initiating a transaction.
  *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#get-info
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0012.md
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#get-info
  * @see SEP31ReceiveAssetInfo
  */
 class SEP12TypesInfo

@@ -15,7 +15,7 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
  * this class combine to form the complete fee details.
  *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#fee-details-object-schema
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#fee-details-object-schema
  * @see SEP31FeeDetails
  */
 class SEP31FeeDetailsDetails

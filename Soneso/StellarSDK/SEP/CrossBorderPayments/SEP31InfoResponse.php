@@ -14,7 +14,7 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
  * limits, fees, and required SEP-12 KYC types for senders and receivers.
  *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#get-info
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#get-info
  * @see CrossBorderPaymentsService::info()
  * @see SEP31ReceiveAssetInfo
  * @see SEP12TypesInfo

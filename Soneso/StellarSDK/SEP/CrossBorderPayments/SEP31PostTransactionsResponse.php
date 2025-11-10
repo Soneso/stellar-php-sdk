@@ -14,7 +14,7 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
  * the payment to the Receiving Anchor.
  *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#post-transactions
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#post-transactions
  * @see CrossBorderPaymentsService::postTransactions()
  * @see SEP31PostTransactionsRequest
  */

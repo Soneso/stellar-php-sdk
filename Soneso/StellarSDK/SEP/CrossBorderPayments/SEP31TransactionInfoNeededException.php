@@ -13,11 +13,19 @@ use Exception;
  *
  * This exception is raised during POST /transactions when the Sending Anchor
  * has not provided all required transaction fields. The fields property contains
- * the list of missing or invalid fields that need to be supplied.
+ * the list of missing or invalid fields that need to be supplied. Returns HTTP 400 Bad Request.
+ *
+ * DEPRECATED: This approach is deprecated in favor of using SEP-12 PUT /customer
+ * to provide customer information. New implementations should use SEP-12 exclusively.
+ *
+ * Resolution workflow (legacy):
+ * 1. Extract the fields array from this exception
+ * 2. Retry POST /transactions with the required fields populated
  *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#post-transactions
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#post-transactions
  * @see CrossBorderPaymentsService::postTransactions()
+ * @deprecated since SEP-31 v2.5.0, use SEP-12 PUT /customer instead
  */
 class SEP31TransactionInfoNeededException extends Exception
 {

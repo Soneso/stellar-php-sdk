@@ -14,7 +14,7 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
  * optional breakdown of individual fee components.
  *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#fee-details-object-schema
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#fee-details-object-schema
  * @see SEP31TransactionResponse
  * @see SEP31FeeDetailsDetails
  */

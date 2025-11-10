@@ -13,8 +13,14 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
  * including the total refunded amount, associated fees, and individual payment
  * details. It is used when a transaction is partially or fully refunded.
  *
+ * Amount Relationships:
+ * - amountRefunded = sum of all payments[].amount
+ * - amountFee = sum of all payments[].fee
+ * - For full refund: amountRefunded should equal transaction.amountIn
+ * - Net refund to sender: amountRefunded - amountFee
+ *
  * @package Soneso\StellarSDK\SEP\CrossBorderPayments
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#refunds-object-schema
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#refunds-object-schema
  * @see SEP31TransactionResponse
  * @see SEP31RefundPayment
  */
