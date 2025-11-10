@@ -16,8 +16,8 @@ use Exception;
  * and retry the request with the obtained token.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md SEP-10 Authentication
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md SEP-10 v3.4.1 Authentication
  */
 class AuthenticationRequiredException extends Exception
 {

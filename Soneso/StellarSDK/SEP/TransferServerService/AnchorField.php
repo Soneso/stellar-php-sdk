@@ -13,11 +13,11 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * for display, whether the field is optional, and possible values to choose from.
  *
  * Used in asset definitions to specify what information is required for different
- * operation types. Anchors should prefer SEP-09 standard fields where applicable.
+ * operation types. Anchors should prefer SEP-9 standard fields where applicable.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md SEP-09 Financial Account Fields
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.17.0/ecosystem/sep-0009.md SEP-9 v1.17.0 Financial Account Fields
  * @see DepositAsset
  * @see WithdrawAsset
  */

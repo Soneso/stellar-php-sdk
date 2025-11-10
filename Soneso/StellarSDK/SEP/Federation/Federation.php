@@ -29,7 +29,8 @@ class Federation {
     /**
      * Resolves a Stellar address to account ID and memo.
      *
-     * @param string $address Stellar address in format "user*domain.com".
+     * @param string $address Stellar address in format "user*domain.com". The username
+     *                        portion must not contain the characters '*' or '>'.
      * @param Client|null $httpClient Optional HTTP client. Default is Guzzle.
      * @return FederationResponse Response containing account ID and optional memo.
      * @throws Exception If address format is invalid or federation server not found.
@@ -87,6 +88,12 @@ class Federation {
 
     /**
      * Resolves forward federation requests with custom parameters.
+     *
+     * Used for forwarding payments to different networks or financial institutions.
+     * The query parameters vary based on the destination institution type. Example
+     * parameters: ['forward_type' => 'bank_account', 'swift' => 'BOPBPHMM', 'acct' => '2382376']
+     * or ['forward_type' => 'remittance_center', 'first_name' => 'John', 'last_name' => 'Doe',
+     * 'address' => '123 Main St', 'city' => 'City', 'postal_code' => '12345', 'country' => 'US'].
      *
      * @param array<array-key, mixed> $queryParameters Custom query parameters for forward request.
      * @param string $federationServerUrl URL of the federation server.

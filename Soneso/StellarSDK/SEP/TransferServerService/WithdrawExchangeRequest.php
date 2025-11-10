@@ -18,8 +18,8 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * (off-chain asset to receive), amount, and type. Optional quote_id locks in exchange rates.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md SEP-38 v2.5.0 Quotes
  * @see TransferServerService::withdrawExchange()
  * @see WithdrawResponse
  */
@@ -124,10 +124,10 @@ class WithdrawExchangeRequest
     public ?string $walletUrl = null;
 
     /**
-     * @var string|null $lang (optional) (optional) Defaults to en if not specified or if the
-     * specified language is not supported. Language code specified using
-     * RFC 4646. error fields and other human readable messages in the
-     * response should be in this language.
+     * @var string|null $lang (optional) Defaults to en if not specified or if the specified language
+     * is not supported. Language code specified using RFC 4646
+     * (e.g., 'en' for English, 'es' for Spanish, 'pt-BR' for Brazilian Portuguese).
+     * Error fields and other human readable messages in the response should be in this language.
      */
     public ?string $lang = null;
 
@@ -140,9 +140,9 @@ class WithdrawExchangeRequest
     public ?string $onChangeCallback = null;
 
     /**
-     * @var string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address.
-     * This field may be necessary for the anchor to determine what KYC
-     * information is necessary to collect.
+     * @var string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address
+     * (e.g., 'USA' for United States, 'GBR' for United Kingdom, 'DEU' for Germany).
+     * This field may be necessary for the anchor to determine what KYC information is necessary to collect.
      */
     public ?string $countryCode = null;
 
@@ -229,7 +229,8 @@ class WithdrawExchangeRequest
      * @param string|null $onChangeCallback (optional) A URL that the anchor should POST a JSON message to when the
      * status property of the transaction created as a result of this request changes. The JSON message should be
      * identical to the response format for the /transaction endpoint.
-     * @param string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address.
+     * @param string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address
+     * (e.g., 'USA' for United States, 'GBR' for United Kingdom, 'DEU' for Germany).
      * This field may be necessary for the anchor to determine what KYC information is necessary to collect.
      * @param string|null $refundMemo (optional) The memo the anchor must use when sending refund payments back
      * to the user. If not specified, the anchor should use the same memo used by the user to send the original payment.

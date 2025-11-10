@@ -25,7 +25,7 @@ use Soneso\StellarSDK\Responses\Response;
  * available depending on the kind of operation.
  *
  * @package Soneso\StellarSDK\SEP\Interactive
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
  * @see InteractiveService For initiating SEP-24 transactions
  * @see SEP24DepositRequest For deposit request parameters
  * @see SEP24WithdrawRequest For withdrawal request parameters
@@ -44,7 +44,26 @@ class SEP24Transaction extends Response
 
     /**
      * @var string $status Processing status of deposit/withdrawal.
-     * For possible values see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#transaction-history
+     *
+     * Possible status values:
+     * - incomplete: User incomplete deposit/withdrawal requiring more info
+     * - pending_user_transfer_start: Waiting for user to send funds to anchor
+     * - pending_user_transfer_complete: User funds sent, waiting for confirmation
+     * - pending_external: Processing external transfer (e.g., bank transfer)
+     * - pending_anchor: Anchor processing the transaction
+     * - on_hold: Transaction held pending additional user info or authorization
+     * - pending_stellar: Waiting for Stellar network transaction to complete
+     * - pending_trust: User needs to add trustline for the asset
+     * - pending_user: Waiting for user action (check message or more_info_url)
+     * - completed: Transaction successfully completed
+     * - refunded: Transaction has been refunded
+     * - expired: Transaction expired before completion
+     * - no_market: No market for the asset pair (for SEP-38 exchanges)
+     * - too_small: Transaction amount below minimum threshold
+     * - too_large: Transaction amount above maximum threshold
+     * - error: Transaction failed due to an error
+     *
+     * For complete documentation see: https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#transaction-history
      */
     public string $status;
 
@@ -75,9 +94,14 @@ class SEP24Transaction extends Response
      * @var string|null $amountInAsset (optional)  The asset received or to be received by the Anchor.
      * Should be present if the deposit/withdraw was made using non-equivalent assets.
      * The value must be in SEP-38 Asset Identification Format.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *
+     * Examples:
+     * - Stellar asset: stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+     * - Fiat currency: iso4217:USD
+     *
+     * https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      * See also the Asset Exchanges section for more information.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     * https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public ?string $amountInAsset = null;
 
@@ -91,9 +115,14 @@ class SEP24Transaction extends Response
      * @var string|null $amountOutAsset (optional) The asset delivered or to be delivered to the user.
      * Should be present if the deposit/withdraw was made using non-equivalent assets.
      * The value must be in SEP-38 Asset Identification Format.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *
+     * Examples:
+     * - Stellar asset: stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+     * - Fiat currency: iso4217:USD
+     *
+     * https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      * See also the Asset Exchanges section for more information.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     * https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public ?string $amountOutAsset = null;
 
@@ -106,9 +135,14 @@ class SEP24Transaction extends Response
      * @var string|null $amountFeeAsset (optional) The asset in which fees are calculated in.
      * Should be present if the deposit/withdraw was made using non-equivalent assets.
      * The value must be in SEP-38 Asset Identification Format.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *
+     * Examples:
+     * - Stellar asset: stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+     * - Fiat currency: iso4217:USD
+     *
+     * https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      * See also the Asset Exchanges section for more information.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     * https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public ?string $amountFeeAsset = null;
 
@@ -136,12 +170,16 @@ class SEP24Transaction extends Response
     public ?string $updatedAt = null;
 
     /**
-     * @var string|null $userActionRequiredBy (optional) The date and time by when the user action is required.
-     *  In certain statuses, such as pending_user_transfer_start or incomplete, anchor waits for the user action and
-     *  user_action_required_by field should be used to show the time anchors gives for the user to make an action
-     *  before transaction will automatically be moved into a different status (such as expired or to be refunded).
-     *  user_action_required_by should only be specified for statuses where user action is required, and omitted for
-     *  all other. Anchor should specify the action waited on using message or more_info_url.
+     * @var string|null $userActionRequiredBy (optional) The date and time by when the user action is required. UTC ISO 8601 string.
+     *
+     * This field is populated only for transaction statuses where user action is required, such as:
+     * - incomplete: User must provide additional information
+     * - pending_user_transfer_start: User must initiate the transfer
+     * - pending_user: User must take action as described in message or more_info_url
+     *
+     * The anchor sets this deadline to indicate when the transaction will automatically transition to a
+     * different status (typically expired or refunded) if the user does not act. Omitted for all other statuses.
+     * The specific action required should be described in the message field or more_info_url.
      */
     public ?string $userActionRequiredBy = null;
 
@@ -311,7 +349,12 @@ class SEP24Transaction extends Response
 
     /**
      * @return string Processing status of deposit/withdrawal.
-     * For possible values see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#transaction-history
+     *
+     * Possible values: incomplete, pending_user_transfer_start, pending_user_transfer_complete,
+     * pending_external, pending_anchor, on_hold, pending_stellar, pending_trust, pending_user,
+     * completed, refunded, expired, no_market, too_small, too_large, error.
+     *
+     * For complete documentation see: https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#transaction-history
      */
     public function getStatus(): string
     {
@@ -320,7 +363,12 @@ class SEP24Transaction extends Response
 
     /**
      * @param string $status Processing status of deposit/withdrawal.
-     *  For possible values see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#transaction-history
+     *
+     * Possible values: incomplete, pending_user_transfer_start, pending_user_transfer_complete,
+     * pending_external, pending_anchor, on_hold, pending_stellar, pending_trust, pending_user,
+     * completed, refunded, expired, no_market, too_small, too_large, error.
+     *
+     * For complete documentation see: https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#transaction-history
      */
     public function setStatus(string $status): void
     {
@@ -401,9 +449,9 @@ class SEP24Transaction extends Response
      * @return string|null The asset received or to be received by the Anchor.
      *  Should be present if the deposit/withdraw was made using non-equivalent assets.
      *  The value must be in SEP-38 Asset Identification Format.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *  https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *  See also the Asset Exchanges section for more information.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *  https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function getAmountInAsset(): ?string
     {
@@ -414,9 +462,9 @@ class SEP24Transaction extends Response
      * @param string|null $amountInAsset The asset received or to be received by the Anchor.
      *   Should be present if the deposit/withdraw was made using non-equivalent assets.
      *   The value must be in SEP-38 Asset Identification Format.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *   https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *   See also the Asset Exchanges section for more information.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *   https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function setAmountInAsset(?string $amountInAsset): void
     {
@@ -445,9 +493,9 @@ class SEP24Transaction extends Response
      * @return string|null The asset delivered or to be delivered to the user.
      *  Should be present if the deposit/withdraw was made using non-equivalent assets.
      *  The value must be in SEP-38 Asset Identification Format.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *  https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *  See also the Asset Exchanges section for more information.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *  https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function getAmountOutAsset(): ?string
     {
@@ -458,9 +506,9 @@ class SEP24Transaction extends Response
      * @param string|null $amountOutAsset The asset delivered or to be delivered to the user.
      *   Should be present if the deposit/withdraw was made using non-equivalent assets.
      *   The value must be in SEP-38 Asset Identification Format.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *   https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *   See also the Asset Exchanges section for more information.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *   https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function setAmountOutAsset(?string $amountOutAsset): void
     {
@@ -487,9 +535,9 @@ class SEP24Transaction extends Response
      * @return string|null The asset in which fees are calculated in.
      *  Should be present if the deposit/withdraw was made using non-equivalent assets.
      *  The value must be in SEP-38 Asset Identification Format.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *  https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *  See also the Asset Exchanges section for more information.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *  https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function getAmountFeeAsset(): ?string
     {
@@ -500,9 +548,9 @@ class SEP24Transaction extends Response
      * @param string|null $amountFeeAsset The asset in which fees are calculated in.
      *   Should be present if the deposit/withdraw was made using non-equivalent assets.
      *   The value must be in SEP-38 Asset Identification Format.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *   https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *   See also the Asset Exchanges section for more information.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *   https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function setAmountFeeAsset(?string $amountFeeAsset): void
     {

@@ -8,6 +8,38 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response from the SEP-10 token endpoint after submitting a signed challenge transaction.
+ *
+ * This response is returned by the authentication server when a client submits the signed
+ * challenge transaction (POST to the auth endpoint). A successful response contains a JWT
+ * token that can be used to authenticate subsequent requests to protected services.
+ *
+ * Structure:
+ * The response can contain either:
+ * - 'token': A JWT token string on successful authentication (HTTP 200)
+ * - 'error': An error message string on authentication failure (HTTP 400)
+ *
+ * JWT Token Format:
+ * The token contains standard JWT claims including:
+ * - 'sub': The authenticated account (G... or M... address, optionally with :memo suffix)
+ * - 'iss': The token issuer (authentication server URL)
+ * - 'iat': Token issued at timestamp
+ * - 'exp': Token expiration timestamp (typically 15 minutes to 24 hours)
+ * - 'client_domain': Optional, present if client domain verification was performed
+ *
+ * Usage:
+ * On success, extract the JWT token and use it as a Bearer token in the Authorization header
+ * for subsequent requests to SEP-24, SEP-31, SEP-12, or other authenticated endpoints. The
+ * token should be stored securely and refreshed when it expires.
+ *
+ * On error, the error field contains a human-readable description of why authentication failed,
+ * such as insufficient signatures, invalid signatures, or server policy violations.
+ *
+ * @package Soneso\StellarSDK\SEP\WebAuth
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#token SEP-10 Token Response
+ * @see WebAuth::jwtToken() For the complete authentication flow
+ */
 class SubmitCompletedChallengeResponse extends Response {
 
     private ?string $jwtToken = null;

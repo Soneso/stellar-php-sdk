@@ -6,8 +6,15 @@
 
 namespace Soneso\StellarSDK\SEP\Toml;
 
-/// Validator Information. From the the stellar.toml [[VALIDATORS]] list, one set of fields for each node your organization runs. Combined with the steps outlined in SEP-20, this section allows to declare the node(s), and to let others know the location of any public archives they maintain.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/**
+ * Validator information from the stellar.toml [[VALIDATORS]] list.
+ *
+ * Contains fields for each node the organization runs. Combined with SEP-20,
+ * this section allows declaration of node(s) and public archive locations.
+ *
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md SEP-1 Validator Information
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0020.md SEP-20 Self-verification of validator nodes
+ */
 class Validator
 {
     /// A name for display in stellar-core configs that conforms to ^[a-z0-9-]{2,16}$.

@@ -21,7 +21,7 @@ use Soneso\StellarSDK\Responses\Response;
  * This allows tracking of refunds regardless of the payment method used.
  *
  * @package Soneso\StellarSDK\SEP\Interactive
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
  * @see Refund For the parent refund object containing payment list
  * @see SEP24Transaction For the parent transaction
  */

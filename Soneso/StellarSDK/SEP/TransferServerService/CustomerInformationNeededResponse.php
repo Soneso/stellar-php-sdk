@@ -16,8 +16,8 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * anchor needs additional customer data.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 KYC API
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.15.0/ecosystem/sep-0012.md SEP-12 v1.15.0 KYC API
  * @see CustomerInformationNeededException
  */
 class CustomerInformationNeededResponse

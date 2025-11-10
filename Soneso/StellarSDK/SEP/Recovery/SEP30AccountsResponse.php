@@ -13,7 +13,7 @@ namespace Soneso\StellarSDK\SEP\Recovery;
  * token allows access to via the GET /accounts endpoint.
  *
  * @package Soneso\StellarSDK\SEP\Recovery
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#get-accounts
+ * @see https://github.com/stellar/stellar-protocol/blob/v0.8.1/ecosystem/sep-0030.md#get-accounts
  * @see RecoveryService::accounts()
  * @see SEP30AccountResponse
  */

@@ -21,7 +21,7 @@ use Soneso\StellarSDK\Responses\Response;
  * trustlines to the deposited asset.
  *
  * @package Soneso\StellarSDK\SEP\Interactive
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
  * @see SEP24InfoResponse For the parent info response
  */
 class FeatureFlags extends Response

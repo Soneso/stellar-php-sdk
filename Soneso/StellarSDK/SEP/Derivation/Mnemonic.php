@@ -16,6 +16,10 @@ use Exception;
  * following the BIP-39 standard. It can generate secure mnemonics of 12, 15, or 24
  * words and derive seeds for use with SEP-0005 key derivation paths.
  *
+ * SEP-5 specifies the Stellar derivation path as m/44'/148'/x' where 148 is the
+ * Stellar coin type and x is the account index. This enables deterministic wallet
+ * generation compatible across the Stellar ecosystem.
+ *
  * @package Soneso\StellarSDK\SEP\Derivation
  * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
  * @see BIP39
@@ -26,27 +30,37 @@ class Mnemonic
 {
 
     /**
-     * @var string|null $entropy The entropy bytes used to generate the mnemonic
+     * Hexadecimal entropy string used to generate the mnemonic phrase.
+     *
+     * @var string|null $entropy The source entropy (128-256 bits) in hexadecimal format
      */
     public ?string $entropy = null;
 
     /**
-     * @var int $wordsCount The number of mnemonic words
+     * Total number of words in the mnemonic phrase.
+     *
+     * @var int $wordsCount Valid values are 12, 15, 18, 21, or 24 words
      */
     public int $wordsCount;
 
     /**
-     * @var array $wordsIndex The index values for each word
+     * Numeric indices corresponding to each word in the BIP-39 word list.
+     *
+     * @var array $wordsIndex Array of integers (0-2047) representing word positions
      */
     public array $wordsIndex;
 
     /**
-     * @var array $words The mnemonic words array
+     * The actual mnemonic words from the BIP-39 word list.
+     *
+     * @var array $words Array of strings representing the mnemonic phrase
      */
     public array $words;
 
     /**
-     * @var array $rawBinaryChunks The raw binary chunks
+     * Binary chunks representing the combined entropy and checksum.
+     *
+     * @var array $rawBinaryChunks Array of 11-bit binary strings used for word generation
      */
     public array $rawBinaryChunks;
 
@@ -135,6 +149,7 @@ class Mnemonic
      * @param string|null $passphrase Optional passphrase for additional security. Default is empty string.
      * @param int|null $bytes Number of bytes to return. Default is 0 (returns full hash).
      * @return string The generated binary seed.
+     * @security Passphrases must be handled securely and never logged or stored in plain text. Consider using secure memory handling for sensitive key material.
      */
     public function generateSeed(?string $passphrase = "", ?int $bytes = 0) : string
     {

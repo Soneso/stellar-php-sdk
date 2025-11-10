@@ -18,7 +18,7 @@ use Soneso\StellarSDK\Responses\Response;
  * Results can be filtered by various criteria and paginated for large datasets.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
  * @see TransferServerService::transactions()
  * @see AnchorTransactionsRequest
  * @see AnchorTransaction

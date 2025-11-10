@@ -21,13 +21,32 @@ use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
  * external account. This request initiates the interactive flow where the user
  * provides withdrawal details through the anchor's web interface.
  *
+ * Interactive Flow Lifecycle:
+ * 1. Client submits this request to POST /transactions/withdraw/interactive
+ * 2. Anchor returns SEP24InteractiveResponse with an interactive URL and transaction ID
+ * 3. Client opens the interactive URL in a popup or webview
+ * 4. The JWT is passed to the web interface via query parameters automatically
+ * 5. User completes the withdrawal form in the anchor's web interface (provides bank account details, etc.)
+ * 6. Anchor provides withdrawal account address and memo for the Stellar payment
+ * 7. Anchor closes the popup/webview and returns control to the client
+ * 8. Client polls the transaction endpoint to get withdrawal account details
+ * 9. User sends Stellar assets to the anchor's withdrawal account with the specified memo
+ * 10. Anchor receives Stellar payment and processes external transfer to user's bank account
+ *
+ * JWT Parameter Handling:
+ * The JWT token is transmitted to the interactive web interface as a query parameter
+ * (e.g., ?token=JWT_VALUE). The anchor's web interface uses this for authentication
+ * and session management. Each interactive session uses a one-time JWT context,
+ * though the JWT itself may be reused across multiple transactions during its validity period.
+ *
  * Required fields include the JWT authentication token and asset code. Optional
  * fields allow pre-filling the interactive form with known information like amount,
  * destination asset, and KYC details to streamline the user experience.
  *
  * @package Soneso\StellarSDK\SEP\Interactive
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
  * @see InteractiveService For executing withdrawal requests
+ * @see SEP24InteractiveResponse For the interactive URL response
  * @see SEP24Transaction For the transaction response
  * @see StandardKYCFields For KYC data structure
  */
@@ -54,7 +73,7 @@ class SEP24WithdrawRequest
 
     /**
      * @var string|null $destinationAsset (optional) string in Asset Identification Format - The asset user wants to receive.
-     * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     * See: https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format.
      * It's an off-chain or fiat asset.
      * If this is not provided, it will be collected in the interactive flow.
      * When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
@@ -82,7 +101,7 @@ class SEP24WithdrawRequest
      * However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
      * Anchors should still support this parameter to maintain support for outdated clients.
      * See the Shared Account Authentication section for more information.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
+     * https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
      */
     public ?string $memo = null;
 
@@ -211,7 +230,7 @@ class SEP24WithdrawRequest
 
     /**
      * @return string|null (optional) string in Asset Identification Format - The asset user wants to receive.
-     *  See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     *  See: https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format.
      *  It's an off-chain or fiat asset.
      *  If this is not provided, it will be collected in the interactive flow.
      *  When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
@@ -223,7 +242,7 @@ class SEP24WithdrawRequest
 
     /**
      * @param string|null $destinationAsset (optional) string in Asset Identification Format - The asset user wants to receive.
-     *  See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     *  See: https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format.
      *  It's an off-chain or fiat asset.
      *  If this is not provided, it will be collected in the interactive flow.
      *  When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
@@ -288,7 +307,7 @@ class SEP24WithdrawRequest
      *  However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
      *  Anchors should still support this parameter to maintain support for outdated clients.
      *  See the Shared Account Authentication section for more information.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
+     *  https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
      */
     public function getMemo(): ?string
     {
@@ -300,7 +319,7 @@ class SEP24WithdrawRequest
      *  However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
      *  Anchors should still support this parameter to maintain support for outdated clients.
      *  See the Shared Account Authentication section for more information.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
+     *  https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
      */
     public function setMemo(?string $memo): void
     {

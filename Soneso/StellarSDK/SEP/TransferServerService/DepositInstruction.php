@@ -13,7 +13,7 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * how to complete the deposit operation.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
  * @see DepositResponse
  */
 class DepositInstruction

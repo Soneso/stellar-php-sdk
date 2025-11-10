@@ -6,8 +6,14 @@
 
 namespace Soneso\StellarSDK\SEP\Toml;
 
-/// Point of Contact Documentation. From the stellar.toml [[PRINCIPALS]] list. It contains identifying information for the primary point of contact or principal of the organization.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/**
+ * Point of contact documentation from the stellar.toml [[PRINCIPALS]] list.
+ *
+ * Contains identifying information for the primary point of contact or principal
+ * of the organization including name, contact details, and verification hashes.
+ *
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md SEP-1 Point of Contact Documentation
+ */
 class PointOfContact
 {
     /// Full legal name.

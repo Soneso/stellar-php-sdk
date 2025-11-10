@@ -15,6 +15,13 @@ use Soneso\StellarSDK\Responses\Response;
  * the resolved Stellar account ID, optional memo type and value, and the
  * original Stellar address if a reverse lookup was performed.
  *
+ * Error responses (HTTP status codes other than 200 or 3xx) will contain
+ * an "error" field with additional details from the federation server.
+ *
+ * Note: Federation responses should not be cached. Some organizations may
+ * generate random IDs to protect user privacy, and these IDs may change
+ * over time.
+ *
  * @package Soneso\StellarSDK\SEP\Federation
  * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md
  * @see Federation
@@ -70,7 +77,8 @@ class FederationResponse extends Response
     /**
      * Gets the memo type.
      *
-     * @return string|null The memo type ("text", "id", or "hash").
+     * @return string|null The memo type ("text", "id", or "hash"). For "hash" type,
+     *                     the memo value will be base64-encoded.
      */
     public function getMemoType(): ?string
     {

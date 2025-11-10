@@ -14,7 +14,7 @@ namespace Soneso\StellarSDK\SEP\Recovery;
  * for multi-party account recovery.
  *
  * @package Soneso\StellarSDK\SEP\Recovery
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddress
+ * @see https://github.com/stellar/stellar-protocol/blob/v0.8.1/ecosystem/sep-0030.md#post-accountsaddress
  * @see RecoveryService::registerAccount()
  * @see RecoveryService::updateIdentitiesForAccount()
  * @see SEP30RequestIdentity

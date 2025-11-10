@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\SEP\KYCService;
 
+/**
+ * Request object for PUT /customer/verification endpoint.
+ *
+ * This endpoint allows servers to accept verification data values such as confirmation codes
+ * that verify previously provided fields (e.g., mobile_number or email_address).
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification SEP-12 v1.15.0
+ * @deprecated This endpoint is deprecated per SEP-12 specification. Anchors should use alternative verification methods.
+ */
 class PutCustomerVerificationRequest
 {
     /**

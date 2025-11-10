@@ -268,6 +268,7 @@ class AccountResponse extends Response implements TransactionBuilderAccount
      * Sets the multiplexed account ID to be used if this account is used as MuxedAccountMed25519
      *
      * @param int|null $muxedAccountMed25519Id The muxed account ID, or null to unset
+     * @return void
      */
     public function setMuxedAccountMed25519Id(?int $muxedAccountMed25519Id): void
     {

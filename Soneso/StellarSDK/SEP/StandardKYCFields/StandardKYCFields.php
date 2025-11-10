@@ -6,12 +6,35 @@
 
 namespace Soneso\StellarSDK\SEP\StandardKYCFields;
 
-/// Defines a list of standard KYC and AML fields for use in Stellar ecosystem protocols.
-/// Issuers, banks, and other entities on Stellar should use these fields when sending
-/// or requesting KYC / AML information with other parties on Stellar.
-/// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md
+/**
+ * Container class for standard KYC and AML fields used in Stellar ecosystem protocols.
+ *
+ * This class provides a structured container for KYC (Know Your Customer) and AML (Anti-Money Laundering)
+ * information exchange between entities on the Stellar network. It supports both natural person and
+ * organization data collection according to SEP-09 specification.
+ *
+ * PRIVACY AND SECURITY WARNING:
+ * This class handles highly sensitive Personally Identifiable Information (PII) and KYC data.
+ * Implementers MUST ensure:
+ * - Transmission only over HTTPS/TLS connections
+ * - Encryption at rest for all stored KYC data
+ * - Compliance with applicable data protection regulations (GDPR, CCPA, etc.)
+ * - Implementation of proper access controls and audit logging
+ * - Secure data retention and deletion policies
+ * - Customer consent management for data collection and processing
+ *
+ * @package Soneso\StellarSDK\SEP\StandardKYCFields
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.17.0/ecosystem/sep-0009.md SEP-09 v1.17.0 Specification
+ */
 class StandardKYCFields
 {
+    /**
+     * @var NaturalPersonKYCFields|null KYC fields for natural persons (individuals)
+     */
     public ?NaturalPersonKYCFields $naturalPersonKYCFields = null;
+
+    /**
+     * @var OrganizationKYCFields|null KYC fields for organizations (companies, entities)
+     */
     public ?OrganizationKYCFields $organizationKYCFields = null;
 }

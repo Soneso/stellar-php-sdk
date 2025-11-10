@@ -17,6 +17,9 @@ use Soneso\StellarSDK\Requests\RequestType;
  * This class builds and executes federation protocol requests to resolve
  * Stellar addresses, account IDs, transaction IDs, or perform forward lookups.
  *
+ * Federation servers must enable CORS by setting the following HTTP header
+ * for all responses: Access-Control-Allow-Origin: *
+ *
  * @package Soneso\StellarSDK\SEP\Federation
  * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md
  * @see Federation
@@ -87,6 +90,9 @@ class FederationRequestBuilder extends RequestBuilder
 
     /**
      * Executes a federation request to the specified URL.
+     *
+     * The federation server may return a 3xx redirect status code with a Location
+     * header to redirect to the correct URL.
      *
      * @param string $url The complete URL to query.
      * @return FederationResponse The federation response.

@@ -45,6 +45,7 @@ class ParameterResponse
      * Sets the parameter type
      *
      * @param string $type The Soroban value type
+     * @return void
      */
     public function setType(string $type): void
     {
@@ -65,6 +66,7 @@ class ParameterResponse
      * Sets the encoded parameter value
      *
      * @param string $value The parameter value
+     * @return void
      */
     public function setValue(string $value): void
     {

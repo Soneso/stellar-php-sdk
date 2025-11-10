@@ -18,7 +18,7 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * destinations, refund preferences, and KYC requirements.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
  * @see TransferServerService::withdraw()
  * @see WithdrawResponse
  */
@@ -94,10 +94,10 @@ class WithdrawRequest
     public ?string $walletUrl = null;
 
     /**
-     * @var string|null $lang (optional) (optional) Defaults to en if not specified or if the
-     * specified language is not supported. Language code specified using
-     * RFC 4646. error fields and other human readable messages in the
-     * response should be in this language.
+     * @var string|null $lang (optional) Defaults to en if not specified or if the specified language
+     * is not supported. Language code specified using RFC 4646
+     * (e.g., 'en' for English, 'es' for Spanish, 'pt-BR' for Brazilian Portuguese).
+     * Error fields and other human readable messages in the response should be in this language.
      */
     public ?string $lang = null;
 
@@ -117,9 +117,9 @@ class WithdrawRequest
     public ?string $amount = null;
 
     /**
-     * @var string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address.
-     * This field may be necessary for the anchor to determine what KYC
-     * information is necessary to collect.
+     * @var string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address
+     * (e.g., 'USA' for United States, 'GBR' for United Kingdom, 'DEU' for Germany).
+     * This field may be necessary for the anchor to determine what KYC information is necessary to collect.
      */
     public ?string $countryCode = null;
 
@@ -197,7 +197,8 @@ class WithdrawRequest
      * identical to the response format for the /transaction endpoint.
      * @param string|null $amount (optional) The amount of the asset the user would like to withdraw. This field may be
      * necessary for the anchor to determine what KYC information is necessary to collect.
-     * @param string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address.
+     * @param string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address
+     * (e.g., 'USA' for United States, 'GBR' for United Kingdom, 'DEU' for Germany).
      * This field may be necessary for the anchor to determine what KYC information is necessary to collect.
      * @param string|null $refundMemo (optional) The memo the anchor must use when sending refund payments back
      * to the user. If not specified, the anchor should use the same memo used by the user to send the original payment.

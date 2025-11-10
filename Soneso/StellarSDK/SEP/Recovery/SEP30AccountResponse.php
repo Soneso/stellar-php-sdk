@@ -13,7 +13,7 @@ namespace Soneso\StellarSDK\SEP\Recovery;
  * and signers that can be used for multi-party account recovery operations.
  *
  * @package Soneso\StellarSDK\SEP\Recovery
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md
+ * @see https://github.com/stellar/stellar-protocol/blob/v0.8.1/ecosystem/sep-0030.md
  * @see RecoveryService
  * @see SEP30ResponseIdentity
  * @see SEP30ResponseSigner

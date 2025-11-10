@@ -17,9 +17,13 @@ use Soneso\StellarSDK\Constants\StellarConstants;
  * for Stellar accounts. It supports the SEP-0005 standard for deriving multiple
  * keypairs from a single seed using derivation paths like m/44'/148'/0'.
  *
+ * The implementation follows SLIP-0010 for ed25519 curve key derivation, which
+ * is required by SEP-5 for Stellar key generation.
+ *
  * @package Soneso\StellarSDK\SEP\Derivation
  * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
  * @see https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+ * @see https://github.com/satoshilabs/slips/blob/master/slip-0010.md
  * @see Mnemonic
  */
 class HDNode
@@ -56,7 +60,7 @@ class HDNode
      *
      * @param string $privateKeyBytes 32 bytes of private key material.
      * @param string $chainCodeBytes 32 bytes of chain code for deriving child keys.
-     * @throws InvalidArgumentException If private key or chain code is not 32 bytes.
+     * @throws \InvalidArgumentException If private key or chain code is not 32 bytes.
      */
     public function __construct(string $privateKeyBytes, string $chainCodeBytes)
     {
@@ -72,7 +76,7 @@ class HDNode
      *
      * @param int $index Child index (automatically converted to hardened).
      * @return HDNode The derived child node.
-     * @throws InvalidArgumentException If the resulting index is not hardened.
+     * @throws \InvalidArgumentException If the resulting index is not hardened.
      */
     public function derive(int $index) : HDNode
     {
@@ -96,7 +100,7 @@ class HDNode
      *
      * @param string $path Derivation path (e.g., "m/44'/148'/0'").
      * @return HDNode The derived node.
-     * @throws InvalidArgumentException If path format is invalid.
+     * @throws \InvalidArgumentException If path format is invalid.
      */
     public function derivePath(string $path) : HDNode
     {
@@ -147,6 +151,7 @@ class HDNode
      * Gets the private key bytes for this node.
      *
      * @return string 32 bytes of private key material.
+     * @security Private key bytes must be handled securely and cleared from memory after use. Never log or expose private keys.
      */
     public function getPrivateKeyBytes() : string
     {

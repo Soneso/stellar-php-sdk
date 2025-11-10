@@ -15,7 +15,7 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 /**
- * Implements SEP-12 Customer Information and KYC API
+ * Implements SEP-12 Customer Information and KYC API (v1.15.0)
  *
  * This class provides methods for managing customer information and Know Your Customer
  * (KYC) data through the SEP-12 protocol. It enables anchors to collect and verify
@@ -34,8 +34,34 @@ use Soneso\StellarSDK\SEP\Toml\StellarToml;
  * accounts), or anchor-assigned customer IDs. The anchor validates submitted data
  * and returns the verification status (accepted, pending, rejected, needs info).
  *
+ * SECURITY AND PRIVACY WARNINGS:
+ *
+ * This service handles highly sensitive Personally Identifiable Information (PII) and KYC data.
+ * Implementers MUST ensure:
+ *
+ * - HTTPS ONLY: All communications with KYC endpoints MUST use HTTPS with valid TLS certificates.
+ *   Never transmit KYC data over unencrypted HTTP connections.
+ *
+ * - DATA PROTECTION COMPLIANCE: Implementations must comply with applicable data protection
+ *   regulations including GDPR (EU), CCPA (California), and other jurisdiction-specific laws.
+ *   Ensure proper legal basis for data collection and processing.
+ *
+ * - SECURE STORAGE: Customer data must be stored securely with encryption at rest. Implement
+ *   appropriate data retention policies and secure deletion procedures when data is no longer
+ *   needed or upon customer request.
+ *
+ * - ACCESS CONTROLS: Implement strict role-based access controls. Limit access to KYC data
+ *   to authorized personnel only. Maintain comprehensive audit logs of all data access.
+ *
+ * - CUSTOMER CONSENT: Obtain explicit customer consent before collecting, processing, or
+ *   sharing KYC data. Provide clear privacy notices explaining data usage, retention, and
+ *   customer rights (access, correction, deletion).
+ *
+ * - DATA MINIMIZATION: Only collect KYC data that is necessary for regulatory compliance
+ *   and the specific use case. Avoid collecting excessive information.
+ *
  * @package Soneso\StellarSDK\SEP\KYCService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 Specification v1.15.0
  * @see StellarToml For discovering the KYC service endpoint
  */
 class KYCService
@@ -44,8 +70,10 @@ class KYCService
     private Client $httpClient;
 
     /**
-     * @param string $serviceAddress
-     * @param ?Client $httpClient Optional http client to be used for requests.
+     * @param string $serviceAddress The base URL of the SEP-12 KYC service endpoint.
+     * @param ?Client $httpClient Optional HTTP client to be used for requests. Provide a custom
+     *                           client when you need specific configurations such as custom timeouts,
+     *                           proxy settings, middleware, or mock handlers for testing.
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
@@ -65,7 +93,7 @@ class KYCService
      * @param string $domain to parse the toml data from.
      * @param ?Client $httpClient Optional http client to be used for requests.
      * @return KYCService
-     * @throws Exception
+     * @throws Exception if no KYC service endpoint is found in the stellar.toml file
      */
     public static function fromDomain(string $domain, ?Client $httpClient = null) : KYCService {
         $stellarToml = StellarToml::fromDomain($domain, $httpClient);
@@ -90,7 +118,7 @@ class KYCService
      *
      * @param GetCustomerInfoRequest $request
      * @return GetCustomerInfoResponse
-     * @throws GuzzleException
+     * @throws GuzzleException if the HTTP request fails or the server returns an error
      */
     public function getCustomerInfo(GetCustomerInfoRequest $request) : GetCustomerInfoResponse {
         $requestBuilder = new GetCustomerInfoRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
@@ -124,7 +152,7 @@ class KYCService
      * Upload customer information to an anchor in an authenticated and idempotent fashion.
      * @param PutCustomerInfoRequest $request
      * @return PutCustomerInfoResponse
-     * @throws GuzzleException
+     * @throws GuzzleException if the HTTP request fails or the server returns an error
      */
     public function putCustomerInfo(PutCustomerInfoRequest $request) : PutCustomerInfoResponse {
 
@@ -182,7 +210,7 @@ class KYCService
      * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
      * @param PutCustomerVerificationRequest $request
      * @return GetCustomerInfoResponse
-     * @throws GuzzleException
+     * @throws GuzzleException if the HTTP request fails or the server returns an error
      */
     public function putCustomerVerification(PutCustomerVerificationRequest $request) : GetCustomerInfoResponse {
 

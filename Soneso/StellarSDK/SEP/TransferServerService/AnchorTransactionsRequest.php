@@ -19,7 +19,7 @@ use DateTime;
  * querying of transaction subsets. Results can be paginated using pagingId.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
  * @see TransferServerService::transactions()
  * @see AnchorTransactionsResponse
  */
@@ -62,8 +62,9 @@ class AnchorTransactionsRequest
 
     /**
      * @var string|null $lang (optional) Defaults to en if not specified or if the specified language
-     *  is not supported. Language code specified using RFC 4646. Error fields and other human readable messages in
-     * the response should be in this language.
+     * is not supported. Language code specified using RFC 4646
+     * (e.g., 'en' for English, 'es' for Spanish, 'pt-BR' for Brazilian Portuguese).
+     * Error fields and other human readable messages in the response should be in this language.
      */
     public ?string $lang = null;
 

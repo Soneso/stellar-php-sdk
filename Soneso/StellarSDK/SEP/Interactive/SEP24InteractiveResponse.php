@@ -24,7 +24,7 @@ use Soneso\StellarSDK\Responses\Response;
  * or /transactions endpoints while the user completes the interactive flow.
  *
  * @package Soneso\StellarSDK\SEP\Interactive
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
  * @see InteractiveService For initiating deposit/withdrawal flows
  * @see SEP24Transaction For querying transaction status
  */

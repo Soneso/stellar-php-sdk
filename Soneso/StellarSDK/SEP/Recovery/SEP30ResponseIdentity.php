@@ -13,7 +13,7 @@ namespace Soneso\StellarSDK\SEP\Recovery;
  * authentication status for account recovery operations.
  *
  * @package Soneso\StellarSDK\SEP\Recovery
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md
+ * @see https://github.com/stellar/stellar-protocol/blob/v0.8.1/ecosystem/sep-0030.md
  * @see SEP30AccountResponse
  */
 class SEP30ResponseIdentity
@@ -24,7 +24,8 @@ class SEP30ResponseIdentity
     /**
      * Constructor.
      *
-     * @param string $role The identity role ("owner" or "other").
+     * @param string $role The identity role (e.g., "owner", "sender", "receiver").
+     *                     Client-defined value stored by server and returned in responses.
      * @param bool|null $authenticated Whether the identity is authenticated.
      */
     public function __construct(string $role, ?bool $authenticated = null)
@@ -51,7 +52,7 @@ class SEP30ResponseIdentity
     /**
      * Gets the identity role.
      *
-     * @return string The role ("owner" or "other").
+     * @return string The role (e.g., "owner", "sender", "receiver").
      */
     public function getRole(): string
     {
@@ -61,7 +62,7 @@ class SEP30ResponseIdentity
     /**
      * Sets the identity role.
      *
-     * @param string $role The role.
+     * @param string $role The role (e.g., "owner", "sender", "receiver").
      */
     public function setRole(string $role): void
     {

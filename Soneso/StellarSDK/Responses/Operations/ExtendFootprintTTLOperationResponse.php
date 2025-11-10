@@ -50,6 +50,7 @@ class ExtendFootprintTTLOperationResponse extends OperationResponse
      * Sets the ledger number to which the TTL is extended
      *
      * @param int $extendTo The target ledger sequence for expiration
+     * @return void
      */
     public function setExtendTo(int $extendTo): void
     {

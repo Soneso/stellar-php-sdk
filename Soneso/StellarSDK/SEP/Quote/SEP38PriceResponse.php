@@ -13,6 +13,8 @@ namespace Soneso\StellarSDK\SEP\Quote;
  * one asset for another. Unlike firm quotes, these prices are not guaranteed
  * and are provided for estimation purposes only.
  *
+ * The price relationship follows the formula: sell_amount = total_price * buy_amount
+ *
  * @package Soneso\StellarSDK\SEP\Quote
  * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-price
  * @see QuoteService::price()
@@ -21,12 +23,12 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38PriceResponse
 {
     /**
-     * @var string $totalPrice The total price of the quote including fees.
+     * @var string $totalPrice The total price of the quote including fees. Used in formula: sell_amount = total_price * buy_amount
      */
     public string $totalPrice;
 
     /**
-     * @var string $price The exchange rate without fees.
+     * @var string $price The exchange rate without fees. Used in formula: sell_amount = total_price * buy_amount
      */
     public string $price;
 

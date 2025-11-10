@@ -13,7 +13,7 @@ namespace Soneso\StellarSDK\SEP\Recovery;
  * endpoint, containing the signature and network passphrase for the signed transaction.
  *
  * @package Soneso\StellarSDK\SEP\Recovery
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddresssignsigning-address
+ * @see https://github.com/stellar/stellar-protocol/blob/v0.8.1/ecosystem/sep-0030.md#post-accountsaddresssignsigning-address
  * @see RecoveryService::signTransaction()
  */
 class SEP30SignatureResponse

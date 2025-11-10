@@ -20,7 +20,7 @@ use Soneso\StellarSDK\Responses\Response;
  * about the refund process including any fees charged for processing the refunds.
  *
  * @package Soneso\StellarSDK\SEP\Interactive
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
  * @see SEP24Transaction For the parent transaction containing refunds
  * @see RefundPayment For individual refund payment details
  */

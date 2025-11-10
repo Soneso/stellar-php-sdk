@@ -23,7 +23,7 @@ use Soneso\StellarSDK\Responses\Response;
  * asset may have different requirements and constraints depending on the operation type.
  *
  * @package Soneso\StellarSDK\SEP\Interactive
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md SEP-24 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
  * @see InteractiveService::info() For retrieving this information
  * @see SEP24DepositAsset For deposit asset details
  * @see SEP24WithdrawAsset For withdrawal asset details

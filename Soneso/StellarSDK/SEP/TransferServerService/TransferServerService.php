@@ -36,10 +36,10 @@ use Soneso\StellarSDK\SEP\Toml\StellarToml;
  * - Patch Transaction: Update pending transaction information
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md SEP-10 Authentication
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 KYC API
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 v4.3.0 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md SEP-10 v3.4.1 Authentication
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.15.0/ecosystem/sep-0012.md SEP-12 v1.15.0 KYC API
+ * @see https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md SEP-38 v2.5.0 Quotes
  */
 class TransferServerService
 {
@@ -537,6 +537,8 @@ class TransferServerService
 
     /**
      * Sets a mock handler stack for testing purposes.
+     *
+     * @internal This method is intended for testing and should not be used in production code
      * @param HandlerStack $handlerStack the handler stack to use for mocking requests.
      * @return void
      */

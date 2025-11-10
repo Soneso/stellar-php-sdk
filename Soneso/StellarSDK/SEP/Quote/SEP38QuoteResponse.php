@@ -70,6 +70,16 @@ class SEP38QuoteResponse
     public SEP38Fee $fee;
 
     /**
+     * @var string|null $sellDeliveryMethod The method used by the client to deliver the sell asset to the Anchor.
+     */
+    public ?string $sellDeliveryMethod = null;
+
+    /**
+     * @var string|null $buyDeliveryMethod The method used by the Anchor to deliver the buy asset to the client.
+     */
+    public ?string $buyDeliveryMethod = null;
+
+    /**
      * @param string $id
      * @param DateTime $expiresAt
      * @param string $totalPrice
@@ -79,6 +89,8 @@ class SEP38QuoteResponse
      * @param string $buyAsset
      * @param string $buyAmount
      * @param SEP38Fee $fee
+     * @param string|null $sellDeliveryMethod
+     * @param string|null $buyDeliveryMethod
      */
     public function __construct(
         string $id,
@@ -89,7 +101,9 @@ class SEP38QuoteResponse
         string $sellAmount,
         string $buyAsset,
         string $buyAmount,
-        SEP38Fee $fee)
+        SEP38Fee $fee,
+        ?string $sellDeliveryMethod = null,
+        ?string $buyDeliveryMethod = null)
     {
         $this->id = $id;
         $this->expiresAt = $expiresAt;
@@ -100,6 +114,8 @@ class SEP38QuoteResponse
         $this->buyAsset = $buyAsset;
         $this->buyAmount = $buyAmount;
         $this->fee = $fee;
+        $this->sellDeliveryMethod = $sellDeliveryMethod;
+        $this->buyDeliveryMethod = $buyDeliveryMethod;
     }
 
     /**
@@ -120,6 +136,8 @@ class SEP38QuoteResponse
             $json['buy_asset'],
             $json['buy_amount'],
             SEP38Fee::fromJson($json['fee']),
+            $json['sell_delivery_method'] ?? null,
+            $json['buy_delivery_method'] ?? null,
         );
     }
 }

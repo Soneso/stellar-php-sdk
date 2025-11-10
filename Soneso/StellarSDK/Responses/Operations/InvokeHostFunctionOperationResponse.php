@@ -70,6 +70,7 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
      * Sets the host function type being invoked
      *
      * @param string $function Function type (InvokeContract, UploadContractWasm, or CreateContract)
+     * @return void
      */
     public function setFunction(string $function): void
     {
@@ -90,6 +91,7 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
      * Sets the parameters passed to the contract function
      *
      * @param ParametersResponse|null $parameters Collection of function parameters or null
+     * @return void
      */
     public function setParameters(?ParametersResponse $parameters): void
     {
@@ -110,6 +112,7 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
      * Sets the contract address being invoked
      *
      * @param string $address The smart contract address
+     * @return void
      */
     public function setAddress(string $address): void
     {
@@ -130,6 +133,7 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
      * Sets the salt used for contract deployment
      *
      * @param string $salt The deployment salt value
+     * @return void
      */
     public function setSalt(string $salt): void
     {
@@ -150,6 +154,7 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
      * Sets asset balance changes caused by contract execution
      *
      * @param AssetBalanceChangesResponse|null $assetBalanceChanges Collection of balance changes or null
+     * @return void
      */
     public function setAssetBalanceChanges(?AssetBalanceChangesResponse $assetBalanceChanges): void
     {

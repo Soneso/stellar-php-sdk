@@ -186,6 +186,7 @@ class AssetResponse extends Response
      * Sets the number of smart contracts holding this asset
      *
      * @param int|null $numContracts The count of contracts
+     * @return void
      */
     public function setNumContracts(?int $numContracts): void
     {
@@ -206,6 +207,7 @@ class AssetResponse extends Response
      * Sets the total amount of this asset held in smart contracts
      *
      * @param string|null $contractsAmount The contracts amount
+     * @return void
      */
     public function setContractsAmount(?string $contractsAmount): void
     {

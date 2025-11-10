@@ -18,8 +18,8 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * (what user sends), amount, and account. Optional quote_id locks in exchange rates.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md SEP-38 v2.5.0 Quotes
  * @see TransferServerService::depositExchange()
  * @see DepositResponse
  */
@@ -115,8 +115,9 @@ class DepositExchangeRequest
     public ?string $walletUrl = null;
 
     /**
-     * @var string|null $lang (optional) Defaults to en. Language code specified using ISO 639-1.
-     * error fields in the response should be in this language.
+     * @var string|null $lang (optional) Defaults to en. Language code specified using ISO 639-1
+     * (e.g., 'en' for English, 'es' for Spanish, 'pt' for Portuguese).
+     * Error fields in the response should be in this language.
      */
     public ?string $lang = null;
 
@@ -129,19 +130,15 @@ class DepositExchangeRequest
     public ?string $onChangeCallback = null;
 
     /**
-     * @var string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address.
-     * This field may be necessary for the anchor to determine what KYC
-     * information is necessary to collect.
+     * @var string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address
+     * (e.g., 'USA' for United States, 'GBR' for United Kingdom, 'DEU' for Germany).
+     * This field may be necessary for the anchor to determine what KYC information is necessary to collect.
      */
     public ?string $countryCode = null;
 
     /**
-     * @var string|null $claimableBalanceSupported (optional) id of an off-chain account (managed by the anchor) associated
-     * with this user's Stellar account (identified by the JWT's sub field).
-     * If the anchor supports SEP-12, the customerId field should match the
-     * SEP-12 customer's id. customerId should be passed only when the off-chain
-     * id is know to the client, but the relationship between this id and the
-     * user's Stellar account is not known to the Anchor.
+     * @var string|null $claimableBalanceSupported (optional) true if the client supports receiving deposit
+     * transactions as a claimable balance, false otherwise.
      */
     public ?string $claimableBalanceSupported = null;
 
@@ -213,12 +210,14 @@ class DepositExchangeRequest
      * @param string|null $walletUrl (deprecated,optional) Anchor should link to this when notifying the user
      *  that the transaction has completed. However, anchors should use
      *  client_domain (for non-custodial) and sub value of JWT (for custodial) to determine wallet information.
-     * @param string|null $lang (optional) Defaults to en. Language code specified using ISO 639-1.
-     *  error fields in the response should be in this language.
+     * @param string|null $lang (optional) Defaults to en. Language code specified using ISO 639-1
+     *  (e.g., 'en' for English, 'es' for Spanish, 'pt' for Portuguese).
+     *  Error fields in the response should be in this language.
      * @param string|null $onChangeCallback (optional) A URL that the anchor should POST a JSON message to when the
      *  status property of the transaction created as a result of this request
      *  changes. The JSON message should be identical to the response format for the /transaction endpoint.
-     * @param string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address.
+     * @param string|null $countryCode (optional) The ISO 3166-1 alpha-3 code of the user's current address
+     *  (e.g., 'USA' for United States, 'GBR' for United Kingdom, 'DEU' for Germany).
      *  This field may be necessary for the anchor to determine what KYC information is necessary to collect.
      * @param string|null $claimableBalanceSupported (optional) true if the client supports receiving deposit transactions as
      *  a claimable balance, false otherwise.

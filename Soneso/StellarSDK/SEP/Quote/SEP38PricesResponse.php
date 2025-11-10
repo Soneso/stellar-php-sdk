@@ -7,30 +7,39 @@
 namespace Soneso\StellarSDK\SEP\Quote;
 
 /**
- * Indicative prices for multiple buy assets in exchange for a sell asset via SEP-38.
+ * Indicative prices for multiple buy or sell assets via SEP-38.
  *
  * This class represents the response from GET /prices, containing indicative
- * exchange rates for all available buy assets that can be obtained in exchange
- * for a specified sell asset amount.
+ * exchange rates. Response contains either buy_assets (for selling a specified
+ * asset) or sell_assets (for buying a specified asset). Support for sell_assets
+ * was added in SEP-38 v2.3.0.
  *
  * @package Soneso\StellarSDK\SEP\Quote
  * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-prices
  * @see QuoteService::prices()
  * @see SEP38BuyAsset
+ * @see SEP38SellAsset
  */
 class SEP38PricesResponse
 {
     /**
-     * @var array<SEP38BuyAsset> $buyAssets
+     * @var array<SEP38BuyAsset>|null $buyAssets Array of available buy assets with their prices.
      */
-    public array $buyAssets;
+    public ?array $buyAssets = null;
 
     /**
-     * @param array<SEP38BuyAsset> $buyAssets Array of available buy assets with their prices.
+     * @var array<SEP38SellAsset>|null $sellAssets Array of available sell assets with their prices.
      */
-    public function __construct(array $buyAssets)
+    public ?array $sellAssets = null;
+
+    /**
+     * @param array<SEP38BuyAsset>|null $buyAssets Array of available buy assets with their prices.
+     * @param array<SEP38SellAsset>|null $sellAssets Array of available sell assets with their prices.
+     */
+    public function __construct(?array $buyAssets = null, ?array $sellAssets = null)
     {
         $this->buyAssets = $buyAssets;
+        $this->sellAssets = $sellAssets;
     }
 
     /**
@@ -42,15 +51,27 @@ class SEP38PricesResponse
     public static function fromJson(array $json) : SEP38PricesResponse
     {
         /**
-         * @var array<SEP38BuyAsset> $buyAssets
+         * @var array<SEP38BuyAsset>|null $buyAssets
          */
-        $buyAssets = array();
+        $buyAssets = null;
         if (isset($json['buy_assets'])) {
+            $buyAssets = array();
             foreach ($json['buy_assets'] as $asset) {
                 $buyAssets[] = SEP38BuyAsset::fromJson($asset);
             }
         }
 
-        return new SEP38PricesResponse($buyAssets);
+        /**
+         * @var array<SEP38SellAsset>|null $sellAssets
+         */
+        $sellAssets = null;
+        if (isset($json['sell_assets'])) {
+            $sellAssets = array();
+            foreach ($json['sell_assets'] as $asset) {
+                $sellAssets[] = SEP38SellAsset::fromJson($asset);
+            }
+        }
+
+        return new SEP38PricesResponse($buyAssets, $sellAssets);
     }
 }

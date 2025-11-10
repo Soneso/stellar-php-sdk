@@ -67,6 +67,7 @@ class AssetBalanceChangeResponse
      * Sets the asset type
      *
      * @param string $assetType The asset type
+     * @return void
      */
     public function setAssetType(string $assetType): void
     {
@@ -87,6 +88,7 @@ class AssetBalanceChangeResponse
      * Sets the asset code
      *
      * @param string|null $assetCode The asset code
+     * @return void
      */
     public function setAssetCode(?string $assetCode): void
     {
@@ -107,6 +109,7 @@ class AssetBalanceChangeResponse
      * Sets the asset issuer
      *
      * @param string|null $assetIssuer The asset issuer account ID
+     * @return void
      */
     public function setAssetIssuer(?string $assetIssuer): void
     {
@@ -127,6 +130,7 @@ class AssetBalanceChangeResponse
      * Sets the type of balance change
      *
      * @param string $type Change type
+     * @return void
      */
     public function setType(string $type): void
     {
@@ -147,6 +151,7 @@ class AssetBalanceChangeResponse
      * Sets the source account of the transfer
      *
      * @param string|null $from The source account ID
+     * @return void
      */
     public function setFrom(?string $from): void
     {
@@ -167,6 +172,7 @@ class AssetBalanceChangeResponse
      * Sets the destination account of the transfer
      *
      * @param string $to The destination account ID
+     * @return void
      */
     public function setTo(string $to): void
     {
@@ -187,6 +193,7 @@ class AssetBalanceChangeResponse
      * Sets the amount of the balance change
      *
      * @param string $amount The amount
+     * @return void
      */
     public function setAmount(string $amount): void
     {
@@ -207,6 +214,7 @@ class AssetBalanceChangeResponse
      * Sets the multiplexed destination account ID
      *
      * @param string|null $destinationMuxedId The muxed destination account ID
+     * @return void
      */
     public function setDestinationMuxedId(?string $destinationMuxedId): void
     {

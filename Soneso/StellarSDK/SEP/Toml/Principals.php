@@ -6,6 +6,12 @@
 
 namespace Soneso\StellarSDK\SEP\Toml;
 
+/**
+ * Collection of PointOfContact objects from the stellar.toml file.
+ *
+ * Provides an iterable collection for managing multiple principal entries
+ * from the [[PRINCIPALS]] section of the stellar.toml file.
+ */
 class Principals extends \IteratorIterator
 {
 
@@ -14,16 +20,32 @@ class Principals extends \IteratorIterator
         parent::__construct(new \ArrayIterator($pointsOfContact));
     }
 
+    /**
+     * Returns the current PointOfContact in the iteration.
+     *
+     * @return PointOfContact The current point of contact object
+     */
     public function current(): PointOfContact
     {
         return parent::current();
     }
 
+    /**
+     * Adds a PointOfContact to the collection.
+     *
+     * @param PointOfContact $pointOfContact The point of contact to add
+     * @return void
+     */
     public function add(PointOfContact $pointOfContact)
     {
         $this->getInnerIterator()->append($pointOfContact);
     }
 
+    /**
+     * Returns the number of principals in the collection.
+     *
+     * @return int The count of principals
+     */
     public function count(): int
     {
         return $this->getInnerIterator()->count();

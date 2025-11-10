@@ -42,6 +42,7 @@ class BIP39
      * @param string $entropy Hexadecimal entropy string (128-256 bits).
      * @return Mnemonic The generated mnemonic.
      * @throws Exception If entropy is invalid.
+     * @security Minimum entropy requirement is 128 bits (32 hex characters). SEP-5 recommends 256 bits (64 hex characters) for maximum security.
      */
     public static function Entropy(string $entropy): Mnemonic
     {
@@ -62,6 +63,7 @@ class BIP39
      * @param int $wordCount Number of words in the mnemonic (12, 15, 18, 21, or 24). Default is 12.
      * @return Mnemonic The generated mnemonic.
      * @throws Exception If word count is invalid.
+     * @security Uses cryptographically secure random_bytes() for entropy generation. SEP-5 recommends 24-word mnemonics (256 bits) for production use.
      */
     public static function Generate(int $wordCount = 12): Mnemonic
     {
@@ -234,8 +236,10 @@ class BIP39
     }
 
     /**
-     * @param string $hex
-     * @return string
+     * Converts a hexadecimal string to binary representation.
+     *
+     * @param string $hex Hexadecimal string to convert.
+     * @return string Binary string representation (4 bits per hex character).
      */
     private function hex2bits(string $hex): string
     {
@@ -247,8 +251,10 @@ class BIP39
     }
 
     /**
-     * @param string $bits
-     * @return string
+     * Converts a binary string to hexadecimal representation.
+     *
+     * @param string $bits Binary string to convert (groups of 4 bits).
+     * @return string Hexadecimal string representation.
      */
     private function bits2hex(string $bits): string
     {
@@ -261,9 +267,11 @@ class BIP39
     }
 
     /**
-     * @param string $entropy
-     * @param int $bits
-     * @return string
+     * Calculates the BIP-39 checksum for the given entropy.
+     *
+     * @param string $entropy Hexadecimal entropy string.
+     * @param int $bits Number of checksum bits to generate (1 bit per 3 words, starting from 4 bits for 12 words).
+     * @return string Binary string of the checksum bits.
      */
     private function checksum(string $entropy, int $bits): string
     {
@@ -277,8 +285,10 @@ class BIP39
     }
 
     /**
-     * @param string $entropy
-     * @throws Exception
+     * Validates entropy format and length according to BIP-39 requirements.
+     *
+     * @param string $entropy Hexadecimal entropy string to validate.
+     * @throws Exception If entropy is not valid hexadecimal or has invalid length (must be 128, 160, 192, 224, or 256 bits).
      */
     private static function validateEntropy(string $entropy): void
     {

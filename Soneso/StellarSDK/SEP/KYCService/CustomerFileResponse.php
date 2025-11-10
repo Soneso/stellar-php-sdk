@@ -9,6 +9,19 @@ namespace Soneso\StellarSDK\SEP\KYCService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response object for POST /customer/files endpoint.
+ *
+ * This response is returned after successfully uploading a file (such as ID documents, proof of
+ * address, or other supporting documentation). The file_id can be used in subsequent PUT /customer
+ * requests by appending _file_id to the appropriate SEP-9 field name.
+ *
+ * Files are stored temporarily and may expire if not referenced in a customer record within the
+ * timeframe indicated by expires_at.
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files SEP-12 v1.15.0
+ */
 class CustomerFileResponse extends Response
 {
 

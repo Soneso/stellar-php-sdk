@@ -17,8 +17,8 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * and what fields are needed for each type. Returned as part of the info endpoint response.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md SEP-09 Financial Account Fields
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.17.0/ecosystem/sep-0009.md SEP-9 v1.17.0 Financial Account Fields
  * @see InfoResponse
  * @see AnchorField
  */

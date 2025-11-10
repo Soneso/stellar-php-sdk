@@ -114,7 +114,7 @@ class WordList
     /**
      * Gets the word at the specified index.
      *
-     * @param int $index Index in the word list (0-2047).
+     * @param int $index Index in the word list. Valid range is 0-2047 (BIP-39 standard word list size).
      * @return string|null The word at the index, or null if index is invalid.
      */
     public function getWord(int $index): ?string

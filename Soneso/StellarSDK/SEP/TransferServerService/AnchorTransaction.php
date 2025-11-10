@@ -18,8 +18,8 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * Transaction kinds: deposit, deposit-exchange, withdrawal, withdrawal-exchange.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md SEP-38 v2.5.0 Quotes
  * @see AnchorTransactionResponse
  * @see AnchorTransactionsResponse
  * @see FeeDetails
@@ -38,7 +38,26 @@ class AnchorTransaction
     public string $kind;
 
     /**
-     * @var string Processing status of deposit/withdrawal.
+     * Processing status of deposit/withdrawal.
+     *
+     * Possible values:
+     * - incomplete: Missing required information (non-interactive)
+     * - pending_user_transfer_start: Awaiting user to send funds to anchor
+     * - pending_anchor: Anchor is processing the transaction
+     * - pending_stellar: Transaction submitted to Stellar network
+     * - pending_external: Waiting for external system (bank, crypto network)
+     * - pending_trust: User must add trustline for the asset
+     * - pending_user: Action required from user (deprecated, use specific status)
+     * - completed: Transaction successfully completed
+     * - refunded: Transaction refunded to user
+     * - expired: Transaction expired without completion
+     * - no_market: No market available for requested conversion (exchange operations)
+     * - too_small: Transaction amount is below minimum
+     * - too_large: Transaction amount exceeds maximum
+     * - error: Unrecoverable error occurred
+     *
+     * @var string
+     * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md#transaction-status
      */
     public string $status;
 

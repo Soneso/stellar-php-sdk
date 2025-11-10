@@ -6,8 +6,14 @@
 
 namespace Soneso\StellarSDK\SEP\Toml;
 
-/// Currency Documentation. From the stellar.toml [[CURRENCIES]] list, one set of fields for each currency supported. Applicable fields should be completed and any that don't apply should be excluded.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/**
+ * Currency documentation from the stellar.toml [[CURRENCIES]] list.
+ *
+ * Contains fields for each currency supported. Currencies can be Stellar Assets
+ * or custom token contracts. Complete all applicable fields and exclude any that don't apply.
+ *
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md SEP-1 Currency Documentation
+ */
 class Currency
 {
     /// Token code.

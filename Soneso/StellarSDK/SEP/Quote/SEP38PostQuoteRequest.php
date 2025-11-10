@@ -24,7 +24,7 @@ use DateTimeInterface;
 class SEP38PostQuoteRequest
 {
     /**
-     * @var string $context The context for the quote, either 'sep6' or 'sep31'.
+     * @var string $context The context for the quote: 'sep6', 'sep24', or 'sep31'.
      */
     public string $context;
 
@@ -64,7 +64,7 @@ class SEP38PostQuoteRequest
     public ?string $buyDeliveryMethod = null;
 
     /**
-     * @var string|null $countryCode The country code of the user's current location in ISO 3166-1 alpha-3 format.
+     * @var string|null $countryCode The country code of the user's current location in ISO 3166-2 or ISO 3166-1 alpha-2 format.
      */
     public ?string $countryCode = null;
 

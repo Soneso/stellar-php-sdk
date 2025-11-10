@@ -16,7 +16,7 @@ use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 /**
  * Implements SEP-0024 - Hosted Deposit and Withdrawal.
- * See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md" target="_blank">Hosted Deposit and Withdrawal</a>
+ * See <https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md" target="_blank">Hosted Deposit and Withdrawal</a>
  */
 class InteractiveService
 {
@@ -76,11 +76,17 @@ class InteractiveService
      * This is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex.
      * If a fee can be fully expressed with the fee_fixed, fee_percent or fee_minimum fields in the /info response,
      * then an anchor will not implement this endpoint.
+     *
+     * @deprecated This endpoint is deprecated in favor of SEP-38 GET /price endpoint for obtaining fee information.
+     *             Anchors should implement SEP-38 for more comprehensive pricing and fee data including exchange rates.
+     *             Clients should migrate to using SEP-38 GET /price for new implementations.
+     *
      * @param SEP24FeeRequest $request the request data.
      * @return SEP24FeeResponse the parsed response.
      * @throws RequestErrorException if the server responds with an error and corresponding error message.
      * @throws SEP24AuthenticationRequiredException if the server responds with an authentication_required error.
      * @throws GuzzleException if another request error occurred.
+     * @see https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md SEP-38 Anchor RFQ API
      */
     public function fee(SEP24FeeRequest $request) : SEP24FeeResponse {
         $requestBuilder = new FeeRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);

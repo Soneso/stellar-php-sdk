@@ -17,8 +17,8 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
  * when no information is requested will result in an error response.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#pending-transaction-info-update
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md#pending-transaction-info-update
  * @see TransferServerService::patchTransaction()
  * @see AnchorTransaction
  */
@@ -32,7 +32,7 @@ class PatchTransactionRequest
 
     /**
      * @var array<string, mixed> $fields An object containing the values requested to be updated by the anchor
-     * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#pending-transaction-info-update
+     * See: https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md#pending-transaction-info-update
      */
     public array $fields;
 
@@ -44,7 +44,7 @@ class PatchTransactionRequest
     /**
      * @param string $id Id of the transaction
      * @param array<string, mixed> $fields An object containing the values requested to be updated by the anchor
-     * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#pending-transaction-info-update
+     * See: https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md#pending-transaction-info-update
      * @param string|null $jwt jwt token previously received from the anchor via the SEP-10 authentication flow
      */
     public function __construct(string $id, array $fields, ?string $jwt)

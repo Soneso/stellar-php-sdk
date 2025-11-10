@@ -6,10 +6,45 @@
 
 namespace Soneso\StellarSDK\SEP\RegulatedAssets;
 
+/**
+ * Abstract base class for POST action responses when action_required status is received.
+ *
+ * When an approval server responds with action_required status and action_method is POST,
+ * the wallet can optionally provide the requested SEP-9 KYC/AML fields programmatically
+ * to avoid requiring the user to manually enter information in a browser.
+ *
+ * The server responds with one of two possible results:
+ *
+ * - no_further_action_required: The POST was sufficient, transaction can be resubmitted (SEP08PostActionDone)
+ * - follow_next_url: Further action required, user must visit next_url in browser (SEP08PostActionNextUrl)
+ *
+ * This class provides a factory method to parse JSON responses and instantiate the
+ * appropriate concrete response class based on the result field.
+ *
+ * HTTP Status Code: 200 for all valid responses
+ *
+ * @package Soneso\StellarSDK\SEP\RegulatedAssets
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.7.4/ecosystem/sep-0008.md#following-the-action-url SEP-0008 v1.7.4 Action URL
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md SEP-0009 Standard KYC/AML Fields
+ */
 abstract class SEP08PostActionResponse
 {
     /**
-     * @throws SEP08InvalidPostActionResponse
+     * Factory method to construct an action response object from JSON data.
+     *
+     * Parses the JSON response after posting action fields and instantiates the appropriate
+     * concrete response class based on the 'result' field value.
+     *
+     * Result Mapping:
+     * - "no_further_action_required" -> SEP08PostActionDone
+     * - "follow_next_url" -> SEP08PostActionNextUrl
+     *
+     * @param array<array-key, mixed> $json Decoded JSON response from action URL
+     *
+     * @return SEP08PostActionResponse Concrete subclass instance based on result field
+     *
+     * @throws SEP08InvalidPostActionResponse If result field is missing, unknown, or required
+     *                                         fields for the given result are missing
      */
     public static function fromJson(array $json) : SEP08PostActionResponse
     {

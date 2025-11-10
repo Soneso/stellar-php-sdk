@@ -46,8 +46,44 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
  * This implementation supports standard accounts, muxed accounts, and client domain
  * verification for non-custodial wallets.
  *
+ * SECURITY WARNINGS:
+ *
+ * 1. Sequence Number Validation (CRITICAL):
+ *    Always verify the challenge transaction has sequence number 0. This ensures the transaction
+ *    cannot be executed on the Stellar network. A non-zero sequence number could allow a malicious
+ *    server to trick clients into signing executable transactions that transfer funds or modify
+ *    account settings. This validation prevents transaction execution attacks.
+ *
+ * 2. Server Signature Verification (CRITICAL):
+ *    Always verify the challenge is signed by the server's signing key from stellar.toml. This
+ *    prevents man-in-the-middle attacks where an attacker intercepts the authentication flow and
+ *    provides a fake challenge to capture client signatures. The server signature proves the
+ *    challenge originated from the legitimate authentication server.
+ *
+ * 3. Time Bounds Validation (HIGH):
+ *    Verify the challenge transaction's time bounds are valid and the current time falls within
+ *    them. Time bounds prevent replay attacks by limiting challenge validity to approximately
+ *    15 minutes. Expired challenges should never be signed or submitted, as they may have been
+ *    intercepted and are being replayed by an attacker.
+ *
+ * 4. JWT Token Security (HIGH):
+ *    Store JWT tokens securely and never expose them in logs, URLs, or insecure storage. Tokens
+ *    grant access to authenticated services and should be treated as credentials. Use HTTPS for
+ *    all requests with tokens. Respect token expiration times and request new authentication
+ *    when tokens expire. Tokens should never be shared between different users or applications.
+ *
+ * 5. Home Domain Validation (HIGH):
+ *    Verify the home domain in the challenge matches the expected service. This prevents domain
+ *    confusion attacks where a challenge for one service is used to authenticate with another.
+ *    Always validate the first operation's key matches "<expected_domain> auth".
+ *
+ * 6. Network Passphrase:
+ *    Use the correct network passphrase (testnet or pubnet) when signing. Mixing passphrases
+ *    can lead to signature validation failures or security vulnerabilities. Verify the network
+ *    passphrase matches your intended network before proceeding with authentication.
+ *
  * @package Soneso\StellarSDK\SEP\WebAuth
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md SEP-10 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md SEP-10 Specification v3.4.1
  * @see StellarToml For discovering the auth endpoint
  */
 class WebAuth
@@ -105,8 +141,16 @@ class WebAuth
 
     /**
      * Get JWT token for wallet.
-     * @param string $clientAccountId The account id of the client/user to get the JWT token for.
-     * @param array $signers list of signers (keypairs including secret seed) of the client account
+     *
+     * Executes the complete SEP-10 authentication flow: requests a challenge, validates it,
+     * signs it with the provided signers, and submits it to obtain a JWT token.
+     *
+     * @param string $clientAccountId The account id of the client/user to get the JWT token for (G... or M... address).
+     * @param array<KeyPair> $signers Array of KeyPair objects (with secret keys) used to sign the challenge transaction.
+     *                                Must include signers with sufficient weight to meet the server's threshold requirements.
+     *                                For accounts that don't exist, must include the master key. For existing accounts,
+     *                                must provide signers that meet the required threshold (typically medium threshold).
+     *                                Minimum: 1 signer. The combined weight must satisfy server authentication requirements.
      * @param int|null $memo optional, ID memo of the client account if muxed and accountId starts with G
      * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml. If clientDomain is provided,
@@ -116,7 +160,7 @@ class WebAuth
      * The callback receives a base64-encoded transaction envelope XDR string and must return the same transaction signed by the client domain account
      * as a base64-encoded transaction envelope XDR string. Used when the client domain signing key is not available locally (e.g., signing occurs on a separate server).
      * Callback signature: function(string $transactionXdr): string
-     * @return string JWT token.
+     * @return string JWT token that can be used to authenticate requests to protected services.
      * @throws ChallengeValidationError
      * @throws ChallengeValidationErrorInvalidHomeDomain
      * @throws ChallengeValidationErrorInvalidMemoType
@@ -132,6 +176,8 @@ class WebAuth
      * @throws SubmitCompletedChallengeUnknownResponseException
      * @throws GuzzleException|ChallengeRequestErrorResponse|ChallengeValidationErrorInvalidOperationType
      * @throws InvalidArgumentException
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md SEP-10 Complete Flow
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#verification SEP-10 Signature Verification
      */
     public function jwtToken(string $clientAccountId,
                              array $signers,
@@ -180,12 +226,14 @@ class WebAuth
     /**
      * Sends the signed challenge transaction back to the web auth server to obtain the jwt token.
      * In case of success, it returns the jwt token obtained from the web auth server.
-     * @param string $base64EnvelopeXDR
-     * @return string
+     *
+     * @param string $base64EnvelopeXDR The signed challenge transaction as base64-encoded XDR.
+     * @return string JWT token for authenticated requests.
      * @throws SubmitCompletedChallengeErrorResponseException
      * @throws SubmitCompletedChallengeTimeoutResponseException
      * @throws SubmitCompletedChallengeUnknownResponseException
      * @throws GuzzleException
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#token SEP-10 Token Endpoint
      */
     private function sendSignedChallengeTransaction(string $base64EnvelopeXDR) : string {
         $response = $this->httpClient->post($this->authEndpoint, [RequestOptions::JSON => ['transaction' => $base64EnvelopeXDR], 'http_errors' => false]);
@@ -251,12 +299,14 @@ class WebAuth
 
     /**
      * Get challenge transaction from the web auth server. Returns base64 xdr transaction envelope received from the web auth server.
+     *
      * @param string $clientAccountId The account id of the client/user that requests the challenge.
      * @param int|null $memo optional, ID memo of the client account if muxed and accountId starts with G
      * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml
-     * @return string
+     * @return string Base64-encoded XDR transaction envelope.
      * @throws ChallengeRequestErrorResponse
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Challenge Endpoint
      */
     private function getChallenge(string $clientAccountId, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : string {
 
@@ -268,12 +318,17 @@ class WebAuth
         return $transaction;
     }
 
-    /** Validates the challenge transaction received from the web auth server.
-     * @param string $challengeTransaction
-     * @param string $userAccountId
-     * @param string|null $clientDomainAccountId
-     * @param int|null $timeBoundsGracePeriod
-     * @param int|null $memo
+    /**
+     * Validates the challenge transaction received from the web auth server.
+     *
+     * Performs comprehensive validation according to SEP-10 requirements including sequence number,
+     * signatures, time bounds, operations, source accounts, home domain, and web auth domain.
+     *
+     * @param string $challengeTransaction Base64-encoded XDR transaction envelope to validate.
+     * @param string $userAccountId The client account ID that should be authenticated.
+     * @param string|null $clientDomainAccountId Optional client domain account for domain verification.
+     * @param int|null $timeBoundsGracePeriod Optional grace period in seconds for time bounds validation.
+     * @param int|null $memo Optional memo that should match the challenge transaction memo.
      * @throws ChallengeValidationError
      * @throws ChallengeValidationErrorInvalidHomeDomain
      * @throws ChallengeValidationErrorInvalidMemoType
@@ -285,6 +340,7 @@ class WebAuth
      * @throws ChallengeValidationErrorInvalidWebAuthDomain
      * @throws ChallengeValidationErrorMemoAndMuxedAccount
      * @throws ChallengeValidationErrorInvalidOperationType
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Challenge Validation
      */
     private function validateChallenge(string $challengeTransaction, string $userAccountId,  ?string $clientDomainAccountId = null, ?int $timeBoundsGracePeriod = null, ?int $memo = null) {
         $res = base64_decode($challengeTransaction);
@@ -430,7 +486,16 @@ class WebAuth
         }
     }
 
-    public function setMockHandler(MockHandler $handler) {
+    /**
+     * Set a mock HTTP handler for testing purposes.
+     *
+     * Replaces the HTTP client with one using the provided mock handler. This allows tests
+     * to simulate authentication server responses without making actual HTTP requests.
+     *
+     * @param MockHandler $handler Guzzle mock handler with predefined responses.
+     * @return void
+     */
+    public function setMockHandler(MockHandler $handler) : void {
         $handlerStack = HandlerStack::create($handler);
         $this->httpClient = new Client(['handler' => $handlerStack]);
     }

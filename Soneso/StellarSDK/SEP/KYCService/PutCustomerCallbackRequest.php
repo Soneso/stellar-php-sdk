@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\SEP\KYCService;
 
+/**
+ * Request object for PUT /customer/callback endpoint.
+ *
+ * This endpoint allows wallets to register a callback URL with the anchor. The anchor will
+ * POST to this URL when the customer's verification status changes. The callback URL replaces
+ * any previously registered callback URL for the identified customer.
+ *
+ * Callbacks enable real-time status updates without requiring the wallet to poll the GET /customer
+ * endpoint repeatedly. This is particularly useful for long-running verification processes.
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put SEP-12 v1.15.0
+ */
 class PutCustomerCallbackRequest
 {
     /**

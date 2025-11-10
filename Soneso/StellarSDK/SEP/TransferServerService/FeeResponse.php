@@ -18,7 +18,7 @@ use Soneso\StellarSDK\Responses\Response;
  * The fee is expressed in units of the asset being deposited or withdrawn.
  *
  * @package Soneso\StellarSDK\SEP\TransferServerService
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
  * @see TransferServerService::fee()
  * @see FeeRequest
  */

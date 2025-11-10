@@ -15,8 +15,13 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 /**
- * Implements SEP-0038 - Anchor RFQ API.
- * See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md" target="_blank">Anchor RFQ API.</a>
+ * Implements SEP-0038 - Anchor RFQ API v2.5.0.
+ *
+ * This service provides indicative and firm quotes for asset exchanges between
+ * Stellar assets and off-chain assets. Supports SEP-10/SEP-45 authentication
+ * for protected endpoints.
+ *
+ * @see <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md" target="_blank">SEP-0038 Specification</a>
  */
 class QuoteService
 {
@@ -57,7 +62,7 @@ class QuoteService
      * This endpoint returns the supported Stellar assets and off-chain assets available for trading.
      * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-info
      *
-     * @param string|null $jwt optional jwtToken token obtained before with SEP-0010.
+     * @param string|null $jwt Optional JWT token obtained with SEP-10/SEP-45 authentication.
      * @return SEP38InfoResponse object containing the response data.
      * @throws GuzzleException
      * @throws SEP38BadRequestException
@@ -97,7 +102,7 @@ class QuoteService
      * @param string|null $sellDeliveryMethod Optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
      * @param string|null $buyDeliveryMethod Optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
      * @param string|null $countryCode Optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
-     * @param string|null $jwt Optional, token obtained before with SEP-0010.
+     * @param string|null $jwt Optional JWT token obtained with SEP-10/SEP-45 authentication.
      * @return SEP38PricesResponse Object containing the response data.
      * @throws GuzzleException
      * @throws SEP38BadRequestException
@@ -151,7 +156,7 @@ class QuoteService
      * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-price
      * The client must provide either sellAmount or buyAmount, but not both.
      *
-     * @param string $context The context for what this quote will be used for. Must be one of 'sep6' or 'sep31'.
+     * @param string $context The context for what this quote will be used for. Must be one of 'sep6', 'sep24', or 'sep31'.
      * @param string $sellAsset The asset the client would like to sell. Ex. stellar:USDC:G..., iso4217:ARS
      * @param string $buyAsset The asset the client would like to exchange for sellAsset.
      * @param string|null $sellAmount Optional, the amount of sellAsset the client would like to exchange for buyAsset.
@@ -159,7 +164,7 @@ class QuoteService
      * @param string|null $sellDeliveryMethod Optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
      * @param string|null $buyDeliveryMethod Optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
      * @param string|null $countryCode Optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
-     * @param string|null $jwt Optional, token obtained before with SEP-0010.
+     * @param string|null $jwt Optional JWT token obtained with SEP-10/SEP-45 authentication.
      * @return SEP38PriceResponse Object containing the response data.
      * @throws GuzzleException
      * @throws SEP38BadRequestException
@@ -225,7 +230,7 @@ class QuoteService
      * This endpoint can be used to request a firm quote for a Stellar asset and off-chain asset pair.
      *
      * @param SEP38PostQuoteRequest $request request Data.
-     * @param string $jwt jwtToken obtained with SEP-10.
+     * @param string $jwt JWT token obtained with SEP-10/SEP-45 authentication.
      * @return SEP38QuoteResponse Object containing the response data.
      * @throws GuzzleException
      * @throws SEP38BadRequestException
@@ -268,7 +273,7 @@ class QuoteService
     /**
      * This endpoint can be used to fetch a previously-provided firm quote by id.
      * @param string $id of the quote to load.
-     * @param string $jwt Jwt token previously received with SEP-10.
+     * @param string $jwt JWT token obtained with SEP-10/SEP-45 authentication.
      * @return SEP38QuoteResponse Object containing the response data.
      * @throws GuzzleException
      * @throws SEP38BadRequestException
