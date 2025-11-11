@@ -14,18 +14,63 @@ use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 
+/**
+ * Represents a Soroban host function for creating smart contracts
+ *
+ * This host function deploys a new smart contract instance from previously uploaded
+ * WASM code. The contract is identified by the WASM ID (hash of the uploaded code),
+ * a deployer address, and a salt value for uniqueness.
+ *
+ * The contract address is deterministically generated from:
+ * - The deployer address (typically the source account or contract)
+ * - The WASM ID (hash of the contract code)
+ * - A salt value (random or specified for reproducibility)
+ *
+ * Usage:
+ * <code>
+ * // Deploy a contract from uploaded WASM
+ * $hostFunction = new CreateContractHostFunction(
+ *     Address::fromAccountId("GABC..."), // Deployer address
+ *     $wasmId,                            // WASM hash from upload
+ *     $salt                               // Optional salt (generated if not provided)
+ * );
+ *
+ * // Use in an InvokeHostFunctionOperation
+ * $operation = (new InvokeHostFunctionOperationBuilder($hostFunction))->build();
+ * </code>
+ *
+ * @package Soneso\StellarSDK
+ * @see HostFunction Base class for all host functions
+ * @see UploadContractWasmHostFunction For uploading WASM code first
+ * @see Address For address handling
+ * @see https://developers.stellar.org/docs/smart-contracts/guides/cli/deploy-contract
+ * @since 1.0.0
+ */
 class CreateContractHostFunction extends HostFunction
 {
+    /**
+     * @var Address $address The deployer address
+     */
     public Address $address;
+
+    /**
+     * @var string $wasmId The WASM ID (hash of the uploaded contract code)
+     */
     public string $wasmId;
+
+    /**
+     * @var string $salt The salt value for contract address generation
+     */
     public string $salt;
 
 
     /**
-     * @param Address $address
-     * @param string $wasmId
-     * @param string|null $salt
-     * @throws Exception
+     * Constructs a new CreateContractHostFunction
+     *
+     * @param Address $address The deployer address
+     * @param string $wasmId The WASM ID (hash of uploaded contract code)
+     * @param string|null $salt Optional salt (32 random bytes generated if not provided)
+     * @throws Exception If random bytes generation fails
      */
     public function __construct(Address $address, string $wasmId, ?string $salt = null)
     {
@@ -35,12 +80,21 @@ class CreateContractHostFunction extends HostFunction
         parent::__construct();
     }
 
+    /**
+     * Converts the create contract host function to XDR format
+     *
+     * @return XdrHostFunction The XDR host function
+     */
     public function toXdr() : XdrHostFunction {
         return XdrHostFunction::forCreatingContract($this->address->toXdr(), $this->wasmId, $this->salt);
     }
 
     /**
-     * @throws Exception
+     * Creates a CreateContractHostFunction from XDR format
+     *
+     * @param XdrHostFunction $xdr The XDR host function
+     * @return CreateContractHostFunction The decoded host function
+     * @throws Exception If the XDR format is invalid or missing required data
      */
     public static function fromXdr(XdrHostFunction $xdr) : CreateContractHostFunction {
         $type = $xdr->type;
@@ -59,7 +113,9 @@ class CreateContractHostFunction extends HostFunction
     }
 
     /**
-     * @return Address
+     * Gets the deployer address
+     *
+     * @return Address The deployer address
      */
     public function getAddress(): Address
     {
@@ -67,7 +123,10 @@ class CreateContractHostFunction extends HostFunction
     }
 
     /**
-     * @param Address $address
+     * Sets the deployer address
+     *
+     * @param Address $address The deployer address
+     * @return void
      */
     public function setAddress(Address $address): void
     {
@@ -75,7 +134,9 @@ class CreateContractHostFunction extends HostFunction
     }
 
     /**
-     * @return string
+     * Gets the WASM ID
+     *
+     * @return string The WASM ID (hash of uploaded contract code)
      */
     public function getWasmId(): string
     {
@@ -83,7 +144,10 @@ class CreateContractHostFunction extends HostFunction
     }
 
     /**
-     * @param string $wasmId
+     * Sets the WASM ID
+     *
+     * @param string $wasmId The WASM ID (hash of uploaded contract code)
+     * @return void
      */
     public function setWasmId(string $wasmId): void
     {
@@ -91,7 +155,9 @@ class CreateContractHostFunction extends HostFunction
     }
 
     /**
-     * @return string
+     * Gets the salt value
+     *
+     * @return string The salt value for contract address generation
      */
     public function getSalt(): string
     {
@@ -99,7 +165,10 @@ class CreateContractHostFunction extends HostFunction
     }
 
     /**
-     * @param string $salt
+     * Sets the salt value
+     *
+     * @param string $salt The salt value for contract address generation
+     * @return void
      */
     public function setSalt(string $salt): void
     {

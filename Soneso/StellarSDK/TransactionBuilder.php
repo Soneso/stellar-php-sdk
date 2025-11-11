@@ -10,7 +10,47 @@ use InvalidArgumentException;
 use Soneso\StellarSDK\Constants\StellarConstants;
 
 /**
- * Builds a new Transaction object.
+ * Builds a new Transaction object using the builder pattern
+ *
+ * This class provides a fluent interface for constructing Stellar transactions. It manages
+ * the source account, operations, memos, preconditions, and fees. The builder pattern allows
+ * for method chaining and ensures transactions are properly constructed before submission.
+ *
+ * Key Features:
+ * - Automatic sequence number management
+ * - Support for multiple operations
+ * - Flexible fee calculation (per-operation or total)
+ * - Time bounds and other preconditions
+ * - Memo attachment
+ *
+ * Usage:
+ * <code>
+ * // Build a simple payment transaction
+ * $transaction = (new TransactionBuilder($sourceAccount))
+ *     ->addOperation($paymentOperation)
+ *     ->addMemo(Memo::text("Payment for order #123"))
+ *     ->setMaxOperationFee(100)
+ *     ->build();
+ *
+ * // Build with time bounds
+ * $transaction = (new TransactionBuilder($sourceAccount))
+ *     ->addOperation($operation)
+ *     ->setTimeBounds(new TimeBounds($minTime, $maxTime))
+ *     ->build();
+ *
+ * // Build with multiple operations
+ * $transaction = (new TransactionBuilder($sourceAccount))
+ *     ->addOperation($createAccountOp)
+ *     ->addOperation($paymentOp)
+ *     ->addOperation($trustlineOp)
+ *     ->build();
+ * </code>
+ *
+ * @package Soneso\StellarSDK
+ * @see Transaction The transaction object that is built
+ * @see TransactionBuilderAccount Interface for source accounts
+ * @see https://developers.stellar.org/docs/encyclopedia/transactions
+ * @since 1.0.0
  */
 class TransactionBuilder
 {

@@ -15,22 +15,73 @@ use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
+/**
+ * Represents a Soroban host function for creating contracts with constructor arguments
+ *
+ * This host function deploys a new smart contract instance from previously uploaded WASM code,
+ * similar to CreateContractHostFunction, but with support for passing constructor arguments.
+ * Constructor arguments are passed to the contract's initialization function during deployment.
+ *
+ * This is useful for contracts that require initialization parameters, such as:
+ * - Token contracts needing initial supply or admin addresses
+ * - Contracts with configurable parameters
+ * - Contracts requiring setup data at deployment time
+ *
+ * Usage:
+ * <code>
+ * // Deploy contract with constructor arguments
+ * $args = [
+ *     XdrSCVal::forSymbol("admin"),
+ *     XdrSCVal::forAddress($adminAddress),
+ *     XdrSCVal::forU64(1000000)
+ * ];
+ *
+ * $hostFunction = new CreateContractWithConstructorHostFunction(
+ *     Address::fromAccountId("GABC..."), // Deployer address
+ *     $wasmId,                            // WASM hash from upload
+ *     $args,                              // Constructor arguments
+ *     $salt                               // Optional salt
+ * );
+ * </code>
+ *
+ * @package Soneso\StellarSDK
+ * @see HostFunction Base class for all host functions
+ * @see CreateContractHostFunction For contracts without constructor arguments
+ * @see UploadContractWasmHostFunction For uploading WASM code first
+ * @see https://developers.stellar.org/docs/smart-contracts/guides/cli/deploy-contract
+ * @since 1.0.0
+ */
 class CreateContractWithConstructorHostFunction extends HostFunction
 {
-    public Address $address;
-    public string $wasmId;
-    public string $salt;
     /**
-     * @var array<XdrSCVal>
+     * @var Address $address The deployer address
+     */
+    public Address $address;
+
+    /**
+     * @var string $wasmId The WASM ID (hash of the uploaded contract code)
+     */
+    public string $wasmId;
+
+    /**
+     * @var string $salt The salt value for contract address generation
+     */
+    public string $salt;
+
+    /**
+     * @var array<XdrSCVal> $constructorArgs The constructor arguments
      */
     public array $constructorArgs;
 
 
     /**
-     * @param Address $address
-     * @param string $wasmId
-     * @param string|null $salt
-     * @throws Exception
+     * Constructs a new CreateContractWithConstructorHostFunction
+     *
+     * @param Address $address The deployer address
+     * @param string $wasmId The WASM ID (hash of uploaded contract code)
+     * @param array<XdrSCVal> $constructorArgs The constructor arguments
+     * @param string|null $salt Optional salt (32 random bytes generated if not provided)
+     * @throws Exception If random bytes generation fails
      */
     public function __construct(Address $address, string $wasmId, array $constructorArgs, ?string $salt = null)
     {

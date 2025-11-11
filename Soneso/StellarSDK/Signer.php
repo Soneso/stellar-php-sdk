@@ -46,7 +46,7 @@ class Signer
      * @param string $sha256HashKey The hash in strkey format (starts with X...)
      * @return XdrSignerKey The signer key object
      */
-    public static function sha256Hash(String $sha256HashKey) : XdrSignerKey {
+    public static function sha256Hash(string $sha256HashKey) : XdrSignerKey {
         $signerKey = new XdrSignerKey();
         $signerKey->setType(new XdrSignerKeyType(XdrSignerKeyType::HASH_X));
         $signerKey->setHashX(StrKey::decodeSha256Hash($sha256HashKey));
@@ -77,7 +77,7 @@ class Signer
      * @param string $preAuthTxKey The transaction hash in strkey format (starts with T...)
      * @return XdrSignerKey The signer key object
      */
-    public static function preAuthTxHash(String $preAuthTxKey) : XdrSignerKey {
+    public static function preAuthTxHash(string $preAuthTxKey) : XdrSignerKey {
         $signerKey = new XdrSignerKey();
         $signerKey->setType(new XdrSignerKeyType(XdrSignerKeyType::PRE_AUTH_TX));
         $signerKey->setPreAuthTx(StrKey::decodePreAuthTx($preAuthTxKey));
