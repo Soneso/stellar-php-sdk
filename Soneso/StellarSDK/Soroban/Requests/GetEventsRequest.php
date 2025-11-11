@@ -8,7 +8,11 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 /**
  * Used for getEvents()
- * See: https://soroban.stellar.org/api/methods/getEvents
+ *
+ * @see EventFilter
+ * @see PaginationOptions
+ * @see https://soroban.stellar.org/api/methods/getEvents
+ * @package Soneso\StellarSDK\Soroban\Requests
  */
 class GetEventsRequest
 {
@@ -59,6 +63,11 @@ class GetEventsRequest
         $this->paginationOptions = $paginationOptions;
     }
 
+    /**
+     * Builds and returns the request parameters array for the RPC API call.
+     *
+     * @return array<string, mixed> The request parameters formatted for Soroban RPC
+     */
     public function getRequestParams() : array {
         /**
          * @var array<string,mixed> $params
@@ -134,7 +143,10 @@ class GetEventsRequest
     }
 
     /**
-     * @param EventFilters|null $filters
+     * Sets the event filters for the request.
+     *
+     * @param EventFilters|null $filters List of filters for the returned events
+     * @return void
      */
     public function setFilters(?EventFilters $filters): void
     {
@@ -142,7 +154,7 @@ class GetEventsRequest
     }
 
     /**
-     * @return PaginationOptions|null
+     * @return PaginationOptions|null for pagination.
      */
     public function getPaginationOptions(): ?PaginationOptions
     {
@@ -150,7 +162,10 @@ class GetEventsRequest
     }
 
     /**
-     * @param PaginationOptions|null $paginationOptions
+     * Sets the pagination options for the request.
+     *
+     * @param PaginationOptions|null $paginationOptions for pagination.
+     * @return void
      */
     public function setPaginationOptions(?PaginationOptions $paginationOptions): void
     {

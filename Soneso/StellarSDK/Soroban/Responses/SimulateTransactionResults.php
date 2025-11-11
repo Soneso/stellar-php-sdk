@@ -6,6 +6,11 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+/**
+ * Collection of SimulateTransactionResult objects
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ */
 class SimulateTransactionResults extends \IteratorIterator
 {
 

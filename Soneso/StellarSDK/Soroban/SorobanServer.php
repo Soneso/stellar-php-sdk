@@ -60,21 +60,79 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
  */
 class SorobanServer
 {
+    /**
+     * @var string the RPC server endpoint URL
+     */
     private string $endpoint;
+
+    /**
+     * @var array<string,string> HTTP headers for RPC requests
+     */
     private array $headers = array();
+
+    /**
+     * @var Client Guzzle HTTP client for making requests
+     */
     private Client $httpClient;
 
+    /**
+     * @var string RPC method name for health checks
+     */
     private const GET_HEALTH = "getHealth";
+
+    /**
+     * @var string RPC method name for network information
+     */
     private const GET_NETWORK = "getNetwork";
+
+    /**
+     * @var string RPC method name for transaction simulation
+     */
     private const SIMULATE_TRANSACTION = "simulateTransaction";
+
+    /**
+     * @var string RPC method name for transaction submission
+     */
     private const SEND_TRANSACTION = "sendTransaction";
+
+    /**
+     * @var string RPC method name for transaction status queries
+     */
     private const GET_TRANSACTION = "getTransaction";
+
+    /**
+     * @var string RPC method name for transaction list queries
+     */
     private const GET_TRANSACTIONS = "getTransactions";
+
+    /**
+     * @var string RPC method name for ledger queries
+     */
     private const GET_LEDGERS = "getLedgers";
+
+    /**
+     * @var string RPC method name for ledger entry queries
+     */
     private const GET_LEDGER_ENTRIES = "getLedgerEntries";
+
+    /**
+     * @var string RPC method name for latest ledger queries
+     */
     private const GET_LATEST_LEDGER = "getLatestLedger";
+
+    /**
+     * @var string RPC method name for event queries
+     */
     private const GET_EVENTS = "getEvents";
+
+    /**
+     * @var string RPC method name for fee statistics
+     */
     private const GET_FEE_STATS = "getFeeStats";
+
+    /**
+     * @var string RPC method name for version information
+     */
     private const GET_VERSION_INFO = "getVersionInfo";
 
     public bool $enableLogging = false;
@@ -198,11 +256,11 @@ class SorobanServer
      * successfully recorded on the blockchain.
      * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransaction
      *
-     * @param String $transactionId of the transaction to be checked.
+     * @param string $transactionId of the transaction to be checked.
      * @return GetTransactionResponse response in case of success.
      * @throws GuzzleException if any request problem occurs.
      */
-    public function getTransaction(String $transactionId) : GetTransactionResponse {
+    public function getTransaction(string $transactionId) : GetTransactionResponse {
         $body = $this->prepareRequest(self::GET_TRANSACTION, ['hash' => $transactionId]);
         $result = $this->request($body, self::GET_TRANSACTION);
         assert($result instanceof GetTransactionResponse);
@@ -246,7 +304,7 @@ class SorobanServer
      * To fetch contract wasm byte-code, use the ContractCode ledger entry key.
      * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgerEntries
      *
-     * @param array $base64EncodedKeys to request the ledger entry for.
+     * @param array<string> $base64EncodedKeys base64-encoded XDR ledger keys to retrieve
      * @return GetLedgerEntriesResponse response in case of success.
      * @throws GuzzleException if any request problem occurs.
      */

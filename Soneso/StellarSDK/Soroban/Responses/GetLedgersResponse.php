@@ -9,48 +9,47 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  * Response for the getLedgers request.
- * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
  */
 class GetLedgersResponse extends SorobanRpcResponse
 {
     /**
-     * @var array<LedgerInfo>|null $ledgers Array of ledger information.
+     * @var array<LedgerInfo>|null $ledgers Array of ledger information
      */
     public ?array $ledgers = null;
 
     /**
-     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it
-     * handled the request.
+     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public ?int $latestLedger = null;
 
     /**
-     * @var int|null $latestLedgerCloseTime The unix timestamp of the close time of the latest ledger known to
-     * Soroban RPC at the time it handled the request.
+     * @var int|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time
      */
     public ?int $latestLedgerCloseTime = null;
 
     /**
-     * @var int|null $oldestLedger The sequence number of the oldest ledger ingested by Soroban RPC at the time
-     * it handled the request.
+     * @var int|null $oldestLedger The sequence number of the oldest ledger ingested by Soroban RPC
      */
     public ?int $oldestLedger = null;
 
     /**
-     * @var int|null $oldestLedgerCloseTime The unix timestamp of the close time of the oldest ledger ingested
-     * by Soroban RPC at the time it handled the request.
+     * @var int|null $oldestLedgerCloseTime Unix timestamp of the oldest ledger close time
      */
     public ?int $oldestLedgerCloseTime = null;
 
     /**
-     * @var string|null $cursor A cursor value for use in pagination.
+     * @var string|null $cursor Cursor value for pagination
      */
     public ?string $cursor = null;
 
     /**
-     * Creates a GetLedgersResponse object from a JSON array.
-     * @param array<array-key, mixed> $json The JSON array to parse.
-     * @return GetLedgersResponse The parsed GetLedgersResponse object.
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
      */
     public static function fromJson(array $json): GetLedgersResponse
     {
@@ -85,7 +84,7 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return array<LedgerInfo>|null Array of ledger information.
+     * @return array<LedgerInfo>|null Array of ledger information
      */
     public function getLedgers(): ?array
     {
@@ -93,7 +92,8 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param array<LedgerInfo>|null $ledgers Array of ledger information.
+     * @param array<LedgerInfo>|null $ledgers Array of ledger information
+     * @return void
      */
     public function setLedgers(?array $ledgers): void
     {
@@ -101,7 +101,7 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public function getLatestLedger(): ?int
     {
@@ -109,8 +109,8 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it
-     * handled the request.
+     * @param int|null $latestLedger The sequence number of the latest ledger
+     * @return void
      */
     public function setLatestLedger(?int $latestLedger): void
     {
@@ -118,8 +118,7 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The unix timestamp of the close time of the latest ledger known to Soroban RPC at the time it
-     * handled the request.
+     * @return int|null Unix timestamp of the latest ledger close time
      */
     public function getLatestLedgerCloseTime(): ?int
     {
@@ -127,8 +126,8 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $latestLedgerCloseTime The unix timestamp of the close time of the latest ledger known to
-     * Soroban RPC at the time it handled the request.
+     * @param int|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time
+     * @return void
      */
     public function setLatestLedgerCloseTime(?int $latestLedgerCloseTime): void
     {
@@ -136,8 +135,7 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The sequence number of the oldest ledger ingested by Soroban RPC at the time it handled
-     * the request.
+     * @return int|null The sequence number of the oldest ledger ingested by Soroban RPC
      */
     public function getOldestLedger(): ?int
     {
@@ -145,8 +143,8 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $oldestLedger The sequence number of the oldest ledger ingested by Soroban RPC at the time it
-     * handled the request.
+     * @param int|null $oldestLedger The sequence number of the oldest ledger
+     * @return void
      */
     public function setOldestLedger(?int $oldestLedger): void
     {
@@ -154,8 +152,7 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time
-     * it handled the request.
+     * @return int|null Unix timestamp of the oldest ledger close time
      */
     public function getOldestLedgerCloseTime(): ?int
     {
@@ -163,8 +160,8 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $oldestLedgerCloseTime The unix timestamp of the close time of the oldest ledger ingested by
-     * Soroban RPC at the time it handled the request.
+     * @param int|null $oldestLedgerCloseTime Unix timestamp of the oldest ledger close time
+     * @return void
      */
     public function setOldestLedgerCloseTime(?int $oldestLedgerCloseTime): void
     {
@@ -172,7 +169,7 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null A cursor value for use in pagination.
+     * @return string|null Cursor value for pagination
      */
     public function getCursor(): ?string
     {
@@ -180,7 +177,8 @@ class GetLedgersResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param string|null $cursor A cursor value for use in pagination.
+     * @param string|null $cursor Cursor value for pagination
+     * @return void
      */
     public function setCursor(?string $cursor): void
     {

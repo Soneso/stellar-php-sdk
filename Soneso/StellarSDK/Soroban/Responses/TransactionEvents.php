@@ -6,6 +6,11 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+/**
+ * Transaction events container for protocol version >= 23
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ */
 class TransactionEvents
 {
     /**
@@ -29,6 +34,12 @@ class TransactionEvents
         $this->contractEventsXdr = $contractEventsXdr;
     }
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json): TransactionEvents
     {
         /**

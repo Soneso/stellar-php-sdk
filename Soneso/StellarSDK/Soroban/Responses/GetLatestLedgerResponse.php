@@ -7,28 +7,34 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
- * Response for getLatestLedger()
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
+ * Response for getLatestLedger request.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
  */
 class GetLatestLedgerResponse extends SorobanRpcResponse
 {
     /**
-     * @var string|null $id Hash identifier of the latest ledger (as a hex-encoded string)
-     * known to Soroban RPC at the time it handled the request.
+     * @var string|null $id Hash identifier of the latest ledger as hex-encoded string
      */
     public ?string $id = null;
 
     /**
-     * @var int|null $protocolVersion Stellar Core protocol version associated with the latest ledger.
+     * @var int|null $protocolVersion Stellar Core protocol version associated with the latest ledger
      */
     public ?int $protocolVersion = null;
 
     /**
-     * @var int|null $sequence The sequence number of the latest ledger known to Soroban RPC at the time it
-     * handled the request.
+     * @var int|null $sequence The sequence number of the latest ledger known to Soroban RPC
      */
     public ?int $sequence = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : GetLatestLedgerResponse {
         $result = new GetLatestLedgerResponse($json);
         if (isset($json['result'])) {
@@ -42,8 +48,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null Hash identifier of the latest ledger (as a hex-encoded string)
-     *  known to Soroban RPC at the time it handled the request.
+     * @return string|null Hash identifier of the latest ledger as hex-encoded string
      */
     public function getId(): ?string
     {
@@ -51,8 +56,8 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param string|null $id Hash identifier of the latest ledger (as a hex-encoded string)
-     *  known to Soroban RPC at the time it handled the request.
+     * @param string|null $id Hash identifier of the latest ledger
+     * @return void
      */
     public function setId(?string $id): void
     {
@@ -60,7 +65,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null Stellar Core protocol version associated with the latest ledger.
+     * @return int|null Stellar Core protocol version associated with the latest ledger
      */
     public function getProtocolVersion(): ?int
     {
@@ -68,7 +73,8 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $protocolVersion Stellar Core protocol version associated with the latest ledger.
+     * @param int|null $protocolVersion Stellar Core protocol version
+     * @return void
      */
     public function setProtocolVersion(?int $protocolVersion): void
     {
@@ -76,7 +82,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC
      */
     public function getSequence(): ?int
     {
@@ -84,7 +90,8 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $sequence The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     * @param int|null $sequence The sequence number of the latest ledger
+     * @return void
      */
     public function setSequence(?int $sequence): void
     {

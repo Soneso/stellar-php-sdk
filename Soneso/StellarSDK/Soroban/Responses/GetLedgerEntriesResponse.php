@@ -8,21 +8,29 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  * Response when reading the current values of ledger entries.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries
  */
 class GetLedgerEntriesResponse extends SorobanRpcResponse
 {
 
     /**
-     * @var array<LedgerEntry>|null $entries Array of objects containing all found ledger entries.
+     * @var array<LedgerEntry>|null $entries Array of found ledger entries
      */
-    public ?array $entries = null; // LedgerEntry
+    public ?array $entries = null;
 
     /**
-     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public ?int $latestLedger = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : GetLedgerEntriesResponse {
         $result = new GetLedgerEntriesResponse($json);
         if (isset($json['result'])) {
@@ -43,7 +51,7 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return array<LedgerEntry>|null Array of objects containing all found ledger entries.
+     * @return array<LedgerEntry>|null Array of found ledger entries
      */
     public function getEntries(): ?array
     {
@@ -51,7 +59,8 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param array<LedgerEntry>|null $entries Array of objects containing all found ledger entries.
+     * @param array<LedgerEntry>|null $entries Array of found ledger entries
+     * @return void
      */
     public function setEntries(?array $entries): void
     {
@@ -59,8 +68,7 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the
-     * request.
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public function getLatestLedger(): ?int
     {
@@ -68,8 +76,8 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time
-     * it handled the request.
+     * @param int|null $latestLedger The sequence number of the latest ledger
+     * @return void
      */
     public function setLatestLedger(?int $latestLedger): void
     {

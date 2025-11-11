@@ -240,7 +240,7 @@ class AssembledTransaction
     public ?SimulateTransactionResponse $simulationResponse = null;
 
     /**
-     * @var SimulateHostFunctionResult|null The result extracted from the simulation response if it was successfull.
+     * @var SimulateHostFunctionResult|null The result extracted from the simulation response if it was successful.
      * To receive this you can call `$tx->getSimulationData()`
      */
     private ?SimulateHostFunctionResult $simulationResult = null;
@@ -335,10 +335,14 @@ class AssembledTransaction
      * resource fees, and authorization entries. If restore is enabled and a restore preamble is
      * returned, it will automatically restore the footprint and re-simulate.
      *
-     * @param bool|null $restore Whether to automatically restore expired ledger entries (overrides method options)
+     * @param bool|null $restore Whether to automatically restore expired ledger entries. If null, uses the
+     *                          restore setting from method options. If true, automatically handles archived
+     *                          entries by building and executing a RestoreFootprint transaction before re-simulating.
+     *                          Requires source account keypair with private key. Default: null (uses method options)
      * @return void
      * @throws Exception If simulation fails or automatic restore is unsuccessful
      * @throws GuzzleException If the RPC request fails
+     * @see getSimulationData() For accessing the simulation results
      */
     public function simulate(?bool $restore = null) : void {
         if ($this->tx === null) {
@@ -389,9 +393,14 @@ class AssembledTransaction
      *
      * @param KeyPair|null $sourceAccountKeyPair The keypair with private key to sign with (overrides options)
      * @param bool $force Force signing and sending even if it is a read-only call (default: false)
-     * @return GetTransactionResponse The transaction result after completion
+     * @return GetTransactionResponse The transaction result with status. Possible status values:
+     *         - STATUS_SUCCESS: Transaction completed successfully
+     *         - STATUS_FAILED: Transaction failed with error
+     *         - STATUS_NOT_FOUND: Transaction timeout (throws exception before returning this)
      * @throws Exception If signing fails, transaction is read-only without force, or timeout is exceeded
      * @throws GuzzleException If the RPC request fails
+     * @see sign() For signing without sending
+     * @see send() For sending an already-signed transaction
      */
     public function signAndSend(?KeyPair $sourceAccountKeyPair = null, bool $force = false) : GetTransactionResponse {
         if ($this->signed === null) {
@@ -427,13 +436,21 @@ class AssembledTransaction
      * Signs the transaction with the source account's private key
      *
      * Signs the transaction envelope with the invoker's keypair. This does not submit the transaction.
+     * The original transaction object is cloned before signing to preserve the unsigned version.
      * Read-only calls will throw an exception unless force is set to true. Multi-signature transactions
      * should use signAuthEntries for additional signers.
      *
+     * @security WARNING: This method requires access to private keys. Never expose private keys in client-side
+     *           code, logs, or error messages. Use secure key storage such as hardware wallets or key management
+     *           systems. Never send private keys over unencrypted connections. For production applications,
+     *           implement signing on secure backend servers with proper key management infrastructure.
+     *
      * @param KeyPair|null $sourceAccountKeyPair The keypair with private key to sign with (overrides options)
      * @param bool $force Force signing even if it is a read-only call (default: false)
-     * @return void
+     * @return void Sets the $signed property to the signed transaction clone
      * @throws Exception If the private key is missing, transaction requires multiple signers, or is read-only without force
+     * @see signAuthEntries() For signing authorization entries in multi-signature workflows
+     * @see signAndSend() For signing and sending in a single operation
      */
     public function sign(?KeyPair $sourceAccountKeyPair = null, bool $force = false) : void {
         if($this->tx === null) {
@@ -471,6 +488,12 @@ class AssembledTransaction
     /**
      * Signs and updates the auth entries related to the public key of the $signerKeyPair provided.
      *
+     * @security WARNING: This method handles sensitive authorization entries and private keys. When using a custom
+     *           authorization callback, ensure the callback securely handles sensitive data and validates the
+     *           authorization entry before signing. Never send unencrypted private keys over the network. Implement
+     *           proper key management and consider using hardware security modules for production environments.
+     *           If transmitting entries for remote signing, use secure channels and validate all returned data.
+     *
      * @param KeyPair $signerKeyPair The keypair of the signer for the auth entry.
      *  By default, this function will sign all auth entries that are connected to the signerKeyPair public key by using SorobanAuthorizationEntry->sign().
      *  The signerKeyPair must contain the private key for signing for this default case. If you don't have the signer's private key, provide the signers
@@ -484,8 +507,10 @@ class AssembledTransaction
      *  the future. Default: current sequence + 100 blocks (about 8.3 minutes from now).
      *
      * @return void
-     * @throws GuzzleException
-     * @throws Exception
+     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If no auth entries need signing, signer address not found, or transaction not simulated
+     * @see sign() For signing the main transaction envelope
+     * @see needsNonInvokerSigningBy() For determining which accounts need to sign
      */
     public function signAuthEntries(KeyPair $signerKeyPair, ?callable $authorizeEntryCallback = null, ?int $validUntilLedgerSeq = null) : void {
 
@@ -655,6 +680,8 @@ class AssembledTransaction
      * Creates a RestoreFootprint operation with the necessary transaction data and fees
      * to restore archived contract state back to the ledger.
      *
+     * @internal This is an internal helper method used by the automatic restore functionality
+     *
      * @param AssembledTransactionOptions $options Configuration for the restore transaction
      * @param XdrSorobanTransactionData $transactionData The footprint data identifying entries to restore
      * @param int $fee The minimum resource fee for the restore operation
@@ -706,6 +733,8 @@ class AssembledTransaction
      * Repeatedly queries getTransaction until the transaction is found or the configured
      * timeout is exceeded. Uses a 3-second delay between polls.
      *
+     * @internal This is an internal helper method used by send()
+     *
      * @param string $transactionId The hash of the transaction to poll
      * @return GetTransactionResponse The final transaction status
      * @throws GuzzleException If the RPC request fails
@@ -732,6 +761,8 @@ class AssembledTransaction
      * Fetches the source account from the ledger
      *
      * Retrieves the account data including the current sequence number from the RPC server.
+     *
+     * @internal This is an internal helper method used during transaction construction
      *
      * @return Account The source account object
      * @throws Exception If the account is not found

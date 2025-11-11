@@ -7,6 +7,12 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+/**
+ * Represents a single transaction in the getTransactions response
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+ */
 class TransactionInfo
 {
     const STATUS_SUCCESS = "SUCCESS";
@@ -102,6 +108,12 @@ class TransactionInfo
         $this->events = $events;
     }
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json): TransactionInfo
     {
 

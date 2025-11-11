@@ -9,12 +9,15 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 /**
  * Used for getTransactions()
- * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+ *
+ * @see PaginationOptions
+ * @see https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+ * @package Soneso\StellarSDK\Soroban\Requests
  */
 class GetTransactionsRequest
 {
     /**
-     * @var int | null $startLedger Ledger sequence number to fetch events after (inclusive).
+     * @var int|null $startLedger Ledger sequence number to fetch events after (inclusive).
      * The getTransactions method will return an error if startLedger is less than the oldest ledger stored in this node,
      * or greater than the latest ledger seen by this node. If a cursor is included in the request,
      * startLedger must be omitted.
@@ -56,5 +59,39 @@ class GetTransactionsRequest
             $params['pagination'] = $this->paginationOptions->getRequestParams();
         }
         return $params;
+    }
+
+    /**
+     * @return int|null Ledger sequence number to fetch events after (inclusive).
+     */
+    public function getStartLedger(): ?int
+    {
+        return $this->startLedger;
+    }
+
+    /**
+     * @param int|null $startLedger Ledger sequence number to fetch events after (inclusive).
+     * @return void
+     */
+    public function setStartLedger(?int $startLedger): void
+    {
+        $this->startLedger = $startLedger;
+    }
+
+    /**
+     * @return PaginationOptions|null for pagination.
+     */
+    public function getPaginationOptions(): ?PaginationOptions
+    {
+        return $this->paginationOptions;
+    }
+
+    /**
+     * @param PaginationOptions|null $paginationOptions for pagination.
+     * @return void
+     */
+    public function setPaginationOptions(?PaginationOptions $paginationOptions): void
+    {
+        $this->paginationOptions = $paginationOptions;
     }
 }

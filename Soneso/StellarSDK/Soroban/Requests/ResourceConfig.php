@@ -8,27 +8,34 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 /**
  * Part of the soroban simulate transaction request.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ *
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ * @package Soneso\StellarSDK\Soroban\Requests
  */
 class ResourceConfig
 {
     /**
-     * @var int $instructionLeeway allows budget instruction leeway used in preflight calculations to be configured.
-     *  number of add CPU instructions to reserve.
+     * @var int $instructionLeeway The number of additional CPU instructions to reserve for budget leeway
+     *  in preflight calculations.
      */
     public int $instructionLeeway;
 
     /**
      * Constructor.
      *
-     * @param int $instructionLeeway allows budget instruction leeway used in preflight calculations to be configured.
-     * number of add CPU instructions to reserve.
+     * @param int $instructionLeeway The number of additional CPU instructions to reserve for budget leeway
+     *  in preflight calculations.
      */
     public function __construct(int $instructionLeeway)
     {
         $this->instructionLeeway = $instructionLeeway;
     }
 
+    /**
+     * Builds and returns the request parameters array for the RPC API call.
+     *
+     * @return array<string, mixed> The request parameters formatted for Soroban RPC
+     */
     public function getRequestParams() : array {
         $params = array();
         $params['instructionLeeway'] = $this->instructionLeeway;
@@ -36,8 +43,8 @@ class ResourceConfig
     }
 
     /**
-     * @return int allows budget instruction leeway used in preflight calculations to be configured.
-     *  number of add CPU instructions to reserve.
+     * @return int The number of additional CPU instructions to reserve for budget leeway
+     *  in preflight calculations.
      */
     public function getInstructionLeeway(): int
     {
@@ -45,8 +52,9 @@ class ResourceConfig
     }
 
     /**
-     * @param int $instructionLeeway allows budget instruction leeway used in preflight calculations to be configured.
-     *  number of add CPU instructions to reserve.
+     * @param int $instructionLeeway The number of additional CPU instructions to reserve for budget leeway
+     *  in preflight calculations.
+     * @return void
      */
     public function setInstructionLeeway(int $instructionLeeway): void
     {

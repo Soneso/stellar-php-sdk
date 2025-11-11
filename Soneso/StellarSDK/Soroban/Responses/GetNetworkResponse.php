@@ -7,26 +7,34 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
- * Response for the getNetwork() request.
- * See: https://soroban.stellar.org/api/methods/getNetwork
+ * Response for the getNetwork request.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getNetwork
  */
 class GetNetworkResponse extends SorobanRpcResponse
 {
     /**
-     * @var string|null $friendbotUrl (optional) The URL of this network's "friendbot" faucet
+     * @var string|null $friendbotUrl URL of this network's friendbot faucet
      */
     public ?string $friendbotUrl = null;
 
     /**
-     * @var string|null $passphrase Network passphrase configured for this Soroban RPC node.
+     * @var string|null $passphrase Network passphrase configured for this Soroban RPC node
      */
     public ?string $passphrase = null;
 
     /**
-     * @var int|null $protocolVersion Stellar Core protocol version associated with the latest ledger.
+     * @var int|null $protocolVersion Stellar Core protocol version associated with the latest ledger
      */
     public ?int $protocolVersion = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : GetNetworkResponse {
         $result = new GetNetworkResponse($json);
         if (isset($json['result'])) {
@@ -46,7 +54,7 @@ class GetNetworkResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null (optional) The URL of this network's "friendbot" faucet
+     * @return string|null URL of this network's friendbot faucet
      */
     public function getFriendbotUrl(): ?string
     {
@@ -54,7 +62,16 @@ class GetNetworkResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null Network passphrase configured for this Soroban RPC node.
+     * @param string|null $friendbotUrl URL of the friendbot faucet
+     * @return void
+     */
+    public function setFriendbotUrl(?string $friendbotUrl): void
+    {
+        $this->friendbotUrl = $friendbotUrl;
+    }
+
+    /**
+     * @return string|null Network passphrase configured for this Soroban RPC node
      */
     public function getPassphrase(): ?string
     {
@@ -62,11 +79,29 @@ class GetNetworkResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null Stellar Core protocol version associated with the latest ledger.
+     * @param string|null $passphrase Network passphrase
+     * @return void
+     */
+    public function setPassphrase(?string $passphrase): void
+    {
+        $this->passphrase = $passphrase;
+    }
+
+    /**
+     * @return int|null Stellar Core protocol version associated with the latest ledger
      */
     public function getProtocolVersion(): ?int
     {
         return $this->protocolVersion;
+    }
+
+    /**
+     * @param int|null $protocolVersion Stellar Core protocol version
+     * @return void
+     */
+    public function setProtocolVersion(?int $protocolVersion): void
+    {
+        $this->protocolVersion = $protocolVersion;
     }
 
 }

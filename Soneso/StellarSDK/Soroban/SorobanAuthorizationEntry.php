@@ -19,17 +19,37 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
 
 /**
- * Used for soroban authorization.
- * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+ * Soroban authorization entry for smart contract invocations
+ *
+ * This class represents an authorization entry that grants permission to execute a specific
+ * contract invocation. Each authorization entry contains credentials (either source account
+ * or address-based) and a tree of authorized invocations representing the call hierarchy.
+ *
+ * Authorization entries are typically signed by the authorizing party before submission.
+ *
+ * @package Soneso\StellarSDK\Soroban
+ * @see SorobanCredentials
+ * @see SorobanAuthorizedInvocation
+ * @see https://developers.stellar.org/docs/learn/smart-contract-internals/authorization Soroban Authorization
+ * @since 1.0.0
  */
 class SorobanAuthorizationEntry
 {
+    /**
+     * @var SorobanCredentials credentials authorizing the invocation (source account or address-based)
+     */
     public SorobanCredentials $credentials;
+
+    /**
+     * @var SorobanAuthorizedInvocation root of the authorized invocation tree
+     */
     public SorobanAuthorizedInvocation $rootInvocation;
 
     /**
-     * @param SorobanCredentials $credentials
-     * @param SorobanAuthorizedInvocation $rootInvocation
+     * Creates a new Soroban authorization entry.
+     *
+     * @param SorobanCredentials $credentials the credentials authorizing the invocation
+     * @param SorobanAuthorizedInvocation $rootInvocation the root invocation being authorized
      */
     public function __construct(SorobanCredentials $credentials, SorobanAuthorizedInvocation $rootInvocation)
     {
@@ -37,30 +57,58 @@ class SorobanAuthorizationEntry
         $this->rootInvocation = $rootInvocation;
     }
 
+    /**
+     * Creates SorobanAuthorizationEntry from its XDR representation.
+     *
+     * @param XdrSorobanAuthorizationEntry $xdr the XDR object to decode
+     * @return SorobanAuthorizationEntry the decoded authorization entry
+     */
     public static function fromXdr(XdrSorobanAuthorizationEntry $xdr) : SorobanAuthorizationEntry {
         return new SorobanAuthorizationEntry(SorobanCredentials::fromXdr($xdr->credentials),
             SorobanAuthorizedInvocation::fromXdr($xdr->rootInvocation));
     }
 
+    /**
+     * Converts this object to its XDR representation.
+     *
+     * @return XdrSorobanAuthorizationEntry the XDR encoded authorization entry
+     */
     public function toXdr(): XdrSorobanAuthorizationEntry {
         return new XdrSorobanAuthorizationEntry($this->credentials->toXdr(), $this->rootInvocation->toXdr());
     }
 
-
-    public static function fromBase64Xdr(String $base64Xdr) : SorobanAuthorizationEntry {
+    /**
+     * Creates SorobanAuthorizationEntry from base64-encoded XDR.
+     *
+     * @param string $base64Xdr the base64-encoded XDR string
+     * @return SorobanAuthorizationEntry the decoded authorization entry
+     * @throws \Exception if XDR decoding fails
+     */
+    public static function fromBase64Xdr(string $base64Xdr) : SorobanAuthorizationEntry {
         $xdr = base64_decode($base64Xdr);
         $xdrBuffer = new XdrBuffer($xdr);
         return SorobanAuthorizationEntry::fromXdr(XdrSorobanAuthorizationEntry::decode($xdrBuffer));
     }
 
-    public function toBase64Xdr() : String {
+    /**
+     * Encodes this authorization entry as base64 XDR.
+     *
+     * @return string the base64-encoded XDR representation
+     */
+    public function toBase64Xdr() : string {
         return base64_encode($this->toXdr()->encode());
     }
 
     /**
-     * Signs the authorization entry. The signature will be added to the signatures of the soroban credentials
-     * @param KeyPair $signer
-     * @param Network $network
+     * Signs the authorization entry with the given keypair.
+     *
+     * The signature will be added to the signatures vector of the address credentials.
+     * This method creates an Ed25519 signature over the authorization payload including
+     * the network passphrase, nonce, signature expiration, and root invocation.
+     *
+     * @param KeyPair $signer the keypair to sign with (must match the authorized address)
+     * @param Network $network the network this authorization is for (determines network passphrase)
+     * @throws \RuntimeException if no address credentials are found in this entry
      */
     public function sign(KeyPair $signer, Network $network): void
     {
@@ -89,7 +137,9 @@ class SorobanAuthorizationEntry
     }
 
     /**
-     * @return SorobanCredentials
+     * Returns the credentials for this authorization entry.
+     *
+     * @return SorobanCredentials the authorization credentials
      */
     public function getCredentials(): SorobanCredentials
     {
@@ -97,7 +147,9 @@ class SorobanAuthorizationEntry
     }
 
     /**
-     * @param SorobanCredentials $credentials
+     * Sets the credentials for this authorization entry.
+     *
+     * @param SorobanCredentials $credentials the authorization credentials
      */
     public function setCredentials(SorobanCredentials $credentials): void
     {
@@ -105,7 +157,9 @@ class SorobanAuthorizationEntry
     }
 
     /**
-     * @return SorobanAuthorizedInvocation
+     * Returns the root authorized invocation.
+     *
+     * @return SorobanAuthorizedInvocation the root of the invocation tree
      */
     public function getRootInvocation(): SorobanAuthorizedInvocation
     {
@@ -113,7 +167,9 @@ class SorobanAuthorizationEntry
     }
 
     /**
-     * @param SorobanAuthorizedInvocation $rootInvocation
+     * Sets the root authorized invocation.
+     *
+     * @param SorobanAuthorizedInvocation $rootInvocation the root of the invocation tree
      */
     public function setRootInvocation(SorobanAuthorizedInvocation $rootInvocation): void
     {

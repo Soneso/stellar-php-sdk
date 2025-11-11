@@ -7,21 +7,22 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
- * General node health check response or the getHealth request.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getHealth
+ * General node health check response for the getHealth request.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getHealth
  */
 class GetHealthResponse extends SorobanRpcResponse
 {
     const HEALTHY = "healthy";
 
     /**
-     * @var string|null $status e.g. "healthy"
+     * @var string|null $status Health status of the node (e.g. "healthy")
      */
     public ?string $status = null;
 
     /**
-     * @var int|null $ledgerRetentionWindow Maximum retention window configured.
-     * A full window state can be determined via: ledgerRetentionWindow = latestLedger - oldestLedger + 1
+     * @var int|null $ledgerRetentionWindow Maximum retention window configured
      */
     public ?int $ledgerRetentionWindow = null;
 
@@ -35,7 +36,12 @@ class GetHealthResponse extends SorobanRpcResponse
      */
     public ?int $latestLedger = null;
 
-
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : GetHealthResponse {
         $result = new GetHealthResponse($json);
         if (isset($json['result'])) {
@@ -58,7 +64,7 @@ class GetHealthResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null health status. e.g. "healthy"
+     * @return string|null Health status of the node (e.g. "healthy")
      */
     public function getStatus(): ?string
     {
@@ -66,7 +72,8 @@ class GetHealthResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param string|null $status e.g. "healthy"
+     * @param string|null $status Health status of the node
+     * @return void
      */
     public function setStatus(?string $status): void
     {
@@ -74,8 +81,7 @@ class GetHealthResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null Maximum retention window configured. A full window state can be determined
-     * via: ledgerRetentionWindow = latestLedger - oldestLedger + 1
+     * @return int|null Maximum retention window configured
      */
     public function getLedgerRetentionWindow(): ?int
     {
@@ -83,8 +89,8 @@ class GetHealthResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $ledgerRetentionWindow Maximum retention window configured. A full window state can be
-     * determined via: ledgerRetentionWindow = latestLedger - oldestLedger + 1
+     * @param int|null $ledgerRetentionWindow Maximum retention window configured
+     * @return void
      */
     public function setLedgerRetentionWindow(?int $ledgerRetentionWindow): void
     {
@@ -92,7 +98,7 @@ class GetHealthResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null Oldest ledger sequence kept in history.
+     * @return int|null Oldest ledger sequence kept in history
      */
     public function getOldestLedger(): ?int
     {
@@ -100,7 +106,8 @@ class GetHealthResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $oldestLedger Oldest ledger sequence kept in history.
+     * @param int|null $oldestLedger Oldest ledger sequence kept in history
+     * @return void
      */
     public function setOldestLedger(?int $oldestLedger): void
     {
@@ -117,6 +124,7 @@ class GetHealthResponse extends SorobanRpcResponse
 
     /**
      * @param int|null $latestLedger Most recent known ledger sequence
+     * @return void
      */
     public function setLatestLedger(?int $latestLedger): void
     {

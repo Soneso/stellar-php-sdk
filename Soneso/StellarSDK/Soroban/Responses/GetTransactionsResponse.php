@@ -9,7 +9,9 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  * Response of the getTransactions request.
- * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
  */
 class GetTransactionsResponse extends SorobanRpcResponse
 {
@@ -47,6 +49,12 @@ class GetTransactionsResponse extends SorobanRpcResponse
      */
     public ?array $transactions = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json): GetTransactionsResponse
     {
         $result = new GetTransactionsResponse($json);

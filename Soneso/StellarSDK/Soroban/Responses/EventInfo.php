@@ -8,79 +8,81 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  * Part of the getEvents request.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+ * @see GetEventsResponse For the complete event query response
  */
 class EventInfo
 {
     /**
-     * @var string $type The type of event emission. Possible values: contract, diagnostic, system.
+     * @var string $type The type of event emission (contract, diagnostic, or system)
      */
     public string $type;
 
     /**
-     * @var int $ledger Sequence number of the ledger in which this event was emitted.
+     * @var int $ledger Sequence number of the ledger in which this event was emitted
      */
     public int $ledger;
 
     /**
-     * @var string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time.
+     * @var string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time
      */
     public string $ledgerClosedAt;
 
     /**
-     * @var string $contractId StrKey representation of the contract address that emitted this event. ("C...").
+     * @var string $contractId StrKey representation of the contract address that emitted this event
      */
     public string $contractId;
 
     /**
-     * @var string $id Unique identifier for this event.
+     * @var string $id Unique identifier for this event
      */
     public string $id;
 
     /**
-     * @var array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
+     * @var array<string> $topic List of topic values this event was emitted with (1-4 items)
      */
     public array $topic;
 
     /**
-     * @var string $value The emitted body value of the event (serialized in a base64 xdr string).
+     * @var string $value The emitted body value of the event (base64-encoded XDR string)
      */
     public string $value;
 
     /**
-     * @var bool|null $inSuccessfulContractCall (deprecated) If true the event was emitted during a successful contract call.
+     * @var bool|null $inSuccessfulContractCall Deprecated indicator if the event was emitted during successful contract call
      */
     public ?bool $inSuccessfulContractCall;
 
     /**
-     * @var string $txHash The transaction which triggered this event.
+     * @var string $txHash The transaction hash which triggered this event
      */
     public string $txHash;
 
-    // starting from protocol 23 opIndex, txIndex will be filled.
     /**
-     * @var int|null $opIndex operation index, only available for protocol >= 23
+     * @var int|null $opIndex Operation index within the transaction (protocol >= 23)
      */
     public ?int $opIndex = null;
 
     /**
-     * @var int|null $txIndex transaction index, only available for protocol >= 23
+     * @var int|null $txIndex Transaction index within the ledger (protocol >= 23)
      */
     public ?int $txIndex = null;
 
 
     /**
-     * @param string $type The type of event emission. Possible values: contract, diagnostic, system.
-     * @param int $ledger Sequence number of the ledger in which this event was emitted.
-     * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time.
-     * @param string $contractId StrKey representation of the contract address that emitted this event. ("C...").
-     * @param string $id Unique identifier for this event.
-     * @param array<String> $topic List containing the topic this event was emitted with. (>= 1 items, <= 4 items).
-     * @param string $value The emitted body value of the event (serialized in a base64 xdr string).
-     * @param bool|null $inSuccessfulContractCall If true the event was emitted during a successful contract call.
-     * @param string $txHash The transaction which triggered this event.
-     * @param int|null $opIndex operation index.
-     * @param int|null $txIndex transaction index.
+     * @param string $type The type of event emission
+     * @param int $ledger Sequence number of the ledger
+     * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time
+     * @param string $contractId StrKey representation of the contract address
+     * @param string $id Unique identifier for this event
+     * @param array<string> $topic List of topic values
+     * @param string $value The emitted body value of the event
+     * @param bool|null $inSuccessfulContractCall Deprecated success indicator
+     * @param string $txHash The transaction hash
+     * @param int|null $opIndex Operation index
+     * @param int|null $txIndex Transaction index
      */
     public function __construct(
         string $type,
@@ -109,6 +111,12 @@ class EventInfo
         $this->txIndex = $txIndex;
     }
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json): EventInfo
     {
         $type = $json['type'];
@@ -154,7 +162,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string The type of event emission (contract, diagnostic, or system)
      */
     public function getType(): string
     {
@@ -162,7 +170,8 @@ class EventInfo
     }
 
     /**
-     * @param string $type
+     * @param string $type The type of event emission
+     * @return void
      */
     public function setType(string $type): void
     {
@@ -170,7 +179,7 @@ class EventInfo
     }
 
     /**
-     * @return int
+     * @return int Sequence number of the ledger in which this event was emitted
      */
     public function getLedger(): int
     {
@@ -178,7 +187,8 @@ class EventInfo
     }
 
     /**
-     * @param int $ledger
+     * @param int $ledger Sequence number of the ledger
+     * @return void
      */
     public function setLedger(int $ledger): void
     {
@@ -186,7 +196,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string ISO-8601 timestamp of the ledger closing time
      */
     public function getLedgerClosedAt(): string
     {
@@ -194,7 +204,8 @@ class EventInfo
     }
 
     /**
-     * @param string $ledgerClosedAt
+     * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time
+     * @return void
      */
     public function setLedgerClosedAt(string $ledgerClosedAt): void
     {
@@ -202,7 +213,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string StrKey representation of the contract address that emitted this event
      */
     public function getContractId(): string
     {
@@ -210,7 +221,8 @@ class EventInfo
     }
 
     /**
-     * @param string $contractId
+     * @param string $contractId StrKey representation of the contract address
+     * @return void
      */
     public function setContractId(string $contractId): void
     {
@@ -218,7 +230,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string Unique identifier for this event
      */
     public function getId(): string
     {
@@ -226,7 +238,8 @@ class EventInfo
     }
 
     /**
-     * @param string $id
+     * @param string $id Unique identifier for this event
+     * @return void
      */
     public function setId(string $id): void
     {
@@ -234,7 +247,7 @@ class EventInfo
     }
 
     /**
-     * @return array
+     * @return array<string> List of topic values this event was emitted with
      */
     public function getTopic(): array
     {
@@ -242,7 +255,8 @@ class EventInfo
     }
 
     /**
-     * @param array $topic
+     * @param array<string> $topic List of topic values
+     * @return void
      */
     public function setTopic(array $topic): void
     {
@@ -250,7 +264,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string The emitted body value of the event (base64-encoded XDR string)
      */
     public function getValue(): string
     {
@@ -258,7 +272,8 @@ class EventInfo
     }
 
     /**
-     * @param string $value
+     * @param string $value The emitted body value of the event
+     * @return void
      */
     public function setValue(string $value): void
     {
@@ -266,7 +281,7 @@ class EventInfo
     }
 
     /**
-     * @return bool|null
+     * @return bool|null Deprecated indicator if the event was emitted during successful contract call
      */
     public function getInSuccessfulContractCall(): ?bool
     {
@@ -274,7 +289,8 @@ class EventInfo
     }
 
     /**
-     * @param bool|null $inSuccessfulContractCall
+     * @param bool|null $inSuccessfulContractCall Deprecated success indicator
+     * @return void
      */
     public function setInSuccessfulContractCall(?bool $inSuccessfulContractCall): void
     {
@@ -282,7 +298,7 @@ class EventInfo
     }
 
     /**
-     * @return string
+     * @return string The transaction hash which triggered this event
      */
     public function getTxHash(): string
     {
@@ -290,7 +306,8 @@ class EventInfo
     }
 
     /**
-     * @param string $txHash
+     * @param string $txHash The transaction hash
+     * @return void
      */
     public function setTxHash(string $txHash): void
     {
@@ -298,7 +315,7 @@ class EventInfo
     }
 
     /**
-     * @return int|null
+     * @return int|null Operation index within the transaction (protocol >= 23)
      */
     public function getOpIndex(): ?int
     {
@@ -306,7 +323,8 @@ class EventInfo
     }
 
     /**
-     * @param int|null $opIndex
+     * @param int|null $opIndex Operation index
+     * @return void
      */
     public function setOpIndex(?int $opIndex): void
     {
@@ -314,7 +332,7 @@ class EventInfo
     }
 
     /**
-     * @return int|null
+     * @return int|null Transaction index within the ledger (protocol >= 23)
      */
     public function getTxIndex(): ?int
     {
@@ -322,7 +340,8 @@ class EventInfo
     }
 
     /**
-     * @param int|null $txIndex
+     * @param int|null $txIndex Transaction index
+     * @return void
      */
     public function setTxIndex(?int $txIndex): void
     {

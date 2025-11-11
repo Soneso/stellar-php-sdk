@@ -10,6 +10,21 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
+/**
+ * Request parameters for deploying a Soroban smart contract instance
+ *
+ * This class encapsulates all parameters needed to deploy a new contract instance from
+ * previously installed WASM code. The deployment process creates a contract with a unique
+ * ID and optionally calls the contract's constructor with initialization arguments.
+ *
+ * The WASM code must be installed on the network first using InstallRequest.
+ *
+ * @package Soneso\StellarSDK\Soroban\Contract
+ * @see SorobanClient::deploy() For the deployment method that uses this request
+ * @see InstallRequest For installing contract WASM code
+ * @see https://developers.stellar.org/docs/smart-contracts/getting-started/deploy-to-testnet
+ * @since 1.0.0
+ */
 class DeployRequest
 {
 
@@ -42,7 +57,9 @@ class DeployRequest
     public ?array $constructorArgs;
 
     /**
-     * @var string|null $salt Salt used to generate the contract's ID. Default: random.
+     * @var string|null $salt Salt used to generate the contract's ID. A 32-byte hex string that
+     * influences the deterministic contract address. Using the same WASM hash and salt will produce
+     * the same contract ID. Default: random (generates a unique contract ID for each deployment).
      */
     public ?string $salt;
 

@@ -9,12 +9,26 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
+/**
+ * Client configuration options for Soroban smart contract interactions
+ *
+ * This class defines the core configuration required for a SorobanClient to interact with
+ * smart contracts on the Stellar network. It specifies the source account, target contract,
+ * network parameters, and RPC endpoint.
+ *
+ * @package Soneso\StellarSDK\Soroban\Contract
+ * @see SorobanClient For the client that uses these options
+ * @see AssembledTransactionOptions For transaction-specific configuration
+ * @since 1.0.0
+ */
 class ClientOptions
 {
 
     /**
-     * @var KeyPair $sourceAccountKeyPair Keypair of the Stellar account that will send this transaction. If restore is set to true,
-     * and restore is needed, the keypair must contain the private key (secret seed) otherwise the public key is sufficient.
+     * @var KeyPair $sourceAccountKeyPair Keypair of the Stellar account that will send transactions.
+     * For read-only operations, only the public key is required. For write operations and automatic
+     * restore, the private key (secret seed) must be included for transaction signing.
+     * @see MethodOptions::$restore For automatic restore configuration
      */
     public KeyPair $sourceAccountKeyPair;
 

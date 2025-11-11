@@ -74,10 +74,11 @@ class Footprint
     }
 
     /**
-     * If found, returns the contract code ledger key as base64 encoded xdr string
-     * @return String|null base64 encoded contract code xdr ledger key
+     * Searches the footprint for a contract code ledger entry and returns its key as base64 encoded XDR.
+     *
+     * @return string|null base64 encoded contract code XDR ledger key or null if not found
      */
-    public function getContractCodeLedgerKey() : ?String {
+    public function getContractCodeLedgerKey() : ?string {
         $key = $this->findFirstKeyOfType(XdrLedgerEntryType::CONTRACT_CODE());
         if ($key != null) {
             return $key->toBase64Xdr();
@@ -86,10 +87,11 @@ class Footprint
     }
 
     /**
-     * If found, returns the contract data ledger key as base64 encoded xdr string
-     * @return String|null base64 encoded contract data xdr ledger key
+     * Searches the footprint for a contract data ledger entry and returns its key as base64 encoded XDR.
+     *
+     * @return string|null base64 encoded contract data XDR ledger key or null if not found
      */
-    public function getContractDataLedgerKey() : ?String {
+    public function getContractDataLedgerKey() : ?string {
         $key = $this->findFirstKeyOfType(XdrLedgerEntryType::CONTRACT_DATA());
         if ($key != null) {
             return $key->toBase64Xdr();
@@ -98,25 +100,28 @@ class Footprint
     }
 
     /**
-     * If found, returns the contract code ledger key as XdrLedgerKey
-     * @return XdrLedgerKey|null contract code ledger key
+     * Searches the footprint for a contract code ledger entry and returns its key as XdrLedgerKey.
+     *
+     * @return XdrLedgerKey|null contract code ledger key or null if not found
      */
     public function getContractCodeXdrLedgerKey() : ?XdrLedgerKey {
         return $this->findFirstKeyOfType(XdrLedgerEntryType::CONTRACT_CODE());
     }
 
     /**
-     * If found, returns the contract data ledger key as XdrLedgerKey
-     * @return XdrLedgerKey|null contract data ledger key
+     * Searches the footprint for a contract data ledger entry and returns its key as XdrLedgerKey.
+     *
+     * @return XdrLedgerKey|null contract data ledger key or null if not found
      */
     public function getContractDataXdrLedgerKey() : ?XdrLedgerKey {
         return $this->findFirstKeyOfType(XdrLedgerEntryType::CONTRACT_DATA());
     }
 
     /**
-     * Searches the first ledger key of the given type.
-     * @param XdrLedgerEntryType $type type to search for.
-     * @return XdrLedgerKey|null the ledger key if found.
+     * Searches for the first ledger key of the given type in the footprint.
+     *
+     * @param XdrLedgerEntryType $type the ledger entry type to search for
+     * @return XdrLedgerKey|null the first matching ledger key or null if not found
      */
     private function findFirstKeyOfType(XdrLedgerEntryType $type) : ?XdrLedgerKey {
         foreach ($this->xdrFootprint->readOnly as $key) {

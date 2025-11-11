@@ -7,9 +7,15 @@
 namespace Soneso\StellarSDK\Soroban\Requests;
 
 /**
- * Part of the getEvents() request
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
- * See: https://developers.stellar.org/network/soroban-rpc/pagination
+ * Pagination options for Soroban RPC requests.
+ * Used by getEvents(), getLedgers(), and getTransactions() requests.
+ *
+ * @see https://developers.stellar.org/network/soroban-rpc/pagination
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+ * @see GetEventsRequest
+ * @see GetLedgersRequest
+ * @see GetTransactionsRequest
+ * @package Soneso\StellarSDK\Soroban\Requests
  */
 class PaginationOptions
 {

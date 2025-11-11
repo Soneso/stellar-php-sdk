@@ -9,7 +9,9 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  * Represents a single ledger in the getLedgers response.
- * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
  */
 class LedgerInfo
 {
@@ -62,9 +64,10 @@ class LedgerInfo
     }
 
     /**
-     * Creates a LedgerInfo object from a JSON array.
-     * @param array<array-key, mixed> $json The JSON array to parse.
-     * @return LedgerInfo The parsed LedgerInfo object.
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
      */
     public static function fromJson(array $json): LedgerInfo
     {

@@ -303,7 +303,11 @@ class ContractSpec
      * @param mixed $val The native PHP value to convert
      * @param XdrSCSpecTypeDef $ty The expected Soroban type from the contract spec
      * @return XdrSCVal The converted XDR value
-     * @throws \InvalidArgumentException If the value cannot be converted to the specified type
+     * @throws InvalidArgumentException If the UDT is not found in the contract spec
+     * @throws InvalidArgumentException If the value type doesn't match the expected type (e.g., string when int expected)
+     * @throws InvalidArgumentException If type validation fails (e.g., negative value for unsigned type)
+     * @throws InvalidArgumentException If array/tuple/map structure doesn't match the spec
+     * @throws InvalidArgumentException If the value cannot be converted to the specified type
      * @see https://github.com/Soneso/stellar-php-sdk/blob/main/soroban.md Soroban Type Conversion Documentation
      */
     public function nativeToXdrSCVal(mixed $val, XdrSCSpecTypeDef $ty) : XdrSCVal {
@@ -515,11 +519,17 @@ class ContractSpec
      * Converts a native value to a user-defined type (UDT)
      *
      * Handles conversion of PHP values to custom contract types including structs, unions, and enums.
+     * For structs, expects an associative array with field names as keys. For unions, expects a
+     * NativeUnionVal instance. For enums, expects an integer value.
      *
-     * @param mixed $val The native PHP value
-     * @param string $name The name of the user-defined type
+     * @internal This is an internal helper method used by nativeToXdrSCVal()
+     *
+     * @param mixed $val The native PHP value (array for struct, NativeUnionVal for union, int for enum)
+     * @param string $name The name of the user-defined type as defined in the contract spec
      * @return XdrSCVal The converted XDR value
-     * @throws \InvalidArgumentException If the UDT is not found or conversion fails
+     * @throws InvalidArgumentException If the UDT is not found in the contract spec
+     * @throws InvalidArgumentException If the value type doesn't match the expected UDT type
+     * @throws InvalidArgumentException If struct field values don't match field types
      */
     private function nativeToUdt(mixed $val, string $name) : XdrSCVal {
         $entry = $this->findEntry($name);
@@ -549,10 +559,12 @@ class ContractSpec
     /**
      * Converts an integer to a contract enum value
      *
+     * @internal This is an internal helper method used by nativeToUdt()
+     *
      * @param int $val The enum case value
      * @param XdrSCSpecUDTEnumV0 $enum The enum specification
      * @return XdrSCVal The converted enum value as U32
-     * @throws \InvalidArgumentException If the value is not a valid enum case
+     * @throws InvalidArgumentException If the value is not a valid enum case
      */
     private function nativeToEnum(int $val, XdrSCSpecUDTEnumV0 $enum) : XdrSCVal {
         foreach ($enum->cases as $case) {
@@ -568,10 +580,13 @@ class ContractSpec
      *
      * Handles both tuple-style structs (numeric field names) and map-style structs (named fields).
      *
+     * @internal This is an internal helper method used by nativeToUdt()
+     *
      * @param mixed $val The PHP array value
      * @param XdrSCSpecUDTStructV0 $struct The struct specification
      * @return XdrSCVal The converted struct as a Vec or Map
-     * @throws \InvalidArgumentException If the value is not an array or fields don't match
+     * @throws InvalidArgumentException If the value is not an array or fields don't match
+     * @throws InvalidArgumentException If field count doesn't match struct definition
      */
     private function nativeToStruct(mixed $val, XdrSCSpecUDTStructV0 $struct) : XdrSCVal {
         $fields = $struct->fields;
@@ -625,10 +640,13 @@ class ContractSpec
      *
      * Unions are represented as vectors with the first element being the case name symbol.
      *
+     * @internal This is an internal helper method used by nativeToUdt()
+     *
      * @param NativeUnionVal $val The union value with tag and optional values
      * @param XdrSCSpecUDTUnionV0 $union The union specification
      * @return XdrSCVal The converted union as a Vec
-     * @throws \InvalidArgumentException If the case is not found or values don't match
+     * @throws InvalidArgumentException If the case is not found or values don't match
+     * @throws InvalidArgumentException If the value count doesn't match the case type definition
      */
     private function nativeToUnion(NativeUnionVal $val,XdrSCSpecUDTUnionV0 $union) : XdrSCVal {
         $entryName = $val->tag;

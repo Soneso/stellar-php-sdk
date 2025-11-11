@@ -11,15 +11,29 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
 /**
- * Used for Soroban authorization as Part of SorobanAuthorizationEntry.
- * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+ * Credentials for Soroban authorization
+ *
+ * This class represents credentials used in Soroban authorization entries. There are two types:
+ * source account credentials (no addressCredentials) or address-based credentials (with addressCredentials).
+ * Source account credentials use the transaction source account for authorization.
+ *
+ * @package Soneso\StellarSDK\Soroban
+ * @see SorobanAddressCredentials
+ * @see SorobanAuthorizationEntry
+ * @see https://developers.stellar.org/docs/learn/smart-contract-internals/authorization Soroban Authorization
+ * @since 1.0.0
  */
 class SorobanCredentials
 {
+    /**
+     * @var SorobanAddressCredentials|null address-based credentials or null for source account credentials
+     */
     public ?SorobanAddressCredentials $addressCredentials = null;
 
     /**
-     * @param SorobanAddressCredentials|null $addressCredentials
+     * Creates new Soroban credentials.
+     *
+     * @param SorobanAddressCredentials|null $addressCredentials address credentials or null for source account
      */
     public function __construct(?SorobanAddressCredentials $addressCredentials = null)
     {
@@ -27,18 +41,25 @@ class SorobanCredentials
     }
 
     /**
-     * @return SorobanCredentials
+     * Creates source account credentials.
+     *
+     * Source account credentials use the transaction source account for authorization
+     * without requiring additional signatures.
+     *
+     * @return SorobanCredentials credentials using the source account
      */
     public static function forSourceAccount() : SorobanCredentials {
         return new SorobanCredentials();
     }
 
     /**
-     * @param Address $address
-     * @param int $nonce
-     * @param int $signatureExpirationLedger
-     * @param XdrSCVal $signature
-     * @return SorobanCredentials
+     * Creates address-based credentials.
+     *
+     * @param Address $address the address to authorize
+     * @param int $nonce unique nonce for replay protection
+     * @param int $signatureExpirationLedger ledger after which signatures expire
+     * @param XdrSCVal $signature the signature data
+     * @return SorobanCredentials credentials using address-based authorization
      */
     public static function forAddress(Address $address, int $nonce, int $signatureExpirationLedger, XdrSCVal $signature) : SorobanCredentials {
         $addressCredentials = new SorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature);
@@ -46,13 +67,21 @@ class SorobanCredentials
     }
 
     /**
-     * @param SorobanAddressCredentials $addressCredentials
-     * @return SorobanCredentials
+     * Creates credentials from existing address credentials.
+     *
+     * @param SorobanAddressCredentials $addressCredentials the address credentials to use
+     * @return SorobanCredentials credentials using the provided address credentials
      */
     public static function forAddressCredentials(SorobanAddressCredentials $addressCredentials) : SorobanCredentials {
         return new SorobanCredentials($addressCredentials);
     }
 
+    /**
+     * Creates SorobanCredentials from its XDR representation.
+     *
+     * @param XdrSorobanCredentials $xdr the XDR object to decode
+     * @return SorobanCredentials the decoded credentials
+     */
     public static function fromXdr(XdrSorobanCredentials $xdr) : SorobanCredentials {
         if ($xdr->type->value == XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS && $xdr->address != null) {
             return new SorobanCredentials(SorobanAddressCredentials::fromXdr($xdr->address));
@@ -60,6 +89,11 @@ class SorobanCredentials
         return new SorobanCredentials();
     }
 
+    /**
+     * Converts this object to its XDR representation.
+     *
+     * @return XdrSorobanCredentials the XDR encoded credentials
+     */
     public function toXdr(): XdrSorobanCredentials {
         if ($this->addressCredentials != null) {
             $xdr = new XdrSorobanCredentials(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS());
@@ -70,7 +104,9 @@ class SorobanCredentials
     }
 
     /**
-     * @return SorobanAddressCredentials|null
+     * Returns the address credentials if using address-based authorization.
+     *
+     * @return SorobanAddressCredentials|null the address credentials or null for source account
      */
     public function getAddressCredentials(): ?SorobanAddressCredentials
     {
@@ -78,7 +114,9 @@ class SorobanCredentials
     }
 
     /**
-     * @param SorobanAddressCredentials|null $addressCredentials
+     * Sets the address credentials.
+     *
+     * @param SorobanAddressCredentials|null $addressCredentials the address credentials or null for source account
      */
     public function setAddressCredentials(?SorobanAddressCredentials $addressCredentials): void
     {

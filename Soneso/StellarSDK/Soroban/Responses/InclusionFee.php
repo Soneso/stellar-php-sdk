@@ -6,6 +6,11 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+/**
+ * Fee distribution statistics for transaction inclusion.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ */
 class InclusionFee
 {
     /**
@@ -17,7 +22,7 @@ class InclusionFee
      */
     public string $min;
     /**
-     * @var string $mode Fee value which occurs the most often
+     * @var string $mode Fee value which occurs most often
      */
     public string $mode;
     /**
@@ -65,11 +70,11 @@ class InclusionFee
      */
     public string $p99;
     /**
-     * @var string $transactionCount How many transactions are part of the distribution
+     * @var string $transactionCount Number of transactions in the distribution
      */
     public string $transactionCount;
     /**
-     * @var int $ledgerCount How many consecutive ledgers form the distribution
+     * @var int $ledgerCount Number of consecutive ledgers forming the distribution
      */
     public int $ledgerCount;
 
@@ -128,6 +133,12 @@ class InclusionFee
         $this->ledgerCount = $ledgerCount;
     }
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json): InclusionFee
     {
         return new InclusionFee(
