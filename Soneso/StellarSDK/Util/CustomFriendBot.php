@@ -18,6 +18,18 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
  * This class allows you to use a custom FriendBot service, useful for local development
  * with standalone Stellar networks or private test networks.
  *
+ * Warning: This service should only be used with test networks.
+ * Never attempt to use FriendBot with mainnet accounts.
+ *
+ * Example:
+ * ```php
+ * $bot = new CustomFriendBot("http://localhost:8000/friendbot");
+ * $success = $bot->fundAccount("GABC...XYZ");
+ * if ($success) {
+ *     echo "Account funded successfully";
+ * }
+ * ```
+ *
  * @package Soneso\StellarSDK\Util
  * @see FriendBot For funding accounts on the official test network
  * @see FuturenetFriendBot For funding accounts on Futurenet
@@ -25,6 +37,9 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 class CustomFriendBot
 {
 
+    /**
+     * @var string The URL of the custom FriendBot service endpoint
+     */
     public string $friendBotUrl;
 
     /**
@@ -40,10 +55,12 @@ class CustomFriendBot
     /**
      * Funds an account using the custom FriendBot endpoint
      *
-     * @param string $accountId The Stellar account ID (public key) to fund
+     * Note: Errors are printed to stdout for debugging purposes
+     *
+     * @param string $accountId The Stellar account ID (56-character public key starting with 'G') to fund
      * @return bool True if funding succeeded, false otherwise
      */
-    function fundAccount(string $accountId): bool
+    public function fundAccount(string $accountId): bool
     {
         try {
             $httpClient = new Client();

@@ -18,6 +18,17 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
  * FriendBot is a service that funds accounts on the Stellar test network with test XLM.
  * This is useful for development and testing purposes. Do not use on the public network.
  *
+ * Warning: This service should only be used with test networks.
+ * Never attempt to use FriendBot with mainnet accounts.
+ *
+ * Example:
+ * ```php
+ * $accountId = "GABC...XYZ";
+ * if (FriendBot::fundTestAccount($accountId)) {
+ *     echo "Test account funded successfully";
+ * }
+ * ```
+ *
  * @package Soneso\StellarSDK\Util
  * @see FuturenetFriendBot For funding accounts on Futurenet
  * @see CustomFriendBot For using a custom FriendBot endpoint
@@ -28,7 +39,10 @@ class FriendBot
     /**
      * Funds a test account on the Stellar test network
      *
-     * @param string $accountId The Stellar account ID (public key) to fund
+     * Note: Errors are printed to stdout for debugging purposes
+     *
+     * @static
+     * @param string $accountId The Stellar account ID (56-character public key starting with 'G') to fund
      * @return bool True if funding succeeded, false otherwise
      */
     static function fundTestAccount(string $accountId) : bool {
