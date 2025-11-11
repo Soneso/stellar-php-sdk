@@ -11,18 +11,46 @@ use Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#create-passive-sell-offer" target="_blank">CreatePassiveSellOffer</a> operation.
+ *
+ * Creates an offer to sell one asset for another without taking a reverse offer of equal price.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see ManageSellOfferOperation For active sell offers
+ * @since 1.0.0
+ */
 class CreatePassiveSellOfferOperation extends AbstractOperation
 {
+    /**
+     * @var Asset The asset being sold
+     */
     private Asset $selling;
+
+    /**
+     * @var Asset The asset being bought
+     */
     private Asset $buying;
+
+    /**
+     * @var string The amount of selling asset to sell (as a decimal string)
+     */
     private string $amount;
+
+    /**
+     * @var Price The price of 1 unit of selling in terms of buying
+     */
     private Price $price;
 
-    /// Creates, updates, or deletes an offer to buy one asset for another, otherwise known as a "bid" order on a traditional orderbook:
-    /// [selling] is the asset the offer creator is selling.
-    /// [buying] is the asset the offer creator is buying.
-    /// [amount] is the amount of buying being bought. Set to 0 if you want to delete an existing offer.
-    /// [price] is the price of 1 unit of buying in terms of selling.
+    /**
+     * Creates a new CreatePassiveSellOfferOperation.
+     *
+     * @param Asset $selling The asset the offer creator is selling
+     * @param Asset $buying The asset the offer creator is buying
+     * @param string $amount The amount of selling asset to sell (as a decimal string)
+     * @param Price $price The price of 1 unit of selling in terms of buying
+     */
     public function __construct(Asset $selling, Asset $buying, string $amount, Price $price) {
         $this->selling = $selling;
         $this->buying = $buying;
@@ -31,7 +59,9 @@ class CreatePassiveSellOfferOperation extends AbstractOperation
     }
 
     /**
-     * @return Asset
+     * Gets the asset being sold.
+     *
+     * @return Asset The selling asset
      */
     public function getSelling(): Asset
     {
@@ -39,7 +69,9 @@ class CreatePassiveSellOfferOperation extends AbstractOperation
     }
 
     /**
-     * @return Asset
+     * Gets the asset being bought.
+     *
+     * @return Asset The buying asset
      */
     public function getBuying(): Asset
     {
@@ -47,7 +79,9 @@ class CreatePassiveSellOfferOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the amount being sold.
+     *
+     * @return string The amount as a decimal string
      */
     public function getAmount(): string
     {
@@ -55,13 +89,21 @@ class CreatePassiveSellOfferOperation extends AbstractOperation
     }
 
     /**
-     * @return Price
+     * Gets the offer price.
+     *
+     * @return Price The price
      */
     public function getPrice(): Price
     {
         return $this->price;
     }
 
+    /**
+     * Creates a CreatePassiveSellOfferOperation from its XDR representation.
+     *
+     * @param XdrCreatePassiveSellOfferOperation $xdrOp The XDR create passive sell offer operation to convert
+     * @return CreatePassiveSellOfferOperation The resulting CreatePassiveSellOfferOperation instance
+     */
     public static function fromXdrOperation(XdrCreatePassiveSellOfferOperation $xdrOp): CreatePassiveSellOfferOperation {
         $selling = Asset::fromXdr($xdrOp->getSelling());
         $buying = Asset::fromXdr($xdrOp->getBuying());
@@ -70,6 +112,11 @@ class CreatePassiveSellOfferOperation extends AbstractOperation
         return new CreatePassiveSellOfferOperation($selling, $buying, $amount, $price);
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody {
         $xdrSelling = $this->selling->toXdr();
         $xdrBuying = $this->buying->toXdr();

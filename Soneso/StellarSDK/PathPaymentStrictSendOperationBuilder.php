@@ -8,29 +8,68 @@
 namespace Soneso\StellarSDK;
 
 /**
- * Builds PathPayment operation.
+ * Builder for creating PathPaymentStrictSend operations.
+ *
+ * This builder implements the builder pattern to construct PathPaymentStrictSendOperation
+ * instances with a fluent interface. This operation sends a payment where the amount sent
+ * is specified, and the destination receives assets converted through a path.
+ *
+ * @package Soneso\StellarSDK
  * @see PathPaymentStrictSendOperation
+ * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#path-payment-strict-send
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new PathPaymentStrictSendOperationBuilder($sendAsset, '100', $destId, $destAsset, '95'))
+ *     ->setPath([$intermediateAsset1, $intermediateAsset2])
+ *     ->setSourceAccount($sourceId)
+ *     ->build();
  */
 class PathPaymentStrictSendOperationBuilder
 {
-    private ?MuxedAccount $sourceAccount = null;
-    private Asset $sendAsset;
-    private string $sendAmount;
-    private MuxedAccount $destination;
-    private Asset $destAsset;
-    private string $destMin;
     /**
-     * @var array<Asset>|null
+     * @var MuxedAccount|null The optional source account for this operation
+     */
+    private ?MuxedAccount $sourceAccount = null;
+
+    /**
+     * @var Asset The asset being sent
+     */
+    private Asset $sendAsset;
+
+    /**
+     * @var string The amount of send asset to send
+     */
+    private string $sendAmount;
+
+    /**
+     * @var MuxedAccount The destination account
+     */
+    private MuxedAccount $destination;
+
+    /**
+     * @var Asset The asset the destination receives
+     */
+    private Asset $destAsset;
+
+    /**
+     * @var string The minimum amount of destination asset to receive
+     */
+    private string $destMin;
+
+    /**
+     * @var array<Asset>|null The intermediate assets in the payment path
      */
     private ?array $path = null;
 
     /**
-     * Creates a new PathPaymentStrictSendOperation builder.
-     * @param Asset $sendAsset The asset deducted from the sender's account.
-     * @param string $sendAmount The asset deducted from the sender's account.
-     * @param string $destinationAccountId Payment destination
-     * @param Asset $destAsset The asset the destination account receives.
-     * @param string $destMin The minimum amount of destination asset the destination account receives.
+     * Creates a new PathPaymentStrictSend operation builder.
+     *
+     * @param Asset $sendAsset The asset being sent
+     * @param string $sendAmount The amount of send asset to send
+     * @param string $destinationAccountId The destination account ID
+     * @param Asset $destAsset The asset the destination receives
+     * @param string $destMin The minimum amount of destination asset to receive
      */
     public function __construct(Asset $sendAsset, string $sendAmount, string $destinationAccountId, Asset $destAsset, string $destMin) {
         $this->sendAsset = $sendAsset;
@@ -40,6 +79,16 @@ class PathPaymentStrictSendOperationBuilder
         $this->destMin = $destMin;
     }
 
+    /**
+     * Creates a builder for a muxed destination account.
+     *
+     * @param Asset $sendAsset The asset being sent
+     * @param string $sendAmount The amount of send asset to send
+     * @param MuxedAccount $destination The muxed destination account
+     * @param Asset $destAsset The asset the destination receives
+     * @param string $destMin The minimum amount of destination asset to receive
+     * @return PathPaymentStrictSendOperationBuilder The builder instance
+     */
     public static function forMuxedDestinationAccount(Asset $sendAsset, string $sendAmount, MuxedAccount $destination, Asset $destAsset, string $destMin): PathPaymentStrictSendOperationBuilder{
         return new PathPaymentStrictSendOperationBuilder($sendAsset, $sendAmount, $destination->getAccountId(), $destAsset, $destMin);
     }
@@ -60,9 +109,10 @@ class PathPaymentStrictSendOperationBuilder
     }
 
     /**
-     * Sets the source account for this operation. G...
-     * @param string $accountId The operation's source account.
-     * @return PathPaymentStrictSendOperationBuilder Builder object so you can chain methods
+     * Sets the source account for this operation.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
      */
     public function setSourceAccount(string $accountId) : PathPaymentStrictSendOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
@@ -71,8 +121,9 @@ class PathPaymentStrictSendOperationBuilder
 
     /**
      * Sets the muxed source account for this operation.
-     * @param MuxedAccount $sourceAccount The operation's source account.
-     * @return PathPaymentStrictSendOperationBuilder Builder object so you can chain methods
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
      */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : PathPaymentStrictSendOperationBuilder  {
         $this->sourceAccount = $sourceAccount;
@@ -80,8 +131,9 @@ class PathPaymentStrictSendOperationBuilder
     }
 
     /**
-     * Builds an operation.
-     * @return PathPaymentStrictSendOperation
+     * Builds the PathPaymentStrictSend operation.
+     *
+     * @return PathPaymentStrictSendOperation The constructed operation
      */
     public function build(): PathPaymentStrictSendOperation {
         $result = new PathPaymentStrictSendOperation($this->sendAsset, $this->sendAmount, $this->destination, $this->destAsset, $this->destMin, $this->path);

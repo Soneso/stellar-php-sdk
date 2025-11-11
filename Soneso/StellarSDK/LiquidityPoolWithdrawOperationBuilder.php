@@ -6,41 +6,95 @@
 
 namespace Soneso\StellarSDK;
 
+/**
+ * Builder for creating LiquidityPoolWithdraw operations.
+ *
+ * This builder implements the builder pattern to construct LiquidityPoolWithdrawOperation
+ * instances with a fluent interface. This operation withdraws assets from a liquidity pool
+ * by redeeming pool shares for the underlying reserves.
+ *
+ * @package Soneso\StellarSDK
+ * @see LiquidityPoolWithdrawOperation
+ * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#liquidity-pool-withdraw
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new LiquidityPoolWithdrawOperationBuilder($poolId, '50', '25', '25'))
+ *     ->setSourceAccount($sourceId)
+ *     ->build();
+ */
 class LiquidityPoolWithdrawOperationBuilder
 {
+    /**
+     * @var string The liquidity pool ID
+     */
+    private string $liquidityPoolId;
 
-    private string $liqudityPoolId;
+    /**
+     * @var string The amount of pool shares to withdraw
+     */
     private string $amount;
+
+    /**
+     * @var string The minimum amount of asset A to receive
+     */
     private string $minAmountA;
+
+    /**
+     * @var string The minimum amount of asset B to receive
+     */
     private string $minAmountB;
+
+    /**
+     * @var MuxedAccount|null The optional source account for this operation
+     */
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @param string $liqudityPoolId
-     * @param string $amount
-     * @param string $minAmountA
-     * @param string $minAmountB
+     * Creates a new LiquidityPoolWithdraw operation builder.
+     *
+     * @param string $liquidityPoolId The liquidity pool ID
+     * @param string $amount The amount of pool shares to withdraw
+     * @param string $minAmountA The minimum amount of asset A to receive
+     * @param string $minAmountB The minimum amount of asset B to receive
      */
-    public function __construct(string $liqudityPoolId, string $amount, string $minAmountA, string $minAmountB)
+    public function __construct(string $liquidityPoolId, string $amount, string $minAmountA, string $minAmountB)
     {
-        $this->liqudityPoolId = $liqudityPoolId;
+        $this->liquidityPoolId = $liquidityPoolId;
         $this->amount = $amount;
         $this->minAmountA = $minAmountA;
         $this->minAmountB = $minAmountB;
     }
 
+    /**
+     * Sets the source account for this operation.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
+     */
     public function setSourceAccount(string $accountId) : LiquidityPoolWithdrawOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
         return $this;
     }
 
+    /**
+     * Sets the muxed source account for this operation.
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
+     */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : LiquidityPoolWithdrawOperationBuilder {
         $this->sourceAccount = $sourceAccount;
         return $this;
     }
 
+    /**
+     * Builds the LiquidityPoolWithdraw operation.
+     *
+     * @return LiquidityPoolWithdrawOperation The constructed operation
+     */
     public function build(): LiquidityPoolWithdrawOperation {
-        $result = new LiquidityPoolWithdrawOperation($this->liqudityPoolId, $this->amount, $this->minAmountA, $this->minAmountB);
+        $result = new LiquidityPoolWithdrawOperation($this->liquidityPoolId, $this->amount, $this->minAmountA, $this->minAmountB);
         if ($this->sourceAccount != null) {
             $result->setSourceAccount($this->sourceAccount);
         }

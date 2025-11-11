@@ -12,20 +12,38 @@ use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
 
 /**
  * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#payment" target="_blank">Payment</a> operation.
+ *
+ * Sends a specified amount of an asset to a destination account. This is the most basic operation
+ * for transferring assets between accounts on the Stellar network.
+ *
+ * @package Soneso\StellarSDK
  * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see PaymentOperationBuilder For building this operation
+ * @since 1.0.0
  */
 class PaymentOperation extends AbstractOperation
 {
-
+    /**
+     * @var MuxedAccount The account that receives the payment.
+     */
     private MuxedAccount $destination;
+
+    /**
+     * @var Asset The asset to send to the destination account.
+     */
     private Asset $asset;
+
+    /**
+     * @var string The amount of the asset to send.
+     */
     private string $amount;
 
     /**
-     * Constructs a new PaymentOperation object
-     * @param MuxedAccount $destination Account that receives the payment.
-     * @param Asset $asset Asset to send to the destination account.
-     * @param string $amount Amount of the asset to send.
+     * Constructs a new PaymentOperation object.
+     *
+     * @param MuxedAccount $destination The account that receives the payment.
+     * @param Asset $asset The asset to send to the destination account.
+     * @param string $amount The amount of the asset to send.
      */
     public function __construct(MuxedAccount $destination, Asset $asset, string $amount) {
         $this->destination = $destination;
@@ -34,29 +52,38 @@ class PaymentOperation extends AbstractOperation
     }
 
     /**
-     * Account that receives the payment.
-     * @return MuxedAccount
+     * Returns the account that receives the payment.
+     *
+     * @return MuxedAccount The destination account.
      */
     public function getDestination(): MuxedAccount {
         return $this->destination;
     }
 
     /**
-     * Asset to send to the destination account.
-     * @return Asset
+     * Returns the asset to send to the destination account.
+     *
+     * @return Asset The payment asset.
      */
     public function getAsset(): Asset {
         return $this->asset;
     }
 
     /**
-     * Amount of the asset to send.
-     * @return string
+     * Returns the amount of the asset to send.
+     *
+     * @return string The payment amount.
      */
     public function getAmount(): string {
         return $this->amount;
     }
 
+    /**
+     * Creates a PaymentOperation from XDR operation object.
+     *
+     * @param XdrPaymentOperation $xdrOp The XDR operation object to convert.
+     * @return PaymentOperation The created operation instance.
+     */
     public static function fromXdrOperation(XdrPaymentOperation $xdrOp): PaymentOperation {
         $destination = MuxedAccount::fromXdr($xdrOp->getDestination());
         $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
@@ -64,6 +91,11 @@ class PaymentOperation extends AbstractOperation
         return new PaymentOperation($destination, $asset, $amount);
     }
 
+    /**
+     * Converts the operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body.
+     */
     public function toOperationBody(): XdrOperationBody {
         $xdrDestination = $this->destination->toXdr();
         $xdrAsset = $this->asset->toXdr();

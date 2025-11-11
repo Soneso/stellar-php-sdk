@@ -7,19 +7,44 @@
 namespace Soneso\StellarSDK;
 
 /**
- * Builds ChangeTrust operation.
+ * Builder for creating ChangeTrust operations.
+ *
+ * This builder implements the builder pattern to construct ChangeTrustOperation
+ * instances with a fluent interface. ChangeTrust operations create, update, or delete
+ * a trustline between the source account and an asset issuer.
+ *
+ * @package Soneso\StellarSDK
  * @see ChangeTrustOperation
+ * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#change-trust
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new ChangeTrustOperationBuilder($asset, '1000.00'))
+ *     ->setSourceAccount($sourceId)
+ *     ->build();
  */
 class ChangeTrustOperationBuilder
 {
+    /**
+     * @var Asset The asset of the trustline
+     */
     private Asset $asset;
+
+    /**
+     * @var string|null The limit of the trustline (null for default maximum)
+     */
     private ?string $limit = null;
+
+    /**
+     * @var MuxedAccount|null The optional source account for this operation
+     */
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * Creates a new ChangeTrust builder.
-     * @param Asset $asset The asset of the trustline. For example, if a gateway extends a trustline of up to 200 USD to a user, the line is USD.
-     * @param string|null $limit The limit of the trustline. For example, if a gateway extends a trustline of up to 200 USD to a user, the limit is 200.
+     * Creates a new ChangeTrust operation builder.
+     *
+     * @param Asset $asset The asset of the trustline
+     * @param string|null $limit The limit of the trustline (null for default maximum)
      */
     public function __construct(Asset $asset, ?string $limit = null) {
         $this->asset = $asset;
@@ -27,9 +52,10 @@ class ChangeTrustOperationBuilder
     }
 
     /**
-     * Sets the source account for this operation. G...
-     * @param string $accountId The operation's source account.
-     * @return ChangeTrustOperationBuilder Builder object so you can chain methods
+     * Sets the source account for this operation.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
      */
     public function setSourceAccount(string $accountId) : ChangeTrustOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
@@ -38,8 +64,9 @@ class ChangeTrustOperationBuilder
 
     /**
      * Sets the muxed source account for this operation.
-     * @param MuxedAccount $sourceAccount The operation's source account.
-     * @return ChangeTrustOperationBuilder Builder object so you can chain methods
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
      */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : ChangeTrustOperationBuilder {
         $this->sourceAccount = $sourceAccount;
@@ -47,8 +74,9 @@ class ChangeTrustOperationBuilder
     }
 
     /**
-     * Builds an operation.
-     * @return ChangeTrustOperation
+     * Builds the ChangeTrust operation.
+     *
+     * @return ChangeTrustOperation The constructed operation
      */
     public function build(): ChangeTrustOperation {
         $result = new ChangeTrustOperation($this->asset, $this->limit);

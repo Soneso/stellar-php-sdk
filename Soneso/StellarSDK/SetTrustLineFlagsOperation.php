@@ -11,18 +11,46 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-trustline-flags" target="_blank">SetTrustLineFlags</a> operation.
+ *
+ * Allows the issuer of an asset to set flags on a trustline. This enables control over whether accounts
+ * can hold the asset, whether it can be clawed back, and other authorization settings.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see SetTrustLineFlagsOperationBuilder For building this operation
+ * @since 1.0.0
+ */
 class SetTrustLineFlagsOperation extends AbstractOperation
 {
+    /**
+     * @var string The account ID of the trustline holder.
+     */
     private string $trustorId;
+
+    /**
+     * @var Asset The asset of the trustline.
+     */
     private Asset $asset;
+
+    /**
+     * @var int Flags to clear on the trustline.
+     */
     private int $clearFlags;
+
+    /**
+     * @var int Flags to set on the trustline.
+     */
     private int $setFlags;
 
     /**
-     * @param string $trustorId
-     * @param Asset $asset
-     * @param int $clearFlags
-     * @param int $setFlags
+     * Constructs a new SetTrustLineFlagsOperation object.
+     *
+     * @param string $trustorId The account ID of the trustline holder.
+     * @param Asset $asset The asset of the trustline.
+     * @param int $clearFlags Flags to clear on the trustline.
+     * @param int $setFlags Flags to set on the trustline.
      */
     public function __construct(string $trustorId, Asset $asset, int $clearFlags, int $setFlags)
     {
@@ -33,7 +61,9 @@ class SetTrustLineFlagsOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Returns the account ID of the trustline holder.
+     *
+     * @return string The trustor account ID.
      */
     public function getTrustorId(): string
     {
@@ -41,7 +71,9 @@ class SetTrustLineFlagsOperation extends AbstractOperation
     }
 
     /**
-     * @return Asset
+     * Returns the asset of the trustline.
+     *
+     * @return Asset The trustline asset.
      */
     public function getAsset(): Asset
     {
@@ -49,7 +81,9 @@ class SetTrustLineFlagsOperation extends AbstractOperation
     }
 
     /**
-     * @return int
+     * Returns flags to clear on the trustline.
+     *
+     * @return int The flags to clear.
      */
     public function getClearFlags(): int
     {
@@ -57,13 +91,21 @@ class SetTrustLineFlagsOperation extends AbstractOperation
     }
 
     /**
-     * @return int
+     * Returns flags to set on the trustline.
+     *
+     * @return int The flags to set.
      */
     public function getSetFlags(): int
     {
         return $this->setFlags;
     }
 
+    /**
+     * Creates a SetTrustLineFlagsOperation from XDR operation object.
+     *
+     * @param XdrSetTrustLineFlagsOperation $xdrOp The XDR operation object to convert.
+     * @return SetTrustLineFlagsOperation The created operation instance.
+     */
     public static function fromXdrOperation(XdrSetTrustLineFlagsOperation $xdrOp): SetTrustLineFlagsOperation {
         $trustorId = $xdrOp->getAccountID()->getAccountId();
         $asset = Asset::fromXdr($xdrOp->getAsset());
@@ -72,6 +114,11 @@ class SetTrustLineFlagsOperation extends AbstractOperation
         return new SetTrustLineFlagsOperation($trustorId, $asset, $clearFlags, $setFlags);
     }
 
+    /**
+     * Converts the operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body.
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $trustorId = XdrAccountID::fromAccountId($this->trustorId);

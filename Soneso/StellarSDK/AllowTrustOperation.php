@@ -13,13 +13,47 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrTrustLineFlags;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#allow-trust" target="_blank">AllowTrust</a> operation.
+ *
+ * Updates the authorized flag of an existing trust line. This operation is deprecated in favor of SetTrustLineFlags.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see SetTrustLineFlagsOperation For the newer operation
+ * @since 1.0.0
+ * @deprecated Use SetTrustLineFlagsOperation instead
+ */
 class AllowTrustOperation extends AbstractOperation
 {
+    /**
+     * @var string The account ID of the trustor (the account that created the trust line)
+     */
     private string $trustor;
+
+    /**
+     * @var string The asset code being authorized
+     */
     private string $assetCode;
+
+    /**
+     * @var bool Whether to authorize the trustor to transact the asset
+     */
     private bool $authorize;
+
+    /**
+     * @var bool Whether to authorize the trustor to maintain liabilities but not receive new assets
+     */
     private bool $authorizeToMaintainLiabilities;
 
+    /**
+     * Creates a new AllowTrustOperation.
+     *
+     * @param string $trustor The account ID of the trustor
+     * @param string $assetCode The asset code to authorize
+     * @param bool $authorize Whether to fully authorize the trust line
+     * @param bool $authorizeToMaintainLiabilities Whether to authorize only maintaining liabilities
+     */
     public function __construct(string $trustor, string $assetCode, bool $authorize, bool $authorizeToMaintainLiabilities)
     {
         $this->trustor = $trustor;
@@ -29,7 +63,9 @@ class AllowTrustOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the trustor account ID.
+     *
+     * @return string The trustor account ID
      */
     public function getTrustor(): string
     {
@@ -37,7 +73,9 @@ class AllowTrustOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the asset code being authorized.
+     *
+     * @return string The asset code
      */
     public function getAssetCode(): string
     {
@@ -45,7 +83,9 @@ class AllowTrustOperation extends AbstractOperation
     }
 
     /**
-     * @return bool
+     * Checks if the trust line is fully authorized.
+     *
+     * @return bool True if fully authorized, false otherwise
      */
     public function isAuthorize(): bool
     {
@@ -53,13 +93,21 @@ class AllowTrustOperation extends AbstractOperation
     }
 
     /**
-     * @return bool
+     * Checks if the trust line is authorized to maintain liabilities only.
+     *
+     * @return bool True if authorized to maintain liabilities, false otherwise
      */
     public function isAuthorizeToMaintainLiabilities(): bool
     {
         return $this->authorizeToMaintainLiabilities;
     }
 
+    /**
+     * Creates an AllowTrustOperation from its XDR representation.
+     *
+     * @param XdrAllowTrustOperation $xdrOp The XDR allow trust operation to convert
+     * @return AllowTrustOperation The resulting AllowTrustOperation instance
+     */
     public static function fromXdrOperation(XdrAllowTrustOperation $xdrOp): AllowTrustOperation {
         $trustor = $xdrOp->getTrustor()->getAccountId();
         $assetCode = $xdrOp->getAsset()->getAssetCode4();
@@ -72,6 +120,11 @@ class AllowTrustOperation extends AbstractOperation
         return new AllowTrustOperation($trustor, $assetCode, $authorize, $authorizeToMaintainLiabilities);
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $xdrTrustor = XdrAccountID::fromAccountId($this->trustor);

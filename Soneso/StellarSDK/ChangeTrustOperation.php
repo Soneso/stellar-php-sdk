@@ -14,12 +14,23 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
  * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#change-trust" target="_blank">ChangeTrust</a> operation.
+ *
+ * Creates, updates, or deletes a trust line between the source account and an asset.
+ *
+ * @package Soneso\StellarSDK
  * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @since 1.0.0
  */
 class ChangeTrustOperation extends AbstractOperation
 {
-
+    /**
+     * @var Asset The asset for the trust line
+     */
     private Asset $asset;
+
+    /**
+     * @var BigInteger The trust line limit in stroops (set to 0 to remove the trust line)
+     */
     private BigInteger $limit;
 
     /**
@@ -37,28 +48,41 @@ class ChangeTrustOperation extends AbstractOperation
     }
 
     /**
-     * The asset of the trustline. For example, if a gateway extends a trustline of up to 200 USD to a user, the line is USD.
-     * @return Asset
+     * Gets the asset of the trust line.
+     *
+     * @return Asset The asset
      */
     public function getAsset(): Asset {
         return $this->asset;
     }
 
     /**
-     * The limit of the trustline. For example, if a gateway extends a trustline of up to 200 USD to a user, the limit is 200.
-     * @return string
+     * Gets the trust line limit.
+     *
+     * @return string The limit as a decimal string
      */
     public function getLimit() : string {
         $res = new StellarAmount($this->limit);
         return $res->getDecimalValueAsString();
     }
 
+    /**
+     * Creates a ChangeTrustOperation from its XDR representation.
+     *
+     * @param XdrChangeTrustOperation $xdrOp The XDR change trust operation to convert
+     * @return ChangeTrustOperation The resulting ChangeTrustOperation instance
+     */
     public static function fromXdrOperation(XdrChangeTrustOperation $xdrOp): ChangeTrustOperation {
         $asset = Asset::fromXdr($xdrOp->getLine());
         $amount = AbstractOperation::fromXdrAmount($xdrOp->getLimit());
         return new ChangeTrustOperation($asset, $amount);
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody {
         $changeTrustAsset = $this->asset->toXdrChangeTrustAsset();
         $op = new XdrChangeTrustOperation($changeTrustAsset, $this->limit);

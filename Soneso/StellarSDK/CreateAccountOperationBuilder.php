@@ -8,19 +8,44 @@
 namespace Soneso\StellarSDK;
 
 /**
- * Builds CreateAccount operation.
+ * Builder for creating CreateAccount operations.
+ *
+ * This builder implements the builder pattern to construct CreateAccountOperation
+ * instances with a fluent interface. CreateAccount operations create a new account
+ * on the Stellar ledger with an initial XLM balance.
+ *
+ * @package Soneso\StellarSDK
  * @see CreateAccountOperation
+ * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#create-account
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new CreateAccountOperationBuilder($destinationId, '10.00'))
+ *     ->setSourceAccount($sourceId)
+ *     ->build();
  */
 class CreateAccountOperationBuilder
 {
+    /**
+     * @var string The destination account ID to be created
+     */
     private string $destination;
+
+    /**
+     * @var string The initial balance in lumens (XLM)
+     */
     private string $startingBalance;
+
+    /**
+     * @var MuxedAccount|null The optional source account for this operation
+     */
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * Creates a new CreateAccount builder.
-     * @param string $destination The destination account id
-     * @param string $startingBalance The initial balance to start with in lumens.
+     * Creates a new CreateAccount operation builder.
+     *
+     * @param string $destination The destination account ID to be created
+     * @param string $startingBalance The initial balance to start with in lumens
      */
     public function __construct(string $destination, string $startingBalance) {
         $this->destination = $destination;
@@ -29,8 +54,9 @@ class CreateAccountOperationBuilder
 
     /**
      * Sets the source account for this operation.
-     * @param string $accountId The operation's source account.
-     * @return CreateAccountOperationBuilder Builder object so you can chain methods.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
      */
     public function setSourceAccount(string $accountId) : CreateAccountOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
@@ -39,8 +65,9 @@ class CreateAccountOperationBuilder
 
     /**
      * Sets the muxed source account for this operation.
-     * @param MuxedAccount $sourceAccount The operation's muxed source account.
-     * @return CreateAccountOperationBuilder Builder object so you can chain methods.
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
      */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : CreateAccountOperationBuilder {
         $this->sourceAccount = $sourceAccount;
@@ -48,8 +75,9 @@ class CreateAccountOperationBuilder
     }
 
     /**
-     * Builds an operation.
-     * @return CreateAccountOperation the build operation.
+     * Builds the CreateAccount operation.
+     *
+     * @return CreateAccountOperation The constructed operation
      */
     public function build(): CreateAccountOperation {
         $result = new CreateAccountOperation($this->destination, $this->startingBalance);

@@ -10,19 +10,45 @@ use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#liquidity-pool-withdraw" target="_blank">LiquidityPoolWithdraw</a> operation.
+ *
+ * Withdraws assets from a liquidity pool, reducing the pool's reserves.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see LiquidityPoolDepositOperation For depositing to a pool
+ * @since 1.0.0
+ */
 class LiquidityPoolWithdrawOperation extends AbstractOperation
 {
-
+    /**
+     * @var string The liquidity pool ID
+     */
     private string $liqudityPoolId;
+
+    /**
+     * @var string The amount of pool shares to withdraw (as a decimal string)
+     */
     private string $amount;
+
+    /**
+     * @var string Minimum amount of asset A to receive (as a decimal string)
+     */
     private string $minAmountA;
+
+    /**
+     * @var string Minimum amount of asset B to receive (as a decimal string)
+     */
     private string $minAmountB;
 
     /**
-     * @param string $liqudityPoolId
-     * @param string $amount
-     * @param string $minAmountA
-     * @param string $minAmountB
+     * Creates a new LiquidityPoolWithdrawOperation.
+     *
+     * @param string $liqudityPoolId The liquidity pool ID
+     * @param string $amount The amount of pool shares to withdraw
+     * @param string $minAmountA Minimum amount of asset A to receive
+     * @param string $minAmountB Minimum amount of asset B to receive
      */
     public function __construct(string $liqudityPoolId, string $amount, string $minAmountA, string $minAmountB)
     {
@@ -33,7 +59,9 @@ class LiquidityPoolWithdrawOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the liquidity pool ID.
+     *
+     * @return string The liquidity pool ID
      */
     public function getLiqudityPoolId(): string
     {
@@ -41,7 +69,9 @@ class LiquidityPoolWithdrawOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the amount of pool shares to withdraw.
+     *
+     * @return string The amount as a decimal string
      */
     public function getAmount(): string
     {
@@ -49,7 +79,9 @@ class LiquidityPoolWithdrawOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the minimum amount of asset A to receive.
+     *
+     * @return string The minimum amount as a decimal string
      */
     public function getMinAmountA(): string
     {
@@ -57,14 +89,21 @@ class LiquidityPoolWithdrawOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the minimum amount of asset B to receive.
+     *
+     * @return string The minimum amount as a decimal string
      */
     public function getMinAmountB(): string
     {
         return $this->minAmountB;
     }
 
-
+    /**
+     * Creates a LiquidityPoolWithdrawOperation from its XDR representation.
+     *
+     * @param XdrLiquidityPoolWithdrawOperation $xdrOp The XDR liquidity pool withdraw operation to convert
+     * @return LiquidityPoolWithdrawOperation The resulting LiquidityPoolWithdrawOperation instance
+     */
     public static function fromXdrOperation(XdrLiquidityPoolWithdrawOperation $xdrOp): LiquidityPoolWithdrawOperation {
         $minAmountA = AbstractOperation::fromXdrAmount($xdrOp->getMinAmountA());
         $minAmountB = AbstractOperation::fromXdrAmount($xdrOp->getMinAmountB());
@@ -73,6 +112,11 @@ class LiquidityPoolWithdrawOperation extends AbstractOperation
         return new LiquidityPoolWithdrawOperation($liquidityPoolId, $amount, $minAmountA, $minAmountB);
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $amount = AbstractOperation::toXdrAmount($this->amount);

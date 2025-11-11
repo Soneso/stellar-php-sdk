@@ -7,35 +7,79 @@
 namespace Soneso\StellarSDK;
 
 /**
- * Builds ManageData operation
+ * Builder for creating ManageData operations.
+ *
+ * This builder implements the builder pattern to construct ManageDataOperation
+ * instances with a fluent interface. ManageData operations set, modify, or delete
+ * key-value pairs stored in an account's data entries.
+ *
+ * @package Soneso\StellarSDK
  * @see ManageDataOperation
+ * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#manage-data
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new ManageDataOperationBuilder('mykey', 'myvalue'))
+ *     ->setSourceAccount($sourceId)
+ *     ->build();
  */
 class ManageDataOperationBuilder
 {
+    /**
+     * @var string The name of the data entry
+     */
     private string $key;
+
+    /**
+     * @var string|null The value of the data entry (null to delete)
+     */
     private ?string $value = null;
+
+    /**
+     * @var MuxedAccount|null The optional source account for this operation
+     */
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * Creates a new ManageData builder. If you want to delete data entry pass null as a <code>value</code> param.
-     * @param string $key The name of data entry.
-     * @param string|null $value The value of data entry. <code>null</code>null will delete data entry.
+     * Creates a new ManageData operation builder.
+     *
+     * Pass null as the value parameter to delete a data entry.
+     *
+     * @param string $key The name of the data entry
+     * @param string|null $value The value of the data entry (null will delete the entry)
      */
     public function __construct(string $key, ?string $value = null) {
         $this->key = $key;
         $this->value = $value;
     }
 
+    /**
+     * Sets the source account for this operation.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
+     */
     public function setSourceAccount(string $accountId) : ManageDataOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
         return $this;
     }
 
+    /**
+     * Sets the muxed source account for this operation.
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
+     */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : ManageDataOperationBuilder {
         $this->sourceAccount = $sourceAccount;
         return $this;
     }
 
+    /**
+     * Builds the ManageData operation.
+     *
+     * @return ManageDataOperation The constructed operation
+     */
     public function build(): ManageDataOperation {
         $result = new ManageDataOperation($this->key, $this->value);
         if ($this->sourceAccount != null) {

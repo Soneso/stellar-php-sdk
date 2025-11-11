@@ -11,16 +11,40 @@ use Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
+/**
+ * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#create-claimable-balance" target="_blank">CreateClaimableBalance</a> operation.
+ *
+ * Creates a claimable balance entry with a list of claimants who can later claim the balance.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see ClaimClaimableBalanceOperation For claiming a balance
+ * @since 1.0.0
+ */
 class CreateClaimableBalanceOperation extends AbstractOperation
 {
-
     /**
-     * @var array<Claimant>
+     * @var array<Claimant> Array of claimants who can claim this balance
      */
     private array $claimants;
+
+    /**
+     * @var Asset The asset for the claimable balance
+     */
     private Asset $asset;
+
+    /**
+     * @var string The amount of the asset (as a decimal string)
+     */
     private string $amount;
 
+    /**
+     * Creates a new CreateClaimableBalanceOperation.
+     *
+     * @param array<Claimant> $claimants Array of claimants who can claim the balance
+     * @param Asset $asset The asset to make claimable
+     * @param string $amount The amount to make claimable (as a decimal string)
+     */
     public function __construct(array $claimants, Asset $asset, string $amount) {
         $this->claimants = $claimants;
         $this->asset = $asset;
@@ -28,7 +52,9 @@ class CreateClaimableBalanceOperation extends AbstractOperation
     }
 
     /**
-     * @return array<Claimant>
+     * Gets the array of claimants.
+     *
+     * @return array<Claimant> The claimants
      */
     public function getClaimants(): array
     {
@@ -36,7 +62,9 @@ class CreateClaimableBalanceOperation extends AbstractOperation
     }
 
     /**
-     * @return Asset
+     * Gets the asset.
+     *
+     * @return Asset The asset
      */
     public function getAsset(): Asset
     {
@@ -44,13 +72,21 @@ class CreateClaimableBalanceOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the amount.
+     *
+     * @return string The amount as a decimal string
      */
     public function getAmount(): string
     {
         return $this->amount;
     }
 
+    /**
+     * Creates a CreateClaimableBalanceOperation from its XDR representation.
+     *
+     * @param XdrCreateClaimableBalanceOperation $xdrOp The XDR create claimable balance operation to convert
+     * @return CreateClaimableBalanceOperation The resulting CreateClaimableBalanceOperation instance
+     */
     public static function fromXdrOperation(XdrCreateClaimableBalanceOperation $xdrOp): CreateClaimableBalanceOperation {
         $asset = Asset::fromXdr($xdrOp->getAsset());
         $amount = AbstractOperation::fromXdrAmount($xdrOp->getAmount());
@@ -63,6 +99,11 @@ class CreateClaimableBalanceOperation extends AbstractOperation
         return new CreateClaimableBalanceOperation($claimants, $asset, $amount);
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $xdrAsset = $this->asset->toXdr();

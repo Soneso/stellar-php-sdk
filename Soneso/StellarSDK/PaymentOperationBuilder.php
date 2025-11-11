@@ -7,21 +7,50 @@
 namespace Soneso\StellarSDK;
 
 /**
- * Builds Payment operation.
+ * Builder for creating Payment operations.
+ *
+ * This builder implements the builder pattern to construct PaymentOperation
+ * instances with a fluent interface. Payment operations send a specified amount
+ * of an asset from the source account to a destination account.
+ *
+ * @package Soneso\StellarSDK
  * @see PaymentOperation
+ * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#payment
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new PaymentOperationBuilder($destinationId, $asset, '100.00'))
+ *     ->setSourceAccount($sourceId)
+ *     ->build();
  */
 class PaymentOperationBuilder
 {
+    /**
+     * @var MuxedAccount|null The optional source account for this operation
+     */
     private ?MuxedAccount $sourceAccount = null;
+
+    /**
+     * @var MuxedAccount The destination account receiving the payment
+     */
     private MuxedAccount $destination;
+
+    /**
+     * @var Asset The asset to be sent
+     */
     private Asset $asset;
+
+    /**
+     * @var string The amount of asset to send
+     */
     private string $amount;
 
     /**
-     * Creates a new PaymentOperation builder.
-     * @param string $destinationAccountId The destination account id.
-     * @param Asset $asset The asset to send.
-     * @param string $amount The amount to send in lumens.
+     * Creates a new Payment operation builder.
+     *
+     * @param string $destinationAccountId The destination account ID
+     * @param Asset $asset The asset to send
+     * @param string $amount The amount to send
      */
     public function __construct(string $destinationAccountId, Asset $asset, string $amount) {
         $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
@@ -29,14 +58,23 @@ class PaymentOperationBuilder
         $this->amount = $amount;
     }
 
+    /**
+     * Creates a new Payment operation builder for a muxed destination account.
+     *
+     * @param MuxedAccount $destination The muxed destination account
+     * @param Asset $asset The asset to send
+     * @param string $amount The amount to send
+     * @return PaymentOperationBuilder The new builder instance
+     */
     public static function forMuxedDestinationAccount(MuxedAccount $destination, Asset $asset, string $amount) : PaymentOperationBuilder {
         return  new PaymentOperationBuilder($destination->getAccountId(), $asset, $amount);
     }
 
     /**
      * Sets the source account for this operation.
-     * @param string $accountId The operation's source account.
-     * @return PaymentOperationBuilder Builder object so you can chain methods.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
      */
     public function setSourceAccount(string $accountId) : PaymentOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
@@ -45,8 +83,9 @@ class PaymentOperationBuilder
 
     /**
      * Sets the muxed source account for this operation.
-     * @param MuxedAccount $sourceAccount The operation's muxed source account.
-     * @return PaymentOperationBuilder Builder object so you can chain methods.
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
      */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : PaymentOperationBuilder {
         $this->sourceAccount = $sourceAccount;
@@ -54,8 +93,9 @@ class PaymentOperationBuilder
     }
 
     /**
-     * Builds an operation
-     * @return PaymentOperation
+     * Builds the Payment operation.
+     *
+     * @return PaymentOperation The constructed operation
      */
     public function build(): PaymentOperation {
         $result = new PaymentOperation($this->destination, $this->asset, $this->amount);

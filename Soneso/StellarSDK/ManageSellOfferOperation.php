@@ -13,22 +13,54 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
  * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-sell-offer" target="_blank">ManageSellOffer</a> operation.
+ *
+ * Creates, updates, or deletes an offer to sell one asset for another, setting the amount of asset to sell.
+ * This operation creates a sell offer on the Stellar decentralized exchange (DEX).
+ *
+ * @package Soneso\StellarSDK
  * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see ManageSellOfferOperationBuilder For building this operation
+ * @since 1.0.0
  */
 class ManageSellOfferOperation extends AbstractOperation
 {
+    /**
+     * @var Asset The asset being sold in this offer.
+     */
     private Asset $selling;
+
+    /**
+     * @var Asset The asset being bought in this offer.
+     */
     private Asset $buying;
+
+    /**
+     * @var string The amount of the selling asset to sell.
+     */
     private string $amount;
+
+    /**
+     * @var Price The price of 1 unit of selling in terms of buying.
+     */
     private Price $price;
+
+    /**
+     * @var int The offer ID. Use 0 for a new offer, or the existing offer ID to update/delete.
+     */
     private int $offerId;
 
-    /// Creates, updates, or deletes an offer to buy one asset for another, otherwise known as a "bid" order on a traditional orderbook:
-    /// [selling] is the asset the offer creator is selling.
-    /// [buying] is the asset the offer creator is buying.
-    /// [amount] is the amount of buying being bought. Set to 0 if you want to delete an existing offer.
-    /// [price] is the price of 1 unit of buying in terms of selling.
-    /// [offerId] set to "0" for a new offer, otherwise the id of the offer to be changed or removed.
+    /**
+     * Constructs a new ManageSellOfferOperation object.
+     *
+     * Creates, updates, or deletes an offer to sell one asset for another on the DEX.
+     *
+     * @param Asset $selling The asset the offer creator is selling.
+     * @param Asset $buying The asset the offer creator is buying.
+     * @param string $amount The amount of selling being sold. Set to "0" to delete an existing offer.
+     * @param Price $price The price of 1 unit of selling in terms of buying.
+     * @param int $offerId Set to 0 for a new offer, otherwise the ID of the offer to update or delete.
+     * @throws InvalidArgumentException If the offer ID is negative.
+     */
     public function __construct(Asset $selling, Asset $buying, string $amount, Price $price, int $offerId) {
         $this->selling = $selling;
         $this->buying = $buying;
@@ -41,8 +73,9 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
-     * The asset being sold in this operation.
-     * @return Asset
+     * Returns the asset being sold in this offer.
+     *
+     * @return Asset The selling asset.
      */
     public function getSelling(): Asset
     {
@@ -50,8 +83,9 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
-     * The asset being bought in this operation.
-     * @return Asset
+     * Returns the asset being bought in this offer.
+     *
+     * @return Asset The buying asset.
      */
     public function getBuying(): Asset
     {
@@ -59,8 +93,9 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
-     * Amount of selling being sold.
-     * @return string
+     * Returns the amount of selling asset being sold.
+     *
+     * @return string The amount of the selling asset.
      */
     public function getAmount(): string
     {
@@ -68,8 +103,9 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
-     * Price of 1 unit of selling in terms of buying.
-     * @return Price
+     * Returns the price of 1 unit of selling in terms of buying.
+     *
+     * @return Price The offer price.
      */
     public function getPrice(): Price
     {
@@ -77,13 +113,20 @@ class ManageSellOfferOperation extends AbstractOperation
     }
 
     /**
-     *  The ID of the offer.
-     * @return int
+     * Returns the ID of the offer.
+     *
+     * @return int The offer ID (0 for new offers).
      */
     public function getOfferId(): int {
         return $this->offerId;
     }
 
+    /**
+     * Creates a ManageSellOfferOperation from XDR operation object.
+     *
+     * @param XdrManageSellOfferOperation $xdrOp The XDR operation object to convert.
+     * @return ManageSellOfferOperation The created operation instance.
+     */
     public static function fromXdrOperation(XdrManageSellOfferOperation $xdrOp): ManageSellOfferOperation {
         $selling = Asset::fromXdr($xdrOp->getSelling());
         $buying = Asset::fromXdr($xdrOp->getBuying());
@@ -92,6 +135,11 @@ class ManageSellOfferOperation extends AbstractOperation
         return new ManageSellOfferOperation($selling, $buying, $amount, $price, $xdrOp->getOfferId());
     }
 
+    /**
+     * Converts the operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body.
+     */
     public function toOperationBody(): XdrOperationBody {
         $xdrSelling = $this->selling->toXdr();
         $xdrBuying = $this->buying->toXdr();
