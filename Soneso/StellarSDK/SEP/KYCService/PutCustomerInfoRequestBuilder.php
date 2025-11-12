@@ -12,25 +12,60 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Request builder for PUT /customer endpoint operations.
+ *
+ * This builder constructs HTTP requests to submit or update customer KYC information to the
+ * anchor's SEP-12 endpoint. It supports submitting standard SEP-9 fields (name, address, etc.),
+ * custom fields, and binary files (ID documents, proof of address).
+ *
+ * The request uses multipart/form-data encoding to support both text fields and file uploads
+ * in a single request. The anchor returns a customer ID that can be used in subsequent requests.
+ *
+ * Example usage:
+ * ```php
+ * $fields = ['first_name' => 'John', 'last_name' => 'Doe'];
+ * $files = ['photo_id_front' => $imageBytes];
+ * $builder = new PutCustomerInfoRequestBuilder($httpClient, $serviceAddress, $fields, $files, $jwt);
+ * $response = $builder->execute();
+ * ```
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put SEP-12 v1.15.0
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md SEP-9 Standard KYC Fields
+ * @see KYCService::putCustomerInfo() For the service method using this builder
+ * @see PutCustomerInfoResponse For the response structure
+ * @since 1.0.0
+ */
 class PutCustomerInfoRequestBuilder extends RequestBuilder {
-    private string $serviceAddress;
-    private ?string $jwtToken = null;
     /**
-     * @var array<array-key, mixed>|null $fields
+     * @var string The base URL of the SEP-12 KYC service endpoint
+     */
+    private string $serviceAddress;
+
+    /**
+     * @var string|null JWT token for authentication obtained via SEP-10
+     */
+    private ?string $jwtToken = null;
+
+    /**
+     * @var array<array-key, mixed>|null Customer data fields to submit
      */
     private ?array $fields = null;
 
     /**
-     * @var array<array-key, string>|null $files
+     * @var array<array-key, string>|null Binary file data to upload (field name => file bytes)
      */
     private ?array $files = null;
 
     /**
-     * @param Client $httpClient
-     * @param string $serviceAddress
-     * @param array<array-key, mixed>|null $fields
-     * @param array<array-key, string>|null $files
-     * @param string|null $jwtToken
+     * Constructor for building PUT /customer requests.
+     *
+     * @param Client $httpClient The HTTP client to use for sending requests
+     * @param string $serviceAddress The base URL of the SEP-12 service
+     * @param array<array-key, mixed>|null $fields Customer data fields to submit
+     * @param array<array-key, string>|null $files Binary file data to upload (field name => file bytes)
+     * @param string|null $jwtToken JWT token for authentication obtained via SEP-10
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?array $fields = null, ?array $files = null, ?string $jwtToken = null)
     {
@@ -41,13 +76,21 @@ class PutCustomerInfoRequestBuilder extends RequestBuilder {
         parent::__construct($httpClient);
     }
 
+    /**
+     * Builds the complete URL for the request.
+     *
+     * @return string The fully constructed URL for customer information submission
+     */
     public function buildUrl() : string {
         return $this->serviceAddress . "/customer";
     }
+
     /**
-     * @param string $url
-     * @return PutCustomerInfoResponse
-     * @throws GuzzleException
+     * Executes the HTTP request to submit customer information.
+     *
+     * @param string $url The fully constructed URL to send the request to
+     * @return PutCustomerInfoResponse The parsed response containing customer ID
+     * @throws GuzzleException If the HTTP request fails or server returns an error
      */
     public function request(string $url) : PutCustomerInfoResponse {
         $headers = array();
@@ -81,9 +124,10 @@ class PutCustomerInfoRequestBuilder extends RequestBuilder {
     }
 
     /**
-     * Build and execute request.
-     * @return PutCustomerInfoResponse
-     * @throws GuzzleException
+     * Builds and executes the customer information submission request.
+     *
+     * @return PutCustomerInfoResponse The parsed response containing customer ID
+     * @throws GuzzleException If the HTTP request fails or server returns an error
      */
     public function execute() : PutCustomerInfoResponse {
         return $this->request($this->buildUrl());

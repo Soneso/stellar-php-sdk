@@ -13,16 +13,54 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Request builder for GET /transactions endpoint operations.
+ *
+ * This builder constructs HTTP requests to query the transaction history for an authenticated
+ * user via SEP-06. The endpoint returns a list of deposit and withdrawal transactions, which
+ * can be filtered by asset, time range, and pagination parameters.
+ *
+ * This is useful for:
+ * - Displaying transaction history to users
+ * - Reconciling transactions with internal records
+ * - Monitoring pending transactions
+ * - Auditing completed transactions
+ *
+ * Authentication via SEP-10 is required to ensure users can only see their own transactions.
+ *
+ * Example usage:
+ * ```php
+ * $builder = new AnchorTransactionsRequestBuilder($httpClient, $serviceAddress, $jwt);
+ * $response = $builder->forQueryParameters([
+ *     'asset_code' => 'USD',
+ *     'limit' => '20'
+ * ])->execute();
+ * ```
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transactions SEP-06 Transactions Endpoint
+ * @see TransferServerService::transactions() For the service method using this builder
+ * @see AnchorTransactionsResponse For the response structure
+ * @since 1.0.0
+ */
 class AnchorTransactionsRequestBuilder extends RequestBuilder
 {
+    /**
+     * @var string|null JWT token for authentication obtained via SEP-10
+     */
     private ?string $jwtToken = null;
+
+    /**
+     * @var string The base URL of the SEP-06 transfer server service
+     */
     private string $serviceAddress;
 
     /**
-     * Constructor.
-     * @param Client $httpClient the client to be used for the request.
-     * @param string $serviceAddress the server address of the sep-06 service (e.g. from sep-01).
-     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication. If provided it will be used in the request header.
+     * Constructor for building GET /transactions requests.
+     *
+     * @param Client $httpClient The HTTP client to use for sending requests
+     * @param string $serviceAddress The base URL of the transfer server from stellar.toml
+     * @param string|null $jwtToken Optional JWT token obtained from SEP-10 authentication
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {

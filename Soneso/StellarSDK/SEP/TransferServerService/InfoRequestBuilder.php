@@ -13,17 +13,50 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Request builder for GET /info endpoint operations.
+ *
+ * This builder constructs HTTP requests to query anchor capabilities and supported assets via
+ * the SEP-06 info endpoint. The info endpoint is the discovery endpoint that clients should query
+ * first to understand what deposit and withdrawal operations the anchor supports.
+ *
+ * The response includes:
+ * - Supported assets for deposit and withdrawal
+ * - Available deposit/withdrawal methods for each asset
+ * - Fee structures and minimum/maximum amounts
+ * - Feature flags indicating supported functionality
+ * - Required KYC fields
+ *
+ * Example usage:
+ * ```php
+ * $builder = new InfoRequestBuilder($httpClient, $serviceAddress, $jwt);
+ * $response = $builder->forQueryParameters(['lang' => 'en'])->execute();
+ * ```
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info SEP-06 Info Endpoint
+ * @see TransferServerService::info() For the service method using this builder
+ * @see InfoResponse For the response structure
+ * @since 1.0.0
+ */
 class InfoRequestBuilder extends RequestBuilder
 {
+    /**
+     * @var string|null JWT token for authentication obtained via SEP-10
+     */
     private ?string $jwtToken = null;
+
+    /**
+     * @var string The base URL of the SEP-06 transfer server service
+     */
     private string $serviceAddress;
 
     /**
-     * Constructor.
-     * @param Client $httpClient the client to be used for the request.
-     * @param string $serviceAddress the address of the service from stellar toml.
-     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication.
-     * If provided it will be used in the request header.
+     * Constructor for building GET /info requests.
+     *
+     * @param Client $httpClient The HTTP client to use for sending requests
+     * @param string $serviceAddress The base URL of the transfer server from stellar.toml
+     * @param string|null $jwtToken Optional JWT token obtained from SEP-10 authentication
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {

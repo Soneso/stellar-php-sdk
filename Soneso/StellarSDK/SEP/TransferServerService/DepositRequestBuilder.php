@@ -13,17 +13,56 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Request builder for GET /deposit endpoint operations.
+ *
+ * This builder constructs HTTP requests to initiate deposit operations from external assets
+ * (fiat or crypto) to Stellar assets via SEP-06. A deposit moves funds from an off-chain source
+ * (bank account, cash, external blockchain) onto the Stellar network.
+ *
+ * The response provides instructions for completing the deposit, including:
+ * - Deposit address or account details
+ * - Required fields or interactive URL
+ * - Minimum and maximum deposit amounts
+ * - Fee information
+ * - Estimated completion time
+ *
+ * Required authentication via SEP-10 is typically required for this endpoint.
+ *
+ * Example usage:
+ * ```php
+ * $builder = new DepositRequestBuilder($httpClient, $serviceAddress, $jwt);
+ * $response = $builder->forQueryParameters([
+ *     'asset_code' => 'USD',
+ *     'account' => 'GXXX...',
+ *     'type' => 'bank_account'
+ * ])->execute();
+ * ```
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#deposit SEP-06 Deposit Endpoint
+ * @see TransferServerService::deposit() For the service method using this builder
+ * @see DepositResponse For the response structure
+ * @since 1.0.0
+ */
 class DepositRequestBuilder extends RequestBuilder
 {
+    /**
+     * @var string|null JWT token for authentication obtained via SEP-10
+     */
     private ?string $jwtToken = null;
+
+    /**
+     * @var string The base URL of the SEP-06 transfer server service
+     */
     private string $serviceAddress;
 
     /**
-     * Constructor.
-     * @param Client $httpClient the client to be used for the request.
-     * @param string $serviceAddress the server address of the sep-06 service (e.g. from sep-01).
-     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication.
-     * If provided it will be used in the request header.
+     * Constructor for building GET /deposit requests.
+     *
+     * @param Client $httpClient The HTTP client to use for sending requests
+     * @param string $serviceAddress The base URL of the transfer server from stellar.toml
+     * @param string|null $jwtToken Optional JWT token obtained from SEP-10 authentication
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {
