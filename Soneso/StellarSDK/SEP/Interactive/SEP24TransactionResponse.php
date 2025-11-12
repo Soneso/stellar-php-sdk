@@ -8,6 +8,19 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response containing a single SEP-24 transaction details
+ *
+ * This class represents the response from the /transaction endpoint when
+ * querying for a specific transaction by ID. It wraps the SEP24Transaction
+ * object and provides access to all transaction details including status,
+ * amounts, and timestamps.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
+ * @see SEP24Transaction For the transaction data structure
+ * @see InteractiveService::transaction() For retrieving transaction details
+ */
 class SEP24TransactionResponse extends Response {
 
     /**
@@ -48,6 +61,7 @@ class SEP24TransactionResponse extends Response {
 
     /**
      * @param SEP24Transaction $transaction The parsed transaction from the anchor response.
+     * @return void
      */
     public function setTransaction(SEP24Transaction $transaction): void
     {

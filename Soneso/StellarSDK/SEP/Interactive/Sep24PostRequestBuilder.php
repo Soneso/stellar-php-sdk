@@ -12,6 +12,25 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Builder for SEP-24 POST requests to interactive deposit and withdrawal endpoints
+ *
+ * This builder constructs and executes POST requests to SEP-24 interactive endpoints,
+ * handling multipart form data submission including both field data and file uploads.
+ * It is used internally by the InteractiveService to initiate deposit and withdrawal
+ * flows that require user interaction through a web interface.
+ *
+ * The builder handles:
+ * - JWT authentication token injection
+ * - Multipart form encoding for fields and files
+ * - Response parsing into SEP24InteractiveResponse
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
+ * @see InteractiveService::deposit() For deposit flow initiation
+ * @see InteractiveService::withdraw() For withdrawal flow initiation
+ * @see SEP24InteractiveResponse For the response structure
+ */
 class Sep24PostRequestBuilder extends RequestBuilder {
 
     private string $serviceAddress;

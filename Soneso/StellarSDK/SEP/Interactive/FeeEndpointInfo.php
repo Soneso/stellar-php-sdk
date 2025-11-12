@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\SEP\Interactive;
 
+/**
+ * Configuration information for the SEP-24 fee calculation endpoint
+ *
+ * This class indicates whether the anchor provides a fee calculation endpoint
+ * and if authentication is required to access it. The fee endpoint allows
+ * precise fee calculations for complex fee structures that cannot be expressed
+ * using the static fee fields in the /info response.
+ *
+ * @deprecated The fee endpoint is deprecated in favor of SEP-38 GET /price
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md SEP-38 for replacement
+ */
 class FeeEndpointInfo
 {
     /**
@@ -55,6 +68,7 @@ class FeeEndpointInfo
 
     /**
      * @param bool $enabled true if the anchor offers a fee endpoint.
+     * @return void
      */
     public function setEnabled(bool $enabled): void
     {
@@ -71,6 +85,7 @@ class FeeEndpointInfo
 
     /**
      * @param bool $authenticationRequired true if the anchor requests sep-10 authentication for calling the fee endpoint.
+     * @return void
      */
     public function setAuthenticationRequired(bool $authenticationRequired): void
     {
