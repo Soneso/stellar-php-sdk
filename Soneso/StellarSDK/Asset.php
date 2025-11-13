@@ -39,7 +39,7 @@ use Soneso\StellarSDK\Xdr\XdrTrustlineAsset;
  * </code>
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/assets
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 abstract class Asset {

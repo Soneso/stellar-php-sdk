@@ -12,12 +12,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-buy-offer" target="_blank">ManageBuyOffer</a> operation.
+ * Represents <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a> operation.
  *
  * Creates, updates, or deletes an offer to buy one asset for another with a specified buy amount.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see ManageSellOfferOperation For sell-side offers
  * @since 1.0.0
  */

@@ -32,7 +32,7 @@ namespace Soneso\StellarSDK\Responses\Trades;
  * @package Soneso\StellarSDK\Responses\Trades
  * @see TradePriceResponse For trade price representation
  * @see TradeLinksResponse For related navigation links
- * @see https://developers.stellar.org/api/resources/trades Horizon Trades API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Trades API
  * @since 1.0.0
  */
 class TradeResponse

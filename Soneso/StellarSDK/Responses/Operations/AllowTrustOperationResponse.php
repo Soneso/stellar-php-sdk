@@ -19,7 +19,7 @@ use Soneso\StellarSDK\Asset;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/allow-trust Horizon Allow Trust Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Allow Trust Operation
  * @deprecated Use SetTrustlineFlagsOperation instead
  */
 class AllowTrustOperationResponse extends OperationResponse

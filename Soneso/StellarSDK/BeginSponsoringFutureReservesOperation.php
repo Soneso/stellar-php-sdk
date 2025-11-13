@@ -13,12 +13,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#begin-sponsoring-future-reserves" target="_blank">BeginSponsoringFutureReserves</a> operation.
+ * Represents <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a> operation.
  *
  * Initiates a sponsorship relationship, where the source account will pay the base reserves for operations submitted by the sponsored account.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see EndSponsoringFutureReservesOperation For ending the sponsorship
  * @since 1.0.0
  */

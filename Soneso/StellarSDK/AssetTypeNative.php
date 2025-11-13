@@ -24,7 +24,7 @@ use Soneso\StellarSDK\Xdr\XdrAssetType;
  * </code>
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/learn/fundamentals/lumens
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class AssetTypeNative extends Asset {

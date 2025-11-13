@@ -31,9 +31,7 @@ use Soneso\StellarSDK\Responses\Page\PageResponse;
  * @see PageResponse For pagination functionality
  * @see PathsResponse For the collection of paths in this page
  * @see PathResponse For individual path details
- * @see https://developers.stellar.org/api/aggregations/paths/strict-receive Horizon Strict Receive Paths API
- * @see https://developers.stellar.org/api/aggregations/paths/strict-send Horizon Strict Send Paths API
- * @see https://developers.stellar.org/api/introduction/pagination Horizon Pagination
+ * @see https://developers.stellar.org Stellar developer docs
  */
 class PathsPageResponse extends PageResponse
 {

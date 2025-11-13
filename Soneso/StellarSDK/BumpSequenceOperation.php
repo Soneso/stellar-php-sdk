@@ -13,12 +13,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#bump-sequence" target="_blank">BumpSequence</a> operation.
+ * Represents a bump sequence operation.
  *
  * Bumps the source account's sequence number to the specified value, invalidating any transactions with a lower sequence number.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @since 1.0.0
  */
 class BumpSequenceOperation extends AbstractOperation

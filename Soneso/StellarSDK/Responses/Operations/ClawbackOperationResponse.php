@@ -19,7 +19,7 @@ use Soneso\StellarSDK\Asset;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/clawback Horizon Clawback Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Clawback Operation
  */
 class ClawbackOperationResponse extends OperationResponse
 {

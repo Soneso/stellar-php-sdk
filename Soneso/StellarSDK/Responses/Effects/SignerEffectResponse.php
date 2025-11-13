@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK\Responses\Effects;
  * @see SignerCreatedEffectResponse When a signer is added
  * @see SignerUpdatedEffectResponse When a signer is modified
  * @see SignerRemovedEffectResponse When a signer is removed
- * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
  * @since 1.0.0
  */
 class SignerEffectResponse extends EffectResponse

@@ -23,7 +23,7 @@ namespace Soneso\StellarSDK\Responses\Transaction;
  * @package Soneso\StellarSDK\Responses\Transaction
  * @see FeeBumpTransactionResponse For the outer fee-bump transaction wrapper
  * @see TransactionResponse For the parent transaction response
- * @see https://developers.stellar.org/docs/encyclopedia/fee-bump-transactions Fee-Bump Transactions
+ * @see https://developers.stellar.org Stellar developer docs Fee-Bump Transactions
  * @see https://stellar.org/protocol/cap-15 CAP-15: Fee-Bump Transactions
  * @since 1.0.0
  */

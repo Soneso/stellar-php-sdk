@@ -30,7 +30,7 @@ use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
  *
  * @package Soneso\StellarSDK
  * @see RevokeSponsorshipOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#revoke-sponsorship
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

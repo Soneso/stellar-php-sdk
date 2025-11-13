@@ -39,7 +39,7 @@ use Soneso\StellarSDK\Responses\Transaction\SubmitAsyncTransactionResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see SubmitAsyncTransactionResponse For the response format
- * @see https://developers.stellar.org/api/resources/transactions/async-post Horizon API Submit Async Transaction
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Submit Async Transaction
  */
 class SubmitAsyncTransactionRequestBuilder extends RequestBuilder
 {

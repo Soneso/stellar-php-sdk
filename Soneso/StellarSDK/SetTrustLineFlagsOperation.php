@@ -12,13 +12,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-trustline-flags" target="_blank">SetTrustLineFlags</a> operation.
+ * Represents a Set Trustline Flags operation.
  *
  * Allows the issuer of an asset to set flags on a trustline. This enables control over whether accounts
  * can hold the asset, whether it can be clawed back, and other authorization settings.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see SetTrustLineFlagsOperationBuilder For building this operation
  * @since 1.0.0
  */

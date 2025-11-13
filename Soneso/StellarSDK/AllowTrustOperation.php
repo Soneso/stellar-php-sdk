@@ -14,12 +14,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrTrustLineFlags;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#allow-trust" target="_blank">AllowTrust</a> operation.
+ * Represents an allow trust operation.
  *
  * Updates the authorized flag of an existing trust line. This operation is deprecated in favor of SetTrustLineFlags.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see SetTrustLineFlagsOperation For the newer operation
  * @since 1.0.0
  * @deprecated Use SetTrustLineFlagsOperation instead

@@ -13,13 +13,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-send" target="_blank">PathPaymentStrictSend</a> operation.
+ * Represents a Path Payment Strict Send operation.
  *
  * Sends a payment from one account to another through a path, where you specify the exact amount
  * to send. This operation finds the best path for the payment that delivers the most destination asset.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see PathPaymentStrictSendOperationBuilder For building this operation
  * @since 1.0.0
  */

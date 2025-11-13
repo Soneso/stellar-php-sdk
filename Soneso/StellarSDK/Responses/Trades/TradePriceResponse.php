@@ -23,7 +23,7 @@ namespace Soneso\StellarSDK\Responses\Trades;
  * @package Soneso\StellarSDK\Responses\Trades
  * @see TradeResponse For executed trade details with decimal price
  * @see TradeAggregationResponse For aggregated trade statistics
- * @see https://developers.stellar.org/api/resources/trades Horizon Trades API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Trades API
  */
 class TradePriceResponse
 {

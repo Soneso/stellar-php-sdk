@@ -35,7 +35,7 @@ use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
  * @package Soneso\StellarSDK\Responses\Operations
  * @see PaymentOperationResponse For payment operations
  * @see CreateAccountOperationResponse For account creation
- * @see https://developers.stellar.org/api/resources/operations Horizon Operations API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Operations API
  * @since 1.0.0
  */
 class OperationResponse extends Response

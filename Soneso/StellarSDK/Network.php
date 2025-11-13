@@ -33,7 +33,7 @@ namespace Soneso\StellarSDK;
  * </code>
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/learn/fundamentals/networks
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class Network

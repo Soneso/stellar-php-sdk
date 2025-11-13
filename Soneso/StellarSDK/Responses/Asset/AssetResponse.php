@@ -32,7 +32,7 @@ use Soneso\StellarSDK\Responses\Response;
  * @see AssetFlagsResponse For asset authorization flags
  * @see AssetAccountsResponse For account statistics
  * @see AssetBalancesResponse For balance distribution
- * @see https://developers.stellar.org/api/resources/assets Horizon Assets API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Assets API
  * @since 1.0.0
  */
 class AssetResponse extends Response

@@ -17,7 +17,7 @@ use Soneso\StellarSDK\Responses\Response;
  *
  * @package Soneso\StellarSDK\Responses\Errors
  * @see HorizonErrorResponseExtras For additional error details
- * @see https://developers.stellar.org/api/errors Horizon Error Handling
+ * @see https://developers.stellar.org Stellar developer docs Horizon Error Handling
  * @since 1.0.0
  */
 class HorizonErrorResponse extends Response

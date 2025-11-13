@@ -30,8 +30,7 @@ use Soneso\StellarSDK\Responses\Page\PageResponse;
  * @see PageResponse For pagination functionality
  * @see OffersResponse For the collection of offers in this page
  * @see OfferResponse For individual offer details
- * @see https://developers.stellar.org/api/resources/offers/list Horizon Offers List API
- * @see https://developers.stellar.org/api/introduction/pagination Horizon Pagination
+ * @see https://developers.stellar.org Stellar developer docs Horizon Offers List API & Pagination
  */
 class OffersPageResponse extends PageResponse
 {

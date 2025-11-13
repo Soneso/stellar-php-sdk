@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK\Responses\Asset;
  *
  * @package Soneso\StellarSDK\Responses\Asset
  * @see AssetResponse For the parent asset details
- * @see https://developers.stellar.org/api/resources/assets Horizon Assets API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Assets API
  * @since 1.0.0
  */
 class AssetBalancesResponse {

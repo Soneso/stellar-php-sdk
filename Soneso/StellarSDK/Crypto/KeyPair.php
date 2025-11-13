@@ -47,7 +47,7 @@ use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
  * </code>
  *
  * @package Soneso\StellarSDK\Crypto
- * @see https://developers.stellar.org/docs/learn/encyclopedia/security/signatures-multisig
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class KeyPair

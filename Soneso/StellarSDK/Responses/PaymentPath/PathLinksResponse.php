@@ -23,7 +23,7 @@ use Soneso\StellarSDK\Responses\Link\LinkResponse;
  * @package Soneso\StellarSDK\Responses\PaymentPath
  * @see LinkResponse For individual link details
  * @see PathResponse For the parent payment path resource
- * @see https://developers.stellar.org/api/introduction/response-format Horizon HAL Response Format
+ * @see https://developers.stellar.org Stellar developer docs Horizon HAL Response Format
  */
 class PathLinksResponse
 {

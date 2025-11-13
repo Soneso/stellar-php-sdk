@@ -55,7 +55,7 @@ use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
  *     });
  *
  * @package Soneso\StellarSDK\Requests
- * @see https://developers.stellar.org/api/resources/operations Operations API documentation
+ * @see https://developers.stellar.org Stellar developer docs Operations API documentation
  */
 class OperationsRequestBuilder extends RequestBuilder
 {
@@ -97,7 +97,7 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $accountId Public key of the account to filter by (G-address)
      * @return OperationsRequestBuilder This instance for method chaining
-     * @see https://developers.stellar.org/api/resources/accounts/operations/ Operations for Account
+     * @see https://developers.stellar.org Stellar developer docs Operations for Account
      */
     public function forAccount(string $accountId) : OperationsRequestBuilder {
         $this->setSegments("accounts", $accountId, "operations");
@@ -114,7 +114,7 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $claimableBalanceId ID of the claimable balance (B-address or hex format)
      * @return OperationsRequestBuilder This instance for method chaining
-     * @see https://developers.stellar.org/api/resources/claimablebalances/operations/ Operations for ClaimableBalance
+     * @see https://developers.stellar.org Stellar developer docs Operations for ClaimableBalance
      */
     public function forClaimableBalance(string $claimableBalanceId) : OperationsRequestBuilder {
         $idHex = $claimableBalanceId;
@@ -134,7 +134,7 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $ledgerSeq The ledger sequence number
      * @return OperationsRequestBuilder This instance for method chaining
-     * @see https://developers.stellar.org/api/resources/ledgers/operations/ Operations for Ledger
+     * @see https://developers.stellar.org Stellar developer docs Operations for Ledger
      */
     public function forLedger(string $ledgerSeq) : OperationsRequestBuilder {
         $this->setSegments("ledgers", $ledgerSeq, "operations");
@@ -150,7 +150,7 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $transactionId The transaction hash
      * @return OperationsRequestBuilder This instance for method chaining
-     * @see https://developers.stellar.org/api/resources/transactions/operations/ Operations for Transaction
+     * @see https://developers.stellar.org Stellar developer docs Operations for Transaction
      */
     public function forTransaction(string $transactionId) : OperationsRequestBuilder {
         $this->setSegments("transactions", $transactionId, "operations");
@@ -167,7 +167,7 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $liquidityPoolId The liquidity pool ID (L-address or hex format)
      * @return OperationsRequestBuilder This instance for method chaining
-     * @see https://developers.stellar.org/api/resources/liquiditypools/operations/ Operations for Liquidity Pool
+     * @see https://developers.stellar.org Stellar developer docs Operations for Liquidity Pool
      */
     public function forLiquidityPool(string $liquidityPoolId) : OperationsRequestBuilder {
         $idHex = $liquidityPoolId;
@@ -218,7 +218,7 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $cursor The paging token from a previous response or "now"
      * @return OperationsRequestBuilder This instance for method chaining
-     * @see https://developers.stellar.org/api/introduction/pagination/ Pagination documentation
+     * @see https://developers.stellar.org Stellar developer docs Pagination documentation
      */
     public function cursor(string $cursor) : OperationsRequestBuilder {
         return parent::cursor($cursor);

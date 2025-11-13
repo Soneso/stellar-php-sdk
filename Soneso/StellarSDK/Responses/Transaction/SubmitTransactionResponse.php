@@ -30,7 +30,7 @@ use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
  * @see TransactionResponse For base transaction response fields
  * @see SubmitTransactionResponseExtras For submission extras including result codes
  * @see SubmitAsyncTransactionResponse For asynchronous transaction submission
- * @see https://developers.stellar.org/api/aggregations/endpoints/submit-transaction Submit Transaction
+ * @see https://developers.stellar.org Stellar developer docs Submit Transaction
  * @since 1.0.0
  */
 class SubmitTransactionResponse extends TransactionResponse

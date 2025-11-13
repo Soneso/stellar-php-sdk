@@ -17,7 +17,7 @@ use Soneso\StellarSDK\Responses\Offers\OfferPriceResponse;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/manage-buy-offer Horizon Manage Buy Offer
+ * @see https://developers.stellar.org Stellar developer docs Horizon Manage Buy Offer
  * @since 1.0.0
  */
 class ManageBuyOfferOperationResponse extends OperationResponse

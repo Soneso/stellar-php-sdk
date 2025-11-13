@@ -32,7 +32,7 @@ use Soneso\StellarSDK\Asset;
  * @package Soneso\StellarSDK\Responses\PaymentPath
  * @see PathAssetsResponse For the intermediate assets in the path
  * @see PathLinksResponse For related navigation links
- * @see https://developers.stellar.org/api/aggregations/paths Horizon Path Finding API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Path Finding API
  */
 class PathResponse {
 

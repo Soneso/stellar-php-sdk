@@ -12,12 +12,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#create-passive-sell-offer" target="_blank">CreatePassiveSellOffer</a> operation.
+ * Represents a create passive sell offer operation.
  *
  * Creates an offer to sell one asset for another without taking a reverse offer of equal price.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see ManageSellOfferOperation For active sell offers
  * @since 1.0.0
  */

@@ -17,7 +17,7 @@ namespace Soneso\StellarSDK\Crypto;
  * - MUXED_ED25519: Multiplexed Ed25519 account (virtual accounts)
  *
  * @package Soneso\StellarSDK\Crypto
- * @see https://developers.stellar.org/docs/encyclopedia/signatures-multisig Documentation on signature types
+ * @see https://developers.stellar.org Stellar developer docs Documentation on signature types
  */
 class CryptoKeyType
 {

@@ -24,7 +24,7 @@ use phpseclib3\Math\BigInteger;
  * @see Account
  * @see MuxedAccount
  * @see TransactionBuilder
- * @link https://developers.stellar.org/docs/fundamentals/transactions/sequence-numbers
+ * @link https://developers.stellar.org Stellar developer docs
  */
 interface TransactionBuilderAccount
 {

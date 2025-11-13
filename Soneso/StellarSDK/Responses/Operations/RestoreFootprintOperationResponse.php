@@ -17,7 +17,7 @@ namespace Soneso\StellarSDK\Responses\Operations;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/restore-footprint Horizon Restore Footprint Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Restore Footprint Operation
  */
 class RestoreFootprintOperationResponse extends OperationResponse
 {

@@ -23,7 +23,7 @@ namespace Soneso\StellarSDK\Responses\Transaction;
  * @package Soneso\StellarSDK\Responses\Transaction
  * @see TransactionPreconditionsResponse For the parent preconditions container
  * @see PreconditionsTimeBoundsResponse For time-based validity bounds
- * @see https://developers.stellar.org/docs/encyclopedia/transactions-specialized/transaction-preconditions Transaction Preconditions
+ * @see https://developers.stellar.org Stellar developer docs Transaction Preconditions
  * @see https://stellar.org/protocol/cap-21 CAP-21: Generalized Transaction Preconditions
  * @since 1.0.0
  */

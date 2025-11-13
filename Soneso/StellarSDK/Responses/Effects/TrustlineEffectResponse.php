@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK\Responses\Effects;
  * @see TrustlineCreatedEffectResponse When a trustline is created
  * @see TrustlineUpdatedEffectResponse When a trustline is modified
  * @see TrustlineRemovedEffectResponse When a trustline is removed
- * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
  * @since 1.0.0
  */
 class TrustlineEffectResponse extends EffectResponse

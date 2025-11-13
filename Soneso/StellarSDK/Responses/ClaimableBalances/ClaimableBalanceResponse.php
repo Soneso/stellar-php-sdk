@@ -34,7 +34,7 @@ use Soneso\StellarSDK\Responses\Response;
  * @see ClaimantsResponse For the list of claimants
  * @see ClaimantResponse For individual claimant details
  * @see ClaimableBalanceLinksResponse For related navigation links
- * @see https://developers.stellar.org/api/resources/claimablebalances Horizon Claimable Balances API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Claimable Balances API
  * @since 1.0.0
  */
 class ClaimableBalanceResponse extends Response

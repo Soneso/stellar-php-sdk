@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK;
  *
  * @package Soneso\StellarSDK
  * @see ClawbackOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#clawback
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

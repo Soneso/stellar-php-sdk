@@ -17,7 +17,7 @@ use InvalidArgumentException;
  *
  * @package Soneso\StellarSDK
  * @see AllowTrustOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#allow-trust
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

@@ -22,7 +22,7 @@ use Soneso\StellarSDK\Xdr\XdrTimeBounds;
  * processed within an expected timeframe.
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/encyclopedia/transactions/transaction-anatomy#time-bounds Documentation on time bounds
+ * @see https://developers.stellar.org Stellar developer docs Documentation on time bounds
  */
 class TimeBounds
 {

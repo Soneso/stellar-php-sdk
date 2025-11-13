@@ -24,7 +24,7 @@ use Soneso\StellarSDK\Responses\Page\PageResponse;
  * @see AccountResponse For individual account details
  * @see AccountsResponse For the collection of accounts in this page
  * @see PageResponse For pagination functionality
- * @see https://developers.stellar.org/api/resources/accounts Horizon Accounts API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Accounts API
  * @since 1.0.0
  */
 class AccountsPageResponse extends PageResponse

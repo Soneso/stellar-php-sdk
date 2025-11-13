@@ -11,13 +11,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#payment" target="_blank">Payment</a> operation.
+ * Represents a Payment operation.
  *
  * Sends a specified amount of an asset to a destination account. This is the most basic operation
  * for transferring assets between accounts on the Stellar network.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see PaymentOperationBuilder For building this operation
  * @since 1.0.0
  */

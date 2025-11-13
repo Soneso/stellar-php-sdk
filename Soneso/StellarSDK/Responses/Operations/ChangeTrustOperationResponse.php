@@ -17,7 +17,7 @@ use Soneso\StellarSDK\Asset;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/change-trust Horizon Change Trust
+ * @see https://developers.stellar.org Stellar developer docs Horizon Change Trust
  * @since 1.0.0
  */
 class ChangeTrustOperationResponse extends OperationResponse

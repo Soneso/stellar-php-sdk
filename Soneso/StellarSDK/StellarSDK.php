@@ -72,7 +72,7 @@ use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
  * </code>
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/data/horizon Horizon API Documentation
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Documentation
  * @since 1.0.0
  */
 class StellarSDK
@@ -113,7 +113,7 @@ class StellarSDK
      * the friendbot service and testnet assets have no real-world value.
      *
      * @return StellarSDK Singleton instance configured for the test network
-     * @see https://developers.stellar.org/docs/learn/fundamentals/networks#testnet
+     * @see https://developers.stellar.org Stellar developer docs
      */
     public static function getTestNetInstance() : StellarSDK
     {
@@ -131,7 +131,7 @@ class StellarSDK
      * may undergo frequent resets.
      *
      * @return StellarSDK Singleton instance configured for the future network
-     * @see https://developers.stellar.org/docs/learn/fundamentals/networks#futurenet
+     * @see https://developers.stellar.org Stellar developer docs
      */
     public static function getFutureNetInstance() : StellarSDK
     {

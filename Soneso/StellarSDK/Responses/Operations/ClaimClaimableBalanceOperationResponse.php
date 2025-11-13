@@ -17,7 +17,7 @@ namespace Soneso\StellarSDK\Responses\Operations;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/claim-claimable-balance Horizon Claim Claimable Balance Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Claim Claimable Balance Operation
  */
 class ClaimClaimableBalanceOperationResponse extends OperationResponse
 {

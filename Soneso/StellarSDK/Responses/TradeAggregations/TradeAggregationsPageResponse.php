@@ -32,8 +32,7 @@ use Soneso\StellarSDK\Responses\Page\PageResponse;
  * @see PageResponse For pagination functionality
  * @see TradeAggregationsResponse For the collection of aggregations in this page
  * @see TradeAggregationResponse For individual aggregation details
- * @see https://developers.stellar.org/api/aggregations/trade-aggregations Horizon Trade Aggregations API
- * @see https://developers.stellar.org/api/introduction/pagination Horizon Pagination
+ * @see https://developers.stellar.org Stellar developer docs Horizon Trade Aggregations API & Pagination
  */
 class TradeAggregationsPageResponse extends PageResponse
 {

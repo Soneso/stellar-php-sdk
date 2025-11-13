@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK\Responses\Operations;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/create-account Horizon Create Account Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Create Account Operation
  * @since 1.0.0
  */
 class CreateAccountOperationResponse extends OperationResponse

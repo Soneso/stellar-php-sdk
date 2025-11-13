@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK;
  *
  * @package Soneso\StellarSDK
  * @see EndSponsoringFutureReservesOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#end-sponsoring-future-reserves
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

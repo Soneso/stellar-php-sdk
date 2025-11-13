@@ -19,7 +19,7 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
  *
  * @package Soneso\StellarSDK
  * @see SetOptionsOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#set-options
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example
@@ -120,7 +120,7 @@ class SetOptionsOperationBuilder
 
     /**
      * Clears the given flags from the account.
-     * @param int $clearFlags For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
+     * @param int $clearFlags For details about the flags, please refer to the <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setClearFlags(int $clearFlags) : SetOptionsOperationBuilder {
@@ -130,7 +130,7 @@ class SetOptionsOperationBuilder
 
     /**
      * Sets the given flags on the account.
-     * @param int $setFlags For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
+     * @param int $setFlags For details about the flags, please refer to the <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setSetFlags(int $setFlags) : SetOptionsOperationBuilder {

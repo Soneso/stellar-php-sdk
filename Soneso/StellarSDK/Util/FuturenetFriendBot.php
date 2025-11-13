@@ -32,7 +32,7 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
  * @package Soneso\StellarSDK\Util
  * @see FriendBot For funding accounts on the regular test network
  * @see CustomFriendBot For using a custom FriendBot endpoint
- * @see https://developers.stellar.org/docs/tools/developer-tools#friendbot Documentation on FriendBot
+ * @see https://developers.stellar.org Stellar developer docs Documentation on FriendBot
  */
 class FuturenetFriendBot
 {

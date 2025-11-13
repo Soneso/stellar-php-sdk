@@ -35,7 +35,7 @@ use Soneso\StellarSDK\Responses\Response;
  * @package Soneso\StellarSDK\Responses\LiquidityPools
  * @see ReservesResponse For the pool's asset reserves
  * @see LiquidityPoolLinksResponse For related navigation links
- * @see https://developers.stellar.org/api/resources/liquiditypools Horizon Liquidity Pools API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Liquidity Pools API
  * @since 1.0.0
  */
 class LiquidityPoolResponse extends Response

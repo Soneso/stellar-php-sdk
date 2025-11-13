@@ -21,7 +21,7 @@ use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimantsResponse;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/create-claimable-balance Horizon Create Claimable Balance Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Create Claimable Balance Operation
  */
 class CreateClaimableBalanceOperationResponse extends OperationResponse
 {

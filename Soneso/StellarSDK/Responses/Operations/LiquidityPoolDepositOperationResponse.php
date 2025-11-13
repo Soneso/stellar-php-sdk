@@ -22,7 +22,7 @@ use Soneso\StellarSDK\Responses\LiquidityPools\ReservesResponse;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/liquidity-pool-deposit Horizon Liquidity Pool Deposit Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Liquidity Pool Deposit Operation
  */
 class LiquidityPoolDepositOperationResponse extends OperationResponse
 {

@@ -53,7 +53,7 @@ use Soneso\StellarSDK\Responses\Offers\OffersPageResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see OffersPageResponse For the response format
- * @see https://developers.stellar.org/api/resources/offers Horizon API Offers endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Offers endpoint
  */
 class OffersRequestBuilder  extends RequestBuilder
 {
@@ -91,7 +91,7 @@ class OffersRequestBuilder  extends RequestBuilder
      * Builds request to <code>GET /accounts/{account}/offers</code>
      * @param string $accountId ID of the account for which to get payments.
      * @return OffersRequestBuilder
-     * @see https://developers.stellar.org/api/resources/accounts/offers/ Offers for Account
+     * @see https://developers.stellar.org Stellar developer docs Offers for Account
      */
     public function forAccount(string $accountId) : OffersRequestBuilder {
         $this->setSegments("accounts", $accountId, "offers");
@@ -151,7 +151,7 @@ class OffersRequestBuilder  extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : OffersRequestBuilder {

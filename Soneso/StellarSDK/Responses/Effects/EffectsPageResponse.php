@@ -19,8 +19,8 @@ use Soneso\StellarSDK\Responses\Page\PageResponse;
  * @package Soneso\StellarSDK\Responses\Effects
  * @see EffectResponse
  * @see PageResponse
- * @see https://developers.stellar.org/api/introduction/pagination
- * @see https://developers.stellar.org/api/resources/effects
+ * @see https://developers.stellar.org Stellar developer docs
+ * @see https://developers.stellar.org Stellar developer docs
  */
 class EffectsPageResponse extends PageResponse
 {

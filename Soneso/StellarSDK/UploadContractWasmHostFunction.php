@@ -37,7 +37,7 @@ use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
  * @package Soneso\StellarSDK
  * @see HostFunction Base class for all host functions
  * @see CreateContractHostFunction For deploying contracts from uploaded WASM
- * @see https://developers.stellar.org/docs/smart-contracts/guides/cli/deploy-contract
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class UploadContractWasmHostFunction extends HostFunction

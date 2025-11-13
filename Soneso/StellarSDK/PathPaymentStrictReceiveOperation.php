@@ -12,13 +12,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-receive" target="_blank">PathPaymentStrictReceive</a> operation.
+ * Represents Path Payment Strict Receive operation.
  *
  * Sends a payment from one account to another through a path, where you specify the exact amount
  * the destination receives. This operation finds the cheapest path for the payment using the orderbooks.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see PathPaymentStrictReceiveOperationBuilder For building this operation
  * @since 1.0.0
  */

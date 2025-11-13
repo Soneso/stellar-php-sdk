@@ -44,7 +44,7 @@ use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolsPageResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see LiquidityPoolsPageResponse For the response format
- * @see https://developers.stellar.org/api/resources/liquiditypools Horizon API Liquidity Pools endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Liquidity Pools endpoint
  */
 class LiquidityPoolsRequestBuilder extends RequestBuilder
 {
@@ -81,7 +81,7 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder
      *
      * @param string ...$reserves
      * @return LiquidityPoolsRequestBuilder current instance
-     * @see https://developers.stellar.org/api/resources/liquiditypools/list/ LiquidityPools
+     * @see https://developers.stellar.org Stellar developer docs LiquidityPools
      */
     public function forReserves(string ...$reserves) : LiquidityPoolsRequestBuilder {
         $this->queryParameters[LiquidityPoolsRequestBuilder::RESERVES_PARAMETER_NAME] = implode(",", $reserves);
@@ -93,7 +93,7 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder
      *
      * @param string $accountId Account ID to filter liquidity pools
      * @return LiquidityPoolsRequestBuilder current instance
-     * @see https://developers.stellar.org/docs/data/apis/horizon/api-reference/list-liquidity-pools LiquidityPools
+     * @see https://developers.stellar.org Stellar developer docs LiquidityPools
      */
     public function forAccount(string $accountId) : LiquidityPoolsRequestBuilder {
         $this->queryParameters[LiquidityPoolsRequestBuilder::ACCOUNT_PARAMETER_NAME] = $accountId;
@@ -104,7 +104,7 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : LiquidityPoolsRequestBuilder {

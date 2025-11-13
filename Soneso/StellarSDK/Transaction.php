@@ -47,7 +47,7 @@ use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
  * </code>
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/learn/fundamentals/transactions Stellar Transactions
+ * @see https://developers.stellar.org Stellar developer docs Stellar Transactions
  * @see TransactionBuilder For building transactions
  * @since 1.0.0
  */

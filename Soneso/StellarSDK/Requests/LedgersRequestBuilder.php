@@ -48,7 +48,7 @@ use Soneso\StellarSDK\Responses\Ledger\LedgersPageResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see LedgersPageResponse For the response format
- * @see https://developers.stellar.org/api/resources/ledgers Horizon API Ledgers endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Ledgers endpoint
  */
 class LedgersRequestBuilder extends RequestBuilder
 {
@@ -77,7 +77,7 @@ class LedgersRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : LedgersRequestBuilder {

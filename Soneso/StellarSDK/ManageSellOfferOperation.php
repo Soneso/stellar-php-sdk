@@ -12,13 +12,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-sell-offer" target="_blank">ManageSellOffer</a> operation.
+ * Represents a Manage Sell Offer operation.
  *
  * Creates, updates, or deletes an offer to sell one asset for another, setting the amount of asset to sell.
  * This operation creates a sell offer on the Stellar decentralized exchange (DEX).
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see ManageSellOfferOperationBuilder For building this operation
  * @since 1.0.0
  */

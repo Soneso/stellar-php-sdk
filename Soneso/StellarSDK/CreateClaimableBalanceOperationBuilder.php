@@ -15,7 +15,7 @@ namespace Soneso\StellarSDK;
  *
  * @package Soneso\StellarSDK
  * @see CreateClaimableBalanceOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#create-claimable-balance
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

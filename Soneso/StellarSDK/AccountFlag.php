@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK;
  *
  * @package Soneso\StellarSDK
  * @see SetOptionsOperation
- * @link https://developers.stellar.org/docs/fundamentals/accounts#flags
+ * @link https://developers.stellar.org Stellar developer docs
  */
 class AccountFlag
 {

@@ -45,7 +45,7 @@ use Soneso\StellarSDK\Responses\Asset\AssetsPageResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see AssetsPageResponse For the response format
- * @see https://developers.stellar.org/api/resources/assets Horizon API Assets endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Assets endpoint
  */
 class AssetsRequestBuilder  extends RequestBuilder
 {
@@ -92,7 +92,7 @@ class AssetsRequestBuilder  extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see <a href="https://developers.stellar.org/api/introduction/pagination/">Page documentation</a>
+     * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
      * @param string cursor
      */
     public function cursor(string $cursor) : AssetsRequestBuilder {

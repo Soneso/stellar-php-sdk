@@ -17,7 +17,7 @@ namespace Soneso\StellarSDK\Responses\Operations;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/extend-footprint-ttl Horizon Extend Footprint TTL Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Extend Footprint TTL Operation
  */
 class ExtendFootprintTTLOperationResponse extends OperationResponse
 {

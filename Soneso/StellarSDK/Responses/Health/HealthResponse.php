@@ -15,7 +15,7 @@ use Soneso\StellarSDK\Responses\Response;
  * and synchronization state. Used for monitoring and health checks.
  *
  * @package Soneso\StellarSDK\Responses\Health
- * @see https://developers.stellar.org/api/resources/get-health Horizon Health Check
+ * @see https://developers.stellar.org Stellar developer docs Horizon Health Check
  * @since 1.0.0
  */
 class HealthResponse extends Response

@@ -21,7 +21,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKey;
  * all Soroban transactions to ensure predictable resource usage and fee calculation.
  *
  * @package Soneso\StellarSDK\Soroban
- * @see https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/ledgers Stellar Ledgers
+ * @see https://developers.stellar.org Stellar developer docs Stellar Ledgers
  * @since 1.0.0
  */
 class Footprint

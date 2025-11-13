@@ -17,8 +17,7 @@ use Soneso\StellarSDK\Responses\Link\LinkResponse;
  *
  * @package Soneso\StellarSDK\Responses\Effects
  * @see EffectResponse
- * @see https://developers.stellar.org/api/introduction/response-format
- * @see https://developers.stellar.org/api/resources/effects
+ * @see https://developers.stellar.org Stellar developer docs
  */
 class EffectLinksResponse
 {

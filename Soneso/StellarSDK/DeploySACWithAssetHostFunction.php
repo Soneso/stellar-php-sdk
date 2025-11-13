@@ -44,7 +44,7 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
  * @package Soneso\StellarSDK
  * @see HostFunction Base class for all host functions
  * @see Asset For asset representation
- * @see https://developers.stellar.org/docs/smart-contracts/tokens/stellar-asset-contract
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class DeploySACWithAssetHostFunction extends HostFunction

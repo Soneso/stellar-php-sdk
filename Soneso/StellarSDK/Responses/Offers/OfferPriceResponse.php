@@ -23,7 +23,7 @@ namespace Soneso\StellarSDK\Responses\Offers;
  *
  * @package Soneso\StellarSDK\Responses\Offers
  * @see OfferResponse For the parent offer with decimal price
- * @see https://developers.stellar.org/api/resources/offers Horizon Offers API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Offers API
  */
 class OfferPriceResponse
 {

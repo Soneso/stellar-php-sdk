@@ -26,7 +26,7 @@ use Soneso\StellarSDK\Responses\Response;
  *
  * @package Soneso\StellarSDK\Requests
  * @see FeeStatsResponse For the response format
- * @see https://developers.stellar.org/api/aggregations/fee-stats Horizon API Fee Stats endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Fee Stats endpoint
  */
 class FeeStatsRequestBuilder extends RequestBuilder
 {

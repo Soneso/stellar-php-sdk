@@ -55,7 +55,7 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
  * });
  *
  * @package Soneso\StellarSDK\Requests
- * @see https://developers.stellar.org/api/resources/accounts Accounts API documentation
+ * @see https://developers.stellar.org Stellar developer docs Accounts API documentation
  */
 class AccountsRequestBuilder extends RequestBuilder
 {
@@ -82,7 +82,7 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param string $accountId Public key of the account to fetch (G-address)
      * @return AccountResponse The account details including balances, signers, and data
      * @throws HorizonRequestException If the account does not exist or request fails
-     * @see https://developers.stellar.org/api/resources/accounts/single/ Account Details
+     * @see https://developers.stellar.org Stellar developer docs Account Details
      */
     public function account(string $accountId) : AccountResponse {
       $this->setSegments("accounts", $accountId);
@@ -96,7 +96,7 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param string $key The data entry key to fetch
      * @return AccountDataValueResponse
      * @throws HorizonRequestException
-     * @see https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-data-by-account-id Account data details
+     * @see https://developers.stellar.org Stellar developer docs Account data details
      */
     public function accountData(string $accountId, string $key) : AccountDataValueResponse {
         $this->setSegments("accounts", $accountId, "data", $key);
@@ -132,7 +132,7 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param callable|null $callback Callback function to receive AccountResponse objects
      * @throws GuzzleException
      * @throws HorizonRequestException
-     * @see https://developers.stellar.org/api/resources/accounts/single/ Account details
+     * @see https://developers.stellar.org Stellar developer docs Account details
      */
     public function streamAccount(string $accountId, ?callable $callback = null)
     {
@@ -170,7 +170,7 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param callable|null $callback Callback function to receive AccountDataValueResponse objects
      * @throws GuzzleException
      * @throws HorizonRequestException
-     * @see https://developers.stellar.org/docs/data/apis/horizon/api-reference/get-data-by-account-id Account data details
+     * @see https://developers.stellar.org Stellar developer docs Account data details
      */
     public function streamAccountData(string $accountId, string $key, ?callable $callback = null): void
     {
@@ -323,7 +323,7 @@ class AccountsRequestBuilder extends RequestBuilder
      *
      * @param string $cursor The paging token from a previous response
      * @return AccountsRequestBuilder This instance for method chaining
-     * @see https://developers.stellar.org/api/introduction/pagination/ Pagination documentation
+     * @see https://developers.stellar.org Stellar developer docs Pagination documentation
      */
     public function cursor(string $cursor) : AccountsRequestBuilder {
         return parent::cursor($cursor);

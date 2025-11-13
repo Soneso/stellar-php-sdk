@@ -22,7 +22,7 @@ use Soneso\StellarSDK\Responses\Link\LinkResponse;
  * @package Soneso\StellarSDK\Responses\Offers
  * @see LinkResponse For individual link details
  * @see OfferResponse For the parent offer resource
- * @see https://developers.stellar.org/api/introduction/response-format Horizon HAL Response Format
+ * @see https://developers.stellar.org Stellar developer docs Horizon HAL Response Format
  */
 class OfferLinksResponse
 {

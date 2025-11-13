@@ -22,7 +22,7 @@ namespace Soneso\StellarSDK\Responses\Transaction;
  * @package Soneso\StellarSDK\Responses\Transaction
  * @see TransactionPreconditionsResponse For the parent preconditions container
  * @see PreconditionsLedgerBoundsResponse For ledger-based validity bounds
- * @see https://developers.stellar.org/docs/encyclopedia/transactions-specialized/transaction-preconditions Transaction Preconditions
+ * @see https://developers.stellar.org Stellar developer docs Transaction Preconditions
  * @since 1.0.0
  */
 class PreconditionsTimeBoundsResponse

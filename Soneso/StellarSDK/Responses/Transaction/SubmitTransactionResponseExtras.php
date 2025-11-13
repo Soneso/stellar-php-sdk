@@ -24,7 +24,7 @@ namespace Soneso\StellarSDK\Responses\Transaction;
  * @package Soneso\StellarSDK\Responses\Transaction
  * @see SubmitTransactionResponse For the parent submission response
  * @see ExtrasResultCodes For detailed result code information
- * @see https://developers.stellar.org/api/aggregations/endpoints/submit-transaction Submit Transaction
+ * @see https://developers.stellar.org Stellar developer docs Submit Transaction
  * @since 1.0.0
  */
 class SubmitTransactionResponseExtras

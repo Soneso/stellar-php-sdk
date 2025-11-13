@@ -36,7 +36,7 @@ use phpseclib3\Math\BigInteger;
  * @package Soneso\StellarSDK
  * @see TransactionBuilderAccount Interface this class implements
  * @see MuxedAccount For multiplexed account support
- * @see https://developers.stellar.org/docs/encyclopedia/accounts
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class Account implements TransactionBuilderAccount

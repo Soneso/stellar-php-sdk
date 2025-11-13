@@ -24,7 +24,7 @@ use function preg_replace;
  * representations.
  *
  * @package Soneso\StellarSDK\Crypto
- * @see https://developers.stellar.org/docs/encyclopedia/glossary#address Address types documentation
+ * @see https://developers.stellar.org Stellar developer docs Address types documentation
  */
 class StrKey
 {

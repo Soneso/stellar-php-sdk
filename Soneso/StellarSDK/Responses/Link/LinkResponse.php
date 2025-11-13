@@ -13,7 +13,7 @@ namespace Soneso\StellarSDK\Responses\Link;
  * following the HAL specification. Contains the href URL and whether it requires template expansion.
  *
  * @package Soneso\StellarSDK\Responses\Link
- * @see https://developers.stellar.org/api/introduction/response-format Horizon Response Format
+ * @see https://developers.stellar.org Stellar developer docs Horizon Response Format
  * @since 1.0.0
  */
 class LinkResponse {

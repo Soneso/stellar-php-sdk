@@ -17,7 +17,7 @@ namespace Soneso\StellarSDK;
  *
  * @package Soneso\StellarSDK
  * @see PathPaymentStrictReceiveOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#path-payment-strict-receive
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

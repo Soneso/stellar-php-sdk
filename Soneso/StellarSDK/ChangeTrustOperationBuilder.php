@@ -15,7 +15,7 @@ namespace Soneso\StellarSDK;
  *
  * @package Soneso\StellarSDK
  * @see ChangeTrustOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#change-trust
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

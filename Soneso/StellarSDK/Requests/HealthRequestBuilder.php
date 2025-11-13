@@ -30,7 +30,7 @@ use Soneso\StellarSDK\Responses\Response;
  *
  * @package Soneso\StellarSDK\Requests
  * @see HealthResponse For the response format
- * @see https://developers.stellar.org/api/introduction/health-check Horizon API Health Check
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Health Check
  */
 class HealthRequestBuilder extends RequestBuilder
 {

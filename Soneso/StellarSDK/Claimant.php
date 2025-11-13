@@ -22,7 +22,7 @@ use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
  * (AND, OR, NOT).
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/encyclopedia/claimable-balances Documentation on claimable balances
+ * @see https://developers.stellar.org Stellar developer docs Documentation on claimable balances
  */
 class Claimant
 {

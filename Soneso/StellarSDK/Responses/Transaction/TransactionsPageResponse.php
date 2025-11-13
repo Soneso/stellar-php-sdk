@@ -35,7 +35,7 @@ use Soneso\StellarSDK\Responses\Page\PageResponse;
  * @see PageResponse For base pagination functionality
  * @see TransactionsResponse For the transaction collection
  * @see TransactionResponse For individual transaction details
- * @see https://developers.stellar.org/api/resources/transactions Horizon Transactions API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Transactions API
  * @since 1.0.0
  */
 class TransactionsPageResponse  extends PageResponse

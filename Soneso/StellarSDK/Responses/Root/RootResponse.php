@@ -31,8 +31,7 @@ use Soneso\StellarSDK\Responses\Response;
  *
  * @package Soneso\StellarSDK\Responses\Root
  * @see Response For base response functionality
- * @see https://developers.stellar.org/api/introduction Horizon API Introduction
- * @see https://developers.stellar.org/api/resources/get-network-info Horizon Root Endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Root Endpoint
  */
 class RootResponse extends Response
 {

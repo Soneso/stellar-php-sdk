@@ -18,8 +18,7 @@ use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimantPredicateResponse;
  *
  * @package Soneso\StellarSDK\Responses\Effects
  * @see EffectResponse
- * @see https://developers.stellar.org/docs/encyclopedia/claimable-balances
- * @see https://developers.stellar.org/api/resources/effects
+ * @see https://developers.stellar.org Stellar developer docs
  */
 class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse
 {

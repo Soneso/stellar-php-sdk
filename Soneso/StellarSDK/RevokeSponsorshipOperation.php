@@ -17,13 +17,13 @@ use Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#revoke-sponsorship" target="_blank">RevokeSponsorship</a> operation.
+ * Represents a Revoke Sponsorship operation.
  *
  * Removes or transfers sponsorship of a ledger entry or signer. This operation allows the sponsor of a
  * ledger entry or signer to revoke their sponsorship, transferring the responsibility back to the sponsored account.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see RevokeSponsorshipOperationBuilder For building this operation
  * @since 1.0.0
  */

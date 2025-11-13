@@ -32,7 +32,7 @@ use Soneso\StellarSDK\Constants\StellarConstants;
  * @package Soneso\StellarSDK
  * @see FeeBumpTransaction
  * @see Transaction
- * @link https://developers.stellar.org/docs/encyclopedia/fee-bump-transactions
+ * @link https://developers.stellar.org Stellar developer docs
  */
 class FeeBumpTransactionBuilder
 {

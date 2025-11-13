@@ -29,7 +29,7 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
  * @see Transaction
  * @see TimeBounds
  * @see LedgerBounds
- * @link https://developers.stellar.org/docs/encyclopedia/transactions-specialized/transaction-preconditions
+ * @link https://developers.stellar.org Stellar developer docs
  * @since Protocol 19
  */
 class TransactionPreconditions

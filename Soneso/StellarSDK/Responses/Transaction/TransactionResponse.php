@@ -42,7 +42,7 @@ use Soneso\StellarSDK\Xdr\XdrTransactionResult;
  * @see SubmitTransactionResponse For transaction submission results
  * @see FeeBumpTransactionResponse For fee-bump transaction details
  * @see InnerTransactionResponse For inner transaction in fee-bump
- * @see https://developers.stellar.org/api/resources/transactions Horizon Transactions API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Transactions API
  * @since 1.0.0
  */
 class TransactionResponse extends Response

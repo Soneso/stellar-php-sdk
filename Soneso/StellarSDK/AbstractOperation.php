@@ -20,7 +20,7 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
  * XDR conversion, and amount formatting utilities.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @since 1.0.0
  */
 abstract class AbstractOperation

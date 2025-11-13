@@ -30,8 +30,7 @@ use Soneso\StellarSDK\Responses\Page\PageResponse;
  * @see PageResponse For pagination functionality
  * @see LiquidityPoolsResponse For the collection of liquidity pools in this page
  * @see LiquidityPoolResponse For individual pool details
- * @see https://developers.stellar.org/api/resources/liquiditypools/list Horizon Liquidity Pools List API
- * @see https://developers.stellar.org/api/introduction/pagination Horizon Pagination
+ * @see https://developers.stellar.org Stellar developer docs Horizon Liquidity Pools List API & Pagination
  */
 class LiquidityPoolsPageResponse extends PageResponse
 {

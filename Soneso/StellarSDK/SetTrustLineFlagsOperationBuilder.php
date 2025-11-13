@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK;
  *
  * @package Soneso\StellarSDK
  * @see SetTrustLineFlagsOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#set-trustline-flags
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

@@ -22,8 +22,7 @@ namespace Soneso\StellarSDK\Responses\Transaction;
  * @package Soneso\StellarSDK\Responses\Transaction
  * @see SubmitTransactionResponseExtras For the extras object containing result codes
  * @see SubmitTransactionResponse For transaction submission results
- * @see https://developers.stellar.org/docs/fundamentals/transactions/transaction-result-codes Transaction Result Codes
- * @see https://developers.stellar.org/docs/fundamentals/transactions/operation-result-codes Operation Result Codes
+ * @see https://developers.stellar.org Stellar developer docs Transaction Result Codes & Operation Result Codes
  * @since 1.0.0
  */
 class ExtrasResultCodes

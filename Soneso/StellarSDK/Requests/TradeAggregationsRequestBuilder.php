@@ -46,7 +46,7 @@ use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see TradeAggregationsPageResponse For the response format
- * @see https://developers.stellar.org/api/aggregations/trade-aggregations Horizon API Trade Aggregations
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Trade Aggregations
  */
 class TradeAggregationsRequestBuilder extends RequestBuilder
 {
@@ -129,7 +129,7 @@ class TradeAggregationsRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : TradeAggregationsRequestBuilder {

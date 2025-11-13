@@ -57,7 +57,7 @@ use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see OperationsPageResponse For the response format
- * @see https://developers.stellar.org/api/resources/operations/list-payments Horizon API Payments endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Payments endpoint
  */
 class PaymentsRequestBuilder extends RequestBuilder
 {
@@ -78,7 +78,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /accounts/{account}/payments</code>
      * @param string $accountId ID of the account for which to get payments.
      * @return PaymentsRequestBuilder
-     * @see https://developers.stellar.org/api/resources/accounts/payments/ Payments for Account
+     * @see https://developers.stellar.org Stellar developer docs Payments for Account
      */
     public function forAccount(string $accountId) : PaymentsRequestBuilder {
         $this->setSegments("accounts", $accountId, "payments");
@@ -89,7 +89,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /ledgers/{ledgerSeq}/payments</code>
      * @param string $ledgerSeq Ledger for which to get payments.
      * @return PaymentsRequestBuilder
-     * @see https://developers.stellar.org/api/resources/ledgers/payments/ Payments for Ledger
+     * @see https://developers.stellar.org Stellar developer docs Payments for Ledger
      */
     public function forLedger(string $ledgerSeq) : PaymentsRequestBuilder {
         $this->setSegments("ledgers", $ledgerSeq, "payments");
@@ -100,7 +100,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /transactions/{transactionId}/payments</code>
      * @param string $transactionId Transaction ID for which to get payments.
      * @return PaymentsRequestBuilder
-     * @see https://developers.stellar.org/api/resources/ledgers/transactions/ Payments for Transaction
+     * @see https://developers.stellar.org Stellar developer docs Payments for Transaction
      */
     public function forTransaction(string $transactionId) : PaymentsRequestBuilder {
         $this->setSegments("transactions", $transactionId, "payments");
@@ -138,7 +138,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : PaymentsRequestBuilder {

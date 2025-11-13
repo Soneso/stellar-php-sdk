@@ -25,7 +25,7 @@ use Throwable;
  *
  * @package Soneso\StellarSDK\Exceptions
  * @see HorizonErrorResponse For structured error response details
- * @see https://developers.stellar.org/docs/data/horizon/api-reference/errors Documentation on Horizon errors
+ * @see https://developers.stellar.org Stellar developer docs Documentation on Horizon errors
  */
 class HorizonRequestException extends \ErrorException
 {

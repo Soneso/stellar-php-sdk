@@ -35,7 +35,7 @@ use Soneso\StellarSDK\Responses\Trades\TradePriceResponse;
  * @package Soneso\StellarSDK\Responses\TradeAggregations
  * @see TradePriceResponse For rational price representation
  * @see TradeAggregationsPageResponse For paginated aggregation results
- * @see https://developers.stellar.org/api/aggregations/trade-aggregations Horizon Trade Aggregations API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Trade Aggregations API
  */
 class TradeAggregationResponse extends Response
 {

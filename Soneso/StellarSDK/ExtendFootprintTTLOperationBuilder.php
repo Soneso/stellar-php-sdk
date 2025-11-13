@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK;
  *
  * @package Soneso\StellarSDK
  * @see ExtendFootprintTTLOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#extend-footprint-ttl
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

@@ -15,7 +15,7 @@ use Soneso\StellarSDK\Responses\Page\PageResponse;
  * @package Soneso\StellarSDK\Responses\ClaimableBalances
  * @see PageResponse For pagination functionality
  * @see ClaimableBalanceResponse For individual claimable balance details
- * @see https://developers.stellar.org/api/resources/claimablebalances Horizon Claimable Balances API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Claimable Balances API
  * @since 1.0.0
  */
 class ClaimableBalancesPageResponse extends PageResponse

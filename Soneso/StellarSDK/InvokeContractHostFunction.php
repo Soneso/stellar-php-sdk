@@ -41,7 +41,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
  * @package Soneso\StellarSDK
  * @see HostFunction Base class for all host functions
  * @see Address For address conversion utilities
- * @see https://developers.stellar.org/docs/smart-contracts/guides/functions
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class InvokeContractHostFunction extends HostFunction

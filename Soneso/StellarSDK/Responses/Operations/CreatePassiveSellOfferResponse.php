@@ -19,7 +19,7 @@ use Soneso\StellarSDK\Responses\Offers\OfferPriceResponse;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/create-passive-sell-offer Horizon Create Passive Sell Offer Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Create Passive Sell Offer Operation
  */
 class CreatePassiveSellOfferResponse extends OperationResponse
 {

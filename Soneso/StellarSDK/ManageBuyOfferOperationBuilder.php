@@ -18,7 +18,7 @@ use InvalidArgumentException;
  *
  * @package Soneso\StellarSDK
  * @see ManageBuyOfferOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#manage-buy-offer
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

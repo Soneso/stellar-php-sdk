@@ -59,7 +59,7 @@ use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see TradesPageResponse For the response format
- * @see https://developers.stellar.org/api/resources/trades Horizon API Trades endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Trades endpoint
  */
 class TradesRequestBuilder extends RequestBuilder
 {
@@ -90,7 +90,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /trades</code> filtered by offer_id query parameter.
      * @param string $offerId Offer ID for which to get trades
      * @return TradesRequestBuilder
-     * @see https://developers.stellar.org/api/resources/trades/list/ List All Trades
+     * @see https://developers.stellar.org Stellar developer docs List All Trades
      */
     public function forOffer(string $offerId) : TradesRequestBuilder {
         $this->queryParameters[TradesRequestBuilder::OFFER_ID_PARAMETER_NAME] = $offerId;
@@ -102,7 +102,7 @@ class TradesRequestBuilder extends RequestBuilder
      *
      * @param string $tradeType
      * @return TradesRequestBuilder current instance
-     * @see https://developers.stellar.org/api/resources/trades/list/ List All Trades
+     * @see https://developers.stellar.org Stellar developer docs List All Trades
      */
     public function forTradeType(string $tradeType) : TradesRequestBuilder {
         $this->queryParameters[TradesRequestBuilder::TRADE_TYPE_PARAMETER_NAME] = $tradeType;
@@ -143,7 +143,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /liquidity_pools/{poolID}/trades</code>
      * @param string $liquidityPoolId Liquidity pool for which to get trades
      * @return TradesRequestBuilder
-     * @see https://developers.stellar.org/api/resources/liquiditypools/trades/ Trades for Liquidity Pool
+     * @see https://developers.stellar.org Stellar developer docs Trades for Liquidity Pool
      */
     public function forLiquidityPool(string $liquidityPoolId) : TradesRequestBuilder {
         $idHex = $liquidityPoolId;
@@ -158,7 +158,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /accounts/{accountId}/trades</code>
      * @param string $accountId
      * @return TradesRequestBuilder
-     * @see https://developers.stellar.org/api/resources/accounts/trades/ Trades for Account
+     * @see https://developers.stellar.org Stellar developer docs Trades for Account
      */
     public function forAccount(string $accountId) : TradesRequestBuilder {
         $this->setSegments("accounts", $accountId, "trades");
@@ -169,7 +169,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : TradesRequestBuilder {

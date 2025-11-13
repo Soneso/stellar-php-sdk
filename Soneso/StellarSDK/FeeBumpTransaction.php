@@ -55,7 +55,7 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
  * @see AbstractTransaction Base transaction functionality
  * @see Transaction The inner transaction type
  * @see FeeBumpTransactionBuilder For building fee bump transactions
- * @see https://developers.stellar.org/docs/encyclopedia/fee-bumps
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class FeeBumpTransaction extends AbstractTransaction

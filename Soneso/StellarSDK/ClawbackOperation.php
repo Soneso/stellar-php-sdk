@@ -11,12 +11,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#clawback" target="_blank">Clawback</a> operation.
+ * Represents clawback operation.
  *
  * Burns an amount of an asset from an account, effectively destroying the asset. The asset must have the AUTH_CLAWBACK_ENABLED flag set.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @since 1.0.0
  */
 class ClawbackOperation extends AbstractOperation

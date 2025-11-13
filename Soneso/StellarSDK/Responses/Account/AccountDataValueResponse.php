@@ -20,7 +20,7 @@ use Soneso\StellarSDK\Responses\Response;
  *
  * @package Soneso\StellarSDK\Responses\Account
  * @see AccountDataResponse For all data entries on an account
- * @see https://developers.stellar.org/api/resources/accounts/data Horizon Account Data API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Account Data API
  * @since 1.0.0
  */
 class AccountDataValueResponse extends Response

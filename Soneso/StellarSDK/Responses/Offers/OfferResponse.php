@@ -33,7 +33,7 @@ use Soneso\StellarSDK\Responses\Response;
  * @package Soneso\StellarSDK\Responses\Offers
  * @see OfferPriceResponse For price ratio representation
  * @see OfferLinksResponse For related navigation links
- * @see https://developers.stellar.org/api/resources/offers Horizon Offers API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Offers API
  * @since 1.0.0
  */
 class OfferResponse extends Response

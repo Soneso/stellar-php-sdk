@@ -42,7 +42,7 @@ use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see SubmitTransactionResponse For the response format
- * @see https://developers.stellar.org/api/resources/transactions/post Horizon API Submit Transaction
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Submit Transaction
  */
 class SubmitTransactionRequestBuilder extends RequestBuilder
 {

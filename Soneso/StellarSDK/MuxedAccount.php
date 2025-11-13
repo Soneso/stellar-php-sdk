@@ -46,7 +46,7 @@ use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
  *
  * @package Soneso\StellarSDK
  * @see Account For account with sequence number management
- * @see https://developers.stellar.org/docs/encyclopedia/muxed-accounts
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class MuxedAccount

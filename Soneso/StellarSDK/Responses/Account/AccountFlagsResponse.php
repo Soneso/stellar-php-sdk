@@ -22,7 +22,7 @@ namespace Soneso\StellarSDK\Responses\Account;
  *
  * @package Soneso\StellarSDK\Responses\Account
  * @see AccountResponse For the parent account details
- * @see https://developers.stellar.org/docs/encyclopedia/authorization-flags Authorization Flags Documentation
+ * @see https://developers.stellar.org Stellar developer docs Authorization Flags Documentation
  * @since 1.0.0
  */
 class AccountFlagsResponse

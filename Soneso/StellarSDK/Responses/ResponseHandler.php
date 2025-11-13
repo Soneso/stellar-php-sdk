@@ -75,7 +75,7 @@ use Soneso\StellarSDK\SEP\WebAuth\ChallengeResponse;
  * @package Soneso\StellarSDK\Responses
  * @see RequestType For supported request type constants
  * @see Response Base class for all response objects
- * @see https://developers.stellar.org/api Horizon API documentation
+ * @see https://developers.stellar.org Stellar developer docs Horizon API documentation
  */
 class ResponseHandler
 {

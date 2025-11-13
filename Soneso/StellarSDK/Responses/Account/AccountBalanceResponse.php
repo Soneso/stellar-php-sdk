@@ -26,7 +26,7 @@ namespace Soneso\StellarSDK\Responses\Account;
  *
  * @package Soneso\StellarSDK\Responses\Account
  * @see AccountResponse For the parent account details
- * @see https://developers.stellar.org/api/resources/accounts Horizon Accounts API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Accounts API
  * @since 1.0.0
  */
 class AccountBalanceResponse

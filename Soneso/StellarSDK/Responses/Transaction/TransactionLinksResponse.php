@@ -31,7 +31,7 @@ use Soneso\StellarSDK\Responses\Link\LinkResponse;
  * @package Soneso\StellarSDK\Responses\Transaction
  * @see TransactionResponse For the parent transaction response
  * @see LinkResponse For individual link details
- * @see https://developers.stellar.org/api/introduction/response-format HAL Response Format
+ * @see https://developers.stellar.org Stellar developer docs HAL Response Format
  * @since 1.0.0
  */
 class TransactionLinksResponse

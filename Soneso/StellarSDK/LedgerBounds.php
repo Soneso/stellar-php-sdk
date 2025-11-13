@@ -21,7 +21,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerBounds;
  *
  * @package Soneso\StellarSDK
  * @see https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification CAP-21 specification
- * @see https://developers.stellar.org/docs/encyclopedia/transactions/transaction-anatomy#preconditions Documentation on preconditions
+ * @see https://developers.stellar.org Stellar developer docs Documentation on preconditions
  */
 class LedgerBounds
 {

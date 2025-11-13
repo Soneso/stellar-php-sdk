@@ -16,13 +16,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#invoke-host-function" target="_blank">InvokeHostFunction</a> operation.
+ * Represents an invoke host function operation.
  *
  * Invokes a Soroban smart contract function, uploads WASM code, or deploys a contract.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
- * @see <a href="https://developers.stellar.org/docs/learn/smart-contracts" target="_blank">Smart Contracts</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @since 1.0.0
  */
 class InvokeHostFunctionOperation extends AbstractOperation

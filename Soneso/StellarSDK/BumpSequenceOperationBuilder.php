@@ -19,7 +19,7 @@ use phpseclib3\Math\BigInteger;
  *
  * @package Soneso\StellarSDK
  * @see BumpSequenceOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#bump-sequence
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

@@ -27,7 +27,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
  * Addresses are used in authorization entries and as contract function arguments.
  *
  * @package Soneso\StellarSDK\Soroban
- * @see https://developers.stellar.org/docs/learn/smart-contract-internals/authorization#address Soroban Authorization
+ * @see https://developers.stellar.org Stellar developer docs Soroban Authorization
  * @since 1.0.0
  */
 class Address

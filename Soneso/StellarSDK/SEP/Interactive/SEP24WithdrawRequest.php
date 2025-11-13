@@ -146,7 +146,7 @@ class SEP24WithdrawRequest
      * @var string|null $refundMemoType (optional) The type of the refund_memo. Can be id, text, or hash.
      * See the memos documentation for more information.
      * If specified, refund_memo must also be specified.
-     * https://developers.stellar.org/docs/encyclopedia/memos
+     * https://developers.stellar.org
      */
     public ?string $refundMemoType = null;
 
@@ -434,7 +434,7 @@ class SEP24WithdrawRequest
      * @return string|null (optional) The type of the refund_memo. Can be id, text, or hash.
      *  See the memos documentation for more information.
      *  If specified, refund_memo must also be specified.
-     *  https://developers.stellar.org/docs/encyclopedia/memos
+     *  https://developers.stellar.org
      */
     public function getRefundMemoType(): ?string
     {
@@ -445,7 +445,7 @@ class SEP24WithdrawRequest
      * @param string|null $refundMemoType (optional) The type of the refund_memo. Can be id, text, or hash.
      *   See the memos documentation for more information.
      *   If specified, refund_memo must also be specified.
-     *   https://developers.stellar.org/docs/encyclopedia/memos
+     *   https://developers.stellar.org
      */
     public function setRefundMemoType(?string $refundMemoType): void
     {

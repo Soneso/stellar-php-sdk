@@ -27,7 +27,7 @@ use Soneso\StellarSDK\Xdr\XdrMemoType;
  * - RETURN: 32-byte hash for return payments
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/encyclopedia/transactions/transaction-anatomy#memo Documentation on memos
+ * @see https://developers.stellar.org Stellar developer docs Documentation on memos
  */
 class Memo
 {

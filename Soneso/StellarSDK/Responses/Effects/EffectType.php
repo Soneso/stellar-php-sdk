@@ -15,7 +15,7 @@ namespace Soneso\StellarSDK\Responses\Effects;
  *
  * @package Soneso\StellarSDK\Responses\Effects
  * @see EffectResponse
- * @see https://developers.stellar.org/api/resources/effects/effect-types
+ * @see https://developers.stellar.org Stellar developer docs
  */
 class EffectType
 {

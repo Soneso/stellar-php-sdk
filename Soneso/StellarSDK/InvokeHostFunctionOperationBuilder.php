@@ -18,7 +18,7 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
  *
  * @package Soneso\StellarSDK
  * @see InvokeHostFunctionOperation
- * @see https://developers.stellar.org/docs/fundamentals-and-concepts/list-of-operations#invoke-host-function
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  *
  * @example

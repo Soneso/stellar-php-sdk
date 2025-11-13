@@ -32,7 +32,7 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
  * @package Soneso\StellarSDK
  * @see Transaction For regular transactions
  * @see FeeBumpTransaction For fee bump transactions
- * @see https://developers.stellar.org/docs/encyclopedia/transactions
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 abstract class AbstractTransaction

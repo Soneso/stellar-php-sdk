@@ -19,7 +19,7 @@ use Soneso\StellarSDK\Responses\LiquidityPools\ReservesResponse;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/liquidity-pool-withdraw Horizon Liquidity Pool Withdraw Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Liquidity Pool Withdraw Operation
  */
 class LiquidityPoolWithdrawOperationResponse extends OperationResponse
 {

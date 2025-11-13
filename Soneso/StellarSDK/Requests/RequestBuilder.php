@@ -29,7 +29,7 @@ use Soneso\StellarSDK\StellarSDK;
  * - order(): Sort results in ascending or descending order
  *
  * @package Soneso\StellarSDK\Requests
- * @see https://developers.stellar.org/api Horizon API documentation
+ * @see https://developers.stellar.org Stellar developer docs Horizon API documentation
  */
 abstract class RequestBuilder
 {
@@ -85,7 +85,7 @@ abstract class RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Pagination documentation
+     * @see https://developers.stellar.org Stellar developer docs Pagination documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : RequestBuilder {

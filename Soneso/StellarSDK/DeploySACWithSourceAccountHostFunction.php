@@ -44,7 +44,7 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
  * @see HostFunction Base class for all host functions
  * @see DeploySACWithAssetHostFunction For deploying SACs for existing assets
  * @see Address For address handling
- * @see https://developers.stellar.org/docs/smart-contracts/tokens/stellar-asset-contract
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class DeploySACWithSourceAccountHostFunction extends HostFunction

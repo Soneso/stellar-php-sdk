@@ -35,7 +35,7 @@ use phpseclib3\Math\BigInteger;
  * ```
  *
  * @package Soneso\StellarSDK\Util
- * @see https://developers.stellar.org/docs/encyclopedia/lumens Documentation on Lumens (XLM)
+ * @see https://developers.stellar.org Stellar developer docs Documentation on Lumens (XLM)
  */
 class StellarAmount
 {

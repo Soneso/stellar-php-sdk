@@ -15,7 +15,7 @@ use Soneso\StellarSDK\Asset;
  *
  * @package Soneso\StellarSDK\Responses\Effects
  * @see EffectResponse Base effect class
- * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
  * @since 1.0.0
  */
 class AccountDebitedEffectResponse extends EffectResponse

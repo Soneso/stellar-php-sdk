@@ -33,7 +33,7 @@ use Soneso\StellarSDK\TransactionBuilderAccount;
  * - GET /accounts - List of accounts
  *
  * @package Soneso\StellarSDK\Responses\Account
- * @see https://developers.stellar.org/api/resources/accounts Horizon Accounts API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Accounts API
  * @see AccountBalanceResponse For balance details
  * @see AccountSignerResponse For signer details
  * @see AccountThresholdsResponse For threshold values

@@ -14,7 +14,7 @@ namespace Soneso\StellarSDK\Responses\Operations;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/set-options Horizon Set Options
+ * @see https://developers.stellar.org Stellar developer docs Horizon Set Options
  * @since 1.0.0
  */
 class SetOptionsOperationResponse extends OperationResponse

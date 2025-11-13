@@ -31,7 +31,7 @@ use Soneso\StellarSDK\Responses\Root\RootResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see RootResponse For the response format
- * @see https://developers.stellar.org/api/introduction Horizon API Root endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Root endpoint
  */
 class RootRequestBuilder extends RequestBuilder
 {

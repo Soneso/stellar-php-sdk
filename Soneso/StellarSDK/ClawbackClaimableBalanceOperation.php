@@ -12,12 +12,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#clawback-claimable-balance" target="_blank">ClawbackClaimableBalance</a> operation.
+ * Represents clawback claimable balance operation.
  *
  * Claws back a claimable balance, returning the funds to the asset issuer and removing the claimable balance from the ledger.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see CreateClaimableBalanceOperation For creating claimable balances
  * @since 1.0.0
  */

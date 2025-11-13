@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK\Responses\Operations;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see PathPaymentOperationResponse Base path payment response
- * @see https://developers.stellar.org/api/resources/operations/object/path-payment-strict-send Horizon Path Payment Strict Send
+ * @see https://developers.stellar.org Stellar developer docs Horizon Path Payment Strict Send
  * @since 1.0.0
  */
 class PathPaymentStrictSendOperationResponse extends PathPaymentOperationResponse

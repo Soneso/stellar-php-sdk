@@ -22,7 +22,7 @@ namespace Soneso\StellarSDK\Responses\Account;
  *
  * @package Soneso\StellarSDK\Responses\Account
  * @see AccountResponse For the parent account details
- * @see https://developers.stellar.org/docs/encyclopedia/data-entries Data Entries Documentation
+ * @see https://developers.stellar.org Stellar developer docs Data Entries Documentation
  * @since 1.0.0
  */
 class AccountDataResponse

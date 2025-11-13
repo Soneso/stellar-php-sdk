@@ -26,7 +26,7 @@ namespace Soneso\StellarSDK\Crypto;
  *
  * @package Soneso\StellarSDK\Crypto
  * @see StrKey For encoding and decoding operations
- * @see https://developers.stellar.org/docs/encyclopedia/glossary#address Documentation on address types
+ * @see https://developers.stellar.org Stellar developer docs Documentation on address types
  */
 class VersionByte
 {

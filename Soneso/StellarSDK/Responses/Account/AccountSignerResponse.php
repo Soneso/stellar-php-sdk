@@ -23,7 +23,7 @@ namespace Soneso\StellarSDK\Responses\Account;
  * @package Soneso\StellarSDK\Responses\Account
  * @see AccountResponse For the parent account details
  * @see AccountThresholdsResponse For threshold requirements
- * @see https://developers.stellar.org/docs/encyclopedia/signatures-multisig Multi-Signature Documentation
+ * @see https://developers.stellar.org Stellar developer docs Multi-Signature Documentation
  * @since 1.0.0
  */
 class AccountSignerResponse

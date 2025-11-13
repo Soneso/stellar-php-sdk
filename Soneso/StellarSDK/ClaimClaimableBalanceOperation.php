@@ -12,12 +12,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#claim-claimable-balance" target="_blank">ClaimClaimableBalance</a> operation.
+ * Represents <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a> operation.
  *
  * Claims a claimable balance entry and adds the amount to the source account's balance.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see CreateClaimableBalanceOperation For creating claimable balances
  * @since 1.0.0
  */

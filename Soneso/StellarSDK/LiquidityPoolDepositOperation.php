@@ -11,12 +11,12 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#liquidity-pool-deposit" target="_blank">LiquidityPoolDeposit</a> operation.
+ * Represents <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a> operation.
  *
  * Deposits assets into a liquidity pool, contributing to the pool's reserves.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see LiquidityPoolWithdrawOperation For withdrawing from a pool
  * @since 1.0.0
  */

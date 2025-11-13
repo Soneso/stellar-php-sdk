@@ -54,7 +54,7 @@ use Soneso\StellarSDK\Responses\Effects\EffectsPageResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see EffectsPageResponse For the response format
- * @see https://developers.stellar.org/api/resources/effects Horizon API Effects endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Effects endpoint
  */
 class EffectsRequestBuilder extends RequestBuilder
 {
@@ -71,7 +71,7 @@ class EffectsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /accounts/{account}/effects</code>
      * @param string $accountId ID of the account for which to get effects.
      * @return EffectsRequestBuilder
-     * @see https://developers.stellar.org/api/resources/accounts/effects/ Effects for Account
+     * @see https://developers.stellar.org Stellar developer docs Effects for Account
      */
     public function forAccount(string $accountId) : EffectsRequestBuilder {
         $this->setSegments("accounts", $accountId, "effects");
@@ -82,7 +82,7 @@ class EffectsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /ledgers/{ledgerSeq}/effects</code>
      * @param string $ledgerSeq Ledger for which to get effects.
      * @return EffectsRequestBuilder
-     * @see https://developers.stellar.org/api/resources/ledgers/effects/ Effects for Ledger
+     * @see https://developers.stellar.org Stellar developer docs Effects for Ledger
      */
     public function forLedger(string $ledgerSeq) : EffectsRequestBuilder {
         $this->setSegments("ledgers", $ledgerSeq, "effects");
@@ -94,7 +94,7 @@ class EffectsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /transactions/{transactionId}/effects</code>
      * @param string $transactionId Transaction ID for which to get effects.
      * @return EffectsRequestBuilder
-     * @see https://developers.stellar.org/api/resources/transactions/effects/ Effect for Transaction
+     * @see https://developers.stellar.org Stellar developer docs Effect for Transaction
      */
     public function forTransaction(string $transactionId) : EffectsRequestBuilder {
         $this->setSegments("transactions", $transactionId, "effects");
@@ -105,7 +105,7 @@ class EffectsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /liquidity_pools/{poolID}/effects</code>
      * @param string $liquidityPoolId Liquidity pool for which to get effects.
      * @return EffectsRequestBuilder
-     * @see https://developers.stellar.org/api/resources/liquiditypools/effects/ Effects for Liquidity Pool
+     * @see https://developers.stellar.org Stellar developer docs Effects for Liquidity Pool
      */
     public function forLiquidityPool(string $liquidityPoolId) : EffectsRequestBuilder {
         $idHex = $liquidityPoolId;
@@ -119,7 +119,7 @@ class EffectsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /operation/{operationId}/effects</code>
      * @param string $operationId ID of operation for which to get effects.
      * @return EffectsRequestBuilder
-     * @see https://developers.stellar.org/api/resources/operations/effects/ Effect for Operation
+     * @see https://developers.stellar.org Stellar developer docs Effect for Operation
      */
     public function forOperation(string $operationId) : EffectsRequestBuilder {
         $this->setSegments("operations", $operationId, "effects");
@@ -130,7 +130,7 @@ class EffectsRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : EffectsRequestBuilder {

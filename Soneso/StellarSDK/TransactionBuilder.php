@@ -49,7 +49,7 @@ use Soneso\StellarSDK\Constants\StellarConstants;
  * @package Soneso\StellarSDK
  * @see Transaction The transaction object that is built
  * @see TransactionBuilderAccount Interface for source accounts
- * @see https://developers.stellar.org/docs/encyclopedia/transactions
+ * @see https://developers.stellar.org Stellar developer docs
  * @since 1.0.0
  */
 class TransactionBuilder
@@ -77,7 +77,7 @@ class TransactionBuilder
     }
 
     /**
-     * Adds a new <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">operation</a> to this transaction.
+     * Adds a new operation to this transaction.
      * @param AbstractOperation $operation The operation to add.
      * @return TransactionBuilder Builder object so you can chain methods.
      */
@@ -87,7 +87,7 @@ class TransactionBuilder
     }
 
     /**
-     * Adds N new <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">operation</a> to this transaction.
+     * Adds N new operations to this transaction.
      * @param array<AbstractOperation> $allOperations Array of itens.
      * @return TransactionBuilder Builder object so you can chain methods.
      */
@@ -110,7 +110,7 @@ class TransactionBuilder
     }
 
     /**
-     * Adds a <a href="https://developers.stellar.org/docs/glossary/transactions/#memo" target="_blank">memo</a> to this transaction.
+     * Adds a memo to this transaction.
      * @param Memo $memo Memo to add.
      * @return TransactionBuilder Builder object so you can chain methods.
      */
@@ -120,7 +120,7 @@ class TransactionBuilder
     }
 
     /**
-     * Adds a <a href="https://developers.stellar.org/docs/glossary/transactions/" target="_blank">time-bounds</a> to this transaction.
+     * Adds time bounds to this transaction.
      * @param TimeBounds $timeBounds TimeBounds to add.
      * @return TransactionBuilder Builder object so you can chain methods.
      */
@@ -133,7 +133,7 @@ class TransactionBuilder
     }
 
     /**
-     * Adds a <a href="https://developers.stellar.org/docs/glossary/transactions/" target="_blank">transaction preconditions</a> to this transaction.
+     * Adds preconditions to this transaction.
      * @param TransactionPreconditions $preconditions Preconditions to add.
      * @return TransactionBuilder Builder object so you can chain methods.
      */

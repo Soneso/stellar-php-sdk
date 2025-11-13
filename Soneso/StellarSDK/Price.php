@@ -19,7 +19,7 @@ use Soneso\StellarSDK\Xdr\XdrPrice;
  * For example, a price of 1.5 would be represented as n=3, d=2 (3/2).
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/encyclopedia/operations/manage-buy-offer Documentation on offer operations
+ * @see https://developers.stellar.org Stellar developer docs Documentation on offer operations
  */
 class Price
 {

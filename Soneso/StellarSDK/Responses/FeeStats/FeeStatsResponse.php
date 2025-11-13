@@ -14,7 +14,7 @@ use Soneso\StellarSDK\Responses\Response;
  * @package Soneso\StellarSDK\Responses\FeeStats
  * @see FeeChargedResponse For fee charged statistics
  * @see MaxFeeResponse For max fee statistics
- * @see https://developers.stellar.org/api/aggregations/fee-stats Horizon Fee Stats API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Fee Stats API
  * @since 1.0.0
  */
 class FeeStatsResponse extends Response

@@ -145,7 +145,7 @@ final class NetworkConstants
     // Constants related to transaction validity windows and timing.
     //
     // Reference: Stellar Protocol - Transaction specification
-    // @see https://developers.stellar.org/docs/learn/fundamentals/transactions
+    // @see https://developers.stellar.org Stellar developer docs
 
     /**
      * Default time bounds offset in seconds.
@@ -167,7 +167,7 @@ final class NetworkConstants
      * clock synchronization issues between client and network nodes.
      *
      * Reference: Transaction time bounds best practices
-     * @see https://developers.stellar.org/docs/learn/fundamentals/transactions/transaction-data-structures
+     * @see https://developers.stellar.org Stellar developer docs
      */
     public const DEFAULT_TIME_BOUNDS_OFFSET_SECONDS = 10;
 
@@ -177,7 +177,7 @@ final class NetworkConstants
     // Constants related to Soroban smart contract invocations.
     //
     // Reference: Soroban documentation
-    // @see https://developers.stellar.org/docs/learn/smart-contract-internals
+    // @see https://developers.stellar.org Stellar developer docs
 
     /**
      * Default timeout for Soroban contract method calls in seconds.
@@ -196,7 +196,7 @@ final class NetworkConstants
      * congestion and retry scenarios.
      *
      * Reference: Soroban transaction lifecycle
-     * @see https://developers.stellar.org/docs/learn/smart-contract-internals/transaction-simulation
+     * @see https://developers.stellar.org Stellar developer docs
      */
     public const DEFAULT_SOROBAN_TIMEOUT_SECONDS = 300;
 }

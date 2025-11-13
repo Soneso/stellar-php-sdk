@@ -24,7 +24,7 @@ use Soneso\StellarSDK\Responses\Link\LinkResponse;
  * @package Soneso\StellarSDK\Responses\Trades
  * @see LinkResponse For individual link details
  * @see TradeResponse For the parent trade resource
- * @see https://developers.stellar.org/api/introduction/response-format Horizon HAL Response Format
+ * @see https://developers.stellar.org Stellar developer docs Horizon HAL Response Format
  */
 class TradeLinksResponse
 {

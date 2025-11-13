@@ -24,7 +24,7 @@ namespace Soneso\StellarSDK\Util;
  * ```
  *
  * @package Soneso\StellarSDK\Util
- * @see https://developers.stellar.org/docs/encyclopedia/signatures-multisig Documentation on Stellar signatures
+ * @see https://developers.stellar.org Stellar developer docs Documentation on Stellar signatures
  */
 class Hash
 {

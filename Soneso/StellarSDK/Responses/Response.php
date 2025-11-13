@@ -26,8 +26,8 @@ use GuzzleHttp\Client;
  * Use the cursor parameter with request builders to navigate through pages.
  *
  * @package Soneso\StellarSDK\Responses
- * @see https://developers.stellar.org/api/introduction/rate-limiting Rate limiting documentation
- * @see https://developers.stellar.org/api/introduction/pagination Pagination documentation
+ * @see https://developers.stellar.org Stellar developer docs Rate limiting documentation
+ * @see https://developers.stellar.org Stellar developer docs Pagination documentation
  */
 abstract class Response
 {
@@ -67,7 +67,7 @@ abstract class Response
      * Returns X-RateLimit-Limit header from the response.
      * This number represents the he maximum number of requests that the current client can
      * make in one hour.
-     * @see https://developers.stellar.org/api/introduction/rate-limiting/ Rate limiting documentation
+     * @see https://developers.stellar.org Stellar developer docs Rate limiting documentation
      */
     public function getRateLimitLimit() : ?int {
         return $this->rateLimitLimit;
@@ -76,7 +76,7 @@ abstract class Response
     /**
      * Returns X-RateLimit-Remaining header from the response.
      * The number of remaining requests for the current window.
-     * @see https://developers.stellar.org/api/introduction/rate-limiting/ Rate limiting documentation
+     * @see https://developers.stellar.org Stellar developer docs Rate limiting documentation
      */
     public function getRateLimitRemaining() : ?int {
         return $this->rateLimitRemaining;
@@ -84,7 +84,7 @@ abstract class Response
     
    /**
    * Returns X-RateLimit-Reset header from the response. Seconds until a new window starts.
-   * @see https://developers.stellar.org/api/introduction/rate-limiting/ Rate limiting documentation
+   * @see https://developers.stellar.org Stellar developer docs Rate limiting documentation
    */
     public function getRateLimitReset() : ?int {
         return $this->rateLimitReset;

@@ -13,13 +13,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#manage-data" target="_blank">ManageData</a> operation.
+ * Represents ManageData operation.
  *
  * Sets, modifies, or deletes a data entry (key/value pair) attached to an account. This allows for storing
  * arbitrary data on the ledger in the form of key/value pairs.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see ManageDataOperationBuilder For building this operation
  * @since 1.0.0
  */

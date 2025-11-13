@@ -18,7 +18,7 @@ use Soneso\StellarSDK\Asset;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/set-trustline-flags Horizon Set Trustline Flags Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Set Trustline Flags Operation
  */
 class SetTrustlineFlagsOperationResponse extends OperationResponse
 {

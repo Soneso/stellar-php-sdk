@@ -20,7 +20,7 @@ use Soneso\StellarSDK\Responses\PaymentPath\PathAssetsResponse;
  * @see OperationResponse Base operation response
  * @see PathPaymentStrictReceiveOperationResponse For strict receive variant
  * @see PathPaymentStrictSendOperationResponse For strict send variant
- * @see https://developers.stellar.org/api/resources/operations/object/path-payment Horizon Path Payment Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Path Payment Operation
  * @since 1.0.0
  */
 class PathPaymentOperationResponse extends OperationResponse

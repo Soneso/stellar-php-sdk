@@ -39,7 +39,7 @@ use Soneso\StellarSDK\Responses\PaymentPath\PathsPageResponse;
  * @see PathsPageResponse For the response format
  * @see StrictReceivePathsRequestBuilder For the recommended alternative
  * @see StrictSendPathsRequestBuilder For the recommended alternative
- * @see https://developers.stellar.org/api/aggregations/paths Horizon API Paths endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Paths endpoint
  * @deprecated Use StrictReceivePathsRequestBuilder or StrictSendPathsRequestBuilder instead
  */
 class FindPathsRequestBuilder extends RequestBuilder {
@@ -112,7 +112,7 @@ class FindPathsRequestBuilder extends RequestBuilder {
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : FindPathsRequestBuilder {

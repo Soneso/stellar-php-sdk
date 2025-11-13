@@ -16,7 +16,7 @@ namespace Soneso\StellarSDK\Responses\Operations;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/end-sponsoring-future-reserves Horizon End Sponsoring Future Reserves Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon End Sponsoring Future Reserves Operation
  */
 class EndSponsoringFutureReservesOperationResponse extends OperationResponse
 {

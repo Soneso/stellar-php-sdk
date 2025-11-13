@@ -26,7 +26,7 @@ use Soneso\StellarSDK\Responses\Response;
  *
  * @package Soneso\StellarSDK\Responses\Transaction
  * @see SubmitTransactionResponse For synchronous transaction submission
- * @see https://developers.stellar.org/api/aggregations/endpoints/submit-async-transaction Submit Async Transaction
+ * @see https://developers.stellar.org Stellar developer docs Submit Async Transaction
  * @since 1.0.0
  */
 class SubmitAsyncTransactionResponse extends Response

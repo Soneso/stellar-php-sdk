@@ -29,7 +29,7 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
  *
  * @package Soneso\StellarSDK\Responses\Page
  * @see PagingLinksResponse For pagination link details
- * @see https://developers.stellar.org/api/introduction/pagination Horizon Pagination
+ * @see https://developers.stellar.org Stellar developer docs Horizon Pagination
  * @since 1.0.0
  */
 abstract class PageResponse extends Response

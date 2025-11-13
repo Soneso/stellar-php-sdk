@@ -34,7 +34,7 @@ use Soneso\StellarSDK\Responses\Response;
  * @package Soneso\StellarSDK\Responses\OrderBook
  * @see OrderBookRowsResponse For the collection of bids or asks
  * @see OrderBookRowResponse For individual price level details
- * @see https://developers.stellar.org/api/aggregations/order-books Horizon Order Book API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Order Book API
  */
 class OrderBookResponse extends Response
 {

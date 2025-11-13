@@ -15,8 +15,7 @@ namespace Soneso\StellarSDK\Responses\Effects;
  *
  * @package Soneso\StellarSDK\Responses\Effects
  * @see EffectResponse
- * @see https://developers.stellar.org/docs/encyclopedia/liquidity-on-stellar-sdex-liquidity-pools
- * @see https://developers.stellar.org/api/resources/effects
+ * @see https://developers.stellar.org Stellar developer docs
  */
 class OfferUpdatedEffectResponse extends EffectResponse
 {

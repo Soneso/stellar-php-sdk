@@ -26,7 +26,7 @@ use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
  * - Signed payload: Ed25519 key with additional signature data
  *
  * @package Soneso\StellarSDK
- * @see https://developers.stellar.org/docs/encyclopedia/signatures-multisig Documentation on multi-signature
+ * @see https://developers.stellar.org Stellar developer docs Documentation on multi-signature
  */
 class Signer
 {

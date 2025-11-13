@@ -32,7 +32,7 @@ use Soneso\StellarSDK\Responses\Response;
  *
  * @package Soneso\StellarSDK\Responses\Ledger
  * @see LedgerLinksResponse For related navigation links
- * @see https://developers.stellar.org/api/resources/ledgers Horizon Ledgers API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Ledgers API
  * @since 1.0.0
  */
 class LedgerResponse extends Response

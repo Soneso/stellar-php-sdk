@@ -44,7 +44,7 @@ use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalancesPageResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see ClaimableBalancesPageResponse For the response format
- * @see https://developers.stellar.org/api/resources/claimablebalances Horizon API Claimable Balances endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Claimable Balances endpoint
  */
 class ClaimableBalancesRequestBuilder  extends RequestBuilder
 {
@@ -111,7 +111,7 @@ class ClaimableBalancesRequestBuilder  extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : ClaimableBalancesRequestBuilder {

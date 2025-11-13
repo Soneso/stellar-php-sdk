@@ -27,7 +27,7 @@ use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
  * @package Soneso\StellarSDK
  * @see LiquidityPoolDepositOperation
  * @see LiquidityPoolWithdrawOperation
- * @link https://developers.stellar.org/docs/fundamentals/liquidity-on-stellar-sdex-liquidity-pools
+ * @link https://developers.stellar.org Stellar developer docs
  */
 class AssetTypePoolShare extends Asset
 {

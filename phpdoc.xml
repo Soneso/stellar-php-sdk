@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdocumentor
+    configVersion="3"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://www.phpdoc.org"
+    xsi:noNamespaceSchemaLocation="https://docs.phpdoc.org/latest/phpdoc.xsd"
+>
+    <title>Stellar PHP SDK API Documentation</title>
+    <paths>
+        <output>docs/api</output>
+        <cache>.phpdoc/cache</cache>
+    </paths>
+    <version number="latest">
+        <api>
+            <source dsn=".">
+                <path>Soneso/StellarSDK</path>
+            </source>
+            <ignore>
+                <path>Soneso/StellarSDKTests/**/*</path>
+                <path>vendor/**/*</path>
+                <path>examples/**/*</path>
+                <path>compatibility/**/*</path>
+                <path>reviews/**/*</path>
+            </ignore>
+            <visibility>public</visibility>
+            <visibility>protected</visibility>
+            <default-package-name>Soneso\StellarSDK</default-package-name>
+        </api>
+    </version>
+    <template name="default"/>
+    <setting name="graphs.enabled" value="false"/>
+</phpdocumentor>

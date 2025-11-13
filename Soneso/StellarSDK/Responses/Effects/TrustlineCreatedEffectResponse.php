@@ -13,7 +13,7 @@ namespace Soneso\StellarSDK\Responses\Effects;
  *
  * @package Soneso\StellarSDK\Responses\Effects
  * @see TrustlineEffectResponse Base trustline effect class
- * @see https://developers.stellar.org/api/resources/effects Horizon Effects API
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
  * @since 1.0.0
  */
 class TrustlineCreatedEffectResponse extends TrustlineEffectResponse

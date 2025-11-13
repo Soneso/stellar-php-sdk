@@ -14,13 +14,13 @@ use Soneso\StellarSDK\Xdr\XdrSigner;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-options" target="_blank">SetOptions</a> operation.
+ * Represents a Set Options operation.
  *
  * Sets various configuration options for an account, including thresholds, signers, home domain,
  * and account flags. This operation allows comprehensive account configuration.
  *
  * @package Soneso\StellarSDK
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
  * @see SetOptionsOperationBuilder For building this operation
  * @since 1.0.0
  */
@@ -118,7 +118,7 @@ class SetOptionsOperation extends AbstractOperation
     /**
      * Returns flags to clear on the account.
      *
-     * For details about the flags, see <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts documentation</a>.
+     * For details about the flags, see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      *
      * @return int|null The flags to clear.
      */
@@ -130,7 +130,7 @@ class SetOptionsOperation extends AbstractOperation
     /**
      * Returns flags to set on the account.
      *
-     * For details about the flags, see <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts documentation</a>.
+     * For details about the flags, see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      *
      * @return int|null The flags to set.
      */
@@ -152,7 +152,7 @@ class SetOptionsOperation extends AbstractOperation
     /**
      * Returns the threshold for low-security operations.
      *
-     * A number from 0-255. See <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">multisig documentation</a>.
+     * A number from 0-255. See <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      *
      * @return int|null The low threshold.
      */
@@ -164,7 +164,7 @@ class SetOptionsOperation extends AbstractOperation
     /**
      * Returns the threshold for medium-security operations.
      *
-     * A number from 0-255. See <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">multisig documentation</a>.
+     * A number from 0-255. See <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      *
      * @return int|null The medium threshold.
      */
@@ -176,7 +176,7 @@ class SetOptionsOperation extends AbstractOperation
     /**
      * Returns the threshold for high-security operations.
      *
-     * A number from 0-255. See <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">multisig documentation</a>.
+     * A number from 0-255. See <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      *
      * @return int|null The high threshold.
      */

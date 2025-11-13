@@ -28,7 +28,7 @@ use Soneso\StellarSDK\Responses\Link\LinkResponse;
  * @package Soneso\StellarSDK\Responses\Page
  * @see PageResponse For paginated collection base class
  * @see LinkResponse For individual link structure
- * @see https://developers.stellar.org/api/introduction/pagination Horizon Pagination
+ * @see https://developers.stellar.org Stellar developer docs Horizon Pagination
  */
 class PagingLinksResponse
 {

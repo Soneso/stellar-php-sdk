@@ -50,7 +50,7 @@ use Soneso\StellarSDK\Responses\OrderBook\OrderBookResponse;
  *
  * @package Soneso\StellarSDK\Requests
  * @see OrderBookResponse For the response format
- * @see https://developers.stellar.org/api/aggregations/order-books Horizon API Order Book endpoint
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Order Book endpoint
  */
 class OrderBookRequestBuilder extends RequestBuilder
 {
@@ -104,7 +104,7 @@ class OrderBookRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see https://developers.stellar.org/api/introduction/pagination/ Page documentation
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
      * @param string $cursor
      */
     public function cursor(string $cursor) : OrderBookRequestBuilder {

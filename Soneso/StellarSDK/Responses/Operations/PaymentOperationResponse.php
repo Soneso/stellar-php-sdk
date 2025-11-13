@@ -18,7 +18,7 @@ use Soneso\StellarSDK\Asset;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/payment Horizon Payment Operation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Payment Operation
  * @since 1.0.0
  */
 class PaymentOperationResponse extends OperationResponse

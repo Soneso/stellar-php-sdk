@@ -14,7 +14,7 @@ namespace Soneso\StellarSDK\Responses\Operations;
  *
  * @package Soneso\StellarSDK\Responses\Operations
  * @see OperationResponse Base operation response
- * @see https://developers.stellar.org/api/resources/operations/object/bump-sequence Horizon Bump Sequence
+ * @see https://developers.stellar.org Stellar developer docs Horizon Bump Sequence
  * @since 1.0.0
  */
 class BumpSequenceOperationResponse extends OperationResponse
