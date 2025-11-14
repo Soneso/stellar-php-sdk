@@ -8,13 +8,25 @@ namespace Soneso\StellarSDK\Responses\LiquidityPools;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents a reserve in a liquidity pool
+ *
+ * Contains the amount and asset type for one of the reserves in a liquidity pool.
+ * Liquidity pools typically have two reserves representing the paired assets.
+ *
+ * @package Soneso\StellarSDK\Responses\LiquidityPools
+ * @see LiquidityPoolResponse For the parent liquidity pool details
+ * @since 1.0.0
+ */
 class ReserveResponse
 {
     private string $amount;
     private Asset $asset;
 
     /**
-     * @return string
+     * Gets the amount of the asset in this reserve
+     *
+     * @return string The reserve amount as a string to preserve precision
      */
     public function getAmount(): string
     {
@@ -22,7 +34,9 @@ class ReserveResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset type for this reserve
+     *
+     * @return Asset The asset object
      */
     public function getAsset(): Asset
     {

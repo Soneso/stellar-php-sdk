@@ -12,7 +12,9 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 
 /**
  * Part of the simulate transaction response
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
  */
 class LedgerEntryChange
 {
@@ -54,6 +56,12 @@ class LedgerEntryChange
         $this->after = $after;
     }
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : LedgerEntryChange {
         $before = null;
         if(isset($json['before'])) {
@@ -82,6 +90,7 @@ class LedgerEntryChange
 
     /**
      * @param string $type Indicates if the entry was 'created', 'updated', or 'deleted'
+     * @return void
      */
     public function setType(string $type): void
     {
@@ -98,6 +107,7 @@ class LedgerEntryChange
 
     /**
      * @param string $key the XdrLedgerKey in base64 for this delta
+     * @return void
      */
     public function setKey(string $key): void
     {
@@ -114,6 +124,7 @@ class LedgerEntryChange
 
     /**
      * @param string|null $before XdrLedgerEntry in base64 (state prior to simulation)
+     * @return void
      */
     public function setBefore(?string $before): void
     {
@@ -130,6 +141,7 @@ class LedgerEntryChange
 
     /**
      * @param string|null $after XdrLedgerEntry in base64 (state after simulation)
+     * @return void
      */
     public function setAfter(?string $after): void
     {
@@ -138,6 +150,7 @@ class LedgerEntryChange
 
     /**
      * @return XdrLedgerKey the XdrLedgerKey for this delta
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getKeyXdr() : XdrLedgerKey {
         return XdrLedgerKey::fromBase64Xdr($this->key);
@@ -145,6 +158,7 @@ class LedgerEntryChange
 
     /**
      * @return XdrLedgerEntry|null XdrLedgerEntry (state after to simulation)
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getAfterXdr() : ?XdrLedgerEntry {
         if($this->after !== null) {
@@ -155,6 +169,7 @@ class LedgerEntryChange
 
     /**
      * @return XdrLedgerEntry|null XdrLedgerEntry (state prior to simulation)
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getBeforeXdr() : ?XdrLedgerEntry {
         if($this->before !== null) {

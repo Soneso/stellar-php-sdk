@@ -8,6 +8,19 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
+/**
+ * Configuration options for constructing and managing AssembledTransaction instances
+ *
+ * This class encapsulates all configuration needed to build, simulate, and send Soroban
+ * smart contract transactions. It combines client configuration, method-specific options,
+ * and transaction parameters into a single object for convenient transaction construction.
+ *
+ * @package Soneso\StellarSDK\Soroban\Contract
+ * @see AssembledTransaction For the transaction class that uses these options
+ * @see ClientOptions For client-level configuration
+ * @see MethodOptions For method invocation settings
+ * @since 1.0.0
+ */
 class AssembledTransactionOptions
 {
     public ClientOptions $clientOptions;

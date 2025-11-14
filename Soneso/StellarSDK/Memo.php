@@ -13,15 +13,21 @@ use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 
 /**
+ * Represents a transaction memo in the Stellar network
  *
- * Union with fields:
- *  memoType (enum)
- *  value:
- *      none: void
- *      text: string(28)
- *      id: uint64
- *      hash: Hash
- *      return: Hash
+ * Memos are optional messages attached to transactions. They can be used to
+ * attach additional information such as payment references, invoice numbers,
+ * or other application-specific data.
+ *
+ * Supported memo types:
+ * - NONE: No memo (default)
+ * - TEXT: UTF-8 text string up to 28 bytes
+ * - ID: Unsigned 64-bit integer
+ * - HASH: 32-byte hash (e.g., for hash preimages)
+ * - RETURN: 32-byte hash for return payments
+ *
+ * @package Soneso\StellarSDK
+ * @see https://developers.stellar.org Stellar developer docs Documentation on memos
  */
 class Memo
 {
@@ -40,8 +46,11 @@ class Memo
     private mixed $value = null;
 
     /**
-     * @param int $type
-     * @param null $value
+     * Memo constructor
+     *
+     * @param int $type The memo type (use MEMO_TYPE_* constants)
+     * @param mixed|null $value The memo value (type depends on memo type)
+     * @throws InvalidArgumentException If the value is invalid for the specified type
      */
     public function __construct(int $type, $value = null)
     {
@@ -52,7 +61,9 @@ class Memo
     }
 
     /**
-     * @return int
+     * Gets the memo type
+     *
+     * @return int The memo type (one of MEMO_TYPE_* constants)
      */
     public function getType(): int
     {
@@ -60,7 +71,9 @@ class Memo
     }
 
     /**
-     * @return mixed
+     * Gets the memo value
+     *
+     * @return mixed The memo value (type depends on memo type)
      */
     public function getValue(): mixed
     {
@@ -68,44 +81,64 @@ class Memo
     }
 
     /**
-     * @return Memo of type none
+     * Creates a memo with no value
+     *
+     * @return Memo A memo of type NONE
      */
     public static function none() : Memo {
         return new Memo(self::MEMO_TYPE_NONE);
     }
 
     /**
-     * @param string $text max 28 characters.
-     * @return Memo of type text
+     * Creates a text memo
+     *
+     * @param string $text The text value (maximum 28 bytes UTF-8)
+     * @return Memo A memo of type TEXT
+     * @throws InvalidArgumentException If text exceeds 28 bytes
      */
     public static function text(string $text) : Memo {
         return new Memo(self::MEMO_TYPE_TEXT, $text);
     }
 
     /**
-     * @param int $id
-     * @return Memo of type id
+     * Creates an ID memo
+     *
+     * @param int $id The unsigned 64-bit integer value
+     * @return Memo A memo of type ID
+     * @throws InvalidArgumentException If ID is negative or exceeds maximum
      */
     public static function id(int $id) : Memo {
         return new Memo(self::MEMO_TYPE_ID, $id);
     }
 
     /**
-     * @param string $hash 32 bytes
-     * @return Memo of type hash
+     * Creates a hash memo
+     *
+     * @param string $hash The 32-byte hash value
+     * @return Memo A memo of type HASH
+     * @throws InvalidArgumentException If hash is not exactly 32 bytes
      */
     public static function hash(string $hash) : Memo {
         return new Memo(self::MEMO_TYPE_HASH, $hash);
     }
 
     /**
-     * @param string $hash 32 bytes
-     * @return Memo of type return
+     * Creates a return hash memo
+     *
+     * @param string $hash The 32-byte hash value for return payments
+     * @return Memo A memo of type RETURN
+     * @throws InvalidArgumentException If hash is not exactly 32 bytes
      */
     public static function return(string $hash) : Memo {
         return new Memo(self::MEMO_TYPE_RETURN, $hash);
     }
 
+    /**
+     * Validates the memo value against its type constraints
+     *
+     * @return void
+     * @throws InvalidArgumentException If the value is invalid for the memo type
+     */
     public function validate()
     {
         if ($this->type == static::MEMO_TYPE_NONE) return;
@@ -168,6 +201,11 @@ class Memo
         }
     }
 
+    /**
+     * Converts this memo to XDR format
+     *
+     * @return XdrMemo The XDR representation of this memo
+     */
     public function toXdr() : XdrMemo
     {
         $xdrMemoType = new XdrMemoType($this->type);
@@ -192,8 +230,10 @@ class Memo
     }
 
     /**
-     * @param XdrMemo $xdr
-     * @return Memo
+     * Creates a Memo from XDR format
+     *
+     * @param XdrMemo $xdr The XDR encoded memo
+     * @return Memo The decoded memo object
      */
     public static function fromXdr(XdrMemo $xdr): Memo
     {

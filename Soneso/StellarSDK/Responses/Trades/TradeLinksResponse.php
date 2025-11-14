@@ -8,6 +8,24 @@ namespace Soneso\StellarSDK\Responses\Trades;
 
 use Soneso\StellarSDK\Responses\Link\LinkResponse;
 
+/**
+ * HAL navigation links for trade resources
+ *
+ * This response contains hypermedia links following the HAL (Hypertext Application Language)
+ * specification for navigating between trade-related resources in the Horizon API. Each link
+ * provides a URL to fetch additional information about the trade or related entities.
+ *
+ * Available links:
+ * - self: Link to this trade's detail endpoint
+ * - base: Link to the base account involved in the trade
+ * - counter: Link to the counter account involved in the trade
+ * - operation: Link to the operation that created this trade
+ *
+ * @package Soneso\StellarSDK\Responses\Trades
+ * @see LinkResponse For individual link details
+ * @see TradeResponse For the parent trade resource
+ * @see https://developers.stellar.org Stellar developer docs Horizon HAL Response Format
+ */
 class TradeLinksResponse
 {
 
@@ -17,7 +35,9 @@ class TradeLinksResponse
     private LinkResponse $self;
 
     /**
-     * @return LinkResponse
+     * Gets the link to the base account in the trade
+     *
+     * @return LinkResponse The base account link
      */
     public function getBase(): LinkResponse
     {
@@ -25,7 +45,9 @@ class TradeLinksResponse
     }
 
     /**
-     * @return LinkResponse
+     * Gets the link to the counter account in the trade
+     *
+     * @return LinkResponse The counter account link
      */
     public function getCounter(): LinkResponse
     {
@@ -33,7 +55,9 @@ class TradeLinksResponse
     }
 
     /**
-     * @return LinkResponse
+     * Gets the link to the operation that created this trade
+     *
+     * @return LinkResponse The operation link
      */
     public function getOperation(): LinkResponse
     {
@@ -41,7 +65,9 @@ class TradeLinksResponse
     }
 
     /**
-     * @return LinkResponse
+     * Gets the link to this trade's detail endpoint
+     *
+     * @return LinkResponse The self link
      */
     public function getSelf(): LinkResponse
     {
@@ -57,6 +83,12 @@ class TradeLinksResponse
         if (isset($json['self'])) $this->self = LinkResponse::fromJson($json['self']);
     }
 
+    /**
+     * Creates a TradeLinksResponse from JSON data
+     *
+     * @param array $json Associative array of parsed JSON response
+     * @return TradeLinksResponse The populated links response
+     */
     public static function fromJson(array $json) : TradeLinksResponse {
         $result = new TradeLinksResponse();
         $result->loadFromJson($json);

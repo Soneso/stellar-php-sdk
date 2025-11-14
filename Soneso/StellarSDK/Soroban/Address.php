@@ -14,10 +14,21 @@ use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
- * Represents a single address in the Stellar network.
- * An address can represent an account, contract, muxed account, claimable balance, or liquidity pool.
+ * Soroban address representing accounts, contracts, and other Stellar entities
  *
- * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization#address
+ * This class represents addresses used in Soroban smart contracts for authorization and
+ * identification. An Address can represent different entity types:
+ * - Account: Regular Stellar accounts (G-prefixed addresses)
+ * - Contract: Deployed smart contracts (C-prefixed addresses)
+ * - Muxed Account: Multiplexed accounts (M-prefixed addresses)
+ * - Claimable Balance: Claimable balance IDs
+ * - Liquidity Pool: AMM liquidity pool IDs
+ *
+ * Addresses are used in authorization entries and as contract function arguments.
+ *
+ * @package Soneso\StellarSDK\Soroban
+ * @see https://developers.stellar.org Stellar developer docs Soroban Authorization
+ * @since 1.0.0
  */
 class Address
 {
@@ -124,7 +135,7 @@ class Address
      * @return Address the created Address object.
      */
     public static function fromClaimableBalanceId(string $claimableBalanceId) : Address {
-        return new Address(Address::TYPE_LIQUIDITY_POOL, claimableBalanceId: $claimableBalanceId);
+        return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $claimableBalanceId);
     }
 
     /**
@@ -140,6 +151,7 @@ class Address
      * Creates an Address object from the given XdrSCAddress object.
      * @param XdrSCAddress $xdrAddress the xdr object to create the Address object from.
      * @return Address the created Address object.
+     * @throws RuntimeException if the XDR address type is unknown or unsupported
      */
     public static function fromXdr(XdrSCAddress $xdrAddress) : Address
     {
@@ -158,6 +170,12 @@ class Address
         }
     }
 
+    /**
+     * Creates an Address object from the given XdrSCVal object.
+     * @param XdrSCVal $val the XdrSCVal to create the Address object from.
+     * @return Address the created Address object.
+     * @throws RuntimeException if the given XdrSCVal is not of type address
+     */
     public static function fromXdrSCVal(XdrSCVal $val) : Address {
         if ($val->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT && $val->address !== null) {
             return self::fromXdr($val->address);
@@ -216,7 +234,8 @@ class Address
 
     /**
      * Returns the StrKey representation of the address.
-     * @throws Exception
+     * @return string the StrKey encoded address (e.g., G-prefixed for accounts, C-prefixed for contracts)
+     * @throws Exception if the address cannot be converted to StrKey format
      */
     public function toStrKey() : string {
         return $this->toXdr()->toStrKey();
@@ -224,7 +243,8 @@ class Address
 
     /**
      * Converts this object to its XDR representation.
-     * @return XdrSCAddress
+     * @return XdrSCAddress the XDR representation of this address
+     * @throws RuntimeException if the address type is unknown or if required ID fields are null
      */
     public function toXdr(): XdrSCAddress {
         if ($this->type == Address::TYPE_ACCOUNT) {
@@ -265,14 +285,16 @@ class Address
 
     /**
      * Converts this object to a XdrSCVal object.
-     * @return XdrSCVal
+     * @return XdrSCVal the XdrSCVal representation wrapping this address
+     * @throws RuntimeException if the address cannot be converted to XDR format
      */
     public function toXdrSCVal() : XdrSCVal {
         return XdrSCVal::forAddress($this->toXdr());
     }
 
     /**
-     * @return int type of address. Can be 0 (account) or 1 (contract).
+     * Returns the type of address.
+     * @return int the address type (TYPE_ACCOUNT, TYPE_CONTRACT, TYPE_MUXED_ACCOUNT, TYPE_CLAIMABLE_BALANCE, or TYPE_LIQUIDITY_POOL)
      */
     public function getType(): int
     {
@@ -280,7 +302,8 @@ class Address
     }
 
     /**
-     * @param int $type type of address. Can be 0 (account) or 1 (contract).
+     * Sets the type of address.
+     * @param int $type the address type (TYPE_ACCOUNT, TYPE_CONTRACT, TYPE_MUXED_ACCOUNT, TYPE_CLAIMABLE_BALANCE, or TYPE_LIQUIDITY_POOL)
      */
     public function setType(int $type): void
     {
@@ -288,7 +311,8 @@ class Address
     }
 
     /**
-     * @return string|null account id, only present if type is 0 (account)
+     * Returns the account id if this is an account address.
+     * @return string|null the account id (G-prefixed), only present if type is TYPE_ACCOUNT
      */
     public function getAccountId(): ?string
     {
@@ -296,7 +320,8 @@ class Address
     }
 
     /**
-     * @param string|null $accountId only needed if type is 0 (account)
+     * Sets the account id.
+     * @param string|null $accountId the account id (G-prefixed), only required if type is TYPE_ACCOUNT
      */
     public function setAccountId(?string $accountId): void
     {
@@ -304,7 +329,8 @@ class Address
     }
 
     /**
-     * @return string|null contract id as hex, only present if type is 1 (contract)
+     * Returns the contract id if this is a contract address.
+     * @return string|null the contract id as hex, only present if type is TYPE_CONTRACT
      */
     public function getContractId(): ?string
     {
@@ -312,7 +338,8 @@ class Address
     }
 
     /**
-     * @param string|null $contractId contract id as hex, only required if type is 1 (contract)
+     * Sets the contract id.
+     * @param string|null $contractId the contract id as hex, only required if type is TYPE_CONTRACT
      */
     public function setContractId(?string $contractId): void
     {
@@ -320,7 +347,8 @@ class Address
     }
 
     /**
-     * @return string|null
+     * Returns the muxed account id if this is a muxed account address.
+     * @return string|null the muxed account id (M-prefixed), only present if type is TYPE_MUXED_ACCOUNT
      */
     public function getMuxedAccountId(): ?string
     {
@@ -328,7 +356,8 @@ class Address
     }
 
     /**
-     * @param string|null $muxedAccountId
+     * Sets the muxed account id.
+     * @param string|null $muxedAccountId the muxed account id (M-prefixed), only required if type is TYPE_MUXED_ACCOUNT
      */
     public function setMuxedAccountId(?string $muxedAccountId): void
     {
@@ -336,7 +365,8 @@ class Address
     }
 
     /**
-     * @return string|null
+     * Returns the claimable balance id if this is a claimable balance address.
+     * @return string|null the claimable balance id as hex, only present if type is TYPE_CLAIMABLE_BALANCE
      */
     public function getClaimableBalanceId(): ?string
     {
@@ -344,7 +374,8 @@ class Address
     }
 
     /**
-     * @param string|null $claimableBalanceId
+     * Sets the claimable balance id.
+     * @param string|null $claimableBalanceId the claimable balance id as hex, only required if type is TYPE_CLAIMABLE_BALANCE
      */
     public function setClaimableBalanceId(?string $claimableBalanceId): void
     {
@@ -352,7 +383,8 @@ class Address
     }
 
     /**
-     * @return string|null
+     * Returns the liquidity pool id if this is a liquidity pool address.
+     * @return string|null the liquidity pool id as hex, only present if type is TYPE_LIQUIDITY_POOL
      */
     public function getLiquidityPoolId(): ?string
     {
@@ -360,7 +392,8 @@ class Address
     }
 
     /**
-     * @param string|null $liquidityPoolId
+     * Sets the liquidity pool id.
+     * @param string|null $liquidityPoolId the liquidity pool id as hex, only required if type is TYPE_LIQUIDITY_POOL
      */
     public function setLiquidityPoolId(?string $liquidityPoolId): void
     {

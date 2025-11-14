@@ -9,7 +9,10 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 /**
  * Used for getLedgers()
- * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+ *
+ * @see PaginationOptions
+ * @see https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+ * @package Soneso\StellarSDK\Soroban\Requests
  */
 class GetLedgersRequest
 {

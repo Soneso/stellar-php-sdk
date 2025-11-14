@@ -8,6 +8,25 @@ namespace Soneso\StellarSDK\SEP\Federation;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response from a SEP-0002 federation query.
+ *
+ * This class represents the response from a federation server containing
+ * the resolved Stellar account ID, optional memo type and value, and the
+ * original Stellar address if a reverse lookup was performed.
+ *
+ * Error responses (HTTP status codes other than 200 or 3xx) will contain
+ * an "error" field with additional details from the federation server.
+ *
+ * Note: Federation responses should not be cached. Some organizations may
+ * generate random IDs to protect user privacy, and these IDs may change
+ * over time.
+ *
+ * @package Soneso\StellarSDK\SEP\Federation
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md
+ * @see Federation
+ * @see FederationRequestBuilder
+ */
 class FederationResponse extends Response
 {
     private ?string $stellarAddress = null;
@@ -16,7 +35,9 @@ class FederationResponse extends Response
     private ?string $memo = null;
 
     /**
-     * @return string|null
+     * Gets the Stellar address.
+     *
+     * @return string|null The Stellar address in format "user*domain.com".
      */
     public function getStellarAddress(): ?string
     {
@@ -24,7 +45,9 @@ class FederationResponse extends Response
     }
 
     /**
-     * @param string|null $stellarAddress
+     * Sets the Stellar address.
+     *
+     * @param string|null $stellarAddress The Stellar address.
      */
     public function setStellarAddress(?string $stellarAddress): void
     {
@@ -32,7 +55,9 @@ class FederationResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the resolved Stellar account ID.
+     *
+     * @return string|null The account ID (G-address).
      */
     public function getAccountId(): ?string
     {
@@ -40,7 +65,9 @@ class FederationResponse extends Response
     }
 
     /**
-     * @param string|null $accountId
+     * Sets the Stellar account ID.
+     *
+     * @param string|null $accountId The account ID.
      */
     public function setAccountId(?string $accountId): void
     {
@@ -48,7 +75,10 @@ class FederationResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the memo type.
+     *
+     * @return string|null The memo type ("text", "id", or "hash"). For "hash" type,
+     *                     the memo value will be base64-encoded.
      */
     public function getMemoType(): ?string
     {
@@ -56,7 +86,9 @@ class FederationResponse extends Response
     }
 
     /**
-     * @param string|null $memoType
+     * Sets the memo type.
+     *
+     * @param string|null $memoType The memo type.
      */
     public function setMemoType(?string $memoType): void
     {
@@ -64,7 +96,9 @@ class FederationResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the memo value.
+     *
+     * @return string|null The memo value.
      */
     public function getMemo(): ?string
     {
@@ -72,7 +106,9 @@ class FederationResponse extends Response
     }
 
     /**
-     * @param string|null $memo
+     * Sets the memo value.
+     *
+     * @param string|null $memo The memo value.
      */
     public function setMemo(?string $memo): void
     {
@@ -87,6 +123,12 @@ class FederationResponse extends Response
         if (isset($json['memo'])) $this->memo = $json['memo'];
     }
 
+    /**
+     * Constructs a FederationResponse from JSON data.
+     *
+     * @param array<array-key, mixed> $json The JSON data to parse.
+     * @return FederationResponse The constructed response.
+     */
     public static function fromJson(array $json) : FederationResponse
     {
         $result = new FederationResponse();

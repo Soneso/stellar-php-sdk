@@ -2,6 +2,16 @@
 
 namespace Soneso\StellarSDK\Responses\FeeStats;
 
+/**
+ * Represents the distribution of maximum fees submitted
+ *
+ * Contains statistical measures of max_fee values submitted with recent transactions including
+ * min, max, mode, and various percentiles. All values are in stroops.
+ *
+ * @package Soneso\StellarSDK\Responses\FeeStats
+ * @see FeeStatsResponse For the parent fee statistics
+ * @since 1.0.0
+ */
 class MaxFeeResponse
 {
     private string $max;
@@ -20,7 +30,9 @@ class MaxFeeResponse
     private string $p99;
 
     /**
-     * @return string
+     * Gets the maximum max_fee submitted
+     *
+     * @return string The maximum max_fee in stroops
      */
     public function getMax(): string
     {
@@ -28,7 +40,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the minimum max_fee submitted
+     *
+     * @return string The minimum max_fee in stroops
      */
     public function getMin(): string
     {
@@ -36,7 +50,11 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the mode max_fee submitted
+     *
+     * The most common max_fee value.
+     *
+     * @return string The mode max_fee in stroops
      */
     public function getMode(): string
     {
@@ -44,7 +62,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 10th percentile max_fee
+     *
+     * @return string The P10 max_fee in stroops
      */
     public function getP10(): string
     {
@@ -52,7 +72,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 20th percentile max_fee
+     *
+     * @return string The P20 max_fee in stroops
      */
     public function getP20(): string
     {
@@ -60,7 +82,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 30th percentile max_fee
+     *
+     * @return string The P30 max_fee in stroops
      */
     public function getP30(): string
     {
@@ -68,7 +92,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 40th percentile max_fee
+     *
+     * @return string The P40 max_fee in stroops
      */
     public function getP40(): string
     {
@@ -76,7 +102,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 50th percentile (median) max_fee
+     *
+     * @return string The P50 max_fee in stroops
      */
     public function getP50(): string
     {
@@ -84,7 +112,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 60th percentile max_fee
+     *
+     * @return string The P60 max_fee in stroops
      */
     public function getP60(): string
     {
@@ -92,7 +122,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 70th percentile max_fee
+     *
+     * @return string The P70 max_fee in stroops
      */
     public function getP70(): string
     {
@@ -100,7 +132,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 80th percentile max_fee
+     *
+     * @return string The P80 max_fee in stroops
      */
     public function getP80(): string
     {
@@ -108,7 +142,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 90th percentile max_fee
+     *
+     * @return string The P90 max_fee in stroops
      */
     public function getP90(): string
     {
@@ -116,7 +152,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 95th percentile max_fee
+     *
+     * @return string The P95 max_fee in stroops
      */
     public function getP95(): string
     {
@@ -124,7 +162,9 @@ class MaxFeeResponse
     }
 
     /**
-     * @return string
+     * Gets the 99th percentile max_fee
+     *
+     * @return string The P99 max_fee in stroops
      */
     public function getP99(): string
     {

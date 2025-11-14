@@ -6,13 +6,25 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a signer sponsorship created effect from the Stellar network
+ *
+ * This effect occurs when sponsorship for a signer's base reserve is established.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class SignerSponsorshipCreatedEffectResponse extends EffectResponse
 {
     private string $signer;
     private string $sponsor;
 
     /**
-     * @return string
+     * Gets the signer's public key
+     *
+     * @return string The signer's public key
      */
     public function getSigner(): string
     {
@@ -20,7 +32,9 @@ class SignerSponsorshipCreatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the account ID of the sponsor
+     *
+     * @return string The sponsor's account ID
      */
     public function getSponsor(): string
     {

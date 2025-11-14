@@ -9,6 +9,17 @@ namespace Soneso\StellarSDK\Responses\Operations;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents a change trust operation response from Horizon API
+ *
+ * This operation creates, updates, or deletes a trustline from the source account to an asset
+ * or liquidity pool. Contains trustline details including trustor, trustee, asset, and limit.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Change Trust
+ * @since 1.0.0
+ */
 class ChangeTrustOperationResponse extends OperationResponse
 {
     private string $trustor;
@@ -22,7 +33,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     private ?string $liquidityPoolId = null;
 
     /**
-     * @return string
+     * Gets the account creating or modifying the trustline
+     *
+     * @return string The trustor account ID
      */
     public function getTrustor(): string
     {
@@ -30,7 +43,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed trustor account if applicable
+     *
+     * @return string|null The muxed trustor account address or null
      */
     public function getTrustorMuxed(): ?string
     {
@@ -38,7 +53,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed trustor account ID if applicable
+     *
+     * @return string|null The muxed trustor account ID or null
      */
     public function getTrustorMuxedId(): ?string
     {
@@ -46,7 +63,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the account or pool being trusted
+     *
+     * @return string|null The trustee account ID or null for liquidity pools
      */
     public function getTrustee(): ?string
     {
@@ -54,7 +73,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the asset type
+     *
+     * @return string The asset type (native, credit_alphanum4, credit_alphanum12, or liquidity_pool_shares)
      */
     public function getAssetType(): string
     {
@@ -62,7 +83,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset code if applicable
+     *
+     * @return string|null The asset code or null for native or pools
      */
     public function getAssetCode(): ?string
     {
@@ -70,7 +93,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset issuer if applicable
+     *
+     * @return string|null The issuer account ID or null for native or pools
      */
     public function getAssetIssuer(): ?string
     {
@@ -78,7 +103,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the trust limit
+     *
+     * @return string|null The maximum amount that can be held, or null for unlimited
      */
     public function getLimit(): ?string
     {
@@ -86,7 +113,9 @@ class ChangeTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the liquidity pool ID if trusting a pool
+     *
+     * @return string|null The liquidity pool ID or null if trusting an asset
      */
     public function getLiquidityPoolId(): ?string
     {

@@ -6,10 +6,31 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a bump sequence operation response from Horizon API
+ *
+ * This operation bumps forward the sequence number of the source account, allowing it to
+ * invalidate any lower sequence transactions that have not yet been included in a ledger.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Bump Sequence
+ * @since 1.0.0
+ */
 class BumpSequenceOperationResponse extends OperationResponse
 {
 
     private string $bumpTo;
+
+    /**
+     * Gets the new sequence number
+     *
+     * @return string The new sequence number
+     */
+    public function getBumpTo(): string
+    {
+        return $this->bumpTo;
+    }
 
     protected function loadFromJson(array $json): void
     {

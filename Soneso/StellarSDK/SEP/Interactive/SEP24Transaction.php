@@ -8,6 +8,28 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents a SEP-24 hosted deposit/withdrawal transaction
+ *
+ * This class encapsulates the complete state of an interactive deposit or withdrawal
+ * transaction as defined by SEP-24 (Hosted Deposit and Withdrawal). It contains all
+ * transaction details including status, amounts, timestamps, and transfer information
+ * for both deposit and withdrawal operations.
+ *
+ * SEP-24 enables anchors to provide an interactive user experience for deposit and
+ * withdrawal flows, typically through a web interface. This class represents the
+ * transaction data returned by the anchor during transaction queries and status updates.
+ *
+ * The transaction can represent either a deposit (external asset to Stellar) or a
+ * withdrawal (Stellar asset to external system), with transaction-specific fields
+ * available depending on the kind of operation.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
+ * @see InteractiveService For initiating SEP-24 transactions
+ * @see SEP24DepositRequest For deposit request parameters
+ * @see SEP24WithdrawRequest For withdrawal request parameters
+ */
 class SEP24Transaction extends Response
 {
     /**
@@ -22,7 +44,26 @@ class SEP24Transaction extends Response
 
     /**
      * @var string $status Processing status of deposit/withdrawal.
-     * For possible values see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#transaction-history
+     *
+     * Possible status values:
+     * - incomplete: User incomplete deposit/withdrawal requiring more info
+     * - pending_user_transfer_start: Waiting for user to send funds to anchor
+     * - pending_user_transfer_complete: User funds sent, waiting for confirmation
+     * - pending_external: Processing external transfer (e.g., bank transfer)
+     * - pending_anchor: Anchor processing the transaction
+     * - on_hold: Transaction held pending additional user info or authorization
+     * - pending_stellar: Waiting for Stellar network transaction to complete
+     * - pending_trust: User needs to add trustline for the asset
+     * - pending_user: Waiting for user action (check message or more_info_url)
+     * - completed: Transaction successfully completed
+     * - refunded: Transaction has been refunded
+     * - expired: Transaction expired before completion
+     * - no_market: No market for the asset pair (for SEP-38 exchanges)
+     * - too_small: Transaction amount below minimum threshold
+     * - too_large: Transaction amount above maximum threshold
+     * - error: Transaction failed due to an error
+     *
+     * For complete documentation see: https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#transaction-history
      */
     public string $status;
 
@@ -53,9 +94,14 @@ class SEP24Transaction extends Response
      * @var string|null $amountInAsset (optional)  The asset received or to be received by the Anchor.
      * Should be present if the deposit/withdraw was made using non-equivalent assets.
      * The value must be in SEP-38 Asset Identification Format.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *
+     * Examples:
+     * - Stellar asset: stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+     * - Fiat currency: iso4217:USD
+     *
+     * https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      * See also the Asset Exchanges section for more information.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     * https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public ?string $amountInAsset = null;
 
@@ -69,9 +115,14 @@ class SEP24Transaction extends Response
      * @var string|null $amountOutAsset (optional) The asset delivered or to be delivered to the user.
      * Should be present if the deposit/withdraw was made using non-equivalent assets.
      * The value must be in SEP-38 Asset Identification Format.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *
+     * Examples:
+     * - Stellar asset: stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+     * - Fiat currency: iso4217:USD
+     *
+     * https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      * See also the Asset Exchanges section for more information.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     * https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public ?string $amountOutAsset = null;
 
@@ -84,9 +135,14 @@ class SEP24Transaction extends Response
      * @var string|null $amountFeeAsset (optional) The asset in which fees are calculated in.
      * Should be present if the deposit/withdraw was made using non-equivalent assets.
      * The value must be in SEP-38 Asset Identification Format.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *
+     * Examples:
+     * - Stellar asset: stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN
+     * - Fiat currency: iso4217:USD
+     *
+     * https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      * See also the Asset Exchanges section for more information.
-     * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     * https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public ?string $amountFeeAsset = null;
 
@@ -114,12 +170,16 @@ class SEP24Transaction extends Response
     public ?string $updatedAt = null;
 
     /**
-     * @var string|null $userActionRequiredBy (optional) The date and time by when the user action is required.
-     *  In certain statuses, such as pending_user_transfer_start or incomplete, anchor waits for the user action and
-     *  user_action_required_by field should be used to show the time anchors gives for the user to make an action
-     *  before transaction will automatically be moved into a different status (such as expired or to be refunded).
-     *  user_action_required_by should only be specified for statuses where user action is required, and omitted for
-     *  all other. Anchor should specify the action waited on using message or more_info_url.
+     * @var string|null $userActionRequiredBy (optional) The date and time by when the user action is required. UTC ISO 8601 string.
+     *
+     * This field is populated only for transaction statuses where user action is required, such as:
+     * - incomplete: User must provide additional information
+     * - pending_user_transfer_start: User must initiate the transfer
+     * - pending_user: User must take action as described in message or more_info_url
+     *
+     * The anchor sets this deadline to indicate when the transaction will automatically transition to a
+     * different status (typically expired or refunded) if the user does not act. Omitted for all other statuses.
+     * The specific action required should be described in the message field or more_info_url.
      */
     public ?string $userActionRequiredBy = null;
 
@@ -265,6 +325,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param string $id Unique, anchor-generated id for the deposit/withdrawal.
+     * @return void
      */
     public function setId(string $id): void
     {
@@ -281,6 +342,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param string $kind Possible values: 'deposit' or 'withdrawal'.
+     * @return void
      */
     public function setKind(string $kind): void
     {
@@ -289,7 +351,12 @@ class SEP24Transaction extends Response
 
     /**
      * @return string Processing status of deposit/withdrawal.
-     * For possible values see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#transaction-history
+     *
+     * Possible values: incomplete, pending_user_transfer_start, pending_user_transfer_complete,
+     * pending_external, pending_anchor, on_hold, pending_stellar, pending_trust, pending_user,
+     * completed, refunded, expired, no_market, too_small, too_large, error.
+     *
+     * For complete documentation see: https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#transaction-history
      */
     public function getStatus(): string
     {
@@ -298,7 +365,13 @@ class SEP24Transaction extends Response
 
     /**
      * @param string $status Processing status of deposit/withdrawal.
-     *  For possible values see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#transaction-history
+     *
+     * Possible values: incomplete, pending_user_transfer_start, pending_user_transfer_complete,
+     * pending_external, pending_anchor, on_hold, pending_stellar, pending_trust, pending_user,
+     * completed, refunded, expired, no_market, too_small, too_large, error.
+     *
+     * For complete documentation see: https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#transaction-history
+     * @return void
      */
     public function setStatus(string $status): void
     {
@@ -315,6 +388,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param int|null $statusEta (optional) Estimated number of seconds until a status change is expected.
+     * @return void
      */
     public function setStatusEta(?int $statusEta): void
     {
@@ -331,6 +405,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param bool|null $kycVerified (optional) True if the anchor has verified the user's KYC information for this transaction.
+     * @return void
      */
     public function setKycVerified(?bool $kycVerified): void
     {
@@ -351,6 +426,7 @@ class SEP24Transaction extends Response
      * @param ?string $moreInfoUrl A URL that is opened by wallets after the interactive flow is complete.
      *   It can include banking information for users to start deposits, the status of the transaction,
      *   or any other information the user might need to know about the transaction.
+     * @return void
      */
     public function setMoreInfoUrl(?string $moreInfoUrl): void
     {
@@ -369,6 +445,7 @@ class SEP24Transaction extends Response
     /**
      * @param ?string $amountIn Amount received by anchor at start of transaction as a string with up to 7 decimals.
      *   Excludes any fees charged before the anchor received the funds.
+     * @return void
      */
     public function setAmountIn(?string $amountIn): void
     {
@@ -379,9 +456,9 @@ class SEP24Transaction extends Response
      * @return string|null The asset received or to be received by the Anchor.
      *  Should be present if the deposit/withdraw was made using non-equivalent assets.
      *  The value must be in SEP-38 Asset Identification Format.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *  https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *  See also the Asset Exchanges section for more information.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *  https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function getAmountInAsset(): ?string
     {
@@ -392,9 +469,10 @@ class SEP24Transaction extends Response
      * @param string|null $amountInAsset The asset received or to be received by the Anchor.
      *   Should be present if the deposit/withdraw was made using non-equivalent assets.
      *   The value must be in SEP-38 Asset Identification Format.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *   https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *   See also the Asset Exchanges section for more information.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *   https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
+     * @return void
      */
     public function setAmountInAsset(?string $amountInAsset): void
     {
@@ -413,6 +491,7 @@ class SEP24Transaction extends Response
     /**
      * @param ?string $amountOut Amount sent by anchor to user at end of transaction as a string with up to 7 decimals.
      *   Excludes amount converted to XLM to fund account and any external fees.
+     * @return void
      */
     public function setAmountOut(?string $amountOut): void
     {
@@ -423,9 +502,9 @@ class SEP24Transaction extends Response
      * @return string|null The asset delivered or to be delivered to the user.
      *  Should be present if the deposit/withdraw was made using non-equivalent assets.
      *  The value must be in SEP-38 Asset Identification Format.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *  https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *  See also the Asset Exchanges section for more information.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *  https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function getAmountOutAsset(): ?string
     {
@@ -436,9 +515,10 @@ class SEP24Transaction extends Response
      * @param string|null $amountOutAsset The asset delivered or to be delivered to the user.
      *   Should be present if the deposit/withdraw was made using non-equivalent assets.
      *   The value must be in SEP-38 Asset Identification Format.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *   https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *   See also the Asset Exchanges section for more information.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *   https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
+     * @return void
      */
     public function setAmountOutAsset(?string $amountOutAsset): void
     {
@@ -455,6 +535,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param ?string $amountFee Amount of fee charged by anchor.
+     * @return void
      */
     public function setAmountFee(?string $amountFee): void
     {
@@ -465,9 +546,9 @@ class SEP24Transaction extends Response
      * @return string|null The asset in which fees are calculated in.
      *  Should be present if the deposit/withdraw was made using non-equivalent assets.
      *  The value must be in SEP-38 Asset Identification Format.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *  https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *  See also the Asset Exchanges section for more information.
-     *  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *  https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
      */
     public function getAmountFeeAsset(): ?string
     {
@@ -478,9 +559,10 @@ class SEP24Transaction extends Response
      * @param string|null $amountFeeAsset The asset in which fees are calculated in.
      *   Should be present if the deposit/withdraw was made using non-equivalent assets.
      *   The value must be in SEP-38 Asset Identification Format.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+     *   https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format
      *   See also the Asset Exchanges section for more information.
-     *   https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#asset-exchanges
+     *   https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md#asset-exchanges
+     * @return void
      */
     public function setAmountFeeAsset(?string $amountFeeAsset): void
     {
@@ -503,6 +585,7 @@ class SEP24Transaction extends Response
      *   Should be present if a quote_id was included in the POST /transactions/deposit/interactive
      *   or POST /transactions/withdraw/interactive request.
      *   Clients should be aware that the quote_id may not be present in older implementations.
+     * @return void
      */
     public function setQuoteId(?string $quoteId): void
     {
@@ -519,6 +602,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param string $startedAt Start date and time of transaction. UTC ISO 8601 string.
+     * @return void
      */
     public function setStartedAt(string $startedAt): void
     {
@@ -535,6 +619,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param string|null $completedAt The date and time of transaction reaching completed or refunded status. UTC ISO 8601 string.
+     * @return void
      */
     public function setCompletedAt(?string $completedAt): void
     {
@@ -551,10 +636,32 @@ class SEP24Transaction extends Response
 
     /**
      * @param string|null $updatedAt The date and time of transaction reaching the current status. UTC ISO 8601 string.
+     * @return void
      */
     public function setUpdatedAt(?string $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
+    }
+
+    /**
+     * Gets the deadline by when user action is required
+     *
+     * @return string|null The date and time by when user action is required. UTC ISO 8601 string. Only specified for statuses where user action is required.
+     */
+    public function getUserActionRequiredBy(): ?string
+    {
+        return $this->userActionRequiredBy;
+    }
+
+    /**
+     * Sets the deadline by when user action is required
+     *
+     * @param string|null $userActionRequiredBy The date and time by when user action is required. UTC ISO 8601 string.
+     * @return void
+     */
+    public function setUserActionRequiredBy(?string $userActionRequiredBy): void
+    {
+        $this->userActionRequiredBy = $userActionRequiredBy;
     }
 
     /**
@@ -567,6 +674,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param string|null $stellarTransactionId transaction_id on Stellar network of the transfer that either completed the deposit or started the withdrawal.
+     * @return void
      */
     public function setStellarTransactionId(?string $stellarTransactionId): void
     {
@@ -583,6 +691,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param string|null $externalTransactionId ID of transaction on external network that either started the deposit or completed the withdrawal.
+     * @return void
      */
     public function setExternalTransactionId(?string $externalTransactionId): void
     {
@@ -599,6 +708,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param string|null $message Human-readable explanation of transaction status, if needed.
+     * @return void
      */
     public function setMessage(?string $message): void
     {
@@ -619,6 +729,7 @@ class SEP24Transaction extends Response
      * @param bool|null $refunded (deprecated, optional) This field is deprecated in favor of the refunds object and the refunded status.
      *   True if the transaction was refunded in full. False if the transaction was partially refunded or not refunded.
      *   For more details about any refunds, see the Refund object.
+     * @return void
      */
     public function setRefunded(?bool $refunded): void
     {
@@ -635,6 +746,7 @@ class SEP24Transaction extends Response
 
     /**
      * @param Refund|null $refunds (optional) An object describing any on or off-chain refund associated with this transaction.
+     * @return void
      */
     public function setRefunds(?Refund $refunds): void
     {
@@ -653,6 +765,7 @@ class SEP24Transaction extends Response
     /**
      * @param string|null $from In case of deposit: Sent from address, perhaps BTC, IBAN, or bank account.
      *   In case of withdraw: Stellar address the assets were withdrawn from.
+     * @return void
      */
     public function setFrom(?string $from): void
     {
@@ -673,6 +786,7 @@ class SEP24Transaction extends Response
      * @param string|null $to In case of deposit: Stellar address the deposited assets were sent to.
      *   In case of withdraw: Sent to address (perhaps BTC, IBAN, or bank account in the case of a withdrawal,
      *   Stellar address in the case of a deposit).
+     * @return void
      */
     public function setTo(?string $to): void
     {
@@ -691,6 +805,7 @@ class SEP24Transaction extends Response
     /**
      * @param string|null $depositMemo (optional) Only for deposit transactions:
      *   This is the memo (if any) used to transfer the asset to the to Stellar address.
+     * @return void
      */
     public function setDepositMemo(?string $depositMemo): void
     {
@@ -709,6 +824,7 @@ class SEP24Transaction extends Response
     /**
      * @param string|null $depositMemoType (optional) Only for deposit transactions:
      *   Type for the depositMemo.
+     * @return void
      */
     public function setDepositMemoType(?string $depositMemoType): void
     {
@@ -727,6 +843,7 @@ class SEP24Transaction extends Response
     /**
      * @param string|null $claimableBalanceId (optional) Only for deposit transactions:
      *   ID of the Claimable Balance used to send the asset initially requested.
+     * @return void
      */
     public function setClaimableBalanceId(?string $claimableBalanceId): void
     {
@@ -745,6 +862,7 @@ class SEP24Transaction extends Response
     /**
      * @param string|null $withdrawAnchorAccount (optional) Only for withdraw transactions:
      *   If this is a withdrawal, this is the anchor's Stellar account that the user transferred (or will transfer) their asset to.
+     * @return void
      */
     public function setWithdrawAnchorAccount(?string $withdrawAnchorAccount): void
     {
@@ -765,6 +883,7 @@ class SEP24Transaction extends Response
      * @param string|null $withdrawMemo (optional) Only for withdraw transactions:
      *   Memo used when the user transferred to withdrawAnchorAccount.
      *   Assigned null if the withdrawal is not ready to receive payment, for example if KYC is not completed.
+     * @return void
      */
     public function setWithdrawMemo(?string $withdrawMemo): void
     {
@@ -783,6 +902,7 @@ class SEP24Transaction extends Response
     /**
      * @param string|null $withdrawMemoType (optional) Only for withdraw transactions:
      *   Memo type for withdrawMemo.
+     * @return void
      */
     public function setWithdrawMemoType(?string $withdrawMemoType): void
     {

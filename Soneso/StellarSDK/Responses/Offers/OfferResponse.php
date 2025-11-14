@@ -10,6 +10,32 @@ namespace Soneso\StellarSDK\Responses\Offers;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents an offer on the Stellar distributed exchange (DEX)
+ *
+ * This response contains comprehensive offer details including the seller account, assets being
+ * traded, amount available, price information, and optional sponsorship details. Offers represent
+ * standing orders in the order book where an account commits to exchange one asset for another
+ * at a specified price ratio.
+ *
+ * Key fields:
+ * - Offer ID and seller account
+ * - Selling and buying asset details
+ * - Amount available for trading
+ * - Price (both decimal and rational representation)
+ * - Optional sponsor account for reserve requirements
+ *
+ * Returned by Horizon endpoints:
+ * - GET /offers - All offers
+ * - GET /offers/{offer_id} - Specific offer details
+ * - GET /accounts/{account_id}/offers - Offers created by an account
+ *
+ * @package Soneso\StellarSDK\Responses\Offers
+ * @see OfferPriceResponse For price ratio representation
+ * @see OfferLinksResponse For related navigation links
+ * @see https://developers.stellar.org Stellar developer docs Horizon Offers API
+ * @since 1.0.0
+ */
 class OfferResponse extends Response
 {
     private OfferLinksResponse $links;
@@ -24,7 +50,9 @@ class OfferResponse extends Response
     private ?string $sponsor = null;
 
     /**
-     * @return OfferLinksResponse
+     * Gets the links to related resources for this offer
+     *
+     * @return OfferLinksResponse The navigation links
      */
     public function getLinks(): OfferLinksResponse
     {
@@ -32,7 +60,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the unique identifier for this offer
+     *
+     * @return string The offer ID
      */
     public function getOfferId(): string
     {
@@ -40,7 +70,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the paging token for this offer in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -48,7 +80,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the account address of the seller who created this offer
+     *
+     * @return string The seller account ID
      */
     public function getSeller(): string
     {
@@ -56,7 +90,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return Asset
+     * Gets the asset being sold in this offer
+     *
+     * @return Asset The selling asset
      */
     public function getSelling(): Asset
     {
@@ -64,7 +100,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return Asset
+     * Gets the asset being bought in this offer
+     *
+     * @return Asset The buying asset
      */
     public function getBuying(): Asset
     {
@@ -72,7 +110,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the amount of the selling asset available in this offer
+     *
+     * @return string The amount available for trading
      */
     public function getAmount(): string
     {
@@ -80,7 +120,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the decimal representation of the offer price
+     *
+     * @return string The price as a decimal string (buying units per selling unit)
      */
     public function getPrice(): string
     {
@@ -88,7 +130,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return OfferPriceResponse
+     * Gets the rational representation of the offer price
+     *
+     * @return OfferPriceResponse The price as a fraction (numerator/denominator)
      */
     public function getPriceR(): OfferPriceResponse
     {
@@ -96,7 +140,9 @@ class OfferResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the account sponsoring the reserves for this offer
+     *
+     * @return string|null The sponsor account ID, or null if not sponsored
      */
     public function getSponsor(): ?string
     {

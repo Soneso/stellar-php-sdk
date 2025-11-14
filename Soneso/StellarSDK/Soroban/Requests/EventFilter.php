@@ -8,7 +8,23 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 
 /**
  * Event filter for the getEvents request.
- * See: https://soroban.stellar.org/api/methods/getEvents
+ *
+ * Example usage:
+ * ```php
+ * $topicFilters = new TopicFilters(
+ *     new TopicFilter(["*", XdrSCVal::forSymbol("transfer")->toBase64Xdr()])
+ * );
+ *
+ * $eventFilter = new EventFilter(
+ *     type: "contract",
+ *     contractIds: ["CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4"],
+ *     topics: $topicFilters
+ * );
+ * ```
+ *
+ * @see EventFilters
+ * @see https://soroban.stellar.org/api/methods/getEvents
+ * @package Soneso\StellarSDK\Soroban\Requests
  */
 class EventFilter
 {
@@ -19,7 +35,7 @@ class EventFilter
     public ?string $type = null;
 
     /**
-     * @var array<String>|null $contractIds List of contract ids to query for events.
+     * @var array<string>|null $contractIds List of contract ids to query for events.
      * If omitted, return events for all contracts. Maximum 5 contract IDs are allowed per request.
      */
     public ?array $contractIds = null;
@@ -36,7 +52,7 @@ class EventFilter
      *
      * @param string|null $type A comma separated list of event types (system, contract, or diagnostic)
      *  used to filter events. If omitted, all event types are included.
-     * @param array<String>|null $contractIds List of contract ids to query for events.
+     * @param array<string>|null $contractIds List of contract ids to query for events.
      *  If omitted, return events for all contracts. Maximum 5 contract IDs are allowed per request.
      * @param TopicFilters|null $topics List of topic filters. If omitted, query for all events.
      *  If multiple filters are specified, events will be included if they match any of the filters.
@@ -49,6 +65,11 @@ class EventFilter
         $this->topics = $topics;
     }
 
+    /**
+     * Builds and returns the request parameters array for the RPC API call.
+     *
+     * @return array<string, mixed> The request parameters formatted for Soroban RPC
+     */
     public function getRequestParams() : array {
         $params = array();
         if ($this->type != null) {
@@ -82,7 +103,7 @@ class EventFilter
     }
 
     /**
-     * @return array<String>|null
+     * @return array<string>|null
      */
     public function getContractIds(): ?array
     {

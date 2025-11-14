@@ -9,6 +9,28 @@ namespace Soneso\StellarSDK\SEP\StandardKYCFields;
 use DateTime;
 use DateTimeInterface;
 
+/**
+ * KYC and AML fields for natural persons (individual customers).
+ *
+ * This class provides standardized fields for collecting Know Your Customer (KYC) and
+ * Anti-Money Laundering (AML) information about individual persons in compliance with
+ * SEP-09 specification. It includes personal identification, contact information,
+ * address details, tax information, and supporting documentation.
+ *
+ * PRIVACY AND SECURITY WARNING:
+ * This class handles highly sensitive Personally Identifiable Information (PII) and KYC data.
+ * Implementers MUST ensure:
+ * - Transmission only over HTTPS/TLS connections
+ * - Encryption at rest for all stored KYC data
+ * - Compliance with applicable data protection regulations (GDPR, CCPA, etc.)
+ * - Implementation of proper access controls and audit logging
+ * - Secure data retention and deletion policies
+ * - Customer consent management for data collection and processing
+ * - Binary fields (photos, documents) must be base64 encoded for transmission
+ *
+ * @package Soneso\StellarSDK\SEP\StandardKYCFields
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.17.0/ecosystem/sep-0009.md SEP-09 v1.17.0 Specification
+ */
 class NaturalPersonKYCFields
 {
     // field keys
@@ -49,114 +71,195 @@ class NaturalPersonKYCFields
     public const PROOF_OF_INCOME_KEY = 'proof_of_income';
     public const PROOF_OF_LIVENESS_KEY = 'proof_of_liveness';
 
-    /// Family or last name
+    /**
+     * @var string|null Family or last name
+     */
     public ?string $lastName = null;
 
-    /// Given or first name
+    /**
+     * @var string|null Given or first name
+     */
     public ?string $firstName = null;
 
-    /// Middle name or other additional name
+    /**
+     * @var string|null Middle name or other additional name
+     */
     public ?string $additionalName = null;
 
-    /// country code for current address
+    /**
+     * @var string|null Country code for current address (ISO 3166-1 alpha-3)
+     */
     public ?string $addressCountryCode = null;
 
-    /// name of state/province/region/prefecture
+    /**
+     * @var string|null Name of state/province/region/prefecture
+     */
     public ?string $stateOrProvince = null;
 
-    /// name of city/town
+    /**
+     * @var string|null Name of city/town
+     */
     public ?string $city = null;
 
-    /// Postal or other code identifying user's locale
+    /**
+     * @var string|null Postal or other code identifying user's locale
+     */
     public ?string $postalCode = null;
 
-    /// Entire address (country, state, postal code, street address, etc...) as a multi-line string
+    /**
+     * @var string|null Entire address (country, state, postal code, street address, etc.) as a multi-line string
+     */
     public ?string $address = null;
 
-    /// Mobile phone number with country code (default E.164)
+    /**
+     * @var string|null Mobile phone number with country code in E.164 format
+     */
     public ?string $mobileNumber = null;
 
-    /// Expected format of the mobile_number field. E.g.: E.164, hash, etc... In case this field is not specified, receiver will assume it's in E.164 format
+    /**
+     * @var string|null Expected format of the mobile_number field (e.g. E.164, hash). Defaults to E.164 if not specified.
+     */
     public ?string $mobileNumberFormat = null;
 
-    /// Email address
+    /**
+     * @var string|null Email address (RFC 5322 format)
+     */
     public ?string $emailAddress = null;
 
-    /// Date of birth, e.g. 1976-07-04
+    /**
+     * @var string|null Date of birth in ISO 8601 format (e.g. 1976-07-04)
+     */
     public ?string $birthDate = null;
 
-    /// Place of birth (city, state, country; as on passport)
+    /**
+     * @var string|null Place of birth (city, state, country; as on passport)
+     */
     public ?string $birthPlace = null;
 
-    /// ISO Code of country of birth ISO 3166-1 alpha-3
+    /**
+     * @var string|null Country code of birth (ISO 3166-1 alpha-3)
+     */
     public ?string $birthCountryCode = null;
 
-    /// Tax identifier of user in their country (social security number in US)
+    /**
+     * @var string|null Tax identifier of user in their country (e.g. social security number in US)
+     */
     public ?string $taxId = null;
 
-    /// Name of the tax ID (SSN or ITIN in the US)
+    /**
+     * @var string|null Name of the tax ID (e.g. SSN or ITIN in the US)
+     */
     public ?string $taxIdName = null;
 
-    /// Occupation ISCO code.
+    /**
+     * @var int|null Occupation ISCO08 code
+     */
     public ?int $occupation = null;
 
-    /// Name of employer.
+    /**
+     * @var string|null Name of employer
+     */
     public ?string $employerName = null;
 
-    /// Address of employer
+    /**
+     * @var string|null Address of employer
+     */
     public ?string $employerAddress = null;
 
-    /// primary language ISO 639-1
+    /**
+     * @var string|null Primary language (ISO 639-1 code)
+     */
     public ?string $languageCode = null;
 
-    /// passport, drivers_license, id_card, etc...
+    /**
+     * @var string|null Type of photo ID (e.g. passport, drivers_license, id_card)
+     */
     public ?string $idType = null;
 
-    /// country issuing passport or photo ID as ISO 3166-1 alpha-3 cod
+    /**
+     * @var string|null Country issuing passport or photo ID (ISO 3166-1 alpha-3)
+     */
     public ?string $idCountryCode = null;
 
-    /// ID issue date
+    /**
+     * @var DateTime|null ID issue date (ISO 8601 format)
+     */
     public ?DateTime $idIssueDate = null;
 
-    /// ID expiration date
+    /**
+     * @var DateTime|null ID expiration date (ISO 8601 format)
+     */
     public ?DateTime $idExpirationDate = null;
 
-    /// Passport or ID number
+    /**
+     * @var string|null Passport or ID number
+     */
     public ?string $idNumber = null;
 
-    /// Image of front of user's photo ID or passport (bytes)
+    /**
+     * @var string|null Image of front of user's photo ID or passport (base64 encoded)
+     */
     public ?string $photoIdFront = null;
 
-    /// Image of back of user's photo ID or passport (bytes)
+    /**
+     * @var string|null Image of back of user's photo ID or passport (base64 encoded)
+     */
     public ?string $photoIdBack = null;
 
-    /// Image of notary's approval of photo ID or passport (bytes)
+    /**
+     * @var string|null Image of notary's approval of photo ID or passport (base64 encoded)
+     */
     public ?string $notaryApprovalOfPhotoId = null;
 
-    /// IP address of customer's computer
+    /**
+     * @var string|null IP address of customer's computer
+     */
     public ?string $ipAddress = null;
 
-    /// Image of a utility bill, bank statement or similar with the user's name and address (bytes)
+    /**
+     * @var string|null Image of a utility bill, bank statement or similar with the user's name and address (base64 encoded)
+     */
     public ?string $photoProofResidence = null;
 
-    /// male, female, or other
+    /**
+     * @var string|null Sex (e.g. male, female, other)
+     */
     public ?string $sex = null;
 
-    /// Image of user's proof of income document (bytes)
+    /**
+     * @var string|null Image of user's proof of income document (base64 encoded)
+     */
     public ?string $proofOfIncome = null;
 
-    /// video or image file of user as a liveness proof (bytes)
+    /**
+     * @var string|null Video or image file of user as a liveness proof (base64 encoded)
+     */
     public ?string $proofOfLiveness = null;
 
-    // User's origin (such as an id in another application) or a referral code
+    /**
+     * @var string|null User's origin (such as an id in another application) or a referral code
+     */
     public ?string $referralId = null;
 
-    /// Financial Account Fields
+    /**
+     * @var FinancialAccountKYCFields|null Financial account fields (bank account, crypto address, etc.)
+     */
     public ?FinancialAccountKYCFields $financialAccountKYCFields = null;
 
-    /// Card Fields
+    /**
+     * @var CardKYCFields|null Card fields (credit/debit card information)
+     */
     public ?CardKYCFields $cardKYCFields = null;
 
+    /**
+     * Returns all non-null KYC fields as an associative array.
+     *
+     * This method collects all populated natural person KYC fields including
+     * nested financial account and card fields, returning them as key-value pairs
+     * suitable for submission to SEP-09 compliant services.
+     *
+     * @return array<array-key, mixed> Associative array of field keys to values
+     */
     public function fields() : array {
         /**
          * @var array<array-key, mixed> $fields
@@ -260,6 +363,15 @@ class NaturalPersonKYCFields
         return $fields;
     }
 
+    /**
+     * Returns all non-null binary file fields as an associative array.
+     *
+     * This method collects all populated binary file fields (photos, documents)
+     * that are base64 encoded, returning them as key-value pairs for file upload
+     * to SEP-09 compliant services.
+     *
+     * @return array<array-key, string> Associative array of file field keys to base64 encoded values
+     */
     public function files() : array
     {
         $files = array();

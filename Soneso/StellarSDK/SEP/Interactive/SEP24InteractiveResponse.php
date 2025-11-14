@@ -8,6 +8,26 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response for initiating a SEP-24 interactive deposit or withdrawal flow
+ *
+ * This class represents the response received when initiating an interactive deposit
+ * or withdrawal transaction. It contains the URL where the user should be directed
+ * to complete the transaction through the anchor's web interface.
+ *
+ * After submitting a deposit or withdrawal request, the anchor returns this response
+ * with a unique transaction ID and an interactive URL. The wallet displays this URL
+ * to the user (typically in a popup or webview) where they provide additional
+ * information and complete the transaction flow with the anchor.
+ *
+ * The transaction ID can be used to query the transaction status via the /transaction
+ * or /transactions endpoints while the user completes the interactive flow.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
+ * @see InteractiveService For initiating deposit/withdrawal flows
+ * @see SEP24Transaction For querying transaction status
+ */
 class SEP24InteractiveResponse extends Response
 {
     /**

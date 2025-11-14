@@ -6,8 +6,25 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents an effect when an offer is created on the DEX
+ *
+ * This effect occurs when an account creates a new buy or sell offer on the
+ * Stellar decentralized exchange. Triggered by ManageBuyOffer or ManageSellOffer
+ * operations.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse
+ * @see https://developers.stellar.org Stellar developer docs
+ */
 class OfferCreatedEffectResponse extends EffectResponse
 {
+    /**
+     * Creates an instance from JSON data
+     *
+     * @param array $jsonData JSON data array
+     * @return OfferCreatedEffectResponse
+     */
     public static function fromJson(array $jsonData) : OfferCreatedEffectResponse {
         $result = new OfferCreatedEffectResponse();
         $result->loadFromJson($jsonData);

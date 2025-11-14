@@ -9,6 +9,18 @@ namespace Soneso\StellarSDK\Responses\Operations;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents a payment operation response from Horizon API
+ *
+ * This response is returned when a payment operation sends an amount of a specific asset
+ * from one account to another. Contains the payment amount, asset details, and the source
+ * and destination accounts including optional multiplexed account information.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Payment Operation
+ * @since 1.0.0
+ */
 class PaymentOperationResponse extends OperationResponse
 {
 
@@ -22,7 +34,9 @@ class PaymentOperationResponse extends OperationResponse
     private ?string $toMuxedId = null;
 
     /**
-     * @return string
+     * Gets the amount of the asset being sent
+     *
+     * @return string The payment amount as a string to preserve precision
      */
     public function getAmount(): string
     {
@@ -30,7 +44,9 @@ class PaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset being sent in this payment
+     *
+     * @return Asset The asset details (type, code, issuer)
      */
     public function getAsset(): Asset
     {
@@ -38,7 +54,9 @@ class PaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the sender account address
+     *
+     * @return string The account ID sending the payment
      */
     public function getFrom(): string
     {
@@ -46,7 +64,9 @@ class PaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed sender account if applicable
+     *
+     * @return string|null The muxed account address or null
      */
     public function getFromMuxed(): ?string
     {
@@ -54,7 +74,9 @@ class PaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed sender account ID if applicable
+     *
+     * @return string|null The muxed account ID or null
      */
     public function getFromMuxedId(): ?string
     {
@@ -62,7 +84,9 @@ class PaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the recipient account address
+     *
+     * @return string The account ID receiving the payment
      */
     public function getTo(): string
     {
@@ -70,7 +94,9 @@ class PaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed recipient account if applicable
+     *
+     * @return string|null The muxed account address or null
      */
     public function getToMuxed(): ?string
     {
@@ -78,7 +104,9 @@ class PaymentOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed recipient account ID if applicable
+     *
+     * @return string|null The muxed account ID or null
      */
     public function getToMuxedId(): ?string
     {

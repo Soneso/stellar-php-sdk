@@ -9,6 +9,34 @@ namespace Soneso\StellarSDK\Responses\ClaimableBalances;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents a claimable balance on the Stellar network
+ *
+ * This response contains comprehensive claimable balance details including the balance ID,
+ * asset type and amount, sponsor, claimants with predicates, and modification history.
+ * Claimable balances are ledger entries that hold funds which can be claimed by specified
+ * accounts when predicate conditions are met, enabling use cases like payment splitting,
+ * airdrops, and conditional payments.
+ *
+ * Key fields:
+ * - Unique balance ID for claiming
+ * - Asset and amount available to claim
+ * - Sponsor account funding the reserve
+ * - List of claimants with claiming predicates
+ * - Ledger modification history
+ *
+ * Returned by Horizon endpoints:
+ * - GET /claimable_balances - All claimable balances
+ * - GET /claimable_balances/{claimable_balance_id} - Specific balance details
+ * - GET /claimants/{account_id}/claimable_balances - Balances claimable by an account
+ *
+ * @package Soneso\StellarSDK\Responses\ClaimableBalances
+ * @see ClaimantsResponse For the list of claimants
+ * @see ClaimantResponse For individual claimant details
+ * @see ClaimableBalanceLinksResponse For related navigation links
+ * @see https://developers.stellar.org Stellar developer docs Horizon Claimable Balances API
+ * @since 1.0.0
+ */
 class ClaimableBalanceResponse extends Response
 {
 
@@ -23,7 +51,9 @@ class ClaimableBalanceResponse extends Response
     private ClaimableBalanceLinksResponse $links;
 
     /**
-     * @return string
+     * Gets the unique identifier for this claimable balance
+     *
+     * @return string The claimable balance ID used for claiming operations
      */
     public function getBalanceId(): string
     {
@@ -31,7 +61,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return Asset
+     * Gets the asset held in this claimable balance
+     *
+     * @return Asset The asset type and details
      */
     public function getAsset(): Asset
     {
@@ -39,7 +71,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the amount of the asset available to claim
+     *
+     * @return string The claimable amount
      */
     public function getAmount(): string
     {
@@ -47,7 +81,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the account sponsoring the reserves for this claimable balance
+     *
+     * @return string The sponsor account ID
      */
     public function getSponsor(): string
     {
@@ -55,7 +91,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the ledger sequence number when this balance was last modified
+     *
+     * @return int The last modified ledger sequence
      */
     public function getLastModifiedLedger(): int
     {
@@ -63,7 +101,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return string | null
+     * Gets the timestamp when this balance was last modified
+     *
+     * @return string|null The last modified time in ISO 8601 format, or null if not available
      */
     public function getLastModifiedTime(): ?string
     {
@@ -71,7 +111,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the paging token for this claimable balance in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -79,7 +121,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return ClaimantsResponse
+     * Gets the list of claimants who can claim this balance
+     *
+     * @return ClaimantsResponse The claimants with their predicates
      */
     public function getClaimants(): ClaimantsResponse
     {
@@ -87,7 +131,9 @@ class ClaimableBalanceResponse extends Response
     }
 
     /**
-     * @return ClaimableBalanceLinksResponse
+     * Gets the links to related resources for this claimable balance
+     *
+     * @return ClaimableBalanceLinksResponse The navigation links
      */
     public function getLinks(): ClaimableBalanceLinksResponse
     {

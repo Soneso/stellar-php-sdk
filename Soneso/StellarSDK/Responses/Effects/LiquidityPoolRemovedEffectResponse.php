@@ -7,24 +7,48 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
-
+/**
+ * Represents an effect when a liquidity pool is removed from the ledger
+ *
+ * This effect occurs when a liquidity pool is deleted, typically when all shares
+ * have been withdrawn and the pool has no remaining reserves. Triggered when the
+ * last liquidity provider withdraws their position.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse
+ * @see https://developers.stellar.org Stellar developer docs
+ */
 class LiquidityPoolRemovedEffectResponse extends EffectResponse
 {
     private string $liquidityPoolId;
 
     /**
-     * @return string
+     * Gets the unique identifier of the removed liquidity pool
+     *
+     * @return string The pool ID
      */
     public function getLiquidityPoolId(): string
     {
         return $this->liquidityPoolId;
     }
 
+    /**
+     * Loads object data from JSON array
+     *
+     * @param array $json JSON data array
+     * @return void
+     */
     protected function loadFromJson(array $json) : void {
         if (isset($json['liquidity_pool_id'])) $this->liquidityPoolId = $json['liquidity_pool_id'];
         parent::loadFromJson($json);
     }
 
+    /**
+     * Creates an instance from JSON data
+     *
+     * @param array $jsonData JSON data array
+     * @return LiquidityPoolRemovedEffectResponse
+     */
     public static function fromJson(array $jsonData) : LiquidityPoolRemovedEffectResponse {
         $result = new LiquidityPoolRemovedEffectResponse();
         $result->loadFromJson($jsonData);

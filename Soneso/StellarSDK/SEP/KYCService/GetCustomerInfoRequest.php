@@ -6,6 +6,27 @@
 
 namespace Soneso\StellarSDK\SEP\KYCService;
 
+/**
+ * Request parameters for retrieving customer information and KYC status via SEP-12
+ *
+ * This class represents the request parameters for querying customer information
+ * from the anchor's SEP-12 KYC endpoint. It can be used to check the verification
+ * status of a customer, retrieve required fields for registration, or get current
+ * customer data.
+ *
+ * Customers can be identified by an anchor-assigned ID, a Stellar account (with
+ * optional memo for shared accounts), or a transaction ID when verification
+ * requirements depend on transaction details.
+ *
+ * The response will indicate whether the customer is accepted, pending verification,
+ * needs additional information, or has been rejected. It will also list any required
+ * or optional fields that need to be provided or updated.
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md SEP-12 Specification
+ * @see KYCService::getCustomerInfo() For executing this request
+ * @see GetCustomerInfoResponse For the response structure
+ */
 class GetCustomerInfoRequest
 {
     /**

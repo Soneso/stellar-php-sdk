@@ -8,6 +8,38 @@ namespace Soneso\StellarSDK\Responses\Effects;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Base class for all effect responses in the Stellar network
+ *
+ * This response represents the changes that occur in the ledger as a result of operations.
+ * Effects are more granular than operations and show the specific state changes that occurred.
+ * The base EffectResponse class contains common fields present in all effect types, including
+ * the effect ID, account affected, timestamps, and effect type information.
+ *
+ * The fromJson factory method automatically deserializes JSON into the appropriate specific
+ * effect subclass based on the effect type (e.g., AccountCreatedEffectResponse,
+ * TrustlineCreatedEffectResponse, TradeEffectResponse, etc.).
+ *
+ * Key fields:
+ * - Effect ID and paging token
+ * - Account affected by the effect (with optional muxed account details)
+ * - Effect type (both numeric and human-readable)
+ * - Creation timestamp
+ *
+ * Returned by Horizon endpoints:
+ * - GET /effects - All effects
+ * - GET /accounts/{account_id}/effects - Effects for an account
+ * - GET /transactions/{transaction_hash}/effects - Effects from a transaction
+ * - GET /operations/{operation_id}/effects - Effects from an operation
+ * - GET /ledgers/{sequence}/effects - Effects in a ledger
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectType For effect type constants
+ * @see AccountCreatedEffectResponse For account creation effects
+ * @see TradeEffectResponse For trade effects
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class EffectResponse extends Response
 {
 
@@ -22,7 +54,9 @@ class EffectResponse extends Response
     private int $effectType;
 
     /**
-     * @return string
+     * Gets the unique identifier for this effect
+     *
+     * @return string The effect ID
      */
     public function getEffectId(): string
     {
@@ -30,7 +64,9 @@ class EffectResponse extends Response
     }
 
     /**
-     * @return EffectLinksResponse
+     * Gets the links to related resources for this effect
+     *
+     * @return EffectLinksResponse The navigation links
      */
     public function getLinks(): EffectLinksResponse
     {
@@ -38,7 +74,9 @@ class EffectResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the paging token for this effect in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -46,7 +84,9 @@ class EffectResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the timestamp when this effect was created
+     *
+     * @return string The creation time in ISO 8601 format
      */
     public function getCreatedAt(): string
     {
@@ -54,7 +94,9 @@ class EffectResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the account address affected by this effect
+     *
+     * @return string The account ID
      */
     public function getAccount(): string
     {
@@ -62,7 +104,9 @@ class EffectResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the muxed account address if the account is multiplexed
+     *
+     * @return string|null The muxed account address, or null if not multiplexed
      */
     public function getAccountMuxed(): ?string
     {
@@ -70,7 +114,9 @@ class EffectResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the muxed account ID if the account is multiplexed
+     *
+     * @return string|null The muxed account ID, or null if not multiplexed
      */
     public function getAccountMuxedId(): ?string
     {
@@ -78,7 +124,9 @@ class EffectResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the human-readable description of the effect type
+     *
+     * @return string The effect type name (e.g., "account_created", "trade")
      */
     public function getHumanReadableEffectType(): string
     {
@@ -86,7 +134,9 @@ class EffectResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the numeric effect type identifier
+     *
+     * @return int The effect type code as defined in EffectType constants
      */
     public function getEffectType(): int
     {

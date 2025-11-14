@@ -8,40 +8,48 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  * Response of the getEvents request.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
  */
 class GetEventsResponse extends SorobanRpcResponse
 {
     /**
-     * @var array<EventInfo>|null $events found events.
+     * @var array<EventInfo>|null $events Found events matching the filter criteria
      */
     public ?array $events = null;
 
     /**
-     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public ?int $latestLedger = null;
 
     /**
-     * @var String|null $cursor for pagination only available for protocol version >= 22
+     * @var string|null $cursor Pagination cursor for retrieving additional results (protocol >= 22)
      */
-    public ?String $cursor = null;
+    public ?string $cursor = null;
 
     /**
-     * @var int|null $oldestLedger The sequence number of the oldest ledger in the search range.
+     * @var int|null $oldestLedger The sequence number of the oldest ledger in the search range
      */
     public ?int $oldestLedger = null;
 
     /**
-     * @var int|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time.
+     * @var int|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time
      */
     public ?int $latestLedgerCloseTime = null;
 
     /**
-     * @var int|null $oldestLedgerCloseTime Unix timestamp of the oldest ledger close time.
+     * @var int|null $oldestLedgerCloseTime Unix timestamp of the oldest ledger close time
      */
     public ?int $oldestLedgerCloseTime = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json): GetEventsResponse
     {
         $result = new GetEventsResponse($json);
@@ -75,7 +83,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return array<EventInfo>|null events.
+     * @return array<EventInfo>|null Found events matching the filter criteria
      */
     public function getEvents(): ?array
     {
@@ -83,7 +91,8 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param array<EventInfo>|null $events
+     * @param array<EventInfo>|null $events Found events matching the filter criteria
+     * @return void
      */
     public function setEvents(?array $events): void
     {
@@ -91,7 +100,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public function getLatestLedger(): ?int
     {
@@ -99,7 +108,8 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     * @param int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
+     * @return void
      */
     public function setLatestLedger(?int $latestLedger): void
     {
@@ -107,7 +117,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return String|null for pagination only available for protocol version >= 22
+     * @return string|null Pagination cursor for retrieving additional results (protocol >= 22)
      */
     public function getCursor(): ?string
     {
@@ -115,7 +125,8 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param String|null $cursor for pagination only for protocol version >= 22
+     * @param string|null $cursor Pagination cursor for retrieving additional results (protocol >= 22)
+     * @return void
      */
     public function setCursor(?string $cursor): void
     {
@@ -123,7 +134,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The sequence number of the oldest ledger in the search range.
+     * @return int|null The sequence number of the oldest ledger in the search range
      */
     public function getOldestLedger(): ?int
     {
@@ -131,7 +142,8 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $oldestLedger The sequence number of the oldest ledger in the search range.
+     * @param int|null $oldestLedger The sequence number of the oldest ledger in the search range
+     * @return void
      */
     public function setOldestLedger(?int $oldestLedger): void
     {
@@ -139,7 +151,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null Unix timestamp of the latest ledger close time.
+     * @return int|null Unix timestamp of the latest ledger close time
      */
     public function getLatestLedgerCloseTime(): ?int
     {
@@ -147,7 +159,8 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time.
+     * @param int|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time
+     * @return void
      */
     public function setLatestLedgerCloseTime(?int $latestLedgerCloseTime): void
     {
@@ -155,7 +168,7 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null Unix timestamp of the oldest ledger close time.
+     * @return int|null Unix timestamp of the oldest ledger close time
      */
     public function getOldestLedgerCloseTime(): ?int
     {
@@ -163,7 +176,8 @@ class GetEventsResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $oldestLedgerCloseTime Unix timestamp of the oldest ledger close time.
+     * @param int|null $oldestLedgerCloseTime Unix timestamp of the oldest ledger close time
+     * @return void
      */
     public function setOldestLedgerCloseTime(?int $oldestLedgerCloseTime): void
     {

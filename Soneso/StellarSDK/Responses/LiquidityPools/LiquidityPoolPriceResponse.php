@@ -7,13 +7,25 @@
 
 namespace Soneso\StellarSDK\Responses\LiquidityPools;
 
+/**
+ * Represents a price as a rational number for liquidity pools
+ *
+ * Stores price as a fraction with numerator (n) and denominator (d).
+ * The price value equals n/d.
+ *
+ * @package Soneso\StellarSDK\Responses\LiquidityPools
+ * @see LiquidityPoolResponse For the parent liquidity pool details
+ * @since 1.0.0
+ */
 class LiquidityPoolPriceResponse
 {
     private int $n;
     private int $d;
 
     /**
-     * @return int
+     * Gets the numerator of the price fraction
+     *
+     * @return int The numerator
      */
     public function getN(): int
     {
@@ -21,7 +33,9 @@ class LiquidityPoolPriceResponse
     }
 
     /**
-     * @return int
+     * Gets the denominator of the price fraction
+     *
+     * @return int The denominator
      */
     public function getD(): int
     {

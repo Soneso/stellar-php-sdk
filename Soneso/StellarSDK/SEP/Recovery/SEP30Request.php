@@ -6,6 +6,19 @@
 
 namespace Soneso\StellarSDK\SEP\Recovery;
 
+/**
+ * Request for registering or updating account identities via SEP-0030.
+ *
+ * This class represents the request payload for POST /accounts/{address}
+ * and PUT /accounts/{address} operations, containing identity information
+ * for multi-party account recovery.
+ *
+ * @package Soneso\StellarSDK\SEP\Recovery
+ * @see https://github.com/stellar/stellar-protocol/blob/v0.8.1/ecosystem/sep-0030.md#post-accountsaddress
+ * @see RecoveryService::registerAccount()
+ * @see RecoveryService::updateIdentitiesForAccount()
+ * @see SEP30RequestIdentity
+ */
 class SEP30Request
 {
     /**
@@ -14,13 +27,20 @@ class SEP30Request
      public array $identities;
 
     /**
-     * @param array<SEP30RequestIdentity> $identities of type SEP30RequestIdentity
+     * Constructor.
+     *
+     * @param array<SEP30RequestIdentity> $identities Array of identity information.
      */
     public function __construct(array $identities)
     {
         $this->identities = $identities;
     }
 
+    /**
+     * Converts the request to JSON format.
+     *
+     * @return array<array-key, mixed> The JSON representation.
+     */
     public function toJson() : array {
 
         $identitiesJson = array();
@@ -36,7 +56,9 @@ class SEP30Request
     }
 
     /**
-     * @return array<SEP30RequestIdentity> of SEP30RequestIdentity
+     * Gets the identities array.
+     *
+     * @return array<SEP30RequestIdentity> Array of identity information.
      */
     public function getIdentities(): array
     {
@@ -44,7 +66,9 @@ class SEP30Request
     }
 
     /**
-     * @param array<SEP30RequestIdentity> $identities of SEP30RequestIdentity
+     * Sets the identities array.
+     *
+     * @param array<SEP30RequestIdentity> $identities Array of identity information.
      */
     public function setIdentities(array $identities): void
     {

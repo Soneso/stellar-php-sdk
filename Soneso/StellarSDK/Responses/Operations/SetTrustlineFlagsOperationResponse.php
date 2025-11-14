@@ -8,6 +8,18 @@ namespace Soneso\StellarSDK\Responses\Operations;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents a set trustline flags operation response from Horizon API
+ *
+ * This operation sets or clears flags on a trustline, controlling authorization and clawback behavior.
+ * The asset issuer can authorize accounts to hold the asset, enable clawback capabilities, or restrict
+ * the trustline to maintain liabilities only. This provides granular control over asset distribution
+ * and compliance requirements. This operation supersedes the deprecated AllowTrust operation.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Set Trustline Flags Operation
+ */
 class SetTrustlineFlagsOperationResponse extends OperationResponse
 {
     private string $trustor;
@@ -20,7 +32,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     private ?array $clearFlagsS = null;
 
     /**
-     * @return string
+     * Gets the account holding the trustline
+     *
+     * @return string The trustor account ID
      */
     public function getTrustor(): string
     {
@@ -28,7 +42,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the asset type
+     *
+     * @return string The asset type (native, credit_alphanum4, or credit_alphanum12)
      */
     public function getAssetType(): string
     {
@@ -36,7 +52,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset code
+     *
+     * @return string|null The asset code or null for native assets
      */
     public function getAssetCode(): ?string
     {
@@ -44,7 +62,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset issuer
+     *
+     * @return string|null The asset issuer account ID or null for native assets
      */
     public function getAssetIssuer(): ?string
     {
@@ -52,7 +72,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return array|null
+     * Gets the flags being set as integer values
+     *
+     * @return array|null Array of flag integers or null
      */
     public function getSetFlags(): ?array
     {
@@ -60,7 +82,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return array|null
+     * Gets the flags being set as string names
+     *
+     * @return array|null Array of flag names or null
      */
     public function getSetFlagsS(): ?array
     {
@@ -68,7 +92,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return array|null
+     * Gets the flags being cleared as integer values
+     *
+     * @return array|null Array of flag integers or null
      */
     public function getClearFlags(): ?array
     {
@@ -76,7 +102,9 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse
     }
 
     /**
-     * @return array|null
+     * Gets the flags being cleared as string names
+     *
+     * @return array|null Array of flag names or null
      */
     public function getClearFlagsS(): ?array
     {

@@ -9,9 +9,16 @@ namespace Soneso\StellarSDK\SEP\KYCService;
 use Soneso\StellarSDK\Responses\Response;
 
 /**
- * The CustomerInfoField object defines the pieces of information the anchor has not yet received for the customer. It is required for the NEEDS_INFO status but may be included with any status.
+ * Represents a KYC field that the anchor requires but has not yet received from the customer.
+ *
+ * The CustomerInfoField object defines the pieces of information the anchor has not yet received
+ * for the customer. It is required for the NEEDS_INFO status but may be included with any status.
  * Fields should be specified as an object with keys representing the SEP-9 field names required.
- * Customers in the ACCEPTED status should not have any required fields present in the object, since all required fields should have already been provided.
+ * Customers in the ACCEPTED status should not have any required fields present in the object,
+ * since all required fields should have already been provided.
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#fields SEP-12 v1.15.0
  */
 class GetCustomerInfoField extends Response
 {

@@ -9,16 +9,63 @@ namespace Soneso\StellarSDK\SEP\Quote;
 use DateTime;
 use DateTimeInterface;
 
+/**
+ * Request body for requesting a firm quote via SEP-38.
+ *
+ * This class represents the data required to submit a POST /quote request to
+ * obtain a firm, time-limited quote for exchanging assets. Either sellAmount
+ * or buyAmount must be provided, but not both.
+ *
+ * @package Soneso\StellarSDK\SEP\Quote
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#post-quote
+ * @see QuoteService::postQuote()
+ * @see SEP38QuoteResponse
+ */
 class SEP38PostQuoteRequest
 {
+    /**
+     * @var string $context The context for the quote: 'sep6', 'sep24', or 'sep31'.
+     */
     public string $context;
+
+    /**
+     * @var string $sellAsset The asset the client would like to sell in Stellar Asset Identification Format or an off-chain asset identifier.
+     */
     public string $sellAsset;
+
+    /**
+     * @var string $buyAsset The asset the client would like to buy in Stellar Asset Identification Format or an off-chain asset identifier.
+     */
     public string $buyAsset;
+
+    /**
+     * @var string|null $sellAmount The amount of the sell asset the client would like to exchange for buy asset.
+     */
     public ?string $sellAmount = null;
+
+    /**
+     * @var string|null $buyAmount The amount of the buy asset the client would like to purchase with sell asset.
+     */
     public ?string $buyAmount = null;
+
+    /**
+     * @var DateTime|null $expireAfter The client's desired expiration date and time for the quote.
+     */
     public ?DateTime $expireAfter = null;
+
+    /**
+     * @var string|null $sellDeliveryMethod The method used by the client to deliver the sell asset to the Anchor.
+     */
     public ?string $sellDeliveryMethod = null;
+
+    /**
+     * @var string|null $buyDeliveryMethod The method used by the Anchor to deliver the buy asset to the client.
+     */
     public ?string $buyDeliveryMethod = null;
+
+    /**
+     * @var string|null $countryCode The country code of the user's current location in ISO 3166-2 or ISO 3166-1 alpha-2 format.
+     */
     public ?string $countryCode = null;
 
     /**

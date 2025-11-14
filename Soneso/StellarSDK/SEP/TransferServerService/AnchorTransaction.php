@@ -6,6 +6,25 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Represents a single deposit or withdrawal transaction processed by an anchor.
+ *
+ * Contains comprehensive transaction details including status, amounts, fees, timestamps,
+ * account information, and any additional data needed to track or complete the transaction.
+ *
+ * Used in transaction endpoint responses to provide detailed information about specific
+ * operations. Includes support for refunds, quotes (SEP-38), and status updates.
+ *
+ * Transaction kinds: deposit, deposit-exchange, withdrawal, withdrawal-exchange.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md SEP-38 v2.5.0 Quotes
+ * @see AnchorTransactionResponse
+ * @see AnchorTransactionsResponse
+ * @see FeeDetails
+ * @see TransactionRefunds
+ */
 class AnchorTransaction
 {
     /**
@@ -19,7 +38,26 @@ class AnchorTransaction
     public string $kind;
 
     /**
-     * @var string Processing status of deposit/withdrawal.
+     * Processing status of deposit/withdrawal.
+     *
+     * Possible values:
+     * - incomplete: Missing required information (non-interactive)
+     * - pending_user_transfer_start: Awaiting user to send funds to anchor
+     * - pending_anchor: Anchor is processing the transaction
+     * - pending_stellar: Transaction submitted to Stellar network
+     * - pending_external: Waiting for external system (bank, crypto network)
+     * - pending_trust: User must add trustline for the asset
+     * - pending_user: Action required from user (deprecated, use specific status)
+     * - completed: Transaction successfully completed
+     * - refunded: Transaction refunded to user
+     * - expired: Transaction expired without completion
+     * - no_market: No market available for requested conversion (exchange operations)
+     * - too_small: Transaction amount is below minimum
+     * - too_large: Transaction amount exceeds maximum
+     * - error: Unrecoverable error occurred
+     *
+     * @var string
+     * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md#transaction-status
      */
     public string $status;
 
@@ -243,7 +281,7 @@ class AnchorTransaction
      * quote.fee.total if a quote_id was used.
      * @param string|null $amountFeeAsset (deprecated, optional) The asset in which fees are calculated in.
      * Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification
-     * Format. Should be equals to quote.fee.asset if a quote_id was us
+     * Format. Should be equals to quote.fee.asset if a quote_id was used.
      * @param FeeDetails|null $feeDetails Description of fee charged by the anchor. If quote_id is present, it should
      * match the referenced quote's fee object.
      * @param string|null $quoteId (optional) The ID of the quote used to create this transaction. Should be present if

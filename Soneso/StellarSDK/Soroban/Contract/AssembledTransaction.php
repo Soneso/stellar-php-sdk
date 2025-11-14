@@ -31,13 +31,20 @@ use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
 /**
- * The main workhorse of {@link SorobanClient}. This class is used to wrap a
- * transaction-under-construction and provide high-level interfaces to the most
- * common workflows, while still providing access to low-level stellar-sdk
- * transaction manipulation.
+ * High-level transaction builder for Soroban smart contract interactions
  *
- * Most of the time, you will not construct an `AssembledTransaction` directly,
- * but instead receive one as the return value of a `SorobanClient` method.
+ * This class wraps a transaction-under-construction and provides convenient methods for the most
+ * common Soroban workflows: simulating transactions, signing them, and sending them to the network.
+ * It handles resource fees, footprint management, authorization entries, and automatic retries
+ * for transactions that require state restoration.
+ *
+ * Most of the time, you will not construct an AssembledTransaction directly,
+ * but instead receive one as the return value of a SorobanClient method.
+ *
+ * @package Soneso\StellarSDK\Soroban\Contract
+ * @see SorobanClient For the high-level contract client that creates these transactions
+ * @see https://developers.stellar.org/docs/smart-contracts Soroban Smart Contracts Documentation
+ * @since 1.0.0
  *
  * Let's look at examples of how to use `AssembledTransaction` for a variety of
  * use-cases:
@@ -233,7 +240,7 @@ class AssembledTransaction
     public ?SimulateTransactionResponse $simulationResponse = null;
 
     /**
-     * @var SimulateHostFunctionResult|null The result extracted from the simulation response if it was successfull.
+     * @var SimulateHostFunctionResult|null The result extracted from the simulation response if it was successful.
      * To receive this you can call `$tx->getSimulationData()`
      */
     private ?SimulateHostFunctionResult $simulationResult = null;
@@ -255,9 +262,12 @@ class AssembledTransaction
     public AssembledTransactionOptions $options;
 
     /**
-     * Private constructor. Use `AssembledTransaction::build` or `AssembledTransaction::buildWithOp` to construct an AssembledTransaction.
+     * Private constructor for AssembledTransaction
      *
-     * @param AssembledTransactionOptions $options for constructing and managing this AssembledTransaction.
+     * Use the static factory methods AssembledTransaction::build or AssembledTransaction::buildWithOp
+     * to create instances. The constructor initializes the Soroban RPC server connection.
+     *
+     * @param AssembledTransactionOptions $options Configuration options for the transaction
      */
     private function __construct(AssembledTransactionOptions $options)
     {
@@ -268,18 +278,19 @@ class AssembledTransaction
     }
 
     /**
-     * Construct a new AssembledTransaction. This is the main way to create a new
-     *  AssembledTransaction; the constructor is private.
+     * Constructs a new AssembledTransaction for invoking a contract method
      *
-     * It will fetch the account from the network to get the current sequence number, and it will
-     * simulate the transaction to get the expected fee. If you don't want to simulate the transaction,
-     * you can set `simulate` to `false` in the method options.
+     * This is the main factory method for creating AssembledTransactions. It fetches the source
+     * account from the network to get the current sequence number, builds a transaction with an
+     * InvokeContractHostFunction operation, and optionally simulates it to get resource fees.
      *
-     * If you need to create a soroban operation with a host function other than `InvokeContractHostFunction`, you
-     *  can use {@link AssembledTransaction::buildWithOp} instead.
+     * If you need to use a different host function type (e.g., CreateContractWithConstructorHostFunction),
+     * use AssembledTransaction::buildWithOp instead.
      *
-     * @throws GuzzleException
-     * @throws Exception
+     * @param AssembledTransactionOptions $options Configuration including contract id, method name, and arguments
+     * @return AssembledTransaction The assembled and optionally simulated transaction
+     * @throws GuzzleException If fetching the account or simulation fails
+     * @throws Exception If transaction construction fails
      */
     public static function build(AssembledTransactionOptions $options): AssembledTransaction {
         $invokeContractHostFunction = new InvokeContractHostFunction($options->clientOptions->contractId,
@@ -289,11 +300,17 @@ class AssembledTransaction
     }
 
     /**
-     * Construct a new AssembledTransaction, specifying a soroban operation with a host function other
-     * than `InvokeContractHostFunction` (the default used by {@link AssembledTransaction::build}).
-     * E.g. `CreateContractWithConstructorHostFunction`
+     * Constructs an AssembledTransaction with a custom host function operation
      *
-     * @throws GuzzleException
+     * Use this factory method when you need to use a host function other than InvokeContractHostFunction,
+     * such as CreateContractWithConstructorHostFunction for deploying contracts or
+     * UploadContractWasmHostFunction for installing contract code.
+     *
+     * @param InvokeHostFunctionOperation $operation The host function operation to include in the transaction
+     * @param AssembledTransactionOptions $options Configuration for the transaction
+     * @return AssembledTransaction The assembled and optionally simulated transaction
+     * @throws GuzzleException If fetching the account or simulation fails
+     * @throws Exception If transaction construction fails
      */
     public static function buildWithOp(InvokeHostFunctionOperation $operation,
                                        AssembledTransactionOptions $options): AssembledTransaction {
@@ -311,11 +328,21 @@ class AssembledTransaction
     }
 
     /**
-     * Simulates the transaction and assembles the final transaction from the simulation result.
-     * To access the simulation response data call `getSimulationData()` after simulation.
+     * Simulates the transaction and updates it with the simulation results
      *
-     * @throws Exception
-     * @throws GuzzleException
+     * Calls the Soroban RPC simulateTransaction method to get resource fees and footprint data.
+     * The simulation results are applied to the transaction, including soroban transaction data,
+     * resource fees, and authorization entries. If restore is enabled and a restore preamble is
+     * returned, it will automatically restore the footprint and re-simulate.
+     *
+     * @param bool|null $restore Whether to automatically restore expired ledger entries. If null, uses the
+     *                          restore setting from method options. If true, automatically handles archived
+     *                          entries by building and executing a RestoreFootprint transaction before re-simulating.
+     *                          Requires source account keypair with private key. Default: null (uses method options)
+     * @return void
+     * @throws Exception If simulation fails or automatic restore is unsuccessful
+     * @throws GuzzleException If the RPC request fails
+     * @see getSimulationData() For accessing the simulation results
      */
     public function simulate(?bool $restore = null) : void {
         if ($this->tx === null) {
@@ -358,16 +385,22 @@ class AssembledTransaction
     }
 
     /**
-     *  Sign the transaction with the private key of the `sourceAccountKeyPair` provided with the options previously.
-     *  If you did not previously provide one that has a private key, you need to include one now.
-     *  After signing, this method will send the transaction to the network and wait max. options->timoutInSeconds to complete.
-     *  If not completed after options->timeoutInSeconds it will throw an exception. Otherwise, returns the `GetTransactionResponse`.
+     * Signs the transaction and sends it to the network, waiting for completion
      *
-     * @param KeyPair|null $sourceAccountKeyPair If you did not provide a $sourceAccountKeyPair with private key in the options you must do it now.
-     * @param bool $force Force signing and sending even if it is a read call. Default false.
-     * @return GetTransactionResponse get transaction response received after sending and waiting for the transaction to complete.
-     * @throws Exception
-     * @throws GuzzleException
+     * Signs the transaction with the source account's private key, submits it to the network,
+     * and polls for transaction completion up to the configured timeout. Read-only calls will
+     * throw an exception unless force is set to true.
+     *
+     * @param KeyPair|null $sourceAccountKeyPair The keypair with private key to sign with (overrides options)
+     * @param bool $force Force signing and sending even if it is a read-only call (default: false)
+     * @return GetTransactionResponse The transaction result with status. Possible status values:
+     *         - STATUS_SUCCESS: Transaction completed successfully
+     *         - STATUS_FAILED: Transaction failed with error
+     *         - STATUS_NOT_FOUND: Transaction timeout (throws exception before returning this)
+     * @throws Exception If signing fails, transaction is read-only without force, or timeout is exceeded
+     * @throws GuzzleException If the RPC request fails
+     * @see sign() For signing without sending
+     * @see send() For sending an already-signed transaction
      */
     public function signAndSend(?KeyPair $sourceAccountKeyPair = null, bool $force = false) : GetTransactionResponse {
         if ($this->signed === null) {
@@ -377,11 +410,14 @@ class AssembledTransaction
     }
 
     /**
-     * Sends the transaction and waits until completed. Returns `GetTransactionResponse`
+     * Sends the signed transaction to the network and waits for completion
      *
-     * @return GetTransactionResponse
-     * @throws Exception
-     * @throws GuzzleException
+     * Submits the transaction via the sendTransaction RPC method and polls getTransaction
+     * until the transaction reaches a terminal state (SUCCESS, FAILED, or timeout).
+     *
+     * @return GetTransactionResponse The transaction result after completion
+     * @throws Exception If the transaction has not been signed, sending fails, or timeout is exceeded
+     * @throws GuzzleException If the RPC request fails
      */
     public function send() :GetTransactionResponse {
         if ($this->signed === null) {
@@ -397,13 +433,24 @@ class AssembledTransaction
     }
 
     /**
-     * Sign the transaction with the private key of the `sourceAccountKeyPair` provided with the options previously.
-     * If you did not previously provide one that has a private key, you need to include one now.
+     * Signs the transaction with the source account's private key
      *
-     * @param KeyPair|null $sourceAccountKeyPair If you did not provide a $sourceAccountKeyPair with private key in the options you must do it now.
-     * @param bool $force Force signing even if it is a read call. Default false.
+     * Signs the transaction envelope with the invoker's keypair. This does not submit the transaction.
+     * The original transaction object is cloned before signing to preserve the unsigned version.
+     * Read-only calls will throw an exception unless force is set to true. Multi-signature transactions
+     * should use signAuthEntries for additional signers.
      *
-     * @throws Exception
+     * @security WARNING: This method requires access to private keys. Never expose private keys in client-side
+     *           code, logs, or error messages. Use secure key storage such as hardware wallets or key management
+     *           systems. Never send private keys over unencrypted connections. For production applications,
+     *           implement signing on secure backend servers with proper key management infrastructure.
+     *
+     * @param KeyPair|null $sourceAccountKeyPair The keypair with private key to sign with (overrides options)
+     * @param bool $force Force signing even if it is a read-only call (default: false)
+     * @return void Sets the $signed property to the signed transaction clone
+     * @throws Exception If the private key is missing, transaction requires multiple signers, or is read-only without force
+     * @see signAuthEntries() For signing authorization entries in multi-signature workflows
+     * @see signAndSend() For signing and sending in a single operation
      */
     public function sign(?KeyPair $sourceAccountKeyPair = null, bool $force = false) : void {
         if($this->tx === null) {
@@ -441,6 +488,12 @@ class AssembledTransaction
     /**
      * Signs and updates the auth entries related to the public key of the $signerKeyPair provided.
      *
+     * @security WARNING: This method handles sensitive authorization entries and private keys. When using a custom
+     *           authorization callback, ensure the callback securely handles sensitive data and validates the
+     *           authorization entry before signing. Never send unencrypted private keys over the network. Implement
+     *           proper key management and consider using hardware security modules for production environments.
+     *           If transmitting entries for remote signing, use secure channels and validate all returned data.
+     *
      * @param KeyPair $signerKeyPair The keypair of the signer for the auth entry.
      *  By default, this function will sign all auth entries that are connected to the signerKeyPair public key by using SorobanAuthorizationEntry->sign().
      *  The signerKeyPair must contain the private key for signing for this default case. If you don't have the signer's private key, provide the signers
@@ -454,8 +507,10 @@ class AssembledTransaction
      *  the future. Default: current sequence + 100 blocks (about 8.3 minutes from now).
      *
      * @return void
-     * @throws GuzzleException
-     * @throws Exception
+     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If no auth entries need signing, signer address not found, or transaction not simulated
+     * @see sign() For signing the main transaction envelope
+     * @see needsNonInvokerSigningBy() For determining which accounts need to sign
      */
     public function signAuthEntries(KeyPair $signerKeyPair, ?callable $authorizeEntryCallback = null, ?int $validUntilLedgerSeq = null) : void {
 
@@ -565,12 +620,14 @@ class AssembledTransaction
     }
 
     /**
-     *  Whether this transaction is a read call. This is determined by the
-     *  simulation result and the transaction data. If the transaction is a read
-     *  call, it will not need to be signed and sent to the network. If this
-     *  returns `false`, then you need to call `signAndSend` on this transaction.
+     * Determines if this is a read-only transaction
      *
-     * @throws Exception
+     * Read-only transactions have no authorization entries and an empty read-write footprint,
+     * meaning they don't modify any ledger state. These transactions only need simulation and
+     * don't require signing or submission to the network.
+     *
+     * @return bool True if the transaction is read-only, false if it modifies state
+     * @throws Exception If the transaction has not been simulated
      */
     public function isReadCall() : bool {
         $res = $this->getSimulationData();
@@ -583,9 +640,13 @@ class AssembledTransaction
     }
 
     /**
-     * Simulation data collected from the transaction simulation.
+     * Retrieves the simulation results from the transaction
      *
-     * @throws Exception
+     * Returns the parsed simulation data including the returned value, transaction data,
+     * and authorization entries. This method caches the result after first call.
+     *
+     * @return SimulateHostFunctionResult The simulation result with return value and transaction data
+     * @throws Exception If the transaction has not been simulated or simulation failed
      */
     public function getSimulationData() : SimulateHostFunctionResult {
         if ($this->simulationResult !== null) {
@@ -614,7 +675,18 @@ class AssembledTransaction
         return $this->simulationResult;
     }
     /**
-     * @throws GuzzleException
+     * Builds a transaction to restore expired ledger entries
+     *
+     * Creates a RestoreFootprint operation with the necessary transaction data and fees
+     * to restore archived contract state back to the ledger.
+     *
+     * @internal This is an internal helper method used by the automatic restore functionality
+     *
+     * @param AssembledTransactionOptions $options Configuration for the restore transaction
+     * @param XdrSorobanTransactionData $transactionData The footprint data identifying entries to restore
+     * @param int $fee The minimum resource fee for the restore operation
+     * @return AssembledTransaction The restore transaction ready to be signed and sent
+     * @throws GuzzleException If fetching the account or simulation fails
      */
     private static function buildFootprintRestoreTransaction(AssembledTransactionOptions $options,
                                                              XdrSorobanTransactionData   $transactionData,
@@ -633,20 +705,19 @@ class AssembledTransaction
         return $restoreTx;
     }
     /**
-     * Restores the footprint (resource ledger entries that can be read or written)
-     *  of an expired transaction.
+     * Restores expired ledger entries required by the transaction
      *
-     * The method will:
-     *  1. Build a new transaction aimed at restoring the necessary resources.
-     *  2. Sign this new transaction if a sourceAccountKeypair with private key is provided.
-     *  3. Send the signed transaction to the network.
-     *  4. Await and return the response from the network.
+     * When contract state entries have been archived, they must be restored before the contract
+     * can be invoked. This method builds, signs, and sends a RestoreFootprint transaction to
+     * restore the necessary ledger entries back to the active state.
      *
-     *  Preconditions:
-     *  - A `sourceAccountKeypair` with private key must be provided during the Client initialization.
+     * The restore preamble is typically received from a simulation response when archived entries
+     * are detected. The method requires a source account with private key to sign the restore transaction.
      *
-     * @throws GuzzleException
-     * @throws Exception
+     * @param RestorePreamble $restorePreamble The restore data from simulation including footprint and fees
+     * @return GetTransactionResponse The result of the restore transaction
+     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If the source account has no private key or the restore fails
      */
     public function restoreFootprint(RestorePreamble $restorePreamble) : GetTransactionResponse {
 
@@ -657,8 +728,17 @@ class AssembledTransaction
     }
 
     /**
-     * @throws GuzzleException
-     * @throws Exception
+     * Polls the transaction status until it reaches a terminal state
+     *
+     * Repeatedly queries getTransaction until the transaction is found or the configured
+     * timeout is exceeded. Uses a 3-second delay between polls.
+     *
+     * @internal This is an internal helper method used by send()
+     *
+     * @param string $transactionId The hash of the transaction to poll
+     * @return GetTransactionResponse The final transaction status
+     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If the timeout is exceeded before the transaction completes
      */
     private function pollStatus(string $transactionId) : GetTransactionResponse {
         $statusResponse = null;
@@ -678,7 +758,15 @@ class AssembledTransaction
         return $statusResponse;
     }
     /**
-     * @throws Exception|GuzzleException
+     * Fetches the source account from the ledger
+     *
+     * Retrieves the account data including the current sequence number from the RPC server.
+     *
+     * @internal This is an internal helper method used during transaction construction
+     *
+     * @return Account The source account object
+     * @throws Exception If the account is not found
+     * @throws GuzzleException If the RPC request fails
      */
     private function getSourceAccount(): Account {
         $account = $this->server->getAccount($this->options->clientOptions->sourceAccountKeyPair->getAccountId());

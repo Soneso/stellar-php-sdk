@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a trustline sponsorship updated effect from the Stellar network
+ *
+ * This effect occurs when a trustline's sponsorship is transferred from one sponsor to another.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse
 {
     private string $newSponsor;
@@ -15,7 +25,9 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse
     private ?string $liquidityPoolId = null;
 
     /**
-     * @return string
+     * Gets the account ID of the new sponsor
+     *
+     * @return string The new sponsor's account ID
      */
     public function getNewSponsor(): string
     {
@@ -23,7 +35,9 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the account ID of the former sponsor
+     *
+     * @return string The former sponsor's account ID
      */
     public function getFormerSponsor(): string
     {
@@ -31,7 +45,9 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset identifier
+     *
+     * @return string|null The asset identifier, or null if not set
      */
     public function getAsset(): ?string
     {
@@ -39,7 +55,9 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset type
+     *
+     * @return string|null The asset type, or null if not set
      */
     public function getAssetType(): ?string
     {
@@ -47,7 +65,9 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the liquidity pool ID
+     *
+     * @return string|null The liquidity pool ID, or null if not a liquidity pool trustline
      */
     public function getLiquidityPoolId(): ?string
     {

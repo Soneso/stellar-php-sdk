@@ -6,6 +6,24 @@
 
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
+/**
+ * Details of a cross-border payment transaction retrieved via SEP-31.
+ *
+ * This class represents the full transaction state including status, amounts,
+ * fees, refunds, and payment details. It is returned when querying a specific
+ * transaction via GET /transactions/:id.
+ *
+ * Amount Formulas (when amount_in_asset equals amount_out_asset):
+ * - amount_out = amount_in - amount_fee - refunds.amount_refunded - refunds.amount_fee
+ * - When using quote_id: amount_in = quote.sell_amount and amount_out = quote.buy_amount
+ * - Price calculation uses quote.price (not quote.total_price)
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#transaction
+ * @see CrossBorderPaymentsService::getTransaction()
+ * @see SEP31FeeDetails
+ * @see SEP31Refunds
+ */
 class SEP31TransactionResponse
 {
     /**
@@ -15,6 +33,21 @@ class SEP31TransactionResponse
 
     /**
      * @var string $status The status of the transaction.
+     *
+     * Possible status values:
+     * - pending_sender: Awaiting payment from Sending Anchor
+     * - pending_stellar: Transaction submitted to Stellar network but not confirmed
+     * - pending_customer_info_update: KYC information needs updating (see SEP-12)
+     * - pending_transaction_info_update: Transaction fields need updating (deprecated, use SEP-12)
+     * - pending_receiver: Payment being processed by Receiving Anchor
+     * - pending_external: Payment submitted to external network but not confirmed
+     * - completed: Funds successfully delivered to Receiving Client
+     * - refunded: Funds refunded to Sending Anchor (see refunds object for details)
+     * - expired: Transaction abandoned or quote expired
+     * - error: Catch-all for unspecified errors (check status_message for details)
+     *
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#transaction-object
+     * @see SEP31Refunds
      */
     public string $status;
 

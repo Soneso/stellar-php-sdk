@@ -6,6 +6,12 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+/**
+ * Response for fee statistics query.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getFeeStats
+ */
 class GetFeeStatsResponse extends SorobanRpcResponse
 {
     /**
@@ -14,16 +20,21 @@ class GetFeeStatsResponse extends SorobanRpcResponse
     public ?InclusionFee $sorobanInclusionFee = null;
 
     /**
-     * @var InclusionFee|null $inclusionFee Fee distribution statistics for Stellar (i.e. non-Soroban) transactions.
-     * Statistics are normalized per operation.
+     * @var InclusionFee|null $inclusionFee Fee distribution statistics for Stellar (non-Soroban) transactions normalized per operation
      */
     public ?InclusionFee $inclusionFee = null;
 
     /**
-     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
+     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public ?int $latestLedger = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : GetFeeStatsResponse {
         $result = new GetFeeStatsResponse($json);
         if (isset($json['result'])) {

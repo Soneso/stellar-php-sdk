@@ -15,12 +15,62 @@ use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
+/**
+ * Represents a fee bump transaction
+ *
+ * Fee bump transactions allow an account to retroactively increase the fee on a
+ * previously submitted transaction. This is useful when a transaction is stuck in
+ * the queue due to insufficient fees or when network congestion requires higher fees.
+ *
+ * The fee bump transaction wraps an existing transaction (the inner transaction) and
+ * specifies a new, higher fee. The fee account pays the additional fee, which must be
+ * at least the minimum network fee plus the original transaction's fee.
+ *
+ * Key Characteristics:
+ * - Contains an inner transaction that must already be signed
+ * - Specifies a fee account (can be different from inner transaction's source)
+ * - New fee must be higher than the inner transaction's fee
+ * - Fee account must sign the fee bump transaction
+ *
+ * Use Cases:
+ * - Unstick transactions with low fees
+ * - Priority transaction processing
+ * - Third-party fee sponsorship
+ *
+ * Usage:
+ * <code>
+ * // Create a fee bump transaction
+ * $feeBump = new FeeBumpTransaction(
+ *     $feeAccount,
+ *     200000, // New higher fee in stroops
+ *     $innerTransaction
+ * );
+ *
+ * // Sign and submit
+ * $feeBump->sign($feeAccountKeyPair, $network);
+ * $response = $sdk->submitTransaction($feeBump);
+ * </code>
+ *
+ * @package Soneso\StellarSDK
+ * @see AbstractTransaction Base transaction functionality
+ * @see Transaction The inner transaction type
+ * @see FeeBumpTransactionBuilder For building fee bump transactions
+ * @see https://developers.stellar.org Stellar developer docs
+ * @since 1.0.0
+ */
 class FeeBumpTransaction extends AbstractTransaction
 {
     private int $fee;
     private MuxedAccount $feeAccount;
     private Transaction $innerTx;
 
+    /**
+     * Constructs a new FeeBumpTransaction
+     *
+     * @param MuxedAccount $feeAccount The account paying the fee (can be muxed)
+     * @param int $fee The new fee in stroops (must be higher than inner transaction fee)
+     * @param Transaction $innerTx The inner transaction to bump
+     */
     public function __construct(MuxedAccount $feeAccount, int $fee, Transaction $innerTx) {
         $this->fee = $fee;
         $this->feeAccount = $feeAccount;
@@ -29,7 +79,9 @@ class FeeBumpTransaction extends AbstractTransaction
     }
 
     /**
-     * @return int
+     * Gets the fee in stroops
+     *
+     * @return int The fee amount in stroops
      */
     public function getFee(): int
     {
@@ -37,7 +89,9 @@ class FeeBumpTransaction extends AbstractTransaction
     }
 
     /**
-     * @return MuxedAccount
+     * Gets the fee account
+     *
+     * @return MuxedAccount The account paying the fee
      */
     public function getFeeAccount(): MuxedAccount
     {
@@ -45,7 +99,9 @@ class FeeBumpTransaction extends AbstractTransaction
     }
 
     /**
-     * @return Transaction
+     * Gets the inner transaction
+     *
+     * @return Transaction The wrapped inner transaction
      */
     public function getInnerTx(): Transaction
     {
@@ -54,7 +110,11 @@ class FeeBumpTransaction extends AbstractTransaction
 
 
     /**
-     * @throws Exception if inner transaction is not signed.
+     * Returns the signature base for this fee bump transaction
+     *
+     * @param Network $network The network for which to generate the signature base
+     * @return string The signature base bytes
+     * @throws Exception If inner transaction is not signed
      */
     public function signatureBase(Network $network): string
     {
@@ -64,6 +124,11 @@ class FeeBumpTransaction extends AbstractTransaction
         return $bytes;
     }
 
+    /**
+     * Converts the fee bump transaction to XDR format
+     *
+     * @return XdrFeeBumpTransaction The XDR representation
+     */
     public function toXdr() : XdrFeeBumpTransaction {
         $xdrInnerTxV1 = $this->innerTx->toEnvelopeXdr()->getV1();
         $xdrInnerTx = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX), $xdrInnerTxV1);
@@ -71,6 +136,11 @@ class FeeBumpTransaction extends AbstractTransaction
     }
 
 
+    /**
+     * Converts the fee bump transaction to XDR envelope format
+     *
+     * @return XdrTransactionEnvelope The XDR transaction envelope
+     */
     public function toEnvelopeXdr(): XdrTransactionEnvelope
     {
         $xdr = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP));

@@ -9,7 +9,20 @@ namespace Soneso\StellarSDK\SEP\KYCService;
 use Soneso\StellarSDK\Responses\Response;
 
 /**
- * Represents a customer info request response.
+ * Response object for GET /customer endpoint operations.
+ *
+ * This response contains the current verification status of a customer and indicates which
+ * fields are required or have been provided. The status field determines the customer's
+ * position in the KYC verification process.
+ *
+ * Status values:
+ * - ACCEPTED: All required information has been received and verified. Customer is approved.
+ * - PROCESSING: KYC information is being reviewed. Customer should check back later.
+ * - NEEDS_INFO: Additional information is required. Check the 'fields' array for required data.
+ * - REJECTED: Customer information was rejected and they are not permitted to use the service.
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-get SEP-12 v1.15.0
  */
 class GetCustomerInfoResponse extends Response
 {

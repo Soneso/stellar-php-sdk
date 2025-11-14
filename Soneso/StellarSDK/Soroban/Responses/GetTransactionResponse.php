@@ -15,8 +15,12 @@ use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 
 /**
- * Response when polling the rpc server to find out if a transaction has been completed.
- * See: https://soroban.stellar.org/api/methods/getTransaction
+ * Response when polling the RPC server to find out if a transaction has been completed.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getTransaction
+ * @see GetTransactionsResponse For batch transaction queries
+ * @see SendTransactionResponse For submitting transactions
  */
 class GetTransactionResponse extends SorobanRpcResponse
 {
@@ -112,6 +116,12 @@ class GetTransactionResponse extends SorobanRpcResponse
      */
     public ?array $diagnosticEventsXdr = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : GetTransactionResponse {
         $result = new GetTransactionResponse($json);
         if (isset($json['result'])) {
@@ -316,6 +326,7 @@ class GetTransactionResponse extends SorobanRpcResponse
 
     /**
      * @return XdrTransactionEnvelope|null (optional) the TransactionEnvelope XDR struct for this transaction.
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getXdrTransactionEnvelope(): ?XdrTransactionEnvelope {
         if ($this->envelopeXdr !== null) {
@@ -336,6 +347,7 @@ class GetTransactionResponse extends SorobanRpcResponse
     /**
      * @return XdrTransactionResult|null (optional) the TransactionResult XDR object for this
      * transaction. This field is only present if status is SUCCESS or FAILED.
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getXdrTransactionResult(): ?XdrTransactionResult {
         if ($this->resultXdr !== null) {
@@ -356,6 +368,7 @@ class GetTransactionResponse extends SorobanRpcResponse
     /**
      * @return XdrTransactionMeta|null (optional) TransactionMeta XDR object
      *   for this transaction.
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getXdrTransactionMeta(): ? XdrTransactionMeta
     {
@@ -375,6 +388,7 @@ class GetTransactionResponse extends SorobanRpcResponse
 
     /**
      * @param string|null $txHash hex-encoded transaction hash string. Only for protocol version >= 22
+     * @return void
      */
     public function setTxHash(?string $txHash): void
     {
@@ -392,6 +406,7 @@ class GetTransactionResponse extends SorobanRpcResponse
 
     /**
      * @param array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
+     * @return void
      */
     public function setDiagnosticEventsXdr(?array $diagnosticEventsXdr): void
     {
@@ -408,6 +423,7 @@ class GetTransactionResponse extends SorobanRpcResponse
 
     /**
      * @param TransactionEvents|null $events events for the transaction. Only available for protocol version >= 23
+     * @return void
      */
     public function setEvents(?TransactionEvents $events): void
     {

@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Represents a deposit instruction field returned by the deposit endpoint.
+ *
+ * Contains a key-value pair with a description providing information about
+ * how to complete the deposit operation.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see DepositResponse
+ */
 class DepositInstruction
 {
     /**

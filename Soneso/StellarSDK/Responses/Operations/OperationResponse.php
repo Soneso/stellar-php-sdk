@@ -8,6 +8,36 @@ namespace Soneso\StellarSDK\Responses\Operations;
 use Soneso\StellarSDK\Responses\Response;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 
+/**
+ * Base class representing an operation included in the Stellar ledger
+ *
+ * Operations are individual commands that mutate the ledger state and are contained within
+ * transactions. This base class provides common fields for all operation types including the
+ * operation ID, source account, type, timestamp, and related transaction information.
+ *
+ * Key fields:
+ * - Operation ID and type for identification
+ * - Source account that performed the operation
+ * - Creation timestamp and paging token
+ * - Transaction hash and success status
+ * - Optional embedded transaction details
+ *
+ * The fromJson method automatically creates the appropriate operation-specific subclass based
+ * on the type_i field, returning instances like PaymentOperationResponse, CreateAccountOperationResponse, etc.
+ *
+ * Returned by Horizon endpoints:
+ * - GET /operations/{id} - Single operation details
+ * - GET /operations - List of operations
+ * - GET /accounts/{account_id}/operations - Account operations
+ * - GET /transactions/{hash}/operations - Transaction operations
+ * - GET /ledgers/{sequence}/operations - Ledger operations
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see PaymentOperationResponse For payment operations
+ * @see CreateAccountOperationResponse For account creation
+ * @see https://developers.stellar.org Stellar developer docs Horizon Operations API
+ * @since 1.0.0
+ */
 class OperationResponse extends Response
 {
 
@@ -26,7 +56,9 @@ class OperationResponse extends Response
     private ?TransactionResponse $transaction = null;
 
     /**
-     * @return string
+     * Gets the unique identifier for this operation
+     *
+     * @return string The operation ID
      */
     public function getOperationId(): string
     {
@@ -34,7 +66,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return OperationLinksResponse
+     * Gets the hypermedia links to related resources
+     *
+     * @return OperationLinksResponse Links to effects, transaction, etc.
      */
     public function getLinks(): OperationLinksResponse
     {
@@ -42,7 +76,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the paging token for this operation in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -50,7 +86,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the source account for this operation
+     *
+     * @return string The source account ID
      */
     public function getSourceAccount(): string
     {
@@ -58,7 +96,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed source account if applicable
+     *
+     * @return string|null The muxed source account address, or null if not muxed
      */
     public function getSourceAccountMuxed(): ?string
     {
@@ -66,7 +106,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed source account ID if applicable
+     *
+     * @return string|null The muxed account ID, or null if not muxed
      */
     public function getSourceAccountMuxedId(): ?string
     {
@@ -74,7 +116,11 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the human-readable operation type name
+     *
+     * Examples: "payment", "create_account", "manage_sell_offer"
+     *
+     * @return string The operation type as a string
      */
     public function getHumanReadableOperationType(): string
     {
@@ -82,7 +128,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the operation type as an integer code
+     *
+     * @return int The operation type code matching OperationType constants
      */
     public function getOperationType(): int
     {
@@ -90,7 +138,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the timestamp when this operation was created
+     *
+     * @return string The creation time in ISO 8601 format
      */
     public function getCreatedAt(): string
     {
@@ -98,7 +148,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the hash of the transaction containing this operation
+     *
+     * @return string The transaction hash
      */
     public function getTransactionHash(): string
     {
@@ -106,7 +158,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return bool
+     * Checks if the parent transaction was successful
+     *
+     * @return bool True if the transaction succeeded
      */
     public function isTransactionSuccessful(): bool
     {
@@ -114,7 +168,9 @@ class OperationResponse extends Response
     }
 
     /**
-     * @return TransactionResponse|null
+     * Gets the full transaction details if requested via join parameter
+     *
+     * @return TransactionResponse|null The transaction, or null if not joined
      */
     public function getTransaction(): ?TransactionResponse
     {

@@ -15,20 +15,35 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
 use Throwable;
 
 /**
- * Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
- * see: https://developers.stellar.org/docs/tools/sdks/build-your-own
+ * Parser for extracting metadata from Soroban contract WASM bytecode
+ *
+ * This utility class parses compiled Soroban contract WASM bytecode to extract embedded metadata
+ * following the custom sections format defined in SEP-47 and SEP-48. The parser extracts:
+ * - Environment Meta: Soroban interface version requirements
+ * - Contract Spec: Function signatures, types, and events (SEP-48)
+ * - Contract Meta: Custom metadata key-value pairs (SEP-47)
+ *
+ * The extracted metadata enables type-safe contract interaction and introspection without
+ * executing the contract code.
+ *
+ * @package Soneso\StellarSDK\Soroban
+ * @see https://developers.stellar.org/docs/tools/sdks/build-your-own SDK Building Guide
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0047.md SEP-47: Contract Metadata
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md SEP-48: Contract Spec
+ * @since 1.0.0
  */
 class SorobanContractParser
 {
 
     /**
-     * Parses a soroban contract bytecode to get Environment Meta, Contract Spec and Contract Meta.
-     * see: https://developers.stellar.org/docs/tools/sdks/build-your-own
-     * Returns SorobanContractInfo containing the parsed data.
+     * Parses contract WASM bytecode to extract all metadata
      *
-     * @param string $byteCode the byte code of the contract
-     * @return SorobanContractInfo return object containing the parsed contract data
-     * @throws SorobanContractParserException if any exception occurred during the byte code parsing. E.g. invalid byte code.
+     * Extracts environment meta, contract spec entries, and custom metadata from the
+     * contract's WASM bytecode custom sections. All metadata must be present for successful parsing.
+     *
+     * @param string $byteCode The compiled WASM bytecode of the contract
+     * @return SorobanContractInfo Container object with all parsed metadata
+     * @throws SorobanContractParserException If bytecode is invalid or required metadata is missing
      */
     public static function parseContractByteCode (string $byteCode): SorobanContractInfo {
         $xdrEnvMeta = self::parseEnvironmentMeta($byteCode);
@@ -52,9 +67,13 @@ class SorobanContractParser
     }
 
     /**
-     * Parses the Environment Meta from the given byte code
-     * @param string $byteCode the contract byte code to parse the data from.
-     * @return XdrSCEnvMetaEntry|null Environment Meta as XDR if found.
+     * Extracts environment metadata from WASM bytecode
+     *
+     * Parses the contractenvmetav0 custom section to extract the Soroban interface
+     * version requirements.
+     *
+     * @param string $byteCode The contract WASM bytecode
+     * @return XdrSCEnvMetaEntry|null The environment meta if found, null otherwise
      */
     private static function parseEnvironmentMeta (string $byteCode) : ?XdrSCEnvMetaEntry {
         /**
@@ -80,10 +99,13 @@ class SorobanContractParser
     }
 
     /**
-     * Parses the Contract Spec Entries from the given byte code. There is a XdrSCSpecEntry for every function,
-     * struct, and union exported by the contract.
-     * @param string $byteCode the contract byte code to parse the data from.
-     * @return array<XdrSCSpecEntry>|null The array of parsed Contract Spec Entries (XdrSCSpecEntry) if found.
+     * Extracts contract specification entries from WASM bytecode
+     *
+     * Parses the contractspecv0 custom section to extract function signatures, user-defined types,
+     * and event definitions. Each exported function, struct, union, enum, and event has a corresponding spec entry.
+     *
+     * @param string $byteCode The contract WASM bytecode
+     * @return array<XdrSCSpecEntry>|null Array of spec entries if found, null otherwise
      */
     private static function parseContractSpec (string $byteCode) : ?array {
         /**

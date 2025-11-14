@@ -12,12 +12,24 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#create-account" target="_blank">CreateAccount</a> operation.
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * Represents a create account operation.
+ *
+ * Creates and funds a new account with the specified starting balance of XLM.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
+ * @since 1.0.0
  */
 class CreateAccountOperation extends AbstractOperation
 {
+    /**
+     * @var string The account ID of the account being created and funded
+     */
     private string $destination;
+
+    /**
+     * @var string The amount of XLM to send to the newly created account (as a decimal string)
+     */
     private string $startingBalance;
 
     /**
@@ -31,8 +43,9 @@ class CreateAccountOperation extends AbstractOperation
     }
 
     /**
-     * Account that is created and funded.
-     * @return string
+     * Gets the destination account ID.
+     *
+     * @return string The destination account ID
      */
     public function getDestination(): string
     {
@@ -40,14 +53,21 @@ class CreateAccountOperation extends AbstractOperation
     }
 
     /**
-     * Amount of XLM to send to the newly created account.
-     * @return string
+     * Gets the starting balance amount.
+     *
+     * @return string The starting balance as a decimal string
      */
     public function getStartingBalance(): string
     {
         return $this->startingBalance;
     }
 
+    /**
+     * Creates a CreateAccountOperation from its XDR representation.
+     *
+     * @param XdrCreateAccountOperation $xdrOp The XDR create account operation to convert
+     * @return CreateAccountOperation The resulting CreateAccountOperation instance
+     */
     public static function fromXdrOperation(XdrCreateAccountOperation $xdrOp): CreateAccountOperation
     {
         $destination = $xdrOp->getDestination()->getAccountId();
@@ -55,6 +75,11 @@ class CreateAccountOperation extends AbstractOperation
         return new CreateAccountOperation($destination, $startingBalance);
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $accountID = XdrAccountID::fromAccountId($this->destination);

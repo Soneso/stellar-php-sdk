@@ -6,6 +6,22 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Describes anchor support and parameters for a withdrawal asset.
+ *
+ * Contains information about whether withdrawals are enabled for an asset, authentication
+ * requirements, fee structure, amount limits, and supported withdrawal types with their
+ * respective field requirements.
+ *
+ * The types field defines different withdrawal methods (e.g., bank_account, cash, crypto)
+ * and what fields are needed for each type. Returned as part of the info endpoint response.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.17.0/ecosystem/sep-0009.md SEP-9 v1.17.0 Financial Account Fields
+ * @see InfoResponse
+ * @see AnchorField
+ */
 class WithdrawAsset
 {
     /**

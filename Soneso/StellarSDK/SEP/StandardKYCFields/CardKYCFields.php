@@ -6,7 +6,28 @@
 
 namespace Soneso\StellarSDK\SEP\StandardKYCFields;
 
-
+/**
+ * KYC fields for payment cards (credit/debit card information).
+ *
+ * This class provides standardized fields for collecting payment card information
+ * required for KYC and payment processing according to SEP-09 specification. It includes
+ * card details, billing address, and tokenization support for external payment systems.
+ *
+ * PRIVACY AND SECURITY WARNING:
+ * This class handles highly sensitive payment card data subject to PCI-DSS requirements.
+ * Implementers MUST ensure:
+ * - Transmission only over HTTPS/TLS connections
+ * - PCI-DSS Level 1 compliance for card data handling
+ * - Never store unencrypted card numbers, CVCs, or full magnetic stripe data
+ * - Prefer tokenization over direct card number storage
+ * - Implement proper access controls and audit logging
+ * - Secure data retention and deletion policies
+ * - Compliance with applicable data protection regulations (GDPR, CCPA, etc.)
+ * - Customer consent management for data collection and processing
+ *
+ * @package Soneso\StellarSDK\SEP\StandardKYCFields
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.17.0/ecosystem/sep-0009.md SEP-09 v1.17.0 Specification
+ */
 class CardKYCFields
 {
     // field keys
@@ -22,41 +43,70 @@ class CardKYCFields
     public const ADDRESS_KEY = 'card.address';
     public const TOKEN_KEY = 'card.token';
 
-    /// Card number
+    /**
+     * @var string|null Card number (PCI-DSS: use tokenization where possible)
+     */
     public ?string $number = null;
 
-    /// Expiration month and year in YY-MM format (e.g. 29-11, November 2029)
+    /**
+     * @var string|null Expiration month and year in YY-MM format (e.g. 29-11 for November 2029)
+     */
     public ?string $expirationDate = null;
 
-    /// CVC number (Digits on the back of the card)
+    /**
+     * @var string|null CVC number (security code on the back of the card)
+     */
     public ?string $cvc = null;
 
-    /// Name of the card holder
+    /**
+     * @var string|null Name of the card holder
+     */
     public ?string $holderName = null;
 
-    /// Brand of the card/network it operates within (e.g. Visa, Mastercard, AmEx, etc.)
+    /**
+     * @var string|null Brand of the card/network (e.g. Visa, Mastercard, AmEx)
+     */
     public ?string $network = null;
 
-    /// Billing address postal code
+    /**
+     * @var string|null Billing address postal code
+     */
     public ?string $postalCode = null;
 
-    /// Billing address country code in ISO 3166-1 alpha-2 code (e.g. US)
+    /**
+     * @var string|null Billing address country code (ISO 3166-1 alpha-2, e.g. US)
+     */
     public ?string $countryCode = null;
 
-    /// Name of state/province/region/prefecture is ISO 3166-2 format
+    /**
+     * @var string|null Name of state/province/region/prefecture (ISO 3166-2 format)
+     */
     public ?string $stateOrProvince = null;
 
-    /// Name of city/town
+    /**
+     * @var string|null Name of city/town
+     */
     public ?string $city = null;
 
-    /// Entire address (country, state, postal code, street address, etc...) as a multi-line string
+    /**
+     * @var string|null Entire billing address (country, state, postal code, street address, etc.) as a multi-line string
+     */
     public ?string $address = null;
 
-    /// Token representation of the card in some external payment system (e.g. Stripe)
+    /**
+     * @var string|null Token representation of the card in an external payment system (e.g. Stripe)
+     */
     public ?string $token = null;
 
     /**
-     * @return array<array-key, mixed>
+     * Returns all non-null card fields as an associative array.
+     *
+     * This method collects all populated payment card fields, returning them as
+     * key-value pairs with 'card.' prefix suitable for submission to SEP-09 compliant
+     * services. Implementers should prefer using tokenized card data where possible
+     * to minimize PCI-DSS compliance scope.
+     *
+     * @return array<array-key, mixed> Associative array of field keys to values
      */
     public function fields() : array {
         /**

@@ -6,7 +6,28 @@
 
 namespace Soneso\StellarSDK\SEP\StandardKYCFields;
 
-
+/**
+ * KYC fields for financial accounts (bank accounts, crypto addresses, mobile money).
+ *
+ * This class provides standardized fields for collecting financial account information
+ * required for KYC and AML compliance according to SEP-09 specification. It supports
+ * various account types including traditional banking, cryptocurrency, and mobile money
+ * payment systems.
+ *
+ * PRIVACY AND SECURITY WARNING:
+ * This class handles highly sensitive financial account information.
+ * Implementers MUST ensure:
+ * - Transmission only over HTTPS/TLS connections
+ * - Encryption at rest for all stored financial data
+ * - Compliance with applicable data protection regulations (GDPR, CCPA, etc.)
+ * - Implementation of proper access controls and audit logging
+ * - Secure data retention and deletion policies
+ * - PCI-DSS compliance where applicable for payment card data
+ * - Customer consent management for data collection and processing
+ *
+ * @package Soneso\StellarSDK\SEP\StandardKYCFields
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.17.0/ecosystem/sep-0009.md SEP-09 v1.17.0 Specification
+ */
 class FinancialAccountKYCFields
 {
     // field keys
@@ -25,52 +46,87 @@ class FinancialAccountKYCFields
     public const CRYPTO_ADDRESS_KEY = 'crypto_address';
     public const CRYPTO_MEMO_KEY = 'crypto_memo';
 
-    /// Name of the bank. May be necessary in regions that don't have a unified routing system.
+    /**
+     * @var string|null Name of the bank (may be necessary in regions without unified routing systems)
+     */
     public ?string $bankName = null;
 
-    /// checking or savings
+    /**
+     * @var string|null Type of bank account (e.g. checking, savings)
+     */
     public ?string $bankAccountType = null;
 
-    /// Number identifying bank account
+    /**
+     * @var string|null Number identifying bank account
+     */
     public ?string $bankAccountNumber = null;
 
-    /// Number identifying bank in national banking system (routing number in US)
+    /**
+     * @var string|null Number identifying bank in national banking system (e.g. routing number in US)
+     */
     public ?string $bankNumber = null;
 
-    /// Phone number with country code for bank
+    /**
+     * @var string|null Phone number with country code for bank (E.164 format)
+     */
     public ?string $bankPhoneNumber = null;
 
-    /// Number identifying bank branch
+    /**
+     * @var string|null Number identifying bank branch
+     */
     public ?string $bankBranchNumber = null;
 
-    /// A destination tag/memo used to identify a transaction
+    /**
+     * @var string|null Destination tag/memo used to identify a transaction
+     */
     public ?string $externalTransferMemo = null;
 
-    /// Bank account number for Mexico
+    /**
+     * @var string|null CLABE number (Clave Bancaria Estandarizada - bank account number for Mexico)
+     */
     public ?string $clabeNumber = null;
 
-    /// Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
+    /**
+     * @var string|null CBU (Clave Bancaria Uniforme) or CVU (Clave Virtual Uniforme) number for Argentina
+     */
     public ?string $cbuNumber = null;
 
-    /// The alias for a Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
+    /**
+     * @var string|null Alias for a CBU (Clave Bancaria Uniforme) or CVU (Clave Virtual Uniforme)
+     */
     public ?string $cbuAlias = null;
 
-    /// Mobile phone number in E.164 format with which a mobile money account is associated.
-    /// Note that this number may be distinct from the same customer's mobile number.
+    /**
+     * @var string|null Mobile phone number in E.164 format associated with a mobile money account
+     * (Note: this number may be distinct from the customer's personal mobile number)
+     */
     public ?string $mobileMoneyNumber = null;
 
-    /// Name of the mobile money service provider.
+    /**
+     * @var string|null Name of the mobile money service provider
+     */
     public ?string $mobileMoneyProvider = null;
 
-    /// Address for a cryptocurrency account
+    /**
+     * @var string|null Address for a cryptocurrency account
+     */
     public ?string $cryptoAddress = null;
 
-    /// (deprecated, use $externalTransferMemo instead) A destination tag/memo used to identify a transaction
+    /**
+     * @var string|null Destination tag/memo used to identify a cryptocurrency transaction
+     * @deprecated Use $externalTransferMemo instead
+     */
     public ?string $cryptoMemo = null;
 
     /**
-     * @param string|null $keyPrefix optional prefix for the fields keys. e.g. 'organization.'
-     * @return array<array-key, mixed>
+     * Returns all non-null financial account fields as an associative array.
+     *
+     * This method collects all populated financial account fields, returning them as
+     * key-value pairs suitable for submission to SEP-09 compliant services. An optional
+     * key prefix (e.g. 'organization.') can be provided for nested field contexts.
+     *
+     * @param string|null $keyPrefix Optional prefix for field keys (e.g. 'organization.')
+     * @return array<array-key, mixed> Associative array of field keys to values
      */
     public function fields(?string $keyPrefix = '') : array {
         /**

@@ -15,6 +15,52 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Trades\TradeResponse;
 use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
 
+/**
+ * Builds requests for the trades endpoint in Horizon
+ *
+ * This class provides methods to query trades on the Stellar network. Trades represent
+ * actual exchanges of assets that occur either through the orderbook or via liquidity
+ * pools. Each trade records the assets exchanged, amounts, price, and participating accounts.
+ *
+ * Query Methods:
+ * - forAccount(): Get trades for a specific account
+ * - forOffer(): Get trades for a specific offer ID
+ * - forLiquidityPool(): Get trades for a specific liquidity pool
+ * - forTradeType(): Filter by trade type (all, orderbook, liquidity_pools)
+ * - forBaseAsset(): Filter by base asset
+ * - forCounterAsset(): Filter by counter asset
+ *
+ * Trades can be filtered by asset pair to analyze specific trading pairs or by account
+ * to track trading activity.
+ *
+ * Usage Examples:
+ *
+ * // Get recent trades for an account
+ * $trades = $sdk->trades()
+ *     ->forAccount("GDAT5...")
+ *     ->limit(20)
+ *     ->order("desc")
+ *     ->execute();
+ *
+ * // Get trades for a specific asset pair
+ * $baseAsset = Asset::createNonNativeAsset("USD", "GBBD...");
+ * $counterAsset = Asset::native();
+ * $trades = $sdk->trades()
+ *     ->forBaseAsset($baseAsset)
+ *     ->forCounterAsset($counterAsset)
+ *     ->execute();
+ *
+ * // Stream real-time trades
+ * $sdk->trades()
+ *     ->cursor("now")
+ *     ->stream(function(TradeResponse $trade) {
+ *         echo "Trade: " . $trade->getBaseAmount() . " " . $trade->getBaseAssetCode() . PHP_EOL;
+ *     });
+ *
+ * @package Soneso\StellarSDK\Requests
+ * @see TradesPageResponse For the response format
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Trades endpoint
+ */
 class TradesRequestBuilder extends RequestBuilder
 {
     private const TRADE_TYPE_ALL = "all";
@@ -30,7 +76,11 @@ class TradesRequestBuilder extends RequestBuilder
     private const COUNTER_ASSET_CODE_PARAMETER_NAME = "counter_asset_code";
     private const COUNTER_ASSET_ISSUER_PARAMETER_NAME = "counter_asset_issuer";
 
-
+    /**
+     * Constructor
+     *
+     * @param Client $httpClient The HTTP client used for making requests to Horizon
+     */
     public function __construct(Client $httpClient)
     {
         parent::__construct($httpClient, "trades");
@@ -40,7 +90,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /trades</code> filtered by offer_id query parameter.
      * @param string $offerId Offer ID for which to get trades
      * @return TradesRequestBuilder
-     * @see <a href="https://developers.stellar.org/api/resources/trades/list/">List All Trades</a>
+     * @see https://developers.stellar.org Stellar developer docs List All Trades
      */
     public function forOffer(string $offerId) : TradesRequestBuilder {
         $this->queryParameters[TradesRequestBuilder::OFFER_ID_PARAMETER_NAME] = $offerId;
@@ -51,8 +101,8 @@ class TradesRequestBuilder extends RequestBuilder
      * Returns all trades that of a specific type.
      *
      * @param string $tradeType
-     * @return TradesRequestBuilder <a href="psi_element://TradesRequestBuilder">TradesRequestBuilder</a> instance
-     * @see <a href="https://developers.stellar.org/api/resources/trades/list/">List All Trades</a>
+     * @return TradesRequestBuilder current instance
+     * @see https://developers.stellar.org Stellar developer docs List All Trades
      */
     public function forTradeType(string $tradeType) : TradesRequestBuilder {
         $this->queryParameters[TradesRequestBuilder::TRADE_TYPE_PARAMETER_NAME] = $tradeType;
@@ -63,7 +113,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Returns all trades for the given base asset.
      *
      * @param Asset $baseAsset
-     * @return TradesRequestBuilder <a href="psi_element://TradesRequestBuilder">TradesRequestBuilder</a> instance
+     * @return TradesRequestBuilder current instance
      */
     public function forBaseAsset(Asset $baseAsset) : TradesRequestBuilder {
         $this->queryParameters[TradesRequestBuilder::BASE_ASSET_TYPE_PARAMETER_NAME] = $baseAsset->getType();
@@ -78,7 +128,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Returns all trades for the given counter asset.
      *
      * @param Asset $counterAsset
-     * @return TradesRequestBuilder <a href="psi_element://TradesRequestBuilder">TradesRequestBuilder</a> instance
+     * @return TradesRequestBuilder current instance
      */
     public function forCounterAsset(Asset $counterAsset) : TradesRequestBuilder {
         $this->queryParameters[TradesRequestBuilder::COUNTER_ASSET_TYPE_PARAMETER_NAME] = $counterAsset->getType();
@@ -93,7 +143,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /liquidity_pools/{poolID}/trades</code>
      * @param string $liquidityPoolId Liquidity pool for which to get trades
      * @return TradesRequestBuilder
-     * @see <a href="https://developers.stellar.org/api/resources/liquiditypools/trades/">Trades for Liquidity Pool</a>
+     * @see https://developers.stellar.org Stellar developer docs Trades for Liquidity Pool
      */
     public function forLiquidityPool(string $liquidityPoolId) : TradesRequestBuilder {
         $idHex = $liquidityPoolId;
@@ -108,7 +158,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /accounts/{accountId}/trades</code>
      * @param string $accountId
      * @return TradesRequestBuilder
-     * @see <a href="https://developers.stellar.org/api/resources/accounts/trades/">Trades for Account</a>
+     * @see https://developers.stellar.org Stellar developer docs Trades for Account
      */
     public function forAccount(string $accountId) : TradesRequestBuilder {
         $this->setSegments("accounts", $accountId, "trades");
@@ -119,8 +169,8 @@ class TradesRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see <a href="https://developers.stellar.org/api/introduction/pagination/">Page documentation</a>
-     * @param string cursor
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
+     * @param string $cursor
      */
     public function cursor(string $cursor) : TradesRequestBuilder {
         return parent::cursor($cursor);
@@ -130,7 +180,7 @@ class TradesRequestBuilder extends RequestBuilder
      * Sets <code>limit</code> parameter on the request.
      * It defines maximum number of records to return.
      * For range and default values check documentation of the endpoint requested.
-     * @param int number maximum number of records to return
+     * @param int $number Maximum number of records to return
      */
     public function limit(int $number) : TradesRequestBuilder {
         return parent::limit($number);
@@ -138,7 +188,7 @@ class TradesRequestBuilder extends RequestBuilder
 
     /**
      * Sets <code>order</code> parameter on the request.
-     * @param string direction "asc" or "desc"
+     * @param string $direction "asc" or "desc"
      */
     public function order(string $direction = "asc") : TradesRequestBuilder {
         return parent::order($direction);

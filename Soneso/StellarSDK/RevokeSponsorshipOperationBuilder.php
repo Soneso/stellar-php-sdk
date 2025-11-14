@@ -21,24 +21,75 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKeyTrustLine;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 
+/**
+ * Builder for creating RevokeSponsorship operations.
+ *
+ * This builder implements the builder pattern to construct RevokeSponsorshipOperation
+ * instances with a fluent interface. This operation revokes sponsorship of various
+ * ledger entries including accounts, trustlines, offers, data, claimable balances, and signers.
+ *
+ * @package Soneso\StellarSDK
+ * @see RevokeSponsorshipOperation
+ * @see https://developers.stellar.org Stellar developer docs
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new RevokeSponsorshipOperationBuilder())
+ *     ->revokeAccountSponsorship($accountId)
+ *     ->setSourceAccount($sponsorId)
+ *     ->build();
+ */
 class RevokeSponsorshipOperationBuilder
 {
+    /**
+     * @var XdrLedgerKey|null The ledger entry key for which to revoke sponsorship
+     */
     private ?XdrLedgerKey $ledgerKey = null;
+
+    /**
+     * @var string|null The account ID for signer sponsorship revocation
+     */
     private ?string $signerAccount = null;
+
+    /**
+     * @var XdrSignerKey|null The signer key for which to revoke sponsorship
+     */
     private ?XdrSignerKey $signerKey = null;
+
+    /**
+     * @var MuxedAccount|null The optional source account for this operation
+     */
     private ?MuxedAccount $sourceAccount = null;
 
-
+    /**
+     * Sets the source account for this operation.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
+     */
     public function setSourceAccount(string $accountId) : RevokeSponsorshipOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
         return $this;
     }
 
+    /**
+     * Sets the muxed source account for this operation.
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
+     */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : RevokeSponsorshipOperationBuilder {
         $this->sourceAccount = $sourceAccount;
         return $this;
     }
 
+    /**
+     * Revokes sponsorship of an account.
+     *
+     * @param string $accountId The account ID for which to revoke sponsorship
+     * @return $this Returns the builder instance for method chaining
+     * @throws RuntimeException If attempting to revoke multiple entries per builder
+     */
     public function revokeAccountSponsorship(string $accountId) : RevokeSponsorshipOperationBuilder {
         if ($this->ledgerKey || $this->signerKey) {
             throw new RuntimeException("can not revoke multiple entries per builder");
@@ -50,6 +101,14 @@ class RevokeSponsorshipOperationBuilder
         return $this;
     }
 
+    /**
+     * Revokes sponsorship of a data entry.
+     *
+     * @param string $accountId The account ID holding the data entry
+     * @param string $dataName The name of the data entry
+     * @return $this Returns the builder instance for method chaining
+     * @throws RuntimeException If attempting to revoke multiple entries per builder
+     */
     public function revokeDataSponsorship(string $accountId, string $dataName) : RevokeSponsorshipOperationBuilder {
         if ($this->ledgerKey || $this->signerKey) {
             throw new RuntimeException("can not revoke multiple entries per builder");
@@ -61,6 +120,14 @@ class RevokeSponsorshipOperationBuilder
         return $this;
     }
 
+    /**
+     * Revokes sponsorship of a trustline.
+     *
+     * @param string $accountId The account ID holding the trustline
+     * @param Asset $asset The asset for the trustline
+     * @return $this Returns the builder instance for method chaining
+     * @throws RuntimeException If attempting to revoke multiple entries per builder
+     */
     public function revokeTrustlineSponsorship(string $accountId, Asset $asset) : RevokeSponsorshipOperationBuilder {
         if ($this->ledgerKey || $this->signerKey) {
             throw new RuntimeException("can not revoke multiple entries per builder");
@@ -72,6 +139,13 @@ class RevokeSponsorshipOperationBuilder
         return $this;
     }
 
+    /**
+     * Revokes sponsorship of a claimable balance.
+     *
+     * @param string $balanceId The claimable balance ID
+     * @return $this Returns the builder instance for method chaining
+     * @throws RuntimeException If attempting to revoke multiple entries per builder
+     */
     public function revokeClaimableBalanceSponsorship(string $balanceId) : RevokeSponsorshipOperationBuilder {
         if ($this->ledgerKey || $this->signerKey) {
             throw new RuntimeException("can not revoke multiple entries per builder");
@@ -82,6 +156,14 @@ class RevokeSponsorshipOperationBuilder
         return $this;
     }
 
+    /**
+     * Revokes sponsorship of an offer.
+     *
+     * @param string $accountId The account ID that created the offer
+     * @param int $offerId The offer ID
+     * @return $this Returns the builder instance for method chaining
+     * @throws RuntimeException If attempting to revoke multiple entries per builder
+     */
     public function revokeOfferSponsorship(string $accountId, int $offerId) : RevokeSponsorshipOperationBuilder {
         if ($this->ledgerKey || $this->signerKey) {
             throw new RuntimeException("can not revoke multiple entries per builder");
@@ -93,6 +175,14 @@ class RevokeSponsorshipOperationBuilder
         return $this;
     }
 
+    /**
+     * Revokes sponsorship of an Ed25519 signer.
+     *
+     * @param string $signerAccountId The account ID that has the signer
+     * @param string $ed25519AccountId The Ed25519 public key of the signer
+     * @return $this Returns the builder instance for method chaining
+     * @throws RuntimeException If attempting to revoke multiple entries per builder
+     */
     public function revokeEd25519Signer(string $signerAccountId, string $ed25519AccountId) : RevokeSponsorshipOperationBuilder {
         if ($this->ledgerKey || $this->signerKey) {
             throw new RuntimeException("can not revoke multiple entries per builder");
@@ -105,6 +195,14 @@ class RevokeSponsorshipOperationBuilder
         return $this;
     }
 
+    /**
+     * Revokes sponsorship of a pre-authorized transaction signer.
+     *
+     * @param string $signerAccountId The account ID that has the signer
+     * @param string $preAuthTx The pre-authorized transaction hash
+     * @return $this Returns the builder instance for method chaining
+     * @throws RuntimeException If attempting to revoke multiple entries per builder
+     */
     public function revokePreAuthTxSigner(string $signerAccountId, string $preAuthTx) : RevokeSponsorshipOperationBuilder {
         if ($this->ledgerKey || $this->signerKey) {
             throw new RuntimeException("can not revoke multiple entries per builder");
@@ -117,6 +215,14 @@ class RevokeSponsorshipOperationBuilder
         return $this;
     }
 
+    /**
+     * Revokes sponsorship of a SHA256 hash signer.
+     *
+     * @param string $signerAccountId The account ID that has the signer
+     * @param string $sha256Hash The SHA256 hash value
+     * @return $this Returns the builder instance for method chaining
+     * @throws RuntimeException If attempting to revoke multiple entries per builder
+     */
     public function revokeSha256HashSigner(string $signerAccountId, string $sha256Hash) : RevokeSponsorshipOperationBuilder {
         if ($this->ledgerKey || $this->signerKey) {
             throw new RuntimeException("can not revoke multiple entries per builder");
@@ -129,6 +235,11 @@ class RevokeSponsorshipOperationBuilder
         return $this;
     }
 
+    /**
+     * Builds the RevokeSponsorship operation.
+     *
+     * @return RevokeSponsorshipOperation The constructed operation
+     */
     public function build(): RevokeSponsorshipOperation {
         $result = new RevokeSponsorshipOperation();
         $result->setLedgerKey($this->ledgerKey);

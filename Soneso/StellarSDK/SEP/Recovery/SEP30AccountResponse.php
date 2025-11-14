@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\SEP\Recovery;
 
+/**
+ * Response containing registered account information from SEP-0030 recovery server.
+ *
+ * This class represents account data including the address, registered identities,
+ * and signers that can be used for multi-party account recovery operations.
+ *
+ * @package Soneso\StellarSDK\SEP\Recovery
+ * @see https://github.com/stellar/stellar-protocol/blob/v0.8.1/ecosystem/sep-0030.md
+ * @see RecoveryService
+ * @see SEP30ResponseIdentity
+ * @see SEP30ResponseSigner
+ */
 class SEP30AccountResponse
 {
     public string $address;
@@ -20,9 +32,11 @@ class SEP30AccountResponse
     public array $signers;
 
     /**
-     * @param string $address
-     * @param array<SEP30ResponseIdentity> $identities
-     * @param array<SEP30ResponseSigner> $signers
+     * Constructor.
+     *
+     * @param string $address The Stellar account address.
+     * @param array<SEP30ResponseIdentity> $identities Registered identity owners.
+     * @param array<SEP30ResponseSigner> $signers Account signers for recovery.
      */
     public function __construct(string $address, array $identities, array $signers)
     {
@@ -31,7 +45,12 @@ class SEP30AccountResponse
         $this->signers = $signers;
     }
 
-
+    /**
+     * Constructs a SEP30AccountResponse from JSON data.
+     *
+     * @param array<array-key, mixed> $json The JSON data to parse.
+     * @return SEP30AccountResponse The constructed response.
+     */
     public static function fromJson(array $json) : SEP30AccountResponse
     {
         $address = $json['address'];
@@ -49,7 +68,9 @@ class SEP30AccountResponse
     }
 
     /**
-     * @return string
+     * Gets the Stellar account address.
+     *
+     * @return string The account address.
      */
     public function getAddress(): string
     {
@@ -57,7 +78,9 @@ class SEP30AccountResponse
     }
 
     /**
-     * @param string $address
+     * Sets the Stellar account address.
+     *
+     * @param string $address The account address.
      */
     public function setAddress(string $address): void
     {
@@ -65,7 +88,9 @@ class SEP30AccountResponse
     }
 
     /**
-     * @return array<SEP30ResponseIdentity>
+     * Gets the registered identities.
+     *
+     * @return array<SEP30ResponseIdentity> Array of identity information.
      */
     public function getIdentities(): array
     {
@@ -73,7 +98,9 @@ class SEP30AccountResponse
     }
 
     /**
-     * @param array<SEP30ResponseIdentity> $identities
+     * Sets the registered identities.
+     *
+     * @param array<SEP30ResponseIdentity> $identities Array of identity information.
      */
     public function setIdentities(array $identities): void
     {
@@ -81,7 +108,9 @@ class SEP30AccountResponse
     }
 
     /**
-     * @return array<SEP30ResponseSigner>
+     * Gets the account signers.
+     *
+     * @return array<SEP30ResponseSigner> Array of signer information.
      */
     public function getSigners(): array
     {
@@ -89,7 +118,9 @@ class SEP30AccountResponse
     }
 
     /**
-     * @param array<SEP30ResponseSigner> $signers
+     * Sets the account signers.
+     *
+     * @param array<SEP30ResponseSigner> $signers Array of signer information.
      */
     public function setSigners(array $signers): void
     {

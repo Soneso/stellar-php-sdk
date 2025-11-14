@@ -7,13 +7,27 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a begin sponsoring future reserves operation response from Horizon API
+ *
+ * This operation initiates reserve sponsorship, allowing one account to pay the base reserves for
+ * ledger entries created by another account. The sponsor covers the reserve costs for subsequent
+ * operations until an end sponsoring operation is encountered. This enables creating accounts and
+ * ledger entries for users without requiring them to hold XLM for reserves.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Begin Sponsoring Future Reserves Operation
+ */
 class BeginSponsoringFutureReservesOperationResponse extends OperationResponse
 {
 
     private string $sponsoredId;
 
     /**
-     * @return string
+     * Gets the account ID receiving sponsorship
+     *
+     * @return string The sponsored account ID
      */
     public function getSponsoredId(): string
     {

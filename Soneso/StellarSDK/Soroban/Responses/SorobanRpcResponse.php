@@ -8,21 +8,23 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 /**
  * Abstract class for soroban rpc responses.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
  */
 abstract class SorobanRpcResponse
 {
     /**
-     * @var array<array-key, mixed> $jsonResponse the complete json response as data array.
+     * @var array<array-key,mixed> $jsonResponse The complete JSON response as data array
      */
     public array $jsonResponse;
 
     /**
-     * @var SorobanRpcErrorResponse|null If the response is an error response, then here is the error data.
+     * @var SorobanRpcErrorResponse|null $error Error data if the response is an error response
      */
     public ?SorobanRpcErrorResponse $error = null;
 
     /**
-     * @param array<array-key, mixed> $jsonResponse the complete json response as data array.
+     * @param array<array-key,mixed> $jsonResponse The complete JSON response as data array
      */
     public function __construct(array $jsonResponse)
     {
@@ -30,7 +32,7 @@ abstract class SorobanRpcResponse
     }
 
     /**
-     * @return array<array-key, mixed> the complete json response as data array.
+     * @return array<array-key,mixed> The complete JSON response as data array
      */
     public function getJsonResponse(): array
     {
@@ -38,7 +40,8 @@ abstract class SorobanRpcResponse
     }
 
     /**
-     * @param array<array-key, mixed> $jsonResponse
+     * @param array<array-key,mixed> $jsonResponse The complete JSON response as data array
+     * @return void
      */
     public function setJsonResponse(array $jsonResponse): void
     {
@@ -46,7 +49,7 @@ abstract class SorobanRpcResponse
     }
 
     /**
-     * @return SorobanRpcErrorResponse|null If the response is an error response, then here is the error data.
+     * @return SorobanRpcErrorResponse|null Error data if the response is an error response
      */
     public function getError(): ?SorobanRpcErrorResponse
     {
@@ -54,7 +57,8 @@ abstract class SorobanRpcResponse
     }
 
     /**
-     * @param SorobanRpcErrorResponse|null $error If the response is an error response, then here is the error data.
+     * @param SorobanRpcErrorResponse|null $error Error data if the response is an error response
+     * @return void
      */
     public function setError(?SorobanRpcErrorResponse $error): void
     {

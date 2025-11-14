@@ -11,12 +11,18 @@ use DateTime;
 use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 
 /**
- * Represents a time range
+ * Represents the time validity bounds for a transaction
  *
- * Optional Struct with fields:
- *  minTime Uint64
- *  maxTime Uint64
+ * TimeBounds specify the time window during which a transaction is valid.
+ * Transactions with time bounds will only be accepted by the network if
+ * the ledger close time falls within the specified range.
  *
+ * Using time bounds is recommended for security purposes to prevent
+ * transaction replay attacks and to ensure transactions expire if not
+ * processed within an expected timeframe.
+ *
+ * @package Soneso\StellarSDK
+ * @see https://developers.stellar.org Stellar developer docs Documentation on time bounds
  */
 class TimeBounds
 {
@@ -31,8 +37,10 @@ class TimeBounds
     private DateTime $maxTime;
 
     /**
-     * @param DateTime $minTime
-     * @param DateTime $maxTime
+     * TimeBounds constructor
+     *
+     * @param DateTime $minTime The earliest time the transaction is valid (inclusive)
+     * @param DateTime $maxTime The latest time the transaction is valid (inclusive)
      */
     public function __construct(DateTime $minTime, DateTime $maxTime)
     {
@@ -41,15 +49,19 @@ class TimeBounds
     }
 
     /**
-     * @return XdrTimeBounds
+     * Converts these time bounds to XDR format
+     *
+     * @return XdrTimeBounds The XDR representation of these time bounds
      */
     public function toXdr(): XdrTimeBounds {
         return new XdrTimeBounds($this->getMinTime(), $this->getMaxTime());
     }
 
     /**
-     * @param XdrTimeBounds $xdrTimeBounds
-     * @return TimeBounds
+     * Creates TimeBounds from XDR format
+     *
+     * @param XdrTimeBounds $xdrTimeBounds The XDR encoded time bounds
+     * @return TimeBounds The decoded time bounds object
      */
     public static function fromXdr(XdrTimeBounds $xdrTimeBounds) : TimeBounds
     {
@@ -57,7 +69,9 @@ class TimeBounds
     }
 
     /**
-     * @return DateTime
+     * Gets the minimum time (earliest validity)
+     *
+     * @return DateTime The earliest time the transaction is valid
      */
     public function getMinTime(): DateTime
     {
@@ -65,7 +79,9 @@ class TimeBounds
     }
 
     /**
-     * @return DateTime
+     * Gets the maximum time (latest validity)
+     *
+     * @return DateTime The latest time the transaction is valid
      */
     public function getMaxTime(): DateTime
     {

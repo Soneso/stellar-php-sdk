@@ -7,6 +7,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a trustline sponsorship created effect from the Stellar network
+ *
+ * This effect occurs when sponsorship for a trustline's base reserve is established.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse
 {
     private string $sponsor;
@@ -15,7 +25,9 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse
     private ?string $liquidityPoolId = null;
 
     /**
-     * @return string|null
+     * Gets the asset identifier
+     *
+     * @return string|null The asset identifier, or null if not set
      */
     public function getAsset(): ?string
     {
@@ -23,7 +35,9 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset type
+     *
+     * @return string|null The asset type, or null if not set
      */
     public function getAssetType(): ?string
     {
@@ -31,7 +45,9 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the liquidity pool ID
+     *
+     * @return string|null The liquidity pool ID, or null if not a liquidity pool trustline
      */
     public function getLiquidityPoolId(): ?string
     {
@@ -39,7 +55,9 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the account ID of the sponsor
+     *
+     * @return string The sponsor's account ID
      */
     public function getSponsor(): string
     {

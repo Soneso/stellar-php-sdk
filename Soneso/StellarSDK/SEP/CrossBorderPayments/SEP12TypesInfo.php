@@ -7,8 +7,16 @@
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
 /**
- * An array containing the accepted sender and receiver values for the type parameter
- * in SEP-12 requests. This object is used in the context of SEP-31.
+ * KYC type definitions for cross-border payment participants.
+ *
+ * This class represents the accepted SEP-12 customer types for senders and receivers
+ * in cross-border payments. Each type maps to specific KYC field requirements that must
+ * be satisfied via SEP-12 customer registration before initiating a transaction.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0012.md
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#get-info
+ * @see SEP31ReceiveAssetInfo
  */
 class SEP12TypesInfo
 {

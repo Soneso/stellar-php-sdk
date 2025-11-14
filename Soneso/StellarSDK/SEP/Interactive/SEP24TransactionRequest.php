@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\SEP\Interactive;
 
+/**
+ * Request parameters for querying a specific SEP-24 transaction
+ *
+ * This class contains the parameters needed to query for a specific
+ * transaction using the /transaction endpoint. At least one identifier
+ * (id, stellarTransactionId, or externalTransactionId) must be provided.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
+ * @see InteractiveService::transaction() For executing transaction queries
+ * @see SEP24TransactionResponse For the response structure
+ */
 class SEP24TransactionRequest {
 
     /**

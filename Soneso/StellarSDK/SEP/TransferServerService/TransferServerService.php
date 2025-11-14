@@ -16,8 +16,30 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 /**
- * Implements SEP-0006 - Deposit and Withdrawal API
- * See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md" target="_blank">Deposit and Withdrawal API</a>
+ * Main service class for SEP-06 Transfer Server protocol implementation.
+ *
+ * Implements SEP-06 Deposit and Withdrawal API for anchor integration.
+ * This service enables wallets and clients to facilitate fiat on/off ramps through
+ * deposit and withdrawal operations. Unlike SEP-24, SEP-06 provides more direct
+ * programmatic access without requiring interactive web flows, though it supports
+ * various deposit and withdrawal methods including bank transfers, cash, and crypto.
+ *
+ * Provides endpoints for:
+ * - Info: Query anchor capabilities and supported assets
+ * - Deposit: Initiate deposits from external assets to Stellar
+ * - Deposit Exchange: Initiate cross-asset deposits with quotes
+ * - Withdraw: Initiate withdrawals from Stellar to external assets
+ * - Withdraw Exchange: Initiate cross-asset withdrawals with quotes
+ * - Fee: Query fee information for operations
+ * - Transactions: Query transaction history
+ * - Transaction: Query individual transaction status
+ * - Patch Transaction: Update pending transaction information
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 v4.3.0 Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md SEP-10 v3.4.1 Authentication
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.15.0/ecosystem/sep-0012.md SEP-12 v1.15.0 KYC API
+ * @see https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md SEP-38 v2.5.0 Quotes
  */
 class TransferServerService
 {
@@ -25,8 +47,10 @@ class TransferServerService
     private Client $httpClient;
 
     /**
-     * @param string $serviceAddress address of the service from stellar toml.
-     * @param Client|null $httpClient optional http client to be used for the requests. If not provided, then uses an own client.
+     * Constructor.
+     *
+     * @param string $serviceAddress Transfer server base URL from stellar.toml TRANSFER_SERVER field
+     * @param Client|null $httpClient Optional HTTP client for requests. If not provided, creates default client
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
@@ -42,11 +66,14 @@ class TransferServerService
     }
 
     /**
-     * Constructs an TransferServerService instance by parsing the server service address from the given domain using sep-01.
-     * @param string $domain the domain to parse the data from. e.g. 'testanchor.stellar.org'.
-     * @param Client|null $httpClient optional http client to be used for the requests. If not provided, then uses an own client.
-     * @return TransferServerService the constructed TransferServerService object.
-     * @throws Exception if the service address could not be loaded from the given domain.
+     * Constructs TransferServerService by discovering service URL from domain using SEP-01.
+     *
+     * Fetches the stellar.toml file from the domain and extracts the TRANSFER_SERVER URL.
+     *
+     * @param string $domain Domain to query (e.g. 'testanchor.stellar.org')
+     * @param Client|null $httpClient Optional HTTP client for requests. If not provided, creates default client
+     * @return TransferServerService Constructed service instance
+     * @throws Exception If service address cannot be loaded from domain or TRANSFER_SERVER not defined
      */
     public static function fromDomain(string $domain, ?Client $httpClient = null) : TransferServerService {
         $stellarToml = StellarToml::fromDomain($domain);
@@ -58,13 +85,16 @@ class TransferServerService
     }
 
     /**
-     * Get basic info from the anchor about what their TRANSFER_SERVER supports.
-     * @param string|null $jwt token previously received from the anchor via the SEP-10 authentication flow
-     * @param string|null $language (optional) Defaults to en if not specified or if the specified
-     * language is not supported. Language code specified using RFC 4646.
-     * Error fields and other human-readable messages in the response should be in this language.
-     * @return InfoResponse response the parsed response.
-     * @throws GuzzleException if a request exception occurs.
+     * Query anchor capabilities and supported assets via info endpoint.
+     *
+     * Returns information about supported assets, deposit/withdrawal methods, fees,
+     * and feature flags. This is the discovery endpoint that clients should query
+     * first to understand what operations the anchor supports.
+     *
+     * @param string|null $jwt Optional SEP-10 JWT token from authentication flow
+     * @param string|null $language Optional language code (RFC 4646). Defaults to 'en'. Error fields use this language
+     * @return InfoResponse Parsed response containing anchor capabilities
+     * @throws GuzzleException If request error occurs
      */
     public function info(?string $jwt = null, ?string $language = null) : InfoResponse {
         $requestBuilder = new InfoRequestBuilder($this->httpClient, $this->serviceAddress, $jwt);
@@ -75,28 +105,22 @@ class TransferServerService
     }
 
     /**
-     * A deposit is when a user sends an external token (BTC via Bitcoin,
-     * USD via bank transfer, etc...) to an address held by an anchor. In turn,
-     * the anchor sends an equal amount of tokens on the Stellar network
-     * (minus fees) to the user's Stellar account.
+     * Initiate deposit of external asset to Stellar network.
      *
-     * If the anchor supports SEP-38 quotes, it can also provide a bridge
-     * between non-equivalent tokens. For example, the anchor can receive ARS
-     * via bank transfer and in return send the equivalent value (minus fees)
-     * as USDC on the Stellar network to the user's Stellar account.
-     * That kind of deposit is covered in GET /deposit-exchange.
+     * Initiates a deposit where the user sends an external asset (BTC via Bitcoin,
+     * USD via bank transfer, etc.) to an anchor-controlled address. The anchor then
+     * sends equivalent Stellar tokens (minus fees) to the user's Stellar account.
      *
-     * The deposit endpoint allows a wallet to get deposit information from
-     * an anchor, so a user has all the information needed to initiate a deposit.
-     * It also lets the anchor specify additional information (if desired) that
-     * the user must submit via SEP-12 to be able to deposit.
+     * For cross-asset deposits with SEP-38 quote support, use depositExchange() instead.
+     * The response provides deposit instructions including destination addresses,
+     * memos, and any additional requirements.
      *
-     * @param DepositRequest $request the request data.
-     * @return DepositResponse the parsed response in case of success
-     * @throws CustomerInformationNeededException The anchor needs more information about the customer.
-     * @throws CustomerInformationStatusException Customer information was submitted for the account, but the information is either still being processed or was not accepted.
-     * @throws AuthenticationRequiredException is the endpoint needs authentication but no jwt token provided in the request.
-     * @throws GuzzleException if a request error occurs.
+     * @param DepositRequest $request Deposit request parameters including asset code and account
+     * @return DepositResponse Deposit instructions and transaction details
+     * @throws CustomerInformationNeededException Anchor needs more customer information via SEP-12
+     * @throws CustomerInformationStatusException Customer information pending or rejected
+     * @throws AuthenticationRequiredException Endpoint requires authentication but no JWT provided
+     * @throws GuzzleException If request error occurs
      */
     public function deposit(DepositRequest $request) : DepositResponse {
         $requestBuilder = new DepositRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
@@ -151,23 +175,21 @@ class TransferServerService
     }
 
     /**
-     * If the anchor supports SEP-38 quotes, it can provide a deposit that makes
-     * a bridge between non-equivalent tokens by receiving, for instance BRL
-     * via bank transfer and in return sending the equivalent value (minus fees)
-     * as USDC to the user's Stellar account.
+     * Initiate cross-asset deposit with currency conversion using SEP-38 quotes.
      *
-     * The /deposit-exchange endpoint allows a wallet to get deposit information
-     * from an anchor when the user intends to make a conversion between
-     * non-equivalent tokens. With this endpoint, a user has all the information
-     * needed to initiate a deposit and it also lets the anchor specify
-     * additional information (if desired) that the user must submit via SEP-12.
+     * Enables deposits with currency conversion where the user sends one asset
+     * (e.g., BRL via bank transfer) and receives a different asset on Stellar
+     * (e.g., USDC). Requires anchor to support SEP-38 quotes for exchange rates.
      *
-     * @param DepositExchangeRequest $request the request data.
-     * @return DepositResponse the parsed response in case of success
-     * @throws CustomerInformationNeededException The anchor needs more information about the customer.
-     * @throws CustomerInformationStatusException Customer information was submitted for the account, but the information is either still being processed or was not accepted.
-     * @throws AuthenticationRequiredException is the endpoint needs authentication but no jwt token provided in the request.
-     * @throws GuzzleException if a request error occurs.
+     * The response provides deposit instructions and quote details for the conversion.
+     * Use the quote_id from a prior SEP-38 quote request to lock in exchange rates.
+     *
+     * @param DepositExchangeRequest $request Deposit exchange request with source and destination assets
+     * @return DepositResponse Deposit instructions with quote information
+     * @throws CustomerInformationNeededException Anchor needs more customer information via SEP-12
+     * @throws CustomerInformationStatusException Customer information pending or rejected
+     * @throws AuthenticationRequiredException Endpoint requires authentication but no JWT provided
+     * @throws GuzzleException If request error occurs
      */
     public function depositExchange(DepositExchangeRequest $request) : DepositResponse {
         $requestBuilder = new DepositExchangeRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
@@ -228,27 +250,22 @@ class TransferServerService
     }
 
     /**
-     * A withdraw is when a user redeems an asset currently on the
-     * Stellar network for its equivalent off-chain asset via the Anchor.
-     * For instance, a user redeeming their NGNT in exchange for fiat NGN.
+     * Initiate withdrawal from Stellar network to external asset.
      *
-     * If the anchor supports SEP-38 quotes, it can also provide a bridge
-     * between non-equivalent tokens. For example, the anchor can receive USDC
-     * from the Stellar network and in return send the equivalent value
-     * (minus fees) as NGN to the user's bank account.
-     * That kind of withdrawal is covered in GET /withdraw-exchange.
+     * Initiates a withdrawal where the user redeems Stellar assets for their
+     * off-chain equivalent via the anchor. For example, redeeming NGNT tokens
+     * for fiat NGN sent to a bank account.
      *
-     * The /withdraw endpoint allows a wallet to get withdrawal information
-     * from an anchor, so a user has all the information needed to initiate
-     * a withdrawal. It also lets the anchor specify additional information
-     * (if desired) that the user must submit via SEP-12 to be able to withdraw.
+     * For cross-asset withdrawals with SEP-38 quote support, use withdrawExchange() instead.
+     * The response provides withdrawal instructions including the anchor's Stellar account,
+     * memo requirements, and any additional user information needed.
      *
-     * @param WithdrawRequest $request the request data.
-     * @return WithdrawResponse the parsed response in case of success
-     * @throws CustomerInformationNeededException The anchor needs more information about the customer.
-     * @throws CustomerInformationStatusException Customer information was submitted for the account, but the information is either still being processed or was not accepted.
-     * @throws AuthenticationRequiredException is the endpoint needs authentication but no jwt token provided in the request.
-     * @throws GuzzleException in case of request error
+     * @param WithdrawRequest $request Withdrawal request parameters including asset code and type
+     * @return WithdrawResponse Withdrawal instructions and transaction details
+     * @throws CustomerInformationNeededException Anchor needs more customer information via SEP-12
+     * @throws CustomerInformationStatusException Customer information pending or rejected
+     * @throws AuthenticationRequiredException Endpoint requires authentication but no JWT provided
+     * @throws GuzzleException If request error occurs
      */
     public function withdraw(WithdrawRequest $request) : WithdrawResponse {
         $requestBuilder = new WithdrawRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
@@ -309,23 +326,21 @@ class TransferServerService
     }
 
     /**
-     * If the anchor supports SEP-38 quotes, it can provide a withdraw that makes
-     * a bridge between non-equivalent tokens by receiving, for instance USDC
-     * from the Stellar network and in return sending the equivalent value
-     * (minus fees) as NGN to the user's bank account.
+     * Initiate cross-asset withdrawal with currency conversion using SEP-38 quotes.
      *
-     * The /withdraw-exchange endpoint allows a wallet to get withdraw
-     * information from an anchor when the user intends to make a conversion
-     * between non-equivalent tokens. With this endpoint, a user has all the
-     * information needed to initiate a withdraw and it also lets the anchor
-     * specify additional information (if desired) that the user must submit via SEP-12.
+     * Enables withdrawals with currency conversion where the user sends one Stellar asset
+     * (e.g., USDC) and receives a different off-chain asset (e.g., NGN to bank account).
+     * Requires anchor to support SEP-38 quotes for exchange rates.
      *
-     * @param WithdrawExchangeRequest $request the request data
-     * @return WithdrawResponse the parsed response in case of success
-     * @throws CustomerInformationNeededException The anchor needs more information about the customer.
-     * @throws CustomerInformationStatusException Customer information was submitted for the account, but the information is either still being processed or was not accepted.
-     * @throws AuthenticationRequiredException is the endpoint needs authentication but no jwt token provided in the request.
-     * @throws GuzzleException in case of request error
+     * The response provides withdrawal instructions and quote details for the conversion.
+     * Use the quote_id from a prior SEP-38 quote request to lock in exchange rates.
+     *
+     * @param WithdrawExchangeRequest $request Withdrawal exchange request with source and destination assets
+     * @return WithdrawResponse Withdrawal instructions with quote information
+     * @throws CustomerInformationNeededException Anchor needs more customer information via SEP-12
+     * @throws CustomerInformationStatusException Customer information pending or rejected
+     * @throws AuthenticationRequiredException Endpoint requires authentication but no JWT provided
+     * @throws GuzzleException If request error occurs
      */
     public function withdrawExchange(WithdrawExchangeRequest $request) : WithdrawResponse {
         $requestBuilder = new WithdrawExchangeRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
@@ -390,10 +405,15 @@ class TransferServerService
     }
 
     /**
-     * Fee endpoint.
-     * @param FeeRequest $request the request data
-     * @return FeeResponse the parsed response in case of success
-     * @throws GuzzleException in case of request error
+     * Query fee information for deposit or withdrawal operations.
+     *
+     * Allows wallets to query the fee that would be charged for a given operation.
+     * Important when fee schedules are complex and cannot be fully expressed in the
+     * info endpoint's fee_fixed, fee_percent, or fee_minimum fields.
+     *
+     * @param FeeRequest $request Fee request with operation type, asset, and amount
+     * @return FeeResponse Fee amount and details
+     * @throws GuzzleException If request error occurs
      */
     public function fee(FeeRequest $request) : FeeResponse {
         $requestBuilder = new FeeRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
@@ -411,13 +431,18 @@ class TransferServerService
     }
 
     /**
-     * The transaction history endpoint helps anchors enable a better experience for users using an external wallet.
-     * With it, wallets can display the status of deposits and withdrawals while they process and a history of past
-     * transactions with the anchor. It's only for transactions that are deposits to or withdrawals from the anchor.
+     * Query transaction history for deposits and withdrawals.
      *
-     * @param AnchorTransactionsRequest $request the request data
-     * @return AnchorTransactionsResponse the parsed response in case of success
-     * @throws GuzzleException in case of request error
+     * Retrieves transaction history for the authenticated account, enabling wallets
+     * to display status updates and historical records. Only returns deposit and
+     * withdrawal transactions processed through this anchor.
+     *
+     * Supports filtering by asset, transaction kind, and time range, plus pagination
+     * for large result sets.
+     *
+     * @param AnchorTransactionsRequest $request Transactions query parameters with filters and pagination
+     * @return AnchorTransactionsResponse List of matching transactions
+     * @throws GuzzleException If request error occurs
      */
     public function transactions(AnchorTransactionsRequest $request) : AnchorTransactionsResponse {
         $requestBuilder = new AnchorTransactionsRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
@@ -450,10 +475,17 @@ class TransferServerService
     }
 
     /**
-     * The transaction endpoint enables clients to query/validate a specific transaction at an anchor.
-     * @param AnchorTransactionRequest $request the request data
-     * @return AnchorTransactionResponse the parsed response in case of success
-     * @throws GuzzleException in case of request error
+     * Query individual transaction details and status.
+     *
+     * Retrieves detailed information about a specific transaction using one of:
+     * transaction ID, Stellar transaction hash, or external transaction ID.
+     *
+     * Useful for validating transaction status and getting real-time updates
+     * on deposit or withdrawal progress.
+     *
+     * @param AnchorTransactionRequest $request Transaction query with at least one identifier
+     * @return AnchorTransactionResponse Detailed transaction information
+     * @throws GuzzleException If request error occurs
      */
     public function transaction(AnchorTransactionRequest $request) : AnchorTransactionResponse {
         $requestBuilder = new AnchorTransactionRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
@@ -476,12 +508,18 @@ class TransferServerService
     }
 
     /**
-     * Updates a transaction. This endpoint should only be used when the anchor requests more info via the pending_transaction_info_update status.
-     * The required_info_updates transaction field should contain the fields required for the update.
-     * If the sender tries to update at a time when no info is requested the receiver will fail with an error response.
-     * @param PatchTransactionRequest $request request data
-     * @return ResponseInterface response
-     * @throws GuzzleException if a request error occurs
+     * Update pending transaction with additional required information.
+     *
+     * Updates transaction details when the anchor requests more information via
+     * the pending_transaction_info_update status. The transaction's required_info_updates
+     * field specifies which fields need updating.
+     *
+     * Should only be called when anchor explicitly requests updates. Attempting to
+     * update when no information is requested will result in an error.
+     *
+     * @param PatchTransactionRequest $request Transaction ID and fields to update
+     * @return ResponseInterface Raw HTTP response
+     * @throws GuzzleException If request error occurs
      */
     public function patchTransaction(PatchTransactionRequest $request) : ResponseInterface {
         $headers = array();
@@ -497,7 +535,14 @@ class TransferServerService
         ]);
     }
 
-    public function setMockHandlerStack(HandlerStack $handlerStack) {
+    /**
+     * Sets a mock handler stack for testing purposes.
+     *
+     * @internal This method is intended for testing and should not be used in production code
+     * @param HandlerStack $handlerStack the handler stack to use for mocking requests.
+     * @return void
+     */
+    public function setMockHandlerStack(HandlerStack $handlerStack) : void {
         $this->httpClient = new Client(['handler' => $handlerStack]);
     }
 }

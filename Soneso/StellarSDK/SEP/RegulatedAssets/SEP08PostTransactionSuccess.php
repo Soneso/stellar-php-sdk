@@ -7,7 +7,20 @@
 namespace Soneso\StellarSDK\SEP\RegulatedAssets;
 
 /**
- * This response means that the transaction was found compliant and signed without being revised.
+ * Response indicating the transaction was approved and signed without revision.
+ *
+ * This response means the transaction was found compliant with the issuer's regulatory
+ * requirements and has been signed by the issuer without modifications. The wallet should
+ * now submit the signed transaction to the Stellar network.
+ *
+ * The returned transaction envelope contains both the original signatures from the user
+ * and additional signatures from the issuer, providing the necessary authorization to
+ * complete the transaction on the network.
+ *
+ * HTTP Status Code: 200
+ *
+ * @package Soneso\StellarSDK\SEP\RegulatedAssets
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.7.4/ecosystem/sep-0008.md#success SEP-0008 v1.7.4
  */
 class SEP08PostTransactionSuccess extends SEP08PostTransactionResponse
 {

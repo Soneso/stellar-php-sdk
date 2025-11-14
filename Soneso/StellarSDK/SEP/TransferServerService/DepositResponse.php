@@ -8,6 +8,22 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response from deposit endpoint containing instructions for completing the deposit.
+ *
+ * Provides all information needed for the user to initiate a deposit, including
+ * destination addresses, memos, fee details, and deposit instructions. The instructions
+ * field contains structured deposit information (replacing the deprecated how field).
+ *
+ * Response includes transaction ID for status tracking, time estimates, and any
+ * amount limits or fees that apply to the deposit.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::deposit()
+ * @see DepositRequest
+ * @see DepositInstruction
+ */
 class DepositResponse extends Response
 {
     /**

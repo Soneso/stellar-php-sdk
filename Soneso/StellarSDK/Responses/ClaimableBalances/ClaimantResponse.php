@@ -7,13 +7,26 @@
 
 namespace Soneso\StellarSDK\Responses\ClaimableBalances;
 
+/**
+ * Represents a claimant eligible to claim a claimable balance
+ *
+ * Contains the destination account ID and the predicate conditions that must be satisfied
+ * before the claimant can successfully claim the balance.
+ *
+ * @package Soneso\StellarSDK\Responses\ClaimableBalances
+ * @see ClaimableBalanceResponse For the parent claimable balance details
+ * @see ClaimantPredicateResponse For the claim conditions
+ * @since 1.0.0
+ */
 class ClaimantResponse
 {
     private string $destination;
     private ClaimantPredicateResponse $predicate;
 
     /**
-     * @return string
+     * Gets the destination account ID that can claim this balance
+     *
+     * @return string The claimant account ID
      */
     public function getDestination(): string
     {
@@ -21,7 +34,9 @@ class ClaimantResponse
     }
 
     /**
-     * @return ClaimantPredicateResponse
+     * Gets the predicate conditions for claiming this balance
+     *
+     * @return ClaimantPredicateResponse The claim predicate
      */
     public function getPredicate(): ClaimantPredicateResponse
     {

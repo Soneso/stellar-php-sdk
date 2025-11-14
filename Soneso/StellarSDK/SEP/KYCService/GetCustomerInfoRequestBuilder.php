@@ -13,14 +13,46 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Request builder for GET /customer endpoint operations.
+ *
+ * This builder constructs HTTP requests to retrieve customer information and KYC status
+ * from the anchor's SEP-12 endpoint. It supports querying by customer ID, Stellar account,
+ * memo, transaction ID, and customer type.
+ *
+ * The builder follows the builder pattern, allowing method chaining to configure request
+ * parameters before execution.
+ *
+ * Example usage:
+ * ```php
+ * $builder = new GetCustomerInfoRequestBuilder($httpClient, $serviceAddress, $jwt);
+ * $response = $builder->forQueryParameters(['account' => $accountId])->execute();
+ * ```
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-get SEP-12 v1.15.0
+ * @see KYCService::getCustomerInfo() For the service method using this builder
+ * @see GetCustomerInfoResponse For the response structure
+ * @since 1.0.0
+ */
 class GetCustomerInfoRequestBuilder extends RequestBuilder
 {
+    /**
+     * @var string The base URL of the SEP-12 KYC service endpoint
+     */
     private string $serviceAddress;
+
+    /**
+     * @var string|null JWT token for authentication obtained via SEP-10
+     */
     private ?string $jwtToken = null;
 
     /**
-     * @param Client $httpClient
-     * @param string|null $jwtToken
+     * Constructor for building GET /customer requests.
+     *
+     * @param Client $httpClient The HTTP client to use for sending requests
+     * @param string $serviceAddress The base URL of the SEP-12 service
+     * @param string|null $jwtToken JWT token for authentication obtained via SEP-10
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {
@@ -29,15 +61,25 @@ class GetCustomerInfoRequestBuilder extends RequestBuilder
         parent::__construct($httpClient);
     }
 
+    /**
+     * Sets the query parameters for the request.
+     *
+     * Supported parameters: id, account, memo, memo_type, type, transaction_id, lang
+     *
+     * @param array<string, string> $queryParameters Query parameters to include in the request
+     * @return GetCustomerInfoRequestBuilder Returns this builder for method chaining
+     */
     public function forQueryParameters(array $queryParameters) : GetCustomerInfoRequestBuilder {
         $this->queryParameters = array_merge($this->queryParameters, $queryParameters);
         return $this;
     }
 
     /**
-     * @param string $url
-     * @return GetCustomerInfoResponse
-     * @throws GuzzleException
+     * Executes the HTTP request to the specified URL.
+     *
+     * @param string $url The fully constructed URL to send the request to
+     * @return GetCustomerInfoResponse The parsed response containing customer information
+     * @throws GuzzleException If the HTTP request fails or server returns an error
      */
     public function request(string $url) : GetCustomerInfoResponse {
         $headers = array();
@@ -51,6 +93,11 @@ class GetCustomerInfoRequestBuilder extends RequestBuilder
         return $responseHandler->handleResponse($response, RequestType::GET_CUSTOMER_INFO, $this->httpClient);
     }
 
+    /**
+     * Builds the complete URL for the request.
+     *
+     * @return string The fully constructed URL with query parameters
+     */
     public function buildUrl() : string {
         $url = $this->serviceAddress . "/customer";
         if (count($this->queryParameters) > 0) {
@@ -60,9 +107,10 @@ class GetCustomerInfoRequestBuilder extends RequestBuilder
     }
 
     /**
-     * Build and execute request.
-     * @return GetCustomerInfoResponse
-     * @throws GuzzleException
+     * Builds and executes the request.
+     *
+     * @return GetCustomerInfoResponse The parsed response containing customer information and status
+     * @throws GuzzleException If the HTTP request fails or server returns an error
      */
     public function execute() : GetCustomerInfoResponse {
         return $this->request($this->buildUrl());

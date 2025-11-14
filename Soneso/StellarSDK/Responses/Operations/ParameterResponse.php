@@ -6,7 +6,15 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
-
+/**
+ * Represents a Soroban contract function parameter
+ *
+ * Encapsulates a single parameter passed to a smart contract function during invocation.
+ * Contains the parameter type and its encoded value. Used in InvokeHostFunctionOperationResponse
+ * to represent the arguments supplied to contract functions.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ */
 class ParameterResponse
 {
     public string $type;
@@ -24,7 +32,9 @@ class ParameterResponse
     }
 
     /**
-     * @return string
+     * Gets the parameter type
+     *
+     * @return string The Soroban value type (e.g., U32, Symbol, Address)
      */
     public function getType(): string
     {
@@ -32,7 +42,10 @@ class ParameterResponse
     }
 
     /**
-     * @param string $type
+     * Sets the parameter type
+     *
+     * @param string $type The Soroban value type
+     * @return void
      */
     public function setType(string $type): void
     {
@@ -40,7 +53,9 @@ class ParameterResponse
     }
 
     /**
-     * @return string
+     * Gets the encoded parameter value
+     *
+     * @return string The parameter value as a base64 XDR-encoded string
      */
     public function getValue(): string
     {
@@ -48,7 +63,10 @@ class ParameterResponse
     }
 
     /**
-     * @param string $value
+     * Sets the encoded parameter value
+     *
+     * @param string $value The parameter value
+     * @return void
      */
     public function setValue(string $value): void
     {

@@ -6,12 +6,24 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents an account home domain updated effect from the Stellar network
+ *
+ * This effect occurs when an account's home domain is modified.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class AccountHomeDomainUpdatedEffectResponse extends EffectResponse
 {
     private string $homeDomain;
 
     /**
-     * @return string
+     * Gets the new home domain for the account
+     *
+     * @return string The home domain value
      */
     public function getHomeDomain(): string {
         return $this->homeDomain;

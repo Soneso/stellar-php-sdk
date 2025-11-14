@@ -6,21 +6,35 @@
 
 namespace Soneso\StellarSDK\SEP\Federation;
 
-/// Implements Federation protocol.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md" target="_blank">Federation Protocol</a>
 use Exception;
 use GuzzleHttp\Client;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
+/**
+ * Federation protocol implementation for resolving Stellar addresses.
+ *
+ * This class implements SEP-0002 Federation Protocol, which provides a way to
+ * resolve human-readable addresses like "bob*example.com" into Stellar account
+ * IDs and memo information. It enables user-friendly payment addressing.
+ *
+ * @package Soneso\StellarSDK\SEP\Federation
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md
+ * @see FederationRequestBuilder
+ * @see FederationResponse
+ */
 class Federation {
 
     /**
-     * Resolves a stellar address such as bob*soneso.com.
-     * @param string $address
-     * @return FederationResponse
-     * @throws Exception
+     * Resolves a Stellar address to account ID and memo.
+     *
+     * @param string $address Stellar address in format "user*domain.com". The username
+     *                        portion must not contain the characters '*' or '>'.
+     * @param Client|null $httpClient Optional HTTP client. Default is Guzzle.
+     * @return FederationResponse Response containing account ID and optional memo.
+     * @throws Exception If address format is invalid or federation server not found.
+     * @throws HorizonRequestException If federation request fails.
      */
     public static function resolveStellarAddress(string $address, ?Client $httpClient = null) : FederationResponse {
         if (!str_contains($address, "*")) {
@@ -43,8 +57,13 @@ class Federation {
     }
 
     /**
-     * @return FederationResponse in case of success.
-     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
+     * Performs reverse federation lookup for an account ID.
+     *
+     * @param string $accountId Stellar account ID to lookup.
+     * @param string $federationServerUrl URL of the federation server.
+     * @param Client|null $httpClient Optional HTTP client. Default is Guzzle.
+     * @return FederationResponse Response containing Stellar address if found.
+     * @throws HorizonRequestException If federation request fails.
      */
     public static function resolveStellarAccountId(string $accountId, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
         $client = $httpClient != null ? $httpClient : new Client();
@@ -53,8 +72,13 @@ class Federation {
     }
 
     /**
-     * @return FederationResponse in case of success.
-     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
+     * Resolves a transaction ID to federation information.
+     *
+     * @param string $txId Transaction ID to lookup.
+     * @param string $federationServerUrl URL of the federation server.
+     * @param Client|null $httpClient Optional HTTP client. Default is Guzzle.
+     * @return FederationResponse Response containing federation information.
+     * @throws HorizonRequestException If federation request fails.
      */
     public static function resolveStellarTransactionId(string $txId, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
         $client = $httpClient != null ? $httpClient : new Client();
@@ -63,12 +87,19 @@ class Federation {
     }
 
     /**
-     * Resolves a stellar forward.
-     * The url of the federation server and the forward query parameters have to be provided.
+     * Resolves forward federation requests with custom parameters.
      *
-     * @return FederationResponse in case of success.
-     * @throws HorizonRequestException on any problem. The details of the problem can be found in the exception object.
-     * /
+     * Used for forwarding payments to different networks or financial institutions.
+     * The query parameters vary based on the destination institution type. Example
+     * parameters: ['forward_type' => 'bank_account', 'swift' => 'BOPBPHMM', 'acct' => '2382376']
+     * or ['forward_type' => 'remittance_center', 'first_name' => 'John', 'last_name' => 'Doe',
+     * 'address' => '123 Main St', 'city' => 'City', 'postal_code' => '12345', 'country' => 'US'].
+     *
+     * @param array<array-key, mixed> $queryParameters Custom query parameters for forward request.
+     * @param string $federationServerUrl URL of the federation server.
+     * @param Client|null $httpClient Optional HTTP client. Default is Guzzle.
+     * @return FederationResponse Response containing federation information.
+     * @throws HorizonRequestException If federation request fails.
      */
     public static function resolveForward(array $queryParameters, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
         $client = $httpClient != null ? $httpClient : new Client();

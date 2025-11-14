@@ -9,6 +9,18 @@ namespace Soneso\StellarSDK\Responses\Operations;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents a clawback operation response from Horizon API
+ *
+ * This operation claws back a specified amount of an asset from a holding account, burning the asset
+ * and reducing the total supply. Only the asset issuer can perform clawbacks, and only if the
+ * AUTH_CLAWBACK_ENABLED flag is set on the asset. This is used to retrieve assets from accounts
+ * for regulatory compliance or asset management purposes.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Clawback Operation
+ */
 class ClawbackOperationResponse extends OperationResponse
 {
     private string $amount;
@@ -18,7 +30,9 @@ class ClawbackOperationResponse extends OperationResponse
     private Asset $asset;
 
     /**
-     * @return string
+     * Gets the amount of the asset being clawed back
+     *
+     * @return string The amount as a string to preserve precision
      */
     public function getAmount(): string
     {
@@ -26,7 +40,9 @@ class ClawbackOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the account from which the asset is being clawed back
+     *
+     * @return string The source account ID
      */
     public function getFrom(): string
     {
@@ -34,7 +50,9 @@ class ClawbackOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed source account if applicable
+     *
+     * @return string|null The muxed source account address or null
      */
     public function getFromMuxed(): ?string
     {
@@ -42,7 +60,9 @@ class ClawbackOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed source account ID if applicable
+     *
+     * @return string|null The muxed source account ID or null
      */
     public function getFromMuxedId(): ?string
     {
@@ -50,7 +70,9 @@ class ClawbackOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset being clawed back
+     *
+     * @return Asset The asset details (type, code, issuer)
      */
     public function getAsset(): Asset
     {

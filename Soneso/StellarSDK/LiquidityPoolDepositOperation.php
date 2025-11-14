@@ -10,20 +10,51 @@ use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
+/**
+ * Represents <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a> operation.
+ *
+ * Deposits assets into a liquidity pool, contributing to the pool's reserves.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
+ * @see LiquidityPoolWithdrawOperation For withdrawing from a pool
+ * @since 1.0.0
+ */
 class LiquidityPoolDepositOperation extends AbstractOperation
 {
+    /**
+     * @var string The liquidity pool ID
+     */
     private string $liqudityPoolId;
+
+    /**
+     * @var string Maximum amount of asset A to deposit (as a decimal string)
+     */
     private string $maxAmountA;
+
+    /**
+     * @var string Maximum amount of asset B to deposit (as a decimal string)
+     */
     private string $maxAmountB;
+
+    /**
+     * @var Price Minimum exchange rate for asset A to asset B
+     */
     private Price $minPrice;
+
+    /**
+     * @var Price Maximum exchange rate for asset A to asset B
+     */
     private Price $maxPrice;
 
     /**
-     * @param string $liqudityPoolId
-     * @param string $maxAmountA
-     * @param string $maxAmountB
-     * @param Price $minPrice
-     * @param Price $maxPrice
+     * Creates a new LiquidityPoolDepositOperation.
+     *
+     * @param string $liqudityPoolId The liquidity pool ID
+     * @param string $maxAmountA Maximum amount of asset A to deposit
+     * @param string $maxAmountB Maximum amount of asset B to deposit
+     * @param Price $minPrice Minimum price (asset A / asset B)
+     * @param Price $maxPrice Maximum price (asset A / asset B)
      */
     public function __construct(string $liqudityPoolId, string $maxAmountA, string $maxAmountB, Price $minPrice, Price $maxPrice)
     {
@@ -35,7 +66,9 @@ class LiquidityPoolDepositOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the liquidity pool ID.
+     *
+     * @return string The liquidity pool ID
      */
     public function getLiqudityPoolId(): string
     {
@@ -43,7 +76,9 @@ class LiquidityPoolDepositOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the maximum amount of asset A.
+     *
+     * @return string The maximum amount as a decimal string
      */
     public function getMaxAmountA(): string
     {
@@ -51,7 +86,9 @@ class LiquidityPoolDepositOperation extends AbstractOperation
     }
 
     /**
-     * @return string
+     * Gets the maximum amount of asset B.
+     *
+     * @return string The maximum amount as a decimal string
      */
     public function getMaxAmountB(): string
     {
@@ -59,7 +96,9 @@ class LiquidityPoolDepositOperation extends AbstractOperation
     }
 
     /**
-     * @return Price
+     * Gets the minimum price.
+     *
+     * @return Price The minimum price
      */
     public function getMinPrice(): Price
     {
@@ -67,13 +106,21 @@ class LiquidityPoolDepositOperation extends AbstractOperation
     }
 
     /**
-     * @return Price
+     * Gets the maximum price.
+     *
+     * @return Price The maximum price
      */
     public function getMaxPrice(): Price
     {
         return $this->maxPrice;
     }
 
+    /**
+     * Creates a LiquidityPoolDepositOperation from its XDR representation.
+     *
+     * @param XdrLiquidityPoolDepositOperation $xdrOp The XDR liquidity pool deposit operation to convert
+     * @return LiquidityPoolDepositOperation The resulting LiquidityPoolDepositOperation instance
+     */
     public static function fromXdrOperation(XdrLiquidityPoolDepositOperation $xdrOp): LiquidityPoolDepositOperation {
         $maxAmountA = AbstractOperation::fromXdrAmount($xdrOp->getMaxAmountA());
         $maxAmountB = AbstractOperation::fromXdrAmount($xdrOp->getMaxAmountB());
@@ -83,6 +130,11 @@ class LiquidityPoolDepositOperation extends AbstractOperation
         return new LiquidityPoolDepositOperation($liquidityPoolId, $maxAmountA, $maxAmountB, $minPrice, $maxPrice);
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $maxAmountA = AbstractOperation::toXdrAmount($this->maxAmountA);

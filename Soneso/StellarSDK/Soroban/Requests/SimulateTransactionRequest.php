@@ -10,7 +10,9 @@ use Soneso\StellarSDK\Transaction;
 
 /**
  * Soroban Simulate Transaction Request.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ *
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ * @package Soneso\StellarSDK\Soroban\Requests
  */
 class SimulateTransactionRequest
 {
@@ -50,6 +52,11 @@ class SimulateTransactionRequest
         $this->authMode = $authMode;
     }
 
+    /**
+     * Builds and returns the request parameters array for the RPC API call.
+     *
+     * @return array<string, mixed> The request parameters formatted for Soroban RPC
+     */
     public function getRequestParams() : array {
         $params = array(
             'transaction' => $this->transaction->toEnvelopeXdrBase64()
@@ -103,7 +110,10 @@ class SimulateTransactionRequest
     }
 
     /**
-     * @return string|null
+     * Returns the authorization mode for transaction simulation.
+     * Controls how authorization is handled during simulation.
+     *
+     * @return string|null The auth mode ("enforce", "record", or "record_allow_nonroot"), or null if not set
      */
     public function getAuthMode(): ?string
     {
@@ -111,7 +121,11 @@ class SimulateTransactionRequest
     }
 
     /**
-     * @param string|null $authMode
+     * Sets the authorization mode for transaction simulation.
+     * Only available for protocol >= 23.
+     *
+     * @param string|null $authMode The auth mode: "enforce" | "record" | "record_allow_nonroot"
+     * @return void
      */
     public function setAuthMode(?string $authMode): void
     {

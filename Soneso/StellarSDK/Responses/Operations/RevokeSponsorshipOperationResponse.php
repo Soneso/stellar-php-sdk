@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a revoke sponsorship operation response from Horizon API
+ *
+ * This operation removes reserve sponsorship from a ledger entry, transferring the reserve
+ * responsibility back to the entry owner or to a new sponsor. It can revoke sponsorship for
+ * accounts, trustlines, offers, data entries, claimable balances, liquidity pool entries,
+ * and signers. Only the current sponsor can revoke their sponsorship of an entry.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Revoke Sponsorship Operation
+ */
 class RevokeSponsorshipOperationResponse extends OperationResponse
 {
     private ?string $accountId= null;
@@ -19,7 +31,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     private ?string $signerKey = null;
 
     /**
-     * @return string|null
+     * Gets the account ID if revoking account sponsorship
+     *
+     * @return string|null The account ID or null if not an account revocation
      */
     public function getAccountId(): ?string
     {
@@ -27,7 +41,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the claimable balance ID if revoking claimable balance sponsorship
+     *
+     * @return string|null The claimable balance ID or null if not a balance revocation
      */
     public function getClaimableBalanceId(): ?string
     {
@@ -35,7 +51,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the account ID if revoking data entry sponsorship
+     *
+     * @return string|null The data account ID or null if not a data revocation
      */
     public function getDataAccountId(): ?string
     {
@@ -43,7 +61,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the data entry name if revoking data entry sponsorship
+     *
+     * @return string|null The data entry name or null if not a data revocation
      */
     public function getDataName(): ?string
     {
@@ -51,7 +71,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the offer ID if revoking offer sponsorship
+     *
+     * @return string|null The offer ID or null if not an offer revocation
      */
     public function getOfferId(): ?string
     {
@@ -59,7 +81,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the trustline account ID if revoking trustline sponsorship
+     *
+     * @return string|null The trustline account ID or null if not a trustline revocation
      */
     public function getTrustlineAccountId(): ?string
     {
@@ -67,7 +91,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the trustline asset if revoking trustline sponsorship
+     *
+     * @return string|null The trustline asset or null if not a trustline revocation
      */
     public function getTrustlineAsset(): ?string
     {
@@ -75,7 +101,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the signer account ID if revoking signer sponsorship
+     *
+     * @return string|null The signer account ID or null if not a signer revocation
      */
     public function getSignerAccountId(): ?string
     {
@@ -83,7 +111,9 @@ class RevokeSponsorshipOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the signer key if revoking signer sponsorship
+     *
+     * @return string|null The signer key or null if not a signer revocation
      */
     public function getSignerKey(): ?string
     {

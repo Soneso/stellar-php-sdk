@@ -9,6 +9,18 @@ namespace Soneso\StellarSDK\Responses\Operations;
 use Soneso\StellarSDK\Responses\LiquidityPools\ReserveResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\ReservesResponse;
 
+/**
+ * Represents a liquidity pool withdraw operation response from Horizon API
+ *
+ * This operation withdraws assets from an automated market maker (AMM) liquidity pool by burning
+ * pool shares. The withdrawer specifies the number of shares to burn and minimum acceptable amounts
+ * to receive from each reserve. The actual amounts received are determined by the pool's current
+ * ratio and the proportion of shares being burned. This reduces the depositor's stake in the pool.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Liquidity Pool Withdraw Operation
+ */
 class LiquidityPoolWithdrawOperationResponse extends OperationResponse
 {
     private string $liquidityPoolId;
@@ -17,7 +29,9 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse
     private ReservesResponse $reservesReceived;
 
     /**
-     * @return string
+     * Gets the unique identifier of the liquidity pool
+     *
+     * @return string The liquidity pool ID
      */
     public function getLiquidityPoolId(): string
     {
@@ -25,7 +39,9 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse
     }
 
     /**
-     * @return ReservesResponse
+     * Gets the minimum acceptable amounts to receive from each reserve
+     *
+     * @return ReservesResponse Minimum withdrawal amounts for pool reserves
      */
     public function getReservesMin(): ReservesResponse
     {
@@ -33,7 +49,9 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the number of pool shares being withdrawn (burned)
+     *
+     * @return string Pool shares amount as a string to preserve precision
      */
     public function getShares(): string
     {
@@ -41,7 +59,9 @@ class LiquidityPoolWithdrawOperationResponse extends OperationResponse
     }
 
     /**
-     * @return ReservesResponse
+     * Gets the actual amounts received from each reserve
+     *
+     * @return ReservesResponse Actual received amounts for pool reserves
      */
     public function getReservesReceived(): ReservesResponse
     {

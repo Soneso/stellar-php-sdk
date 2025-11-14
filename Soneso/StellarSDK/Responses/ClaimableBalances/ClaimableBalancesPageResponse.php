@@ -9,12 +9,23 @@ namespace Soneso\StellarSDK\Responses\ClaimableBalances;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
 
+/**
+ * Represents a paginated collection of claimable balances from Horizon
+ *
+ * @package Soneso\StellarSDK\Responses\ClaimableBalances
+ * @see PageResponse For pagination functionality
+ * @see ClaimableBalanceResponse For individual claimable balance details
+ * @see https://developers.stellar.org Stellar developer docs Horizon Claimable Balances API
+ * @since 1.0.0
+ */
 class ClaimableBalancesPageResponse extends PageResponse
 {
     private ClaimableBalancesResponse $claimableBalances;
 
     /**
-     * @return ClaimableBalancesResponse
+     * Gets the collection of claimable balances in this page
+     *
+     * @return ClaimableBalancesResponse The claimable balances collection
      */
     public function getClaimableBalances(): ClaimableBalancesResponse {
         return $this->claimableBalances;

@@ -9,6 +9,19 @@ namespace Soneso\StellarSDK\Responses\Operations;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents an allow trust operation response from Horizon API
+ *
+ * This deprecated operation updates trustline authorization flags for an asset. The asset issuer
+ * can authorize or deauthorize accounts to hold the asset, or allow them to maintain liabilities
+ * only. This operation has been superseded by SetTrustlineFlagsOperation which provides more
+ * granular control over trustline flags.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Allow Trust Operation
+ * @deprecated Use SetTrustlineFlagsOperation instead
+ */
 class AllowTrustOperationResponse extends OperationResponse
 {
     private string $trustor;
@@ -22,7 +35,9 @@ class AllowTrustOperationResponse extends OperationResponse
     private ?bool $authorizeToMaintainLiabilities = null;
 
     /**
-     * @return string
+     * Gets the account holding the trustline
+     *
+     * @return string The trustor account ID
      */
     public function getTrustor(): string
     {
@@ -30,7 +45,9 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the asset issuer account
+     *
+     * @return string The trustee (issuer) account ID
      */
     public function getTrustee(): string
     {
@@ -38,7 +55,9 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed trustee account if applicable
+     *
+     * @return string|null The muxed trustee account address or null
      */
     public function getTrusteeMuxed(): ?string
     {
@@ -46,7 +65,9 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed trustee account ID if applicable
+     *
+     * @return string|null The muxed trustee account ID or null
      */
     public function getTrusteeMuxedId(): ?string
     {
@@ -54,7 +75,9 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the asset type
+     *
+     * @return string The asset type (native, credit_alphanum4, or credit_alphanum12)
      */
     public function getAssetType(): string
     {
@@ -62,7 +85,9 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset code
+     *
+     * @return string|null The asset code or null for native assets
      */
     public function getAssetCode(): ?string
     {
@@ -70,7 +95,9 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset issuer
+     *
+     * @return string|null The asset issuer account ID or null for native assets
      */
     public function getAssetIssuer(): ?string
     {
@@ -78,7 +105,9 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return bool
+     * Checks if the trustline is authorized
+     *
+     * @return bool True if authorized, false otherwise
      */
     public function isAuthorize(): bool
     {
@@ -86,7 +115,9 @@ class AllowTrustOperationResponse extends OperationResponse
     }
 
     /**
-     * @return bool|null
+     * Checks if the trustline is authorized to maintain liabilities only
+     *
+     * @return bool|null True if authorized to maintain liabilities only, false if not, null if not set
      */
     public function getAuthorizeToMaintainLiabilities(): ?bool
     {

@@ -14,12 +14,32 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Responses\Response;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Abstract base class for paginated collection responses from Horizon API
+ *
+ * Horizon returns collections in pages for efficient data transfer. This base class provides
+ * common pagination functionality including navigation links, page state checking, and methods
+ * to fetch next/previous pages. All paginated collection responses extend this class.
+ *
+ * Key features:
+ * - Navigation links for next, previous, and self pages
+ * - Helper methods to check if next/previous pages exist
+ * - Abstract methods to fetch next/previous pages (implemented by subclasses)
+ * - Support for both forward and backward pagination
+ *
+ * @package Soneso\StellarSDK\Responses\Page
+ * @see PagingLinksResponse For pagination link details
+ * @see https://developers.stellar.org Stellar developer docs Horizon Pagination
+ * @since 1.0.0
+ */
 abstract class PageResponse extends Response
 {
     private PagingLinksResponse $links;
 
     /**
-     * @return PagingLinksResponse
+     * Gets the pagination links for navigating between pages
+     *
+     * @return PagingLinksResponse The navigation links (next, prev, self)
      */
     public function getLinks(): PagingLinksResponse
     {
@@ -30,6 +50,11 @@ abstract class PageResponse extends Response
         if (isset($json['_links'])) $this->links = PagingLinksResponse::fromJson($json['_links']);
     }
 
+    /**
+     * Checks if a next page exists
+     *
+     * @return bool True if there is a next page available
+     */
     public function hasNextPage() : bool {
 
         if ($this->links->getNext()?->getHref()) {
@@ -38,6 +63,11 @@ abstract class PageResponse extends Response
         return false;
     }
 
+    /**
+     * Checks if a previous page exists
+     *
+     * @return bool True if there is a previous page available
+     */
     public function hasPrevPage() : bool {
 
         if ($this->links->getPrev()?->getHref()) {
@@ -46,7 +76,18 @@ abstract class PageResponse extends Response
         return false;
     }
 
+    /**
+     * Fetches the next page of results
+     *
+     * @return PageResponse|null The next page or null if no next page exists
+     */
     public abstract function getNextPage() : PageResponse | null;
+
+    /**
+     * Fetches the previous page of results
+     *
+     * @return PageResponse|null The previous page or null if no previous page exists
+     */
     public abstract function getPreviousPage() : PageResponse | null;
 
     protected function getNextPageUrl() : string | null {

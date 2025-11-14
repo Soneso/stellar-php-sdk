@@ -9,7 +9,17 @@ namespace Soneso\StellarSDK\SEP\Derivation;
 use Exception;
 
 /**
- * Class WordList
+ * BIP-39 word list loader for multiple languages.
+ *
+ * This class manages the loading and lookup of BIP-39 word lists in various
+ * languages. Each word list contains exactly 2048 words used for mnemonic
+ * phrase generation and validation according to the BIP-39 standard.
+ *
+ * @package Soneso\StellarSDK\SEP\Derivation
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
+ * @see https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+ * @see BIP39
+ * @see Mnemonic
  */
 class WordList
 {
@@ -29,9 +39,11 @@ class WordList
     private int $count;
 
     /**
-     * @param string $lang
-     * @return WordList
-     * @throws Exception
+     * Gets a cached word list instance for the specified language.
+     *
+     * @param string $lang Language code. Default is English.
+     * @return WordList The word list instance.
+     * @throws Exception If the word list file is not found or invalid.
      */
     public static function getLanguage(string $lang = WordList::LANGUAGE_ENGLISH): self
     {
@@ -47,8 +59,9 @@ class WordList
 
     /**
      * WordList constructor.
-     * @param string $language
-     * @throws Exception
+     *
+     * @param string $language Language code for the word list. Default is English.
+     * @throws Exception If the word list file is not found or does not contain exactly 2048 words.
      */
     public function __construct(string $language = WordList::LANGUAGE_ENGLISH)
     {
@@ -75,15 +88,23 @@ class WordList
     }
 
     /**
-     * @return array
+     * Provides debug information for var_dump and print_r output.
+     *
+     * Returns a single-element array containing a human-readable description
+     * of the word list language for debugging purposes. Invoked automatically
+     * by var_dump() and print_r() when inspecting WordList instances.
+     *
+     * @return array<int, string> Indexed array with a formatted language description
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         return [sprintf('BIP39 wordlist for "%s" Language', ucfirst($this->language))];
     }
 
     /**
-     * @return string
+     * Returns the language code of this word list.
+     *
+     * @return string The language code.
      */
     public function which(): string
     {
@@ -91,8 +112,10 @@ class WordList
     }
 
     /**
-     * @param int $index
-     * @return string|null
+     * Gets the word at the specified index.
+     *
+     * @param int $index Index in the word list. Valid range is 0-2047 (BIP-39 standard word list size).
+     * @return string|null The word at the index, or null if index is invalid.
      */
     public function getWord(int $index): ?string
     {
@@ -100,8 +123,10 @@ class WordList
     }
 
     /**
-     * @param string $search
-     * @return int|null
+     * Finds the index of a word in the word list.
+     *
+     * @param string $search The word to search for (case-insensitive).
+     * @return int|null The index of the word, or null if not found.
      */
     public function findIndex(string $search): ?int
     {

@@ -11,27 +11,86 @@ use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
 /**
- * Builds SetOptions operation.
+ * Builder for creating SetOptions operations.
+ *
+ * This builder implements the builder pattern to construct SetOptionsOperation
+ * instances with a fluent interface. SetOptions operations allow an account to
+ * configure various settings including thresholds, signers, home domain, and flags.
+ *
+ * @package Soneso\StellarSDK
  * @see SetOptionsOperation
+ * @see https://developers.stellar.org Stellar developer docs
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new SetOptionsOperationBuilder())
+ *     ->setHomeDomain('example.com')
+ *     ->setMediumThreshold(2)
+ *     ->setSourceAccount($sourceId)
+ *     ->build();
  */
 class SetOptionsOperationBuilder
 {
+    /**
+     * @var MuxedAccount|null The optional source account for this operation
+     */
     private ?MuxedAccount $sourceAccount = null;
+
+    /**
+     * @var string|null The inflation destination account
+     */
     private ?string $inflationDestination = null;
+
+    /**
+     * @var int|null Flags to clear on the account
+     */
     private ?int $clearFlags = null;
+
+    /**
+     * @var int|null Flags to set on the account
+     */
     private ?int $setFlags = null;
+
+    /**
+     * @var int|null The weight of the master key
+     */
     private ?int $masterKeyWeight = null;
+
+    /**
+     * @var int|null The low threshold for the account
+     */
     private ?int $lowThreshold = null;
+
+    /**
+     * @var int|null The medium threshold for the account
+     */
     private ?int $mediumThreshold = null;
+
+    /**
+     * @var int|null The high threshold for the account
+     */
     private ?int $highThreshold = null;
+
+    /**
+     * @var string|null The home domain for the account
+     */
     private ?string $homeDomain = null;
+
+    /**
+     * @var XdrSignerKey|null The signer key to add, update, or remove
+     */
     private ?XdrSignerKey $signerKey = null;
+
+    /**
+     * @var int|null The weight for the signer
+     */
     private ?int $signerWeight = null;
 
     /**
-     * Sets the source account for this operation. G...
-     * @param string $accountId The operation's source account.
-     * @return SetOptionsOperationBuilder Builder object so you can chain methods
+     * Sets the source account for this operation.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
      */
     public function setSourceAccount(string $accountId) : SetOptionsOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
@@ -40,8 +99,9 @@ class SetOptionsOperationBuilder
 
     /**
      * Sets the muxed source account for this operation.
-     * @param MuxedAccount $sourceAccount The operation's source account.
-     * @return SetOptionsOperationBuilder Builder object so you can chain methods
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
      */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : SetOptionsOperationBuilder {
         $this->sourceAccount = $sourceAccount;
@@ -60,7 +120,7 @@ class SetOptionsOperationBuilder
 
     /**
      * Clears the given flags from the account.
-     * @param int $clearFlags For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
+     * @param int $clearFlags For details about the flags, please refer to the <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setClearFlags(int $clearFlags) : SetOptionsOperationBuilder {
@@ -70,7 +130,7 @@ class SetOptionsOperationBuilder
 
     /**
      * Sets the given flags on the account.
-     * @param int $setFlags For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
+     * @param int $setFlags For details about the flags, please refer to the <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
      * @return SetOptionsOperationBuilder Builder object so you can chain methods
      */
     public function setSetFlags(int $setFlags) : SetOptionsOperationBuilder {
@@ -144,8 +204,9 @@ class SetOptionsOperationBuilder
     }
 
     /**
-     * Builds a SetOptionsOperation.
-     * @return SetOptionsOperation The operation build.
+     * Builds the SetOptions operation.
+     *
+     * @return SetOptionsOperation The constructed operation
      */
     public function build(): SetOptionsOperation {
         $result = new SetOptionsOperation($this->inflationDestination, $this->clearFlags, $this->setFlags,

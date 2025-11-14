@@ -10,20 +10,35 @@ namespace Soneso\StellarSDK\Soroban;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation;
 
 /**
- * Used for soroban authorization as a part of SorobanAuthorizedEntry.
- * See: https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
+ * Authorized invocation tree for Soroban authorization
+ *
+ * This class represents a node in the tree of authorized invocations. Each node contains
+ * a function to be authorized and a list of sub-invocations that the function is allowed
+ * to make. This creates a complete authorization tree for complex contract call chains.
+ *
+ * @package Soneso\StellarSDK\Soroban
+ * @see SorobanAuthorizedFunction
+ * @see SorobanAuthorizationEntry
+ * @see https://developers.stellar.org/docs/learn/smart-contract-internals/authorization Soroban Authorization
+ * @since 1.0.0
  */
 class SorobanAuthorizedInvocation
 {
-    public SorobanAuthorizedFunction $function;
     /**
-     * @var array<SorobanAuthorizedInvocation> $subInvocations
+     * @var SorobanAuthorizedFunction the function being authorized at this node
+     */
+    public SorobanAuthorizedFunction $function;
+
+    /**
+     * @var array<SorobanAuthorizedInvocation> sub-invocations this function is authorized to make
      */
     public array $subInvocations;
 
     /**
-     * @param SorobanAuthorizedFunction $function
-     * @param array<SorobanAuthorizedInvocation> $subInvocations
+     * Creates a new authorized invocation node.
+     *
+     * @param SorobanAuthorizedFunction $function the function to authorize
+     * @param array<SorobanAuthorizedInvocation> $subInvocations authorized sub-invocations (defaults to empty)
      */
     public function __construct(SorobanAuthorizedFunction $function, array $subInvocations = array())
     {
@@ -31,6 +46,12 @@ class SorobanAuthorizedInvocation
         $this->subInvocations = $subInvocations;
     }
 
+    /**
+     * Creates SorobanAuthorizedInvocation from its XDR representation.
+     *
+     * @param XdrSorobanAuthorizedInvocation $xdr the XDR object to decode
+     * @return SorobanAuthorizedInvocation the decoded authorized invocation tree
+     */
     public static function fromXdr(XdrSorobanAuthorizedInvocation $xdr) : SorobanAuthorizedInvocation {
         $subs = array();
         foreach ($xdr->getSubInvocations() as $sub) {
@@ -41,6 +62,11 @@ class SorobanAuthorizedInvocation
         return new SorobanAuthorizedInvocation(SorobanAuthorizedFunction::fromXdr($xdr->function), $subs);
     }
 
+    /**
+     * Converts this object to its XDR representation.
+     *
+     * @return XdrSorobanAuthorizedInvocation the XDR encoded invocation tree
+     */
     public function toXdr() : XdrSorobanAuthorizedInvocation {
         $subs = array();
         foreach ($this->subInvocations as $sub) {
@@ -52,7 +78,9 @@ class SorobanAuthorizedInvocation
     }
 
     /**
-     * @return SorobanAuthorizedFunction
+     * Returns the function being authorized.
+     *
+     * @return SorobanAuthorizedFunction the authorized function
      */
     public function getFunction(): SorobanAuthorizedFunction
     {
@@ -60,7 +88,9 @@ class SorobanAuthorizedInvocation
     }
 
     /**
-     * @param SorobanAuthorizedFunction $function
+     * Sets the function being authorized.
+     *
+     * @param SorobanAuthorizedFunction $function the authorized function
      */
     public function setFunction(SorobanAuthorizedFunction $function): void
     {
@@ -68,7 +98,9 @@ class SorobanAuthorizedInvocation
     }
 
     /**
-     * @return array<SorobanAuthorizedInvocation>
+     * Returns the authorized sub-invocations.
+     *
+     * @return array<SorobanAuthorizedInvocation> the list of authorized sub-invocations
      */
     public function getSubInvocations(): array
     {
@@ -76,7 +108,9 @@ class SorobanAuthorizedInvocation
     }
 
     /**
-     * @param array<SorobanAuthorizedInvocation> $subInvocations
+     * Sets the authorized sub-invocations.
+     *
+     * @param array<SorobanAuthorizedInvocation> $subInvocations the list of authorized sub-invocations
      */
     public function setSubInvocations(array $subInvocations): void
     {

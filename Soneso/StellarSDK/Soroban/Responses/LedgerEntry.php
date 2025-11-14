@@ -11,7 +11,9 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
  * Part of the getLedgerEntries response.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries
  */
 class LedgerEntry
 {
@@ -62,6 +64,12 @@ class LedgerEntry
         $this->ext = $ext;
     }
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json): LedgerEntry
     {
         $key = $json['key'];
@@ -80,6 +88,7 @@ class LedgerEntry
 
     /**
      * @return XdrLedgerEntryData The current value of the given ledger entry.
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getLedgerEntryDataXdr() : XdrLedgerEntryData {
         return XdrLedgerEntryData::fromBase64Xdr($this->xdr);
@@ -95,6 +104,7 @@ class LedgerEntry
 
     /**
      * @return XdrSCVal The key of the ledger entry.
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getKeyXdr(): XdrSCVal
     {
@@ -103,6 +113,7 @@ class LedgerEntry
 
     /**
      * @param string $key The key of the ledger entry (serialized in a base64 xdr string).
+     * @return void
      */
     public function setKey(string $key): void
     {
@@ -119,6 +130,7 @@ class LedgerEntry
 
     /**
      * @param string $xdr The current value of the given ledger entry (serialized in a base64 xdr string).
+     * @return void
      */
     public function setXdr(string $xdr): void
     {
@@ -135,6 +147,7 @@ class LedgerEntry
 
     /**
      * @param int $lastModifiedLedgerSeq The ledger sequence number of the last time this entry was updated.
+     * @return void
      */
     public function setLastModifiedLedgerSeq(int $lastModifiedLedgerSeq): void
     {
@@ -151,6 +164,7 @@ class LedgerEntry
 
     /**
      * @param int|null $liveUntilLedgerSeq Sequence number of the ledger.
+     * @return void
      */
     public function setLiveUntilLedgerSeq(?int $liveUntilLedgerSeq): void
     {
@@ -167,6 +181,7 @@ class LedgerEntry
 
     /**
      * @param string|null $ext
+     * @return void
      */
     public function setExt(?string $ext): void
     {

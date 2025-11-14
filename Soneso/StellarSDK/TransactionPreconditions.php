@@ -13,21 +13,87 @@ use Soneso\StellarSDK\Xdr\XdrPreconditionType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
+/**
+ * Transaction preconditions define validation rules for transaction execution.
+ *
+ * Preconditions allow transactions to specify constraints that must be satisfied
+ * before they can be included in a ledger. This includes time bounds, ledger bounds,
+ * minimum sequence number requirements, sequence age and ledger gap constraints,
+ * and required additional signers.
+ *
+ * V2 preconditions (Protocol 19+) support all constraint types, while earlier
+ * versions only support time bounds. The hasV2() method determines which format
+ * to use when converting to XDR.
+ *
+ * @package Soneso\StellarSDK
+ * @see Transaction
+ * @see TimeBounds
+ * @see LedgerBounds
+ * @link https://developers.stellar.org Stellar developer docs
+ * @since Protocol 19
+ */
 class TransactionPreconditions
 {
-
-    private ?LedgerBounds $ledgerBounds = null;
-    private ?BigInteger $minSeqNumber = null;
-    private int $minSeqAge = 0;
-    private int $minSeqLedgerGap = 0;
     /**
-     * @var array<XdrSignerKey> $extraSigners
+     * Ledger number constraints for transaction validity.
+     *
+     * Restricts the range of ledgers within which the transaction can be included.
+     *
+     * @var LedgerBounds|null
+     */
+    private ?LedgerBounds $ledgerBounds = null;
+
+    /**
+     * Minimum sequence number required for the source account.
+     *
+     * Transaction will only be valid if the account's sequence number is at least this value.
+     *
+     * @var BigInteger|null
+     */
+    private ?BigInteger $minSeqNumber = null;
+
+    /**
+     * Minimum age in seconds since the source account's sequence number was set.
+     *
+     * Transaction will only be valid if this many seconds have passed since the
+     * account's sequence number last changed.
+     *
+     * @var int
+     */
+    private int $minSeqAge = 0;
+
+    /**
+     * Minimum number of ledgers since the source account's sequence number was set.
+     *
+     * Transaction will only be valid if this many ledgers have closed since the
+     * account's sequence number last changed.
+     *
+     * @var int
+     */
+    private int $minSeqLedgerGap = 0;
+
+    /**
+     * Additional signers required for transaction authorization.
+     *
+     * Specifies extra signature requirements beyond the normal transaction signers.
+     *
+     * @var array<XdrSignerKey>
      */
     private array $extraSigners = [];
+
+    /**
+     * Time constraints for transaction validity.
+     *
+     * Restricts the time range within which the transaction can be included.
+     *
+     * @var TimeBounds|null
+     */
     private ?TimeBounds $timeBounds = null;
 
     /**
-     * @return LedgerBounds|null
+     * Gets the ledger bounds constraint.
+     *
+     * @return LedgerBounds|null The ledger bounds, or null if not set
      */
     public function getLedgerBounds(): ?LedgerBounds
     {
@@ -35,7 +101,13 @@ class TransactionPreconditions
     }
 
     /**
-     * @param LedgerBounds|null $ledgerBounds
+     * Sets the ledger bounds constraint.
+     *
+     * Restricts the transaction to only be valid within a specific range of ledgers.
+     *
+     * @param LedgerBounds|null $ledgerBounds The ledger bounds to set, or null to clear
+     *
+     * @return void
      */
     public function setLedgerBounds(?LedgerBounds $ledgerBounds): void
     {
@@ -43,7 +115,9 @@ class TransactionPreconditions
     }
 
     /**
-     * @return BigInteger|null
+     * Gets the minimum sequence number constraint.
+     *
+     * @return BigInteger|null The minimum sequence number, or null if not set
      */
     public function getMinSeqNumber(): ?BigInteger
     {
@@ -51,7 +125,14 @@ class TransactionPreconditions
     }
 
     /**
-     * @param BigInteger|null $minSeqNumber
+     * Sets the minimum sequence number constraint.
+     *
+     * Transaction will only be valid if the source account's sequence number
+     * is at least this value.
+     *
+     * @param BigInteger|null $minSeqNumber The minimum sequence number to require, or null to clear
+     *
+     * @return void
      */
     public function setMinSeqNumber(?BigInteger $minSeqNumber): void
     {
@@ -59,7 +140,9 @@ class TransactionPreconditions
     }
 
     /**
-     * @return TimeBounds|null
+     * Gets the time bounds constraint.
+     *
+     * @return TimeBounds|null The time bounds, or null if not set
      */
     public function getTimeBounds(): ?TimeBounds
     {
@@ -67,7 +150,13 @@ class TransactionPreconditions
     }
 
     /**
-     * @param TimeBounds|null $timeBounds
+     * Sets the time bounds constraint.
+     *
+     * Restricts the transaction to only be valid within a specific time range.
+     *
+     * @param TimeBounds|null $timeBounds The time bounds to set, or null to clear
+     *
+     * @return void
      */
     public function setTimeBounds(?TimeBounds $timeBounds): void
     {
@@ -75,7 +164,9 @@ class TransactionPreconditions
     }
 
     /**
-     * @return int
+     * Gets the minimum sequence age constraint in seconds.
+     *
+     * @return int The minimum sequence age in seconds (0 if not set)
      */
     public function getMinSeqAge(): int
     {
@@ -83,7 +174,14 @@ class TransactionPreconditions
     }
 
     /**
-     * @param int $minSeqAge
+     * Sets the minimum sequence age constraint.
+     *
+     * Transaction will only be valid if this many seconds have passed since
+     * the source account's sequence number last changed.
+     *
+     * @param int $minSeqAge The minimum age in seconds (0 to disable)
+     *
+     * @return void
      */
     public function setMinSeqAge(int $minSeqAge): void
     {
@@ -91,7 +189,9 @@ class TransactionPreconditions
     }
 
     /**
-     * @return int
+     * Gets the minimum sequence ledger gap constraint.
+     *
+     * @return int The minimum ledger gap (0 if not set)
      */
     public function getMinSeqLedgerGap(): int
     {
@@ -99,7 +199,14 @@ class TransactionPreconditions
     }
 
     /**
-     * @param int $minSeqLedgerGap
+     * Sets the minimum sequence ledger gap constraint.
+     *
+     * Transaction will only be valid if this many ledgers have closed since
+     * the source account's sequence number last changed.
+     *
+     * @param int $minSeqLedgerGap The minimum ledger gap (0 to disable)
+     *
+     * @return void
      */
     public function setMinSeqLedgerGap(int $minSeqLedgerGap): void
     {
@@ -107,7 +214,9 @@ class TransactionPreconditions
     }
 
     /**
-     * @return array<XdrSignerKey>
+     * Gets the list of extra signers required for authorization.
+     *
+     * @return array<XdrSignerKey> Array of additional required signers
      */
     public function getExtraSigners(): array
     {
@@ -115,14 +224,29 @@ class TransactionPreconditions
     }
 
     /**
-     * @param array<XdrSignerKey> $extraSigners
+     * Sets the list of extra signers required for authorization.
+     *
+     * Specifies additional signers that must sign the transaction beyond
+     * the normal signature requirements.
+     *
+     * @param array<XdrSignerKey> $extraSigners Array of required signer keys
+     *
+     * @return void
      */
     public function setExtraSigners(array $extraSigners): void
     {
         $this->extraSigners = $extraSigners;
     }
 
-
+    /**
+     * Determines if V2 preconditions are needed.
+     *
+     * Returns true if any V2-only preconditions are set (ledger bounds, minimum
+     * sequence number, sequence age, ledger gap, or extra signers). When true,
+     * the preconditions must be encoded using the V2 XDR format.
+     *
+     * @return bool True if V2 preconditions are required, false otherwise
+     */
     public function hasV2(): bool {
         return $this->ledgerBounds != null ||
             $this->minSeqNumber != null ||
@@ -131,6 +255,17 @@ class TransactionPreconditions
             count($this->extraSigners) > 0;
     }
 
+    /**
+     * Converts the preconditions to XDR format.
+     *
+     * Creates an XDR representation of the preconditions. The format used depends
+     * on which constraints are set:
+     * - V2 format: If any V2-only preconditions are set
+     * - TIME format: If only time bounds are set
+     * - NONE format: If no preconditions are set
+     *
+     * @return XdrPreconditions The XDR representation of these preconditions
+     */
     public function toXdr() : XdrPreconditions {
 
         if ($this->hasV2()) {
@@ -159,6 +294,16 @@ class TransactionPreconditions
         }
     }
 
+    /**
+     * Creates a TransactionPreconditions instance from XDR.
+     *
+     * Decodes an XDR preconditions object and extracts all constraint values
+     * based on the precondition type (NONE, TIME, or V2).
+     *
+     * @param XdrPreconditions $xdr The XDR preconditions to decode
+     *
+     * @return TransactionPreconditions The decoded preconditions object
+     */
     public static function fromXdr(XdrPreconditions $xdr) : TransactionPreconditions
     {
         $cond = new TransactionPreconditions();

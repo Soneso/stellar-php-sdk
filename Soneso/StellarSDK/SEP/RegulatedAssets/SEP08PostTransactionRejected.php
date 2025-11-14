@@ -8,7 +8,26 @@
 namespace Soneso\StellarSDK\SEP\RegulatedAssets;
 
 /**
- * This response means that the transaction is not compliant and could not be revised to be made compliant.
+ * Response indicating the transaction is not compliant and cannot be revised.
+ *
+ * This response means the transaction violates the issuer's compliance criteria in a way
+ * that cannot be corrected by adding additional operations or modifications. The wallet
+ * should display the error message to the user explaining why the transaction was rejected.
+ *
+ * Common rejection reasons:
+ * - Destination account is blocked or sanctioned
+ * - Transaction amount exceeds velocity limits that cannot be split
+ * - Source or destination is in a restricted jurisdiction
+ * - Asset holder has incomplete or expired KYC information
+ * - Transaction violates regulatory constraints
+ *
+ * The wallet should not retry rejected transactions without addressing the underlying
+ * compliance issue described in the error message.
+ *
+ * HTTP Status Code: 400
+ *
+ * @package Soneso\StellarSDK\SEP\RegulatedAssets
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.7.4/ecosystem/sep-0008.md#rejected SEP-0008 v1.7.4
  */
 class SEP08PostTransactionRejected extends SEP08PostTransactionResponse
 {

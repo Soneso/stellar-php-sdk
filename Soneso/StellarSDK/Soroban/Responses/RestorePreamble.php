@@ -10,13 +10,15 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
 /**
  * Part of the simulateTransaction response.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
  *
  * It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations.
  * If present, it indicates the simulation detected expired ledger entries which requires restoring
  * with the submission of a RestoreFootprint operation before submitting the InvokeHostFunction operation.
  * The minResourceFee and transactionData fields should be used to construct the transaction
  * containing the RestoreFootprint operation.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
  */
 class RestorePreamble
 {
@@ -47,7 +49,13 @@ class RestorePreamble
         $this->minResourceFee = $minResourceFee;
     }
 
-
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     * @throws \InvalidArgumentException If XDR data is malformed
+     */
     public static function fromJson(array $json) : RestorePreamble {
         $transactionData = XdrSorobanTransactionData::fromBase64Xdr($json['transactionData']);
         $minResourceFee = intval($json['minResourceFee']);

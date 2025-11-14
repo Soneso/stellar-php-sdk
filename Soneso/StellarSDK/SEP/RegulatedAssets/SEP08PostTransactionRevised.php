@@ -7,7 +7,25 @@
 namespace Soneso\StellarSDK\SEP\RegulatedAssets;
 
 /**
- * This response means that the transaction was revised to be made compliant.
+ * Response indicating the transaction was modified for compliance and signed.
+ *
+ * This response means the original transaction was not compliant but has been revised by the
+ * approval server to meet regulatory requirements. The revised transaction has been signed
+ * by the issuer.
+ *
+ * The wallet MUST inspect the revised transaction carefully to understand what changes were
+ * made before submitting it to the Stellar network. Common revisions include:
+ * - Adding operations (e.g., fee payments, compliance operations)
+ * - Modifying amounts to comply with velocity limits
+ * - Changing destination accounts
+ *
+ * Security Warning: Always verify that revised transactions do not contain unexpected or
+ * malicious modifications before submitting to the network.
+ *
+ * HTTP Status Code: 200
+ *
+ * @package Soneso\StellarSDK\SEP\RegulatedAssets
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.7.4/ecosystem/sep-0008.md#revised SEP-0008 v1.7.4
  */
 class SEP08PostTransactionRevised extends SEP08PostTransactionResponse
 {

@@ -7,7 +7,17 @@
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
 /**
- * Holds info about an Asset that the Receiving Anchor supports receiving from the Sending Anchor.
+ * Asset information for cross-border payments including limits, fees, and KYC requirements.
+ *
+ * This class represents the configuration for a specific asset that the Receiving Anchor
+ * accepts for cross-border payments. It includes transaction amount limits, fee structures,
+ * required SEP-12 KYC types for senders and receivers, and optional SEP-38 quote integration
+ * for off-chain asset delivery.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#get-info
+ * @see SEP31InfoResponse
+ * @see SEP12TypesInfo
  */
 class SEP31ReceiveAssetInfo
 {
@@ -41,20 +51,39 @@ class SEP31ReceiveAssetInfo
     /**
      * @var string|null $senderSep12Type (deprecated, optional) The value of the type parameter the Sending Anchor
      * should use for a SEP-12 GET /customer request. This field can be omitted if no KYC is necessary.
-     * Use a value from sep12.sender.types instead if any are present.
+     *
+     * DEPRECATED: Use values from sep12.sender.types instead if any are present.
+     * This field is maintained for backward compatibility only.
+     *
+     * @deprecated Use sep12.sender.types array instead
+     * @see SEP12TypesInfo
      */
     public ?string $senderSep12Type = null;
 
     /**
      * @var string|null $receiverSep12Type (deprecated, optional) The value of the type parameter the Sending Anchor
      * should use for a SEP-12 GET /customer request. This field can be omitted if no KYC is necessary.
-     * Use a values from sep12.receiver.types instead if any are present.
+     *
+     * DEPRECATED: Use values from sep12.receiver.types instead if any are present.
+     * This field is maintained for backward compatibility only.
+     *
+     * @deprecated Use sep12.receiver.types array instead
+     * @see SEP12TypesInfo
      */
     public ?string $receiverSep12Type = null;
 
     /**
      * @var array<array-key, mixed> |null (deprecated, optional) An object containing the per-transaction parameters
-     * required in POST /transactions requests. Pass SEP-9 fields via SEP-12 PUT /customer instead.
+     * required in POST /transactions requests.
+     *
+     * DEPRECATED: This field is maintained for backward compatibility only and will be removed in a future version.
+     * Pass SEP-9 standard fields via SEP-12 PUT /customer instead.
+     *
+     * Migration: Use SEP-12 to register customers with required KYC fields before initiating transactions.
+     *
+     * @deprecated since SEP-31 v2.5.0, use SEP-12 PUT /customer instead
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0012.md
+     * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0009.md
      */
     public ?array $fields = null;
 

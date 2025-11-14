@@ -7,6 +7,15 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Collection of operation responses from Horizon API
+ *
+ * Provides an iterable collection of OperationResponse objects. Supports iteration through
+ * operations, adding new operations to the collection, counting operations, and converting
+ * the collection to an array. Used within OperationsPageResponse for paginated results.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ */
 class OperationsResponse extends \IteratorIterator
 {
 
@@ -20,11 +29,22 @@ class OperationsResponse extends \IteratorIterator
         return parent::current();
     }
 
+    /**
+     * Adds an operation to the collection
+     *
+     * @param OperationResponse $response The operation response to add
+     * @return void
+     */
     public function add(OperationResponse $response)
     {
         $this->getInnerIterator()->append($response);
     }
 
+    /**
+     * Gets the number of operations in the collection
+     *
+     * @return int The operation count
+     */
     public function count(): int
     {
         return $this->getInnerIterator()->count();

@@ -6,6 +6,28 @@
 
 namespace Soneso\StellarSDK\Crypto;
 
+/**
+ * Version byte constants for Stellar StrKey encoding
+ *
+ * Each Stellar address type has a unique version byte that determines the first
+ * character of the encoded string representation. These version bytes are used
+ * when encoding and decoding between binary data and human-readable strings.
+ *
+ * Address prefixes:
+ * - G: Account ID (Ed25519 public key)
+ * - M: Muxed account ID (multiplexed account)
+ * - S: Secret seed (Ed25519 private key)
+ * - T: Pre-authorized transaction hash
+ * - X: SHA-256 hash (for hash-locked transactions)
+ * - P: Signed payload (Ed25519 with additional signature data)
+ * - C: Contract ID (Soroban smart contract)
+ * - L: Liquidity pool ID
+ * - B: Claimable balance ID
+ *
+ * @package Soneso\StellarSDK\Crypto
+ * @see StrKey For encoding and decoding operations
+ * @see https://developers.stellar.org Stellar developer docs Documentation on address types
+ */
 class VersionByte
 {
     const ACCOUNT_ID = 6 << 3; // G

@@ -10,12 +10,23 @@ namespace Soneso\StellarSDK\Responses\Asset;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\Page\PageResponse;
 
+/**
+ * Represents a paginated collection of assets from Horizon
+ *
+ * @package Soneso\StellarSDK\Responses\Asset
+ * @see PageResponse For pagination functionality
+ * @see AssetResponse For individual asset details
+ * @see https://developers.stellar.org Stellar developer docs Horizon Assets API
+ * @since 1.0.0
+ */
 class AssetsPageResponse extends PageResponse
 {
     private AssetsResponse $assets;
 
     /**
-     * @return AssetsResponse
+     * Gets the collection of assets in this page
+     *
+     * @return AssetsResponse The assets collection
      */
     public function getAssets(): AssetsResponse {
         return $this->assets;

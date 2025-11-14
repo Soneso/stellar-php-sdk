@@ -10,6 +10,34 @@ use Soneso\StellarSDK\Responses\Account\AccountBalanceResponse;
 use Soneso\StellarSDK\Responses\Account\AccountBalancesResponse;
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents a liquidity pool on the Stellar network
+ *
+ * This response contains comprehensive liquidity pool details including the pool ID, pool type,
+ * fee structure, asset reserves, total shares, trustline count, and modification history.
+ * Liquidity pools are automated market makers (AMMs) that enable decentralized trading by
+ * allowing users to deposit assets and earn fees from trades.
+ *
+ * Key fields:
+ * - Unique pool ID for identification
+ * - Pool type (currently constant_product)
+ * - Fee charged in basis points
+ * - Asset reserves held in the pool
+ * - Total shares representing pool ownership
+ * - Number of trustlines to the pool
+ * - Ledger modification history
+ *
+ * Returned by Horizon endpoints:
+ * - GET /liquidity_pools - All liquidity pools
+ * - GET /liquidity_pools/{liquidity_pool_id} - Specific pool details
+ * - GET /accounts/{account_id}/liquidity_pools - Pools an account participates in
+ *
+ * @package Soneso\StellarSDK\Responses\LiquidityPools
+ * @see ReservesResponse For the pool's asset reserves
+ * @see LiquidityPoolLinksResponse For related navigation links
+ * @see https://developers.stellar.org Stellar developer docs Horizon Liquidity Pools API
+ * @since 1.0.0
+ */
 class LiquidityPoolResponse extends Response
 {
     private string $poolId;
@@ -25,7 +53,9 @@ class LiquidityPoolResponse extends Response
 
 
     /**
-     * @return string
+     * Gets the unique identifier for this liquidity pool
+     *
+     * @return string The liquidity pool ID
      */
     public function getPoolId(): string
     {
@@ -33,7 +63,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the paging token for this liquidity pool in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -41,7 +73,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the fee charged by this pool on trades
+     *
+     * @return int The fee in basis points (e.g., 30 = 0.3%)
      */
     public function getFee(): int
     {
@@ -49,7 +83,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the liquidity pool type
+     *
+     * @return string The pool type (e.g., "constant_product")
      */
     public function getType(): string
     {
@@ -57,7 +93,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the total number of trustlines to this pool
+     *
+     * @return string The count of accounts with trustlines to this pool
      */
     public function getTotalTrustlines(): string
     {
@@ -65,7 +103,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the total pool shares issued
+     *
+     * @return string The total shares representing ownership in the pool
      */
     public function getTotalShares(): string
     {
@@ -73,7 +113,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return LiquidityPoolLinksResponse
+     * Gets the links to related resources for this liquidity pool
+     *
+     * @return LiquidityPoolLinksResponse The navigation links
      */
     public function getLinks(): LiquidityPoolLinksResponse
     {
@@ -81,7 +123,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return ReservesResponse
+     * Gets the asset reserves held in this pool
+     *
+     * @return ReservesResponse The pool's asset reserves
      */
     public function getReserves(): ReservesResponse
     {
@@ -89,7 +133,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the ledger sequence number when this pool was last modified
+     *
+     * @return int The last modified ledger sequence
      */
     public function getLastModifiedLedger(): int
     {
@@ -97,7 +143,9 @@ class LiquidityPoolResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the timestamp when this pool was last modified
+     *
+     * @return string The last modified time in ISO 8601 format
      */
     public function getLastModifiedTime(): string
     {

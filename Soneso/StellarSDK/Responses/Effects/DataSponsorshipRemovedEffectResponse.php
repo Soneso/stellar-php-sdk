@@ -6,13 +6,25 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a data entry sponsorship removed effect from the Stellar network
+ *
+ * This effect occurs when sponsorship for a data entry's base reserve is removed.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class DataSponsorshipRemovedEffectResponse extends EffectResponse
 {
     private string $formerSponsor;
     private string $dataName;
 
     /**
-     * @return string
+     * Gets the account ID of the former sponsor
+     *
+     * @return string The former sponsor's account ID
      */
     public function getFormerSponsor(): string
     {
@@ -20,7 +32,9 @@ class DataSponsorshipRemovedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the name of the data entry
+     *
+     * @return string The data entry name
      */
     public function getDataName(): string
     {

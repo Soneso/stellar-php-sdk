@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents an asset balance change from a Soroban contract invocation
+ *
+ * Tracks a single asset balance change that occurred during smart contract execution.
+ * This includes the asset details, the type of change (transfer, mint, burn, clawback),
+ * the accounts involved, and the amount transferred. Used to monitor asset flows
+ * within Soroban contract operations.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ */
 class AssetBalanceChangeResponse
 {
     public string $assetType;
@@ -44,7 +54,9 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string
+     * Gets the asset type
+     *
+     * @return string The asset type (native, credit_alphanum4, or credit_alphanum12)
      */
     public function getAssetType(): string
     {
@@ -52,7 +64,10 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @param string $assetType
+     * Sets the asset type
+     *
+     * @param string $assetType The asset type
+     * @return void
      */
     public function setAssetType(string $assetType): void
     {
@@ -60,7 +75,9 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset code
+     *
+     * @return string|null The asset code or null for native assets
      */
     public function getAssetCode(): ?string
     {
@@ -68,7 +85,10 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @param string|null $assetCode
+     * Sets the asset code
+     *
+     * @param string|null $assetCode The asset code
+     * @return void
      */
     public function setAssetCode(?string $assetCode): void
     {
@@ -76,7 +96,9 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the asset issuer
+     *
+     * @return string|null The asset issuer account ID or null for native assets
      */
     public function getAssetIssuer(): ?string
     {
@@ -84,7 +106,10 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @param string|null $assetIssuer
+     * Sets the asset issuer
+     *
+     * @param string|null $assetIssuer The asset issuer account ID
+     * @return void
      */
     public function setAssetIssuer(?string $assetIssuer): void
     {
@@ -92,7 +117,9 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string
+     * Gets the type of balance change
+     *
+     * @return string Change type (transfer, mint, burn, or clawback)
      */
     public function getType(): string
     {
@@ -100,7 +127,10 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @param string $type
+     * Sets the type of balance change
+     *
+     * @param string $type Change type
+     * @return void
      */
     public function setType(string $type): void
     {
@@ -108,7 +138,9 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the source account of the transfer
+     *
+     * @return string|null The source account ID or null for mint operations
      */
     public function getFrom(): ?string
     {
@@ -116,7 +148,10 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @param string|null $from
+     * Sets the source account of the transfer
+     *
+     * @param string|null $from The source account ID
+     * @return void
      */
     public function setFrom(?string $from): void
     {
@@ -124,7 +159,9 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string
+     * Gets the destination account of the transfer
+     *
+     * @return string The destination account ID
      */
     public function getTo(): string
     {
@@ -132,7 +169,10 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @param string $to
+     * Sets the destination account of the transfer
+     *
+     * @param string $to The destination account ID
+     * @return void
      */
     public function setTo(string $to): void
     {
@@ -140,7 +180,9 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string
+     * Gets the amount of the balance change
+     *
+     * @return string The amount as a string to preserve precision
      */
     public function getAmount(): string
     {
@@ -148,7 +190,10 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @param string $amount
+     * Sets the amount of the balance change
+     *
+     * @param string $amount The amount
+     * @return void
      */
     public function setAmount(string $amount): void
     {
@@ -156,7 +201,9 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed destination account ID
+     *
+     * @return string|null The muxed destination account ID as uint64 string or null
      */
     public function getDestinationMuxedId(): ?string
     {
@@ -164,7 +211,10 @@ class AssetBalanceChangeResponse
     }
 
     /**
-     * @param string|null $destinationMuxedId
+     * Sets the multiplexed destination account ID
+     *
+     * @param string|null $destinationMuxedId The muxed destination account ID
+     * @return void
      */
     public function setDestinationMuxedId(?string $destinationMuxedId): void
     {

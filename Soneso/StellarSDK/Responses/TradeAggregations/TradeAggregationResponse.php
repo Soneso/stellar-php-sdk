@@ -10,6 +10,33 @@ namespace Soneso\StellarSDK\Responses\TradeAggregations;
 use Soneso\StellarSDK\Responses\Response;
 use Soneso\StellarSDK\Responses\Trades\TradePriceResponse;
 
+/**
+ * Represents aggregated trade statistics for a time period
+ *
+ * This response contains OHLC (Open-High-Low-Close) candlestick data and volume statistics
+ * for trades of a specific asset pair over a defined time period. Trade aggregations enable
+ * historical price analysis, charting, and market trend identification by summarizing multiple
+ * individual trades into time-based buckets.
+ *
+ * Key fields:
+ * - Timestamp marking the start of the aggregation period
+ * - Trade count for the period
+ * - Base and counter asset volumes
+ * - Average price for the period
+ * - OHLC prices (open, high, low, close) in decimal and rational formats
+ *
+ * Prices are provided as both decimal strings and rational fractions (price_r fields) for
+ * precision. The aggregation period (resolution) is specified when querying the endpoint
+ * and can range from minutes to days.
+ *
+ * Returned by Horizon endpoint:
+ * - GET /trade_aggregations - Aggregated trade statistics by time period
+ *
+ * @package Soneso\StellarSDK\Responses\TradeAggregations
+ * @see TradePriceResponse For rational price representation
+ * @see TradeAggregationsPageResponse For paginated aggregation results
+ * @see https://developers.stellar.org Stellar developer docs Horizon Trade Aggregations API
+ */
 class TradeAggregationResponse extends Response
 {
     private string $timestamp;
@@ -27,7 +54,9 @@ class TradeAggregationResponse extends Response
     private TradePriceResponse $closePriceR;
 
     /**
-     * @return string
+     * Gets the timestamp marking the start of this aggregation period
+     *
+     * @return string The timestamp in milliseconds since epoch
      */
     public function getTimestamp(): string
     {
@@ -35,7 +64,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the number of trades in this aggregation period
+     *
+     * @return string The total count of executed trades
      */
     public function getTradeCount(): string
     {
@@ -43,7 +74,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the total volume of the base asset traded
+     *
+     * @return string The base asset volume
      */
     public function getBaseVolume(): string
     {
@@ -51,7 +84,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the total volume of the counter asset traded
+     *
+     * @return string The counter asset volume
      */
     public function getCounterVolume(): string
     {
@@ -59,7 +94,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the average price during this period
+     *
+     * @return string The average price as a decimal string
      */
     public function getAveragePrice(): string
     {
@@ -67,7 +104,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the highest price reached during this period
+     *
+     * @return string The high price as a decimal string
      */
     public function getHighPrice(): string
     {
@@ -75,7 +114,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the lowest price reached during this period
+     *
+     * @return string The low price as a decimal string
      */
     public function getLowPrice(): string
     {
@@ -83,7 +124,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the opening price at the start of this period
+     *
+     * @return string The open price as a decimal string
      */
     public function getOpenPrice(): string
     {
@@ -91,7 +134,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the closing price at the end of this period
+     *
+     * @return string The close price as a decimal string
      */
     public function getClosePrice(): string
     {
@@ -99,7 +144,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return TradePriceResponse
+     * Gets the rational representation of the high price
+     *
+     * @return TradePriceResponse The high price as a fraction
      */
     public function getHighPriceR(): TradePriceResponse
     {
@@ -107,7 +154,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return TradePriceResponse
+     * Gets the rational representation of the low price
+     *
+     * @return TradePriceResponse The low price as a fraction
      */
     public function getLowPriceR(): TradePriceResponse
     {
@@ -115,7 +164,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return TradePriceResponse
+     * Gets the rational representation of the open price
+     *
+     * @return TradePriceResponse The open price as a fraction
      */
     public function getOpenPriceR(): TradePriceResponse
     {
@@ -123,7 +174,9 @@ class TradeAggregationResponse extends Response
     }
 
     /**
-     * @return TradePriceResponse
+     * Gets the rational representation of the close price
+     *
+     * @return TradePriceResponse The close price as a fraction
      */
     public function getClosePriceR(): TradePriceResponse
     {
@@ -150,6 +203,12 @@ class TradeAggregationResponse extends Response
 
     }
 
+    /**
+     * Creates a TradeAggregationResponse from JSON data
+     *
+     * @param array $json Associative array of parsed JSON response
+     * @return TradeAggregationResponse The populated aggregation response
+     */
     public static function fromJson(array $json) : TradeAggregationResponse
     {
         $result = new TradeAggregationResponse();

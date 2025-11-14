@@ -43,36 +43,107 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractData;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
- * This class helps you to connect to a local or remote soroban rpc server
- * and send requests to the server. It parses the results and provides
- * corresponding response objects.
+ * Main entry point for interacting with Soroban RPC servers
  *
- * See: https://developers.stellar.org/docs/data/rpc/api-reference
+ * This class provides methods for communicating with a Soroban RPC server to interact with
+ * smart contracts on the Stellar network. It handles transaction simulation, submission,
+ * ledger queries, event retrieval, and contract code loading. All RPC methods follow the
+ * JSON-RPC 2.0 specification and return strongly-typed response objects.
+ *
+ * The server handles automatic JSON-RPC request construction and response parsing,
+ * converting raw JSON responses into typed PHP objects for type-safe contract interaction.
+ *
+ * @package Soneso\StellarSDK\Soroban
+ * @see https://developers.stellar.org/docs/data/rpc/api-reference Soroban RPC API Reference
+ * @see https://developers.stellar.org/docs/smart-contracts Soroban Smart Contracts Documentation
+ * @since 1.0.0
  */
 class SorobanServer
 {
+    /**
+     * @var string the RPC server endpoint URL
+     */
     private string $endpoint;
+
+    /**
+     * @var array<string,string> HTTP headers for RPC requests
+     */
     private array $headers = array();
+
+    /**
+     * @var Client Guzzle HTTP client for making requests
+     */
     private Client $httpClient;
 
+    /**
+     * @var string RPC method name for health checks
+     */
     private const GET_HEALTH = "getHealth";
+
+    /**
+     * @var string RPC method name for network information
+     */
     private const GET_NETWORK = "getNetwork";
+
+    /**
+     * @var string RPC method name for transaction simulation
+     */
     private const SIMULATE_TRANSACTION = "simulateTransaction";
+
+    /**
+     * @var string RPC method name for transaction submission
+     */
     private const SEND_TRANSACTION = "sendTransaction";
+
+    /**
+     * @var string RPC method name for transaction status queries
+     */
     private const GET_TRANSACTION = "getTransaction";
+
+    /**
+     * @var string RPC method name for transaction list queries
+     */
     private const GET_TRANSACTIONS = "getTransactions";
+
+    /**
+     * @var string RPC method name for ledger queries
+     */
     private const GET_LEDGERS = "getLedgers";
+
+    /**
+     * @var string RPC method name for ledger entry queries
+     */
     private const GET_LEDGER_ENTRIES = "getLedgerEntries";
+
+    /**
+     * @var string RPC method name for latest ledger queries
+     */
     private const GET_LATEST_LEDGER = "getLatestLedger";
+
+    /**
+     * @var string RPC method name for event queries
+     */
     private const GET_EVENTS = "getEvents";
+
+    /**
+     * @var string RPC method name for fee statistics
+     */
     private const GET_FEE_STATS = "getFeeStats";
+
+    /**
+     * @var string RPC method name for version information
+     */
     private const GET_VERSION_INFO = "getVersionInfo";
 
     public bool $enableLogging = false;
 
     /**
-     * Helps you to communicate with a remote soroban rpc server.
-     * @param string $endpoint remote soroban rpc server endpoint
+     * Creates a new Soroban RPC server client
+     *
+     * Initializes the HTTP client and sets up default headers for JSON-RPC 2.0 communication.
+     * The endpoint should be a fully qualified URL to a Soroban RPC server.
+     *
+     * @param string $endpoint The URL of the Soroban RPC server (e.g., "https://soroban-testnet.stellar.org")
      */
     public function __construct(string $endpoint)
     {
@@ -120,7 +191,7 @@ class SorobanServer
      * that were paid for the transactions to be included onto the ledger. For Soroban transactions and Stellar transactions,
      * they each have their own inclusion fees and own surge pricing. Inclusion fees are used to prevent spam and
      * prioritize transactions during network traffic surge.
-     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStatsh
+     * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats
      *
      * @return GetFeeStatsResponse in case of success.
      * @throws GuzzleException if any request problem occurs.
@@ -185,11 +256,11 @@ class SorobanServer
      * successfully recorded on the blockchain.
      * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransaction
      *
-     * @param String $transactionId of the transaction to be checked.
+     * @param string $transactionId of the transaction to be checked.
      * @return GetTransactionResponse response in case of success.
      * @throws GuzzleException if any request problem occurs.
      */
-    public function getTransaction(String $transactionId) : GetTransactionResponse {
+    public function getTransaction(string $transactionId) : GetTransactionResponse {
         $body = $this->prepareRequest(self::GET_TRANSACTION, ['hash' => $transactionId]);
         $result = $this->request($body, self::GET_TRANSACTION);
         assert($result instanceof GetTransactionResponse);
@@ -233,7 +304,7 @@ class SorobanServer
      * To fetch contract wasm byte-code, use the ContractCode ledger entry key.
      * See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgerEntries
      *
-     * @param array $base64EncodedKeys to request the ledger entry for.
+     * @param array<string> $base64EncodedKeys base64-encoded XDR ledger keys to retrieve
      * @return GetLedgerEntriesResponse response in case of success.
      * @throws GuzzleException if any request problem occurs.
      */
@@ -275,10 +346,14 @@ class SorobanServer
     }
 
     /**
-     * Loads the contract source code (including source code - wasm bytes) for a given wasm id.
-     * @param string $wasmId
-     * @return XdrContractCodeEntry|null The contract code entry if found
-     * @throws GuzzleException if any request problem occurs.
+     * Loads the contract source code for a given wasm id
+     *
+     * Retrieves the contract code entry from the ledger, including the compiled WASM bytecode.
+     * The wasm id is a hex-encoded hash of the contract bytecode.
+     *
+     * @param string $wasmId The hex-encoded wasm id (hash) of the contract code
+     * @return XdrContractCodeEntry|null The contract code entry if found, null if not found
+     * @throws GuzzleException If the RPC request fails
      */
     public function loadContractCodeForWasmId(string $wasmId) : ?XdrContractCodeEntry {
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
@@ -294,10 +369,14 @@ class SorobanServer
     }
 
     /**
-     * Loads the contract code entry (including source code - wasm bytes) for a given contract id.
-     * @param string $contractId
-     * @return XdrContractCodeEntry|null The contract code entry if found
-     * @throws GuzzleException if any request problem occurs.
+     * Loads the contract source code for a given contract id
+     *
+     * First retrieves the contract instance data to determine the wasm id, then loads
+     * the contract code entry containing the compiled WASM bytecode.
+     *
+     * @param string $contractId The contract id (C-prefixed address) of the deployed contract
+     * @return XdrContractCodeEntry|null The contract code entry if found, null if not found
+     * @throws GuzzleException If the RPC request fails
      */
     public function loadContractCodeForContractId(string $contractId) : ?XdrContractCodeEntry {
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
@@ -318,12 +397,16 @@ class SorobanServer
     }
 
     /**
-     * Loads contract source byte code for the given contract id and extracts
-     * the information (Environment Meta, Contract Spec, Contract Meta).
-     * @param string $contractId the id of the contract to load and parse the information from.
-     * @return SorobanContractInfo|null The contract info or null if the contract was not found.
-     * @throws SorobanContractParserException if parsing of the byte code failed.
-     * @throws GuzzleException if any request problem occurs.
+     * Loads and parses contract information for a given contract id
+     *
+     * Retrieves the contract bytecode from the ledger and parses it to extract metadata
+     * including environment meta, contract spec entries, and contract meta information.
+     * The contract spec can be used to introspect available functions and types.
+     *
+     * @param string $contractId The contract id (C-prefixed address) of the deployed contract
+     * @return SorobanContractInfo|null The parsed contract information or null if contract not found
+     * @throws SorobanContractParserException If parsing the WASM bytecode fails
+     * @throws GuzzleException If the RPC request fails
      */
     public function loadContractInfoForContractId(string $contractId) :?SorobanContractInfo {
         $contractCodeEntry =  self::loadContractCodeForContractId($contractId);
@@ -335,12 +418,16 @@ class SorobanServer
     }
 
     /**
-     * Loads contract source byte code for the given wasm id and extracts
-     * the information (Environment Meta, Contract Spec, Contract Meta).
-     * @param string $wasmId the wasm id of the contract to load and parse the information from.
-     * @return SorobanContractInfo|null The contract info or null if the contract was not found.
-     * @throws SorobanContractParserException if parsing of the byte code failed.
-     * @throws GuzzleException if any request problem occurs.
+     * Loads and parses contract information for a given wasm id
+     *
+     * Retrieves the contract bytecode from the ledger and parses it to extract metadata
+     * including environment meta, contract spec entries, and contract meta information.
+     * The contract spec can be used to introspect available functions and types.
+     *
+     * @param string $wasmId The hex-encoded wasm id (hash) of the contract code
+     * @return SorobanContractInfo|null The parsed contract information or null if contract not found
+     * @throws SorobanContractParserException If parsing the WASM bytecode fails
+     * @throws GuzzleException If the RPC request fails
      */
     public function loadContractInfoForWasmId(string $wasmId) :?SorobanContractInfo {
         $contractCodeEntry =  self::loadContractCodeForWasmId($wasmId);
@@ -352,12 +439,15 @@ class SorobanServer
     }
 
     /**
-     * Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
-     * number for the account, so you can build a successful transaction.
-     * Returns null if account was not found.
-     * @param string $accountId th account id to request the data for ("G...")
-     * @return Account|null The account object or null if not found.
-     * @throws GuzzleException if any request problem occurs.
+     * Retrieves current account information from the ledger
+     *
+     * Fetches a minimal set of account data including the current sequence number,
+     * which is required for building and submitting transactions. This is more efficient
+     * than using Horizon for simple account lookups when working with Soroban.
+     *
+     * @param string $accountId The account id (G-prefixed address) to query
+     * @return Account|null The account object with current sequence number, or null if not found
+     * @throws GuzzleException If the RPC request fails
      */
     public function getAccount(string $accountId): ?Account {
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
@@ -407,11 +497,15 @@ class SorobanServer
     }
 
     /**
-     * Sends request to remote Soroban RPC Server.
-     * @param string $body jsonrpc 2.0 body
-     * @param string $requestType the request type such as SIMULATE_TRANSACTION
-     * @return SorobanRpcResponse response.
-     * @throws GuzzleException if any request problem occurs.
+     * Sends a JSON-RPC 2.0 request to the Soroban RPC server
+     *
+     * Executes the HTTP POST request and handles the response by parsing it
+     * into the appropriate typed response object based on the request type.
+     *
+     * @param string $body The JSON-RPC 2.0 request body as JSON string
+     * @param string $requestType The RPC method name (e.g., "simulateTransaction", "sendTransaction")
+     * @return SorobanRpcResponse The parsed response object
+     * @throws GuzzleException If the HTTP request fails
      */
     private function request(string $body, string $requestType) : SorobanRpcResponse {
         $request = new Request("POST", $this->endpoint, $this->headers, $body);
@@ -419,11 +513,17 @@ class SorobanServer
         return $this->handleRpcResponse($response, $requestType);
     }
 
-    /** Handles the response obtained from the remote Soroban RPC Server.
-     *  Converts received data into the corresponding response object.
-     * @param ResponseInterface $response the general http response
-     * @param string $requestType the request type such as SIMULATE_TRANSACTION
-     * @return SorobanRpcResponse
+    /**
+     * Handles and parses the HTTP response from the Soroban RPC server
+     *
+     * Converts the raw JSON response into a strongly-typed response object based on
+     * the request type. Handles error responses and validates JSON parsing.
+     *
+     * @param ResponseInterface $response The PSR-7 HTTP response from the server
+     * @param string $requestType The RPC method name used to determine response type
+     * @return SorobanRpcResponse The parsed and typed response object
+     * @throws \RuntimeException If the HTTP status indicates an error
+     * @throws \InvalidArgumentException If JSON parsing fails
      */
     private function handleRpcResponse(ResponseInterface $response, string $requestType) : SorobanRpcResponse
     {
@@ -464,10 +564,14 @@ class SorobanServer
     }
 
     /**
-     * Prepares jsonrpc 2.0 request body for the given values.
-     * @param string $procedure method name
-     * @param array $params parameters
-     * @return string the prepared json encoded body
+     * Prepares a JSON-RPC 2.0 request body
+     *
+     * Constructs a properly formatted JSON-RPC 2.0 request with method name,
+     * parameters, and a random request id.
+     *
+     * @param string $procedure The RPC method name to call
+     * @param array $params The parameters to pass to the method (optional)
+     * @return string The JSON-encoded request body
      */
     private function prepareRequest(string $procedure, array $params = array()) : string
     {

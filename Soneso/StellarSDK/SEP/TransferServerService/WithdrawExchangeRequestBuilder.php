@@ -13,16 +13,53 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Request builder for GET /withdraw-exchange endpoint operations.
+ *
+ * This builder constructs HTTP requests to initiate withdrawal operations with cross-asset exchange
+ * via SEP-06 and SEP-38. This endpoint combines withdrawal functionality with on-chain asset exchange,
+ * allowing users to withdraw one asset by sending a different Stellar asset.
+ *
+ * For example, a user can send USDC on Stellar and receive USD via bank transfer, with the
+ * exchange happening as part of the withdrawal process. This requires the anchor to support SEP-38
+ * quote functionality.
+ *
+ * Example usage:
+ * ```php
+ * $builder = new WithdrawExchangeRequestBuilder($httpClient, $serviceAddress, $jwt);
+ * $response = $builder->forQueryParameters([
+ *     'source_asset' => 'stellar:USDC:GXXX...',
+ *     'destination_asset' => 'iso4217:USD',
+ *     'amount' => '100',
+ *     'type' => 'bank_account'
+ * ])->execute();
+ * ```
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#withdraw-exchange SEP-06 Withdraw Exchange
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see TransferServerService::withdrawExchange() For the service method using this builder
+ * @see WithdrawResponse For the response structure
+ * @since 1.0.0
+ */
 class WithdrawExchangeRequestBuilder extends RequestBuilder
 {
+    /**
+     * @var string|null JWT token for authentication obtained via SEP-10
+     */
     private ?string $jwtToken = null;
+
+    /**
+     * @var string The base URL of the SEP-06 transfer server service
+     */
     private string $serviceAddress;
 
     /**
-     * Constructor.
-     * @param Client $httpClient the client to be used for the request.
-     * @param string $serviceAddress the server address of the sep-24 service (e.g. from sep-01).
-     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication. If provided it will be used in the request header.
+     * Constructor for building GET /withdraw-exchange requests.
+     *
+     * @param Client $httpClient The HTTP client to use for sending requests
+     * @param string $serviceAddress The base URL of the transfer server from stellar.toml
+     * @param string|null $jwtToken Optional JWT token obtained from SEP-10 authentication
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {

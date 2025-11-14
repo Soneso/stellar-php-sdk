@@ -6,6 +6,18 @@
 
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
+/**
+ * Detailed fee breakdown for a cross-border payment transaction via SEP-31.
+ *
+ * This class represents the comprehensive fee structure applied to a transaction,
+ * including the total fee amount, the asset in which fees are charged, and an
+ * optional breakdown of individual fee components.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#fee-details-object-schema
+ * @see SEP31TransactionResponse
+ * @see SEP31FeeDetailsDetails
+ */
 class SEP31FeeDetails
 {
     /**

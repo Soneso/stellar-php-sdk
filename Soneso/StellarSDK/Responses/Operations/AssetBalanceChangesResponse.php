@@ -6,6 +6,15 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Collection of asset balance changes from a Soroban contract invocation
+ *
+ * Provides an iterable collection of AssetBalanceChangeResponse objects representing all
+ * asset balance changes that occurred during smart contract execution. Supports iteration,
+ * counting, and conversion to array.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ */
 class AssetBalanceChangesResponse extends \IteratorIterator
 {
 
@@ -19,11 +28,22 @@ class AssetBalanceChangesResponse extends \IteratorIterator
         return parent::current();
     }
 
+    /**
+     * Adds an asset balance change to the collection
+     *
+     * @param AssetBalanceChangeResponse $response The balance change response to add
+     * @return void
+     */
     public function add(AssetBalanceChangeResponse $response)
     {
         $this->getInnerIterator()->append($response);
     }
 
+    /**
+     * Gets the number of balance changes in the collection
+     *
+     * @return int The balance change count
+     */
     public function count(): int
     {
         return $this->getInnerIterator()->count();

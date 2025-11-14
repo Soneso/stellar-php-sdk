@@ -8,6 +8,16 @@ namespace Soneso\StellarSDK\SEP\KYCService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response object for PUT /customer endpoint operations.
+ *
+ * This response contains the customer identifier assigned by the anchor after successfully
+ * creating or updating customer information. The ID can be used in subsequent requests to
+ * identify the customer when querying status or updating information.
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put SEP-12 v1.15.0
+ */
 class PutCustomerInfoResponse extends Response
 {
     /**

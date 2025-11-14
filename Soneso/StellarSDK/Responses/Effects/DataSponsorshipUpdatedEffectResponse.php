@@ -5,6 +5,16 @@
 // found in the LICENSE file.
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a data entry sponsorship updated effect from the Stellar network
+ *
+ * This effect occurs when a data entry's sponsorship is transferred from one sponsor to another.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class DataSponsorshipUpdatedEffectResponse extends EffectResponse
 {
     private string $newSponsor;
@@ -12,7 +22,9 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse
     private string $dataName;
 
     /**
-     * @return string
+     * Gets the account ID of the new sponsor
+     *
+     * @return string The new sponsor's account ID
      */
     public function getNewSponsor(): string
     {
@@ -20,7 +32,9 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the account ID of the former sponsor
+     *
+     * @return string The former sponsor's account ID
      */
     public function getFormerSponsor(): string
     {
@@ -28,7 +42,9 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the name of the data entry
+     *
+     * @return string The data entry name
      */
     public function getDataName(): string
     {

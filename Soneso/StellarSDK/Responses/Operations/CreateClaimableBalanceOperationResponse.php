@@ -11,6 +11,18 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimantResponse;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimantsResponse;
 
+/**
+ * Represents a create claimable balance operation response from Horizon API
+ *
+ * This operation creates a claimable balance entry on the ledger with a specified amount of an asset
+ * and a list of authorized claimants. The claimable balance can later be claimed by any of the specified
+ * claimants who meet the predicate conditions. The creating account sponsors the base reserve for the
+ * balance entry until it is claimed or clawed back.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Create Claimable Balance Operation
+ */
 class CreateClaimableBalanceOperationResponse extends OperationResponse
 {
     private string $sponsor;
@@ -19,7 +31,9 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse
     private ClaimantsResponse $claimants;
 
     /**
-     * @return string
+     * Gets the account sponsoring the claimable balance reserve
+     *
+     * @return string The sponsor account ID
      */
     public function getSponsor(): string
     {
@@ -27,7 +41,9 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the amount of the asset in the claimable balance
+     *
+     * @return string The amount as a string to preserve precision
      */
     public function getAmount(): string
     {
@@ -35,7 +51,9 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset held in the claimable balance
+     *
+     * @return Asset The asset details (type, code, issuer)
      */
     public function getAsset(): Asset
     {
@@ -43,7 +61,9 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse
     }
 
     /**
-     * @return ClaimantsResponse
+     * Gets the list of authorized claimants for this balance
+     *
+     * @return ClaimantsResponse Collection of claimants with their predicates
      */
     public function getClaimants(): ClaimantsResponse
     {

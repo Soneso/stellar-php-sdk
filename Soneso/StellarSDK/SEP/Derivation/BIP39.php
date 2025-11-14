@@ -9,6 +9,20 @@ namespace Soneso\StellarSDK\SEP\Derivation;
 
 use Exception;
 
+/**
+ * BIP-39 implementation for mnemonic phrase generation and validation.
+ *
+ * This class implements the BIP-39 standard for generating mnemonic phrases
+ * from entropy and reconstructing entropy from mnemonic phrases. It handles
+ * entropy generation, checksum calculation, and word list operations for
+ * creating deterministic wallet seeds.
+ *
+ * @package Soneso\StellarSDK\SEP\Derivation
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
+ * @see https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+ * @see Mnemonic
+ * @see WordList
+ */
 class BIP39
 {
 
@@ -23,9 +37,12 @@ class BIP39
     private ?WordList $wordList = null;
 
     /**
-     * @param string $entropy
-     * @return Mnemonic
-     * @throws Exception
+     * Creates a mnemonic from the provided hexadecimal entropy.
+     *
+     * @param string $entropy Hexadecimal entropy string (128-256 bits).
+     * @return Mnemonic The generated mnemonic.
+     * @throws Exception If entropy is invalid.
+     * @security Minimum entropy requirement is 128 bits (32 hex characters). SEP-5 recommends 256 bits (64 hex characters) for maximum security.
      */
     public static function Entropy(string $entropy): Mnemonic
     {
@@ -41,9 +58,12 @@ class BIP39
     }
 
     /**
-     * @param int $wordCount
-     * @return Mnemonic
-     * @throws Exception
+     * Generates a new mnemonic with cryptographically secure entropy.
+     *
+     * @param int $wordCount Number of words in the mnemonic (12, 15, 18, 21, or 24). Default is 12.
+     * @return Mnemonic The generated mnemonic.
+     * @throws Exception If word count is invalid.
+     * @security Uses cryptographically secure random_bytes() for entropy generation. SEP-5 recommends 24-word mnemonics (256 bits) for production use.
      */
     public static function Generate(int $wordCount = 12): Mnemonic
     {
@@ -54,11 +74,13 @@ class BIP39
     }
 
     /**
-     * @param $words
-     * @param WordList|null $wordList
-     * @param bool $verifyChecksum
-     * @return Mnemonic
-     * @throws Exception
+     * Reconstructs a mnemonic from words.
+     *
+     * @param string|array<string> $words Mnemonic words as string or array.
+     * @param WordList|null $wordList Word list to use. Default is English.
+     * @param bool $verifyChecksum Whether to verify entropy checksum. Default is true.
+     * @return Mnemonic The reconstructed mnemonic.
+     * @throws Exception If words are invalid or checksum verification fails.
      */
     public static function Words($words, ?WordList $wordList = null, bool $verifyChecksum = true): Mnemonic
     {
@@ -78,8 +100,9 @@ class BIP39
 
     /**
      * BIP39 constructor.
-     * @param int $wordCount
-     * @throws Exception
+     *
+     * @param int $wordCount Number of words (must be between 12-24 and divisible by 3). Default is 12.
+     * @throws Exception If word count is invalid.
      */
     public function __construct(int $wordCount = 12)
     {
@@ -100,9 +123,11 @@ class BIP39
     }
 
     /**
-     * @param string $entropy
-     * @return BIP39
-     * @throws Exception
+     * Uses the provided entropy for mnemonic generation.
+     *
+     * @param string $entropy Hexadecimal entropy string.
+     * @return BIP39 This instance for method chaining.
+     * @throws Exception If entropy is invalid.
      */
     public function useEntropy(string $entropy): self
     {
@@ -114,8 +139,10 @@ class BIP39
     }
 
     /**
-     * @return BIP39
-     * @throws Exception
+     * Generates cryptographically secure entropy.
+     *
+     * @return BIP39 This instance for method chaining.
+     * @throws Exception If entropy generation fails.
      */
     public function generateSecureEntropy(): self
     {
@@ -124,8 +151,10 @@ class BIP39
     }
 
     /**
-     * @return Mnemonic
-     * @throws Exception
+     * Generates the final mnemonic from entropy and word list.
+     *
+     * @return Mnemonic The generated mnemonic.
+     * @throws Exception If entropy or word list is not defined.
      */
     public function mnemonic(): Mnemonic
     {
@@ -150,8 +179,10 @@ class BIP39
     }
 
     /**
-     * @param WordList $wordList
-     * @return BIP39
+     * Sets the word list to use for mnemonic generation.
+     *
+     * @param WordList $wordList The word list to use.
+     * @return BIP39 This instance for method chaining.
      */
     public function wordList(WordList $wordList): self
     {
@@ -160,10 +191,12 @@ class BIP39
     }
 
     /**
-     * @param array $words
-     * @param bool $verifyChecksum
-     * @return Mnemonic
-     * @throws Exception
+     * Reconstructs a mnemonic from an array of words.
+     *
+     * @param array<string> $words Array of mnemonic words.
+     * @param bool $verifyChecksum Whether to verify the entropy checksum. Default is true.
+     * @return Mnemonic The reconstructed mnemonic.
+     * @throws Exception If words are invalid or checksum verification fails.
      */
     public function reverse(array $words, bool $verifyChecksum = true): Mnemonic
     {
@@ -203,8 +236,10 @@ class BIP39
     }
 
     /**
-     * @param string $hex
-     * @return string
+     * Converts a hexadecimal string to binary representation.
+     *
+     * @param string $hex Hexadecimal string to convert.
+     * @return string Binary string representation (4 bits per hex character).
      */
     private function hex2bits(string $hex): string
     {
@@ -216,8 +251,10 @@ class BIP39
     }
 
     /**
-     * @param string $bits
-     * @return string
+     * Converts a binary string to hexadecimal representation.
+     *
+     * @param string $bits Binary string to convert (groups of 4 bits).
+     * @return string Hexadecimal string representation.
      */
     private function bits2hex(string $bits): string
     {
@@ -230,9 +267,11 @@ class BIP39
     }
 
     /**
-     * @param string $entropy
-     * @param int $bits
-     * @return string
+     * Calculates the BIP-39 checksum for the given entropy.
+     *
+     * @param string $entropy Hexadecimal entropy string.
+     * @param int $bits Number of checksum bits to generate (1 bit per 3 words, starting from 4 bits for 12 words).
+     * @return string Binary string of the checksum bits.
      */
     private function checksum(string $entropy, int $bits): string
     {
@@ -246,8 +285,10 @@ class BIP39
     }
 
     /**
-     * @param string $entropy
-     * @throws Exception
+     * Validates entropy format and length according to BIP-39 requirements.
+     *
+     * @param string $entropy Hexadecimal entropy string to validate.
+     * @throws Exception If entropy is not valid hexadecimal or has invalid length (must be 128, 160, 192, 224, or 256 bits).
      */
     private static function validateEntropy(string $entropy): void
     {

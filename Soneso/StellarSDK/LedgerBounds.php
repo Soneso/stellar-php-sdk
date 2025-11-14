@@ -10,8 +10,18 @@ namespace Soneso\StellarSDK;
 use Soneso\StellarSDK\Xdr\XdrLedgerBounds;
 
 /**
- * LedgerBounds are Preconditions of a transaction per <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification">CAP-21<a/>
+ * Represents ledger number bounds as transaction preconditions
  *
+ * LedgerBounds specify a range of ledger numbers during which a transaction
+ * is valid. Transactions with ledger bounds will only be accepted if the
+ * current ledger number falls within the specified range.
+ *
+ * This feature was introduced in CAP-21 to provide more granular control
+ * over transaction validity based on ledger progression rather than time.
+ *
+ * @package Soneso\StellarSDK
+ * @see https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification CAP-21 specification
+ * @see https://developers.stellar.org Stellar developer docs Documentation on preconditions
  */
 class LedgerBounds
 {
@@ -26,8 +36,10 @@ class LedgerBounds
     private int $maxLedger;
 
     /**
-     * @param int $minLedger
-     * @param int $maxLedger
+     * LedgerBounds constructor
+     *
+     * @param int $minLedger The minimum ledger number (inclusive)
+     * @param int $maxLedger The maximum ledger number (inclusive)
      */
     public function __construct(int $minLedger, int $maxLedger)
     {
@@ -36,7 +48,9 @@ class LedgerBounds
     }
 
     /**
-     * @return int
+     * Gets the minimum ledger number
+     *
+     * @return int The minimum ledger number
      */
     public function getMinLedger(): int
     {
@@ -44,7 +58,10 @@ class LedgerBounds
     }
 
     /**
-     * @param int $minLedger
+     * Sets the minimum ledger number
+     *
+     * @param int $minLedger The minimum ledger number
+     * @return void
      */
     public function setMinLedger(int $minLedger): void
     {
@@ -52,7 +69,9 @@ class LedgerBounds
     }
 
     /**
-     * @return int
+     * Gets the maximum ledger number
+     *
+     * @return int The maximum ledger number
      */
     public function getMaxLedger(): int
     {
@@ -60,7 +79,10 @@ class LedgerBounds
     }
 
     /**
-     * @param int $maxLedger
+     * Sets the maximum ledger number
+     *
+     * @param int $maxLedger The maximum ledger number
+     * @return void
      */
     public function setMaxLedger(int $maxLedger): void
     {
@@ -68,7 +90,9 @@ class LedgerBounds
     }
 
     /**
-     * @return XdrLedgerBounds
+     * Converts these ledger bounds to XDR format
+     *
+     * @return XdrLedgerBounds The XDR representation of these ledger bounds
      */
     public function toXdr(): XdrLedgerBounds {
         return new XdrLedgerBounds($this->getMinLedger(), $this->getMaxLedger());
@@ -76,8 +100,10 @@ class LedgerBounds
 
 
     /**
-     * @param XdrLedgerBounds $xdr
-     * @return LedgerBounds
+     * Creates LedgerBounds from XDR format
+     *
+     * @param XdrLedgerBounds $xdr The XDR encoded ledger bounds
+     * @return LedgerBounds The decoded ledger bounds object
      */
     public static function fromXdr(XdrLedgerBounds $xdr) : LedgerBounds
     {

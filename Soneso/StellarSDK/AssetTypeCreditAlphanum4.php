@@ -13,9 +13,33 @@ use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
 
+/**
+ * Represents an issued asset with a 1-4 character alphanumeric code
+ *
+ * AlphaNum4 assets are identified by a short code (1-4 characters) and the
+ * issuer's account ID. Common examples include USD, EUR, BTC, etc.
+ *
+ * Usage:
+ * <code>
+ * $usd = new AssetTypeCreditAlphanum4("USD", "GISSUER...");
+ * // or use the factory method
+ * $usd = Asset::createNonNativeAsset("USD", "GISSUER...");
+ * </code>
+ *
+ * @package Soneso\StellarSDK
+ * @see AssetTypeCreditAlphanum12 For assets with 5-12 character codes
+ * @since 1.0.0
+ */
 class AssetTypeCreditAlphanum4 extends AssetTypeCreditAlphanum
 {
 
+    /**
+     * Creates an AlphaNum4 asset with code validation
+     *
+     * @param string $code Asset code (1-4 characters)
+     * @param string $issuer Issuer account ID (public key starting with G)
+     * @throws \RuntimeException If the code length is invalid
+     */
     public function __construct(string $code, string $issuer) {
         $codeLen = strlen($code);
         if ($codeLen < StellarConstants::ASSET_CODE_MIN_LENGTH || $codeLen > StellarConstants::ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
@@ -25,13 +49,20 @@ class AssetTypeCreditAlphanum4 extends AssetTypeCreditAlphanum
     }
 
     /**
-     * @inheritDoc
+     * Returns the asset type identifier
+     *
+     * @return string Always returns "credit_alphanum4"
      */
     public function getType(): string
     {
         return Asset::TYPE_CREDIT_ALPHANUM_4;
     }
 
+    /**
+     * Converts this asset to its XDR representation
+     *
+     * @return XdrAsset XDR format of this AlphaNum4 asset
+     */
     public function toXdr(): XdrAsset
     {
         $xrAssetType = new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4);

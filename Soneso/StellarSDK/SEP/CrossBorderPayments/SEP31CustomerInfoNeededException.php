@@ -8,6 +8,25 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
 use Exception;
 
+/**
+ * Exception thrown when additional KYC information is required via SEP-12.
+ *
+ * This exception is raised during POST /transactions when the Sending Anchor
+ * has not provided all required KYC information, or when additional KYC is
+ * needed after the transaction amount is known. The type field indicates which
+ * customer type requires additional information. Returns HTTP 400 Bad Request.
+ *
+ * Resolution workflow:
+ * 1. Extract the type field from this exception
+ * 2. Call SEP-12 PUT /customer with the missing KYC data
+ * 3. Use the returned customer_id as sender_id or receiver_id
+ * 4. Retry POST /transactions with the updated IDs
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#post-transactions
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0012.md
+ * @see CrossBorderPaymentsService::postTransactions()
+ */
 class SEP31CustomerInfoNeededException extends Exception
 {
     /**

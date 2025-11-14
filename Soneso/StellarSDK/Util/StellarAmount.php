@@ -10,17 +10,55 @@ use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use phpseclib3\Math\BigInteger;
 
-
+/**
+ * Represents an amount in the Stellar network with proper precision handling
+ *
+ * Stellar amounts are represented internally as 64-bit signed integers in stroops,
+ * where 1 XLM = 10,000,000 stroops. This class handles conversion between decimal
+ * amounts and stroops while ensuring proper precision and validation.
+ *
+ * Maximum supported amount: 922337203685.4775807 XLM (9223372036854775807 stroops)
+ *
+ * Example usage:
+ * ```php
+ * // Create from decimal string
+ * $amount = StellarAmount::fromString("100.50");
+ *
+ * // Create from float
+ * $amount = StellarAmount::fromFloat(100.5);
+ *
+ * // Get decimal representation
+ * $decimal = $amount->getDecimalValueAsString(); // "100.5000000"
+ *
+ * // Get stroops value
+ * $stroops = $amount->getStroopsAsString(); // "1005000000"
+ * ```
+ *
+ * @package Soneso\StellarSDK\Util
+ * @see https://developers.stellar.org Stellar developer docs Documentation on Lumens (XLM)
+ */
 class StellarAmount
 {
+    /**
+     * @var BigInteger The amount value in stroops
+     */
     protected BigInteger $stroops;
+
+    /**
+     * @var BigInteger Scale factor for stroop conversion (10,000,000)
+     */
     protected BigInteger $stroopScaleBignum;
-    protected BigInteger $maxSignedStroops64; // The largest amount of stroops that can fit in a signed int64
+
+    /**
+     * @var BigInteger Maximum value that fits in a signed 64-bit integer (9223372036854775807)
+     */
+    protected BigInteger $maxSignedStroops64;
     
     /**
      * Returns the maximum supported amount
      *
-     * @return StellarAmount
+     * @static
+     * @return StellarAmount The maximum amount (922337203685.4775807 XLM)
      */
     public static function maximum() : StellarAmount
     {
@@ -30,8 +68,10 @@ class StellarAmount
     /**
      * Reads a StellarAmount from a SIGNED 64-bit integer
      *
-     * @param XdrBuffer $xdr
-     * @return StellarAmount
+     * @static
+     * @param XdrBuffer $xdr The XDR buffer to read from
+     * @return StellarAmount The decoded amount
+     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
      */
     public static function fromXdr(XdrBuffer $xdr) : StellarAmount
     {
@@ -39,9 +79,10 @@ class StellarAmount
     }
 
     /**
-     * StellarAmount constructor.
+     * StellarAmount constructor
      *
-     * @param BigInteger $stroops
+     * @param BigInteger $stroops The amount in stroops (1 XLM = 10,000,000 stroops)
+     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
      */
     public function __construct(BigInteger $stroops)
     {
@@ -63,11 +104,29 @@ class StellarAmount
         }
     }
 
+    /**
+     * Creates a StellarAmount from a floating point number
+     *
+     * @static
+     * @param float $amount The amount as a decimal number (e.g., 100.5 for 100.5 XLM)
+     * @return StellarAmount The amount object
+     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
+     */
     public static function fromFloat(float $amount) : StellarAmount {
         $amountStr = number_format($amount, 7, '.', '');
         return self::fromString($amountStr);
     }
 
+    /**
+     * Creates a StellarAmount from a decimal string
+     *
+     * Supports up to 7 decimal places. Commas and spaces are automatically removed.
+     *
+     * @static
+     * @param string $decimalAmount The amount as a string (e.g., "100.5" or "1,000.25")
+     * @return StellarAmount The amount object
+     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
+     */
     public static function fromString(string $decimalAmount) : StellarAmount {
         $amountStr = str_replace(',', '', $decimalAmount);
         $amountStr = str_replace(' ', '', $amountStr);
@@ -90,7 +149,9 @@ class StellarAmount
     }
     
     /**
-     * @return string
+     * Returns the decimal value as a string with 7 decimal places
+     *
+     * @return string The amount formatted as a decimal string (e.g., "100.5000000")
      */
     public function getDecimalValueAsString() : string
     {
@@ -105,7 +166,7 @@ class StellarAmount
     /**
      * Returns the raw value in stroops as a string
      *
-     * @return string
+     * @return string The amount in stroops as a numeric string
      */
     public function getStroopsAsString(): string
     {
@@ -115,7 +176,7 @@ class StellarAmount
     /**
      * Returns the raw value in stroops
      *
-     * @return BigInteger
+     * @return BigInteger The amount in stroops as a BigInteger object
      */
     public function getStroops(): BigInteger
     {

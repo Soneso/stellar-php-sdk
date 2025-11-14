@@ -15,7 +15,7 @@ namespace Soneso\StellarSDK\Constants;
  *
  * References:
  * - Stellar Protocol: https://github.com/stellar/stellar-protocol
- * - Stellar Developers: https://developers.stellar.org/docs/
+ * - Stellar Developers: https://developers.stellar.org
  * - CAP specifications: https://github.com/stellar/stellar-protocol/tree/master/core
  *
  * Note: This class cannot be instantiated. All constants are static and
@@ -62,7 +62,7 @@ final class StellarConstants
     // Asset codes can be 1-4 characters (AlphaNum4) or 5-12 characters (AlphaNum12).
     //
     // Reference: Stellar Protocol - Asset specification
-    // @see https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/assets
+    // @see https://developers.stellar.org Stellar developer docs
 
     /**
      * Minimum length for any asset code.
@@ -122,7 +122,7 @@ final class StellarConstants
      * Note: During network congestion, higher fees may be required
      * for transaction inclusion.
      *
-     * @see https://developers.stellar.org/docs/learn/fundamentals/fees-resource-limits-metering
+     * @see https://developers.stellar.org Stellar developer docs
      */
     public const MIN_BASE_FEE_STROOPS = 100;
 
@@ -134,7 +134,7 @@ final class StellarConstants
      * This corresponds to the XDR string32 type.
      *
      * Reference: XDR type string32 and federation specification
-     * @see https://developers.stellar.org/docs/learn/encyclopedia/federation
+     * @see https://developers.stellar.org Stellar developer docs
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md
      */
     public const HOME_DOMAIN_MAX_LENGTH = 32;
@@ -145,7 +145,7 @@ final class StellarConstants
     // Constants related to transaction memo fields.
     //
     // Reference: Stellar Protocol - Transaction specification
-    // @see https://developers.stellar.org/docs/learn/fundamentals/transactions/transaction-data-structures
+    // @see https://developers.stellar.org Stellar developer docs
 
     /**
      * Maximum length for a text memo in bytes.
@@ -209,7 +209,7 @@ final class StellarConstants
     // Constants related to account thresholds and signer weights.
     //
     // Reference: Stellar Protocol - Multisig specification
-    // @see https://developers.stellar.org/docs/learn/encyclopedia/security/signatures-multisig
+    // @see https://developers.stellar.org Stellar developer docs
 
     /**
      * Minimum value for account thresholds and signer weights.
@@ -263,7 +263,7 @@ final class StellarConstants
     // Constants related to Stellar's currency unit conversions.
     //
     // Reference: Stellar Protocol - Asset specification
-    // @see https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/assets
+    // @see https://developers.stellar.org Stellar developer docs
 
     /**
      * Stroop scale factor for converting between XLM and stroops.
@@ -279,7 +279,7 @@ final class StellarConstants
      * - 0.1 XLM = 1,000,000 stroops
      * - 100 stroops = 0.00001 XLM (minimum base fee)
      *
-     * @see https://developers.stellar.org/docs/learn/fundamentals/fees-resource-limits-metering
+     * @see https://developers.stellar.org Stellar developer docs
      */
     public const STROOP_SCALE = 10000000;
 
@@ -289,7 +289,7 @@ final class StellarConstants
     // Constants related to transaction construction and validation.
     //
     // Reference: Stellar Protocol - Transaction specification
-    // @see https://developers.stellar.org/docs/learn/fundamentals/transactions
+    // @see https://developers.stellar.org Stellar developer docs
 
     /**
      * Maximum number of operations allowed in a single transaction.
@@ -304,7 +304,7 @@ final class StellarConstants
      * total_fee = base_fee × number_of_operations
      *
      * Reference: Stellar Protocol - Transaction specification
-     * @see https://developers.stellar.org/docs/learn/fundamentals/transactions
+     * @see https://developers.stellar.org Stellar developer docs
      */
     public const MAX_OPERATIONS_PER_TRANSACTION = 100;
 
@@ -314,7 +314,7 @@ final class StellarConstants
     // Constants related to Soroban smart contracts and ledger management.
     //
     // Reference: Soroban documentation
-    // @see https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
+    // @see https://developers.stellar.org Stellar developer docs
 
     /**
      * Default ledger expiration offset for Soroban transactions.
@@ -332,7 +332,7 @@ final class StellarConstants
      * invocations while preventing stale transactions.
      *
      * Reference: Soroban documentation - State archival
-     * @see https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
+     * @see https://developers.stellar.org Stellar developer docs
      */
     public const DEFAULT_LEDGER_EXPIRATION_OFFSET = 100;
 }

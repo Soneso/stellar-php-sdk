@@ -6,6 +6,15 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Operation type constants for Stellar operations
+ *
+ * Defines integer constants for all operation types supported by the Stellar protocol.
+ * These values correspond to the type_i field in operation responses and match the
+ * operation type codes defined in the Stellar XDR specification.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ */
 class OperationType
 {
     public const CREATE_ACCOUNT = 0;

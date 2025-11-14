@@ -6,6 +6,31 @@
 
 namespace Soneso\StellarSDK\SEP\StandardKYCFields;
 
+/**
+ * KYC and AML fields for organizations (companies, legal entities).
+ *
+ * This class provides standardized fields for collecting Know Your Customer (KYC) and
+ * Anti-Money Laundering (AML) information about organizations in compliance with
+ * SEP-09 specification. It includes corporate identification, registration details,
+ * contact information, and supporting documentation.
+ *
+ * Note: All organization field keys use dot notation with 'organization.' prefix
+ * (e.g. 'organization.name', 'organization.address_country_code').
+ *
+ * PRIVACY AND SECURITY WARNING:
+ * This class handles highly sensitive corporate and Personally Identifiable Information (PII).
+ * Implementers MUST ensure:
+ * - Transmission only over HTTPS/TLS connections
+ * - Encryption at rest for all stored KYC data
+ * - Compliance with applicable data protection regulations (GDPR, CCPA, etc.)
+ * - Implementation of proper access controls and audit logging
+ * - Secure data retention and deletion policies
+ * - Corporate authorization management for data collection and processing
+ * - Binary fields (photos, documents) must be base64 encoded for transmission
+ *
+ * @package Soneso\StellarSDK\SEP\StandardKYCFields
+ * @see https://github.com/stellar/stellar-protocol/blob/v1.17.0/ecosystem/sep-0009.md SEP-09 v1.17.0 Specification
+ */
 class OrganizationKYCFields
 {
 
@@ -31,66 +56,110 @@ class OrganizationKYCFields
     public const PHOTO_INCORPORATION_DOC_KEY =self::KEY_PREFIX . 'photo_incorporation_doc';
     public const PHOTO_PROOF_ADDRESS_KEY = self::KEY_PREFIX . 'photo_proof_address';
 
-    /// Full organization name as on the incorporation papers
+    /**
+     * @var string|null Full organization name as on the incorporation papers
+     */
     public ?string $name = null;
 
-    /// Organization VAT number
+    /**
+     * @var string|null Organization VAT number
+     */
     public ?string $VATNumber = null;
 
-    /// Organization registration number
+    /**
+     * @var string|null Organization registration number
+     */
     public ?string $registrationNumber = null;
 
-    /// Date the organization was registered
+    /**
+     * @var string|null Date the organization was registered (ISO 8601 format)
+     */
     public ?string $registrationDate = null;
 
-    /// Organization registered address
+    /**
+     * @var string|null Organization registered address
+     */
     public ?string $registeredAddress = null;
 
-    /// Organization shareholder number
+    /**
+     * @var int|null Number of shareholders in the organization
+     */
     public ?int $numberOfShareholders = null;
 
-    /// Can be an organization or a person and should be queried recursively up to the ultimate beneficial
-    ///  owners (with KYC information for natural persons such as above)
+    /**
+     * @var string|null Shareholder name (can be an organization or a person, should be queried recursively
+     * up to the ultimate beneficial owners with KYC information for natural persons)
+     */
     public ?string $shareholderName = null;
 
-    /// Image of incorporation documents (bytes)
+    /**
+     * @var string|null Image of incorporation documents (base64 encoded)
+     */
     public ?string $photoIncorporationDoc = null;
 
-    /// Image of a utility bill, bank statement with the organization's name and address (bytes)
+    /**
+     * @var string|null Image of a utility bill, bank statement with the organization's name and address (base64 encoded)
+     */
     public ?string $photoProofAddress = null;
 
-    /// Country code for current address
+    /**
+     * @var string|null Country code for current address (ISO 3166-1 alpha-3)
+     */
     public ?string $addressCountryCode = null;
 
-    /// Name of state/province/region/prefecture
+    /**
+     * @var string|null Name of state/province/region/prefecture
+     */
     public ?string $stateOrProvince = null;
 
-    /// name of city/town
+    /**
+     * @var string|null Name of city/town
+     */
     public ?string $city = null;
 
-    /// Postal or other code identifying organization's locale
+    /**
+     * @var string|null Postal or other code identifying organization's locale
+     */
     public ?string $postalCode = null;
 
-    /// Organization registered managing director
+    /**
+     * @var string|null Organization registered managing director
+     */
     public ?string $directorName = null;
 
-    /// Organization website
+    /**
+     * @var string|null Organization website URL
+     */
     public ?string $website = null;
 
-    /// Organization contact email
+    /**
+     * @var string|null Organization contact email (RFC 5322 format)
+     */
     public ?string $email = null;
 
-    ///	Organization contact phone
+    /**
+     * @var string|null Organization contact phone number (E.164 format)
+     */
     public ?string $phone = null;
 
-    /// Financial Account Fields
+    /**
+     * @var FinancialAccountKYCFields|null Financial account fields (bank account, crypto address, etc.)
+     */
     public ?FinancialAccountKYCFields $financialAccountKYCFields = null;
 
-    /// Card Fields
+    /**
+     * @var CardKYCFields|null Card fields (credit/debit card information)
+     */
     public ?CardKYCFields $cardKYCFields = null;
 
     /**
-     * @return array<array-key, mixed>
+     * Returns all non-null KYC fields as an associative array.
+     *
+     * This method collects all populated organization KYC fields including
+     * nested financial account and card fields, returning them as key-value pairs
+     * with 'organization.' prefix suitable for submission to SEP-09 compliant services.
+     *
+     * @return array<array-key, mixed> Associative array of field keys to values
      */
     public function fields() : array
     {
@@ -155,7 +224,13 @@ class OrganizationKYCFields
     }
 
     /**
-     * @return array<array-key, string> the fields containing the files to be uploaded.
+     * Returns all non-null binary file fields as an associative array.
+     *
+     * This method collects all populated binary file fields (photos, documents)
+     * that are base64 encoded, returning them as key-value pairs with 'organization.'
+     * prefix for file upload to SEP-09 compliant services.
+     *
+     * @return array<array-key, string> Associative array of file field keys to base64 encoded values
      */
     public function files() : array
     {

@@ -6,7 +6,22 @@
 
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
-
+/**
+ * Individual refund payment details within a cross-border payment refund.
+ *
+ * This class represents a single refund payment transaction sent back to the
+ * Sending Anchor, including the Stellar transaction hash, refunded amount,
+ * and associated fee. Multiple refund payments may exist for a single transaction.
+ *
+ * Refund Calculation:
+ * - Net amount returned to sender: amount - fee
+ * - Total refund amount: sum of all refund payments
+ * - Fee is deducted from the refunded amount
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#refund-payment-object-schema
+ * @see SEP31Refunds
+ */
 class SEP31RefundPayment
 {
 

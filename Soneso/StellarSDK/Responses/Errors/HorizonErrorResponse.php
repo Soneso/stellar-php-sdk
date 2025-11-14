@@ -9,6 +9,17 @@ namespace Soneso\StellarSDK\Responses\Errors;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents an error response from Horizon
+ *
+ * Contains detailed information about errors returned by Horizon, including type, title, status code,
+ * details, and optional extras with transaction failure information. Follows RFC 7807 Problem Details format.
+ *
+ * @package Soneso\StellarSDK\Responses\Errors
+ * @see HorizonErrorResponseExtras For additional error details
+ * @see https://developers.stellar.org Stellar developer docs Horizon Error Handling
+ * @since 1.0.0
+ */
 class HorizonErrorResponse extends Response
 {
     public string $type;
@@ -23,8 +34,11 @@ class HorizonErrorResponse extends Response
     public ?array $extrasJson = null;
 
     /**
-     * The type of Status Code returned (URL to lookup for more information).
-     * @return string
+     * Gets the type of status code returned
+     *
+     * URL to lookup for more information about the error.
+     *
+     * @return string The type of status code
      */
     public function getType(): string
     {
@@ -32,8 +46,11 @@ class HorizonErrorResponse extends Response
     }
 
     /**
-     * A short title describing the Status Code, which can be used to look up more information about an error.
-     * @return string
+     * Gets a short title describing the status code
+     *
+     * The title can be used to look up more information about the error.
+     *
+     * @return string The error title
      */
     public function getTitle(): string
     {
@@ -41,8 +58,9 @@ class HorizonErrorResponse extends Response
     }
 
     /**
-     * Status Code.
-     * @return int
+     * Gets the HTTP status code
+     *
+     * @return int The status code
      */
     public function getStatus(): int
     {
@@ -50,8 +68,9 @@ class HorizonErrorResponse extends Response
     }
 
     /**
-     * Details about the error.
-     * @return string
+     * Gets details about the error
+     *
+     * @return string The error details
      */
     public function getDetail(): string
     {
@@ -59,8 +78,12 @@ class HorizonErrorResponse extends Response
     }
 
     /**
-     * If the Status Code is Transaction Failed, this extras field displays the Result Code returned by Stellar Core describing why the transaction failed.
-     * @return HorizonErrorResponseExtras|null
+     * Gets additional error details for transaction failures
+     *
+     * If the status code indicates a transaction failure, this field contains the result code
+     * returned by Stellar Core describing why the transaction failed.
+     *
+     * @return HorizonErrorResponseExtras|null The extras object, or null if not available
      */
     public function getExtras(): ?HorizonErrorResponseExtras
     {
@@ -68,8 +91,9 @@ class HorizonErrorResponse extends Response
     }
 
     /**
-     * Horizon instance if any.
-     * @return string|null
+     * Gets the Horizon instance identifier
+     *
+     * @return string|null The instance identifier, or null if not available
      */
     public function getInstance(): ?string
     {
@@ -77,7 +101,9 @@ class HorizonErrorResponse extends Response
     }
 
     /**
-     * @return array<string,mixed>|null
+     * Gets all extras from the response as an array
+     *
+     * @return array<string,mixed>|null The extras array, or null if not available
      */
     public function getExtrasJson(): ?array
     {

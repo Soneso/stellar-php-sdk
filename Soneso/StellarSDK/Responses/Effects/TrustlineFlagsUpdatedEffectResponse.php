@@ -8,6 +8,16 @@ namespace Soneso\StellarSDK\Responses\Effects;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents a trustline flags updated effect from the Stellar network
+ *
+ * This effect occurs when a trustline's authorization flags are modified by the asset issuer.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class TrustlineFlagsUpdatedEffectResponse extends EffectResponse
 {
 
@@ -18,7 +28,9 @@ class TrustlineFlagsUpdatedEffectResponse extends EffectResponse
     private ?bool $clawbackEnabledFlag;
 
     /**
-     * @return Asset
+     * Gets the asset for this trustline
+     *
+     * @return Asset The asset
      */
     public function getAsset(): Asset
     {
@@ -26,7 +38,9 @@ class TrustlineFlagsUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string|null
+     * Gets the trustor account ID
+     *
+     * @return string|null The trustor's account ID
      */
     public function getTrustor(): ?string
     {
@@ -34,7 +48,9 @@ class TrustlineFlagsUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return bool|null
+     * Gets the authorized flag state
+     *
+     * @return bool|null True if trustline is authorized, false otherwise, or null if not set
      */
     public function getAuthorizedFlag(): ?bool
     {
@@ -42,7 +58,9 @@ class TrustlineFlagsUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return bool|null
+     * Gets the authorized to maintain liabilities flag state
+     *
+     * @return bool|null True if authorized to maintain liabilities, false otherwise, or null if not set
      */
     public function getAuthorizedToMaintainLiabilitiesFlag(): ?bool
     {
@@ -50,7 +68,9 @@ class TrustlineFlagsUpdatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return bool|null
+     * Gets the clawback enabled flag state
+     *
+     * @return bool|null True if clawback is enabled, false otherwise, or null if not set
      */
     public function getClawbackEnabledFlag(): ?bool
     {
@@ -65,7 +85,7 @@ class TrustlineFlagsUpdatedEffectResponse extends EffectResponse
         }
         if (isset($json['trustor'])) $this->trustor = $json['trustor'];
         if (isset($json['authorized_flag'])) $this->authorizedFlag = $json['authorized_flag'];
-        if (isset($json['authorized_to_maintain_liabilites_flag'])) $this->authorizedToMaintainLiabilitiesFlag = $json['authorized_to_maintain_liabilites_flag'];
+        if (isset($json['authorized_to_maintain_liabilities_flag'])) $this->authorizedToMaintainLiabilitiesFlag = $json['authorized_to_maintain_liabilities_flag'];
         if (isset($json['clawback_enabled_flag'])) $this->clawbackEnabledFlag = $json['clawback_enabled_flag'];
         parent::loadFromJson($json);
     }

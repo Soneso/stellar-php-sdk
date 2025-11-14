@@ -12,20 +12,55 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 
+/**
+ * Utility for funding accounts using a custom FriendBot endpoint
+ *
+ * This class allows you to use a custom FriendBot service, useful for local development
+ * with standalone Stellar networks or private test networks.
+ *
+ * Warning: This service should only be used with test networks.
+ * Never attempt to use FriendBot with mainnet accounts.
+ *
+ * Example:
+ * ```php
+ * $bot = new CustomFriendBot("http://localhost:8000/friendbot");
+ * $success = $bot->fundAccount("GABC...XYZ");
+ * if ($success) {
+ *     echo "Account funded successfully";
+ * }
+ * ```
+ *
+ * @package Soneso\StellarSDK\Util
+ * @see FriendBot For funding accounts on the official test network
+ * @see FuturenetFriendBot For funding accounts on Futurenet
+ */
 class CustomFriendBot
 {
 
+    /**
+     * @var string The URL of the custom FriendBot service endpoint
+     */
     public string $friendBotUrl;
 
     /**
-     * @param string $friendBotUrl e.g. "http://localhost:8000/friendbot"
+     * CustomFriendBot constructor
+     *
+     * @param string $friendBotUrl The URL of the custom FriendBot service (e.g., "http://localhost:8000/friendbot")
      */
     public function __construct(string $friendBotUrl)
     {
         $this->friendBotUrl = $friendBotUrl;
     }
 
-    function fundAccount(string $accountId): bool
+    /**
+     * Funds an account using the custom FriendBot endpoint
+     *
+     * Note: Errors are printed to stdout for debugging purposes
+     *
+     * @param string $accountId The Stellar account ID (56-character public key starting with 'G') to fund
+     * @return bool True if funding succeeded, false otherwise
+     */
+    public function fundAccount(string $accountId): bool
     {
         try {
             $httpClient = new Client();
@@ -42,7 +77,9 @@ class CustomFriendBot
     }
 
     /**
-     * @return string
+     * Gets the configured FriendBot URL
+     *
+     * @return string The FriendBot endpoint URL
      */
     public function getFriendBotUrl(): string
     {
@@ -50,7 +87,10 @@ class CustomFriendBot
     }
 
     /**
-     * @param string $friendBotUrl
+     * Sets a new FriendBot URL
+     *
+     * @param string $friendBotUrl The FriendBot endpoint URL
+     * @return void
      */
     public function setFriendBotUrl(string $friendBotUrl): void
     {

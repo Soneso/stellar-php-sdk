@@ -9,6 +9,18 @@ namespace Soneso\StellarSDK\Responses\Operations;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Responses\Offers\OfferPriceResponse;
 
+/**
+ * Represents a create passive sell offer operation response from Horizon API
+ *
+ * This operation creates a passive offer to sell an asset on the Stellar decentralized exchange.
+ * Unlike active offers, passive offers will not immediately consume existing offers at the same
+ * price. They only execute if the market price moves favorably. This is useful for market making
+ * without immediately affecting the order book.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Create Passive Sell Offer Operation
+ */
 class CreatePassiveSellOfferResponse extends OperationResponse
 {
     private string $amount;
@@ -18,7 +30,9 @@ class CreatePassiveSellOfferResponse extends OperationResponse
     private Asset $sellingAsset;
 
     /**
-     * @return string
+     * Gets the amount of the selling asset to offer
+     *
+     * @return string The offer amount as a string to preserve precision
      */
     public function getAmount(): string
     {
@@ -26,7 +40,9 @@ class CreatePassiveSellOfferResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the offer price as a decimal string
+     *
+     * @return string Price of 1 unit of selling asset in terms of buying asset
      */
     public function getPrice(): string
     {
@@ -34,7 +50,9 @@ class CreatePassiveSellOfferResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset to buy
+     *
+     * @return Asset The asset being purchased
      */
     public function getBuyingAsset(): Asset
     {
@@ -42,7 +60,9 @@ class CreatePassiveSellOfferResponse extends OperationResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset to sell
+     *
+     * @return Asset The asset being sold
      */
     public function getSellingAsset(): Asset
     {
@@ -50,7 +70,9 @@ class CreatePassiveSellOfferResponse extends OperationResponse
     }
 
     /**
-     * @return OfferPriceResponse
+     * Gets the offer price as a rational number
+     *
+     * @return OfferPriceResponse Price as numerator/denominator
      */
     public function getPriceR(): OfferPriceResponse
     {

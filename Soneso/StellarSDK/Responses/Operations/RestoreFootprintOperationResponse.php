@@ -7,6 +7,18 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a restore footprint operation response from Horizon API
+ *
+ * This Soroban operation restores archived smart contract data entries back into the active ledger.
+ * When contract data entries expire, they are archived and become inaccessible. This operation
+ * unarchives entries specified in the read-write footprint, making them available again for contract
+ * execution. The restored entries must have their TTL extended to prevent immediate re-archival.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Restore Footprint Operation
+ */
 class RestoreFootprintOperationResponse extends OperationResponse
 {
 

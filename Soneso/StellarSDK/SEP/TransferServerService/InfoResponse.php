@@ -8,6 +8,23 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response from info endpoint describing anchor capabilities and supported assets.
+ *
+ * Contains comprehensive information about what the anchor's transfer server supports,
+ * including lists of supported assets for deposits and withdrawals (both regular and
+ * exchange operations), fee structures, endpoint capabilities, and feature flags.
+ *
+ * This is the discovery endpoint response that clients should query first to understand
+ * what operations are available and how to interact with the anchor.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::info()
+ * @see DepositAsset
+ * @see WithdrawAsset
+ * @see AnchorFeatureFlags
+ */
 class InfoResponse extends Response
 {
     /**
@@ -16,7 +33,7 @@ class InfoResponse extends Response
     public ?array $depositAssets = null;
 
     /**
-     * @var array<array-key, DepositExchangeAsset>|null $depositAssets deposit exchange assets of the info response.
+     * @var array<array-key, DepositExchangeAsset>|null $depositExchangeAssets deposit exchange assets of the info response.
      */
     public ?array $depositExchangeAssets = null;
 

@@ -8,34 +8,45 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcResponse;
 
+/**
+ * Response for version information query.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getVersionInfo
+ */
 class GetVersionInfoResponse extends SorobanRpcResponse
 {
     /**
-     * @var string|null $version The version of the RPC server.
+     * @var string|null $version The version of the RPC server
      */
     public ?string $version = null;
 
     /**
-     * @var string|null $commitHash The commit hash of the RPC server.
+     * @var string|null $commitHash The commit hash of the RPC server
      */
     public ?string $commitHash = null;
 
     /**
-     * @var string|null $buildTimeStamp The build timestamp of the RPC server.
+     * @var string|null $buildTimeStamp The build timestamp of the RPC server
      */
     public ?string $buildTimeStamp = null;
 
     /**
-     * @var string|null $captiveCoreVersion The version of the Captive Core.
+     * @var string|null $captiveCoreVersion The version of the Captive Core
      */
     public ?string $captiveCoreVersion = null;
 
     /**
-     * @var int|null $protocolVersion The protocol version.
+     * @var int|null $protocolVersion The protocol version
      */
     public ?int $protocolVersion = null;
 
-
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : GetVersionInfoResponse {
         $result = new GetVersionInfoResponse($json);
         if (isset($json['result'])) {

@@ -8,6 +8,26 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Response containing anchor capabilities and supported assets for SEP-24 operations
+ *
+ * This class represents the response from the SEP-24 /info endpoint, which provides
+ * comprehensive information about the anchor's supported deposit and withdrawal assets,
+ * fee calculation capabilities, and additional features.
+ *
+ * Wallets query this endpoint to discover which assets the anchor supports for deposits
+ * and withdrawals, what fields are required for each operation, and what additional
+ * features are available such as account creation or claimable balance support.
+ *
+ * The response includes separate asset lists for deposits and withdrawals, as each
+ * asset may have different requirements and constraints depending on the operation type.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
+ * @see InteractiveService::info() For retrieving this information
+ * @see SEP24DepositAsset For deposit asset details
+ * @see SEP24WithdrawAsset For withdrawal asset details
+ */
 class SEP24InfoResponse extends Response
 {
     /**

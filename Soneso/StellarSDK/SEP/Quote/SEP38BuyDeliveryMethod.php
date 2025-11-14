@@ -6,11 +6,26 @@
 
 namespace Soneso\StellarSDK\SEP\Quote;
 
-
+/**
+ * Delivery method for receiving an off-chain asset from an anchor via SEP-38.
+ *
+ * This class describes a method by which an anchor can deliver an off-chain
+ * asset to a user, such as bank transfer, mobile money, or cash pickup.
+ *
+ * @package Soneso\StellarSDK\SEP\Quote
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-info
+ * @see SEP38Asset
+ */
 class SEP38BuyDeliveryMethod
 {
-
+    /**
+     * @var string $name The identifier for the delivery method.
+     */
     public string $name;
+
+    /**
+     * @var string $description Human-readable description of the delivery method.
+     */
     public string $description;
 
     /**
@@ -23,6 +38,12 @@ class SEP38BuyDeliveryMethod
         $this->description = $description;
     }
 
+    /**
+     * Constructs a new instance of SEP38BuyDeliveryMethod by using the given data.
+     *
+     * @param array<array-key, mixed> $json the data to construct the object from.
+     * @return SEP38BuyDeliveryMethod the object containing the parsed data.
+     */
     public static function fromJson(array $json) : SEP38BuyDeliveryMethod
     {
         return new SEP38BuyDeliveryMethod($json['name'], $json['description']);

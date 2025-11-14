@@ -7,8 +7,17 @@
 namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 
 /**
- * Object containing the response data from the GET info/ endpoint of SEP-31.
- * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md#get-info
+ * Response containing supported receiving assets and KYC requirements from SEP-31 info endpoint.
+ *
+ * This class represents the response from GET /info, listing all assets that the
+ * Receiving Anchor supports for cross-border payments, along with their transaction
+ * limits, fees, and required SEP-12 KYC types for senders and receivers.
+ *
+ * @package Soneso\StellarSDK\SEP\CrossBorderPayments
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.1.0/ecosystem/sep-0031.md#get-info
+ * @see CrossBorderPaymentsService::info()
+ * @see SEP31ReceiveAssetInfo
+ * @see SEP12TypesInfo
  */
 class SEP31InfoResponse
 {

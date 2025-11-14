@@ -7,7 +7,18 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
-
+/**
+ * Represents an invoke host function operation response from Horizon API
+ *
+ * This Soroban operation executes a smart contract function on the Stellar network. It can invoke
+ * contract functions, deploy new contracts, or upload contract code. The operation includes the
+ * function type (invoke, upload, or deploy), parameters passed to the function, the contract address,
+ * and tracks any asset balance changes that occurred during contract execution.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see OperationResponse Base operation response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Invoke Host Function Operation
+ */
 class InvokeHostFunctionOperationResponse extends OperationResponse
 {
     public string $function;
@@ -46,7 +57,9 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the host function type being invoked
+     *
+     * @return string Function type (InvokeContract, UploadContractWasm, or CreateContract)
      */
     public function getFunction(): string
     {
@@ -54,7 +67,10 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @param string $function
+     * Sets the host function type being invoked
+     *
+     * @param string $function Function type (InvokeContract, UploadContractWasm, or CreateContract)
+     * @return void
      */
     public function setFunction(string $function): void
     {
@@ -62,7 +78,9 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @return ParametersResponse|null
+     * Gets the parameters passed to the contract function
+     *
+     * @return ParametersResponse|null Collection of function parameters or null
      */
     public function getParameters(): ?ParametersResponse
     {
@@ -70,7 +88,10 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @param ParametersResponse|null $parameters
+     * Sets the parameters passed to the contract function
+     *
+     * @param ParametersResponse|null $parameters Collection of function parameters or null
+     * @return void
      */
     public function setParameters(?ParametersResponse $parameters): void
     {
@@ -78,7 +99,9 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the contract address being invoked
+     *
+     * @return string The smart contract address
      */
     public function getAddress(): string
     {
@@ -86,7 +109,10 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @param string $address
+     * Sets the contract address being invoked
+     *
+     * @param string $address The smart contract address
+     * @return void
      */
     public function setAddress(string $address): void
     {
@@ -94,7 +120,9 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @return string
+     * Gets the salt used for contract deployment
+     *
+     * @return string The deployment salt value
      */
     public function getSalt(): string
     {
@@ -102,7 +130,10 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @param string $salt
+     * Sets the salt used for contract deployment
+     *
+     * @param string $salt The deployment salt value
+     * @return void
      */
     public function setSalt(string $salt): void
     {
@@ -110,7 +141,9 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @return AssetBalanceChangesResponse|null
+     * Gets asset balance changes caused by contract execution
+     *
+     * @return AssetBalanceChangesResponse|null Collection of balance changes or null
      */
     public function getAssetBalanceChanges(): ?AssetBalanceChangesResponse
     {
@@ -118,7 +151,10 @@ class InvokeHostFunctionOperationResponse extends OperationResponse
     }
 
     /**
-     * @param AssetBalanceChangesResponse|null $assetBalanceChanges
+     * Sets asset balance changes caused by contract execution
+     *
+     * @param AssetBalanceChangesResponse|null $assetBalanceChanges Collection of balance changes or null
+     * @return void
      */
     public function setAssetBalanceChanges(?AssetBalanceChangesResponse $assetBalanceChanges): void
     {

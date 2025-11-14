@@ -10,25 +10,62 @@ namespace Soneso\StellarSDK;
 use InvalidArgumentException;
 
 /**
- * Builds ManageSellOffer operation.
- * If you want to update existing offer use setOfferId()
+ * Builder for creating ManageSellOffer operations.
+ *
+ * This builder implements the builder pattern to construct ManageSellOfferOperation
+ * instances with a fluent interface. ManageSellOffer operations create, update, or delete
+ * offers to sell an asset on the Stellar decentralized exchange.
+ *
+ * @package Soneso\StellarSDK
  * @see ManageSellOfferOperation
+ * @see https://developers.stellar.org Stellar developer docs
+ * @since 1.0.0
+ *
+ * @example
+ * $operation = (new ManageSellOfferOperationBuilder($selling, $buying, '100', '2.5'))
+ *     ->setOfferId($existingOfferId)
+ *     ->setSourceAccount($sourceId)
+ *     ->build();
  */
 class ManageSellOfferOperationBuilder
 {
+    /**
+     * @var Asset The asset being sold
+     */
     private Asset $selling;
+
+    /**
+     * @var Asset The asset being bought
+     */
     private Asset $buying;
+
+    /**
+     * @var string The amount of selling asset
+     */
     private string $amount;
+
+    /**
+     * @var Price The price of 1 unit of selling in terms of buying
+     */
     private Price $price;
+
+    /**
+     * @var int The offer ID (0 for new offers)
+     */
     private int $offerId = 0;
+
+    /**
+     * @var MuxedAccount|null The optional source account for this operation
+     */
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * Creates a new ManageSellOffer builder. If you want to update existing offer use setOfferId().
-     * @param Asset $selling The asset being sold in this operation.
-     * @param Asset $buying The asset being bought in this operation.
-     * @param string $amount  Amount of selling being sold.
-     * @param string $price Price of 1 unit of selling in terms of buying.
+     * Creates a new ManageSellOffer operation builder.
+     *
+     * @param Asset $selling The asset being sold
+     * @param Asset $buying The asset being bought
+     * @param string $amount The amount of selling asset
+     * @param string $price The price of 1 unit of selling in terms of buying
      */
     public function __construct(Asset $selling, Asset $buying, string $amount, string $price) {
         $this->selling = $selling;
@@ -51,9 +88,10 @@ class ManageSellOfferOperationBuilder
     }
 
     /**
-     * Sets the source account for this operation. G...
-     * @param string $accountId The operation's source account.
-     * @return ManageSellOfferOperationBuilder Builder object so you can chain methods
+     * Sets the source account for this operation.
+     *
+     * @param string $accountId The Stellar account ID (G...)
+     * @return $this Returns the builder instance for method chaining
      */
     public function setSourceAccount(string $accountId) : ManageSellOfferOperationBuilder {
         $this->sourceAccount = MuxedAccount::fromAccountId($accountId);
@@ -62,8 +100,9 @@ class ManageSellOfferOperationBuilder
 
     /**
      * Sets the muxed source account for this operation.
-     * @param MuxedAccount $sourceAccount The operation's source account.
-     * @return ManageSellOfferOperationBuilder Builder object so you can chain methods
+     *
+     * @param MuxedAccount $sourceAccount The muxed account to use as source
+     * @return $this Returns the builder instance for method chaining
      */
     public function setMuxedSourceAccount(MuxedAccount $sourceAccount) : ManageSellOfferOperationBuilder {
         $this->sourceAccount = $sourceAccount;
@@ -71,8 +110,9 @@ class ManageSellOfferOperationBuilder
     }
 
     /**
-     * Builds an operation
-     * @return ManageSellOfferOperation
+     * Builds the ManageSellOffer operation.
+     *
+     * @return ManageSellOfferOperation The constructed operation
      */
     public function build(): ManageSellOfferOperation {
         $result = new ManageSellOfferOperation($this->selling, $this->buying, $this->amount, $this->price, $this->offerId);

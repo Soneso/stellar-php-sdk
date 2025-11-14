@@ -13,12 +13,27 @@ use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
+/**
+ * Base class for all Stellar operations.
+ *
+ * Provides common functionality for operation objects including source account management,
+ * XDR conversion, and amount formatting utilities.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
+ * @since 1.0.0
+ */
 abstract class AbstractOperation
 {
+    /**
+     * @var MuxedAccount|null The source account for this operation, or null to use the transaction's source account
+     */
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @return MuxedAccount|null
+     * Gets the source account for this operation.
+     *
+     * @return MuxedAccount|null The source account, or null if using the transaction's source account
      */
     public function getSourceAccount(): ?MuxedAccount
     {
@@ -26,30 +41,60 @@ abstract class AbstractOperation
     }
 
     /**
-     * @param MuxedAccount|null $sourceAccount
+     * Sets the source account for this operation.
+     *
+     * @param MuxedAccount|null $sourceAccount The source account, or null to use the transaction's source account
      */
     public function setSourceAccount(?MuxedAccount $sourceAccount): void
     {
         $this->sourceAccount = $sourceAccount;
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public abstract function toOperationBody() : XdrOperationBody;
 
+    /**
+     * Converts this operation to its XDR representation.
+     *
+     * @return XdrOperation The XDR operation
+     */
     public function toXdr() : XdrOperation {
         $body = $this->toOperationBody();
         return new XdrOperation($body, $this->sourceAccount?->toXdr());
     }
 
+    /**
+     * Converts a decimal amount string to XDR amount format (stroops).
+     *
+     * @param string $strAmount The amount as a decimal string
+     * @return BigInteger The amount in stroops (1 stroop = 0.0000001)
+     */
     public static function toXdrAmount(string $strAmount) : BigInteger {
         $stellarAmount = StellarAmount::fromString($strAmount);
         return $stellarAmount->getStroops();
     }
 
+    /**
+     * Converts an XDR amount (stroops) to a decimal string.
+     *
+     * @param BigInteger $stroops The amount in stroops (1 stroop = 0.0000001)
+     * @return string The amount as a decimal string
+     */
     public static function fromXdrAmount(BigInteger $stroops) : string {
         $stellarAmount = new StellarAmount($stroops);
         return $stellarAmount->getDecimalValueAsString();
     }
 
+    /**
+     * Creates an operation from its XDR representation.
+     *
+     * @param XdrOperation $xdrOp The XDR operation to convert
+     * @return AbstractOperation The resulting operation instance
+     */
     public static function fromXdr(XdrOperation $xdrOp) : AbstractOperation {
         $body = $xdrOp->getBody();
         $sourceAccount = null;

@@ -15,6 +15,36 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 
+/**
+ * Represents a transaction that has been included in the Stellar ledger
+ *
+ * This response contains comprehensive transaction details including the source account,
+ * fee information, operations, signatures, preconditions, and XDR representations of the
+ * transaction envelope, result, and metadata. Transactions can be regular transactions or
+ * fee-bump transactions wrapping inner transactions.
+ *
+ * Key fields:
+ * - Transaction hash and ledger sequence
+ * - Source account and fee account details
+ * - Operation count and memo
+ * - Success status and result codes
+ * - XDR representations for envelope, result, and metadata
+ * - Signatures and preconditions
+ * - Fee-bump transaction details if applicable
+ *
+ * Returned by Horizon endpoints:
+ * - GET /transactions/{transaction_hash} - Single transaction details
+ * - GET /transactions - List of transactions
+ * - GET /accounts/{account_id}/transactions - Account transactions
+ * - GET /ledgers/{sequence}/transactions - Ledger transactions
+ *
+ * @package Soneso\StellarSDK\Responses\Transaction
+ * @see SubmitTransactionResponse For transaction submission results
+ * @see FeeBumpTransactionResponse For fee-bump transaction details
+ * @see InnerTransactionResponse For inner transaction in fee-bump
+ * @see https://developers.stellar.org Stellar developer docs Horizon Transactions API
+ * @since 1.0.0
+ */
 class TransactionResponse extends Response
 {
     private string $id;
@@ -49,7 +79,9 @@ class TransactionResponse extends Response
     private ?TransactionPreconditionsResponse $preconditions;
 
     /**
-     * @return string
+     * Gets the unique identifier for this transaction
+     *
+     * @return string The transaction ID
      */
     public function getId(): string
     {
@@ -57,7 +89,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the paging token for this transaction in list results
+     *
+     * @return string The paging token used for cursor-based pagination
      */
     public function getPagingToken(): string
     {
@@ -65,7 +99,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return bool
+     * Checks if the transaction was successful
+     *
+     * @return bool True if all operations succeeded, false if any failed
      */
     public function isSuccessful(): bool
     {
@@ -73,7 +109,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the transaction hash
+     *
+     * @return string The 64-character hexadecimal transaction hash
      */
     public function getHash(): string
     {
@@ -81,7 +119,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the ledger sequence number where this transaction was included
+     *
+     * @return int The ledger sequence number
      */
     public function getLedger(): int
     {
@@ -89,7 +129,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the timestamp when this transaction was created
+     *
+     * @return string The creation time in ISO 8601 format
      */
     public function getCreatedAt(): string
     {
@@ -97,7 +139,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the source account for this transaction
+     *
+     * @return string The source account ID
      */
     public function getSourceAccount(): string
     {
@@ -105,7 +149,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed source account if applicable
+     *
+     * @return string|null The muxed source account address, or null if not muxed
      */
     public function getSourceAccountMuxed(): ?string
     {
@@ -113,7 +159,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed source account ID if applicable
+     *
+     * @return string|null The muxed account ID, or null if not muxed
      */
     public function getSourceAccountMuxedId(): ?string
     {
@@ -121,7 +169,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the sequence number used by this transaction
+     *
+     * @return string The source account sequence number
      */
     public function getSourceAccountSequence(): string
     {
@@ -129,7 +179,11 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the account that paid the transaction fee
+     *
+     * For fee-bump transactions, this differs from the source account.
+     *
+     * @return string The fee account ID
      */
     public function getFeeAccount(): string
     {
@@ -137,7 +191,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed fee account if applicable
+     *
+     * @return string|null The muxed fee account address, or null if not muxed
      */
     public function getFeeAccountMuxed(): ?string
     {
@@ -145,7 +201,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the multiplexed fee account ID if applicable
+     *
+     * @return string|null The muxed fee account ID, or null if not muxed
      */
     public function getFeeAccountMuxedId(): ?string
     {
@@ -153,7 +211,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the actual fee charged for this transaction in stroops
+     *
+     * @return string|null The fee charged as a string, or null if not available
      */
     public function getFeeCharged(): ?string
     {
@@ -161,7 +221,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the maximum fee the submitter was willing to pay in stroops
+     *
+     * @return string|null The max fee as a string, or null if not available
      */
     public function getMaxFee(): ?string
     {
@@ -169,7 +231,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return int
+     * Gets the number of operations in this transaction
+     *
+     * @return int The operation count
      */
     public function getOperationCount(): int
     {
@@ -177,7 +241,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return Memo
+     * Gets the memo attached to this transaction
+     *
+     * @return Memo The transaction memo
      */
     public function getMemo(): Memo
     {
@@ -185,7 +251,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return XdrTransactionEnvelope
+     * Gets the parsed transaction envelope XDR
+     *
+     * @return XdrTransactionEnvelope The transaction envelope containing the transaction and signatures
      */
     public function getEnvelopeXdr(): XdrTransactionEnvelope
     {
@@ -193,7 +261,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return XdrTransactionResult
+     * Gets the parsed transaction result XDR
+     *
+     * @return XdrTransactionResult The transaction result containing operation results
      */
     public function getResultXdr(): XdrTransactionResult
     {
@@ -201,7 +271,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return XdrTransactionMeta | null
+     * Gets the parsed transaction metadata XDR
+     *
+     * @return XdrTransactionMeta|null The transaction metadata containing ledger changes, or null
      */
     public function getResultMetaXdr(): ?XdrTransactionMeta
     {
@@ -209,7 +281,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string|null
+     * Gets the base64-encoded fee metadata XDR
+     *
+     * @return string|null The fee metadata XDR, or null if not available
      */
     public function getFeeMetaXdrBase64(): ?string
     {
@@ -217,7 +291,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return array|null
+     * Gets the parsed fee metadata XDR as ledger entry changes
+     *
+     * @return array|null Array of XdrLedgerEntryChange objects, or null
      */
     public function getFeeMetaXdr(): ?array
     {
@@ -225,7 +301,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return TransactionSignaturesResponse
+     * Gets the signatures attached to this transaction
+     *
+     * @return TransactionSignaturesResponse Collection of signature strings
      */
     public function getSignatures(): TransactionSignaturesResponse
     {
@@ -233,7 +311,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return FeeBumpTransactionResponse|null
+     * Gets the fee-bump transaction details if this is a fee-bump transaction
+     *
+     * @return FeeBumpTransactionResponse|null Fee-bump details, or null if not fee-bumped
      */
     public function getFeeBumpTransactionResponse(): ?FeeBumpTransactionResponse
     {
@@ -241,7 +321,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return InnerTransactionResponse|null
+     * Gets the inner transaction details if this is a fee-bump transaction
+     *
+     * @return InnerTransactionResponse|null Inner transaction details, or null if not fee-bumped
      */
     public function getInnerTransactionResponse(): ?InnerTransactionResponse
     {
@@ -249,7 +331,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return TransactionLinksResponse
+     * Gets the hypermedia links to related resources
+     *
+     * @return TransactionLinksResponse Links to account, ledger, operations, effects, etc.
      */
     public function getLinks(): TransactionLinksResponse
     {
@@ -257,7 +341,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return TransactionPreconditionsResponse|null
+     * Gets the transaction preconditions if any were set
+     *
+     * @return TransactionPreconditionsResponse|null Preconditions including time bounds, or null
      */
     public function getPreconditions(): ?TransactionPreconditionsResponse
     {
@@ -265,7 +351,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the base64-encoded transaction envelope XDR
+     *
+     * @return string The envelope XDR as a base64 string
      */
     public function getEnvelopeXdrBase64(): string
     {
@@ -273,7 +361,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return string
+     * Gets the base64-encoded transaction result XDR
+     *
+     * @return string The result XDR as a base64 string
      */
     public function getResultXdrBase64(): string
     {
@@ -281,7 +371,9 @@ class TransactionResponse extends Response
     }
 
     /**
-     * @return ?string
+     * Gets the base64-encoded transaction metadata XDR
+     *
+     * @return string|null The metadata XDR as a base64 string, or null
      */
     public function getResultMetaXdrBase64(): ?string
     {
@@ -358,6 +450,12 @@ class TransactionResponse extends Response
         parent::loadFromJson($json);
     }
 
+    /**
+     * Creates a TransactionResponse instance from JSON data
+     *
+     * @param array $json The JSON array containing transaction data from Horizon
+     * @return TransactionResponse The parsed transaction response
+     */
     public static function fromJson(array $json) : TransactionResponse
     {
         $result = new TransactionResponse();

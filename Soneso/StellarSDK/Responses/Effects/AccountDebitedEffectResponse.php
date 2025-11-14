@@ -8,13 +8,25 @@ namespace Soneso\StellarSDK\Responses\Effects;
 
 use Soneso\StellarSDK\Asset;
 
+/**
+ * Represents an account debited effect from the Stellar network
+ *
+ * This effect occurs when an account sends a payment or asset transfer.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class AccountDebitedEffectResponse extends EffectResponse
 {
     private string $amount;
     private Asset $asset;
 
     /**
-     * @return string
+     * Gets the amount debited from the account
+     *
+     * @return string The amount as a string to preserve precision
      */
     public function getAmount(): string
     {
@@ -22,7 +34,9 @@ class AccountDebitedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return Asset
+     * Gets the asset that was debited
+     *
+     * @return Asset The asset debited from the account
      */
     public function getAsset(): Asset
     {

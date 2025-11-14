@@ -16,11 +16,59 @@ use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictReceiveOperationResp
 use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictSendOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 
+/**
+ * Builds requests for the payments endpoint in Horizon
+ *
+ * This class provides methods to query payment-related operations on the Stellar network.
+ * Payment operations include create_account, payment, account_merge, and path payment
+ * operations (both strict send and strict receive variants).
+ *
+ * Query Methods:
+ * - forAccount(): Get payments for a specific account
+ * - forLedger(): Get payments in a specific ledger
+ * - forTransaction(): Get payments in a specific transaction
+ * - includeFailed(): Include payments from failed transactions
+ * - includeTransactions(): Embed transaction data in payment responses
+ *
+ * This endpoint returns a subset of operation types that represent payments or transfers
+ * of value between accounts.
+ *
+ * Usage Examples:
+ *
+ * // Get recent payments for an account
+ * $payments = $sdk->payments()
+ *     ->forAccount("GDAT5...")
+ *     ->limit(20)
+ *     ->order("desc")
+ *     ->execute();
+ *
+ * // Stream real-time payments with transaction data
+ * $sdk->payments()
+ *     ->cursor("now")
+ *     ->includeTransactions(true)
+ *     ->stream(function(OperationResponse $payment) {
+ *         echo "Payment: " . $payment->getId() . PHP_EOL;
+ *     });
+ *
+ * // Get all payments in a specific ledger
+ * $payments = $sdk->payments()
+ *     ->forLedger("123456")
+ *     ->execute();
+ *
+ * @package Soneso\StellarSDK\Requests
+ * @see OperationsPageResponse For the response format
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Payments endpoint
+ */
 class PaymentsRequestBuilder extends RequestBuilder
 {
     private const INCLUDE_FAILED_PARAMETER_NAME = "include_failed";
     private const JOIN_PARAMETER_NAME = "join";
 
+    /**
+     * Constructor
+     *
+     * @param Client $httpClient The HTTP client used for making requests to Horizon
+     */
     public function __construct(Client $httpClient)
     {
         parent::__construct($httpClient, "payments");
@@ -30,7 +78,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /accounts/{account}/payments</code>
      * @param string $accountId ID of the account for which to get payments.
      * @return PaymentsRequestBuilder
-     * @see <a href="https://developers.stellar.org/api/resources/accounts/payments/">Payments for Account</a>
+     * @see https://developers.stellar.org Stellar developer docs Payments for Account
      */
     public function forAccount(string $accountId) : PaymentsRequestBuilder {
         $this->setSegments("accounts", $accountId, "payments");
@@ -41,7 +89,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /ledgers/{ledgerSeq}/payments</code>
      * @param string $ledgerSeq Ledger for which to get payments.
      * @return PaymentsRequestBuilder
-     * @see <a href="https://developers.stellar.org/api/resources/ledgers/payments/">Payments for Ledger</a>
+     * @see https://developers.stellar.org Stellar developer docs Payments for Ledger
      */
     public function forLedger(string $ledgerSeq) : PaymentsRequestBuilder {
         $this->setSegments("ledgers", $ledgerSeq, "payments");
@@ -52,7 +100,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /transactions/{transactionId}/payments</code>
      * @param string $transactionId Transaction ID for which to get payments.
      * @return PaymentsRequestBuilder
-     * @see <a href="https://developers.stellar.org/api/resources/ledgers/transactions/">Payments for Transaction</a>
+     * @see https://developers.stellar.org Stellar developer docs Payments for Transaction
      */
     public function forTransaction(string $transactionId) : PaymentsRequestBuilder {
         $this->setSegments("transactions", $transactionId, "payments");
@@ -62,7 +110,7 @@ class PaymentsRequestBuilder extends RequestBuilder
     /**
      * Adds a parameter defining whether to include transactions in the response. By default, transaction data
      * is not included.
-     * @param bool $include  Set to <code>true</code> to include transaction data in the payment response.
+     * @param bool $include Set to <code>true</code> to include transaction data in the payment response.
      * @return PaymentsRequestBuilder
      */
     public function includeTransactions(bool $include) : PaymentsRequestBuilder {
@@ -78,7 +126,7 @@ class PaymentsRequestBuilder extends RequestBuilder
     /**
      * Adds a parameter defining whether to include payments of failed transactions. By default, only payments of
      * successful transactions are returned.
-     * @param bool $value  Set to <code>true</code> to include payments of failed transactions.
+     * @param bool $value Set to <code>true</code> to include payments of failed transactions.
      * @return PaymentsRequestBuilder
      */
     public function includeFailed(bool $value) : PaymentsRequestBuilder {
@@ -90,8 +138,8 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see <a href="https://developers.stellar.org/api/introduction/pagination/">Page documentation</a>
-     * @param string cursor
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
+     * @param string $cursor
      */
     public function cursor(string $cursor) : PaymentsRequestBuilder {
         return parent::cursor($cursor);
@@ -101,7 +149,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Sets <code>limit</code> parameter on the request.
      * It defines maximum number of records to return.
      * For range and default values check documentation of the endpoint requested.
-     * @param int number maximum number of records to return
+     * @param int $number Maximum number of records to return
      */
     public function limit(int $number) : PaymentsRequestBuilder {
         return parent::limit($number);
@@ -109,7 +157,7 @@ class PaymentsRequestBuilder extends RequestBuilder
 
     /**
      * Sets <code>order</code> parameter on the request.
-     * @param string direction "asc" or "desc"
+     * @param string $direction "asc" or "desc"
      */
     public function order(string $direction = "asc") : PaymentsRequestBuilder {
         return parent::order($direction);

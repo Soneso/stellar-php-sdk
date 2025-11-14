@@ -15,18 +15,33 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 
+/**
+ * Represents an invoke host function operation.
+ *
+ * Invokes a Soroban smart contract function, uploads WASM code, or deploys a contract.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
+ * @since 1.0.0
+ */
 class InvokeHostFunctionOperation extends AbstractOperation
 {
-    public HostFunction $function;
     /**
-     * @var array<SorobanAuthorizationEntry>
+     * @var HostFunction The host function to invoke
+     */
+    public HostFunction $function;
+
+    /**
+     * @var array<SorobanAuthorizationEntry> Authorization entries for the invocation
      */
     public array $auth;
 
     /**
-     * @param HostFunction $function
-     * @param array<SorobanAuthorizationEntry> $auth
-     * @param MuxedAccount|null $sourceAccount
+     * Creates a new InvokeHostFunctionOperation.
+     *
+     * @param HostFunction $function The host function to invoke
+     * @param array<SorobanAuthorizationEntry> $auth Authorization entries
+     * @param MuxedAccount|null $sourceAccount Optional source account
      */
     public function __construct(HostFunction $function, array $auth = array(), ?MuxedAccount $sourceAccount = null)
     {
@@ -36,7 +51,11 @@ class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
-     * @throws Exception
+     * Creates an InvokeHostFunctionOperation from its XDR representation.
+     *
+     * @param XdrInvokeHostFunctionOp $xdrOp The XDR invoke host function operation to convert
+     * @return InvokeHostFunctionOperation The resulting InvokeHostFunctionOperation instance
+     * @throws Exception If the XDR operation is invalid
      */
     public static function fromXdrOperation(XdrInvokeHostFunctionOp $xdrOp): InvokeHostFunctionOperation {
         $auth = array();
@@ -88,6 +107,11 @@ class InvokeHostFunctionOperation extends AbstractOperation
         throw new Exception("invalid argument");
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $xdrAuth = array();
@@ -102,7 +126,9 @@ class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
-     * @return HostFunction
+     * Gets the host function.
+     *
+     * @return HostFunction The host function
      */
     public function getFunction(): HostFunction
     {
@@ -110,7 +136,9 @@ class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
-     * @param HostFunction $function
+     * Sets the host function.
+     *
+     * @param HostFunction $function The host function
      */
     public function setFunction(HostFunction $function): void
     {
@@ -118,7 +146,9 @@ class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
-     * @return array<SorobanAuthorizationEntry>
+     * Gets the authorization entries.
+     *
+     * @return array<SorobanAuthorizationEntry> The authorization entries
      */
     public function getAuth(): array
     {
@@ -126,7 +156,9 @@ class InvokeHostFunctionOperation extends AbstractOperation
     }
 
     /**
-     * @param array<SorobanAuthorizationEntry> $auth
+     * Sets the authorization entries.
+     *
+     * @param array<SorobanAuthorizationEntry> $auth The authorization entries
      */
     public function setAuth(array $auth): void
     {

@@ -6,13 +6,25 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a data entry sponsorship created effect from the Stellar network
+ *
+ * This effect occurs when sponsorship for a data entry's base reserve is established.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class DataSponsorshipCreatedEffectResponse extends EffectResponse
 {
     private string $dataName;
     private string $sponsor;
 
     /**
-     * @return string
+     * Gets the name of the data entry
+     *
+     * @return string The data entry name
      */
     public function getDataName(): string
     {
@@ -20,7 +32,9 @@ class DataSponsorshipCreatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the account ID of the sponsor
+     *
+     * @return string The sponsor's account ID
      */
     public function getSponsor(): string
     {

@@ -13,6 +13,38 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\PaymentPath\PathsPageResponse;
 
+/**
+ * Builds requests for the strict receive paths endpoint in Horizon
+ *
+ * This class provides methods to find payment paths where the destination amount and asset
+ * are fixed (strict receive). It returns possible paths showing what source assets and
+ * amounts are required to deliver the exact destination amount.
+ *
+ * Query Methods:
+ * - forDestinationAccount(): Set the destination account
+ * - forDestinationAsset(): Set the asset to be received (required)
+ * - forDestinationAmount(): Set the exact amount to be received (required)
+ * - forSourceAccount(): Filter paths by source account
+ * - forSourceAssets(): Filter paths by possible source assets
+ *
+ * This is the recommended method for finding payment paths when you know the exact
+ * amount the recipient should receive.
+ *
+ * Usage Examples:
+ *
+ * // Find paths to deliver exactly 100 USD
+ * $destinationAsset = Asset::createNonNativeAsset("USD", "GBBD...");
+ * $paths = $sdk->strictReceivePaths()
+ *     ->forDestinationAccount("GDAT5...")
+ *     ->forDestinationAsset($destinationAsset)
+ *     ->forDestinationAmount("100")
+ *     ->forSourceAccount("GBBD...")
+ *     ->execute();
+ *
+ * @package Soneso\StellarSDK\Requests
+ * @see PathsPageResponse For the response format
+ * @see https://developers.stellar.org Stellar developer docs Horizon API Strict Receive Paths
+ */
 class StrictReceivePathsRequestBuilder extends RequestBuilder {
 
     private const DESTINATION_ACCOUNT_PARAMETER_NAME = "destination_account";
@@ -23,12 +55,23 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
     private const SOURCE_ACCOUNT_PARAMETER_NAME = "source_account";
     private const SOURCE_ASSETS_PARAMETER_NAME = "source_assets";
 
+    /**
+     * Constructor
+     *
+     * @param Client $httpClient The HTTP client used for making requests to Horizon
+     */
     public function __construct(Client $httpClient) {
         parent::__construct($httpClient);
         $this->setSegments("paths", "strict-receive");
 
     }
 
+    /**
+     * Set the destination account for the payment path
+     *
+     * @param string $account The Stellar account ID that will receive the payment
+     * @return StrictReceivePathsRequestBuilder This builder for method chaining
+     */
     public function forDestinationAccount(string $account) : StrictReceivePathsRequestBuilder {
         $this->queryParameters[StrictReceivePathsRequestBuilder::DESTINATION_ACCOUNT_PARAMETER_NAME] = $account;
         return $this;
@@ -72,8 +115,8 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
      * Sets <code>cursor</code> parameter on the request.
      * A cursor is a value that points to a specific location in a collection of resources.
      * The cursor attribute itself is an opaque value meaning that users should not try to parse it.
-     * @see <a href="https://developers.stellar.org/api/introduction/pagination/">Page documentation</a>
-     * @param string cursor
+     * @see https://developers.stellar.org Stellar developer docs Page documentation
+     * @param string $cursor
      */
     public function cursor(string $cursor) : StrictReceivePathsRequestBuilder {
         return parent::cursor($cursor);
@@ -83,7 +126,7 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
      * Sets <code>limit</code> parameter on the request.
      * It defines maximum number of records to return.
      * For range and default values check documentation of the endpoint requested.
-     * @param int number maximum number of records to return
+     * @param int $number Maximum number of records to return
      */
     public function limit(int $number) : StrictReceivePathsRequestBuilder {
         return parent::limit($number);
@@ -91,7 +134,7 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
 
     /**
      * Sets <code>order</code> parameter on the request.
-     * @param string direction "asc" or "desc"
+     * @param string $direction "asc" or "desc"
      */
     public function order(string $direction = "asc") : StrictReceivePathsRequestBuilder {
         return parent::order($direction);

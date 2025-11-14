@@ -6,8 +6,14 @@
 
 namespace Soneso\StellarSDK\SEP\Toml;
 
-/// Organization Documentation. From the stellar.toml DOCUMENTATION table.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/**
+ * Organization documentation from the stellar.toml DOCUMENTATION table.
+ *
+ * Contains identifying information about the organization including legal name,
+ * contact information, and attestations for physical address and phone number.
+ *
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md SEP-1 Organization Documentation
+ */
 class Documentation
 {
     /// Legal name of the organization.

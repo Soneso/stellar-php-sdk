@@ -7,12 +7,26 @@
 
 namespace Soneso\StellarSDK\Responses\Operations;
 
+/**
+ * Represents a path payment strict send operation response from Horizon API
+ *
+ * This operation guarantees exactly the specified amount is sent from source
+ * while the destination must receive at least destinationMin. Extends PathPaymentOperationResponse
+ * with the minimum amount to be received at destination.
+ *
+ * @package Soneso\StellarSDK\Responses\Operations
+ * @see PathPaymentOperationResponse Base path payment response
+ * @see https://developers.stellar.org Stellar developer docs Horizon Path Payment Strict Send
+ * @since 1.0.0
+ */
 class PathPaymentStrictSendOperationResponse extends PathPaymentOperationResponse
 {
     private string $destinationMin;
 
     /**
-     * @return string
+     * Gets the minimum amount to be received at destination
+     *
+     * @return string The minimum destination amount
      */
     public function getDestinationMin(): string
     {

@@ -12,66 +12,59 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
 /**
  * Response that will be received when submitting a trial contract invocation.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ * @see SendTransactionResponse For submitting transactions after simulation
  */
 class SimulateTransactionResponse extends SorobanRpcResponse
 {
     /**
-     * @var int $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time
-     * it handled the request.
+     * @var int $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public int $latestLedger;
 
     /**
-     * @var int|null $minResourceFee (optional) Recommended minimum resource fee to add when
-     * submitting the transaction. This fee is to be added on top of the Stellar network fee.
-     * Not present in case of error.
+     * @var int|null $minResourceFee Recommended minimum resource fee to add when submitting the transaction (not present in case of error)
      */
     public ?int $minResourceFee = null;
 
     /**
-     * @var SimulateTransactionResults|null This object will only have one element: the result for the Host
-     * Function invocation. Only present on successful simulation (i.e. no error) of InvokeHostFunction operations.
+     * @var SimulateTransactionResults|null Results for the Host Function invocation (only present on successful simulation of InvokeHostFunction operations)
      */
     public ?SimulateTransactionResults $results = null;
 
     /**
-     * @var XdrSorobanTransactionData|null The recommended Soroban Transaction Data to use when submitting the
-     * simulated transaction. This data contains the refundable fee and resource usage information such as the
-     * ledger footprint and IO access data.
+     * @var XdrSorobanTransactionData|null The recommended Soroban Transaction Data containing refundable fee and resource usage information
      */
     public ?XdrSorobanTransactionData $transactionData = null;
 
     /**
-     * @var array<String>|null (optional) Array of serialized base64 strings - Array of the events emitted during
-     * the contract invocation. The events are ordered by their emission time. (an array of serialized base64 strings).
-     * Only present when simulating of InvokeHostFunction operations, note that it can be present on error,
-     * providing extra context about what failed.
+     * @var array<string>|null Array of serialized base64 event strings emitted during contract invocation (can be present on error for extra context)
      */
     public ?array $events = null;
 
     /**
-     * @var RestorePreamble|null (optional) - It can only be present on successful simulation (i.e. no error)
-     * of InvokeHostFunction operations. If present, it indicates that the simulation detected archived ledger entries
-     * which need to be restored before the submission of the InvokeHostFunction operation. The minResourceFee
-     * and transactionData fields should be used to submit a transaction containing a RestoreFootprint operation
+     * @var RestorePreamble|null Preamble indicating archived ledger entries that need restoration before submission
      */
     public ?RestorePreamble $restorePreamble = null;
 
     /**
-     * @var array<LedgerEntryChange>|null $stateChanges (optional) - On successful simulation of InvokeHostFunction
-     * operations, this field will be an array of LedgerEntrys before and after simulation occurred.
-     * Note that at least one of before or after will be present: before and no after indicates a deletion event,
-     * the inverse is a creation event, and both present indicates an update event. Or just check the type.
+     * @var array<LedgerEntryChange>|null Array of ledger entries before and after simulation for tracking state changes
      */
     public ?array $stateChanges = null;
 
     /**
-     * @var string|null $resultError (optional) - This field will include details about why the invoke host function
-     * call failed. Only present if the transaction simulation failed.
+     * @var string|null Error details explaining why the invoke host function call failed
      */
     public ?string $resultError = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : SimulateTransactionResponse {
         $result = new SimulateTransactionResponse($json);
         if (isset($json['result'])) {
@@ -119,7 +112,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return Footprint|null Footprint from the transaction data.
+     * @return Footprint|null Footprint from the transaction data
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getFootprint() : ?Footprint {
         if ($this->transactionData != null) {
@@ -130,7 +124,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return array<SorobanAuthorizationEntry>|null auth entries that eventually need to be signed.
+     * @return array<SorobanAuthorizationEntry>|null Authorization entries that need to be signed
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getSorobanAuth() : ?array {
         $results = $this->results;
@@ -145,9 +140,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null (optional) Recommended minimum resource fee to add when
-     *  submitting the transaction. This fee is to be added on top of the Stellar network fee.
-     *  Not present in case of error.
+     * @return int|null Recommended minimum resource fee to add when submitting the transaction (not present in case of error)
      */
     public function getMinResourceFee(): ?int
     {
@@ -155,9 +148,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int|null $minResourceFee (optional) Recommended minimum resource fee to add when
-     *  submitting the transaction. This fee is to be added on top of the Stellar network fee.
-     *  Not present in case of error.
+     * @param int|null $minResourceFee Recommended minimum resource fee to add when submitting the transaction
+     * @return void
      */
     public function setMinResourceFee(?int $minResourceFee): void
     {
@@ -165,9 +157,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return XdrSorobanTransactionData|null The recommended Soroban Transaction Data to use when submitting the
-     *  simulated transaction. This data contains the refundable fee and resource usage information such as the
-     *  ledger footprint and IO access data.
+     * @return XdrSorobanTransactionData|null The recommended Soroban Transaction Data containing refundable fee and resource usage information
      */
     public function getTransactionData(): ?XdrSorobanTransactionData
     {
@@ -175,9 +165,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param XdrSorobanTransactionData|null $transactionData The recommended Soroban Transaction Data to use when
-     * submitting the simulated transaction. This data contains the refundable fee and resource usage information
-     * such as the ledger footprint and IO access data.
+     * @param XdrSorobanTransactionData|null $transactionData The recommended Soroban Transaction Data
+     * @return void
      */
     public function setTransactionData(?XdrSorobanTransactionData $transactionData): void
     {
@@ -185,8 +174,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int The sequence number of the latest ledger known to Soroban RPC at the time
-     *  it handled the request.
+     * @return int The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public function getLatestLedger(): int
     {
@@ -194,8 +182,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param int $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time
-     *  it handled the request.
+     * @param int $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
+     * @return void
      */
     public function setLatestLedger(int $latestLedger): void
     {
@@ -203,9 +191,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return SimulateTransactionResults|null If error is present then results will not be in the response.
-     * will only have one element: the result for the Host Function invocation. Only present on
-     * successful simulation (i.e. no error) of InvokeHostFunction operations.
+     * @return SimulateTransactionResults|null Results for the Host Function invocation (only present on successful simulation of InvokeHostFunction operations)
      */
     public function getResults(): ?SimulateTransactionResults
     {
@@ -213,9 +199,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param SimulateTransactionResults|null $results If error is present then results will not be in the response.
-     *  will only have one element: the result for the Host Function invocation. Only present on
-     *  successful simulation (i.e. no error) of InvokeHostFunction operations.
+     * @param SimulateTransactionResults|null $results Results for the Host Function invocation
+     * @return void
      */
     public function setResults(?SimulateTransactionResults $results): void
     {
@@ -224,8 +209,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
 
 
     /**
-     * @return string|null (optional) - This field will include details about why the invoke host function
-     *  call failed. Only present if the transaction simulation failed.
+     * @return string|null Error details explaining why the invoke host function call failed
      */
     public function getResultError(): ?string
     {
@@ -233,8 +217,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param string|null $resultError (optional) - This field will include details about why the invoke host function
-     *  call failed. Only present if the transaction simulation failed.
+     * @param string|null $resultError Error details explaining why the invoke host function call failed
+     * @return void
      */
     public function setResultError(?string $resultError): void
     {
@@ -242,10 +226,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return array<String>|null (optional) Array of serialized base64 strings - Array of the events emitted during
-     *  the contract invocation. The events are ordered by their emission time. (an array of serialized base64 strings).
-     *  Only present when simulating of InvokeHostFunction operations, note that it can be present on error,
-     *  providing extra context about what failed.
+     * @return array<string>|null Array of serialized base64 event strings emitted during contract invocation (can be present on error for extra context)
      */
     public function getEvents(): ?array
     {
@@ -253,10 +234,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param array<String>|null $events (optional) Array of serialized base64 strings - Array of the events emitted during
-     *  the contract invocation. The events are ordered by their emission time. (an array of serialized base64 strings).
-     *  Only present when simulating of InvokeHostFunction operations, note that it can be present on error,
-     *  providing extra context about what failed.
+     * @param array<string>|null $events Array of serialized base64 event strings emitted during contract invocation
+     * @return void
      */
     public function setEvents(?array $events): void
     {
@@ -264,10 +243,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return RestorePreamble|null (optional) - It can only be present on successful simulation (i.e. no error)
-     *  of InvokeHostFunction operations. If present, it indicates that the simulation detected archived ledger entries
-     *  which need to be restored before the submission of the InvokeHostFunction operation. The minResourceFee
-     *  and transactionData fields should be used to submit a transaction containing a RestoreFootprint operation.
+     * @return RestorePreamble|null Preamble indicating archived ledger entries that need restoration before submission
      */
     public function getRestorePreamble(): ?RestorePreamble
     {
@@ -275,11 +251,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param RestorePreamble|null $restorePreamble (optional) - It can only be present on successful simulation
-     * (i.e. no error) of InvokeHostFunction operations. If present, it indicates that the simulation detected
-     * archived ledger entries which need to be restored before the submission of the InvokeHostFunction operation.
-     * The minResourceFee and transactionData fields should be used to submit a transaction containing a
-     * RestoreFootprint operation.
+     * @param RestorePreamble|null $restorePreamble Preamble indicating archived ledger entries that need restoration
+     * @return void
      */
     public function setRestorePreamble(?RestorePreamble $restorePreamble): void
     {
@@ -287,10 +260,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return array<LedgerEntryChange>|null (optional) - On successful simulation of InvokeHostFunction
-     *  operations, this field will be an array of LedgerEntrys before and after simulation occurred.
-     *  Note that at least one of before or after will be present: before and no after indicates a deletion event,
-     *  the inverse is a creation event, and both present indicates an update event. Or just check the type.
+     * @return array<LedgerEntryChange>|null Array of ledger entries before and after simulation for tracking state changes
      */
     public function getStateChanges(): ?array
     {
@@ -298,10 +268,8 @@ class SimulateTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @param array<LedgerEntryChange>|null $stateChanges (optional) - On successful simulation of InvokeHostFunction
-     *  operations, this field will be an array of LedgerEntrys before and after simulation occurred.
-     *  Note that at least one of before or after will be present: before and no after indicates a deletion event,
-     *  the inverse is a creation event, and both present indicates an update event. Or just check the type.
+     * @param array<LedgerEntryChange>|null $stateChanges Array of ledger entries before and after simulation
+     * @return void
      */
     public function setStateChanges(?array $stateChanges): void
     {

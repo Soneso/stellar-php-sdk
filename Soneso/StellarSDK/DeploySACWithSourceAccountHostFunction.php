@@ -13,15 +13,58 @@ use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 
+/**
+ * Represents a Soroban host function for deploying a Stellar Asset Contract from a source account
+ *
+ * This host function deploys a Stellar Asset Contract (SAC) for the native asset (XLM)
+ * controlled by a specific source account. Unlike DeploySACWithAssetHostFunction which deploys
+ * for existing Stellar assets, this variant creates a SAC tied to an account's identity.
+ *
+ * The deployment uses:
+ * - A source account address (the account that controls the asset)
+ * - A salt value for deterministic address generation
+ *
+ * This is useful for creating wrapped native asset contracts where the issuing
+ * account wants control over the SAC deployment.
+ *
+ * Usage:
+ * <code>
+ * // Deploy SAC with source account
+ * $address = Address::fromAccountId("GABC...");
+ * $hostFunction = new DeploySACWithSourceAccountHostFunction($address);
+ *
+ * // Deploy with specific salt for reproducibility
+ * $hostFunction = new DeploySACWithSourceAccountHostFunction($address, $salt);
+ *
+ * // Use in an InvokeHostFunctionOperation
+ * $operation = (new InvokeHostFunctionOperationBuilder($hostFunction))->build();
+ * </code>
+ *
+ * @package Soneso\StellarSDK
+ * @see HostFunction Base class for all host functions
+ * @see DeploySACWithAssetHostFunction For deploying SACs for existing assets
+ * @see Address For address handling
+ * @see https://developers.stellar.org Stellar developer docs
+ * @since 1.0.0
+ */
 class DeploySACWithSourceAccountHostFunction extends HostFunction
 {
+    /**
+     * @var Address $address The source account address
+     */
     public Address $address;
+
+    /**
+     * @var string $salt The salt value for contract address generation
+     */
     public string $salt;
 
     /**
-     * @param Address $address
-     * @param string|null $salt
-     * @throws Exception
+     * Constructs a new DeploySACWithSourceAccountHostFunction
+     *
+     * @param Address $address The source account address
+     * @param string|null $salt Optional salt (32 random bytes generated if not provided)
+     * @throws Exception If random bytes generation fails
      */
     public function __construct(Address $address, ?string $salt = null)
     {
@@ -30,12 +73,21 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction
         parent::__construct();
     }
 
+    /**
+     * Converts the deploy SAC host function to XDR format
+     *
+     * @return XdrHostFunction The XDR host function
+     */
     public function toXdr() : XdrHostFunction {
         return XdrHostFunction::forDeploySACWithSourceAccount($this->address->toXdr(), $this->salt);
     }
 
     /**
-     * @throws Exception
+     * Creates a DeploySACWithSourceAccountHostFunction from XDR format
+     *
+     * @param XdrHostFunction $xdr The XDR host function
+     * @return DeploySACWithSourceAccountHostFunction The decoded host function
+     * @throws Exception If the XDR format is invalid or missing required data
      */
     public static function fromXdr(XdrHostFunction $xdr) : DeploySACWithSourceAccountHostFunction {
         $type = $xdr->type;
@@ -64,7 +116,9 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction
     }
 
     /**
-     * @return Address
+     * Gets the source account address
+     *
+     * @return Address The source account address
      */
     public function getAddress(): Address
     {
@@ -72,7 +126,10 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction
     }
 
     /**
-     * @param Address $address
+     * Sets the source account address
+     *
+     * @param Address $address The source account address
+     * @return void
      */
     public function setAddress(Address $address): void
     {
@@ -80,7 +137,9 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction
     }
 
     /**
-     * @return string
+     * Gets the salt value
+     *
+     * @return string The salt value for contract address generation
      */
     public function getSalt(): string
     {
@@ -88,7 +147,10 @@ class DeploySACWithSourceAccountHostFunction extends HostFunction
     }
 
     /**
-     * @param string $salt
+     * Sets the salt value
+     *
+     * @param string $salt The salt value for contract address generation
+     * @return void
      */
     public function setSalt(string $salt): void
     {

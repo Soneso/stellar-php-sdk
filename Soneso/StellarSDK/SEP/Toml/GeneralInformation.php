@@ -6,8 +6,14 @@
 
 namespace Soneso\StellarSDK\SEP\Toml;
 
-/// General information from the stellar.toml file.
-/// See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md" target="_blank">Stellar Toml</a>
+/**
+ * General information from the stellar.toml file.
+ *
+ * Contains global fields from the stellar.toml file that define service endpoints
+ * and network configuration for the organization.
+ *
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md SEP-1 General Information
+ */
 class GeneralInformation
 {
     /// The version of SEP-1 your stellar.toml adheres to. This helps parsers know which fields to expect.
@@ -20,6 +26,7 @@ class GeneralInformation
     public ?string $federationServer = null;
 
     /// The endpoint used for SEP-3 Compliance Protocol.
+    /// @deprecated As per SEP-1 specification, this field is deprecated
     public ?string $authServer = null;
 
     /// The server used for SEP-6 Anchor/Client interoperability.
@@ -47,6 +54,7 @@ class GeneralInformation
     public ?string $horizonUrl = null;
 
     /// A list of Stellar accounts that are controlled by this domain
+    /// @var string[]
     public array $accounts = array();
 
     /// The signing key is used for SEP-7 delegated signing.

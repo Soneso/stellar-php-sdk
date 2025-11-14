@@ -8,6 +8,49 @@ namespace Soneso\StellarSDK\SEP\Interactive;
 
 use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
 
+/**
+ * Request parameters for initiating a SEP-24 interactive deposit
+ *
+ * This class represents the request payload for starting an interactive deposit
+ * flow as defined by SEP-24 (Hosted Deposit and Withdrawal). It contains all the
+ * parameters needed to initiate a deposit from an external payment system to the
+ * Stellar network.
+ *
+ * A deposit transfers assets from an off-chain source (e.g., bank account, crypto
+ * exchange) to the user's Stellar account. The user provides the external funds to
+ * the anchor, and the anchor credits the equivalent Stellar asset to the user's
+ * account. This request initiates the interactive flow where the user provides
+ * deposit details through the anchor's web interface.
+ *
+ * Interactive Flow Lifecycle:
+ * 1. Client submits this request to POST /transactions/deposit/interactive
+ * 2. Anchor returns SEP24InteractiveResponse with an interactive URL and transaction ID
+ * 3. Client opens the interactive URL in a popup or webview
+ * 4. The JWT is passed to the web interface via query parameters automatically
+ * 5. User completes the deposit form in the anchor's web interface (provides bank details, etc.)
+ * 6. Anchor closes the popup/webview and returns control to the client
+ * 7. Client polls the transaction endpoint to monitor deposit status
+ * 8. User sends funds to anchor via external payment method
+ * 9. Anchor receives funds and credits Stellar asset to user's account
+ *
+ * JWT Parameter Handling:
+ * The JWT token is transmitted to the interactive web interface as a query parameter
+ * (e.g., ?token=JWT_VALUE). The anchor's web interface uses this for authentication
+ * and session management. Each interactive session uses a one-time JWT context,
+ * though the JWT itself may be reused across multiple transactions during its validity period.
+ *
+ * Required fields include the JWT authentication token and asset code. Optional
+ * fields allow pre-filling the interactive form with known information like amount,
+ * source asset, destination account, memo, and KYC details to streamline the user
+ * experience.
+ *
+ * @package Soneso\StellarSDK\SEP\Interactive
+ * @see https://github.com/stellar/stellar-protocol/blob/v3.8.0/ecosystem/sep-0024.md SEP-24 Specification
+ * @see InteractiveService For executing deposit requests
+ * @see SEP24InteractiveResponse For the interactive URL response
+ * @see SEP24Transaction For the transaction response
+ * @see StandardKYCFields For KYC data structure
+ */
 class SEP24DepositRequest
 {
     /**
@@ -31,7 +74,7 @@ class SEP24DepositRequest
 
     /**
      * @var string|null $sourceAsset (optional) - string in Asset Identification Format - The asset user wants to send.
-     * See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     * See: https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format.
      * Note, that this is the asset user initially holds (off-chain or fiat asset).
      * If this is not provided, it will be collected in the interactive flow.
      * When quoteId is specified, this parameter must match the quote's sell_asset asset code or be omitted.
@@ -175,7 +218,7 @@ class SEP24DepositRequest
 
     /**
      * @return string|null string in Asset Identification Format - The asset user wants to send.
-     *  See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     *  See: https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format.
      *  Note, that this is the asset user initially holds (off-chain or fiat asset).
      *  If this is not provided, it will be collected in the interactive flow.
      *  When quoteId is specified, this parameter must match the quote's sell_asset asset code or be omitted.
@@ -187,7 +230,7 @@ class SEP24DepositRequest
 
     /**
      * @param string|null $sourceAsset string in Asset Identification Format - The asset user wants to send.
-     *  See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format.
+     *  See: https://github.com/stellar/stellar-protocol/blob/v2.5.0/ecosystem/sep-0038.md#asset-identification-format.
      *  Note, that this is the asset user initially holds (off-chain or fiat asset).
      *  If this is not provided, it will be collected in the interactive flow.
      *  When quoteId is specified, this parameter must match the quote's sell_asset asset code or be omitted.

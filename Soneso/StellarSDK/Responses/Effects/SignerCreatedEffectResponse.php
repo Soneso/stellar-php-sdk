@@ -6,6 +6,16 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a signer created effect from the Stellar network
+ *
+ * This effect occurs when a new signer is added to an account.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see SignerEffectResponse Base signer effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class SignerCreatedEffectResponse extends SignerEffectResponse
 {
     public static function fromJson(array $jsonData) : SignerCreatedEffectResponse {

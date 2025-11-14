@@ -6,6 +6,22 @@
 
 namespace Soneso\StellarSDK\SEP\TransferServerService;
 
+/**
+ * Request parameters for querying fee information via SEP-06.
+ *
+ * Used to query the fee that would be charged for a specific deposit or withdrawal
+ * operation. Important when anchors have complex fee schedules that cannot be fully
+ * expressed through the simple fee_fixed, fee_percent, and fee_minimum fields in
+ * the info endpoint response.
+ *
+ * Required fields are operation (deposit/withdraw), assetCode, and amount.
+ * Optional type field helps specify the deposit/withdrawal method.
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md SEP-06 Specification
+ * @see TransferServerService::fee()
+ * @see FeeResponse
+ */
 class FeeRequest
 {
     /**

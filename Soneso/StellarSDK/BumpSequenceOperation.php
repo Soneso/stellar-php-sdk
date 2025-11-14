@@ -13,11 +13,19 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#bump-sequence">BumpSequence</a> operation.
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/">List of Operations</a>
+ * Represents a bump sequence operation.
+ *
+ * Bumps the source account's sequence number to the specified value, invalidating any transactions with a lower sequence number.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
+ * @since 1.0.0
  */
 class BumpSequenceOperation extends AbstractOperation
 {
+    /**
+     * @var BigInteger The desired value for the source account's sequence number
+     */
     private BigInteger $bumpTo;
 
     /**
@@ -29,19 +37,31 @@ class BumpSequenceOperation extends AbstractOperation
     }
 
     /**
-     * Desired value for the operation’s source account sequence number.
-     * @return BigInteger
+     * Gets the desired sequence number value.
+     *
+     * @return BigInteger The desired sequence number
      */
     public function getBumpTo(): BigInteger
     {
         return $this->bumpTo;
     }
 
+    /**
+     * Creates a BumpSequenceOperation from its XDR representation.
+     *
+     * @param XdrBumpSequenceOperation $xdrOp The XDR bump sequence operation to convert
+     * @return BumpSequenceOperation The resulting BumpSequenceOperation instance
+     */
     public static function fromXdrOperation(XdrBumpSequenceOperation $xdrOp): BumpSequenceOperation {
         $bumpTo = $xdrOp->getBumpTo()->getValue();
         return new BumpSequenceOperation($bumpTo);
     }
 
+    /**
+     * Converts this operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body
+     */
     public function toOperationBody(): XdrOperationBody {
         $seqNr = new XdrSequenceNumber($this->bumpTo);
         $op = new XdrBumpSequenceOperation($seqNr);

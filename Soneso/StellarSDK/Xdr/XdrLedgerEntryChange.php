@@ -41,6 +41,9 @@ class XdrLedgerEntryChange
             case XdrLedgerEntryChangeType::LEDGER_ENTRY_STATE:
                 $bytes .= $this->state->encode();
                 break;
+            case XdrLedgerEntryChangeType::LEDGER_ENTRY_RESTORED:
+                $bytes .= $this->restored->encode();
+                break;
         }
         return $bytes;
     }
@@ -59,6 +62,9 @@ class XdrLedgerEntryChange
                 break;
             case XdrLedgerEntryChangeType::LEDGER_ENTRY_STATE:
                 $result->state = XdrLedgerEntry::decode($xdr);
+                break;
+            case XdrLedgerEntryChangeType::LEDGER_ENTRY_RESTORED:
+                $result->restored = XdrLedgerEntry::decode($xdr);
                 break;
         }
         return $result;

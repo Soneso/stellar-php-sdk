@@ -11,7 +11,9 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
  * Used as a part of simulate transaction response.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
  */
 class SimulateTransactionResult
 {
@@ -21,7 +23,7 @@ class SimulateTransactionResult
     public string $xdr;
 
     /**
-     * @var array<String> Array of serialized base64 strings - Per-address authorizations recorded when
+     * @var array<string> Array of serialized base64 strings - Per-address authorizations recorded when
      * simulating this Host Function call.
      */
     public array $auth;
@@ -34,6 +36,12 @@ class SimulateTransactionResult
         }
     }
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : SimulateTransactionResult {
         $result = new SimulateTransactionResult();
         $result->loadFromJson($json);
@@ -42,6 +50,7 @@ class SimulateTransactionResult
 
     /**
      * @return XdrSCVal return value of the Host Function call as XdrSCVal.
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getResultValue(): XdrSCVal {
         return XdrSCVal::fromBase64Xdr($this->xdr);
@@ -56,7 +65,7 @@ class SimulateTransactionResult
     }
 
     /**
-     * @return array<String> Array of serialized base64 strings - Per-address authorizations recorded when
+     * @return array<string> Array of serialized base64 strings - Per-address authorizations recorded when
      * simulating this Host Function call.
      */
     public function getAuth(): array

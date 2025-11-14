@@ -10,68 +10,71 @@ use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 
 /**
- * Response when submitting a real transaction to the stellar
- * network by using the soroban rpc server.
- * See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction
+ * Response when submitting a real transaction to the Stellar network via Soroban RPC.
+ *
+ * @package Soneso\StellarSDK\Soroban\Responses
+ * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction
+ * @see SimulateTransactionResponse For simulating transactions before submission
  */
 class SendTransactionResponse extends SorobanRpcResponse
 {
 
     /**
-     * The transaction has been accepted by stellar-core.
+     * The transaction has been accepted by stellar-core
      */
     public const STATUS_PENDING = "PENDING";
 
     /**
-     * The transaction has already been submitted to stellar-core.
+     * The transaction has already been submitted to stellar-core
      */
     public const STATUS_DUPLICATE = "DUPLICATE";
 
     /**
-     * The transaction was not included in the previous 4 ledgers and is banned from the next few ledgers.
+     * The transaction was not included in the previous 4 ledgers and is banned from the next few ledgers
      */
     public const STATUS_TRY_AGAIN_LATER = "TRY_AGAIN_LATER";
 
     /**
-     * An error occurred from submitting the transaction to stellar-core.
+     * An error occurred from submitting the transaction to stellar-core
      */
     public const STATUS_ERROR = "ERROR";
 
     /**
-     * @var string|null $hash Transaction hash (as a hex-encoded string).
+     * @var string|null $hash Transaction hash as hex-encoded string
      */
     public ?string $hash = null;
 
     /**
-     * @var string|null $status The current status of the transaction by hash, one of: PENDING, DUPLICATE,
-     * TRY_AGAIN_LATER, ERROR
+     * @var string|null $status The current status of the transaction (PENDING, DUPLICATE, TRY_AGAIN_LATER, or ERROR)
      */
     public ?string $status = null;
 
     /**
-     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it
-     * handled the request.
+     * @var int|null $latestLedger The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public ?int $latestLedger = null;
 
     /**
-     * @var string|null $latestLedgerCloseTime The unix timestamp of the close time of the latest ledger known to
-     * Soroban RPC at the time it handled the request.
+     * @var string|null $latestLedgerCloseTime Unix timestamp of the latest ledger close time
      */
     public ?string $latestLedgerCloseTime = null;
 
     /**
-     * @var string|null $errorResultXdr (optional) If the transaction status is ERROR, this will be a base64 encoded
-     * string of the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
+     * @var string|null $errorResultXdr Base64-encoded TransactionResult XDR if status is ERROR
      */
     public ?string $errorResultXdr = null;
 
     /**
-     * @var array<XdrDiagnosticEvent>|null $diagnosticEvents (optional) If the transaction status is "ERROR", this
-     * list of xdr diagnostic events may be present containing details on why stellar-core rejected the transaction.
+     * @var array<XdrDiagnosticEvent>|null $diagnosticEvents Diagnostic events if status is ERROR
      */
     public ?array $diagnosticEvents = null;
 
+    /**
+     * Creates an instance from JSON-RPC response data
+     *
+     * @param array<string,mixed> $json The JSON response data
+     * @return static The created instance
+     */
     public static function fromJson(array $json) : SendTransactionResponse {
         $result = new SendTransactionResponse($json);
         if (isset($json['result'])) {
@@ -96,7 +99,7 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null Transaction hash (as a hex-encoded string).
+     * @return string|null Transaction hash as hex-encoded string
      */
     public function getHash(): ?string
     {
@@ -104,8 +107,7 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null The current status of the transaction by hash, one of: PENDING, DUPLICATE,
-     *  TRY_AGAIN_LATER, ERROR
+     * @return string|null The current status of the transaction (PENDING, DUPLICATE, TRY_AGAIN_LATER, or ERROR)
      */
     public function getStatus(): ?string
     {
@@ -113,8 +115,7 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it
-     *  handled the request.
+     * @return int|null The sequence number of the latest ledger known to Soroban RPC at the time it handled the request
      */
     public function getLatestLedger(): ?int
     {
@@ -122,8 +123,7 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null The unix timestamp of the close time of the latest ledger known to
-     *  Soroban RPC at the time it handled the request.
+     * @return string|null Unix timestamp of the latest ledger close time
      */
     public function getLatestLedgerCloseTime(): ?string
     {
@@ -131,8 +131,7 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return string|null (optional) If the transaction status is ERROR, this will be a base64 encoded
-     *  string of the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
+     * @return string|null Base64-encoded TransactionResult XDR if status is ERROR
      */
     public function getErrorResultXdr(): ?string
     {
@@ -140,8 +139,8 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return XdrTransactionResult|null (optional) If the transaction status is ERROR, this will be a
-     * XdrTransactionResult object containing details on why stellar-core rejected the transaction.
+     * @return XdrTransactionResult|null TransactionResult XDR object containing error details if status is ERROR
+     * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getErrorXdrTransactionResult(): ?XdrTransactionResult {
         if ($this->errorResultXdr !== null) {
@@ -151,8 +150,7 @@ class SendTransactionResponse extends SorobanRpcResponse
     }
 
     /**
-     * @return array<XdrDiagnosticEvent>|null (optional) If the transaction status is "ERROR", this
-     *  list of xdr diagnostic events may be present containing details on why stellar-core rejected the transaction.
+     * @return array<XdrDiagnosticEvent>|null Diagnostic events if status is ERROR
      */
     public function getDiagnosticEvents(): ?array
     {

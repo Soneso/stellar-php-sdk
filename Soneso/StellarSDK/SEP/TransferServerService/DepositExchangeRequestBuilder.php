@@ -13,17 +13,53 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
 
+/**
+ * Request builder for GET /deposit-exchange endpoint operations.
+ *
+ * This builder constructs HTTP requests to initiate deposit operations with cross-asset exchange
+ * via SEP-06 and SEP-38. This endpoint combines deposit functionality with on-chain asset exchange,
+ * allowing users to deposit one asset and receive a different Stellar asset.
+ *
+ * For example, a user can deposit USD via bank transfer and receive USDC on Stellar, with the
+ * exchange happening as part of the deposit process. This requires the anchor to support SEP-38
+ * quote functionality.
+ *
+ * Example usage:
+ * ```php
+ * $builder = new DepositExchangeRequestBuilder($httpClient, $serviceAddress, $jwt);
+ * $response = $builder->forQueryParameters([
+ *     'source_asset' => 'iso4217:USD',
+ *     'destination_asset' => 'stellar:USDC:GXXX...',
+ *     'amount' => '100',
+ *     'account' => 'GXXX...'
+ * ])->execute();
+ * ```
+ *
+ * @package Soneso\StellarSDK\SEP\TransferServerService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#deposit-exchange SEP-06 Deposit Exchange
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md SEP-38 Quotes
+ * @see TransferServerService::depositExchange() For the service method using this builder
+ * @see DepositResponse For the response structure
+ * @since 1.0.0
+ */
 class DepositExchangeRequestBuilder extends RequestBuilder
 {
+    /**
+     * @var string|null JWT token for authentication obtained via SEP-10
+     */
     private ?string $jwtToken = null;
+
+    /**
+     * @var string The base URL of the SEP-06 transfer server service
+     */
     private string $serviceAddress;
 
     /**
-     * Constructor.
-     * @param Client $httpClient the client to be used for the request.
-     * @param string $serviceAddress the server address of the sep-06 service (e.g. from sep-01).
-     * @param string|null $jwtToken optional jwt token obtained from sep-10 authentication.
-     * If provided it will be used in the request header.
+     * Constructor for building GET /deposit-exchange requests.
+     *
+     * @param Client $httpClient The HTTP client to use for sending requests
+     * @param string $serviceAddress The base URL of the transfer server from stellar.toml
+     * @param string|null $jwtToken Optional JWT token obtained from SEP-10 authentication
      */
     public function __construct(Client $httpClient, string $serviceAddress, ?string $jwtToken = null)
     {

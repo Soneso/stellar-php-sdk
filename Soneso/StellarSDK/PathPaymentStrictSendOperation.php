@@ -13,29 +13,57 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#path-payment-strict-send" target="_blank">PathPaymentStrictSend</a> operation.
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/" target="_blank">List of Operations</a>
+ * Represents a Path Payment Strict Send operation.
+ *
+ * Sends a payment from one account to another through a path, where you specify the exact amount
+ * to send. This operation finds the best path for the payment that delivers the most destination asset.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
+ * @see PathPaymentStrictSendOperationBuilder For building this operation
+ * @since 1.0.0
  */
 class PathPaymentStrictSendOperation extends AbstractOperation
 {
-    private Asset $sendAsset;
-    private string $sendAmount;
-    private MuxedAccount $destination;
-    private Asset $destAsset;
-    private String $destMin;
     /**
-     * @var array<Asset>|null
+     * @var Asset The asset to be deducted from the sender's account.
+     */
+    private Asset $sendAsset;
+
+    /**
+     * @var string The exact amount of the send asset to deduct (excluding fees).
+     */
+    private string $sendAmount;
+
+    /**
+     * @var MuxedAccount The account that receives the payment.
+     */
+    private MuxedAccount $destination;
+
+    /**
+     * @var Asset The asset that the destination account receives.
+     */
+    private Asset $destAsset;
+
+    /**
+     * @var string The minimum amount of the destination asset that must be received.
+     */
+    private String $destMin;
+
+    /**
+     * @var array<Asset>|null The intermediate assets in the payment path.
      */
     private ?array $path = null;
 
     /**
      * Constructs a new PathPaymentStrictSendOperation object.
+     *
      * @param Asset $sendAsset The asset deducted from the sender's account.
-     * @param string $sendAmount The amount of send asset to deduct (excluding fees).
-     * @param MuxedAccount $destination Account that receives the payment.
+     * @param string $sendAmount The exact amount of send asset to deduct (excluding fees).
+     * @param MuxedAccount $destination The account that receives the payment.
      * @param Asset $destAsset The asset the destination account receives.
-     * @param string $destMin The minimum amount of destination asset the destination account receives.
-     * @param array|null $path The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -&raquo; XLM -&raquo; BTC -&raquo; EUR and the path would contain XLM and BTC.
+     * @param string $destMin The minimum amount of destination asset that must be received.
+     * @param array<Asset>|null $path The intermediate assets in the payment path. For example, if the path is USD to EUR through XLM and BTC, the path would be USD -> XLM -> BTC -> EUR and this parameter would contain [XLM, BTC].
      */
     public function __construct(Asset $sendAsset, string $sendAmount, MuxedAccount $destination, Asset $destAsset, string $destMin, ?array $path = null) {
         $this->sendAsset = $sendAsset;
@@ -47,53 +75,68 @@ class PathPaymentStrictSendOperation extends AbstractOperation
     }
 
     /**
-     * The asset deducted from the sender's account.
-     * @return Asset
+     * Returns the asset deducted from the sender's account.
+     *
+     * @return Asset The sending asset.
      */
     public function getSendAsset(): Asset {
         return $this->sendAsset;
     }
 
     /**
-     * The amount of send asset to deduct (excluding fees)
-     * @return string
+     * Returns the exact amount of send asset to deduct (excluding fees).
+     *
+     * @return string The send amount.
      */
     public function getSendAmount(): string {
         return $this->sendAmount;
     }
 
     /**
-     * Account that receives the payment.
-     * @return MuxedAccount
+     * Returns the account that receives the payment.
+     *
+     * @return MuxedAccount The destination account.
      */
     public function getDestination(): MuxedAccount {
         return $this->destination;
     }
 
     /**
-     * The asset the destination account receives.
-     * @return Asset
+     * Returns the asset the destination account receives.
+     *
+     * @return Asset The destination asset.
      */
     public function getDestAsset(): Asset {
         return $this->destAsset;
     }
 
     /**
-     * The minimum amount of destination asset the destination account receives.
-     * @return string
+     * Returns the minimum amount of destination asset that must be received.
+     *
+     * @return string The minimum destination amount.
      */
     public function getDestMin(): string {
         return $this->destMin;
     }
 
     /**
-     * The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -&raquo; XLM -&raquo; BTC -&raquo; EUR and the path would contain XLM and BTC.
-     * @return array<Asset>|null
+     * Returns the intermediate assets in the payment path.
+     *
+     * For example, if the path is USD to EUR through XLM and BTC, the path would be
+     * USD -> XLM -> BTC -> EUR and this returns [XLM, BTC].
+     *
+     * @return array<Asset>|null The payment path, or null if direct payment.
      */
     public function getPath(): ?array {
         return $this->path;
     }
 
+    /**
+     * Creates a PathPaymentStrictSendOperation from XDR operation object.
+     *
+     * @param XdrPathPaymentStrictSendOperation $xdrOp The XDR operation object to convert.
+     * @return PathPaymentStrictSendOperation The created operation instance.
+     */
     public static function fromXdrOperation(XdrPathPaymentStrictSendOperation $xdrOp): PathPaymentStrictSendOperation {
         $sendAmount = AbstractOperation::fromXdrAmount($xdrOp->getSendAmount());
         $sendAsset = Asset::fromXdr($xdrOp->getSendAsset());
@@ -109,6 +152,11 @@ class PathPaymentStrictSendOperation extends AbstractOperation
         return new PathPaymentStrictSendOperation($sendAsset, $sendAmount, $destination, $destAsset, $destMin, $path);
     }
 
+    /**
+     * Converts the operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body.
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $xdrSendAsset = $this->sendAsset->toXdr();

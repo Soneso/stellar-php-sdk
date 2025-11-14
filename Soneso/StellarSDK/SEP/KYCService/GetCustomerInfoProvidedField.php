@@ -8,6 +8,23 @@ namespace Soneso\StellarSDK\SEP\KYCService;
 
 use Soneso\StellarSDK\Responses\Response;
 
+/**
+ * Represents a KYC field that has been provided by the customer and its verification status.
+ *
+ * This object contains information about fields the anchor has already received from the customer.
+ * Each field includes its verification status indicating whether it has been accepted, rejected,
+ * or requires verification. This is particularly important for fields that need verification via
+ * the customer verification endpoint.
+ *
+ * Field status values:
+ * - ACCEPTED: The field has been validated and accepted by the anchor.
+ * - PROCESSING: The field is being reviewed and has not yet been approved or rejected.
+ * - REJECTED: The field was rejected and the error property explains why.
+ * - VERIFICATION_REQUIRED: The field needs additional verification (e.g., confirmation code).
+ *
+ * @package Soneso\StellarSDK\SEP\KYCService
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#provided-fields SEP-12 v1.15.0
+ */
 class GetCustomerInfoProvidedField extends Response
 {
     /**
@@ -100,7 +117,7 @@ class GetCustomerInfoProvidedField extends Response
         }
         if (isset($json['optional'])) $this->optional = $json['optional'];
         if (isset($json['status'])) $this->status = $json['status'];
-        if (isset($json['error'])) $this->optional = $json['error'];
+        if (isset($json['error'])) $this->error = $json['error'];
     }
 
     public static function fromJson(array $json) : GetCustomerInfoProvidedField

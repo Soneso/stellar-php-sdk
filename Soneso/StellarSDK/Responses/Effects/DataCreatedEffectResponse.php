@@ -6,13 +6,25 @@
 
 namespace Soneso\StellarSDK\Responses\Effects;
 
+/**
+ * Represents a data entry created effect from the Stellar network
+ *
+ * This effect occurs when a new data entry is added to an account.
+ *
+ * @package Soneso\StellarSDK\Responses\Effects
+ * @see EffectResponse Base effect class
+ * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
+ * @since 1.0.0
+ */
 class DataCreatedEffectResponse extends EffectResponse
 {
     private string $name;
     private string $value;
 
     /**
-     * @return string
+     * Gets the name of the data entry
+     *
+     * @return string The data entry name
      */
     public function getName(): string
     {
@@ -20,7 +32,9 @@ class DataCreatedEffectResponse extends EffectResponse
     }
 
     /**
-     * @return string
+     * Gets the value of the data entry
+     *
+     * @return string The data entry value (base64 encoded)
      */
     public function getValue(): string
     {

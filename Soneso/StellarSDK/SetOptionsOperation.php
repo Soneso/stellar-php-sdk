@@ -14,35 +14,82 @@ use Soneso\StellarSDK\Xdr\XdrSigner;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 
 /**
- * Represents <a href="https://developers.stellar.org/docs/start/list-of-operations/#set-options">SetOptions</a> operation.
- * @see <a href="https://developers.stellar.org/docs/start/list-of-operations/">List of Operations</a>
+ * Represents a Set Options operation.
+ *
+ * Sets various configuration options for an account, including thresholds, signers, home domain,
+ * and account flags. This operation allows comprehensive account configuration.
+ *
+ * @package Soneso\StellarSDK
+ * @see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>
+ * @see SetOptionsOperationBuilder For building this operation
+ * @since 1.0.0
  */
 class SetOptionsOperation extends AbstractOperation
 {
+    /**
+     * @var string|null Account ID to receive inflation proceeds.
+     */
     private ?string $inflationDestination = null;
+
+    /**
+     * @var int|null Flags to clear on the account.
+     */
     private ?int $clearFlags = null;
+
+    /**
+     * @var int|null Flags to set on the account.
+     */
     private ?int $setFlags = null;
+
+    /**
+     * @var int|null Weight of the master key (0-255).
+     */
     private ?int $masterKeyWeight = null;
+
+    /**
+     * @var int|null Threshold for low-security operations (0-255).
+     */
     private ?int $lowThreshold = null;
+
+    /**
+     * @var int|null Threshold for medium-security operations (0-255).
+     */
     private ?int $mediumThreshold = null;
+
+    /**
+     * @var int|null Threshold for high-security operations (0-255).
+     */
     private ?int $highThreshold = null;
+
+    /**
+     * @var string|null The home domain of the account.
+     */
     private ?string $homeDomain = null;
+
+    /**
+     * @var XdrSignerKey|null Additional signer key to add/remove.
+     */
     private ?XdrSignerKey $signerKey = null;
+
+    /**
+     * @var int|null Weight of the additional signer (0 to remove).
+     */
     private ?int $signerWeight = null;
 
 
     /**
-     * Creates a new SetOptionsOperation object.
-     * @param string|null $inflationDestination
-     * @param int|null $clearFlags
-     * @param int|null $setFlags
-     * @param int|null $masterKeyWeight
-     * @param int|null $lowThreshold
-     * @param int|null $mediumThreshold
-     * @param int|null $highThreshold
-     * @param string|null $homeDomain
-     * @param XdrSignerKey|null $signerKey
-     * @param int|null $signerWeight
+     * Constructs a new SetOptionsOperation object.
+     *
+     * @param string|null $inflationDestination Account ID to receive inflation proceeds.
+     * @param int|null $clearFlags Flags to clear on the account.
+     * @param int|null $setFlags Flags to set on the account.
+     * @param int|null $masterKeyWeight Weight of the master key (0-255).
+     * @param int|null $lowThreshold Threshold for low-security operations (0-255).
+     * @param int|null $mediumThreshold Threshold for medium-security operations (0-255).
+     * @param int|null $highThreshold Threshold for high-security operations (0-255).
+     * @param string|null $homeDomain The home domain of the account.
+     * @param XdrSignerKey|null $signerKey Additional signer key to add/remove.
+     * @param int|null $signerWeight Weight of the additional signer (0 to remove).
      */
     public function __construct(?string $inflationDestination = null, ?int $clearFlags = null, ?int $setFlags = null, ?int $masterKeyWeight = null, ?int $lowThreshold = null,?int $mediumThreshold = null,
                                 ?int $highThreshold = null, ?string $homeDomain = null, ?XdrSignerKey $signerKey = null, ?int $signerWeight = null) {
@@ -59,8 +106,9 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * Account of the inflation destination.
-     * @return string|null
+     * Returns the account ID to receive inflation proceeds.
+     *
+     * @return string|null The inflation destination account ID.
      */
     public function getInflationDestination(): ?string
     {
@@ -68,8 +116,11 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * Indicates which flags to clear. For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
-     * @return int|null
+     * Returns flags to clear on the account.
+     *
+     * For details about the flags, see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
+     *
+     * @return int|null The flags to clear.
      */
     public function getClearFlags(): ?int
     {
@@ -77,8 +128,11 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * Indicates which flags to set. For details about the flags, please refer to the <a href="https://developers.stellar.org/docs/glossary/accounts/" target="_blank">accounts doc</a>.
-     * @return int|null
+     * Returns flags to set on the account.
+     *
+     * For details about the flags, see <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
+     *
+     * @return int|null The flags to set.
      */
     public function getSetFlags(): ?int
     {
@@ -86,8 +140,9 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * Weight of the master key.
-     * @return int|null
+     * Returns the weight of the master key.
+     *
+     * @return int|null The master key weight (0-255).
      */
     public function getMasterKeyWeight(): ?int
     {
@@ -95,8 +150,11 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">a low threshold</a>.
-     * @return int|null
+     * Returns the threshold for low-security operations.
+     *
+     * A number from 0-255. See <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
+     *
+     * @return int|null The low threshold.
      */
     public function getLowThreshold(): ?int
     {
@@ -104,8 +162,11 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">a medium threshold</a>.
-     * @return int|null
+     * Returns the threshold for medium-security operations.
+     *
+     * A number from 0-255. See <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
+     *
+     * @return int|null The medium threshold.
      */
     public function getMediumThreshold(): ?int
     {
@@ -113,8 +174,11 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * A number from 0-255 representing the threshold this account sets on all operations it performs that have <a href="https://developers.stellar.org/docs/glossary/multisig/" target="_blank">a high threshold</a>.
-     * @return int|null
+     * Returns the threshold for high-security operations.
+     *
+     * A number from 0-255. See <a href="https://developers.stellar.org" target="_blank">Stellar developer docs</a>.
+     *
+     * @return int|null The high threshold.
      */
     public function getHighThreshold(): ?int
     {
@@ -122,8 +186,9 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * The home domain of an account.
-     * @return string|null
+     * Returns the home domain of the account.
+     *
+     * @return string|null The home domain.
      */
     public function getHomeDomain(): ?string
     {
@@ -131,8 +196,9 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * Additional signer added/removed in this operation.
-     * @return XdrSignerKey|null
+     * Returns the additional signer key added or removed in this operation.
+     *
+     * @return XdrSignerKey|null The signer key.
      */
     public function getSignerKey(): ?XdrSignerKey
     {
@@ -140,14 +206,23 @@ class SetOptionsOperation extends AbstractOperation
     }
 
     /**
-     * Additional signer weight. The signer is deleted if the weight is 0.
-     * @return int|null
+     * Returns the weight of the additional signer.
+     *
+     * The signer is deleted if the weight is 0.
+     *
+     * @return int|null The signer weight.
      */
     public function getSignerWeight(): ?int
     {
         return $this->signerWeight;
     }
 
+    /**
+     * Creates a SetOptionsOperation from XDR operation object.
+     *
+     * @param XdrSetOptionsOperation $xdrOp The XDR operation object to convert.
+     * @return SetOptionsOperation The created operation instance.
+     */
     public static function fromXdrOperation(XdrSetOptionsOperation $xdrOp): SetOptionsOperation {
 
         $inflationDestination = $xdrOp->getInflationDest()?->getAccountId();
@@ -165,6 +240,11 @@ class SetOptionsOperation extends AbstractOperation
             $highThreshold, $homeDomain, $signerKey, $signerWeight);
     }
 
+    /**
+     * Converts the operation to its XDR operation body representation.
+     *
+     * @return XdrOperationBody The XDR operation body.
+     */
     public function toOperationBody(): XdrOperationBody
     {
         $result = new XdrSetOptionsOperation();

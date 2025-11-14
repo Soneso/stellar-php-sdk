@@ -14,8 +14,15 @@ use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Yosymfony\Toml\Toml;
 
-/// see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md
-/// Supported version: 2.5.0
+/**
+ * Represents a parsed stellar.toml file according to SEP-1 specification.
+ *
+ * The stellar.toml file is used to provide a common place where the Internet
+ * can find information about an organization's Stellar integration.
+ *
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md SEP-1 Stellar Info File
+ * @version 2.7.0
+ */
 class StellarToml
 {
     public ?GeneralInformation $generalInformation = null;
@@ -24,6 +31,15 @@ class StellarToml
     public ?Currencies $currencies = null;
     public ?Validators $validators = null;
 
+    /**
+     * Creates a StellarToml instance from a TOML string.
+     *
+     * Parses the provided TOML content and populates the general information,
+     * documentation, principals, currencies, and validators data.
+     *
+     * @param string $toml The TOML content to parse
+     * @throws Exception If TOML parsing fails
+     */
     public function __construct(string $toml) {
 
         $object = Toml::Parse($toml, true);
@@ -200,7 +216,15 @@ class StellarToml
     }
 
     /**
-     * @throws Exception
+     * Fetches and parses stellar.toml from a domain.
+     *
+     * Constructs the URL https://DOMAIN/.well-known/stellar.toml and retrieves
+     * the stellar.toml file from the specified domain.
+     *
+     * @param string $domain The domain to fetch the stellar.toml from (without protocol)
+     * @param Client|null $httpClient Optional HTTP client for testing or custom configuration
+     * @return StellarToml The parsed stellar.toml file
+     * @throws Exception If the stellar.toml file cannot be fetched or parsed
      */
     public static function fromDomain(string $domain, ?Client $httpClient = null) : StellarToml {
         $url = "https://" . $domain . "/.well-known/stellar.toml";
@@ -220,10 +244,16 @@ class StellarToml
         }
     }
 
-    /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
-    /// In this case you can use this method to load the currency data from the received link (Currency.toml).
     /**
-     * @throws Exception
+     * Loads currency data from a separate TOML file URL.
+     *
+     * Alternately to specifying a currency in its content, stellar.toml can link out
+     * to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml"
+     * as the currency's only field. This method loads the currency data from that URL.
+     *
+     * @param string $toml The URL to the currency TOML file
+     * @return Currency The parsed currency data
+     * @throws Exception If the currency TOML file cannot be fetched or parsed
      */
     public static function currencyFromUrl(string $toml) : Currency {
         $httpClient = new Client();
@@ -240,6 +270,15 @@ class StellarToml
         }
     }
 
+    /**
+     * Constructs a Currency object from a TOML array item.
+     *
+     * Parses the currency fields from a TOML array and maps them to a Currency object.
+     * This method is used internally by the constructor and currencyFromUrl method.
+     *
+     * @param array $item The TOML array containing currency fields
+     * @return Currency The constructed currency object
+     */
     public static function currencyFromItem(array $item) : Currency {
         $currency = new Currency();
         if (array_key_exists("toml", $item)) {

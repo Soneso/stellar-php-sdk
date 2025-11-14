@@ -7,7 +7,17 @@
 
 namespace Soneso\StellarSDK\Responses\ClaimableBalances;
 
-
+/**
+ * Represents conditions that must be satisfied to claim a claimable balance
+ *
+ * Predicates can be unconditional, time-based (absolute or relative), or logical
+ * combinations (AND, OR, NOT) of multiple predicates. This allows for complex
+ * claim authorization logic.
+ *
+ * @package Soneso\StellarSDK\Responses\ClaimableBalances
+ * @see ClaimantResponse For the parent claimant details
+ * @since 1.0.0
+ */
 class ClaimantPredicateResponse
 {
     private ?bool $unconditional = null;
@@ -18,7 +28,11 @@ class ClaimantPredicateResponse
     private ?string $beforeRelativeTime = null;
 
     /**
-     * @return bool|null
+     * Gets whether this is an unconditional predicate
+     *
+     * When true, the balance can be claimed without any conditions.
+     *
+     * @return bool|null True if unconditional, null if not applicable
      */
     public function getUnconditional(): ?bool
     {
@@ -26,7 +40,11 @@ class ClaimantPredicateResponse
     }
 
     /**
-     * @return ClaimantPredicatesResponse|null
+     * Gets the AND logical combination of predicates
+     *
+     * All predicates in the collection must be satisfied.
+     *
+     * @return ClaimantPredicatesResponse|null The AND predicates, or null if not applicable
      */
     public function getAnd(): ?ClaimantPredicatesResponse
     {
@@ -34,7 +52,11 @@ class ClaimantPredicateResponse
     }
 
     /**
-     * @return ClaimantPredicatesResponse|null
+     * Gets the OR logical combination of predicates
+     *
+     * At least one predicate in the collection must be satisfied.
+     *
+     * @return ClaimantPredicatesResponse|null The OR predicates, or null if not applicable
      */
     public function getOr(): ?ClaimantPredicatesResponse
     {
@@ -42,7 +64,11 @@ class ClaimantPredicateResponse
     }
 
     /**
-     * @return ClaimantPredicateResponse|null
+     * Gets the NOT logical negation of a predicate
+     *
+     * The nested predicate must not be satisfied.
+     *
+     * @return ClaimantPredicateResponse|null The negated predicate, or null if not applicable
      */
     public function getNot(): ?ClaimantPredicateResponse
     {
@@ -50,7 +76,11 @@ class ClaimantPredicateResponse
     }
 
     /**
-     * @return string|null
+     * Gets the absolute time before which the balance can be claimed
+     *
+     * Uses Unix timestamp format.
+     *
+     * @return string|null The absolute time threshold, or null if not applicable
      */
     public function getBeforeAbsoluteTime(): ?string
     {
@@ -58,7 +88,11 @@ class ClaimantPredicateResponse
     }
 
     /**
-     * @return string|null
+     * Gets the relative time before which the balance can be claimed
+     *
+     * Specified as seconds relative to the close time of the ledger where the balance was created.
+     *
+     * @return string|null The relative time threshold in seconds, or null if not applicable
      */
     public function getBeforeRelativeTime(): ?string
     {
