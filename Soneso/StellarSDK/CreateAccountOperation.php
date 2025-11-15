@@ -23,23 +23,15 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class CreateAccountOperation extends AbstractOperation
 {
     /**
-     * @var string The account ID of the account being created and funded
-     */
-    private string $destination;
-
-    /**
-     * @var string The amount of XLM to send to the newly created account (as a decimal string)
-     */
-    private string $startingBalance;
-
-    /**
      * Creates a new CreateAccountOperation object.
-     * @param string $destination Account that is created and funded.
-     * @param string $startingBalance Amount of XLM to send to the newly created account.
+     *
+     * @param string $destination The account ID of the account being created and funded.
+     * @param string $startingBalance The amount of XLM to send to the newly created account (as a decimal string).
      */
-    public function __construct(string $destination, string $startingBalance) {
-        $this->startingBalance = $startingBalance;
-        $this->destination = $destination;
+    public function __construct(
+        private string $destination,
+        private string $startingBalance,
+    ) {
     }
 
     /**

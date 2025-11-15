@@ -24,45 +24,21 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class ManageBuyOfferOperation extends AbstractOperation
 {
     /**
-     * @var Asset The asset being sold
-     */
-    private Asset $selling;
-
-    /**
-     * @var Asset The asset being bought
-     */
-    private Asset $buying;
-
-    /**
-     * @var string The amount of buying asset to purchase (as a decimal string)
-     */
-    private string $amount;
-
-    /**
-     * @var Price The price of 1 unit of buying in terms of selling
-     */
-    private Price $price;
-
-    /**
-     * @var int The offer ID (0 for new offers, or existing offer ID to update/delete)
-     */
-    private int $offerId;
-
-    /**
      * Creates a new ManageBuyOfferOperation.
      *
      * @param Asset $selling The asset being sold
      * @param Asset $buying The asset being bought
-     * @param string $amount The amount of buying asset to purchase (set to "0" to delete)
+     * @param string $amount The amount of buying asset to purchase (as a decimal string, set to "0" to delete)
      * @param Price $price The price of 1 unit of buying in terms of selling
-     * @param int $offerId Set to 0 for a new offer, or the ID of an existing offer to update/delete
+     * @param int $offerId The offer ID (0 for new offers, or existing offer ID to update/delete)
      */
-    public function __construct(Asset $selling, Asset $buying, string $amount, Price $price, int $offerId) {
-        $this->selling = $selling;
-        $this->buying = $buying;
-        $this->amount = $amount;
-        $this->price = $price;
-        $this->offerId = $offerId;
+    public function __construct(
+        private Asset $selling,
+        private Asset $buying,
+        private string $amount,
+        private Price $price,
+        private int $offerId,
+    ) {
         if ($offerId < 0) {
             throw new InvalidArgumentException("Invalid offer id: ".$offerId);
         }

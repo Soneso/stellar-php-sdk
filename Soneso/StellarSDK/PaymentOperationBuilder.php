@@ -36,26 +36,18 @@ class PaymentOperationBuilder
     private MuxedAccount $destination;
 
     /**
-     * @var Asset The asset to be sent
-     */
-    private Asset $asset;
-
-    /**
-     * @var string The amount of asset to send
-     */
-    private string $amount;
-
-    /**
      * Creates a new Payment operation builder.
      *
      * @param string $destinationAccountId The destination account ID
-     * @param Asset $asset The asset to send
-     * @param string $amount The amount to send
+     * @param Asset $asset The asset to be sent
+     * @param string $amount The amount of asset to send
      */
-    public function __construct(string $destinationAccountId, Asset $asset, string $amount) {
+    public function __construct(
+        string $destinationAccountId,
+        private Asset $asset,
+        private string $amount,
+    ) {
         $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
-        $this->asset = $asset;
-        $this->amount = $amount;
     }
 
     /**

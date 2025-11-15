@@ -31,17 +31,13 @@ class ClaimClaimableBalanceOperationBuilder
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @var string The claimable balance ID to claim
-     */
-    private string $balanceId;
-
-    /**
      * Creates a new ClaimClaimableBalance operation builder.
      *
-     * @param string $balanceId The claimable balance ID to claim
+     * @param string $balanceId The claimable balance ID
      */
-    public function __construct(string $balanceId) {
-        $this->balanceId = $balanceId;
+    public function __construct(
+        private string $balanceId,
+    ) {
     }
 
     /**

@@ -23,46 +23,21 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class LiquidityPoolDepositOperation extends AbstractOperation
 {
     /**
-     * @var string The liquidity pool ID
-     */
-    private string $liqudityPoolId;
-
-    /**
-     * @var string Maximum amount of asset A to deposit (as a decimal string)
-     */
-    private string $maxAmountA;
-
-    /**
-     * @var string Maximum amount of asset B to deposit (as a decimal string)
-     */
-    private string $maxAmountB;
-
-    /**
-     * @var Price Minimum exchange rate for asset A to asset B
-     */
-    private Price $minPrice;
-
-    /**
-     * @var Price Maximum exchange rate for asset A to asset B
-     */
-    private Price $maxPrice;
-
-    /**
      * Creates a new LiquidityPoolDepositOperation.
      *
      * @param string $liqudityPoolId The liquidity pool ID
-     * @param string $maxAmountA Maximum amount of asset A to deposit
-     * @param string $maxAmountB Maximum amount of asset B to deposit
-     * @param Price $minPrice Minimum price (asset A / asset B)
-     * @param Price $maxPrice Maximum price (asset A / asset B)
+     * @param string $maxAmountA Maximum amount of asset A to deposit (as a decimal string)
+     * @param string $maxAmountB Maximum amount of asset B to deposit (as a decimal string)
+     * @param Price $minPrice Minimum exchange rate for asset A to asset B
+     * @param Price $maxPrice Maximum exchange rate for asset A to asset B
      */
-    public function __construct(string $liqudityPoolId, string $maxAmountA, string $maxAmountB, Price $minPrice, Price $maxPrice)
-    {
-        $this->liqudityPoolId = $liqudityPoolId;
-        $this->maxAmountA = $maxAmountA;
-        $this->maxAmountB = $maxAmountB;
-        $this->minPrice = $minPrice;
-        $this->maxPrice = $maxPrice;
+    public function __construct(
+        private string $liqudityPoolId,
+        private string $maxAmountA,
+        private string $maxAmountB,
+        private Price $minPrice,
+        private Price $maxPrice,
+    ) {
     }
 
     /**

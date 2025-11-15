@@ -22,31 +22,17 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class ClawbackOperation extends AbstractOperation
 {
     /**
-     * @var Asset The asset being clawed back
-     */
-    private Asset $asset;
-
-    /**
-     * @var MuxedAccount The account from which the asset is clawed back
-     */
-    private MuxedAccount $from;
-
-    /**
-     * @var string The amount of the asset to claw back (as a decimal string)
-     */
-    private string $amount;
-
-    /**
      * Creates a new ClawbackOperation.
      *
-     * @param Asset $asset The asset to claw back (must have AUTH_CLAWBACK_ENABLED flag set)
-     * @param MuxedAccount $from The account from which to claw back the asset
-     * @param string $amount The amount to claw back (as a decimal string)
+     * @param Asset $asset The asset being clawed back (must have AUTH_CLAWBACK_ENABLED flag set)
+     * @param MuxedAccount $from The account from which the asset is clawed back
+     * @param string $amount The amount of the asset to claw back (as a decimal string)
      */
-    public function __construct(Asset $asset, MuxedAccount $from, string $amount) {
-        $this->asset = $asset;
-        $this->from = $from;
-        $this->amount = $amount;
+    public function __construct(
+        private Asset $asset,
+        private MuxedAccount $from,
+        private string $amount,
+    ) {
     }
 
     /**

@@ -27,11 +27,6 @@ namespace Soneso\StellarSDK;
 class ExtendFootprintTTLOperationBuilder
 {
     /**
-     * @var int The number of ledgers to extend the TTL
-     */
-    private int $extendTo;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -41,9 +36,9 @@ class ExtendFootprintTTLOperationBuilder
      *
      * @param int $extendTo The number of ledgers to extend the TTL
      */
-    public function __construct(int $extendTo)
-    {
-        $this->extendTo = $extendTo;
+    public function __construct(
+        private int $extendTo,
+    ) {
     }
 
 

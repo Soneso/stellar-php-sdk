@@ -33,29 +33,9 @@ class PathPaymentStrictSendOperationBuilder
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @var Asset The asset being sent
-     */
-    private Asset $sendAsset;
-
-    /**
-     * @var string The amount of send asset to send
-     */
-    private string $sendAmount;
-
-    /**
      * @var MuxedAccount The destination account
      */
     private MuxedAccount $destination;
-
-    /**
-     * @var Asset The asset the destination receives
-     */
-    private Asset $destAsset;
-
-    /**
-     * @var string The minimum amount of destination asset to receive
-     */
-    private string $destMin;
 
     /**
      * @var array<Asset>|null The intermediate assets in the payment path
@@ -71,12 +51,14 @@ class PathPaymentStrictSendOperationBuilder
      * @param Asset $destAsset The asset the destination receives
      * @param string $destMin The minimum amount of destination asset to receive
      */
-    public function __construct(Asset $sendAsset, string $sendAmount, string $destinationAccountId, Asset $destAsset, string $destMin) {
-        $this->sendAsset = $sendAsset;
-        $this->sendAmount = $sendAmount;
+    public function __construct(
+        private Asset $sendAsset,
+        private string $sendAmount,
+        string $destinationAccountId,
+        private Asset $destAsset,
+        private string $destMin,
+    ) {
         $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
-        $this->destAsset = $destAsset;
-        $this->destMin = $destMin;
     }
 
     /**

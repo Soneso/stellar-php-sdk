@@ -25,39 +25,19 @@ use Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation;
 class SetTrustLineFlagsOperation extends AbstractOperation
 {
     /**
-     * @var string The account ID of the trustline holder.
-     */
-    private string $trustorId;
-
-    /**
-     * @var Asset The asset of the trustline.
-     */
-    private Asset $asset;
-
-    /**
-     * @var int Flags to clear on the trustline.
-     */
-    private int $clearFlags;
-
-    /**
-     * @var int Flags to set on the trustline.
-     */
-    private int $setFlags;
-
-    /**
      * Constructs a new SetTrustLineFlagsOperation object.
      *
-     * @param string $trustorId The account ID of the trustline holder.
-     * @param Asset $asset The asset of the trustline.
-     * @param int $clearFlags Flags to clear on the trustline.
-     * @param int $setFlags Flags to set on the trustline.
+     * @param string $trustorId The account ID of the trustline holder
+     * @param Asset $asset The asset of the trustline
+     * @param int $clearFlags Flags to clear on the trustline
+     * @param int $setFlags Flags to set on the trustline
      */
-    public function __construct(string $trustorId, Asset $asset, int $clearFlags, int $setFlags)
-    {
-        $this->trustorId = $trustorId;
-        $this->asset = $asset;
-        $this->clearFlags = $clearFlags;
-        $this->setFlags = $setFlags;
+    public function __construct(
+        private string $trustorId,
+        private Asset $asset,
+        private int $clearFlags,
+        private int $setFlags,
+    ) {
     }
 
     /**

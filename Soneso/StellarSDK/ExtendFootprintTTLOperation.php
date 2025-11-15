@@ -24,18 +24,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class ExtendFootprintTTLOperation extends AbstractOperation
 {
     /**
-     * @var int The number of ledgers to extend the entry lifetimes by
-     */
-    private int $extendTo;
-
-    /**
      * Creates a new ExtendFootprintTTLOperation.
      *
-     * @param int $extendTo The number of ledgers to extend the entry lifetimes by
+     * @param int $extendTo The number of ledgers to extend the entry lifetimes by.
      */
-    public function __construct(int $extendTo)
-    {
-        $this->extendTo = $extendTo;
+    public function __construct(
+        private int $extendTo,
+    ) {
     }
 
     /**

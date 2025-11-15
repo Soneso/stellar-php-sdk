@@ -33,43 +33,24 @@ class AllowTrustOperationBuilder
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @var string The account ID of the trustor being authorized or deauthorized
-     */
-    private string $trustor;
-
-    /**
-     * @var string The asset code (1-12 characters)
-     */
-    private string $assetCode;
-
-    /**
-     * @var bool Whether to authorize the trustline
-     */
-    private bool $authorized;
-
-    /**
-     * @var bool Whether to authorize only maintaining liabilities
-     */
-    private bool $authorizedToMaintainLiabilities;
-
-    /**
      * Creates a new AllowTrust operation builder.
      *
-     * @param string $trustor The account ID being authorized or deauthorized
+     * @param string $trustor The account ID of the trustor being authorized or deauthorized
      * @param string $assetCode The asset code (1-12 characters)
      * @param bool $authorized Whether to authorize the trustline
      * @param bool $authorizedToMaintainLiabilities Whether to authorize only maintaining liabilities
      * @throws InvalidArgumentException If asset code length is invalid (must be 1-12 characters)
      */
-    public function __construct(string $trustor, string $assetCode, bool $authorized, bool $authorizedToMaintainLiabilities) {
+    public function __construct(
+        private string $trustor,
+        private string $assetCode,
+        private bool $authorized,
+        private bool $authorizedToMaintainLiabilities,
+    ) {
         $len = strlen($assetCode);
         if ($len <= 0 || $len > 12) {
             throw new InvalidArgumentException("invalid asset code: ". $assetCode);
         }
-        $this->trustor = $trustor;
-        $this->assetCode = $assetCode;
-        $this->authorized = $authorized;
-        $this->authorizedToMaintainLiabilities = $authorizedToMaintainLiabilities;
     }
 
     /**

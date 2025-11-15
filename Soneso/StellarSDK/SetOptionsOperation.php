@@ -27,82 +27,31 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
 class SetOptionsOperation extends AbstractOperation
 {
     /**
-     * @var string|null Account ID to receive inflation proceeds.
-     */
-    private ?string $inflationDestination = null;
-
-    /**
-     * @var int|null Flags to clear on the account.
-     */
-    private ?int $clearFlags = null;
-
-    /**
-     * @var int|null Flags to set on the account.
-     */
-    private ?int $setFlags = null;
-
-    /**
-     * @var int|null Weight of the master key (0-255).
-     */
-    private ?int $masterKeyWeight = null;
-
-    /**
-     * @var int|null Threshold for low-security operations (0-255).
-     */
-    private ?int $lowThreshold = null;
-
-    /**
-     * @var int|null Threshold for medium-security operations (0-255).
-     */
-    private ?int $mediumThreshold = null;
-
-    /**
-     * @var int|null Threshold for high-security operations (0-255).
-     */
-    private ?int $highThreshold = null;
-
-    /**
-     * @var string|null The home domain of the account.
-     */
-    private ?string $homeDomain = null;
-
-    /**
-     * @var XdrSignerKey|null Additional signer key to add/remove.
-     */
-    private ?XdrSignerKey $signerKey = null;
-
-    /**
-     * @var int|null Weight of the additional signer (0 to remove).
-     */
-    private ?int $signerWeight = null;
-
-
-    /**
      * Constructs a new SetOptionsOperation object.
      *
-     * @param string|null $inflationDestination Account ID to receive inflation proceeds.
-     * @param int|null $clearFlags Flags to clear on the account.
-     * @param int|null $setFlags Flags to set on the account.
-     * @param int|null $masterKeyWeight Weight of the master key (0-255).
-     * @param int|null $lowThreshold Threshold for low-security operations (0-255).
-     * @param int|null $mediumThreshold Threshold for medium-security operations (0-255).
-     * @param int|null $highThreshold Threshold for high-security operations (0-255).
-     * @param string|null $homeDomain The home domain of the account.
-     * @param XdrSignerKey|null $signerKey Additional signer key to add/remove.
-     * @param int|null $signerWeight Weight of the additional signer (0 to remove).
+     * @param string|null $inflationDestination Account ID to receive inflation proceeds
+     * @param int|null $clearFlags Flags to clear on the account
+     * @param int|null $setFlags Flags to set on the account
+     * @param int|null $masterKeyWeight Weight of the master key (0-255)
+     * @param int|null $lowThreshold Threshold for low-security operations (0-255)
+     * @param int|null $mediumThreshold Threshold for medium-security operations (0-255)
+     * @param int|null $highThreshold Threshold for high-security operations (0-255)
+     * @param string|null $homeDomain The home domain of the account
+     * @param XdrSignerKey|null $signerKey Additional signer key to add/remove
+     * @param int|null $signerWeight Weight of the additional signer (0 to remove)
      */
-    public function __construct(?string $inflationDestination = null, ?int $clearFlags = null, ?int $setFlags = null, ?int $masterKeyWeight = null, ?int $lowThreshold = null,?int $mediumThreshold = null,
-                                ?int $highThreshold = null, ?string $homeDomain = null, ?XdrSignerKey $signerKey = null, ?int $signerWeight = null) {
-        $this->inflationDestination = $inflationDestination;
-        $this->clearFlags = $clearFlags;
-        $this->setFlags = $setFlags;
-        $this->masterKeyWeight = $masterKeyWeight;
-        $this->lowThreshold = $lowThreshold;
-        $this->mediumThreshold = $mediumThreshold;
-        $this->highThreshold = $highThreshold;
-        $this->homeDomain = $homeDomain;
-        $this->signerKey = $signerKey;
-        $this->signerWeight = $signerWeight;
+    public function __construct(
+        private ?string $inflationDestination = null,
+        private ?int $clearFlags = null,
+        private ?int $setFlags = null,
+        private ?int $masterKeyWeight = null,
+        private ?int $lowThreshold = null,
+        private ?int $mediumThreshold = null,
+        private ?int $highThreshold = null,
+        private ?string $homeDomain = null,
+        private ?XdrSignerKey $signerKey = null,
+        private ?int $signerWeight = null,
+    ) {
     }
 
     /**

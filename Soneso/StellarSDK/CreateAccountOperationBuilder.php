@@ -27,16 +27,6 @@ namespace Soneso\StellarSDK;
 class CreateAccountOperationBuilder
 {
     /**
-     * @var string The destination account ID to be created
-     */
-    private string $destination;
-
-    /**
-     * @var string The initial balance in lumens (XLM)
-     */
-    private string $startingBalance;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -45,11 +35,12 @@ class CreateAccountOperationBuilder
      * Creates a new CreateAccount operation builder.
      *
      * @param string $destination The destination account ID to be created
-     * @param string $startingBalance The initial balance to start with in lumens
+     * @param string $startingBalance The initial balance in lumens (XLM)
      */
-    public function __construct(string $destination, string $startingBalance) {
-        $this->destination = $destination;
-        $this->startingBalance = $startingBalance;
+    public function __construct(
+        private string $destination,
+        private string $startingBalance,
+    ) {
     }
 
     /**

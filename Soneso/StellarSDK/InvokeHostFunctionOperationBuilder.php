@@ -29,16 +29,6 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 class InvokeHostFunctionOperationBuilder
 {
     /**
-     * @var HostFunction The host function to invoke
-     */
-    public HostFunction $function;
-
-    /**
-     * @var array<SorobanAuthorizationEntry> The authorization entries for the invocation
-     */
-    public array $auth;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     public ?MuxedAccount $sourceAccount = null;
@@ -49,10 +39,10 @@ class InvokeHostFunctionOperationBuilder
      * @param HostFunction $function The host function to invoke
      * @param array<SorobanAuthorizationEntry> $auth The authorization entries for the invocation
      */
-    public function __construct(HostFunction $function, array $auth = array())
-    {
-        $this->function = $function;
-        $this->auth = $auth;
+    public function __construct(
+        public HostFunction $function,
+        public array $auth = array(),
+    ) {
     }
 
 

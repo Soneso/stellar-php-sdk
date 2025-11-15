@@ -24,17 +24,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class ClawbackClaimableBalanceOperation extends AbstractOperation
 {
     /**
-     * @var string The claimable balance ID to claw back (in hex format)
-     */
-    private string $balanceId;
-
-    /**
      * Creates a new ClawbackClaimableBalanceOperation.
      *
-     * @param string $balanceId The claimable balance ID to claw back (in hex format)
+     * @param string $balanceId The claimable balance ID to claw back (in hex format).
      */
-    public function __construct(string $balanceId) {
-        $this->balanceId = $balanceId;
+    public function __construct(
+        private string $balanceId,
+    ) {
     }
 
     /**

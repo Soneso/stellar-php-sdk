@@ -34,29 +34,9 @@ class PathPaymentStrictReceiveOperationBuilder
     private ?MuxedAccount $sourceAccount = null;
 
     /**
-     * @var Asset The asset to be sent (deducted from sender's account)
-     */
-    private Asset $sendAsset;
-
-    /**
-     * @var string The maximum amount of the send asset to deduct (excluding fees)
-     */
-    private string $sendMax;
-
-    /**
      * @var MuxedAccount The destination account receiving the payment
      */
     private MuxedAccount $destination;
-
-    /**
-     * @var Asset The asset to be received by the destination account
-     */
-    private Asset $destAsset;
-
-    /**
-     * @var string The exact amount of destination asset to be received
-     */
-    private String $destAmount;
 
     /**
      * @var array<Asset>|null The intermediate assets in the payment path
@@ -66,18 +46,20 @@ class PathPaymentStrictReceiveOperationBuilder
     /**
      * Creates a new PathPaymentStrictReceive operation builder.
      *
-     * @param Asset $sendAsset The asset deducted from the sender's account
-     * @param string $sendMax The maximum amount of send asset to deduct
-     * @param string $destinationAccountId Payment destination account ID
-     * @param Asset $destAsset The asset the destination account receives
-     * @param string $destAmount The amount of destination asset the destination account receives
+     * @param Asset $sendAsset The asset to be sent (deducted from sender's account)
+     * @param string $sendMax The maximum amount of the send asset to deduct (excluding fees)
+     * @param string $destinationAccountId The destination account ID
+     * @param Asset $destAsset The asset to be received by the destination account
+     * @param string $destAmount The exact amount of destination asset to be received
      */
-    public function __construct(Asset $sendAsset, string $sendMax, string $destinationAccountId, Asset $destAsset, string $destAmount) {
-        $this->sendAsset = $sendAsset;
-        $this->sendMax = $sendMax;
+    public function __construct(
+        private Asset $sendAsset,
+        private string $sendMax,
+        string $destinationAccountId,
+        private Asset $destAsset,
+        private String $destAmount,
+    ) {
         $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
-        $this->destAsset = $destAsset;
-        $this->destAmount = $destAmount;
     }
 
     /**

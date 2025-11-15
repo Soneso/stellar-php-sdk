@@ -26,24 +26,15 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class ManageDataOperation extends AbstractOperation
 {
     /**
-     * @var string The name of the data entry (key).
-     */
-    private string $key;
-
-    /**
-     * @var string|null The value of the data entry. If null, the data entry is deleted.
-     */
-    private ?string $value = null;
-
-    /**
      * Constructs a new ManageDataOperation object.
      *
      * @param string $key The name of the data entry (up to 64 bytes).
      * @param string|null $value The value to store (up to 64 bytes), or null to delete the entry.
      */
-    public function __construct(string $key, ?string $value = null) {
-        $this->key = $key;
-        $this->value = $value;
+    public function __construct(
+        private string $key,
+        private ?string $value = null,
+    ) {
     }
 
     /**

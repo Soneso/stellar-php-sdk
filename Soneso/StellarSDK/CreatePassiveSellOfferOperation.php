@@ -24,38 +24,19 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class CreatePassiveSellOfferOperation extends AbstractOperation
 {
     /**
-     * @var Asset The asset being sold
-     */
-    private Asset $selling;
-
-    /**
-     * @var Asset The asset being bought
-     */
-    private Asset $buying;
-
-    /**
-     * @var string The amount of selling asset to sell (as a decimal string)
-     */
-    private string $amount;
-
-    /**
-     * @var Price The price of 1 unit of selling in terms of buying
-     */
-    private Price $price;
-
-    /**
      * Creates a new CreatePassiveSellOfferOperation.
      *
-     * @param Asset $selling The asset the offer creator is selling
-     * @param Asset $buying The asset the offer creator is buying
+     * @param Asset $selling The asset being sold
+     * @param Asset $buying The asset being bought
      * @param string $amount The amount of selling asset to sell (as a decimal string)
      * @param Price $price The price of 1 unit of selling in terms of buying
      */
-    public function __construct(Asset $selling, Asset $buying, string $amount, Price $price) {
-        $this->selling = $selling;
-        $this->buying = $buying;
-        $this->amount = $amount;
-        $this->price = $price;
+    public function __construct(
+        private Asset $selling,
+        private Asset $buying,
+        private string $amount,
+        private Price $price,
+    ) {
     }
 
     /**

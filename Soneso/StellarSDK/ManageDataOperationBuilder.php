@@ -26,16 +26,6 @@ namespace Soneso\StellarSDK;
 class ManageDataOperationBuilder
 {
     /**
-     * @var string The name of the data entry
-     */
-    private string $key;
-
-    /**
-     * @var string|null The value of the data entry (null to delete)
-     */
-    private ?string $value = null;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -48,9 +38,10 @@ class ManageDataOperationBuilder
      * @param string $key The name of the data entry
      * @param string|null $value The value of the data entry (null will delete the entry)
      */
-    public function __construct(string $key, ?string $value = null) {
-        $this->key = $key;
-        $this->value = $value;
+    public function __construct(
+        private string $key,
+        private ?string $value = null,
+    ) {
     }
 
     /**

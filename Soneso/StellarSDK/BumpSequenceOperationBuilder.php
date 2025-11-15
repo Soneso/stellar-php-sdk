@@ -30,11 +30,6 @@ use phpseclib3\Math\BigInteger;
 class BumpSequenceOperationBuilder
 {
     /**
-     * @var BigInteger The desired value for the source account's sequence number
-     */
-    private BigInteger $bumpTo;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -42,10 +37,11 @@ class BumpSequenceOperationBuilder
     /**
      * Creates a new BumpSequence operation builder.
      *
-     * @param BigInteger $bumpTo Desired value for the operation's source account sequence number
+     * @param BigInteger $bumpTo The desired value for the source account's sequence number
      */
-    public function __construct(BigInteger $bumpTo) {
-        $this->bumpTo = $bumpTo;
+    public function __construct(
+        private BigInteger $bumpTo,
+    ) {
     }
 
     /**

@@ -25,17 +25,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class BeginSponsoringFutureReservesOperation extends AbstractOperation
 {
     /**
-     * @var string The account ID that will be sponsored
-     */
-    private string $sponsoredId;
-
-    /**
      * Creates a new BeginSponsoringFutureReservesOperation.
      *
-     * @param string $sponsoredId The account ID of the account to be sponsored
+     * @param string $sponsoredId The account ID that will be sponsored.
      */
-    public function __construct(string $sponsoredId) {
-        $this->sponsoredId = $sponsoredId;
+    public function __construct(
+        private string $sponsoredId,
+    ) {
     }
 
     /**

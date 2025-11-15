@@ -24,31 +24,17 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class CreateClaimableBalanceOperation extends AbstractOperation
 {
     /**
-     * @var array<Claimant> Array of claimants who can claim this balance
-     */
-    private array $claimants;
-
-    /**
-     * @var Asset The asset for the claimable balance
-     */
-    private Asset $asset;
-
-    /**
-     * @var string The amount of the asset (as a decimal string)
-     */
-    private string $amount;
-
-    /**
      * Creates a new CreateClaimableBalanceOperation.
      *
-     * @param array<Claimant> $claimants Array of claimants who can claim the balance
-     * @param Asset $asset The asset to make claimable
-     * @param string $amount The amount to make claimable (as a decimal string)
+     * @param array<Claimant> $claimants Array of claimants who can claim this balance
+     * @param Asset $asset The asset for the claimable balance
+     * @param string $amount The amount of the asset (as a decimal string)
      */
-    public function __construct(array $claimants, Asset $asset, string $amount) {
-        $this->claimants = $claimants;
-        $this->asset = $asset;
-        $this->amount = $amount;
+    public function __construct(
+        private array $claimants,
+        private Asset $asset,
+        private string $amount,
+    ) {
     }
 
     /**

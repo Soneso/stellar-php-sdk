@@ -24,16 +24,13 @@ use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 class BumpSequenceOperation extends AbstractOperation
 {
     /**
-     * @var BigInteger The desired value for the source account's sequence number
-     */
-    private BigInteger $bumpTo;
-
-    /**
      * Creates a BumpSequence operation.
-     * @param BigInteger $bumpTo desired value for the operation’s source account sequence number.
+     *
+     * @param BigInteger $bumpTo The desired value for the source account's sequence number.
      */
-    public function __construct(BigInteger $bumpTo) {
-        $this->bumpTo = $bumpTo;
+    public function __construct(
+        private BigInteger $bumpTo,
+    ) {
     }
 
     /**
