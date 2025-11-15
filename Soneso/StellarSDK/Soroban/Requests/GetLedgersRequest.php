@@ -17,30 +17,18 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 class GetLedgersRequest
 {
     /**
-     * @var int|null $startLedger Ledger sequence number to start fetching responses from (inclusive).
-     * GetLedgers will return an error if startLedger is less than the oldest ledger stored in this node,
-     * or greater than the latest ledger seen by this node. If a cursor is included in the request,
-     * startLedger must be omitted.
-     */
-    public ?int $startLedger = null;
-
-    /**
-     * @var PaginationOptions|null $paginationOptions for pagination.
-     */
-    public ?PaginationOptions $paginationOptions = null;
-
-    /**
      * Constructor.
+     *
      * @param int|null $startLedger Ledger sequence number to start fetching responses from (inclusive).
-     * GetLedgers will return an error if startLedger is less than the oldest ledger stored in this node,
-     * or greater than the latest ledger seen by this node. If a cursor is included in the request,
-     * startLedger must be omitted.
+     *  GetLedgers will return an error if startLedger is less than the oldest ledger stored in this node,
+     *  or greater than the latest ledger seen by this node. If a cursor is included in the request,
+     *  startLedger must be omitted.
      * @param PaginationOptions|null $paginationOptions for pagination.
      */
-    public function __construct(?int $startLedger = null, ?PaginationOptions $paginationOptions = null)
-    {
-        $this->startLedger = $startLedger;
-        $this->paginationOptions = $paginationOptions;
+    public function __construct(
+        public ?int $startLedger = null,
+        public ?PaginationOptions $paginationOptions = null,
+    ) {
     }
 
     /**

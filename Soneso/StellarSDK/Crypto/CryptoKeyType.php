@@ -27,15 +27,14 @@ class CryptoKeyType
     public const KEY_TYPE_ED25519_SIGNED_PAYLOAD = 3;
     public const KEY_TYPE_MUXED_ED25519 = 256;
 
-    private int $value;
-
     /**
      * CryptoKeyType constructor
      *
      * @param int $value The numeric value of the key type
      */
-    public function __construct(int $value) {
-        $this->value = $value;
+    public function __construct(
+        private int $value,
+    ) {
     }
 
     /**

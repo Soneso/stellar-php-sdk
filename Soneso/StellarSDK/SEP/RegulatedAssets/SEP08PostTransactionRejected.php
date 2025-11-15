@@ -33,17 +33,14 @@ class SEP08PostTransactionRejected extends SEP08PostTransactionResponse
 {
 
     /**
-     * @var string $error A human-readable string explaining why the transaction is not
-     * compliant and could not be made compliant.
+     * Constructor.
+     *
+     * @param string $error A human-readable string explaining why the transaction is not compliant
+     *                      and could not be made compliant.
      */
-    public string $error;
-
-    /**
-     * @param string $error
-     */
-    public function __construct(string $error)
-    {
-        $this->error = $error;
+    public function __construct(
+        public string $error,
+    ) {
     }
 
 }

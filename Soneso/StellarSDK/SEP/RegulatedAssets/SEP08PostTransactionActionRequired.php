@@ -33,41 +33,23 @@ class SEP08PostTransactionActionRequired extends SEP08PostTransactionResponse
 {
 
     /**
-     * @var string $message A human-readable string containing information regarding the action required.
-     */
-    public string $message;
-    /**
-     * @var string $actionUrl A URL that allows the user to complete the actions required to have the
-     * transaction approved.
-     */
-    public string $actionUrl;
-    /**
-     * @var string $actionMethod GET or POST, indicating the type of request that should be made to the action_url.
-     */
-    public string $actionMethod = 'GET';
-    /**
-     * @var array<String>|null $actionFields (optional) An array of additional fields defined by SEP-9 Standard
-     * KYC / AML fields that the client may optionally provide to the approval service when sending the request
-     * to the action_url so as to circumvent the need for the user to enter the information manually.
-     */
-    public ?array $actionFields = null;
-
-    /**
      * Constructor.
+     *
      * @param string $message A human-readable string containing information regarding the action required.
      * @param string $actionUrl A URL that allows the user to complete the actions required to have the
-     *  transaction approved.
+     *                          transaction approved.
      * @param string $actionMethod GET or POST, indicating the type of request that should be made to the action_url.
-     * @param array<String>|null $actionFields (optional) An array of additional fields defined by SEP-9 Standard
-     *  KYC / AML fields that the client may optionally provide to the approval service when sending the request
-     *  to the action_url so as to circumvent the need for the user to enter the information manually.
+     * @param array<String>|null $actionFields An array of additional fields defined by SEP-9 Standard KYC/AML
+     *                                         fields that the client may optionally provide to the approval service
+     *                                         when sending the request to the action_url so as to circumvent the
+     *                                         need for the user to enter the information manually.
      */
-    public function __construct(string $message, string $actionUrl, string $actionMethod, ?array $actionFields)
-    {
-        $this->message = $message;
-        $this->actionUrl = $actionUrl;
-        $this->actionMethod = $actionMethod;
-        $this->actionFields = $actionFields;
+    public function __construct(
+        public string $message,
+        public string $actionUrl,
+        public string $actionMethod = 'GET',
+        public ?array $actionFields = null,
+    ) {
     }
 
 }

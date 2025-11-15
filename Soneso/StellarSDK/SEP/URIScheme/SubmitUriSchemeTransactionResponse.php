@@ -24,36 +24,19 @@ use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
  */
 class SubmitUriSchemeTransactionResponse
 {
-
-    /**
-     * Horizon response when transaction submitted directly to Stellar network.
-     * Null if transaction was sent to callback URL instead.
-     *
-     * @var SubmitTransactionResponse|null
-     */
-    private ?SubmitTransactionResponse $submitTransactionResponse = null;
-
-    /**
-     * HTTP response from callback URL when transaction submitted via callback.
-     * Null if transaction was submitted directly to network instead.
-     *
-     * @var ResponseInterface|null
-     */
-    private ?ResponseInterface $callBackResponse = null;
-
     /**
      * Creates a new response container with exactly one response populated.
      *
      * Either submitTransactionResponse or callBackResponse will be non-null,
      * but never both. This reflects the mutually exclusive submission paths.
      *
-     * @param SubmitTransactionResponse|null $submitTransactionResponse Horizon submission response
-     * @param ResponseInterface|null $callBackResponse HTTP callback response
+     * @param SubmitTransactionResponse|null $submitTransactionResponse Horizon response when transaction submitted directly to Stellar network. Null if transaction was sent to callback URL instead.
+     * @param ResponseInterface|null $callBackResponse HTTP response from callback URL when transaction submitted via callback. Null if transaction was submitted directly to network instead.
      */
-    public function __construct(?SubmitTransactionResponse $submitTransactionResponse, ?ResponseInterface $callBackResponse)
-    {
-        $this->submitTransactionResponse = $submitTransactionResponse;
-        $this->callBackResponse = $callBackResponse;
+    public function __construct(
+        private ?SubmitTransactionResponse $submitTransactionResponse = null,
+        private ?ResponseInterface $callBackResponse = null,
+    ) {
     }
 
     /**

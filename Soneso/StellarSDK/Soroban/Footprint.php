@@ -27,18 +27,13 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 class Footprint
 {
     /**
-     * @var XdrLedgerFootprint The XDR representation of the footprint
-     */
-    public XdrLedgerFootprint $xdrFootprint;
-
-    /**
-     * Creates a new Footprint from an XDR ledger footprint
+     * Creates a new Footprint from an XDR ledger footprint.
      *
-     * @param XdrLedgerFootprint $xdrFootprint The XDR footprint data
+     * @param XdrLedgerFootprint $xdrFootprint The XDR representation of the footprint.
      */
-    public function __construct(XdrLedgerFootprint $xdrFootprint)
-    {
-        $this->xdrFootprint = $xdrFootprint;
+    public function __construct(
+        public XdrLedgerFootprint $xdrFootprint,
+    ) {
     }
 
     /**

@@ -22,31 +22,6 @@ class TransactionRefundPayment
 {
 
     /**
-     * @var string $id The payment ID that can be used to identify the refund payment.
-     * This is either a Stellar transaction hash or an off-chain payment identifier,
-     * such as a reference number provided to the user when the refund was initiated.
-     * This id is not guaranteed to be unique.
-     */
-    public string $id;
-
-    /**
-     * @var string $idType stellar or external.
-     */
-    public string $idType;
-
-    /**
-     * @var string $amount The amount sent back to the user for the payment identified by id,
-     * in units of amount_in_asset.
-     */
-    public string $amount;
-
-    /**
-     * @var string $fee The amount charged as a fee for processing the refund, in units of amount_in_asset.
-     */
-    public string $fee;
-
-    /**
-     * Constructor.
      * @param string $id The payment ID that can be used to identify the refund payment.
      * This is either a Stellar transaction hash or an off-chain payment identifier,
      * such as a reference number provided to the user when the refund was initiated.
@@ -56,12 +31,12 @@ class TransactionRefundPayment
      * in units of amount_in_asset.
      * @param string $fee The amount charged as a fee for processing the refund, in units of amount_in_asset.
      */
-    public function __construct(string $id, string $idType, string $amount, string $fee)
-    {
-        $this->id = $id;
-        $this->idType = $idType;
-        $this->amount = $amount;
-        $this->fee = $fee;
+    public function __construct(
+        public string $id,
+        public string $idType,
+        public string $amount,
+        public string $fee,
+    ) {
     }
 
 

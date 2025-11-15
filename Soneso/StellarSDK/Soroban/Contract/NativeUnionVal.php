@@ -24,24 +24,14 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 class NativeUnionVal
 {
     /**
-     * @var string $tag The name of the union case/variant to use
+     * @param string $tag The name of the union case/variant to use.
+     * @param array|null $values The values associated with this union case. Null for void cases,
+     *                           array of values for tuple cases. The array must match the expected types
+     *                           defined in the contract spec for this union case.
      */
-    public string $tag;
-
-    /**
-     * @var array|null $values The values associated with this union case. Null for void cases,
-     * array of values for tuple cases. The array must match the expected types defined in the
-     * contract spec for this union case.
-     */
-    public ?array $values = null;
-
-    /**
-     * @param string $tag The name of the union case/variant to use
-     * @param array|null $values The values for this case. Null for void cases, array for tuple cases.
-     */
-    public function __construct(string $tag, ?array $values = null)
-    {
-        $this->tag = $tag;
-        $this->values = $values;
+    public function __construct(
+        public string $tag,
+        public ?array $values = null,
+    ) {
     }
 }

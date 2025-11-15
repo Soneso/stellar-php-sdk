@@ -20,36 +20,18 @@ class TransactionRefunds
 {
 
     /**
-     * @var string $amountRefunded The total amount refunded to the user, in units of amount_in_asset.
+     * @param string $amountRefunded The total amount refunded to the user, in units of amount_in_asset.
      * If a full refund was issued, this amount should match amount_in.
-     */
-    public string $amountRefunded;
-
-    /**
-     * @var string $amountFee The total amount charged in fees for processing all refund payments,
+     * @param string $amountFee The total amount charged in fees for processing all refund payments,
      * in units of amount_in_asset. The sum of all fee values in the payments object list should equal this value.
-     */
-    public string $amountFee;
-
-    /**
-     * @var array<TransactionRefundPayment> $payments A list of objects containing information on the individual
+     * @param array<TransactionRefundPayment> $payments A list of objects containing information on the individual
      * payments made back to the user as refunds.
      */
-    public array $payments;
-
-    /**
-     * @param string $amountRefunded The total amount refunded to the user, in units of amount_in_asset.
-     *  If a full refund was issued, this amount should match amount_in.
-     * @param string $amountFee The total amount charged in fees for processing all refund payments,
-     *  in units of amount_in_asset. The sum of all fee values in the payments object list should equal this value.
-     * @param array<TransactionRefundPayment> $payments A list of objects containing information on the individual
-     *  payments made back to the user as refunds.
-     */
-    public function __construct(string $amountRefunded, string $amountFee, array $payments)
-    {
-        $this->amountRefunded = $amountRefunded;
-        $this->amountFee = $amountFee;
-        $this->payments = $payments;
+    public function __construct(
+        public string $amountRefunded,
+        public string $amountFee,
+        public array $payments,
+    ) {
     }
 
 

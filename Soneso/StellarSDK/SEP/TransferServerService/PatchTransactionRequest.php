@@ -26,32 +26,16 @@ class PatchTransactionRequest
 {
 
     /**
-     * @var string $id Id of the transaction
-     */
-    public string $id;
-
-    /**
-     * @var array<string, mixed> $fields An object containing the values requested to be updated by the anchor
-     * See: https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md#pending-transaction-info-update
-     */
-    public array $fields;
-
-    /**
-     * @var string|null jwt token previously received from the anchor via the SEP-10 authentication flow
-     */
-    public ?string $jwt = null;
-
-    /**
      * @param string $id Id of the transaction
-     * @param array<string, mixed> $fields An object containing the values requested to be updated by the anchor
+     * @param array<string, mixed> $fields An object containing the values requested to be updated by the anchor.
      * See: https://github.com/stellar/stellar-protocol/blob/v4.3.0/ecosystem/sep-0006.md#pending-transaction-info-update
      * @param string|null $jwt jwt token previously received from the anchor via the SEP-10 authentication flow
      */
-    public function __construct(string $id, array $fields, ?string $jwt)
-    {
-        $this->id = $id;
-        $this->fields = $fields;
-        $this->jwt = $jwt;
+    public function __construct(
+        public string $id,
+        public array $fields,
+        public ?string $jwt,
+    ) {
     }
 
 }

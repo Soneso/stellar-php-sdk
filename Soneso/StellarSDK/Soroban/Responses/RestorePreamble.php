@@ -24,29 +24,14 @@ class RestorePreamble
 {
 
     /**
-     * @var XdrSorobanTransactionData $transactionData The recommended Soroban Transaction Data to use when submitting
-     * the RestoreFootprint operation.
+     * @param XdrSorobanTransactionData $transactionData The recommended Soroban Transaction Data to use when submitting the RestoreFootprint operation
+     * @param int $minResourceFee Recommended minimum resource fee to add when submitting the RestoreFootprint operation (on top of the Stellar network fee)
      */
-    public XdrSorobanTransactionData $transactionData;
-
-    /**
-     * @var int $minResourceFee Recommended minimum resource fee to add when submitting the RestoreFootprint operation.
-     * This fee is to be added on top of the Stellar network fee.
-     */
-    public int $minResourceFee;
-
-    /**
-     * Constructor.
-     *
-     * @param XdrSorobanTransactionData $transactionData The recommended Soroban Transaction Data to use when submitting
-     *  the RestoreFootprint operation.
-     * @param int $minResourceFee Recommended minimum resource fee to add when submitting the RestoreFootprint operation.
-     *  This fee is to be added on top of the Stellar network fee.
-     */
-    public function __construct(XdrSorobanTransactionData $transactionData, int $minResourceFee)
+    public function __construct(
+        public XdrSorobanTransactionData $transactionData,
+        public int $minResourceFee,
+    )
     {
-        $this->transactionData = $transactionData;
-        $this->minResourceFee = $minResourceFee;
     }
 
     /**

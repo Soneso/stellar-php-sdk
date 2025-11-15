@@ -15,20 +15,14 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 class ResourceConfig
 {
     /**
-     * @var int $instructionLeeway The number of additional CPU instructions to reserve for budget leeway
-     *  in preflight calculations.
-     */
-    public int $instructionLeeway;
-
-    /**
      * Constructor.
      *
      * @param int $instructionLeeway The number of additional CPU instructions to reserve for budget leeway
      *  in preflight calculations.
      */
-    public function __construct(int $instructionLeeway)
-    {
-        $this->instructionLeeway = $instructionLeeway;
+    public function __construct(
+        public int $instructionLeeway,
+    ) {
     }
 
     /**

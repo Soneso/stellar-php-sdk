@@ -39,33 +39,19 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 class PutCustomerVerificationRequestBuilder extends RequestBuilder
 {
     /**
-     * @var string The base URL of the SEP-12 KYC service endpoint
-     */
-    private string $serviceAddress;
-
-    /**
-     * @var string|null JWT token for authentication obtained via SEP-10
-     */
-    private ?string $jwtToken = null;
-
-    /**
-     * @var array<array-key, string>|null Verification fields (e.g., mobile_number_verification => code)
-     */
-    private ?array $fields = null;
-
-    /**
      * Constructor for building PUT /customer/verification requests.
      *
      * @param Client $httpClient The HTTP client to use for sending requests
-     * @param string $serviceAddress The base URL of the SEP-12 service
-     * @param array<array-key, string>|null $fields Verification fields to submit
+     * @param string $serviceAddress The base URL of the SEP-12 KYC service endpoint
+     * @param array<array-key, string>|null $fields Verification fields to submit (e.g., mobile_number_verification => code)
      * @param string|null $jwtToken JWT token for authentication obtained via SEP-10
      */
-    public function __construct(Client $httpClient, string $serviceAddress, ?array $fields = null, ?string $jwtToken = null)
-    {
-        $this->serviceAddress = $serviceAddress;
-        $this->jwtToken = $jwtToken;
-        $this->fields = $fields;
+    public function __construct(
+        Client $httpClient,
+        private string $serviceAddress,
+        private ?array $fields = null,
+        private ?string $jwtToken = null,
+    ) {
         parent::__construct($httpClient);
     }
 

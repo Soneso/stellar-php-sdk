@@ -18,50 +18,20 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 class LedgerEntry
 {
     /**
-     * @var string $key The key of the ledger entry (serialized in a base64 xdr string).
-     */
-    public string $key;
-
-    /**
-     * @var string $xdr The current value of the given ledger entry (serialized in a base64 xdr string).
-     */
-    public string $xdr;
-
-    /**
-     * @var int $lastModifiedLedgerSeq The ledger sequence number of the last time this entry was updated.
-     */
-    public int $lastModifiedLedgerSeq;
-
-    /**
-     * @var int|null $liveUntilLedgerSeq Sequence number of the ledger.
-     */
-    public ?int $liveUntilLedgerSeq = null;
-
-    /**
-     * @var string|null $ext The entry's "Ext" field. Only available for protocol version >= 23
-     */
-    public ?string $ext = null;
-
-    /**
-     * @param string $key The key of the ledger entry (serialized in a base64 xdr string).
-     * @param string $xdr The current value of the given ledger entry (serialized in a base64 xdr string).
-     * @param int $lastModifiedLedgerSeq The ledger sequence number of the last time this entry was updated.
-     * @param int|null $liveUntilLedgerSeq Sequence number of the ledger.
-     * @param string|null $ext The entry's "Ext" field. Only available for protocol version >= 23
+     * @param string $key The key of the ledger entry (serialized in a base64 XDR string)
+     * @param string $xdr The current value of the given ledger entry (serialized in a base64 XDR string)
+     * @param int $lastModifiedLedgerSeq The ledger sequence number of the last time this entry was updated
+     * @param int|null $liveUntilLedgerSeq Ledger sequence number until which the entry is live
+     * @param string|null $ext The entry's "Ext" field (only available for protocol version >= 23)
      */
     public function __construct(
-        string $key,
-        string $xdr,
-        int $lastModifiedLedgerSeq,
-        ?int $liveUntilLedgerSeq = null,
-        ?string $ext = null,
+        public string $key,
+        public string $xdr,
+        public int $lastModifiedLedgerSeq,
+        public ?int $liveUntilLedgerSeq = null,
+        public ?string $ext = null,
     )
     {
-        $this->key = $key;
-        $this->xdr = $xdr;
-        $this->lastModifiedLedgerSeq = $lastModifiedLedgerSeq;
-        $this->liveUntilLedgerSeq = $liveUntilLedgerSeq;
-        $this->ext = $ext;
     }
 
     /**

@@ -14,24 +14,14 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 class TransactionEvents
 {
     /**
-     * @var array<string>|null $transactionEventsXdr (optional) A base64 encoded slice of xdr.TransactionEvent.
+     * @param array<string>|null $transactionEventsXdr Base64-encoded slice of xdr.TransactionEvent
+     * @param array<array<string>>|null $contractEventsXdr Base64-encoded slice of array [xdr.ContractEvent] for each operation
      */
-    public ?array $transactionEventsXdr = null;
-
-    /**
-     * @var array<array<string>>|null $contractEventsXdr (optional) A base64 encoded slice of array [xdr.ContractEvent] for each operation.
-     */
-    public ?array $contractEventsXdr = null;
-
-    /**
-     * @param array<string>|null $transactionEventsXdr (optional) A base64 encoded slice of xdr.TransactionEvent.
-     * @param array<array<string>>|null $contractEventsXdr (optional) A base64 encoded slice of array [xdr.ContractEvent] for each operation.
-     */
-    public function __construct(?array $transactionEventsXdr = null,
-                                ?array $contractEventsXdr = null)
+    public function __construct(
+        public ?array $transactionEventsXdr = null,
+        public ?array $contractEventsXdr = null,
+    )
     {
-        $this->transactionEventsXdr = $transactionEventsXdr;
-        $this->contractEventsXdr = $contractEventsXdr;
     }
 
     /**

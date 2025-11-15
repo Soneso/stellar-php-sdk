@@ -29,16 +29,12 @@ class SorobanRpcErrorResponse
     public ?array $data = null;
 
     /**
-     * @var array<array-key,mixed> $jsonResponse Complete JSON response received
-     */
-    public array $jsonResponse;
-
-    /**
      * @param array<array-key,mixed> $jsonResponse Complete JSON response received
      */
-    public function __construct(array $jsonResponse)
+    public function __construct(
+        public array $jsonResponse,
+    )
     {
-        $this->jsonResponse = $jsonResponse;
     }
 
     /**

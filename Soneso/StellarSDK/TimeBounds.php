@@ -27,25 +27,15 @@ use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 class TimeBounds
 {
     /**
-     * @var DateTime
-     */
-    private DateTime $minTime;
-
-    /**
-     * @var DateTime
-     */
-    private DateTime $maxTime;
-
-    /**
      * TimeBounds constructor
      *
      * @param DateTime $minTime The earliest time the transaction is valid (inclusive)
      * @param DateTime $maxTime The latest time the transaction is valid (inclusive)
      */
-    public function __construct(DateTime $minTime, DateTime $maxTime)
-    {
-        $this->minTime = $minTime;
-        $this->maxTime = $maxTime;
+    public function __construct(
+        private DateTime $minTime,
+        private DateTime $maxTime,
+    ) {
     }
 
     /**

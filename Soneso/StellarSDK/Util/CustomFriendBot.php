@@ -36,20 +36,14 @@ use Soneso\StellarSDK\Requests\RequestBuilder;
  */
 class CustomFriendBot
 {
-
-    /**
-     * @var string The URL of the custom FriendBot service endpoint
-     */
-    public string $friendBotUrl;
-
     /**
      * CustomFriendBot constructor
      *
-     * @param string $friendBotUrl The URL of the custom FriendBot service (e.g., "http://localhost:8000/friendbot")
+     * @param string $friendBotUrl The URL of the custom FriendBot service endpoint (e.g., "http://localhost:8000/friendbot")
      */
-    public function __construct(string $friendBotUrl)
-    {
-        $this->friendBotUrl = $friendBotUrl;
+    public function __construct(
+        public string $friendBotUrl,
+    ) {
     }
 
     /**

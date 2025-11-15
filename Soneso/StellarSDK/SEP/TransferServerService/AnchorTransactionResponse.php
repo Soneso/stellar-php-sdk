@@ -25,14 +25,12 @@ use Soneso\StellarSDK\Responses\Response;
  */
 class AnchorTransactionResponse extends Response {
 
-    public AnchorTransaction $transaction;
-
     /**
      * @param AnchorTransaction $transaction
      */
-    public function __construct(AnchorTransaction $transaction)
-    {
-        $this->transaction = $transaction;
+    public function __construct(
+        public AnchorTransaction $transaction,
+    ) {
     }
 
     /**

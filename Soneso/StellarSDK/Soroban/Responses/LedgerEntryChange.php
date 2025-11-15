@@ -19,41 +19,18 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 class LedgerEntryChange
 {
     /**
-     * @var string $type 'created', 'updated' or 'deleted'
-     */
-    public string $type;
-    /**
-     * @var string $key XdrLedgerKey in base64 for this delta
-     */
-    public string $key;
-
-    /**
-     * @var string|null $before XdrLedgerEntry in base64 (state prior to simulation)
-     */
-    public ?string $before = null;
-
-    /**
-     * @var string|null $after XdrLedgerEntry in base64 (state after simulation)
-     */
-    public ?string $after = null;
-
-    /**
      * @param string $type Indicates if the entry was 'created', 'updated', or 'deleted'
-     * @param string $key the XdrLedgerKey in base64 for this delta
+     * @param string $key XdrLedgerKey in base64 for this delta
      * @param string|null $before XdrLedgerEntry in base64 (state prior to simulation)
      * @param string|null $after XdrLedgerEntry in base64 (state after simulation)
      */
     public function __construct(
-        string $type,
-        string $key,
-        ?string $before = null,
-        ?string $after = null,
+        public string $type,
+        public string $key,
+        public ?string $before = null,
+        public ?string $after = null,
     )
     {
-        $this->type = $type;
-        $this->key = $key;
-        $this->before = $before;
-        $this->after = $after;
     }
 
     /**

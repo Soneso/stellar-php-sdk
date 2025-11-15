@@ -39,40 +39,21 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
  */
 class PutCustomerInfoRequestBuilder extends RequestBuilder {
     /**
-     * @var string The base URL of the SEP-12 KYC service endpoint
-     */
-    private string $serviceAddress;
-
-    /**
-     * @var string|null JWT token for authentication obtained via SEP-10
-     */
-    private ?string $jwtToken = null;
-
-    /**
-     * @var array<array-key, mixed>|null Customer data fields to submit
-     */
-    private ?array $fields = null;
-
-    /**
-     * @var array<array-key, string>|null Binary file data to upload (field name => file bytes)
-     */
-    private ?array $files = null;
-
-    /**
      * Constructor for building PUT /customer requests.
      *
      * @param Client $httpClient The HTTP client to use for sending requests
-     * @param string $serviceAddress The base URL of the SEP-12 service
+     * @param string $serviceAddress The base URL of the SEP-12 KYC service endpoint
      * @param array<array-key, mixed>|null $fields Customer data fields to submit
      * @param array<array-key, string>|null $files Binary file data to upload (field name => file bytes)
      * @param string|null $jwtToken JWT token for authentication obtained via SEP-10
      */
-    public function __construct(Client $httpClient, string $serviceAddress, ?array $fields = null, ?array $files = null, ?string $jwtToken = null)
-    {
-        $this->serviceAddress = $serviceAddress;
-        $this->jwtToken = $jwtToken;
-        $this->fields = $fields;
-        $this->files = $files;
+    public function __construct(
+        Client $httpClient,
+        private string $serviceAddress,
+        private ?array $fields = null,
+        private ?array $files = null,
+        private ?string $jwtToken = null,
+    ) {
         parent::__construct($httpClient);
     }
 

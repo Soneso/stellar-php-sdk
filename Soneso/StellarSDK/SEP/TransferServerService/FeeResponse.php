@@ -25,18 +25,12 @@ use Soneso\StellarSDK\Responses\Response;
 class FeeResponse extends Response
 {
     /**
-     * @var float $fee The total fee (in units of the asset involved) that would be charged
+     * @param float $fee The total fee (in units of the asset involved) that would be charged
      * to deposit/withdraw the specified amount of asset_code.
      */
-    public float $fee;
-
-    /**
-     * @param float $fee The total fee (in units of the asset involved) that would be charged
-     *  to deposit/withdraw the specified amount of asset_code.
-     */
-    public function __construct(float $fee)
-    {
-        $this->fee = $fee;
+    public function __construct(
+        public float $fee,
+    ) {
     }
 
     /**

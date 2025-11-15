@@ -23,18 +23,16 @@ use Soneso\StellarSDK\Xdr\XdrPrice;
  */
 class Price
 {
-    private int $n;
-    private int $d;
-
     /**
      * Price constructor
      *
      * @param int $n The numerator of the price fraction
      * @param int $d The denominator of the price fraction
      */
-    public function __construct(int $n, int $d) {
-        $this->n = $n;
-        $this->d = $d;
+    public function __construct(
+        private int $n,
+        private int $d,
+    ) {
     }
 
     /**
