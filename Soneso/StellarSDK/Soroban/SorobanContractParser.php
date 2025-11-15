@@ -147,7 +147,7 @@ class SorobanContractParser
 
                     array_push($result, $entry);
                     $entryBytes = $entry->encode();
-                    if (substr($specBytes, 0, strlen($entryBytes)) === $entryBytes) {
+                    if (str_starts_with($specBytes, $entryBytes)) {
                         $specBytes = substr($specBytes, strlen($entryBytes));
                     } else {
                         break;
@@ -203,7 +203,7 @@ class SorobanContractParser
                 }
                 $result[$entry->v0->key] = $entry->v0->value;
                 $entryBytes = $entry->encode();
-                if (substr($metaEntryBytes, 0, strlen($entryBytes)) === $entryBytes) {
+                if (str_starts_with($metaEntryBytes, $entryBytes)) {
                     $metaEntryBytes = substr($metaEntryBytes, strlen($entryBytes));
                 } else {
                     break;

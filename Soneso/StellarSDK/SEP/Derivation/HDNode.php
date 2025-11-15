@@ -136,7 +136,7 @@ class HDNode
         // Add each part to the return value
         foreach ($parts as $part) {
             // Each subsequent node must be hardened
-            if (strpos($part, "'") != (strlen($part)-1)) throw new \InvalidArgumentException('Path can only contain hardened indexes');
+            if (!str_ends_with($part, "'")) throw new \InvalidArgumentException('Path can only contain hardened indexes');
             $part = str_replace("'", '', $part);
 
             if (!is_numeric($part)) throw new \InvalidArgumentException('Path must be numeric');

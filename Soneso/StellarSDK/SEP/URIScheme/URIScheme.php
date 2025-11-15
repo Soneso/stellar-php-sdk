@@ -299,7 +299,7 @@ class URIScheme
         $absTransaction->sign($signerKeyPair,$net);
 
         $callback = $this->getParameterValue(URIScheme::callbackParameterName, $url);
-        if ($callback != null && substr($callback, 0, 4 ) === "url:") {
+        if ($callback != null && str_starts_with($callback, "url:")) {
             $callbackUrl = substr($callback, 4);
             $headers = array();
             $headers = array_merge($headers, RequestBuilder::HEADERS);
@@ -554,7 +554,7 @@ class URIScheme
     private function getXdrTransactionEnvelope(string $url): XdrTransactionEnvelope {
         $base64TransactionEnvelope = $this->getParameterValue(URIScheme::xdrParameterName, $url);
         if ($base64TransactionEnvelope != null) {
-            if (strpos($base64TransactionEnvelope, '%') !== false) {
+            if (str_contains($base64TransactionEnvelope, '%')) {
                 $base64TransactionEnvelope = urldecode($base64TransactionEnvelope);
             }
             return XdrTransactionEnvelope::fromEnvelopeBase64XdrString($base64TransactionEnvelope);
