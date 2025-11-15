@@ -27,15 +27,14 @@ namespace Soneso\StellarSDK\Responses\Account;
  */
 class AccountDataResponse
 {
-    private array $data;
-
     /**
      * Creates a new account data response
      *
      * @param array $data Associative array of data entries (key => base64 value)
      */
-    public function __construct(array $data = array()) {
-        $this->data = $data;
+    public function __construct(
+        private array $data = [],
+    ) {
     }
 
     /**

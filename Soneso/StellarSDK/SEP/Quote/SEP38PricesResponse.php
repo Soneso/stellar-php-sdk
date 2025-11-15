@@ -23,23 +23,13 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38PricesResponse
 {
     /**
-     * @var array<SEP38BuyAsset>|null $buyAssets Array of available buy assets with their prices.
+     * @param array<SEP38BuyAsset>|null $buyAssets Array of available buy assets with their prices (when selling a specified asset).
+     * @param array<SEP38SellAsset>|null $sellAssets Array of available sell assets with their prices (when buying a specified asset, added in SEP-38 v2.3.0).
      */
-    public ?array $buyAssets = null;
-
-    /**
-     * @var array<SEP38SellAsset>|null $sellAssets Array of available sell assets with their prices.
-     */
-    public ?array $sellAssets = null;
-
-    /**
-     * @param array<SEP38BuyAsset>|null $buyAssets Array of available buy assets with their prices.
-     * @param array<SEP38SellAsset>|null $sellAssets Array of available sell assets with their prices.
-     */
-    public function __construct(?array $buyAssets = null, ?array $sellAssets = null)
-    {
-        $this->buyAssets = $buyAssets;
-        $this->sellAssets = $sellAssets;
+    public function __construct(
+        public ?array $buyAssets = null,
+        public ?array $sellAssets = null,
+    ) {
     }
 
     /**

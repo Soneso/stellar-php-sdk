@@ -18,19 +18,14 @@ namespace Soneso\StellarSDK\SEP\Recovery;
  */
 class SEP30SignatureResponse
 {
-    public string $signature;
-    public string $networkPassphrase;
-
     /**
-     * Constructor.
-     *
-     * @param string $signature The transaction signature (base64).
+     * @param string $signature The transaction signature in base64 format.
      * @param string $networkPassphrase The Stellar network passphrase.
      */
-    public function __construct(string $signature, string $networkPassphrase)
-    {
-        $this->signature = $signature;
-        $this->networkPassphrase = $networkPassphrase;
+    public function __construct(
+        public string $signature,
+        public string $networkPassphrase,
+    ) {
     }
 
     /**

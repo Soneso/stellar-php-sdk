@@ -23,44 +23,19 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38PriceResponse
 {
     /**
-     * @var string $totalPrice The total price of the quote including fees. Used in formula: sell_amount = total_price * buy_amount
+     * @param string $totalPrice The total price of the quote including fees. Used in formula: sell_amount = total_price * buy_amount
+     * @param string $price The exchange rate without fees.
+     * @param string $sellAmount The amount of the sell asset.
+     * @param string $buyAmount The amount of the buy asset.
+     * @param SEP38Fee $fee The fee structure for this price.
      */
-    public string $totalPrice;
-
-    /**
-     * @var string $price The exchange rate without fees. Used in formula: sell_amount = total_price * buy_amount
-     */
-    public string $price;
-
-    /**
-     * @var string $sellAmount The amount of the sell asset.
-     */
-    public string $sellAmount;
-
-    /**
-     * @var string $buyAmount The amount of the buy asset.
-     */
-    public string $buyAmount;
-
-    /**
-     * @var SEP38Fee $fee The fee structure for this price.
-     */
-    public SEP38Fee $fee;
-
-    /**
-     * @param string $totalPrice
-     * @param string $price
-     * @param string $sellAmount
-     * @param string $buyAmount
-     * @param SEP38Fee $fee
-     */
-    public function __construct(string $totalPrice, string $price, string $sellAmount, string $buyAmount, SEP38Fee $fee)
-    {
-        $this->totalPrice = $totalPrice;
-        $this->price = $price;
-        $this->sellAmount = $sellAmount;
-        $this->buyAmount = $buyAmount;
-        $this->fee = $fee;
+    public function __construct(
+        public string $totalPrice,
+        public string $price,
+        public string $sellAmount,
+        public string $buyAmount,
+        public SEP38Fee $fee,
+    ) {
     }
 
     /**

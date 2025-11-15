@@ -25,16 +25,14 @@ use Soneso\StellarSDK\Responses\Response;
  */
 class AccountDataValueResponse extends Response
 {
-    private string $value;
-
     /**
      * Creates a new account data value response
      *
      * @param string $value The base64-encoded data value
      */
-    public function __construct(string $value)
-    {
-        $this->value = $value;
+    public function __construct(
+        private string $value,
+    ) {
     }
 
     /**

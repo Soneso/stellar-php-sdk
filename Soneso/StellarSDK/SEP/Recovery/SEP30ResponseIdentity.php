@@ -18,20 +18,14 @@ namespace Soneso\StellarSDK\SEP\Recovery;
  */
 class SEP30ResponseIdentity
 {
-    public string $role;
-    public ?bool $authenticated = null;
-
     /**
-     * Constructor.
-     *
-     * @param string $role The identity role (e.g., "owner", "sender", "receiver").
-     *                     Client-defined value stored by server and returned in responses.
+     * @param string $role The identity role (e.g., "owner", "sender", "receiver"). Client-defined value stored by server and returned in responses.
      * @param bool|null $authenticated Whether the identity is authenticated.
      */
-    public function __construct(string $role, ?bool $authenticated = null)
-    {
-        $this->role = $role;
-        $this->authenticated = $authenticated;
+    public function __construct(
+        public string $role,
+        public ?bool $authenticated = null,
+    ) {
     }
 
     /**

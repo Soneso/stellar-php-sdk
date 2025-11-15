@@ -22,18 +22,11 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 class SEP30Request
 {
     /**
-     * @var array<SEP30RequestIdentity> $identities
+     * @param array<SEP30RequestIdentity> $identities Array of identity information for account recovery.
      */
-     public array $identities;
-
-    /**
-     * Constructor.
-     *
-     * @param array<SEP30RequestIdentity> $identities Array of identity information.
-     */
-    public function __construct(array $identities)
-    {
-        $this->identities = $identities;
+    public function __construct(
+        public array $identities,
+    ) {
     }
 
     /**

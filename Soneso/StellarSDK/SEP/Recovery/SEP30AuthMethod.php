@@ -42,37 +42,15 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 class SEP30AuthMethod
 {
     /**
-     * The authentication method type.
-     *
-     * Standard types: "stellar_address", "phone_number", "email"
-     * Custom types may be supported by specific server implementations.
-     *
-     * @var string
-     */
-    public string $type;
-
-    /**
-     * The authentication value/identifier.
-     *
-     * Format depends on type:
-     * - stellar_address: "GDUAB..." (Stellar G-address)
-     * - phone_number: "+10000000001" (E.164 format with +, no spaces)
-     * - email: "user@example.com"
-     *
-     * @var string
-     */
-    public string $value;
-
-    /**
      * Constructs a new authentication method.
      *
      * @param string $type The authentication method type (e.g., "stellar_address", "phone_number", "email").
      * @param string $value The authentication value/identifier in the format required by the type.
      */
-    public function __construct(string $type, string $value)
-    {
-        $this->type = $type;
-        $this->value = $value;
+    public function __construct(
+        public string $type,
+        public string $value,
+    ) {
     }
 
     public function toJson() : array {

@@ -25,97 +25,31 @@ use DateTimeInterface;
 class SEP38QuoteResponse
 {
     /**
-     * @var string $id The unique identifier for this quote.
-     */
-    public string $id;
-
-    /**
-     * @var DateTime $expiresAt The date and time when the quote will expire.
-     */
-    public DateTime $expiresAt;
-
-    /**
-     * @var string $totalPrice The total price of the quote including fees.
-     */
-    public string $totalPrice;
-
-    /**
-     * @var string $price The exchange rate without fees.
-     */
-    public string $price;
-
-    /**
-     * @var string $sellAsset The asset being sold.
-     */
-    public string $sellAsset;
-
-    /**
-     * @var string $sellAmount The amount of the sell asset.
-     */
-    public string $sellAmount;
-
-    /**
-     * @var string $buyAsset The asset being purchased.
-     */
-    public string $buyAsset;
-
-    /**
-     * @var string $buyAmount The amount of the buy asset.
-     */
-    public string $buyAmount;
-
-    /**
-     * @var SEP38Fee $fee The fee structure for this quote.
-     */
-    public SEP38Fee $fee;
-
-    /**
-     * @var string|null $sellDeliveryMethod The method used by the client to deliver the sell asset to the Anchor.
-     */
-    public ?string $sellDeliveryMethod = null;
-
-    /**
-     * @var string|null $buyDeliveryMethod The method used by the Anchor to deliver the buy asset to the client.
-     */
-    public ?string $buyDeliveryMethod = null;
-
-    /**
-     * @param string $id
-     * @param DateTime $expiresAt
-     * @param string $totalPrice
-     * @param string $price
-     * @param string $sellAsset
-     * @param string $sellAmount
-     * @param string $buyAsset
-     * @param string $buyAmount
-     * @param SEP38Fee $fee
-     * @param string|null $sellDeliveryMethod
-     * @param string|null $buyDeliveryMethod
+     * @param string $id The unique identifier for this quote.
+     * @param DateTime $expiresAt The date and time when the quote will expire.
+     * @param string $totalPrice The total price of the quote including fees.
+     * @param string $price The exchange rate without fees.
+     * @param string $sellAsset The asset being sold.
+     * @param string $sellAmount The amount of the sell asset.
+     * @param string $buyAsset The asset being purchased.
+     * @param string $buyAmount The amount of the buy asset.
+     * @param SEP38Fee $fee The fee structure for this quote.
+     * @param string|null $sellDeliveryMethod The method used by the client to deliver the sell asset to the Anchor.
+     * @param string|null $buyDeliveryMethod The method used by the Anchor to deliver the buy asset to the client.
      */
     public function __construct(
-        string $id,
-        DateTime $expiresAt,
-        string $totalPrice,
-        string $price,
-        string $sellAsset,
-        string $sellAmount,
-        string $buyAsset,
-        string $buyAmount,
-        SEP38Fee $fee,
-        ?string $sellDeliveryMethod = null,
-        ?string $buyDeliveryMethod = null)
-    {
-        $this->id = $id;
-        $this->expiresAt = $expiresAt;
-        $this->totalPrice = $totalPrice;
-        $this->price = $price;
-        $this->sellAsset = $sellAsset;
-        $this->sellAmount = $sellAmount;
-        $this->buyAsset = $buyAsset;
-        $this->buyAmount = $buyAmount;
-        $this->fee = $fee;
-        $this->sellDeliveryMethod = $sellDeliveryMethod;
-        $this->buyDeliveryMethod = $buyDeliveryMethod;
+        public string $id,
+        public DateTime $expiresAt,
+        public string $totalPrice,
+        public string $price,
+        public string $sellAsset,
+        public string $sellAmount,
+        public string $buyAsset,
+        public string $buyAmount,
+        public SEP38Fee $fee,
+        public ?string $sellDeliveryMethod = null,
+        public ?string $buyDeliveryMethod = null,
+    ) {
     }
 
     /**

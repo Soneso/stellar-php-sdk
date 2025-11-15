@@ -19,23 +19,13 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38BuyDeliveryMethod
 {
     /**
-     * @var string $name The identifier for the delivery method.
+     * @param string $name The identifier for the delivery method.
+     * @param string $description Human-readable description of the delivery method.
      */
-    public string $name;
-
-    /**
-     * @var string $description Human-readable description of the delivery method.
-     */
-    public string $description;
-
-    /**
-     * @param string $name
-     * @param string $description
-     */
-    public function __construct(string $name, string $description)
-    {
-        $this->name = $name;
-        $this->description = $description;
+    public function __construct(
+        public string $name,
+        public string $description,
+    ) {
     }
 
     /**
