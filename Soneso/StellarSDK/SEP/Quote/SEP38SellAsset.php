@@ -20,30 +20,15 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38SellAsset
 {
     /**
-     * @var string $asset The asset identifier that can be sold.
+     * @param string $asset The asset identifier that can be sold.
+     * @param string $price The indicative price of one unit of the sell asset in terms of the buy asset.
+     * @param int $decimals The number of decimal places precision supported for this asset.
      */
-    public string $asset;
-
-    /**
-     * @var string $price The indicative price of one unit of the sell asset in terms of the buy asset.
-     */
-    public string $price;
-
-    /**
-     * @var int $decimals The number of decimal places precision supported for this asset.
-     */
-    public int $decimals;
-
-    /**
-     * @param string $asset
-     * @param string $price
-     * @param int $decimals
-     */
-    public function __construct(string $asset, string $price, int $decimals)
-    {
-        $this->asset = $asset;
-        $this->price = $price;
-        $this->decimals = $decimals;
+    public function __construct(
+        public string $asset,
+        public string $price,
+        public int $decimals,
+    ) {
     }
 
     /**

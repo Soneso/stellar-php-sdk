@@ -20,29 +20,16 @@ namespace Soneso\StellarSDK\SEP\Recovery;
  */
 class SEP30AccountResponse
 {
-    public string $address;
     /**
-     * @var array<SEP30ResponseIdentity> $identities
-     */
-    public array $identities;
-
-    /**
-     * @var array<SEP30ResponseSigner> $signers
-     */
-    public array $signers;
-
-    /**
-     * Constructor.
-     *
      * @param string $address The Stellar account address.
      * @param array<SEP30ResponseIdentity> $identities Registered identity owners.
      * @param array<SEP30ResponseSigner> $signers Account signers for recovery.
      */
-    public function __construct(string $address, array $identities, array $signers)
-    {
-        $this->address = $address;
-        $this->identities = $identities;
-        $this->signers = $signers;
+    public function __construct(
+        public string $address,
+        public array $identities,
+        public array $signers,
+    ) {
     }
 
     /**

@@ -29,25 +29,6 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 class EventFilter
 {
     /**
-     * @var string|null $type A comma separated list of event types (system, contract, or diagnostic)
-     * used to filter events. If omitted, all event types are included.
-     */
-    public ?string $type = null;
-
-    /**
-     * @var array<string>|null $contractIds List of contract ids to query for events.
-     * If omitted, return events for all contracts. Maximum 5 contract IDs are allowed per request.
-     */
-    public ?array $contractIds = null;
-
-    /**
-     * @var TopicFilters|null $topics List of topic filters. If omitted, query for all events.
-     * If multiple filters are specified, events will be included if they match any of the filters.
-     * Maximum 5 filters are allowed per request.
-     */
-    public ?TopicFilters $topics = null;
-
-    /**
      * Constructor.
      *
      * @param string|null $type A comma separated list of event types (system, contract, or diagnostic)
@@ -58,11 +39,11 @@ class EventFilter
      *  If multiple filters are specified, events will be included if they match any of the filters.
      *  Maximum 5 filters are allowed per request.
      */
-    public function __construct(?string $type = null, ?array $contractIds = null, ?TopicFilters $topics = null)
-    {
-        $this->type = $type;
-        $this->contractIds = $contractIds;
-        $this->topics = $topics;
+    public function __construct(
+        public ?string $type = null,
+        public ?array $contractIds = null,
+        public ?TopicFilters $topics = null,
+    ) {
     }
 
     /**

@@ -27,26 +27,6 @@ namespace Soneso\StellarSDK;
 class SetTrustLineFlagsOperationBuilder
 {
     /**
-     * @var string The account ID of the trustline holder (trustor)
-     */
-    private string $trustorId;
-
-    /**
-     * @var Asset The asset of the trustline
-     */
-    private Asset $asset;
-
-    /**
-     * @var int The flags to clear on the trustline
-     */
-    private int $clearFlags;
-
-    /**
-     * @var int The flags to set on the trustline
-     */
-    private int $setFlags;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -54,16 +34,17 @@ class SetTrustLineFlagsOperationBuilder
     /**
      * Creates a new SetTrustLineFlags operation builder.
      *
-     * @param string $trustorId The account ID of the trustline holder
+     * @param string $trustorId The account ID of the trustline holder (trustor)
      * @param Asset $asset The asset of the trustline
      * @param int $clearFlags The flags to clear on the trustline
      * @param int $setFlags The flags to set on the trustline
      */
-    public function __construct(string $trustorId, Asset $asset, int $clearFlags, int $setFlags) {
-        $this->trustorId = $trustorId;
-        $this->asset = $asset;
-        $this->clearFlags = $clearFlags;
-        $this->setFlags = $setFlags;
+    public function __construct(
+        private string $trustorId,
+        private Asset $asset,
+        private int $clearFlags,
+        private int $setFlags,
+    ) {
     }
 
     /**

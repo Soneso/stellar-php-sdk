@@ -26,34 +26,15 @@ class SEP31RefundPayment
 {
 
     /**
-     * @var string $id The Stellar transaction hash of the transaction that included the refund payment.
-     * This id is not guaranteed to be unique.
-     */
-    public string $id;
-
-    /**
-     * @var string $amount The amount sent back to the Sending Anchor for the payment identified by id,
-     * in units of amount_in_asset.
-     */
-    public string $amount;
-
-    /**
-     * @var string $fee The amount charged as a fee for processing the refund, in units of amount_in_asset.
-     */
-    public string $fee;
-
-    /**
-     * @param string $id The Stellar transaction hash of the transaction that included the refund payment.
-     *  This id is not guaranteed to be unique.
-     * @param string $amount The amount sent back to the Sending Anchor for the payment identified by id,
-     *  in units of amount_in_asset.
+     * @param string $id The Stellar transaction hash of the refund payment (not guaranteed to be unique).
+     * @param string $amount The amount sent back to the Sending Anchor, in units of amount_in_asset.
      * @param string $fee The amount charged as a fee for processing the refund, in units of amount_in_asset.
      */
-    public function __construct(string $id, string $amount, string $fee)
-    {
-        $this->id = $id;
-        $this->amount = $amount;
-        $this->fee = $fee;
+    public function __construct(
+        public string $id,
+        public string $amount,
+        public string $fee,
+    ) {
     }
 
     /**

@@ -27,21 +27,6 @@ namespace Soneso\StellarSDK;
 class ClawbackOperationBuilder
 {
     /**
-     * @var Asset The asset to claw back
-     */
-    private Asset $asset;
-
-    /**
-     * @var MuxedAccount The account from which to claw back the asset
-     */
-    private MuxedAccount $from;
-
-    /**
-     * @var string The amount to claw back
-     */
-    private string $amount;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -53,10 +38,11 @@ class ClawbackOperationBuilder
      * @param MuxedAccount $from The account from which to claw back the asset
      * @param string $amount The amount to claw back
      */
-    public function __construct(Asset $asset, MuxedAccount $from, string $amount) {
-        $this->asset = $asset;
-        $this->from = $from;
-        $this->amount = $amount;
+    public function __construct(
+        private Asset $asset,
+        private MuxedAccount $from,
+        private string $amount,
+    ) {
     }
 
     /**

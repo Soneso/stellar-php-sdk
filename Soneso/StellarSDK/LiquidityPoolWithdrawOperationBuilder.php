@@ -26,26 +26,6 @@ namespace Soneso\StellarSDK;
 class LiquidityPoolWithdrawOperationBuilder
 {
     /**
-     * @var string The liquidity pool ID
-     */
-    private string $liquidityPoolId;
-
-    /**
-     * @var string The amount of pool shares to withdraw
-     */
-    private string $amount;
-
-    /**
-     * @var string The minimum amount of asset A to receive
-     */
-    private string $minAmountA;
-
-    /**
-     * @var string The minimum amount of asset B to receive
-     */
-    private string $minAmountB;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -58,12 +38,12 @@ class LiquidityPoolWithdrawOperationBuilder
      * @param string $minAmountA The minimum amount of asset A to receive
      * @param string $minAmountB The minimum amount of asset B to receive
      */
-    public function __construct(string $liquidityPoolId, string $amount, string $minAmountA, string $minAmountB)
-    {
-        $this->liquidityPoolId = $liquidityPoolId;
-        $this->amount = $amount;
-        $this->minAmountA = $minAmountA;
-        $this->minAmountB = $minAmountB;
+    public function __construct(
+        private string $liquidityPoolId,
+        private string $amount,
+        private string $minAmountA,
+        private string $minAmountB,
+    ) {
     }
 
     /**

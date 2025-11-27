@@ -24,81 +24,27 @@ use DateTimeInterface;
 class SEP38PostQuoteRequest
 {
     /**
-     * @var string $context The context for the quote: 'sep6', 'sep24', or 'sep31'.
-     */
-    public string $context;
-
-    /**
-     * @var string $sellAsset The asset the client would like to sell in Stellar Asset Identification Format or an off-chain asset identifier.
-     */
-    public string $sellAsset;
-
-    /**
-     * @var string $buyAsset The asset the client would like to buy in Stellar Asset Identification Format or an off-chain asset identifier.
-     */
-    public string $buyAsset;
-
-    /**
-     * @var string|null $sellAmount The amount of the sell asset the client would like to exchange for buy asset.
-     */
-    public ?string $sellAmount = null;
-
-    /**
-     * @var string|null $buyAmount The amount of the buy asset the client would like to purchase with sell asset.
-     */
-    public ?string $buyAmount = null;
-
-    /**
-     * @var DateTime|null $expireAfter The client's desired expiration date and time for the quote.
-     */
-    public ?DateTime $expireAfter = null;
-
-    /**
-     * @var string|null $sellDeliveryMethod The method used by the client to deliver the sell asset to the Anchor.
-     */
-    public ?string $sellDeliveryMethod = null;
-
-    /**
-     * @var string|null $buyDeliveryMethod The method used by the Anchor to deliver the buy asset to the client.
-     */
-    public ?string $buyDeliveryMethod = null;
-
-    /**
-     * @var string|null $countryCode The country code of the user's current location in ISO 3166-2 or ISO 3166-1 alpha-2 format.
-     */
-    public ?string $countryCode = null;
-
-    /**
-     * @param string $context
-     * @param string $sellAsset
-     * @param string $buyAsset
-     * @param string|null $sellAmount
-     * @param string|null $buyAmount
-     * @param DateTime|null $expireAfter
-     * @param string|null $sellDeliveryMethod
-     * @param string|null $buyDeliveryMethod
-     * @param string|null $countryCode
+     * @param string $context The context for the quote: 'sep6', 'sep24', or 'sep31'.
+     * @param string $sellAsset The asset the client would like to sell in Stellar Asset Identification Format or an off-chain asset identifier.
+     * @param string $buyAsset The asset the client would like to buy in Stellar Asset Identification Format or an off-chain asset identifier.
+     * @param string|null $sellAmount The amount of the sell asset the client would like to exchange for buy asset (mutually exclusive with buyAmount).
+     * @param string|null $buyAmount The amount of the buy asset the client would like to purchase with sell asset (mutually exclusive with sellAmount).
+     * @param DateTime|null $expireAfter The client's desired expiration date and time for the quote.
+     * @param string|null $sellDeliveryMethod The method used by the client to deliver the sell asset to the Anchor.
+     * @param string|null $buyDeliveryMethod The method used by the Anchor to deliver the buy asset to the client.
+     * @param string|null $countryCode The country code of the user's current location in ISO 3166-2 or ISO 3166-1 alpha-2 format.
      */
     public function __construct(
-        string $context,
-        string $sellAsset,
-        string $buyAsset,
-        ?string $sellAmount = null,
-        ?string $buyAmount = null,
-        ?DateTime $expireAfter = null,
-        ?string $sellDeliveryMethod = null,
-        ?string $buyDeliveryMethod = null,
-        ?string $countryCode = null)
-    {
-        $this->context = $context;
-        $this->sellAsset = $sellAsset;
-        $this->buyAsset = $buyAsset;
-        $this->sellAmount = $sellAmount;
-        $this->buyAmount = $buyAmount;
-        $this->expireAfter = $expireAfter;
-        $this->sellDeliveryMethod = $sellDeliveryMethod;
-        $this->buyDeliveryMethod = $buyDeliveryMethod;
-        $this->countryCode = $countryCode;
+        public string $context,
+        public string $sellAsset,
+        public string $buyAsset,
+        public ?string $sellAmount = null,
+        public ?string $buyAmount = null,
+        public ?DateTime $expireAfter = null,
+        public ?string $sellDeliveryMethod = null,
+        public ?string $buyDeliveryMethod = null,
+        public ?string $countryCode = null,
+    ) {
     }
 
     /**

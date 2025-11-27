@@ -23,20 +23,14 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
  */
 class ChangeTrustOperation extends AbstractOperation
 {
-    /**
-     * @var Asset The asset for the trust line
-     */
     private Asset $asset;
-
-    /**
-     * @var BigInteger The trust line limit in stroops (set to 0 to remove the trust line)
-     */
     private BigInteger $limit;
 
     /**
      * Creates a new ChangeTrustOperation object.
-     * @param Asset $asset The asset of the trustline.
-     * @param string|null $limit The limit of the trustline. If null => max. Set to 0 to remove the trust line.
+     *
+     * @param Asset $asset The asset for the trust line
+     * @param string|null $limit The trust line limit (as a decimal string). If null, defaults to maximum. Set to "0" to remove the trust line.
      */
     public function __construct(Asset $asset, ?string $limit = null) {
         $this->asset = $asset;

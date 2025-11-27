@@ -55,7 +55,7 @@ class TransferServerService
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
         $this->serviceAddress = $serviceAddress;
-        if (substr($this->serviceAddress, -1) === "/") {
+        if (str_ends_with($this->serviceAddress, "/")) {
             $this->serviceAddress = substr($this->serviceAddress, 0, -1);
         }
         if ($httpClient === null) {

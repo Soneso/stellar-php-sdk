@@ -16,51 +16,20 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 class LedgerInfo
 {
     /**
-     * @var string $hash Hash of the ledger as a hex-encoded string.
-     */
-    public string $hash;
-
-    /**
-     * @var int $sequence Sequence number of the ledger.
-     */
-    public int $sequence;
-
-    /**
-     * @var string $ledgerCloseTime The unix timestamp of the close time of the ledger as a string.
-     */
-    public string $ledgerCloseTime;
-
-    /**
-     * @var string|null $headerXdr Base64-encoded ledger header XDR (optional).
-     */
-    public ?string $headerXdr = null;
-
-    /**
-     * @var string|null $metadataXdr Base64-encoded ledger metadata XDR (optional).
-     */
-    public ?string $metadataXdr = null;
-
-    /**
-     * Constructor.
-     * @param string $hash Hash of the ledger as a hex-encoded string.
-     * @param int $sequence Sequence number of the ledger.
-     * @param string $ledgerCloseTime The unix timestamp of the close time of the ledger as a string.
-     * @param string|null $headerXdr Base64-encoded ledger header XDR (optional).
-     * @param string|null $metadataXdr Base64-encoded ledger metadata XDR (optional).
+     * @param string $hash Hash of the ledger as a hex-encoded string
+     * @param int $sequence Sequence number of the ledger
+     * @param string $ledgerCloseTime Unix timestamp of the ledger close time as a string
+     * @param string|null $headerXdr Base64-encoded ledger header XDR
+     * @param string|null $metadataXdr Base64-encoded ledger metadata XDR
      */
     public function __construct(
-        string $hash,
-        int $sequence,
-        string $ledgerCloseTime,
-        ?string $headerXdr = null,
-        ?string $metadataXdr = null,
+        public string $hash,
+        public int $sequence,
+        public string $ledgerCloseTime,
+        public ?string $headerXdr = null,
+        public ?string $metadataXdr = null,
     )
     {
-        $this->hash = $hash;
-        $this->sequence = $sequence;
-        $this->ledgerCloseTime = $ledgerCloseTime;
-        $this->headerXdr = $headerXdr;
-        $this->metadataXdr = $metadataXdr;
     }
 
     /**

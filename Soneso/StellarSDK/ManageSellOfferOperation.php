@@ -25,48 +25,24 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class ManageSellOfferOperation extends AbstractOperation
 {
     /**
-     * @var Asset The asset being sold in this offer.
-     */
-    private Asset $selling;
-
-    /**
-     * @var Asset The asset being bought in this offer.
-     */
-    private Asset $buying;
-
-    /**
-     * @var string The amount of the selling asset to sell.
-     */
-    private string $amount;
-
-    /**
-     * @var Price The price of 1 unit of selling in terms of buying.
-     */
-    private Price $price;
-
-    /**
-     * @var int The offer ID. Use 0 for a new offer, or the existing offer ID to update/delete.
-     */
-    private int $offerId;
-
-    /**
      * Constructs a new ManageSellOfferOperation object.
      *
      * Creates, updates, or deletes an offer to sell one asset for another on the DEX.
      *
-     * @param Asset $selling The asset the offer creator is selling.
-     * @param Asset $buying The asset the offer creator is buying.
-     * @param string $amount The amount of selling being sold. Set to "0" to delete an existing offer.
-     * @param Price $price The price of 1 unit of selling in terms of buying.
-     * @param int $offerId Set to 0 for a new offer, otherwise the ID of the offer to update or delete.
-     * @throws InvalidArgumentException If the offer ID is negative.
+     * @param Asset $selling The asset being sold
+     * @param Asset $buying The asset being bought
+     * @param string $amount The amount of the selling asset to sell (as a decimal string, set to "0" to delete)
+     * @param Price $price The price of 1 unit of selling in terms of buying
+     * @param int $offerId The offer ID (0 for new offers, or existing offer ID to update/delete)
+     * @throws InvalidArgumentException If the offer ID is negative
      */
-    public function __construct(Asset $selling, Asset $buying, string $amount, Price $price, int $offerId) {
-        $this->selling = $selling;
-        $this->buying = $buying;
-        $this->amount = $amount;
-        $this->price = $price;
-        $this->offerId = $offerId;
+    public function __construct(
+        private Asset $selling,
+        private Asset $buying,
+        private string $amount,
+        private Price $price,
+        private int $offerId,
+    ) {
         if ($offerId < 0) {
             throw new InvalidArgumentException("Invalid offer id: ".$offerId);
         }

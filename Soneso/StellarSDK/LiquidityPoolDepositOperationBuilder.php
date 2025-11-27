@@ -26,31 +26,6 @@ namespace Soneso\StellarSDK;
 class LiquidityPoolDepositOperationBuilder
 {
     /**
-     * @var string The liquidity pool ID
-     */
-    private string $liquidityPoolId;
-
-    /**
-     * @var string The maximum amount of asset A to deposit
-     */
-    private string $maxAmountA;
-
-    /**
-     * @var string The maximum amount of asset B to deposit
-     */
-    private string $maxAmountB;
-
-    /**
-     * @var Price The minimum price for the deposit
-     */
-    private Price $minPrice;
-
-    /**
-     * @var Price The maximum price for the deposit
-     */
-    private Price $maxPrice;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -64,13 +39,13 @@ class LiquidityPoolDepositOperationBuilder
      * @param Price $minPrice The minimum price for the deposit
      * @param Price $maxPrice The maximum price for the deposit
      */
-    public function __construct(string $liquidityPoolId, string $maxAmountA, string $maxAmountB, Price $minPrice, Price $maxPrice)
-    {
-        $this->liquidityPoolId = $liquidityPoolId;
-        $this->maxAmountA = $maxAmountA;
-        $this->maxAmountB = $maxAmountB;
-        $this->minPrice = $minPrice;
-        $this->maxPrice = $maxPrice;
+    public function __construct(
+        private string $liquidityPoolId,
+        private string $maxAmountA,
+        private string $maxAmountB,
+        private Price $minPrice,
+        private Price $maxPrice,
+    ) {
     }
 
     /**

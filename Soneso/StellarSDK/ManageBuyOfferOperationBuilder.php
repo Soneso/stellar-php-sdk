@@ -30,26 +30,6 @@ use InvalidArgumentException;
 class ManageBuyOfferOperationBuilder
 {
     /**
-     * @var Asset The asset being sold in this operation
-     */
-    private Asset $selling;
-
-    /**
-     * @var Asset The asset being bought in this operation
-     */
-    private Asset $buying;
-
-    /**
-     * @var string The amount of asset to be bought
-     */
-    private string $amount;
-
-    /**
-     * @var Price The price of the asset being bought in terms of the asset being sold
-     */
-    private Price $price;
-
-    /**
      * @var int The offer ID (0 for new offers, existing ID to modify)
      */
     private int $offerId = 0;
@@ -60,17 +40,24 @@ class ManageBuyOfferOperationBuilder
     private ?MuxedAccount $sourceAccount = null;
 
     /**
+     * @var Price The price of the asset being bought in terms of the asset being sold
+     */
+    private Price $price;
+
+    /**
      * Creates a new ManageBuyOffer operation builder.
      *
      * @param Asset $selling The asset being sold in this operation
      * @param Asset $buying The asset being bought in this operation
-     * @param string $amount Amount of asset to be bought
-     * @param string $price Price of thing being bought in terms of what you are selling
+     * @param string $amount The amount of asset to be bought
+     * @param string $price The price of the asset being bought in terms of the asset being sold
      */
-    public function __construct(Asset $selling, Asset $buying, string $amount, string $price) {
-        $this->selling = $selling;
-        $this->buying = $buying;
-        $this->amount = $amount;
+    public function __construct(
+        private Asset $selling,
+        private Asset $buying,
+        private string $amount,
+        string $price,
+    ) {
         $this->price = Price::fromString($price);
     }
 

@@ -21,32 +21,15 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 class SEP31FeeDetailsDetails
 {
     /**
-     * @var string $name The name of the fee, for example ACH fee, Brazilian conciliation fee, Service fee, etc.
+     * @param string $name The name of the fee (e.g., ACH fee, Brazilian conciliation fee, Service fee).
+     * @param string $amount The amount of asset applied. If fee_details.details is provided, sum(fee_details.details.amount) should equal fee_details.total.
+     * @param string|null $description Optional text describing the fee.
      */
-    public string $name;
-
-    /**
-     * @var string $amount The amount of asset applied. If fee_details.details is provided,
-     * sum(fee_details.details.amount) should be equals fee_details.total.
-     */
-    public string $amount;
-
-    /**
-     * @var string|null $description (optional) A text describing the fee.
-     */
-    public ?string $description = null;
-
-    /**
-     * @param string $name The name of the fee, for example ACH fee, Brazilian conciliation fee, Service fee, etc.
-     * @param string $amount The amount of asset applied. If fee_details.details is provided,
-     *  sum(fee_details.details.amount) should be equals fee_details.total.
-     * @param string|null $description (optional) A text describing the fee.
-     */
-    public function __construct(string $name, string $amount, ?string $description = null)
-    {
-        $this->name = $name;
-        $this->amount = $amount;
-        $this->description = $description;
+    public function __construct(
+        public string $name,
+        public string $amount,
+        public ?string $description = null,
+    ) {
     }
 
     /**

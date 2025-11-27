@@ -28,36 +28,15 @@ class SEP31Refunds
 {
 
     /**
-     * @var string $amountRefunded The total amount refunded to the Sending Anchor, in units of amount_in_asset.
-     * If a full refund was issued, this amount should match amount_in.
+     * @param string $amountRefunded The total amount refunded to the Sending Anchor, in units of amount_in_asset. If a full refund was issued, this should match amount_in.
+     * @param string $amountFee The total amount charged in fees for processing all refund payments. Should equal sum of all fee values in the payments list.
+     * @param array<SEP31RefundPayment> $payments List of individual refund payments made back to the Sending Anchor.
      */
-    public string $amountRefunded;
-
-    /**
-     * @var string $amountFee The total amount charged in fees for processing all refund payments, in units of amount_in_asset.
-     * The sum of all fee values in the payments object list should equal this value.
-     */
-    public string $amountFee;
-
-    /**
-     * @var array<SEP31RefundPayment> $payments A list of objects containing information on the individual payments
-     * made back to the Sending Anchor as refunds. The schema for these objects is defined in the section below.
-     */
-    public array $payments = array();
-
-    /**
-     * @param string $amountRefunded The total amount refunded to the Sending Anchor, in units of amount_in_asset.
-     *  If a full refund was issued, this amount should match amount_in.
-     * @param string $amountFee The total amount charged in fees for processing all refund payments, in units of amount_in_asset.
-     *  The sum of all fee values in the payments object list should equal this value.
-     * @param array<SEP31RefundPayment> $payments A list of objects containing information on the individual payments
-     *  made back to the Sending Anchor as refunds. The schema for these objects is defined in the section below.
-     */
-    public function __construct(string $amountRefunded, string $amountFee, array $payments)
-    {
-        $this->amountRefunded = $amountRefunded;
-        $this->amountFee = $amountFee;
-        $this->payments = $payments;
+    public function __construct(
+        public string $amountRefunded,
+        public string $amountFee,
+        public array $payments,
+    ) {
     }
 
     /**

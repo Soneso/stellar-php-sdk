@@ -16,35 +16,9 @@ namespace Soneso\StellarSDK\Soroban\Requests;
  */
 class GetEventsRequest
 {
-
-    /**
-     * @var int|null $startLedger Ledger sequence number to fetch events after (inclusive).
-     * The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
-     * or greater than the latest ledger seen by this node. If a cursor is included in the request,
-     * startLedger must be omitted.
-     */
-    public ?int $startLedger = null;
-
-    /**
-     * @var int|null $endLedger Ledger sequence number represents the end of search window (exclusive).
-     * If a cursor is included in the request, endLedger must be omitted.
-     */
-    public ?int $endLedger = null;
-
-    /**
-     * @var EventFilters|null List of filters for the returned events. Events matching any of the filters are included.
-     * To match a filter, an event must match both a contractId and a topic.
-     * Maximum 5 filters are allowed per request.
-     */
-    public ?EventFilters $filters = null;
-
-    /**
-     * @var PaginationOptions|null for pagination.
-     */
-    public ?PaginationOptions $paginationOptions = null;
-
     /**
      * Constructor.
+     *
      * @param int|null $startLedger Ledger sequence number to fetch events after (inclusive).
      *  The getEvents method will return an error if startLedger is less than the oldest ledger stored in this node,
      *  or greater than the latest ledger seen by this node. If a cursor is included in the request, startLedger must be omitted.
@@ -55,12 +29,12 @@ class GetEventsRequest
      *  Maximum 5 filters are allowed per request.
      * @param PaginationOptions|null $paginationOptions for pagination.
      */
-    public function __construct(?int $startLedger = null, ?int $endLedger = null, ?EventFilters $filters = null, ?PaginationOptions $paginationOptions = null)
-    {
-        $this->startLedger = $startLedger;
-        $this->endLedger = $endLedger;
-        $this->filters = $filters;
-        $this->paginationOptions = $paginationOptions;
+    public function __construct(
+        public ?int $startLedger = null,
+        public ?int $endLedger = null,
+        public ?EventFilters $filters = null,
+        public ?PaginationOptions $paginationOptions = null,
+    ) {
     }
 
     /**

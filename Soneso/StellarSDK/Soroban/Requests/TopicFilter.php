@@ -25,20 +25,14 @@ namespace Soneso\StellarSDK\Soroban\Requests;
 class TopicFilter
 {
     /**
-     * @var array<string> $segmentMatchers For an exact segment match, a string containing a base64-encoded ScVal.
-     * For a wildcard single-segment match, the string "*", matches exactly one segment.
-     */
-    public array $segmentMatchers;
-
-    /**
      * Constructor.
      *
      * @param array<string> $segmentMatchers For an exact segment match, a string containing a base64-encoded ScVal.
      *  For a wildcard single-segment match, the string "*", matches exactly one segment.
      */
-    public function __construct(array $segmentMatchers)
-    {
-        $this->segmentMatchers = $segmentMatchers;
+    public function __construct(
+        public array $segmentMatchers,
+    ) {
     }
 
     /**

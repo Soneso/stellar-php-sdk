@@ -18,32 +18,16 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 class FeeDetails
 {
     /**
-     * @var string $total The total amount of fee applied.
-     */
-    public string $total;
-
-    /**
-     * @var string $asset The asset in which the fee is applied, represented through the Asset Identification Format.
-     */
-    public string $asset;
-
-    /**
-     * @var array<FeeDetailsDetails>|null $details (optional) An array of objects detailing the fees that were used to
-     * calculate the conversion price. This can be used to detail the price components for the end-user.
-     */
-    public ?array $details;
-
-    /**
      * @param string $total The total amount of fee applied.
      * @param string $asset The asset in which the fee is applied, represented through the Asset Identification Format.
-     * @param array<FeeDetailsDetails>[]|null $details (optional) An array of objects detailing the fees that were used to
-     *  calculate the conversion price. This can be used to detail the price components for the end-user.
+     * @param array<FeeDetailsDetails>|null $details An array of objects detailing the fees that were used to
+     * calculate the conversion price. This can be used to detail the price components for the end-user.
      */
-    public function __construct(string $total, string $asset, ?array $details = null)
-    {
-        $this->total = $total;
-        $this->asset = $asset;
-        $this->details = $details;
+    public function __construct(
+        public string $total,
+        public string $asset,
+        public ?array $details = null,
+    ) {
     }
 
     /**

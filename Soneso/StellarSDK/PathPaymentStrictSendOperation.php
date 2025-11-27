@@ -26,52 +26,23 @@ use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation;
 class PathPaymentStrictSendOperation extends AbstractOperation
 {
     /**
-     * @var Asset The asset to be deducted from the sender's account.
-     */
-    private Asset $sendAsset;
-
-    /**
-     * @var string The exact amount of the send asset to deduct (excluding fees).
-     */
-    private string $sendAmount;
-
-    /**
-     * @var MuxedAccount The account that receives the payment.
-     */
-    private MuxedAccount $destination;
-
-    /**
-     * @var Asset The asset that the destination account receives.
-     */
-    private Asset $destAsset;
-
-    /**
-     * @var string The minimum amount of the destination asset that must be received.
-     */
-    private String $destMin;
-
-    /**
-     * @var array<Asset>|null The intermediate assets in the payment path.
-     */
-    private ?array $path = null;
-
-    /**
      * Constructs a new PathPaymentStrictSendOperation object.
      *
-     * @param Asset $sendAsset The asset deducted from the sender's account.
-     * @param string $sendAmount The exact amount of send asset to deduct (excluding fees).
-     * @param MuxedAccount $destination The account that receives the payment.
-     * @param Asset $destAsset The asset the destination account receives.
-     * @param string $destMin The minimum amount of destination asset that must be received.
+     * @param Asset $sendAsset The asset to be deducted from the sender's account
+     * @param string $sendAmount The exact amount of the send asset to deduct (as a decimal string, excluding fees)
+     * @param MuxedAccount $destination The account that receives the payment
+     * @param Asset $destAsset The asset that the destination account receives
+     * @param string $destMin The minimum amount of the destination asset that must be received (as a decimal string)
      * @param array<Asset>|null $path The intermediate assets in the payment path. For example, if the path is USD to EUR through XLM and BTC, the path would be USD -> XLM -> BTC -> EUR and this parameter would contain [XLM, BTC].
      */
-    public function __construct(Asset $sendAsset, string $sendAmount, MuxedAccount $destination, Asset $destAsset, string $destMin, ?array $path = null) {
-        $this->sendAsset = $sendAsset;
-        $this->sendAmount = $sendAmount;
-        $this->destination = $destination;
-        $this->destAsset = $destAsset;
-        $this->destMin = $destMin;
-        $this->path = $path;
+    public function __construct(
+        private Asset $sendAsset,
+        private string $sendAmount,
+        private MuxedAccount $destination,
+        private Asset $destAsset,
+        private string $destMin,
+        private ?array $path = null,
+    ) {
     }
 
     /**

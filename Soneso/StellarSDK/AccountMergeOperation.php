@@ -23,16 +23,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class AccountMergeOperation extends AbstractOperation
 {
     /**
-     * @var MuxedAccount The account that receives the remaining XLM balance of the source account
-     */
-    private MuxedAccount $destination;
-
-    /**
-     * Creates a new AccountMerge operation
+     * Creates a new AccountMerge operation.
+     *
      * @param MuxedAccount $destination The account that receives the remaining XLM balance of the source account.
      */
-    public function __construct(MuxedAccount $destination) {
-        $this->destination = $destination;
+    public function __construct(
+        private MuxedAccount $destination,
+    ) {
     }
 
     /**

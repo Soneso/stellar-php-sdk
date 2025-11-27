@@ -26,11 +26,6 @@ namespace Soneso\StellarSDK;
 class ClawbackClaimableBalanceOperationBuilder
 {
     /**
-     * @var string The claimable balance ID to claw back
-     */
-    private string $balanceId;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -40,8 +35,9 @@ class ClawbackClaimableBalanceOperationBuilder
      *
      * @param string $balanceId The claimable balance ID to claw back
      */
-    public function __construct(string $balanceId) {
-        $this->balanceId = $balanceId;
+    public function __construct(
+        private string $balanceId,
+    ) {
     }
 
     /**

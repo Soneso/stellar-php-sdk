@@ -25,37 +25,20 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 class SimulateHostFunctionResult
 {
     /**
-     * @var array<SorobanAuthorizationEntry>|null Authorization entries required for this transaction.
-     * Null or empty for read-only calls. Non-empty for state-changing operations that require
-     * authorization from account or contract signers.
+     * @param XdrSorobanTransactionData $transactionData Transaction resource data including footprint and resource limits.
+     *                                                   This data is applied to the transaction before signing and submission.
+     * @param XdrSCVal $returnedValue The return value from the contract function call.
+     *                                For read-only calls, this contains the result. For write calls, this is available
+     *                                after the transaction completes successfully.
+     * @param array<SorobanAuthorizationEntry>|null $auth Authorization entries required for this transaction.
+     *                                                     Null or empty for read-only calls. Non-empty for state-changing operations
+     *                                                     that require authorization from account or contract signers.
      */
-    public ?array $auth = null;
-
-    /**
-     * @var XdrSorobanTransactionData Transaction resource data including footprint and resource limits.
-     * This data is applied to the transaction before signing and submission.
-     */
-    public XdrSorobanTransactionData $transactionData;
-
-    /**
-     * @var XdrSCVal The return value from the contract function call.
-     * For read-only calls, this contains the result. For write calls, this is available
-     * after the transaction completes successfully.
-     */
-    public XdrSCVal $returnedValue;
-
-
-    /**
-     * Constructor.
-     * @param XdrSorobanTransactionData $transactionData
-     * @param XdrSCVal $returnedValue
-     * @param array<SorobanAuthorizationEntry>|null $auth
-     */
-    public function __construct(XdrSorobanTransactionData $transactionData, XdrSCVal $returnedValue, ?array $auth = null)
-    {
-        $this->auth = $auth;
-        $this->transactionData = $transactionData;
-        $this->returnedValue = $returnedValue;
+    public function __construct(
+        public XdrSorobanTransactionData $transactionData,
+        public XdrSCVal $returnedValue,
+        public ?array $auth = null,
+    ) {
     }
 
 }

@@ -38,26 +38,17 @@ use Soneso\StellarSDK\Responses\ResponseHandler;
 class GetCustomerFilesRequestBuilder extends RequestBuilder
 {
     /**
-     * @var string The base URL of the SEP-12 KYC service endpoint
-     */
-    private string $serviceAddress;
-
-    /**
-     * @var string|null JWT token for authentication obtained via SEP-10
-     */
-    private ?string $jwtToken = null;
-
-    /**
      * Constructor for building GET /customer/files requests.
      *
      * @param Client $httpClient The HTTP client to use for sending requests
-     * @param string $serviceAddress The base URL of the SEP-12 service
+     * @param string $serviceAddress The base URL of the SEP-12 KYC service endpoint
      * @param string $jwtToken JWT token for authentication obtained via SEP-10
      */
-    public function __construct(Client $httpClient, string $serviceAddress, string $jwtToken)
-    {
-        $this->serviceAddress = $serviceAddress;
-        $this->jwtToken = $jwtToken;
+    public function __construct(
+        Client $httpClient,
+        private string $serviceAddress,
+        private string $jwtToken,
+    ) {
         parent::__construct($httpClient);
     }
 

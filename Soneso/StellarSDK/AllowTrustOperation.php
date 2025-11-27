@@ -27,39 +27,19 @@ use Soneso\StellarSDK\Xdr\XdrTrustLineFlags;
 class AllowTrustOperation extends AbstractOperation
 {
     /**
-     * @var string The account ID of the trustor (the account that created the trust line)
-     */
-    private string $trustor;
-
-    /**
-     * @var string The asset code being authorized
-     */
-    private string $assetCode;
-
-    /**
-     * @var bool Whether to authorize the trustor to transact the asset
-     */
-    private bool $authorize;
-
-    /**
-     * @var bool Whether to authorize the trustor to maintain liabilities but not receive new assets
-     */
-    private bool $authorizeToMaintainLiabilities;
-
-    /**
      * Creates a new AllowTrustOperation.
      *
-     * @param string $trustor The account ID of the trustor
-     * @param string $assetCode The asset code to authorize
-     * @param bool $authorize Whether to fully authorize the trust line
-     * @param bool $authorizeToMaintainLiabilities Whether to authorize only maintaining liabilities
+     * @param string $trustor The account ID of the trustor (the account that created the trust line)
+     * @param string $assetCode The asset code being authorized
+     * @param bool $authorize Whether to authorize the trustor to transact the asset
+     * @param bool $authorizeToMaintainLiabilities Whether to authorize the trustor to maintain liabilities but not receive new assets
      */
-    public function __construct(string $trustor, string $assetCode, bool $authorize, bool $authorizeToMaintainLiabilities)
-    {
-        $this->trustor = $trustor;
-        $this->assetCode = $assetCode;
-        $this->authorize = $authorize;
-        $this->authorizeToMaintainLiabilities = $authorizeToMaintainLiabilities;
+    public function __construct(
+        private string $trustor,
+        private string $assetCode,
+        private bool $authorize,
+        private bool $authorizeToMaintainLiabilities,
+    ) {
     }
 
     /**

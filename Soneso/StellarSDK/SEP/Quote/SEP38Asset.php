@@ -22,42 +22,17 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38Asset
 {
     /**
-     * @var string $asset The asset identifier in Stellar Asset Identification Format or one of the allowed off-chain assets.
-     */
-    public string $asset;
-
-    /**
-     * @var array<SEP38SellDeliveryMethod>|null $sellDeliveryMethods
-     */
-    public ?array $sellDeliveryMethods = null;
-
-    /**
-     * @var array<SEP38SellDeliveryMethod>|null $buyDeliveryMethods
-     */
-    public ?array $buyDeliveryMethods = null;
-
-    /**
-     * @var array<string>|null $countryCodes
-     */
-    public ?array $countryCodes = null;
-
-    /**
-     * @param string $asset
-     * @param array<SEP38SellDeliveryMethod>|null $sellDeliveryMethods
-     * @param array<SEP38SellDeliveryMethod>|null $buyDeliveryMethods
-     * @param array<string>|null $countryCodes
+     * @param string $asset The asset identifier in Stellar Asset Identification Format or one of the allowed off-chain assets.
+     * @param array<SEP38SellDeliveryMethod>|null $sellDeliveryMethods Optional delivery methods for selling the asset to the anchor.
+     * @param array<SEP38SellDeliveryMethod>|null $buyDeliveryMethods Optional delivery methods for buying the asset from the anchor.
+     * @param array<string>|null $countryCodes Optional ISO country codes where the asset is available.
      */
     public function __construct(
-        string $asset,
-        ?array $sellDeliveryMethods = null,
-        ?array $buyDeliveryMethods = null,
-        ?array $countryCodes = null,
-    )
-    {
-        $this->asset = $asset;
-        $this->sellDeliveryMethods = $sellDeliveryMethods;
-        $this->buyDeliveryMethods = $buyDeliveryMethods;
-        $this->countryCodes = $countryCodes;
+        public string $asset,
+        public ?array $sellDeliveryMethods = null,
+        public ?array $buyDeliveryMethods = null,
+        public ?array $countryCodes = null,
+    ) {
     }
 
     /**

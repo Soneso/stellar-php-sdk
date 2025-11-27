@@ -26,25 +26,15 @@ use Soneso\StellarSDK\Xdr\XdrLedgerBounds;
 class LedgerBounds
 {
     /**
-     * @var int
-     */
-    private int $minLedger;
-
-    /**
-     * @var int
-     */
-    private int $maxLedger;
-
-    /**
-     * LedgerBounds constructor
+     * Constructs a new LedgerBounds instance
      *
      * @param int $minLedger The minimum ledger number (inclusive)
      * @param int $maxLedger The maximum ledger number (inclusive)
      */
-    public function __construct(int $minLedger, int $maxLedger)
-    {
-        $this->minLedger = $minLedger;
-        $this->maxLedger = $maxLedger;
+    public function __construct(
+        private int $minLedger,
+        private int $maxLedger,
+    ) {
     }
 
     /**

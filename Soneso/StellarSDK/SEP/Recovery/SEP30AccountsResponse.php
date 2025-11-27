@@ -20,18 +20,11 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 class SEP30AccountsResponse
 {
     /**
-     * @var array<SEP30AccountResponse> $accounts
+     * @param array<SEP30AccountResponse> $accounts Array of registered accounts accessible via the JWT token.
      */
-    public array $accounts;
-
-    /**
-     * Constructor.
-     *
-     * @param array<SEP30AccountResponse> $accounts Array of account responses.
-     */
-    public function __construct(array $accounts)
-    {
-        $this->accounts = $accounts;
+    public function __construct(
+        public array $accounts,
+    ) {
     }
 
     /**

@@ -20,18 +20,16 @@ namespace Soneso\StellarSDK;
  */
 abstract class AssetTypeCreditAlphanum extends Asset
 {
-    protected string $code;
-    protected string $issuer;
-
     /**
      * Creates a credit asset with the specified code and issuer
      *
      * @param string $code The asset code
      * @param string $issuer The issuer account ID (public key starting with G)
      */
-    public function __construct(string $code, string $issuer) {
-        $this->code = $code;
-        $this->issuer = $issuer;
+    public function __construct(
+        protected string $code,
+        protected string $issuer,
+    ) {
     }
 
     /**

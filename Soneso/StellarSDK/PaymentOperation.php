@@ -24,31 +24,17 @@ use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
 class PaymentOperation extends AbstractOperation
 {
     /**
-     * @var MuxedAccount The account that receives the payment.
-     */
-    private MuxedAccount $destination;
-
-    /**
-     * @var Asset The asset to send to the destination account.
-     */
-    private Asset $asset;
-
-    /**
-     * @var string The amount of the asset to send.
-     */
-    private string $amount;
-
-    /**
      * Constructs a new PaymentOperation object.
      *
      * @param MuxedAccount $destination The account that receives the payment.
      * @param Asset $asset The asset to send to the destination account.
      * @param string $amount The amount of the asset to send.
      */
-    public function __construct(MuxedAccount $destination, Asset $asset, string $amount) {
-        $this->destination = $destination;
-        $this->asset = $asset;
-        $this->amount = $amount;
+    public function __construct(
+        private MuxedAccount $destination,
+        private Asset $asset,
+        private string $amount,
+    ) {
     }
 
     /**

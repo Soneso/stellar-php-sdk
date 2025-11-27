@@ -40,9 +40,11 @@ class AccountMergeOperationBuilder
     /**
      * Creates a new AccountMerge operation builder.
      *
-     * @param string $destinationAccountId The account that receives the remaining XLM balance of the source account
+     * @param string $destinationAccountId The account ID that receives the remaining XLM balance of the source account
      */
-    public function __construct(string $destinationAccountId) {
+    public function __construct(
+        string $destinationAccountId,
+    ) {
         $this->destination = MuxedAccount::fromAccountId($destinationAccountId);
     }
 

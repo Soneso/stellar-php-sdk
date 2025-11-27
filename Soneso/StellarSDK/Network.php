@@ -38,16 +38,14 @@ namespace Soneso\StellarSDK;
  */
 class Network
 {
-    private string $networkPassphrase;
-
     /**
      * Creates a Network with the specified passphrase
      *
      * @param string $networkPassphrase The unique passphrase for this network
      */
-    public function __construct(string $networkPassphrase)
-    {
-        $this->networkPassphrase = $networkPassphrase;
+    public function __construct(
+        private string $networkPassphrase,
+    ) {
     }
 
     /**

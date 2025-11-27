@@ -16,99 +16,32 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 class EventInfo
 {
     /**
-     * @var string $type The type of event emission (contract, diagnostic, or system)
-     */
-    public string $type;
-
-    /**
-     * @var int $ledger Sequence number of the ledger in which this event was emitted
-     */
-    public int $ledger;
-
-    /**
-     * @var string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time
-     */
-    public string $ledgerClosedAt;
-
-    /**
-     * @var string $contractId StrKey representation of the contract address that emitted this event
-     */
-    public string $contractId;
-
-    /**
-     * @var string $id Unique identifier for this event
-     */
-    public string $id;
-
-    /**
-     * @var array<string> $topic List of topic values this event was emitted with (1-4 items)
-     */
-    public array $topic;
-
-    /**
-     * @var string $value The emitted body value of the event (base64-encoded XDR string)
-     */
-    public string $value;
-
-    /**
-     * @var bool|null $inSuccessfulContractCall Deprecated indicator if the event was emitted during successful contract call
-     */
-    public ?bool $inSuccessfulContractCall;
-
-    /**
-     * @var string $txHash The transaction hash which triggered this event
-     */
-    public string $txHash;
-
-    /**
-     * @var int|null $opIndex Operation index within the transaction (protocol >= 23)
-     */
-    public ?int $opIndex = null;
-
-    /**
-     * @var int|null $txIndex Transaction index within the ledger (protocol >= 23)
-     */
-    public ?int $txIndex = null;
-
-
-    /**
-     * @param string $type The type of event emission
-     * @param int $ledger Sequence number of the ledger
+     * @param string $type The type of event emission (contract, diagnostic, or system)
+     * @param int $ledger Sequence number of the ledger in which this event was emitted
      * @param string $ledgerClosedAt ISO-8601 timestamp of the ledger closing time
-     * @param string $contractId StrKey representation of the contract address
+     * @param string $contractId StrKey representation of the contract address that emitted this event
      * @param string $id Unique identifier for this event
-     * @param array<string> $topic List of topic values
-     * @param string $value The emitted body value of the event
-     * @param bool|null $inSuccessfulContractCall Deprecated success indicator
-     * @param string $txHash The transaction hash
-     * @param int|null $opIndex Operation index
-     * @param int|null $txIndex Transaction index
+     * @param array<string> $topic List of topic values this event was emitted with (1-4 items)
+     * @param string $value The emitted body value of the event (base64-encoded XDR string)
+     * @param bool|null $inSuccessfulContractCall Deprecated indicator if the event was emitted during successful contract call
+     * @param string $txHash The transaction hash which triggered this event
+     * @param int|null $opIndex Operation index within the transaction (protocol >= 23)
+     * @param int|null $txIndex Transaction index within the ledger (protocol >= 23)
      */
     public function __construct(
-        string $type,
-        int $ledger,
-        string $ledgerClosedAt,
-        string $contractId,
-        string $id,
-        array $topic,
-        string $value,
-        ?bool $inSuccessfulContractCall,
-        string $txHash,
-        ?int $opIndex = null,
-        ?int $txIndex = null,
+        public string $type,
+        public int $ledger,
+        public string $ledgerClosedAt,
+        public string $contractId,
+        public string $id,
+        public array $topic,
+        public string $value,
+        public ?bool $inSuccessfulContractCall,
+        public string $txHash,
+        public ?int $opIndex = null,
+        public ?int $txIndex = null,
     )
     {
-        $this->type = $type;
-        $this->ledger = $ledger;
-        $this->ledgerClosedAt = $ledgerClosedAt;
-        $this->contractId = $contractId;
-        $this->id = $id;
-        $this->topic = $topic;
-        $this->value = $value;
-        $this->inSuccessfulContractCall = $inSuccessfulContractCall;
-        $this->txHash = $txHash;
-        $this->opIndex = $opIndex;
-        $this->txIndex = $txIndex;
     }
 
     /**

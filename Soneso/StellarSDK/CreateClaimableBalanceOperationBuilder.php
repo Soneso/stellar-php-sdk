@@ -26,21 +26,6 @@ namespace Soneso\StellarSDK;
 class CreateClaimableBalanceOperationBuilder
 {
     /**
-     * @var array<Claimant> The claimants that can claim the claimable balance
-     */
-    private array $claimants;
-
-    /**
-     * @var Asset The asset to be claimed
-     */
-    private Asset $asset;
-
-    /**
-     * @var string The amount of the asset
-     */
-    private string $amount;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -52,10 +37,11 @@ class CreateClaimableBalanceOperationBuilder
      * @param Asset $asset The asset to be claimed
      * @param string $amount The amount of the asset
      */
-    public function __construct(array $claimants, Asset $asset, string $amount) {
-        $this->claimants = $claimants;
-        $this->asset = $asset;
-        $this->amount = $amount;
+    public function __construct(
+        private array $claimants,
+        private Asset $asset,
+        private string $amount,
+    ) {
     }
 
     /**

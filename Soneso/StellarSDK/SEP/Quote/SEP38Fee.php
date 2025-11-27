@@ -22,30 +22,15 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38Fee
 {
     /**
-     * @var string $total The total fee amount.
+     * @param string $total The total fee amount.
+     * @param string $asset The asset in which the fee is charged.
+     * @param array<SEP38FeeDetails>|null $details Optional detailed breakdown of fee components.
      */
-    public string $total;
-
-    /**
-     * @var string $asset The asset in which the fee is charged.
-     */
-    public string $asset;
-
-    /**
-     * @var array<SEP38FeeDetails>|null $details Optional detailed breakdown of fee components.
-     */
-    public ?array $details = null;
-
-    /**
-     * @param string $total
-     * @param string $asset
-     * @param array<SEP38FeeDetails>|null $details
-     */
-    public function __construct(string $total, string $asset, ?array $details = null)
-    {
-        $this->total = $total;
-        $this->asset = $asset;
-        $this->details = $details;
+    public function __construct(
+        public string $total,
+        public string $asset,
+        public ?array $details = null,
+    ) {
     }
 
     /**

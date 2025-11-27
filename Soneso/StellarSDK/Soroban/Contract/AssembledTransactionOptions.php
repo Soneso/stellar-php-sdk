@@ -23,38 +23,20 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
  */
 class AssembledTransactionOptions
 {
-    public ClientOptions $clientOptions;
-    public MethodOptions $methodOptions;
-
     /**
-     * @var string $method name of the contract method to call
+     * @param ClientOptions $clientOptions Client options.
+     * @param MethodOptions $methodOptions Method options.
+     * @param string $method The name of the contract method to call.
+     * @param array<XdrSCVal>|null $arguments Arguments to pass to the method call.
+     * @param bool $enableServerLogging Enable soroban server logging (helpful for debugging). Default: false.
      */
-    public string $method;
-
-    /**
-     * @var array<XdrSCVal>|null $arguments arguments to pass to the method call
-     */
-    public ?array $arguments = null;
-
-    /**
-     * @var bool $enableServerLogging enable soroban server logging (helpful for debugging). Default: false.
-     */
-    public bool $enableServerLogging = false;
-
-    /**
-     * @param ClientOptions $clientOptions client options.
-     * @param MethodOptions $methodOptions method options.
-     * @param string $method name of the contract method to call.
-     * @param array<XdrSCVal>|null $arguments arguments to pass to the method call.
-     * @param bool $enableServerLogging enable soroban server logging (helpful for debugging). Default: false.
-     */
-    public function __construct(ClientOptions $clientOptions, MethodOptions $methodOptions, string $method, ?array $arguments = null, bool $enableServerLogging = false)
-    {
-        $this->clientOptions = $clientOptions;
-        $this->methodOptions = $methodOptions;
-        $this->method = $method;
-        $this->arguments = $arguments;
-        $this->enableServerLogging = $enableServerLogging;
+    public function __construct(
+        public ClientOptions $clientOptions,
+        public MethodOptions $methodOptions,
+        public string $method,
+        public ?array $arguments = null,
+        public bool $enableServerLogging = false,
+    ) {
     }
 
 }

@@ -27,26 +27,23 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 class InvokeHostFunctionOperation extends AbstractOperation
 {
     /**
-     * @var HostFunction The host function to invoke
-     */
-    public HostFunction $function;
-
-    /**
-     * @var array<SorobanAuthorizationEntry> Authorization entries for the invocation
-     */
-    public array $auth;
-
-    /**
      * Creates a new InvokeHostFunctionOperation.
      *
      * @param HostFunction $function The host function to invoke
-     * @param array<SorobanAuthorizationEntry> $auth Authorization entries
+     * @param array<SorobanAuthorizationEntry> $auth Authorization entries for the invocation
      * @param MuxedAccount|null $sourceAccount Optional source account
      */
-    public function __construct(HostFunction $function, array $auth = array(), ?MuxedAccount $sourceAccount = null)
-    {
-        $this->function = $function;
-        $this->auth = $auth;
+    public function __construct(
+        /**
+         * @var HostFunction The host function to invoke
+         */
+        public HostFunction $function,
+        /**
+         * @var array<SorobanAuthorizationEntry> Authorization entries for the invocation
+         */
+        public array $auth = array(),
+        ?MuxedAccount $sourceAccount = null,
+    ) {
         $this->setSourceAccount($sourceAccount);
     }
 

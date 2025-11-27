@@ -34,27 +34,17 @@ use Soneso\StellarSDK\SEP\RegulatedAssets\SEP08PostActionResponse;
 class SEP08PostActionNextUrl extends SEP08PostActionResponse
 {
     /**
-     * @var string A URL where the user can complete the required actions with all the
-     * parameters included in the original POST pre-filled or already accepted.
-     */
-    public string $nextUrl;
-    /**
-     * @var string|null (optional) A human-readable string containing information
-     * regarding the further action required.
-     */
-    public ?string $message = null;
-
-    /**
-     * Constructor
+     * Constructor.
+     *
      * @param string $nextUrl A URL where the user can complete the required actions with all the
-     *  parameters included in the original POST pre-filled or already accepted.
-     * @param string|null $message (optional) A human-readable string containing information
-     *  regarding the further action required.
+     *                        parameters included in the original POST pre-filled or already accepted.
+     * @param string|null $message A human-readable string containing information regarding the
+     *                             further action required.
      */
-    public function __construct(string $nextUrl, ?string $message)
-    {
-        $this->nextUrl = $nextUrl;
-        $this->message = $message;
+    public function __construct(
+        public string $nextUrl,
+        public ?string $message = null,
+    ) {
     }
 
 }

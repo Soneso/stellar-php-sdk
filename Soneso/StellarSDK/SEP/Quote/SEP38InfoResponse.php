@@ -21,16 +21,11 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38InfoResponse
 {
     /**
-     * @var array<SEP38Asset>
+     * @param array<SEP38Asset> $assets Array of supported assets with delivery methods and country restrictions.
      */
-    public array $assets;
-
-    /**
-     * @param array<SEP38Asset> $assets Array of supported assets.
-     */
-    public function __construct(array $assets)
-    {
-        $this->assets = $assets;
+    public function __construct(
+        public array $assets,
+    ) {
     }
 
     /**

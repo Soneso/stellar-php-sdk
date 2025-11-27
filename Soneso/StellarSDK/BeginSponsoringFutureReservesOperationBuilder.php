@@ -27,11 +27,6 @@ namespace Soneso\StellarSDK;
 class BeginSponsoringFutureReservesOperationBuilder
 {
     /**
-     * @var string The account ID that will be sponsored
-     */
-    private string $sponsoredId;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -41,8 +36,9 @@ class BeginSponsoringFutureReservesOperationBuilder
      *
      * @param string $sponsoredId The account ID that will be sponsored
      */
-    public function __construct(string $sponsoredId) {
-        $this->sponsoredId = $sponsoredId;
+    public function __construct(
+        private string $sponsoredId,
+    ) {
     }
 
     /**

@@ -17,39 +17,21 @@ use Soneso\StellarSDK\Transaction;
 class SimulateTransactionRequest
 {
     /**
-     * @var Transaction $transaction A Stellar transaction. In order for the RPC server to successfully simulate a
-     * Stellar transaction, the provided transaction must contain only a single operation of the
-     * type invokeHostFunction.
-     */
-    public Transaction $transaction;
-
-    /**
-     * @var ResourceConfig|null Contains configuration for how resources will be calculated when simulating
-     * transactions.
-     */
-    public ?ResourceConfig $resourceConfig = null;
-
-    /**
-     * @var string|null $authMode Support for non-root authorization. Only available for protocol >= 23
-     * Possible values: "enforce" | "record" | "record_allow_nonroot"
-    */
-    public ?string $authMode = null;
-
-
-    /**
+     * Constructor.
+     *
      * @param Transaction $transaction The transaction to be submitted. In order for the RPC server to successfully
-     * simulate a Stellar transaction, the provided transaction must contain only a single operation of the
-     * type invokeHostFunction.
+     *  simulate a Stellar transaction, the provided transaction must contain only a single operation of the
+     *  type invokeHostFunction.
      * @param ResourceConfig|null $resourceConfig Contains configuration for how resources will be calculated when simulating
-     * transactions.
-     * @param string|null $authMode Support for non-root authorization. Only available for protocol >= 23
+     *  transactions.
+     * @param string|null $authMode Support for non-root authorization. Only available for protocol >= 23.
      *  Possible values: "enforce" | "record" | "record_allow_nonroot"
      */
-    public function __construct(Transaction $transaction, ?ResourceConfig $resourceConfig = null, ?string $authMode = null)
-    {
-        $this->transaction = $transaction;
-        $this->resourceConfig = $resourceConfig;
-        $this->authMode = $authMode;
+    public function __construct(
+        public Transaction $transaction,
+        public ?ResourceConfig $resourceConfig = null,
+        public ?string $authMode = null,
+    ) {
     }
 
     /**

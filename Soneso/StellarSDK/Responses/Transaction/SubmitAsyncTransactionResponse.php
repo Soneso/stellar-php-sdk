@@ -36,10 +36,6 @@ class SubmitAsyncTransactionResponse extends Response
     const TX_STATUS_DUPLICATE = 'DUPLICATE';
     const TX_STATUS_TRY_AGAIN_LATER = 'TRY_AGAIN_LATER';
 
-    public string $txStatus;
-    public string $hash;
-    public int $httpStatusCode;
-
     /**
      * Creates a new SubmitAsyncTransactionResponse
      *
@@ -47,11 +43,11 @@ class SubmitAsyncTransactionResponse extends Response
      * @param string $hash The 64-character hexadecimal transaction hash
      * @param int $httpStatusCode The HTTP status code from the Horizon response
      */
-    public function __construct(string $txStatus, string $hash, int $httpStatusCode)
-    {
-        $this->txStatus = $txStatus;
-        $this->hash = $hash;
-        $this->httpStatusCode = $httpStatusCode;
+    public function __construct(
+        public string $txStatus,
+        public string $hash,
+        public int $httpStatusCode,
+    ) {
     }
 
     /**

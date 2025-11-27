@@ -26,26 +26,6 @@ namespace Soneso\StellarSDK;
 class CreatePassiveSellOfferOperationBuilder
 {
     /**
-     * @var Asset The asset being sold
-     */
-    private Asset $selling;
-
-    /**
-     * @var Asset The asset being bought
-     */
-    private Asset $buying;
-
-    /**
-     * @var string The amount of selling asset
-     */
-    private string $amount;
-
-    /**
-     * @var Price The price ratio of buying to selling
-     */
-    private Price $price;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -58,11 +38,12 @@ class CreatePassiveSellOfferOperationBuilder
      * @param string $amount The amount of selling asset
      * @param Price $price The price ratio of buying to selling
      */
-    public function __construct(Asset $selling, Asset $buying, string $amount, Price $price) {
-        $this->selling = $selling;
-        $this->buying = $buying;
-        $this->amount = $amount;
-        $this->price = $price;
+    public function __construct(
+        private Asset $selling,
+        private Asset $buying,
+        private string $amount,
+        private Price $price,
+    ) {
     }
 
     /**

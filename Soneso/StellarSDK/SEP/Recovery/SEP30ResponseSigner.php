@@ -20,24 +20,11 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 class SEP30ResponseSigner
 {
     /**
-     * The signer's public key.
-     *
-     * This key should be added to the Stellar account with appropriate weight.
-     * Use this key in signTransaction() calls to get server signatures.
-     *
-     * @var string
+     * @param string $key The signer's public key in Stellar G... format. This key should be added to the account as a signer.
      */
-    public string $key;
-
-    /**
-     * Constructor.
-     *
-     * @param string $key The signer's public key in Stellar G... format.
-     *                    This key should be added to the account as a signer.
-     */
-    public function __construct(string $key)
-    {
-        $this->key = $key;
+    public function __construct(
+        public string $key,
+    ) {
     }
 
     /**

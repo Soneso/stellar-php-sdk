@@ -50,37 +50,15 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 class SEP30RequestIdentity
 {
     /**
-     * The identity role describing the relationship to the account.
-     *
-     * This is a client-defined value (e.g., "owner", "sender", "receiver").
-     * The server stores and returns this value but does not validate it.
-     *
-     * @var string
-     */
-    public string $role;
-
-    /**
-     * Array of authentication methods for this identity.
-     *
-     * Each identity must have at least one authentication method.
-     * Multiple methods provide flexibility and redundancy for recovery.
-     *
-     * @var array<SEP30AuthMethod> $authMethods
-     */
-    public array $authMethods;
-
-    /**
      * Constructs a new identity for account recovery.
      *
-     * @param string $role The identity role (e.g., "owner", "sender", "receiver").
-     *                     Client-defined value describing relationship to account.
-     * @param array<SEP30AuthMethod> $authMethods Array of authentication methods for this identity.
-     *                                             Must contain at least one method.
+     * @param string $role The identity role (e.g., "owner", "sender", "receiver"). Client-defined value describing relationship to account.
+     * @param array<SEP30AuthMethod> $authMethods Array of authentication methods for this identity. Must contain at least one method.
      */
-    public function __construct(string $role, array $authMethods)
-    {
-        $this->role = $role;
-        $this->authMethods = $authMethods;
+    public function __construct(
+        public string $role,
+        public array $authMethods,
+    ) {
     }
 
     public function toJson() : array {

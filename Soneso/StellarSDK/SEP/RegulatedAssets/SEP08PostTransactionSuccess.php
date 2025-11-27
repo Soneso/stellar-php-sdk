@@ -25,26 +25,17 @@ namespace Soneso\StellarSDK\SEP\RegulatedAssets;
 class SEP08PostTransactionSuccess extends SEP08PostTransactionResponse
 {
     /**
-     * @var string $tx Transaction envelope XDR, base64 encoded. This transaction will have both
-     * the original signature(s) from the request as well as one or multiple additional signatures from the issuer.
-     */
-    public string $tx;
-
-    /**
-     * @var string|null $message (optional) A human-readable string containing information to pass on to the user.
-     */
-    public ?string $message = null;
-
-    /**
      * Constructor.
-     * @param string $tx Transaction envelope XDR, base64 encoded. This transaction will have both
-     *  the original signature(s) from the request as well as one or multiple additional signatures from the issuer.
-     * @param string|null $message (optional) A human-readable string containing information to pass on to the user.
+     *
+     * @param string $tx Transaction envelope XDR (base64 encoded). This transaction will have both
+     *                   the original signature(s) from the request as well as one or multiple additional
+     *                   signatures from the issuer.
+     * @param string|null $message A human-readable string containing information to pass on to the user.
      */
-    public function __construct(string $tx, ?string $message = null)
-    {
-        $this->tx = $tx;
-        $this->message = $message;
+    public function __construct(
+        public string $tx,
+        public ?string $message = null,
+    ) {
     }
 
 }

@@ -26,16 +26,6 @@ namespace Soneso\StellarSDK;
 class ChangeTrustOperationBuilder
 {
     /**
-     * @var Asset The asset of the trustline
-     */
-    private Asset $asset;
-
-    /**
-     * @var string|null The limit of the trustline (null for default maximum)
-     */
-    private ?string $limit = null;
-
-    /**
      * @var MuxedAccount|null The optional source account for this operation
      */
     private ?MuxedAccount $sourceAccount = null;
@@ -46,9 +36,10 @@ class ChangeTrustOperationBuilder
      * @param Asset $asset The asset of the trustline
      * @param string|null $limit The limit of the trustline (null for default maximum)
      */
-    public function __construct(Asset $asset, ?string $limit = null) {
-        $this->asset = $asset;
-        $this->limit = $limit;
+    public function __construct(
+        private Asset $asset,
+        private ?string $limit = null,
+    ) {
     }
 
     /**

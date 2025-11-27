@@ -24,17 +24,13 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class ClaimClaimableBalanceOperation extends AbstractOperation
 {
     /**
-     * @var string The claimable balance ID (in hex format)
-     */
-    private string $balanceId;
-
-    /**
      * Creates a new ClaimClaimableBalanceOperation.
      *
-     * @param string $balanceId The claimable balance ID to claim (in hex format)
+     * @param string $balanceId The claimable balance ID (in hex format).
      */
-    public function __construct(string $balanceId) {
-        $this->balanceId = $balanceId;
+    public function __construct(
+        private string $balanceId,
+    ) {
     }
 
     /**

@@ -14,11 +14,6 @@ namespace Soneso\StellarSDK\Soroban\Responses;
 abstract class SorobanRpcResponse
 {
     /**
-     * @var array<array-key,mixed> $jsonResponse The complete JSON response as data array
-     */
-    public array $jsonResponse;
-
-    /**
      * @var SorobanRpcErrorResponse|null $error Error data if the response is an error response
      */
     public ?SorobanRpcErrorResponse $error = null;
@@ -26,9 +21,10 @@ abstract class SorobanRpcResponse
     /**
      * @param array<array-key,mixed> $jsonResponse The complete JSON response as data array
      */
-    public function __construct(array $jsonResponse)
+    public function __construct(
+        public array $jsonResponse,
+    )
     {
-        $this->jsonResponse = $jsonResponse;
     }
 
     /**

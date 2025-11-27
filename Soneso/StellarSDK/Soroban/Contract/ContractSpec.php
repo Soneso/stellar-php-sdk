@@ -45,18 +45,13 @@ use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
 class ContractSpec
 {
     /**
-     * @var array<XdrSCSpecEntry> The parsed contract specification entries
-     */
-    public array $entries;
-
-    /**
      * Creates a new contract spec from parsed spec entries
      *
-     * @param array<XdrSCSpecEntry> $entries The contract spec entries from the contract bytecode
+     * @param array<XdrSCSpecEntry> $entries The parsed contract specification entries from the contract bytecode.
      */
-    public function __construct(array $entries)
-    {
-        $this->entries = $entries;
+    public function __construct(
+        public array $entries,
+    ) {
     }
 
     /**

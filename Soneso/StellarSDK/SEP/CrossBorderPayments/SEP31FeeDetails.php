@@ -21,29 +21,15 @@ namespace Soneso\StellarSDK\SEP\CrossBorderPayments;
 class SEP31FeeDetails
 {
     /**
-     * @var string $total The total amount of fee applied.
-     */
-    public string $total;
-    /**
-     * @var string $asset The asset in which the fee is applied, represented through the Asset Identification Format.
-     */
-    public string $asset;
-    /**
-     * @var array<SEP31FeeDetailsDetails>|null $details (optional) An array of objects detailing the fees that were used to calculate the
-     * conversion price. This can be used to detail the price components for the end-user.
-     */
-    public ?array $details = null;
-
-    /**
      * @param string $total The total amount of fee applied.
      * @param string $asset The asset in which the fee is applied, represented through the Asset Identification Format.
-     * @param array<SEP31FeeDetailsDetails>|null $details
+     * @param array<SEP31FeeDetailsDetails>|null $details Optional array of detailed fee components that sum to the total.
      */
-    public function __construct(string $total, string $asset, ?array $details = null)
-    {
-        $this->total = $total;
-        $this->asset = $asset;
-        $this->details = $details;
+    public function __construct(
+        public string $total,
+        public string $asset,
+        public ?array $details = null,
+    ) {
     }
 
     /**

@@ -357,7 +357,7 @@ class WebAuth
         }
 
         if ($transaction->getMemo()->getType()->getValue() != XdrMemoType::MEMO_NONE) {
-            if (strpos($userAccountId, "M" ) === 0) {
+            if (str_starts_with($userAccountId, "M")) {
                 throw new ChallengeValidationErrorMemoAndMuxedAccount("Memo and muxed account (M...) found");
             } else if ($transaction->getMemo()->getType()->getValue() != XdrMemoType::MEMO_ID) {
                 throw new ChallengeValidationErrorInvalidMemoType("invalid memo type");
@@ -466,7 +466,7 @@ class WebAuth
      * @throws ChallengeRequestErrorResponse
      */
     private function getChallengeResponse(string $accountId, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : ChallengeResponse {
-        if ($memo && strpos($accountId, "M" ) === 0) {
+        if ($memo && str_starts_with($accountId, "M")) {
             throw new InvalidArgumentException("memo cannot be used if accountId is a muxed account");
         }
         $requestBuilder = (new ChallengeRequestBuilder($this->authEndpoint, $this->httpClient))->forAccountId($accountId);

@@ -20,30 +20,15 @@ namespace Soneso\StellarSDK\SEP\Quote;
 class SEP38FeeDetails
 {
     /**
-     * @var string $name The name of the fee component.
+     * @param string $name The name of the fee component.
+     * @param string $amount The amount of this fee component.
+     * @param string|null $description Optional description of what this fee component covers.
      */
-    public string $name;
-
-    /**
-     * @var string $amount The amount of this fee component.
-     */
-    public string $amount;
-
-    /**
-     * @var string|null $description Optional description of what this fee component covers.
-     */
-    public ?string $description = null;
-
-    /**
-     * @param string $name
-     * @param string $amount
-     * @param string|null $description
-     */
-    public function __construct(string $name, string $amount, ?string $description = null)
-    {
-        $this->name = $name;
-        $this->amount = $amount;
-        $this->description = $description;
+    public function __construct(
+        public string $name,
+        public string $amount,
+        public ?string $description = null,
+    ) {
     }
 
     /**

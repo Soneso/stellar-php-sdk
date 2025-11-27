@@ -23,39 +23,19 @@ use Soneso\StellarSDK\Xdr\XdrOperationType;
 class LiquidityPoolWithdrawOperation extends AbstractOperation
 {
     /**
-     * @var string The liquidity pool ID
-     */
-    private string $liqudityPoolId;
-
-    /**
-     * @var string The amount of pool shares to withdraw (as a decimal string)
-     */
-    private string $amount;
-
-    /**
-     * @var string Minimum amount of asset A to receive (as a decimal string)
-     */
-    private string $minAmountA;
-
-    /**
-     * @var string Minimum amount of asset B to receive (as a decimal string)
-     */
-    private string $minAmountB;
-
-    /**
      * Creates a new LiquidityPoolWithdrawOperation.
      *
      * @param string $liqudityPoolId The liquidity pool ID
-     * @param string $amount The amount of pool shares to withdraw
-     * @param string $minAmountA Minimum amount of asset A to receive
-     * @param string $minAmountB Minimum amount of asset B to receive
+     * @param string $amount The amount of pool shares to withdraw (as a decimal string)
+     * @param string $minAmountA Minimum amount of asset A to receive (as a decimal string)
+     * @param string $minAmountB Minimum amount of asset B to receive (as a decimal string)
      */
-    public function __construct(string $liqudityPoolId, string $amount, string $minAmountA, string $minAmountB)
-    {
-        $this->liqudityPoolId = $liqudityPoolId;
-        $this->amount = $amount;
-        $this->minAmountA = $minAmountA;
-        $this->minAmountB = $minAmountB;
+    public function __construct(
+        private string $liqudityPoolId,
+        private string $amount,
+        private string $minAmountA,
+        private string $minAmountB,
+    ) {
     }
 
     /**

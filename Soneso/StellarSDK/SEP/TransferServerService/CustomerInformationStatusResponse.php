@@ -23,33 +23,17 @@ namespace Soneso\StellarSDK\SEP\TransferServerService;
 class CustomerInformationStatusResponse
 {
     /**
-     * @var string $status Status of customer information processing. One of: pending, denied.
-     */
-    public string $status;
-
-    /**
-     * @var string|null $moreInfoUrl (optional) A URL the user can visit if they want more information
+     * @param string $status Status of customer information processing. One of: pending, denied.
+     * @param string|null $moreInfoUrl A URL the user can visit if they want more information
      * about their account / status.
-     */
-    public ?string $moreInfoUrl = null;
-
-    /**
-     * @var int|null $eta (optional) Estimated number of seconds until the customer information
+     * @param int|null $eta Estimated number of seconds until the customer information
      * status will update.
      */
-    public ?int $eta = null;
-
-    /**
-     * @param string $status Status of customer information processing. One of: pending, denied.
-     * @param string|null $moreInfoUrl (optional) A URL the user can visit if they want more information
-     * @param int|null $eta (optional) Estimated number of seconds until the customer information
-     *  status will update.
-     */
-    public function __construct(string $status, ?string $moreInfoUrl = null, ?int $eta = null)
-    {
-        $this->status = $status;
-        $this->moreInfoUrl = $moreInfoUrl;
-        $this->eta = $eta;
+    public function __construct(
+        public string $status,
+        public ?string $moreInfoUrl = null,
+        public ?int $eta = null,
+    ) {
     }
 
     /**

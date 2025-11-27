@@ -26,18 +26,16 @@ use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
  */
 class Claimant
 {
-    private string $destination;
-    private XdrClaimPredicate $predicate;
-
     /**
      * Claimant constructor
      *
      * @param string $destination The account ID that can claim the balance
      * @param XdrClaimPredicate $predicate The conditions under which the balance can be claimed
      */
-    public function __construct(string $destination, XdrClaimPredicate $predicate) {
-        $this->destination = $destination;
-        $this->predicate = $predicate;
+    public function __construct(
+        private string $destination,
+        private XdrClaimPredicate $predicate,
+    ) {
     }
 
     /**
