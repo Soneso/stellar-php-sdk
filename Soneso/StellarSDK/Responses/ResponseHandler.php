@@ -53,6 +53,7 @@ use Soneso\StellarSDK\SEP\TransferServerService\FeeResponse;
 use Soneso\StellarSDK\SEP\TransferServerService\InfoResponse;
 use Soneso\StellarSDK\SEP\TransferServerService\WithdrawResponse;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeResponse;
+use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeResponse;
 
 /**
  * Handles HTTP responses from Horizon API and converts them to typed response objects
@@ -144,6 +145,7 @@ class ResponseHandler
             RequestType::SUBMIT_ASYNC_TRANSACTION => SubmitAsyncTransactionResponse::fromJson($jsonData, $response->getStatusCode()),
             RequestType::FEDERATION => FederationResponse::fromJson($jsonData),
             RequestType::CHALLENGE => ChallengeResponse::fromJson($jsonData),
+            RequestType::CONTRACT_CHALLENGE => ContractChallengeResponse::fromJson($jsonData),
             RequestType::GET_CUSTOMER_INFO, RequestType::PUT_CUSTOMER_VERIFICATION => GetCustomerInfoResponse::fromJson($jsonData),
             RequestType::PUT_CUSTOMER_INFO => PutCustomerInfoResponse::fromJson($jsonData),
             RequestType::POST_CUSTOMER_FILE => CustomerFileResponse::fromJson($jsonData),

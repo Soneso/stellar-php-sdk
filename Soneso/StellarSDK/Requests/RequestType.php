@@ -115,6 +115,9 @@ class RequestType
     /** @var string SEP-10 authentication challenge endpoint */
     public const CHALLENGE = "challenge";
 
+    /** @var string SEP-45 contract authentication challenge endpoint */
+    public const CONTRACT_CHALLENGE = "contract_challenge";
+
     /** @var string SEP-12 GET customer info endpoint */
     public const GET_CUSTOMER_INFO = "get_customer_info";
 
