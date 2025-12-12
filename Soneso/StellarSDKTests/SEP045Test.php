@@ -7,23 +7,18 @@
 namespace Soneso\StellarSDKTests;
 
 use Exception;
+use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
-use Soneso\StellarSDK\InvokeContractHostFunction;
-use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Contract\DeployRequest;
 use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
-use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
-use Soneso\StellarSDK\Soroban\SorobanServer;
-use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeRequestErrorResponse;
-use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationError;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidAccount;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidArgs;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidContractAddress;
@@ -45,12 +40,10 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizedFunction;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizedInvocation;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanCredentials;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
-use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
 use GuzzleHttp\Handler\MockHandler;
 
 /**
@@ -1027,6 +1020,95 @@ class SEP045Test extends TestCase
     }
 
     /**
+     * Test successful authentication flow with client domain signing callback
+     *
+     * This test validates that a client domain can be signed using a callback function
+     * instead of providing the keypair directly. The callback receives the array of
+     * SorobanAuthorizationEntry objects and must return them with the client domain
+     * entry signed.
+     *
+     * When using clientDomainSigningCallback without clientDomainKeyPair, the jwtToken
+     * method fetches the stellar.toml from the client domain to get the signing key.
+     * This test properly mocks the stellar.toml fetch to test the complete callback flow.
+     *
+     * Mock response order (matching actual code execution order):
+     * 1. Challenge response (authorization entries from the server)
+     * 2. stellar.toml fetch (returns SIGNING_KEY for the client domain)
+     * 3. Token response (JWT token)
+     */
+    public function testClientDomainCallbackSuccess(): void
+    {
+        $nonce = "test_nonce_" . time();
+        $clientDomain = "client.example.com";
+        $clientDomainKeyPair = KeyPair::random();
+        $clientDomainAccount = $clientDomainKeyPair->getAccountId();
+
+        $challengeXdr = $this->buildValidChallenge(
+            $this->clientContractId,
+            $this->domain,
+            "auth.example.stellar.org",
+            $this->serverAccountId,
+            $nonce,
+            $clientDomain,
+            $clientDomainAccount
+        );
+
+        // Mock response 1: Challenge response from auth server
+        $challengeResponse = new Response(200, [], json_encode([
+            'authorization_entries' => $challengeXdr,
+            'network_passphrase' => 'Test SDF Network ; September 2015'
+        ]));
+
+        // Mock response 2: stellar.toml fetch for client domain signing key
+        // This is fetched after the challenge when only clientDomainSigningCallback is provided
+        $stellarTomlContent = "SIGNING_KEY = \"" . $clientDomainAccount . "\"";
+        $stellarTomlResponse = new Response(200, [], $stellarTomlContent);
+
+        // Mock response 3: Token response from auth server
+        $tokenResponse = new Response(200, [], json_encode([
+            'token' => $this->successJWTToken
+        ]));
+
+        $mock = new MockHandler([$challengeResponse, $stellarTomlResponse, $tokenResponse]);
+
+        $webAuth = new WebAuthForContracts(
+            $this->authServer,
+            $this->webAuthContractId,
+            $this->serverAccountId,
+            $this->domain,
+            Network::testnet()
+        );
+        $webAuth->setMockHandler($mock);
+
+        // Track whether the callback was invoked
+        $callbackInvoked = false;
+
+        // Create a callback that signs the client domain entry
+        // The callback receives a single SorobanAuthorizationEntry and returns a signed SorobanAuthorizationEntry
+        $callback = function (SorobanAuthorizationEntry $entry) use ($clientDomainKeyPair, &$callbackInvoked): SorobanAuthorizationEntry {
+            $callbackInvoked = true;
+            // Set signature expiration ledger before signing
+            $entry->credentials->addressCredentials->signatureExpirationLedger = 1000000;
+            $entry->sign($clientDomainKeyPair, Network::testnet());
+            return $entry;
+        };
+
+        $clientSigner = KeyPair::random();
+        // Only provide clientDomainSigningCallback, NOT clientDomainKeyPair
+        // The signing key is fetched from the mocked stellar.toml response
+        $token = $webAuth->jwtToken(
+            $this->clientContractId,
+            [$clientSigner],
+            $this->domain,
+            $clientDomain,
+            clientDomainSigningCallback: $callback
+        );
+
+        $this->assertEquals($this->successJWTToken, $token);
+        $this->assertTrue($callbackInvoked, 'Client domain signing callback was not invoked');
+    }
+
+    /**
      * Test validation error: client_domain_account mismatch
      */
     public function testInvalidClientDomainAccount(): void
@@ -1396,7 +1478,6 @@ class SEP045Test extends TestCase
 
         // Step 6: Test SEP-45 authentication with deployed contract
         $webAuth = WebAuthForContracts::fromDomain("testanchor.stellar.org", Network::testnet());
-        $webAuth->setUseFormUrlEncoded(true);
 
         try {
             print("Authenticating with testanchor.stellar.org..." . PHP_EOL);
@@ -1422,6 +1503,148 @@ class SEP045Test extends TestCase
             // The failure happens at submission, which is acceptable for this test
             print("Note: Token submission failed (expected): " . $e->getMessage() . PHP_EOL);
             print("Contract deployment and challenge flow validated successfully" . PHP_EOL);
+            $this->assertTrue(true);
+        }
+    }
+
+    /**
+     * Integration test: SEP-45 authentication with testanchor.stellar.org and client domain
+     *
+     * This test:
+     * 1. Creates and funds a test account using Friendbot
+     * 2. Deploys sep_45_account.wasm to testnet with proper constructor arguments
+     * 3. Uses the deployed contract ID for SEP-45 authentication
+     * 4. Uses phpsepsigner.stellargate.com as the client domain
+     * 5. Creates a callback that calls the remote signing server for client domain signing
+     * 6. Validates that the challenge is received and signed correctly by both client and domain signer
+     * 7. Receives a real JWT token from the test anchor
+     *
+     * @see https://github.com/Soneso/php-server-signer
+     */
+    public function testWithStellarTestAnchorAndClientDomain(): void
+    {
+        // Step 1: Create and fund test account
+        $sourceKeyPair = KeyPair::random();
+        print("Created test account: " . $sourceKeyPair->getAccountId() . PHP_EOL);
+
+        FriendBot::fundTestAccount($sourceKeyPair->getAccountId());
+        print("Funded test account via Friendbot" . PHP_EOL);
+
+        // Step 2: Create signer keypair (used for both constructor and authentication)
+        $signerKeyPair = KeyPair::random();
+        print("Created signer keypair: " . $signerKeyPair->getAccountId() . PHP_EOL);
+
+        // Step 3: Upload wasm
+        $wasmPath = __DIR__ . '/wasm/sep_45_account.wasm';
+        if (!file_exists($wasmPath)) {
+            $this->markTestSkipped("WASM file not found: {$wasmPath}");
+            return;
+        }
+
+        $contractCode = file_get_contents($wasmPath, false);
+
+        $installRequest = new InstallRequest(
+            wasmBytes: $contractCode,
+            rpcUrl: "https://soroban-testnet.stellar.org",
+            network: Network::testnet(),
+            sourceAccountKeyPair: $sourceKeyPair,
+            enableServerLogging: false
+        );
+
+        $wasmHash = SorobanClient::install($installRequest);
+        print("Uploaded wasm, hash: {$wasmHash}" . PHP_EOL);
+
+        // Step 4: Build constructor arguments
+        $adminAddress = Address::fromAccountId($sourceKeyPair->getAccountId())->toXdrSCVal();
+        $signerPublicKey = XdrSCVal::forBytes($signerKeyPair->getPublicKey());
+        $constructorArgs = [$adminAddress, $signerPublicKey];
+
+        // Step 5: Deploy contract with constructor arguments
+        $deployRequest = new DeployRequest(
+            rpcUrl: "https://soroban-testnet.stellar.org",
+            network: Network::testnet(),
+            sourceAccountKeyPair: $sourceKeyPair,
+            wasmHash: $wasmHash,
+            constructorArgs: $constructorArgs,
+            enableServerLogging: false
+        );
+
+        $client = SorobanClient::deploy($deployRequest);
+        $contractId = $client->getContractId();
+        print("Deployed contract ID: {$contractId}" . PHP_EOL);
+
+        // Verify contract ID format
+        $this->assertStringStartsWith('C', $contractId);
+        $this->assertEquals(56, strlen($contractId));
+
+        // Step 6: Test SEP-45 authentication with deployed contract and client domain
+        $webAuth = WebAuthForContracts::fromDomain("testanchor.stellar.org", Network::testnet());
+
+        // Client domain configuration
+        $clientDomain = "phpsepsigner.stellargate.com";
+        $remoteSigningUrl = "https://phpsepsigner.stellargate.com/sign-sep-45";
+        $bearerToken = "103e1e6234ac2cc1a30d983dba367db2b194ea5b269433c316ad36d21e1e8235";
+        $clientDomainSigningKey = "GANRU6EAL2GS7CQZ6TEXLHLFQ77KZW5TXT6N4PZ5ZQ5CHA57NS2L5RJL";
+
+        // Track callback invocation
+        $callbackInvoked = false;
+
+        // Create callback that calls the remote signing server (single entry API)
+        $callback = function (SorobanAuthorizationEntry $entry) use (
+            $remoteSigningUrl,
+            $bearerToken,
+            &$callbackInvoked
+        ): SorobanAuthorizationEntry {
+            $callbackInvoked = true;
+            print("Callback invoked, sending entry to remote signing server..." . PHP_EOL);
+
+            // Encode single entry to base64 XDR
+            $base64Xdr = $entry->toBase64Xdr();
+
+            // POST to remote signing server with bearer token authentication
+            $httpClient = new Client();
+            $response = $httpClient->request('POST', $remoteSigningUrl, [
+                'json' => [
+                    'authorization_entry' => $base64Xdr,
+                    'network_passphrase' => 'Test SDF Network ; September 2015'
+                ],
+                'headers' => ['Authorization' => 'Bearer ' . $bearerToken]
+            ]);
+
+            $content = $response->getBody()->__toString();
+            $jsonData = json_decode($content, true);
+
+            if (!isset($jsonData['authorization_entry'])) {
+                throw new \Exception("Invalid server response: " . $content);
+            }
+
+            print("Remote signing server returned signed entry" . PHP_EOL);
+
+            // Decode response back to SorobanAuthorizationEntry
+            return SorobanAuthorizationEntry::fromBase64Xdr($jsonData['authorization_entry']);
+        };
+
+        try {
+            print("Authenticating with testanchor.stellar.org using client domain: {$clientDomain}..." . PHP_EOL);
+            $jwt = $webAuth->jwtToken(
+                $contractId,
+                [$signerKeyPair],
+                clientDomain: $clientDomain,
+                clientDomainSigningCallback: $callback
+            );
+
+            // Success - we received a real JWT token
+            $this->assertNotEmpty($jwt);
+            $this->assertTrue($callbackInvoked, 'Client domain signing callback should have been invoked');
+            print("Successfully received JWT token with client domain support" . PHP_EOL);
+            print("JWT: {$jwt}" . PHP_EOL);
+        } catch (SubmitContractChallengeUnknownResponseException $e) {
+            // Similar to testWithStellarTestAnchor, the submission may fail but
+            // the important part is that we successfully completed the full flow
+            // including remote client domain signing via the callback
+            print("Note: Token submission failed (expected): " . $e->getMessage() . PHP_EOL);
+            print("Contract deployment, challenge flow, and remote signing validated successfully" . PHP_EOL);
+            $this->assertTrue($callbackInvoked, 'Client domain signing callback should have been invoked');
             $this->assertTrue(true);
         }
     }

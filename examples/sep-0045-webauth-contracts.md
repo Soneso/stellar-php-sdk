@@ -4,7 +4,7 @@ This document describes how to use the Stellar PHP SDK's SEP-45 implementation t
 
 ## Overview
 
-SEP-45 enables wallets and clients to prove control of a Soroban contract account by signing authorization entries provided by an anchor's authentication server. Upon successful authentication, the server returns a JWT token that can be used to access other SEP services (SEP-12 KYC, SEP-24 deposits/withdrawals, SEP-31 payments, etc.).
+SEP-45 enables wallets and clients to prove control of a Soroban contract account by signing authorization entries provided by an anchor's authentication server. Upon successful authentication, the server returns a JWT token that can be used to access other SEP services (SEP-12 KYC, SEP-24 deposits/withdrawals, SEP-38 quotes, etc.).
 
 **SEP-45 vs SEP-10:**
 - SEP-45 is for contract accounts (C... addresses) only
@@ -192,17 +192,23 @@ If the client domain signing key is on a remote server:
 
 ```php
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
+use GuzzleHttp\Client;
 
-$clientDomainSigningCallback = function(array $authEntries): array {
-    // $authEntries is array of SorobanAuthorizationEntry objects
-    // Send to your remote signing service and return signed entries
-    // The callback must return array of SorobanAuthorizationEntry objects
+$clientDomainSigningCallback = function(SorobanAuthorizationEntry $entry): SorobanAuthorizationEntry {
+    // The callback receives only the client domain entry that needs to be signed
+    // Send to your remote signing service and return the signed entry
 
-    // Example: serialize, send to server, deserialize response
-    // Your signing service should sign the client domain entry
-    // and return all entries (with the client domain entry now signed)
+    $httpClient = new Client();
+    $response = $httpClient->post('https://your-signing-server.com/sign-sep-45', [
+        'json' => [
+            'authorization_entry' => $entry->toBase64Xdr(),
+            'network_passphrase' => 'Test SDF Network ; September 2015'
+        ],
+        'headers' => ['Authorization' => 'Bearer YOUR_TOKEN']
+    ]);
 
-    return $signedEntries;  // Must be array of SorobanAuthorizationEntry
+    $jsonData = json_decode($response->getBody()->__toString(), true);
+    return SorobanAuthorizationEntry::fromBase64Xdr($jsonData['authorization_entry']);
 };
 
 $jwtToken = $webAuth->jwtToken(

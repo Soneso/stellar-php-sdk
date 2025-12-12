@@ -113,7 +113,7 @@ class WebAuthForContracts
     private string $serverHomeDomain;
     private Network $network;
     private Client $httpClient;
-    private bool $useFormUrlEncoded = false;
+    private bool $useFormUrlEncoded = true;
     private string $sorobanRpcUrl;
 
     /**
@@ -325,7 +325,7 @@ class WebAuthForContracts
                 $clientDomainAccountId = $clientDomainKeyPair->getAccountId();
             } else if ($clientDomainSigningCallback != null) {
                 try {
-                    $toml = StellarToml::fromDomain($clientDomain);
+                    $toml = StellarToml::fromDomain($clientDomain, $this->httpClient);
                     $clientDomainAccountId = $toml->generalInformation?->signingKey;
                     if ($clientDomainAccountId == null) {
                         throw new Exception("Could not find signing key in stellar.toml");
@@ -359,7 +359,8 @@ class WebAuthForContracts
             $signers,
             $effectiveExpirationLedger,
             $clientDomainKeyPair,
-            $clientDomainSigningCallback
+            $clientDomainSigningCallback,
+            $clientDomainAccountId
         );
 
         // Request the JWT token by sending back the signed authorization entries
@@ -590,11 +591,14 @@ class WebAuthForContracts
      *                                __check_auth implementation does not require signatures (per SEP-45).
      * @param int|null $signatureExpirationLedger Expiration ledger for signatures. Required if signers
      *                                            array is not empty. Ignored if signers array is empty.
-     * @param KeyPair|null $clientDomainKeyPair Optional client domain keypair
-     * @param callable|null $clientDomainSigningCallback Optional callback
+     * @param KeyPair|null $clientDomainKeyPair Optional client domain keypair for local signing
+     * @param callable|null $clientDomainSigningCallback Optional callback for remote signing. The callback
+     *                                                   receives a single SorobanAuthorizationEntry (the client
+     *                                                   domain entry) and must return a signed SorobanAuthorizationEntry.
+     * @param string|null $clientDomainAccountId Client domain account ID (required if callback is provided)
      * @return array<SorobanAuthorizationEntry> Signed entries
      * @throws RuntimeException if no address credentials are found in entry
-     * @throws InvalidArgumentException if callback validation fails
+     * @throws InvalidArgumentException if callback validation fails or client domain entry not found
      * @throws Exception if credentials address could not be converted to StrKey representation
      */
     public function signAuthorizationEntries(
@@ -603,11 +607,13 @@ class WebAuthForContracts
         array $signers,
         ?int $signatureExpirationLedger,
         ?KeyPair $clientDomainKeyPair = null,
-        ?callable $clientDomainSigningCallback = null
+        ?callable $clientDomainSigningCallback = null,
+        ?string $clientDomainAccountId = null
     ): array {
         $signedEntries = [];
+        $clientDomainEntryIndex = null;
 
-        foreach ($authEntries as $entry) {
+        foreach ($authEntries as $index => $entry) {
             $credentials = $entry->credentials;
             if ($credentials->addressCredentials !== null) {
                 $credentialsAddress = $credentials->addressCredentials->address;
@@ -628,12 +634,17 @@ class WebAuthForContracts
                     }
                 }
 
-                // Sign client domain entry
+                // Sign client domain entry with local keypair
                 if ($clientDomainKeyPair !== null && $credentialsAddressStr === $clientDomainKeyPair->getAccountId()) {
                     if ($signatureExpirationLedger !== null) {
                         $credentials->addressCredentials->signatureExpirationLedger = $signatureExpirationLedger;
                     }
                     $entry->sign($clientDomainKeyPair, $this->network);
+                }
+
+                // Track client domain entry index for callback
+                if ($clientDomainAccountId !== null && $credentialsAddressStr === $clientDomainAccountId) {
+                    $clientDomainEntryIndex = $index;
                 }
             }
 
@@ -642,27 +653,25 @@ class WebAuthForContracts
 
         // Call client domain signing callback if provided
         if ($clientDomainSigningCallback !== null) {
-            $inputCount = count($signedEntries);
-            $callbackResult = $clientDomainSigningCallback($signedEntries);
-
-            // Validate callback return value
-            if (!is_array($callbackResult)) {
-                throw new InvalidArgumentException("Client domain signing callback must return an array");
-            }
-            if (count($callbackResult) !== $inputCount) {
+            if ($clientDomainEntryIndex === null) {
                 throw new InvalidArgumentException(
-                    "Client domain signing callback must return same number of entries as input. " .
-                    "Expected: $inputCount, Got: " . count($callbackResult)
+                    "Client domain entry not found for account: $clientDomainAccountId"
                 );
             }
-            foreach ($callbackResult as $entry) {
-                if (!($entry instanceof SorobanAuthorizationEntry)) {
-                    throw new InvalidArgumentException(
-                        "Client domain signing callback must return array of SorobanAuthorizationEntry objects"
-                    );
-                }
+
+            // Send only the client domain entry to the callback
+            $clientDomainEntry = $signedEntries[$clientDomainEntryIndex];
+            $signedEntry = $clientDomainSigningCallback($clientDomainEntry);
+
+            // Validate callback return value
+            if (!($signedEntry instanceof SorobanAuthorizationEntry)) {
+                throw new InvalidArgumentException(
+                    "Client domain signing callback must return a SorobanAuthorizationEntry object"
+                );
             }
-            $signedEntries = $callbackResult;
+
+            // Replace the client domain entry with the signed one
+            $signedEntries[$clientDomainEntryIndex] = $signedEntry;
         }
 
         return $signedEntries;
