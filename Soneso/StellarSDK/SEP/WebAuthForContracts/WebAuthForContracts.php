@@ -737,7 +737,7 @@ class WebAuthForContracts
      * @return array<SorobanAuthorizationEntry> Decoded authorization entries
      * @throws ContractChallengeValidationError if decoding fails
      */
-    private function decodeAuthorizationEntries(string $base64Xdr): array
+    public function decodeAuthorizationEntries(string $base64Xdr): array
     {
         try {
             $xdr = base64_decode($base64Xdr);

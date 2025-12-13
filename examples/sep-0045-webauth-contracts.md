@@ -229,12 +229,9 @@ For more control, execute each step individually:
 <?php
 
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
-use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
-use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
 
 $contractAccountId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ";
 $signerKeyPair = KeyPair::fromSeed("SXXXXX...");
@@ -247,15 +244,9 @@ try {
     $challengeResponse = $webAuth->getChallenge($contractAccountId, $homeDomain);
 
     // Step 2: Decode authorization entries from base64 XDR
-    $xdr = base64_decode($challengeResponse->getAuthorizationEntries());
-    $xdrBuffer = new XdrBuffer($xdr);
-    $count = $xdrBuffer->readInteger32();
-    $authEntries = [];
-    for ($i = 0; $i < $count; $i++) {
-        $authEntries[] = SorobanAuthorizationEntry::fromXdr(
-            XdrSorobanAuthorizationEntry::decode($xdrBuffer)
-        );
-    }
+    $authEntries = $webAuth->decodeAuthorizationEntries(
+        $challengeResponse->getAuthorizationEntries()
+    );
 
     // Step 3: Validate challenge
     $webAuth->validateChallenge($authEntries, $contractAccountId, $homeDomain);
