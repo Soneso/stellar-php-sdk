@@ -172,13 +172,13 @@ class QueryTest extends TestCase
     {
 
         // get balance id from ClaimableBalancesTest
-        $bId = "000000003ec5a97a6071ba59b2dd4e2655a454ff0fe145c7941582c2be39fb8a115d6150";
+        $bId = "00000000f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82";
         $response = $this->sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getOperations()->count() == 1);
         $response = $this->sdk->transactions()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getTransactions()->count() == 1);
 
-        $bId = "BAAAAAAAH3C2S6TAOG5FTMW5JYTFLJCU74H6CROHSQKYFQV6HH5YUEK5MFIAIMI";
+        $bId = "BAAAAAAA6XVH7M66DDNOT4JK7FWPA5IHJEAW7PF2NPYJ5EBKNHSUK2DXDWBGVQA";
         $response = $this->sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getOperations()->count() == 1);
     }

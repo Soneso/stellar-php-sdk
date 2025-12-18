@@ -1,7 +1,7 @@
 
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
-![v1.8.8](https://img.shields.io/badge/v1.8.8-green.svg) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
+![v1.9.0](https://img.shields.io/badge/v1.9.0-green.svg) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
 
 The Soneso open source Stellar SDK for PHP provides APIs to build and sign transactions, connect and query [Horizon](https://github.com/stellar/horizon).
 
@@ -9,7 +9,7 @@ The Soneso open source Stellar SDK for PHP provides APIs to build and sign trans
 
 ## Latest stable release
 
-```composer require soneso/stellar-php-sdk:1.8.8```
+```composer require soneso/stellar-php-sdk:1.9.0```
 
 ## Quick Start
 
@@ -216,6 +216,7 @@ if ($response->isSuccessful()) {
 | [SEP-0030: Account Recovery](examples/sep-0030-recovery.md)                            |In this examples you can see how to recover accounts as defined by SEP-0030. | [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)                                                                                                                                                                                                            |
 | [SEP-0038: Quotes](examples/sep-0038-quote.md)                                         | In this examples you can learn how to get quotes as defined by SEP-0038. | [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)                                                                                                                                                                                                            |
 | [SEP-0031: Cross Border Payments](examples/sep-0031-cross-border-payments.md)          | In this examples you can learn how to make cross border payments as a Sending Anchor as defined by SEP-0031  | [SEP-0031](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md)                                                                                                                                                                                                            |
+| [SEP-0045: Web Authentication for Contract Accounts](examples/sep-0045-webauth-contracts.md) | This example shows how to authenticate Soroban contract accounts (C... addresses) with web services. | [SEP-0045](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md)                                                                                                                                                                                                            |
 
 More examples can be found in the [tests](https://github.com/Soneso/stellar-php-sdk/tree/main/Soneso/StellarSDKTests).
 
@@ -237,6 +238,7 @@ More examples can be found in the [tests](https://github.com/Soneso/stellar-php-
 - [SEP-0030: Account Recovery](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)
 - [SEP-0038: Quotes](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
 - [SEP-0031: Cross Border Payments](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md)
+- [SEP-0045: Web Authentication for Contract Accounts](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md)
 
 
 ### Soroban Support
