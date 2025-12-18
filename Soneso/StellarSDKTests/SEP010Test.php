@@ -16,7 +16,6 @@ use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\Response;
-use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -28,7 +27,6 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperation;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestErrorResponse;
-use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationError;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidHomeDomain;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoType;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoValue;
@@ -41,9 +39,6 @@ use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidWebAuthDomain;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
-use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
-use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
 
 class SEP010Test extends TestCase
@@ -625,58 +620,56 @@ class SEP010Test extends TestCase
         $this->assertEquals($this->successJWTToken, $jwtToken);
     }
 
+    /**
+     * Integration test: SEP-10 authentication with testanchor.stellar.org
+     */
     public function testWithStellarTestAnchor(): void {
         $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
 
-        // default
         $userKeyPair = KeyPair::random();
         $userAccountId = $userKeyPair->getAccountId();
         $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
         $this->assertNotEmpty($jwt);
+    }
 
-        // client domain with key signing
-        $userKeyPair = KeyPair::random();
-        $userAccountId = $userKeyPair->getAccountId();
-        $clientDomain = "server-signer.replit.app";
-        $clientDomainSignerKeyPair = KeyPair::fromSeed("SBRSOOURG2E24VGDR6NKZJMBOSOHVT6GV7EECUR3ZBE7LGSSVYN5VMOG");
-        $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair], clientDomain: $clientDomain, clientDomainKeyPair: $clientDomainSignerKeyPair);
-        $this->assertNotEmpty($jwt);
+    /**
+     * Integration test: SEP-10 authentication with testanchor.stellar.org and client domain
+     *
+     * Uses phpsepsigner.stellargate.com as the client domain signing server.
+     *
+     * @see https://github.com/Soneso/php-server-signer
+     */
+    public function testWithStellarTestAnchorAndClientDomain(): void {
+        $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
 
-        // client domain with local signing callback
-        $userKeyPair = KeyPair::random();
-        $userAccountId = $userKeyPair->getAccountId();
-        $callback = function (string $b64EncodedEnvelope) {
-            $tx = AbstractTransaction::fromEnvelopeBase64XdrString($b64EncodedEnvelope);
-            $clientDomainSignerKeyPair = KeyPair::fromSeed("SBRSOOURG2E24VGDR6NKZJMBOSOHVT6GV7EECUR3ZBE7LGSSVYN5VMOG");
-            $tx->sign($clientDomainSignerKeyPair, Network::testnet());
-            return $tx->toEnvelopeXdrBase64();
-        };
-        $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair], clientDomain: $clientDomain, clientDomainSigningCallback: $callback);
-        $this->assertNotEmpty($jwt);
+        $clientDomain = "phpsepsigner.stellargate.com";
+        $bearerToken = "103e1e6234ac2cc1a30d983dba367db2b194ea5b269433c316ad36d21e1e8235";
 
-        // client domain with remote signing callback
-        $userKeyPair = KeyPair::random();
-        $userAccountId = $userKeyPair->getAccountId();
-        // server signer src: https://replit.com/@crogobete/ServerSigner#main.py
-        $callback = function (string $b64EncodedEnvelope) {
-            $headers = ['Authorization' => "Bearer 987654321"];
+        $callback = function (string $b64EncodedEnvelope) use ($bearerToken) {
             $httpClient = new Client();
-            $url = "https://server-signer.replit.app/sign";
-            $params = ['transaction' => $b64EncodedEnvelope, 'network_passphrase' => 'Test SDF Network ; September 2015'];
-            $response = $httpClient->request('POST', $url, [
-                "json" => $params,
-                "headers" => $headers
+            $response = $httpClient->request('POST', 'https://phpsepsigner.stellargate.com/sign-sep-10', [
+                'json' => [
+                    'transaction' => $b64EncodedEnvelope,
+                    'network_passphrase' => 'Test SDF Network ; September 2015'
+                ],
+                'headers' => ['Authorization' => 'Bearer ' . $bearerToken]
             ]);
             $content = $response->getBody()->__toString();
-            $jsonData = @json_decode($content, true);
+            $jsonData = json_decode($content, true);
             if (isset($jsonData['transaction'])) {
                 return $jsonData['transaction'];
-            } else {
-                throw new Exception("Invalid server response");
             }
+            throw new Exception("Invalid server response: " . $content);
         };
-        $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair],
-            clientDomain: $clientDomain, clientDomainSigningCallback: $callback);
+
+        $userKeyPair = KeyPair::random();
+        $userAccountId = $userKeyPair->getAccountId();
+        $jwt = $webAuth->jwtToken(
+            $userAccountId,
+            [$userKeyPair],
+            clientDomain: $clientDomain,
+            clientDomainSigningCallback: $callback
+        );
         $this->assertNotEmpty($jwt);
     }
 

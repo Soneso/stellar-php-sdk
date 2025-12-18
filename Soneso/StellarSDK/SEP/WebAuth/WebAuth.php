@@ -196,7 +196,7 @@ class WebAuth
                 $clientDomainSignerAccountId = $clientDomainKeyPair?->getAccountId();
             } else if ($clientDomainSigningCallback != null) {
                 try {
-                    $toml = StellarToml::fromDomain($clientDomain);
+                    $toml = StellarToml::fromDomain($clientDomain, $this->httpClient);
                     $clientDomainSignerAccountId = $toml->generalInformation?->signingKey;
                     if ($clientDomainSignerAccountId == null) {
                         throw new Exception("Could not find signing key in stellar.toml");
