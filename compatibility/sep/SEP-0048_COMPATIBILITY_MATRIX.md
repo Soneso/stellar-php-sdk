@@ -1,9 +1,13 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2025-10-16 16:07:55
+**Generated:** 2026-01-06 16:36:09
 
 **SEP Version:** 1.1.0
+
 **SEP Status:** Active
+
+**SDK Version:** 1.9.1
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md
 
 ## SEP Summary
@@ -120,12 +124,15 @@ A standard for contracts to self-describe their exported interface.
 - **`LedgerInfo`**
 - **`EventInfo`**
 - **`SendTransactionResponse`**
+- **`SimulateTransactionResults`**
 - **`TransactionInfo`**
 - **`GetLedgersResponse`**
 - **`SorobanContractParserException`**
+- **`EventFilters`**
 - **`TopicFilter`**
 - **`GetEventsRequest`**
 - **`PaginationOptions`**
+- **`TopicFilters`**
 - **`GetTransactionsRequest`**
 - **`SimulateTransactionRequest`**
 - **`GetLedgersRequest`**

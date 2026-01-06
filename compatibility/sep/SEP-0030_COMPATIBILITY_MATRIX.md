@@ -1,9 +1,13 @@
 # SEP-0030 (Account Recovery: multi-party recovery of Stellar accounts) Compatibility Matrix
 
-**Generated:** 2025-10-16 15:10:20
+**Generated:** 2026-01-06 18:01:40
 
 **SEP Version:** 0.8.1
+
 **SEP Status:** Draft
+
+**SDK Version:** 1.9.1
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md
 
 ## SEP Summary
@@ -53,21 +57,20 @@ enables individuals to pass control of a Stellar account to another individual.
 
 ### Key Classes
 
-- **`SEP30ResponseSigner`**: 
-- **`SEP30UnknownResponseException`**: 
-- **`SEP30Request`**: 
-- **`SEP30ConflictResponseException`**: 
-- **`RecoveryService`**: Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md" target="_blank">Account Recovery: multi-party recovery of Stellar accounts.</a>
-- **`SEP30RequestIdentity`**: 
-- **`SEP30AccountsResponse`**: 
-- **`SEP30AccountResponse`**: 
-- **`SEP30NotFoundResponseException`**: 
-- **`SEP30AuthMethod`**: 
-- **`SEP30ResponseIdentity`**: 
-- **`SEP30UnauthorizedResponseException`**: 
-- **`SEP30SignatureResponse`**: 
-- **`SEP30BadRequestResponseException`**: 
+- **`SEP30ResponseSigner`**
+- **`SEP30UnknownResponseException`**
+- **`SEP30Request`**
+- **`SEP30ConflictResponseException`**
+- **`RecoveryService`**
+- **`SEP30RequestIdentity`**
+- **`SEP30AccountsResponse`**
+- **`SEP30AccountResponse`**
+- **`SEP30NotFoundResponseException`**
+- **`SEP30AuthMethod`**
+- **`SEP30ResponseIdentity`**
+- **`SEP30UnauthorizedResponseException`**
+- **`SEP30SignatureResponse`**
+- **`SEP30BadRequestResponseException`**
 
 ## Coverage by Section
 

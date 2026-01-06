@@ -1,9 +1,13 @@
 # SEP-0001 (Stellar Info File) Compatibility Matrix
 
-**Generated:** 2025-10-16 16:08:13
+**Generated:** 2026-01-06 16:36:03
 
 **SEP Version:** 2.7.0
+
 **SEP Status:** Active
+
+**SDK Version:** 1.9.1
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md
 
 ## SEP Summary
@@ -56,11 +60,14 @@ contributes to the health and decentralization of the network as a whole.
 ### Key Classes
 
 - **`Validator`**
+- **`Currencies`**
 - **`Documentation`**
 - **`GeneralInformation`**
+- **`Principals`**
 - **`PointOfContact`**
 - **`StellarToml`**
 - **`Currency`**
+- **`Validators`**
 
 ## Coverage by Section
 

@@ -136,7 +136,16 @@ class SorobanTest extends TestCase
 
         // get transactions
         $latestLedgerResponse = $this->server->getLatestLedger();
-        assertNotNull($latestLedgerResponse->sequence);
+        $this->assertNotNull($latestLedgerResponse->sequence);
+        $this->assertNotNull($latestLedgerResponse->id);
+        $this->assertNotNull($latestLedgerResponse->protocolVersion);
+        // New fields added in RPC v25.0.0
+        $this->assertNotNull($latestLedgerResponse->closeTime);
+        $this->assertGreaterThan(0, $latestLedgerResponse->closeTime);
+        $this->assertNotNull($latestLedgerResponse->headerXdr);
+        $this->assertNotEmpty($latestLedgerResponse->headerXdr);
+        $this->assertNotNull($latestLedgerResponse->metadataXdr);
+        $this->assertNotEmpty($latestLedgerResponse->metadataXdr);
         $startLedger = $latestLedgerResponse->sequence - 200;
         $paginationOptions = new PaginationOptions(limit: 2);
         $getTransactionsRequest = new GetTransactionsRequest(
@@ -994,6 +1003,19 @@ class SorobanTest extends TestCase
         $this->assertNotNull($latestLedgerResponse);
         $this->assertNotNull($latestLedgerResponse->sequence);
         $this->assertNull($latestLedgerResponse->error);
+
+        // Assert new fields added in RPC v25.0.0
+        $this->assertNotNull($latestLedgerResponse->closeTime, 'closeTime should not be null');
+        $this->assertIsInt($latestLedgerResponse->closeTime, 'closeTime should be an integer');
+        $this->assertGreaterThan(0, $latestLedgerResponse->closeTime, 'closeTime should be a valid Unix timestamp');
+
+        $this->assertNotNull($latestLedgerResponse->headerXdr, 'headerXdr should not be null');
+        $this->assertIsString($latestLedgerResponse->headerXdr, 'headerXdr should be a string');
+        $this->assertNotEmpty($latestLedgerResponse->headerXdr, 'headerXdr should not be empty');
+
+        $this->assertNotNull($latestLedgerResponse->metadataXdr, 'metadataXdr should not be null');
+        $this->assertIsString($latestLedgerResponse->metadataXdr, 'metadataXdr should be a string');
+        $this->assertNotEmpty($latestLedgerResponse->metadataXdr, 'metadataXdr should not be empty');
 
         // Calculate a start ledger a few ledgers back
         $startLedger = $latestLedgerResponse->sequence - 10;

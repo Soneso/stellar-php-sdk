@@ -1,9 +1,13 @@
 # SEP-0002 (Federation protocol) Compatibility Matrix
 
-**Generated:** 2025-10-16 15:08:09
+**Generated:** 2026-01-06 18:01:40
 
 **SEP Version:** N/A
+
 **SEP Status:** Final
+
+**SDK Version:** 1.9.1
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md
 
 ## SEP Summary
@@ -38,9 +42,9 @@ interoperates across different domains and providers.
 
 ### Key Classes
 
-- **`Federation`**: 
-- **`FederationRequestBuilder`**: 
-- **`FederationResponse`**: 
+- **`Federation`**
+- **`FederationRequestBuilder`**
+- **`FederationResponse`**
 
 ## Coverage by Section
 

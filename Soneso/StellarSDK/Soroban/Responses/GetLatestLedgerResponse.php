@@ -30,6 +30,21 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     public ?int $sequence = null;
 
     /**
+     * @var int|null $closeTime Unix timestamp when the ledger closed
+     */
+    public ?int $closeTime = null;
+
+    /**
+     * @var string|null $headerXdr Base64-encoded ledger header XDR
+     */
+    public ?string $headerXdr = null;
+
+    /**
+     * @var string|null $metadataXdr Base64-encoded ledger close metadata XDR
+     */
+    public ?string $metadataXdr = null;
+
+    /**
      * Creates an instance from JSON-RPC response data
      *
      * @param array<string,mixed> $json The JSON response data
@@ -41,6 +56,17 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
             $result->id = $json['result']['id'];
             $result->protocolVersion = $json['result']['protocolVersion'];
             $result->sequence = $json['result']['sequence'];
+            if (isset($json['result']['closeTime'])) {
+                $result->closeTime = is_string($json['result']['closeTime'])
+                    ? intval($json['result']['closeTime'])
+                    : $json['result']['closeTime'];
+            }
+            if (isset($json['result']['headerXdr'])) {
+                $result->headerXdr = $json['result']['headerXdr'];
+            }
+            if (isset($json['result']['metadataXdr'])) {
+                $result->metadataXdr = $json['result']['metadataXdr'];
+            }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
         }
@@ -96,6 +122,57 @@ class GetLatestLedgerResponse extends SorobanRpcResponse
     public function setSequence(?int $sequence): void
     {
         $this->sequence = $sequence;
+    }
+
+    /**
+     * @return int|null Unix timestamp when the ledger closed
+     */
+    public function getCloseTime(): ?int
+    {
+        return $this->closeTime;
+    }
+
+    /**
+     * @param int|null $closeTime Unix timestamp when the ledger closed
+     * @return void
+     */
+    public function setCloseTime(?int $closeTime): void
+    {
+        $this->closeTime = $closeTime;
+    }
+
+    /**
+     * @return string|null Base64-encoded ledger header XDR
+     */
+    public function getHeaderXdr(): ?string
+    {
+        return $this->headerXdr;
+    }
+
+    /**
+     * @param string|null $headerXdr Base64-encoded ledger header XDR
+     * @return void
+     */
+    public function setHeaderXdr(?string $headerXdr): void
+    {
+        $this->headerXdr = $headerXdr;
+    }
+
+    /**
+     * @return string|null Base64-encoded ledger close metadata XDR
+     */
+    public function getMetadataXdr(): ?string
+    {
+        return $this->metadataXdr;
+    }
+
+    /**
+     * @param string|null $metadataXdr Base64-encoded ledger close metadata XDR
+     * @return void
+     */
+    public function setMetadataXdr(?string $metadataXdr): void
+    {
+        $this->metadataXdr = $metadataXdr;
     }
 
 }

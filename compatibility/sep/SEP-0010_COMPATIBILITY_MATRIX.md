@@ -1,9 +1,13 @@
 # SEP-0010 (Stellar Web Authentication) Compatibility Matrix
 
-**Generated:** 2025-10-16 15:08:22
+**Generated:** 2026-01-06 16:36:05
 
 **SEP Version:** 3.4.1
+
 **SEP Status:** Active
+
+**SDK Version:** 1.9.1
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md
 
 ## SEP Summary
@@ -61,9 +65,24 @@ shared accounts.
 
 ### Key Classes
 
+- **`ChallengeValidationError`**
 - **`SubmitCompletedChallengeResponse`**
+- **`ChallengeValidationErrorInvalidHomeDomain`**
+- **`ChallengeValidationErrorInvalidWebAuthDomain`**
+- **`ChallengeValidationErrorInvalidSourceAccount`**
+- **`ChallengeValidationErrorMemoAndMuxedAccount`**
+- **`SubmitCompletedChallengeTimeoutResponseException`**
+- **`ChallengeValidationErrorInvalidSignature`**
+- **`ChallengeRequestErrorResponse`**
+- **`ChallengeValidationErrorInvalidSeqNr`**
 - **`ChallengeResponse`**
+- **`SubmitCompletedChallengeErrorResponseException`**
+- **`ChallengeValidationErrorInvalidTimeBounds`**
+- **`ChallengeValidationErrorInvalidMemoType`**
+- **`ChallengeValidationErrorInvalidMemoValue`**
 - **`ChallengeRequestBuilder`**
+- **`SubmitCompletedChallengeUnknownResponseException`**
+- **`ChallengeValidationErrorInvalidOperationType`**
 - **`WebAuth`**
 
 ## Coverage by Section

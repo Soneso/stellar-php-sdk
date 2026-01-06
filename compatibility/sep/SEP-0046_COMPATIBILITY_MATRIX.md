@@ -1,9 +1,13 @@
 # SEP-0046 (Contract Meta) Compatibility Matrix
 
-**Generated:** 2025-10-16 15:10:32
+**Generated:** 2026-01-06 16:36:08
 
 **SEP Version:** 1.0.0
+
 **SEP Status:** Active
+
+**SDK Version:** 1.9.1
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0046.md
 
 ## SEP Summary
@@ -118,12 +122,15 @@ A standard for the storage of metadata in contract Wasm files.
 - **`LedgerInfo`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`EventInfo`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`SendTransactionResponse`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
+- **`SimulateTransactionResults`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`TransactionInfo`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`GetLedgersResponse`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`SorobanContractParserException`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
+- **`EventFilters`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`TopicFilter`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`GetEventsRequest`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`PaginationOptions`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
+- **`TopicFilters`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`GetTransactionsRequest`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`SimulateTransactionRequest`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 - **`GetLedgersRequest`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.

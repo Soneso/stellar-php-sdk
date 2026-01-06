@@ -1,9 +1,13 @@
 # SEP-0038 (Anchor RFQ API) Compatibility Matrix
 
-**Generated:** 2025-10-16 15:08:24
+**Generated:** 2026-01-06 16:36:08
 
 **SEP Version:** N/A
+
 **SEP Status:** Draft
+
+**SDK Version:** 1.9.1
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md
 
 ## SEP Summary
@@ -37,6 +41,7 @@ scope of this document.
 - `Soneso/StellarSDK/SEP/Quote/SEP38Asset.php`
 - `Soneso/StellarSDK/SEP/Quote/SEP38PermissionDeniedException.php`
 - `Soneso/StellarSDK/SEP/Quote/QuoteService.php`
+- `Soneso/StellarSDK/SEP/Quote/SEP38SellAsset.php`
 - `Soneso/StellarSDK/SEP/Quote/SEP38PriceResponse.php`
 - `Soneso/StellarSDK/SEP/Quote/SEP38UnknownResponseException.php`
 - `Soneso/StellarSDK/SEP/Quote/SEP38QuoteResponse.php`
@@ -56,6 +61,7 @@ scope of this document.
 - **`SEP38Asset`**: Implements SEP-0038 - Anchor RFQ API.
 - **`SEP38PermissionDeniedException`**: Implements SEP-0038 - Anchor RFQ API.
 - **`QuoteService`**: Implements SEP-0038 - Anchor RFQ API.
+- **`SEP38SellAsset`**: Implements SEP-0038 - Anchor RFQ API.
 - **`SEP38PriceResponse`**: Implements SEP-0038 - Anchor RFQ API.
 - **`SEP38UnknownResponseException`**: Implements SEP-0038 - Anchor RFQ API.
 - **`SEP38QuoteResponse`**: Implements SEP-0038 - Anchor RFQ API.
