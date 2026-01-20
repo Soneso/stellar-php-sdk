@@ -12,11 +12,11 @@ namespace Soneso\StellarSDK\Responses\Effects;
  * This effect occurs when a signer's properties (such as weight) are modified.
  *
  * @package Soneso\StellarSDK\Responses\Effects
- * @see EffectResponse Base effect class
+ * @see SignerEffectResponse Base signer effect class
  * @see https://developers.stellar.org Stellar developer docs Horizon Effects API
  * @since 1.0.0
  */
-class SignerUpdatedEffectResponse extends EffectResponse
+class SignerUpdatedEffectResponse extends SignerEffectResponse
 {
     public static function fromJson(array $jsonData) : SignerUpdatedEffectResponse {
         $result = new SignerUpdatedEffectResponse();

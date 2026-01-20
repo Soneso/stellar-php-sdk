@@ -25,9 +25,9 @@ class DataRemovedEffectResponse extends EffectResponse
      *
      * @return string The data entry name
      */
-    public function getValue(): string
+    public function getName(): string
     {
-        return $this->value;
+        return $this->name;
     }
 
     protected function loadFromJson(array $json): void
