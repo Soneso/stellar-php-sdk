@@ -3,8 +3,14 @@
 	"description" : "Stellar PHP SDK for the Stellar Network",
 	"autoload" : {
 		"psr-4" : {
-			"Soneso\\StellarSDK\\" : "Soneso/StellarSDK/",
-			"Soneso\\StellarSDKTests\\" : "Soneso/StellarSDKTests/"
+			"Soneso\\StellarSDK\\" : "Soneso/StellarSDK/"
+		}
+	},
+	"autoload-dev" : {
+		"psr-4" : {
+			"Soneso\\StellarSDKTests\\" : "Soneso/StellarSDKTests/",
+			"Soneso\\StellarSDKTests\\Unit\\" : "Soneso/StellarSDKTests/Unit/",
+			"Soneso\\StellarSDKTests\\Integration\\" : "Soneso/StellarSDKTests/Integration/"
 		}
 	},
 	"require" : {
