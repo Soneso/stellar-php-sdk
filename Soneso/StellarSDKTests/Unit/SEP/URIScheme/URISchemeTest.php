@@ -14,6 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\SEP\URIScheme\SubmitUriSchemeTransactionResponse;
+use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\URIScheme\URIScheme;
 use Soneso\StellarSDK\SEP\URIScheme\URISchemeError;
 
@@ -252,6 +253,35 @@ class URISchemeTest extends TestCase
         $signedUri = $uriScheme->signURI($uri, $keyPair);
 
         $this->assertStringContainsString('signature=', $signedUri);
+    }
+
+    // ==================== signAndSubmitTransaction Tests ====================
+
+    public function testSignAndSubmitTransactionToCallback(): void
+    {
+        $uriScheme = new URIScheme();
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET);
+
+        // Mock HTTP client to return 200 for callback
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], '')
+        ]);
+        $handlerStack = HandlerStack::create($mock);
+        $uriScheme->setMockHandlerStack($handlerStack);
+
+        // Generate URI with callback
+        $uri = $uriScheme->generateSignTransactionURI(
+            self::TEST_XDR,
+            callback: 'url:https://example.com/callback',
+            originDomain: 'example.com'
+        );
+        $signedUri = $uriScheme->signURI($uri, $keyPair);
+
+        $response = $uriScheme->signAndSubmitTransaction($signedUri, $keyPair, Network::testnet());
+
+        $this->assertNotNull($response->getCallBackResponse());
+        $this->assertEquals(200, $response->getCallBackResponse()->getStatusCode());
+        $this->assertNull($response->getSubmitTransactionResponse());
     }
 
     // ==================== checkUIRSchemeIsValid Tests ====================

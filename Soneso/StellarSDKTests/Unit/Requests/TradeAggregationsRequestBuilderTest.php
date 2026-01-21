@@ -494,4 +494,149 @@ class TradeAggregationsRequestBuilderTest extends TestCase
 
         $this->assertStringContainsString('trade_aggregations', $requestedUrl);
     }
+
+    public function testTradeAggregationResponseAllGetters(): void
+    {
+        $requestedUrl = '';
+        $responseData = [
+            '_embedded' => [
+                'records' => [
+                    [
+                        'timestamp' => '1705315200000',
+                        'trade_count' => '26',
+                        'base_volume' => '1000.0000000',
+                        'counter_volume' => '1500.0000000',
+                        'avg' => '1.5000000',
+                        'high' => '1.6000000',
+                        'high_r' => ['n' => '8', 'd' => '5'],
+                        'low' => '1.4000000',
+                        'low_r' => ['n' => '7', 'd' => '5'],
+                        'open' => '1.4500000',
+                        'open_r' => ['n' => '29', 'd' => '20'],
+                        'close' => '1.5500000',
+                        'close_r' => ['n' => '31', 'd' => '20']
+                    ]
+                ]
+            ]
+        ];
+
+        $client = $this->createMockClient($requestedUrl, 200, $responseData);
+
+        $sdk = new StellarSDK('https://horizon.stellar.org');
+        $sdk->setHttpClient($client);
+
+        $baseAsset = Asset::createNonNativeAsset('SONESO', 'GAOF7ARG3ZAVUA63GCLXG5JQTMBAH3ZFYHGLGJLDXGDSXQRHD72LLGOB');
+        $counterAsset = Asset::createNonNativeAsset('COOL', 'GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL');
+
+        $response = $sdk->tradeAggregations()
+            ->forBaseAsset($baseAsset)
+            ->forCounterAsset($counterAsset)
+            ->forResolution('60000')
+            ->order('desc')
+            ->execute();
+
+        $this->assertInstanceOf(TradeAggregationsPageResponse::class, $response);
+        $this->assertEquals(1, $response->getTradeAggregations()->count());
+
+        $tradeAggregation = $response->getTradeAggregations()->toArray()[0];
+
+        // Test all getters
+        $this->assertEquals('1705315200000', $tradeAggregation->getTimestamp());
+        $this->assertEquals('26', $tradeAggregation->getTradeCount());
+        $this->assertEquals('1000.0000000', $tradeAggregation->getBaseVolume());
+        $this->assertEquals('1500.0000000', $tradeAggregation->getCounterVolume());
+        $this->assertEquals('1.5000000', $tradeAggregation->getAveragePrice());
+        $this->assertEquals('1.6000000', $tradeAggregation->getHighPrice());
+        $this->assertEquals(8, $tradeAggregation->getHighPriceR()->getN());
+        $this->assertEquals(5, $tradeAggregation->getHighPriceR()->getD());
+        $this->assertEquals('1.4000000', $tradeAggregation->getLowPrice());
+        $this->assertEquals(7, $tradeAggregation->getLowPriceR()->getN());
+        $this->assertEquals(5, $tradeAggregation->getLowPriceR()->getD());
+        $this->assertEquals('1.4500000', $tradeAggregation->getOpenPrice());
+        $this->assertEquals(29, $tradeAggregation->getOpenPriceR()->getN());
+        $this->assertEquals(20, $tradeAggregation->getOpenPriceR()->getD());
+        $this->assertEquals('1.5500000', $tradeAggregation->getClosePrice());
+        $this->assertEquals(31, $tradeAggregation->getClosePriceR()->getN());
+        $this->assertEquals(20, $tradeAggregation->getClosePriceR()->getD());
+    }
+
+    public function testTradeAggregationResponseMultipleRecords(): void
+    {
+        $requestedUrl = '';
+        $responseData = [
+            '_embedded' => [
+                'records' => [
+                    [
+                        'timestamp' => '1705315200000',
+                        'trade_count' => '10',
+                        'base_volume' => '500.0000000',
+                        'counter_volume' => '750.0000000',
+                        'avg' => '1.5000000',
+                        'high' => '1.6000000',
+                        'high_r' => ['n' => '8', 'd' => '5'],
+                        'low' => '1.4000000',
+                        'low_r' => ['n' => '7', 'd' => '5'],
+                        'open' => '1.4500000',
+                        'open_r' => ['n' => '29', 'd' => '20'],
+                        'close' => '1.5500000',
+                        'close_r' => ['n' => '31', 'd' => '20']
+                    ],
+                    [
+                        'timestamp' => '1705318800000',
+                        'trade_count' => '15',
+                        'base_volume' => '800.0000000',
+                        'counter_volume' => '1200.0000000',
+                        'avg' => '1.5500000',
+                        'high' => '1.7000000',
+                        'high_r' => ['n' => '17', 'd' => '10'],
+                        'low' => '1.4500000',
+                        'low_r' => ['n' => '29', 'd' => '20'],
+                        'open' => '1.5500000',
+                        'open_r' => ['n' => '31', 'd' => '20'],
+                        'close' => '1.6500000',
+                        'close_r' => ['n' => '33', 'd' => '20']
+                    ]
+                ]
+            ]
+        ];
+
+        $client = $this->createMockClient($requestedUrl, 200, $responseData);
+
+        $sdk = new StellarSDK('https://horizon.stellar.org');
+        $sdk->setHttpClient($client);
+
+        $response = $sdk->tradeAggregations()
+            ->forResolution('3600000')
+            ->execute();
+
+        $this->assertEquals(2, $response->getTradeAggregations()->count());
+
+        $records = $response->getTradeAggregations()->toArray();
+        $this->assertEquals('1705315200000', $records[0]->getTimestamp());
+        $this->assertEquals('10', $records[0]->getTradeCount());
+        $this->assertEquals('1705318800000', $records[1]->getTimestamp());
+        $this->assertEquals('15', $records[1]->getTradeCount());
+    }
+
+    public function testTradeAggregationEmptyResponse(): void
+    {
+        $requestedUrl = '';
+        $responseData = [
+            '_embedded' => [
+                'records' => []
+            ]
+        ];
+
+        $client = $this->createMockClient($requestedUrl, 200, $responseData);
+
+        $sdk = new StellarSDK('https://horizon.stellar.org');
+        $sdk->setHttpClient($client);
+
+        $response = $sdk->tradeAggregations()
+            ->forResolution('60000')
+            ->execute();
+
+        $this->assertInstanceOf(TradeAggregationsPageResponse::class, $response);
+        $this->assertEquals(0, $response->getTradeAggregations()->count());
+    }
 }

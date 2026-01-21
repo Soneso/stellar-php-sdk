@@ -110,8 +110,14 @@ class ExamplesTest extends TestCase
         }
 
 
-        $senderKeyPair = KeyPair::fromSeed("SA52PD5FN425CUONRMMX2CY5HB6I473A5OYNIVU67INROUZ6W4SPHXZB");
-        $destination = "GCRFFUKMUWWBRIA6ABRDFL5NKO6CKDB2IOX7MOS2TRLXNXQD255Z2MYG";
+        // Create and fund a new sender account for the payment example
+        $senderKeyPair = KeyPair::random();
+        FriendBot::fundTestAccount($senderKeyPair->getAccountId());
+
+        // Create and fund a destination account
+        $destinationKeyPair = KeyPair::random();
+        $destination = $destinationKeyPair->getAccountId();
+        FriendBot::fundTestAccount($destination);
 
         // Load sender account data from the stellar network.
         $sender = $sdk->requestAccount($senderKeyPair->getAccountId());
@@ -155,8 +161,9 @@ class ExamplesTest extends TestCase
 
         $sdk = StellarSDK::getTestNetInstance();
 
-        // Build a key pair from the seed of an existing account. We will need it for signing.
-        $existingAccountKeyPair = KeyPair::fromSeed("SAYCJIDYFEUY4IYBTOLACOV33BWIBQUAO7YKNMNGQX7QHFGE364KHKDR");
+        // Create and fund an existing account using FriendBot
+        $existingAccountKeyPair = KeyPair::random();
+        FriendBot::fundTestAccount($existingAccountKeyPair->getAccountId());
 
         // Existing account id.
         $existingAccountId = $existingAccountKeyPair->getAccountId();
@@ -190,15 +197,20 @@ class ExamplesTest extends TestCase
 
         $sdk = StellarSDK::getTestNetInstance();
 
-        // Create the key pairs of issuer, sender and receiver from their secret seeds. We will need them for signing.
-        $issuerKeyPair = KeyPair::fromSeed("SD3UQ2IRQSC4VM4CPMRD6H6EOGSZWUTX3K3DP6GJRBDPL4UL5RQIQTD4");
-        $senderKeyPair = KeyPair::fromSeed("SCYMI7XBFZUMKNTTGZSEJWWDMR4KA2QTDPUKTAMIDI353NFHA3MMQST7");
-        $receiverKeyPair = KeyPair::fromSeed("SD3ZC4QWYNXL2XIK4GZXGOTZU5CTD2XRWSCAW4GJYUBOKZQ4GQASYAWG");
+        // Create random key pairs for issuer, sender and receiver. We will need them for signing.
+        $issuerKeyPair = KeyPair::random();
+        $senderKeyPair = KeyPair::random();
+        $receiverKeyPair = KeyPair::random();
 
         // Account Ids.
         $issuerAccountId = $issuerKeyPair->getAccountId();
         $senderAccountId = $senderKeyPair->getAccountId();
         $receiverAccountId = $receiverKeyPair->getAccountId();
+
+        // Fund all accounts using FriendBot
+        FriendBot::fundTestAccount($issuerAccountId);
+        FriendBot::fundTestAccount($senderAccountId);
+        FriendBot::fundTestAccount($receiverAccountId);
 
         // Define the custom asset/token issued by the issuer account.
         $iomAsset = new AssetTypeCreditAlphaNum4("IOM", $issuerAccountId);
@@ -1474,8 +1486,13 @@ class ExamplesTest extends TestCase
         $this->assertTrue(true);
     }
 
+    /**
+     * This test demonstrates streaming payments but is skipped in automated testing
+     * because it requires manual interaction and runs indefinitely.
+     */
     public function testStreamPayments(): void
     {
+
         $sdk = StellarSDK::getTestNetInstance();
         $accountId = "GCDBA6GFGEHAMVAMRL6R2733EXUENJ35EMYNA2LE7WWJPVANORVC4UNA";
 
