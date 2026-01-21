@@ -8,10 +8,19 @@ namespace Soneso\StellarSDKTests\Unit\Core;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\AccountMergeOperationBuilder;
+use Soneso\StellarSDK\AllowTrustOperationBuilder;
 use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\BumpSequenceOperationBuilder;
+use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\Claimant;
+use Soneso\StellarSDK\ClaimClaimableBalanceOperationBuilder;
+use Soneso\StellarSDK\ClawbackClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\ClawbackOperationBuilder;
+use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
+use Soneso\StellarSDK\CreatePassiveSellOfferOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
 use Soneso\StellarSDK\LiquidityPoolWithdrawOperationBuilder;
@@ -804,5 +813,385 @@ class OperationBuilderTest extends TestCase
         $operation = $builder->build();
         $xdr = $operation->toXdr();
         $this->assertNotNull($xdr->getBody()->getLiquidityPoolWithdrawOperation());
+    }
+
+    // AccountMergeOperationBuilder Tests
+
+    public function testAccountMergeBasic(): void
+    {
+        $builder = new AccountMergeOperationBuilder($this->destAccountId);
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals($this->destAccountId, $operation->getDestination()->getAccountId());
+        $this->assertEquals($this->sourceAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testAccountMergeForMuxedDestination(): void
+    {
+        $muxedDest = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $builder = AccountMergeOperationBuilder::forMuxedDestinationAccount($muxedDest);
+        $operation = $builder->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getDestination()->getAccountId());
+    }
+
+    public function testAccountMergeMuxedSourceAccount(): void
+    {
+        $muxedSource = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $builder = new AccountMergeOperationBuilder($this->destAccountId);
+        $operation = $builder->setMuxedSourceAccount($muxedSource)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testAccountMergeXdrRoundTrip(): void
+    {
+        $builder = new AccountMergeOperationBuilder($this->destAccountId);
+        $operation = $builder->build();
+
+        $xdr = $operation->toXdr();
+        $this->assertNotNull($xdr->getBody());
+        $this->assertEquals($this->destAccountId, $operation->getDestination()->getAccountId());
+    }
+
+    // AllowTrustOperationBuilder Tests
+
+    public function testAllowTrustBasic(): void
+    {
+        $builder = new AllowTrustOperationBuilder(
+            $this->destAccountId,
+            "USD",
+            true,
+            false
+        );
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals($this->destAccountId, $operation->getTrustor());
+        $this->assertEquals("USD", $operation->getAssetCode());
+        $this->assertTrue($operation->isAuthorize());
+        $this->assertFalse($operation->isAuthorizeToMaintainLiabilities());
+    }
+
+    public function testAllowTrustAuthorizeToMaintainLiabilities(): void
+    {
+        $builder = new AllowTrustOperationBuilder(
+            $this->destAccountId,
+            "EUR",
+            false,
+            true
+        );
+        $operation = $builder->build();
+
+        $this->assertFalse($operation->isAuthorize());
+        $this->assertTrue($operation->isAuthorizeToMaintainLiabilities());
+    }
+
+    public function testAllowTrustMuxedSourceAccount(): void
+    {
+        $muxedSource = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $builder = new AllowTrustOperationBuilder(
+            $this->destAccountId,
+            "BTC",
+            true,
+            false
+        );
+        $operation = $builder->setMuxedSourceAccount($muxedSource)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testAllowTrustInvalidAssetCodeThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("invalid asset code");
+
+        new AllowTrustOperationBuilder(
+            $this->destAccountId,
+            "",
+            true,
+            false
+        );
+    }
+
+    public function testAllowTrustAssetCodeTooLongThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("invalid asset code");
+
+        new AllowTrustOperationBuilder(
+            $this->destAccountId,
+            str_repeat("A", 13),
+            true,
+            false
+        );
+    }
+
+    public function testAllowTrustXdrRoundTrip(): void
+    {
+        $builder = new AllowTrustOperationBuilder(
+            $this->destAccountId,
+            "USD",
+            true,
+            false
+        );
+        $operation = $builder->build();
+
+        $xdr = $operation->toXdr();
+        $this->assertNotNull($xdr->getBody()->getAllowTrustOperation());
+    }
+
+    // BumpSequenceOperationBuilder Tests
+
+    public function testBumpSequenceBasic(): void
+    {
+        $bumpTo = new BigInteger("12345");
+        $builder = new BumpSequenceOperationBuilder($bumpTo);
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals($bumpTo->toString(), $operation->getBumpTo()->toString());
+        $this->assertEquals($this->sourceAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testBumpSequenceLargeNumber(): void
+    {
+        $bumpTo = new BigInteger("9999999999999999");
+        $builder = new BumpSequenceOperationBuilder($bumpTo);
+        $operation = $builder->build();
+
+        $this->assertEquals($bumpTo->toString(), $operation->getBumpTo()->toString());
+    }
+
+    public function testBumpSequenceMuxedSourceAccount(): void
+    {
+        $bumpTo = new BigInteger("54321");
+        $muxedSource = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $builder = new BumpSequenceOperationBuilder($bumpTo);
+        $operation = $builder->setMuxedSourceAccount($muxedSource)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testBumpSequenceXdrRoundTrip(): void
+    {
+        $bumpTo = new BigInteger("99999");
+        $builder = new BumpSequenceOperationBuilder($bumpTo);
+        $operation = $builder->build();
+
+        $xdr = $operation->toXdr();
+        $this->assertNotNull($xdr->getBody());
+        $this->assertEquals($bumpTo->toString(), $operation->getBumpTo()->toString());
+    }
+
+    // ChangeTrustOperationBuilder Tests
+
+    public function testChangeTrustBasic(): void
+    {
+        $asset = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $builder = new ChangeTrustOperationBuilder($asset, "1000.0");
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals("USD", $operation->getAsset()->getCode());
+        $this->assertEquals("1000.0000000", $operation->getLimit());
+    }
+
+    public function testChangeTrustWithoutLimit(): void
+    {
+        $asset = Asset::createNonNativeAsset("EUR", $this->destAccountId);
+        $builder = new ChangeTrustOperationBuilder($asset);
+        $operation = $builder->build();
+
+        $this->assertEquals("922337203685.4775807", $operation->getLimit());
+    }
+
+    public function testChangeTrustNativeAsset(): void
+    {
+        $asset = Asset::native();
+        $builder = new ChangeTrustOperationBuilder($asset, "500.0");
+        $operation = $builder->build();
+
+        $this->assertEquals("native", $asset->getType());
+    }
+
+    public function testChangeTrustMuxedSourceAccount(): void
+    {
+        $asset = Asset::createNonNativeAsset("BTC", $this->sourceAccountId);
+        $muxedSource = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $builder = new ChangeTrustOperationBuilder($asset, "100.0");
+        $operation = $builder->setMuxedSourceAccount($muxedSource)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testChangeTrustXdrRoundTrip(): void
+    {
+        $asset = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $builder = new ChangeTrustOperationBuilder($asset, "1000.0");
+        $operation = $builder->build();
+
+        $xdr = $operation->toXdr();
+        $this->assertNotNull($xdr->getBody());
+        $this->assertEquals("USD", $operation->getAsset()->getCode());
+    }
+
+    // ClaimClaimableBalanceOperationBuilder Tests
+
+    public function testClaimClaimableBalanceBasic(): void
+    {
+        $balanceId = "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+        $builder = new ClaimClaimableBalanceOperationBuilder($balanceId);
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals($balanceId, $operation->getBalanceId());
+        $this->assertEquals($this->sourceAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testClaimClaimableBalanceMuxedSourceAccount(): void
+    {
+        $balanceId = "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+        $muxedSource = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $builder = new ClaimClaimableBalanceOperationBuilder($balanceId);
+        $operation = $builder->setMuxedSourceAccount($muxedSource)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testClaimClaimableBalanceXdrRoundTrip(): void
+    {
+        $balanceId = "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+        $builder = new ClaimClaimableBalanceOperationBuilder($balanceId);
+        $operation = $builder->build();
+
+        $xdr = $operation->toXdr();
+        $this->assertNotNull($xdr->getBody()->getClaimClaimableBalanceOperation());
+    }
+
+    // ClawbackClaimableBalanceOperationBuilder Tests
+
+    public function testClawbackClaimableBalanceBasic(): void
+    {
+        $balanceId = "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+        $builder = new ClawbackClaimableBalanceOperationBuilder($balanceId);
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals($balanceId, $operation->getBalanceId());
+        $this->assertEquals($this->sourceAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testClawbackClaimableBalanceMuxedSourceAccount(): void
+    {
+        $balanceId = "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+        $muxedSource = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $builder = new ClawbackClaimableBalanceOperationBuilder($balanceId);
+        $operation = $builder->setMuxedSourceAccount($muxedSource)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testClawbackClaimableBalanceXdrRoundTrip(): void
+    {
+        $balanceId = "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+        $builder = new ClawbackClaimableBalanceOperationBuilder($balanceId);
+        $operation = $builder->build();
+
+        $xdr = $operation->toXdr();
+        $this->assertNotNull($xdr->getBody()->getClawbackClaimableBalanceOperation());
+    }
+
+    // CreateAccountOperationBuilder Tests
+
+    public function testCreateAccountBasic(): void
+    {
+        $builder = new CreateAccountOperationBuilder($this->destAccountId, "10.0");
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals($this->destAccountId, $operation->getDestination());
+        $this->assertEquals("10.0", $operation->getStartingBalance());
+        $this->assertEquals($this->sourceAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testCreateAccountLargeStartingBalance(): void
+    {
+        $builder = new CreateAccountOperationBuilder($this->destAccountId, "10000000.0");
+        $operation = $builder->build();
+
+        $this->assertEquals("10000000.0", $operation->getStartingBalance());
+    }
+
+    public function testCreateAccountMuxedSourceAccount(): void
+    {
+        $muxedSource = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $builder = new CreateAccountOperationBuilder($this->destAccountId, "5.0");
+        $operation = $builder->setMuxedSourceAccount($muxedSource)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testCreateAccountXdrRoundTrip(): void
+    {
+        $builder = new CreateAccountOperationBuilder($this->destAccountId, "10.0");
+        $operation = $builder->build();
+
+        $xdr = $operation->toXdr();
+        $this->assertNotNull($xdr->getBody());
+        $this->assertEquals($this->destAccountId, $operation->getDestination());
+    }
+
+    // CreatePassiveSellOfferOperationBuilder Tests
+
+    public function testCreatePassiveSellOfferBasic(): void
+    {
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::createNonNativeAsset("EUR", $this->destAccountId);
+        $price = new Price(1, 2);
+
+        $builder = new CreatePassiveSellOfferOperationBuilder($selling, $buying, "100.0", $price);
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals("USD", $operation->getSelling()->getCode());
+        $this->assertEquals("EUR", $operation->getBuying()->getCode());
+        $this->assertEquals("100.0", $operation->getAmount());
+        $this->assertEquals(1, $operation->getPrice()->getN());
+        $this->assertEquals(2, $operation->getPrice()->getD());
+    }
+
+    public function testCreatePassiveSellOfferNativeAssets(): void
+    {
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $price = new Price(5, 1);
+
+        $builder = new CreatePassiveSellOfferOperationBuilder($selling, $buying, "50.0", $price);
+        $operation = $builder->build();
+
+        $this->assertEquals("native", $selling->getType());
+        $this->assertEquals(5, $operation->getPrice()->getN());
+        $this->assertEquals(1, $operation->getPrice()->getD());
+    }
+
+    public function testCreatePassiveSellOfferMuxedSourceAccount(): void
+    {
+        $selling = Asset::createNonNativeAsset("BTC", $this->sourceAccountId);
+        $buying = Asset::createNonNativeAsset("ETH", $this->destAccountId);
+        $price = new Price(10, 3);
+        $muxedSource = MuxedAccount::fromAccountId($this->muxedAccountId);
+
+        $builder = new CreatePassiveSellOfferOperationBuilder($selling, $buying, "25.0", $price);
+        $operation = $builder->setMuxedSourceAccount($muxedSource)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testCreatePassiveSellOfferXdrRoundTrip(): void
+    {
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::native();
+        $price = new Price(2, 3);
+
+        $builder = new CreatePassiveSellOfferOperationBuilder($selling, $buying, "100.0", $price);
+        $operation = $builder->build();
+
+        $xdr = $operation->toXdr();
+        $this->assertNotNull($xdr->getBody());
+        $this->assertEquals("USD", $operation->getSelling()->getCode());
     }
 }

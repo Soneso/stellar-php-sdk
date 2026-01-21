@@ -507,4 +507,96 @@ class AccountsRequestBuilderTest extends TestCase
         $result = $builder->forSigner(self::TEST_SIGNER_ID);
         $this->assertInstanceOf(AccountsRequestBuilder::class, $result);
     }
+
+    /**
+     * Test forLiquidityPool filter with L-prefixed ID (StrKey encoded)
+     */
+    public function testForLiquidityPoolWithLAddress(): void
+    {
+        $client = $this->createMockedClient([
+            new Response(200, [], $this->getSampleAccountsPageJson())
+        ]);
+        $builder = new AccountsRequestBuilder($client);
+
+        // L-prefixed liquidity pool ID (StrKey encoded)
+        $lPoolId = 'LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN';
+
+        $builder->forLiquidityPool($lPoolId);
+        $url = $builder->buildUrl();
+
+        // The L-address should be decoded to hex format
+        $this->assertStringContainsString('liquidity_pool=', $url);
+        // The decoded hex should not contain the L prefix
+        $this->assertStringNotContainsString('LA7QYNF7', $url);
+        // The URL should contain a 64-character hex string (32 bytes)
+        $this->assertMatchesRegularExpression('/liquidity_pool=[0-9a-f]{64}/', $url);
+    }
+
+    /**
+     * Test that forAsset and forSigner mutual exclusivity works in reverse order
+     */
+    public function testForAssetBeforeSignerMutuallyExclusive(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('cannot set both asset and signer');
+
+        $client = $this->createMockedClient([]);
+        $builder = new AccountsRequestBuilder($client);
+
+        $builder->forSigner(self::TEST_SIGNER_ID);
+        $asset = new AssetTypeCreditAlphanum4('USD', self::TEST_SIGNER_ID);
+        $builder->forAsset($asset);
+    }
+
+    /**
+     * Test that forLiquidityPool before forAsset is mutually exclusive
+     */
+    public function testForLiquidityPoolBeforeAssetMutuallyExclusive(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('cannot set both liquidity_pool and asset');
+
+        $client = $this->createMockedClient([]);
+        $builder = new AccountsRequestBuilder($client);
+
+        $builder->forLiquidityPool(self::TEST_LIQUIDITY_POOL_ID);
+        $asset = new AssetTypeCreditAlphanum4('USD', self::TEST_SIGNER_ID);
+        $builder->forAsset($asset);
+    }
+
+    /**
+     * Test that forSponsor before forLiquidityPool is mutually exclusive
+     */
+    public function testForSponsorBeforeLiquidityPoolMutuallyExclusive(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('cannot set both sponsor and liquidity_pool');
+
+        $client = $this->createMockedClient([]);
+        $builder = new AccountsRequestBuilder($client);
+
+        $builder->forSponsor(self::TEST_SPONSOR_ID);
+        $builder->forLiquidityPool(self::TEST_LIQUIDITY_POOL_ID);
+    }
+
+    /**
+     * Test that setSegments throws exception when called twice
+     */
+    public function testSetSegmentsThrowsExceptionWhenCalledTwice(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('URL segments have been already added.');
+
+        $client = $this->createMockedClient([
+            new Response(200, [], $this->getSampleAccountJson()),
+            new Response(200, [], $this->getSampleAccountJson())
+        ]);
+        $builder = new AccountsRequestBuilder($client);
+
+        // First call sets segments via account()
+        $builder->account(self::TEST_ACCOUNT_ID);
+
+        // Second call should throw - using accountData() which also calls setSegments
+        $builder->accountData(self::TEST_ACCOUNT_ID, 'config');
+    }
 }

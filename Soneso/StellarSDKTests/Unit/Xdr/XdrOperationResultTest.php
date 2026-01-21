@@ -46,6 +46,28 @@ use Soneso\StellarSDK\Xdr\XdrPaymentResult;
 use Soneso\StellarSDK\Xdr\XdrPaymentResultCode;
 use Soneso\StellarSDK\Xdr\XdrSetOptionsResult;
 use Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode;
+use Soneso\StellarSDK\Xdr\XdrClaimAtom;
+use Soneso\StellarSDK\Xdr\XdrClaimAtomType;
+use Soneso\StellarSDK\Xdr\XdrClaimOfferAtom;
+use Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0;
+use Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom;
+use Soneso\StellarSDK\Xdr\XdrInnerTransactionResult;
+use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultPair;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultResult;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultExt;
+use Soneso\StellarSDK\Xdr\XdrClawbackResult;
+use Soneso\StellarSDK\Xdr\XdrClawbackResultCode;
+use Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult;
+use Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode;
+use Soneso\StellarSDK\Xdr\XdrPathPaymentResultSuccess;
+use Soneso\StellarSDK\Xdr\XdrSimplePaymentResult;
+use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
+use Soneso\StellarSDK\Xdr\XdrAccountID;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
+use phpseclib3\Math\BigInteger;
 
 class XdrOperationResultTest extends TestCase
 {
@@ -479,5 +501,694 @@ class XdrOperationResultTest extends TestCase
 
         $this->assertEquals(XdrOperationResultCode::NO_ACCOUNT, $decoded->getResultCode()->getValue());
         $this->assertNull($decoded->getResultTr());
+    }
+
+    #[Test]
+    public function testOperationResultTrPathPaymentStrictReceive(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE);
+
+        $code = new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::MALFORMED);
+        $encoded = $code->encode();
+        $decoded = XdrPathPaymentStrictReceiveResultCode::decode(new XdrBuffer($encoded));
+
+        $result = new XdrPathPaymentStrictReceiveResult();
+        $buffer = new XdrBuffer($type->encode() . $decoded->encode());
+        $decodedTr = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE, $decodedTr->getType()->getValue());
+        $this->assertNotNull($decodedTr->getPathPaymentStrictReceiveResult());
+        $this->assertEquals(
+            XdrPathPaymentStrictReceiveResultCode::MALFORMED,
+            $decodedTr->getPathPaymentStrictReceiveResult()->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrPathPaymentStrictSend(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_SEND);
+
+        $code = new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN);
+        $encoded = $code->encode();
+        $decoded = XdrPathPaymentStrictSendResultCode::decode(new XdrBuffer($encoded));
+
+        $result = new XdrPathPaymentStrictSendResult();
+        $buffer = new XdrBuffer($type->encode() . $decoded->encode());
+        $decodedTr = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::PATH_PAYMENT_STRICT_SEND, $decodedTr->getType()->getValue());
+        $this->assertNotNull($decodedTr->getPathPaymentStrictSendResult());
+        $this->assertEquals(
+            XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN,
+            $decodedTr->getPathPaymentStrictSendResult()->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrCreatePassiveSellOffer(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::CREATE_PASSIVE_SELL_OFFER);
+        $manageOfferResult = new XdrManageOfferResult(
+            new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_ISSUER)
+        );
+
+        $buffer = new XdrBuffer($type->encode() . $manageOfferResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::CREATE_PASSIVE_SELL_OFFER, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getCreatePassiveSellOfferResult());
+        $this->assertEquals(
+            XdrManageOfferResultCode::SELL_NO_ISSUER,
+            $decoded->getCreatePassiveSellOfferResult()->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrAllowTrust(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::ALLOW_TRUST);
+        $allowTrustResult = new XdrAllowTrustResult();
+        $allowTrustResult->setResultCode(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::TRUST_NOT_REQUIRED));
+
+        $buffer = new XdrBuffer($type->encode() . $allowTrustResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::ALLOW_TRUST, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getAllowTrustResult());
+        $this->assertEquals(
+            XdrAllowTrustResultCode::TRUST_NOT_REQUIRED,
+            $decoded->getAllowTrustResult()->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrInvokeHostFunction(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION);
+        $invokeResult = new XdrInvokeHostFunctionResult(
+            new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED)
+        );
+
+        $buffer = new XdrBuffer($type->encode() . $invokeResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::INVOKE_HOST_FUNCTION, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getInvokeHostFunctionResult());
+        $this->assertEquals(
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED,
+            $decoded->getInvokeHostFunctionResult()->type->value
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrExtendFootprintTTL(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL);
+        $extendResult = new XdrExtendFootprintTTLResult(
+            new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_MALFORMED)
+        );
+
+        $buffer = new XdrBuffer($type->encode() . $extendResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::EXTEND_FOOTPRINT_TTL, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getExtendFootprintTTLResult());
+        $this->assertEquals(
+            XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_MALFORMED,
+            $decoded->getExtendFootprintTTLResult()->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrRestoreFootprint(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::RESTORE_FOOTPRINT);
+        $restoreResult = new XdrRestoreFootprintResult(
+            new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED)
+        );
+
+        $buffer = new XdrBuffer($type->encode() . $restoreResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::RESTORE_FOOTPRINT, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getRestoreFootprintResult());
+        $this->assertEquals(
+            XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED,
+            $decoded->getRestoreFootprintResult()->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrClawback(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::CLAWBACK);
+        $clawbackResult = new XdrClawbackResult(
+            new XdrClawbackResultCode(XdrClawbackResultCode::NO_TRUST)
+        );
+
+        $buffer = new XdrBuffer($type->encode() . $clawbackResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::CLAWBACK, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getClawbackResult());
+        $this->assertEquals(
+            XdrClawbackResultCode::NO_TRUST,
+            $decoded->getClawbackResult()->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrClawbackClaimableBalance(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE);
+        $clawbackResult = new XdrClawbackClaimableBalanceResult(
+            new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::DOES_NOT_EXIST)
+        );
+
+        $buffer = new XdrBuffer($type->encode() . $clawbackResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getClawbackClaimableBalanceResult());
+        $this->assertEquals(
+            XdrClawbackClaimableBalanceResultCode::DOES_NOT_EXIST,
+            $decoded->getClawbackClaimableBalanceResult()->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrLiquidityPoolDeposit(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_DEPOSIT);
+        $depositResult = new XdrLiquidityPoolDepositResult();
+        $depositResult->setResultCode(
+            new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NO_TRUST)
+        );
+
+        $buffer = new XdrBuffer($type->encode() . $depositResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::LIQUIDITY_POOL_DEPOSIT, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getLiquidityPoolDepositResult());
+        $this->assertEquals(
+            XdrLiquidityPoolDepositResultCode::NO_TRUST,
+            $decoded->getLiquidityPoolDepositResult()->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testOperationResultTrLiquidityPoolWithdraw(): void
+    {
+        $type = new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_WITHDRAW);
+        $withdrawResult = new XdrLiquidityPoolWithdrawResult();
+        $withdrawResult->setResultCode(
+            new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED)
+        );
+
+        $buffer = new XdrBuffer($type->encode() . $withdrawResult->encode());
+        $decoded = XdrOperationResultTr::decode($buffer);
+
+        $this->assertEquals(XdrOperationType::LIQUIDITY_POOL_WITHDRAW, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getLiquidityPoolWithdrawResult());
+        $this->assertEquals(
+            XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED,
+            $decoded->getLiquidityPoolWithdrawResult()->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testClawbackResultRoundTrip(): void
+    {
+        $result = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::SUCCESS));
+
+        $encoded = $result->encode();
+        $decoded = XdrClawbackResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(XdrClawbackResultCode::SUCCESS, $decoded->getResultCode()->getValue());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testRestoreFootprintResultRoundTrip(): void
+    {
+        $result = new XdrRestoreFootprintResult(
+            new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS)
+        );
+
+        $encoded = $result->encode();
+        $decoded = XdrRestoreFootprintResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS,
+            $decoded->getCode()->getValue()
+        );
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testClaimOfferAtomRoundTrip(): void
+    {
+        $accountId = XdrAccountID::fromAccountId("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H");
+        $assetSold = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $assetBought = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+
+        $claimAtom = new XdrClaimOfferAtom(
+            $accountId,
+            12345,
+            $assetSold,
+            new BigInteger(1000000),
+            $assetBought,
+            new BigInteger(2000000)
+        );
+
+        $encoded = $claimAtom->encode();
+        $decoded = XdrClaimOfferAtom::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals($accountId->getAccountId(), $decoded->getAccountId()->getAccountId());
+        $this->assertEquals(12345, $decoded->getOfferId());
+        $this->assertEquals("1000000", $decoded->getAmountSold()->toString());
+        $this->assertEquals("2000000", $decoded->getAmountBought()->toString());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testClaimOfferAtomV0RoundTrip(): void
+    {
+        $sellerEd25519 = str_repeat("\xaa", 32);
+        $assetSold = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $assetBought = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+
+        $claimAtom = new XdrClaimOfferAtomV0(
+            $sellerEd25519,
+            67890,
+            $assetSold,
+            new BigInteger(500000),
+            $assetBought,
+            new BigInteger(750000)
+        );
+
+        $encoded = $claimAtom->encode();
+        $decoded = XdrClaimOfferAtomV0::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals($sellerEd25519, $decoded->getSellerEd25519());
+        $this->assertEquals(67890, $decoded->getOfferId());
+        $this->assertEquals("500000", $decoded->getAmountSold()->toString());
+        $this->assertEquals("750000", $decoded->getAmountBought()->toString());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testClaimLiquidityAtomRoundTrip(): void
+    {
+        $poolId = hash('sha256', 'test-pool-id', true);
+        $assetSold = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $assetBought = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+
+        $claimAtom = new XdrClaimLiquidityAtom(
+            $poolId,
+            $assetSold,
+            new BigInteger(3000000),
+            $assetBought,
+            new BigInteger(4000000)
+        );
+
+        $encoded = $claimAtom->encode();
+        $decoded = XdrClaimLiquidityAtom::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals($poolId, $decoded->getLiquidityPoolID());
+        $this->assertEquals("3000000", $decoded->getAmountSold()->toString());
+        $this->assertEquals("4000000", $decoded->getAmountBought()->toString());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testClaimAtomWithV0RoundTrip(): void
+    {
+        $claimAtom = new XdrClaimAtom();
+        $claimAtom->setType(new XdrClaimAtomType(XdrClaimAtomType::V0));
+
+        $sellerEd25519 = str_repeat("\xbb", 32);
+        $assetSold = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $assetBought = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+
+        $v0 = new XdrClaimOfferAtomV0(
+            $sellerEd25519,
+            111,
+            $assetSold,
+            new BigInteger(100),
+            $assetBought,
+            new BigInteger(200)
+        );
+        $claimAtom->setV0($v0);
+
+        $encoded = $claimAtom->encode();
+        $decoded = XdrClaimAtom::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(XdrClaimAtomType::V0, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getV0());
+        $this->assertEquals($sellerEd25519, $decoded->getV0()->getSellerEd25519());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testClaimAtomWithOrderBookRoundTrip(): void
+    {
+        $accountId = XdrAccountID::fromAccountId("GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ");
+        $assetSold = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $assetBought = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+
+        $orderBook = new XdrClaimOfferAtom(
+            $accountId,
+            222,
+            $assetSold,
+            new BigInteger(300),
+            $assetBought,
+            new BigInteger(400)
+        );
+
+        $type = new XdrClaimAtomType(XdrClaimAtomType::ORDER_BOOK);
+        $buffer = new XdrBuffer($type->encode() . $orderBook->encode());
+        $decoded = XdrClaimAtom::decode($buffer);
+
+        $this->assertEquals(XdrClaimAtomType::ORDER_BOOK, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getOrderBook());
+        $this->assertEquals($accountId->getAccountId(), $decoded->getOrderBook()->getAccountId()->getAccountId());
+    }
+
+    #[Test]
+    public function testClaimAtomWithLiquidityPoolRoundTrip(): void
+    {
+        $claimAtom = new XdrClaimAtom();
+        $claimAtom->setType(new XdrClaimAtomType(XdrClaimAtomType::LIQUIDITY_POOL));
+
+        $poolId = hash('sha256', 'liquidity-test', true);
+        $assetSold = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $assetBought = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+
+        $liquidityPool = new XdrClaimLiquidityAtom(
+            $poolId,
+            $assetSold,
+            new BigInteger(500),
+            $assetBought,
+            new BigInteger(600)
+        );
+        $claimAtom->setLiquidityPool($liquidityPool);
+
+        $encoded = $claimAtom->encode();
+        $decoded = XdrClaimAtom::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(XdrClaimAtomType::LIQUIDITY_POOL, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getLiquidityPool());
+        $this->assertEquals($poolId, $decoded->getLiquidityPool()->getLiquidityPoolID());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testInnerTransactionResultRoundTrip(): void
+    {
+        $innerResult = new XdrInnerTransactionResult();
+        $innerResult->feeCharged = new BigInteger(10000);
+
+        $resultResult = new XdrTransactionResultResult();
+        $resultResult->resultCode = new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS);
+        $resultResult->results = [];
+        $innerResult->result = $resultResult;
+
+        $innerResult->ext = new XdrTransactionResultExt(0);
+
+        $encoded = $innerResult->encode();
+        $decoded = XdrInnerTransactionResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals("10000", $decoded->getFeeCharged()->toString());
+        $this->assertEquals(
+            XdrTransactionResultCode::SUCCESS,
+            $decoded->getResult()->getResultCode()->getValue()
+        );
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testInnerTransactionResultPairRoundTrip(): void
+    {
+        $txHash = hash('sha256', 'test-transaction', false);
+
+        $innerResult = new XdrInnerTransactionResult();
+        $innerResult->feeCharged = new BigInteger(5000);
+
+        $resultResult = new XdrTransactionResultResult();
+        $resultResult->resultCode = new XdrTransactionResultCode(XdrTransactionResultCode::FAILED);
+        $resultResult->results = [];
+        $innerResult->result = $resultResult;
+
+        $innerResult->ext = new XdrTransactionResultExt(0);
+
+        $pair = new XdrInnerTransactionResultPair($txHash, $innerResult);
+
+        $encoded = $pair->encode();
+        $decoded = XdrInnerTransactionResultPair::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals($txHash, $decoded->getTransactionHash());
+        $this->assertEquals("5000", $decoded->getResult()->getFeeCharged()->toString());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testInflationResultSuccess(): void
+    {
+        $result = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::SUCCESS), []);
+
+        $encoded = $result->encode();
+        $decoded = XdrInflationResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(XdrInflationResultCode::SUCCESS, $decoded->getCode()->getValue());
+        $this->assertNotNull($decoded->getPayouts());
+        $this->assertIsArray($decoded->getPayouts());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testInflationResultNotTime(): void
+    {
+        $result = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::NOT_TIME));
+
+        $encoded = $result->encode();
+        $decoded = XdrInflationResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(XdrInflationResultCode::NOT_TIME, $decoded->getCode()->getValue());
+        $this->assertNull($decoded->getPayouts());
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    #[Test]
+    public function testPathPaymentStrictReceiveResultWithNoIssuer(): void
+    {
+        $issuer = XdrAccountID::fromAccountId("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H");
+        $alphaNum4 = new XdrAssetAlphaNum4("USD", $issuer);
+        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        $asset->setAlphaNum4($alphaNum4);
+
+        $code = new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_ISSUER);
+        $buffer = new XdrBuffer($code->encode() . $asset->encode());
+        $decoded = XdrPathPaymentStrictReceiveResult::decode($buffer);
+
+        $this->assertEquals(
+            XdrPathPaymentStrictReceiveResultCode::NO_ISSUER,
+            $decoded->getCode()->getValue()
+        );
+        $this->assertNotNull($decoded->getNoIssuer());
+        $this->assertEquals(
+            XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4,
+            $decoded->getNoIssuer()->getType()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testPathPaymentStrictReceiveResultMalformed(): void
+    {
+        $code = new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::MALFORMED);
+        $buffer = new XdrBuffer($code->encode());
+        $decoded = XdrPathPaymentStrictReceiveResult::decode($buffer);
+
+        $this->assertEquals(
+            XdrPathPaymentStrictReceiveResultCode::MALFORMED,
+            $decoded->getCode()->getValue()
+        );
+        $this->assertNull($decoded->getSuccess());
+        $this->assertNull($decoded->getNoIssuer());
+    }
+
+    #[Test]
+    public function testPathPaymentStrictSendResultLineFull(): void
+    {
+        $code = new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::LINE_FULL);
+        $buffer = new XdrBuffer($code->encode());
+        $decoded = XdrPathPaymentStrictSendResult::decode($buffer);
+
+        $this->assertEquals(
+            XdrPathPaymentStrictSendResultCode::LINE_FULL,
+            $decoded->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testPathPaymentStrictSendResultUnderDestmin(): void
+    {
+        $code = new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN);
+        $buffer = new XdrBuffer($code->encode());
+        $decoded = XdrPathPaymentStrictSendResult::decode($buffer);
+
+        $this->assertEquals(
+            XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN,
+            $decoded->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testClawbackResultMalformed(): void
+    {
+        $result = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::MALFORMED));
+
+        $encoded = $result->encode();
+        $decoded = XdrClawbackResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(XdrClawbackResultCode::MALFORMED, $decoded->getResultCode()->getValue());
+    }
+
+    #[Test]
+    public function testClawbackResultNotEnabled(): void
+    {
+        $result = new XdrClawbackResult(
+            new XdrClawbackResultCode(XdrClawbackResultCode::NOT_ENABLED)
+        );
+
+        $encoded = $result->encode();
+        $decoded = XdrClawbackResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrClawbackResultCode::NOT_ENABLED,
+            $decoded->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testClawbackClaimableBalanceResultNotIssuer(): void
+    {
+        $result = new XdrClawbackClaimableBalanceResult(
+            new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_ISSUER)
+        );
+
+        $encoded = $result->encode();
+        $decoded = XdrClawbackClaimableBalanceResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrClawbackClaimableBalanceResultCode::NOT_ISSUER,
+            $decoded->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testLiquidityPoolDepositResultMalformed(): void
+    {
+        $result = new XdrLiquidityPoolDepositResult();
+        $result->setResultCode(
+            new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::MALFORMED)
+        );
+
+        $encoded = $result->encode();
+        $decoded = XdrLiquidityPoolDepositResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrLiquidityPoolDepositResultCode::MALFORMED,
+            $decoded->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testLiquidityPoolWithdrawResultLineFull(): void
+    {
+        $result = new XdrLiquidityPoolWithdrawResult();
+        $result->setResultCode(
+            new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::LINE_FULL)
+        );
+
+        $encoded = $result->encode();
+        $decoded = XdrLiquidityPoolWithdrawResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrLiquidityPoolWithdrawResultCode::LINE_FULL,
+            $decoded->getResultCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testInvokeHostFunctionResultSuccess(): void
+    {
+        $result = new XdrInvokeHostFunctionResult(
+            new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS)
+        );
+        $result->success = hash('sha256', 'test-success', true);
+
+        $encoded = $result->encode();
+        $decoded = XdrInvokeHostFunctionResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS,
+            $decoded->type->value
+        );
+        $this->assertNotNull($decoded->success);
+        $this->assertEquals($result->success, $decoded->success);
+    }
+
+    #[Test]
+    public function testExtendFootprintTTLResultInsufficientRefundableFee(): void
+    {
+        $result = new XdrExtendFootprintTTLResult(
+            new XdrExtendFootprintTTLResultCode(
+                XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE
+            )
+        );
+
+        $encoded = $result->encode();
+        $decoded = XdrExtendFootprintTTLResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE,
+            $decoded->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testRestoreFootprintResultMalformed(): void
+    {
+        $result = new XdrRestoreFootprintResult(
+            new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_MALFORMED)
+        );
+
+        $encoded = $result->encode();
+        $decoded = XdrRestoreFootprintResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_MALFORMED,
+            $decoded->getCode()->getValue()
+        );
+    }
+
+    #[Test]
+    public function testRestoreFootprintResultInsufficientRefundableFee(): void
+    {
+        $result = new XdrRestoreFootprintResult(
+            new XdrRestoreFootprintResultCode(
+                XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE
+            )
+        );
+
+        $encoded = $result->encode();
+        $decoded = XdrRestoreFootprintResult::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(
+            XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE,
+            $decoded->getCode()->getValue()
+        );
     }
 }

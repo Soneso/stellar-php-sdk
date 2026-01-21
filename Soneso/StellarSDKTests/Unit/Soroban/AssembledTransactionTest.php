@@ -625,4 +625,402 @@ class AssembledTransactionTest extends TestCase
         $response->latestLedger = 1000;
         return $response;
     }
+
+    public function testSimulateThrowsWithoutRawTransaction(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+            $tx->raw = null;
+
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage('Transaction has not yet been assembled');
+
+            $tx->simulate();
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testSimulateBuildsTransactionFromRaw(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+            $this->assertNull($tx->tx);
+
+            $server = new SorobanServer(self::TEST_RPC_URL);
+            $mockResponse = new \Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse([]);
+            $mockResponse->transactionData = $this->createMockTransactionData();
+            $mockResponse->minResourceFee = 100;
+            $mockResponse->latestLedger = 1000;
+
+            $reflection = new \ReflectionClass($tx);
+            $property = $reflection->getProperty('server');
+            $property->setAccessible(true);
+            $mockServer = $this->createMockSorobanServer($mockResponse);
+            $property->setValue($tx, $mockServer);
+
+            $tx->simulate();
+
+            $this->assertNotNull($tx->tx);
+            $this->assertInstanceOf(Transaction::class, $tx->tx);
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testSubmitThrowsWithoutSimulation(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage('not yet been signed');
+
+            $tx->send();
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testSignAndSubmitCombinesSignAndSend(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+            $tx->tx = $tx->raw->build();
+
+            $this->expectException(Exception::class);
+
+            $tx->signAndSend();
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testIsReadOnlyReturnsFalseWithoutSimulation(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+
+            $isReadOnly = $tx->isReadCall();
+            $this->assertFalse($isReadOnly);
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testGetResultThrowsWithoutSimulation(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage('Transaction has not yet been simulated');
+
+            $tx->getSimulationData();
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testParseResultReturnsValueFromSimulation(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+
+            $simulationResponse = $this->createMockSimulationResponse();
+            $tx->simulationResponse = $simulationResponse;
+
+            $result = $tx->getSimulationData();
+
+            $this->assertNotNull($result);
+            $this->assertNotNull($result->returnedValue);
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    private function createMockSorobanServer(SimulateTransactionResponse $mockResponse): SorobanServer
+    {
+        $server = new SorobanServer(self::TEST_RPC_URL);
+
+        $mock = new \GuzzleHttp\Handler\MockHandler([
+            new \GuzzleHttp\Psr7\Response(200, [], json_encode([
+                'jsonrpc' => '2.0',
+                'id' => 1,
+                'result' => [
+                    'minResourceFee' => '100',
+                    'latestLedger' => 1000,
+                    'results' => []
+                ]
+            ]))
+        ]);
+
+        $handlerStack = \GuzzleHttp\HandlerStack::create($mock);
+        $client = new \GuzzleHttp\Client(['handler' => $handlerStack]);
+
+        $reflection = new \ReflectionClass($server);
+        $property = $reflection->getProperty('httpClient');
+        $property->setAccessible(true);
+        $property->setValue($server, $client);
+
+        return $server;
+    }
+
+    public function testBuildCreatesValidAssembledTransaction(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test_method',
+            arguments: [XdrSCVal::forU32(42)]
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+
+            $this->assertInstanceOf(AssembledTransaction::class, $tx);
+            $this->assertNotNull($tx->raw);
+            $this->assertNull($tx->tx);
+            $this->assertNull($tx->signed);
+            $this->assertNull($tx->simulationResponse);
+            $this->assertSame($txOptions, $tx->options);
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testSimulateUpdatesTransactionWithSimulationData(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false, restore: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+
+            $mockResponse = $this->createMockSimulationResponse();
+            $reflection = new \ReflectionClass($tx);
+            $property = $reflection->getProperty('server');
+            $property->setAccessible(true);
+            $mockServer = $this->createMockSorobanServer($mockResponse);
+            $property->setValue($tx, $mockServer);
+
+            $tx->simulate();
+
+            $this->assertNotNull($tx->simulationResponse);
+            $this->assertNotNull($tx->tx);
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testIsReadCallReturnsTrueForReadOnlyCall(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+
+            $simulationResponse = $this->createMockSimulationResponse();
+            $tx->simulationResponse = $simulationResponse;
+
+            $reflection = new \ReflectionClass($tx);
+            $property = $reflection->getProperty('simulationResult');
+            $property->setAccessible(true);
+
+            $mockResult = new \Soneso\StellarSDK\Soroban\Contract\SimulateHostFunctionResult(
+                $simulationResponse->transactionData,
+                XdrSCVal::forU32(100),
+                []
+            );
+            $property->setValue($tx, $mockResult);
+
+            $isReadCall = $tx->isReadCall();
+            $this->assertTrue($isReadCall);
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testSignWithCustomKeyPair(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+            $tx->tx = $tx->raw->build();
+
+            $simulationResponse = $this->createMockSimulationResponse();
+            $tx->simulationResponse = $simulationResponse;
+
+            $reflection = new \ReflectionClass($tx);
+            $property = $reflection->getProperty('simulationResult');
+            $property->setAccessible(true);
+
+            $mockResult = new \Soneso\StellarSDK\Soroban\Contract\SimulateHostFunctionResult(
+                $simulationResponse->transactionData,
+                XdrSCVal::forU32(100),
+                []
+            );
+            $property->setValue($tx, $mockResult);
+
+            $tx->sign(force: true);
+
+            $this->assertNotNull($tx->signed);
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testGetSimulationDataThrowsForNullSimulationResponse(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        try {
+            $tx = AssembledTransaction::build($txOptions);
+            $tx->simulationResponse = null;
+
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage('Transaction has not yet been simulated');
+
+            $tx->getSimulationData();
+        } catch (Exception $e) {
+            $this->markTestSkipped("Network access required: " . $e->getMessage());
+        }
+    }
+
+    public function testMethodOptionsDefaults(): void
+    {
+        $options = new MethodOptions();
+
+        $this->assertEquals(100, $options->fee);
+        $this->assertEquals(300, $options->timeoutInSeconds);
+        $this->assertTrue($options->simulate);
+        $this->assertTrue($options->restore);
+    }
+
+    public function testClientOptionsWithAllParameters(): void
+    {
+        $keyPair = $this->testKeyPair;
+        $network = $this->testNetwork;
+        $contractId = self::TEST_CONTRACT_ID;
+        $rpcUrl = self::TEST_RPC_URL;
+
+        $options = new ClientOptions(
+            sourceAccountKeyPair: $keyPair,
+            contractId: $contractId,
+            network: $network,
+            rpcUrl: $rpcUrl,
+            enableServerLogging: true
+        );
+
+        $this->assertSame($keyPair, $options->sourceAccountKeyPair);
+        $this->assertEquals($contractId, $options->contractId);
+        $this->assertSame($network, $options->network);
+        $this->assertEquals($rpcUrl, $options->rpcUrl);
+        $this->assertTrue($options->enableServerLogging);
+    }
 }

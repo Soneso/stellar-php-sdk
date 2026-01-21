@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-// Copyright 2025 The Stellar PHP SDK Authors. All rights reserved.
+// Copyright 2026 The Stellar PHP SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
@@ -334,6 +334,276 @@ class StrKeyTest extends TestCase
         // Invalid length (base-32 decoding should yield 43 bytes, not 44)
         $strKey = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAAV75I";
         assertFalse(StrKey::isValidAccountId($strKey));
+    }
+
+    public function testPreAuthTx() {
+        $keyPair = KeyPair::random();
+        $publicKey = $keyPair->getPublicKey();
+
+        // Encode and decode PreAuthTx
+        $encoded = StrKey::encodePreAuthTx($publicKey);
+        assertTrue(str_starts_with($encoded, "T"));
+        assertEquals($publicKey, StrKey::decodePreAuthTx($encoded));
+
+        // Test isValidPreAuthTx
+        assertTrue(StrKey::isValidPreAuthTx($encoded));
+        assertFalse(StrKey::isValidPreAuthTx("GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL"));
+        assertFalse(StrKey::isValidPreAuthTx("invalid"));
+        assertFalse(StrKey::isValidPreAuthTx(""));
+    }
+
+    public function testSha256Hash() {
+        $keyPair = KeyPair::random();
+        $publicKey = $keyPair->getPublicKey();
+
+        // Encode and decode Sha256Hash
+        $encoded = StrKey::encodeSha256Hash($publicKey);
+        assertTrue(str_starts_with($encoded, "X"));
+        assertEquals($publicKey, StrKey::decodeSha256Hash($encoded));
+
+        // Test isValidSha256Hash
+        assertTrue(StrKey::isValidSha256Hash($encoded));
+        assertFalse(StrKey::isValidSha256Hash("GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL"));
+        assertFalse(StrKey::isValidSha256Hash("invalid"));
+        assertFalse(StrKey::isValidSha256Hash(""));
+    }
+
+    public function testDecodeContractIdHex() {
+        $contractId = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE";
+        $expectedHex = "363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103";
+
+        $decodedHex = StrKey::decodeContractIdHex($contractId);
+        assertEquals($expectedHex, $decodedHex);
+
+        // Verify round-trip
+        assertEquals($contractId, StrKey::encodeContractIdHex($decodedHex));
+    }
+
+    public function testDecodeLiquidityPoolIdHex() {
+        $liquidityPoolId = "LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN";
+        $expectedHex = "3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a";
+
+        $decodedHex = StrKey::decodeLiquidityPoolIdHex($liquidityPoolId);
+        assertEquals($expectedHex, $decodedHex);
+
+        // Verify round-trip
+        assertEquals($liquidityPoolId, StrKey::encodeLiquidityPoolIdHex($decodedHex));
+    }
+
+    public function testAccountIdFromSeed() {
+        $seed = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE";
+        $expectedAccountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+
+        $accountId = StrKey::accountIdFromSeed($seed);
+        assertEquals($expectedAccountId, $accountId);
+        assertTrue(str_starts_with($accountId, "G"));
+
+        // Verify it matches the KeyPair result
+        $keyPair = KeyPair::fromSeed($seed);
+        assertEquals($keyPair->getAccountId(), $accountId);
+    }
+
+    public function testAccountIdFromPrivateKey() {
+        $seed = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE";
+        $keyPair = KeyPair::fromSeed($seed);
+        $privateKey = $keyPair->getPrivateKey();
+        $expectedAccountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+
+        $accountId = StrKey::accountIdFromPrivateKey($privateKey);
+        assertEquals($expectedAccountId, $accountId);
+        assertTrue(str_starts_with($accountId, "G"));
+
+        // Verify it matches the KeyPair result
+        assertEquals($keyPair->getAccountId(), $accountId);
+    }
+
+    public function testPublicKeyFromPrivateKey() {
+        $seed = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE";
+        $keyPair = KeyPair::fromSeed($seed);
+        $privateKey = $keyPair->getPrivateKey();
+
+        $publicKey = StrKey::publicKeyFromPrivateKey($privateKey);
+        assertEquals($keyPair->getPublicKey(), $publicKey);
+        assertEquals(32, strlen($publicKey));
+
+        // Verify the derived public key can verify signatures
+        $message = "test message";
+        $signature = $keyPair->sign($message);
+        $verifyKeyPair = KeyPair::fromPublicKey($publicKey);
+        assertTrue($verifyKeyPair->verifySignature($signature, $message));
+    }
+
+    public function testXdrSignedPayloadEncodeDecode() {
+        $keyPair = KeyPair::random();
+        $payload = hex2bin("0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
+
+        $xdrSignedPayload = new \Soneso\StellarSDK\Xdr\XdrSignedPayload($keyPair->getPublicKey(), $payload);
+
+        // Encode XDR signed payload
+        $encoded = StrKey::encodeXdrSignedPayload($xdrSignedPayload);
+        assertTrue(str_starts_with($encoded, "P"));
+
+        // Decode back to XDR signed payload
+        $decoded = StrKey::decodeXdrSignedPayload($encoded);
+        assertEquals($keyPair->getPublicKey(), $decoded->getEd25519());
+        assertEquals($payload, $decoded->getPayload());
+
+        // Verify round-trip
+        $encodedAgain = StrKey::encodeXdrSignedPayload($decoded);
+        assertEquals($encoded, $encodedAgain);
+    }
+
+    public function testSignedPayloadWithDifferentLengths() {
+        $keyPair = KeyPair::random();
+
+        // Test with minimum payload length (4 bytes)
+        $minPayload = hex2bin("01020304");
+        $xdrMin = new \Soneso\StellarSDK\Xdr\XdrSignedPayload($keyPair->getPublicKey(), $minPayload);
+        $encodedMin = StrKey::encodeXdrSignedPayload($xdrMin);
+        $decodedMin = StrKey::decodeXdrSignedPayload($encodedMin);
+        assertEquals($minPayload, $decodedMin->getPayload());
+
+        // Test with maximum payload length (64 bytes)
+        $maxPayload = random_bytes(64);
+        $xdrMax = new \Soneso\StellarSDK\Xdr\XdrSignedPayload($keyPair->getPublicKey(), $maxPayload);
+        $encodedMax = StrKey::encodeXdrSignedPayload($xdrMax);
+        $decodedMax = StrKey::decodeXdrSignedPayload($encodedMax);
+        assertEquals($maxPayload, $decodedMax->getPayload());
+
+        // Test with medium payload length (32 bytes)
+        $medPayload = random_bytes(32);
+        $xdrMed = new \Soneso\StellarSDK\Xdr\XdrSignedPayload($keyPair->getPublicKey(), $medPayload);
+        $encodedMed = StrKey::encodeXdrSignedPayload($xdrMed);
+        $decodedMed = StrKey::decodeXdrSignedPayload($encodedMed);
+        assertEquals($medPayload, $decodedMed->getPayload());
+    }
+
+    public function testIsValidSignedPayload() {
+        $validPayload = "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM";
+
+        // Valid signed payload should be properly decoded
+        $decoded = StrKey::decodeSignedPayload($validPayload);
+        assertEquals("GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", $decoded->getSignerAccountId()->getAccountId());
+    }
+
+    public function testEncodeDecodeConsistency() {
+        // Test all encode/decode pairs for consistency
+        $keyPair = KeyPair::random();
+        $data = $keyPair->getPublicKey();
+
+        // Account ID
+        $accountId = StrKey::encodeAccountId($data);
+        assertEquals($data, StrKey::decodeAccountId($accountId));
+
+        // Seed
+        $seed = StrKey::encodeSeed($data);
+        assertEquals($data, StrKey::decodeSeed($seed));
+
+        // PreAuthTx
+        $preAuthTx = StrKey::encodePreAuthTx($data);
+        assertEquals($data, StrKey::decodePreAuthTx($preAuthTx));
+
+        // Sha256Hash
+        $sha256Hash = StrKey::encodeSha256Hash($data);
+        assertEquals($data, StrKey::decodeSha256Hash($sha256Hash));
+
+        // Contract ID
+        $contractId = StrKey::encodeContractId($data);
+        assertEquals($data, StrKey::decodeContractId($contractId));
+
+        // Liquidity Pool ID
+        $liquidityPoolId = StrKey::encodeLiquidityPoolId($data);
+        assertEquals($data, StrKey::decodeLiquidityPoolId($liquidityPoolId));
+    }
+
+    public function testIsValidWithInvalidDecodedLengths() {
+        // Test muxed account with wrong decoded length
+        // Valid muxed account has 40 bytes decoded, test with modified data
+        $muxedAccountId = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK";
+        assertTrue(StrKey::isValidMuxedAccountId($muxedAccountId));
+
+        // Test signed payload with lengths at boundaries
+        // Min length signed payload (32 + 4 + 4 = 40 bytes)
+        $minPayload = "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAOQCAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUAAAAFGBU";
+        assertTrue(StrKey::decodeSignedPayload($minPayload) !== null);
+
+        // Max length signed payload
+        $maxPayload = "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM";
+        assertTrue(StrKey::decodeSignedPayload($maxPayload) !== null);
+
+        // Test claimable balance with correct decoded length (33 bytes)
+        $claimableBalanceId = "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU";
+        assertTrue(StrKey::isValidClaimableBalanceId($claimableBalanceId));
+    }
+
+    public function testPublicKeyFromPrivateKeyEdgeCases() {
+        // Test multiple random keypairs to ensure consistency
+        for ($i = 0; $i < 5; $i++) {
+            $keyPair = KeyPair::random();
+            $privateKey = $keyPair->getPrivateKey();
+
+            // Derive public key using StrKey
+            $derivedPublicKey = StrKey::publicKeyFromPrivateKey($privateKey);
+
+            // Should match the original
+            assertEquals($keyPair->getPublicKey(), $derivedPublicKey);
+            assertEquals(32, strlen($derivedPublicKey));
+        }
+    }
+
+    public function testAccountIdFromSeedAndPrivateKeyConsistency() {
+        // Test that both methods produce the same result
+        for ($i = 0; $i < 3; $i++) {
+            $keyPair = KeyPair::random();
+            $seed = $keyPair->getSecretSeed();
+            $privateKey = $keyPair->getPrivateKey();
+
+            $accountIdFromSeed = StrKey::accountIdFromSeed($seed);
+            $accountIdFromPrivateKey = StrKey::accountIdFromPrivateKey($privateKey);
+
+            assertEquals($accountIdFromSeed, $accountIdFromPrivateKey);
+            assertEquals($keyPair->getAccountId(), $accountIdFromSeed);
+            assertEquals($keyPair->getAccountId(), $accountIdFromPrivateKey);
+        }
+    }
+
+    public function testEncodeSignedPayload() {
+        $keyPair = KeyPair::random();
+        $payload = hex2bin("0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
+
+        // Create SignedPayloadSigner from account ID
+        $signedPayloadSigner = \Soneso\StellarSDK\SignedPayloadSigner::fromAccountId($keyPair->getAccountId(), $payload);
+
+        // Encode using SignedPayloadSigner
+        $encoded = StrKey::encodeSignedPayload($signedPayloadSigner);
+        assertTrue(str_starts_with($encoded, "P"));
+
+        // Decode and verify
+        $decoded = StrKey::decodeSignedPayload($encoded);
+        assertEquals($keyPair->getAccountId(), $decoded->getSignerAccountId()->getAccountId());
+        assertEquals($payload, $decoded->getPayload());
+
+        // Should match XDR signed payload encoding
+        $xdrPayload = new \Soneso\StellarSDK\Xdr\XdrSignedPayload($keyPair->getPublicKey(), $payload);
+        $encodedXdr = StrKey::encodeXdrSignedPayload($xdrPayload);
+        assertEquals($encoded, $encodedXdr);
+    }
+
+    public function testDecodeClaimableBalanceIdHex() {
+        // Test with full claimable balance ID (with discriminant)
+        $claimableBalanceId = "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU";
+        $expectedHex = "003f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a";
+
+        $decodedHex = StrKey::decodeClaimableBalanceIdHex($claimableBalanceId);
+        assertEquals($expectedHex, $decodedHex);
+
+        // Verify round-trip
+        assertEquals($claimableBalanceId, StrKey::encodeClaimableBalanceIdHex($decodedHex));
+
+        // Test encoding from hex without discriminant (should add it)
+        $hexWithoutDiscriminant = "3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a";
+        $encoded = StrKey::encodeClaimableBalanceIdHex($hexWithoutDiscriminant);
+        assertEquals($claimableBalanceId, $encoded);
     }
 
 }

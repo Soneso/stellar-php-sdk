@@ -299,4 +299,90 @@ class KeyPairTest extends TestCase
         // Should be able to verify with public key only
         assertTrue($verifyingKeyPair->verifySignature($signature, $message));
     }
+
+    public function testSignPayloadDecoratedWithVariousPayloads()
+    {
+        $keyPair = KeyPair::random();
+
+        // Test with payload exactly 4 bytes
+        $fourBytePayload = "abcd";
+        $decoratedSig1 = $keyPair->signPayloadDecorated($fourBytePayload);
+        assertNotNull($decoratedSig1);
+        assertEquals(4, strlen($decoratedSig1->getHint()));
+
+        // Test with payload longer than 4 bytes
+        $longPayload = "test payload data that is longer";
+        $decoratedSig2 = $keyPair->signPayloadDecorated($longPayload);
+        assertNotNull($decoratedSig2);
+        assertEquals(4, strlen($decoratedSig2->getHint()));
+
+        // Test with very long payload
+        $veryLongPayload = str_repeat("x", 100);
+        $decoratedSig3 = $keyPair->signPayloadDecorated($veryLongPayload);
+        assertNotNull($decoratedSig3);
+        assertEquals(4, strlen($decoratedSig3->getHint()));
+
+        // Verify that different payloads produce different hints
+        assertTrue($decoratedSig1->getHint() !== $decoratedSig2->getHint());
+    }
+
+    public function testStrToStream()
+    {
+        $keyPair = KeyPair::random();
+
+        // Test the str_to_stream method (it has default public visibility)
+        $testString = "test data for stream";
+        $stream = $keyPair->str_to_stream($testString);
+
+        // Verify it's a resource
+        assertTrue(is_resource($stream));
+
+        // Verify we can read the data back
+        $readData = stream_get_contents($stream);
+        assertEquals($testString, $readData);
+
+        // Clean up
+        fclose($stream);
+    }
+
+    public function testVerifySignatureWithInvalidSignature()
+    {
+        $keyPair = KeyPair::random();
+        $message = "test message";
+
+        // Test with malformed signature (not 64 bytes)
+        $invalidSignature = "short";
+        assertFalse($keyPair->verifySignature($invalidSignature, $message));
+
+        // Test with completely wrong signature
+        $wrongSignature = random_bytes(64);
+        assertFalse($keyPair->verifySignature($wrongSignature, $message));
+    }
+
+    public function testSignDecoratedWithoutPrivateKey()
+    {
+        // Create keypair without private key
+        $accountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+        $keyPair = KeyPair::fromAccountId($accountId);
+
+        $message = "test message";
+
+        // signDecorated without private key should trigger exception in sign()
+        $this->expectException(\TypeError::class);
+        $keyPair->signDecorated($message);
+    }
+
+    public function testSignPayloadDecoratedWithoutPrivateKey()
+    {
+        // Create keypair without private key
+        $accountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+        $keyPair = KeyPair::fromAccountId($accountId);
+
+        $payload = "test payload";
+
+        // signPayloadDecorated without private key should trigger exception
+        $this->expectException(\TypeError::class);
+        $keyPair->signPayloadDecorated($payload);
+    }
+
 }

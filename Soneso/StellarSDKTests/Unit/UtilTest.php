@@ -7,10 +7,13 @@
 namespace Soneso\StellarSDKTests\Unit;
 
 use InvalidArgumentException;
+use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\CryptoKeyType;
+use Soneso\StellarSDK\Util\CustomFriendBot;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Util\StellarAmount;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertTrue;
 
@@ -300,5 +303,119 @@ class UtilTest extends TestCase
 
         assertTrue($keyType instanceof CryptoKeyType);
         assertEquals($xdr, $keyType->toXdr());
+    }
+
+    // CustomFriendBot Tests
+
+    public function testCustomFriendBotConstructor(): void
+    {
+        $url = "http://localhost:8000/friendbot";
+        $bot = new CustomFriendBot($url);
+
+        $this->assertInstanceOf(CustomFriendBot::class, $bot);
+        $this->assertEquals($url, $bot->friendBotUrl);
+    }
+
+    public function testCustomFriendBotGetFriendBotUrl(): void
+    {
+        $url = "https://custom-friendbot.example.com";
+        $bot = new CustomFriendBot($url);
+
+        $this->assertEquals($url, $bot->getFriendBotUrl());
+    }
+
+    public function testCustomFriendBotSetFriendBotUrl(): void
+    {
+        $originalUrl = "http://localhost:8000/friendbot";
+        $newUrl = "https://new-friendbot.example.com";
+
+        $bot = new CustomFriendBot($originalUrl);
+        $this->assertEquals($originalUrl, $bot->getFriendBotUrl());
+
+        $bot->setFriendBotUrl($newUrl);
+        $this->assertEquals($newUrl, $bot->getFriendBotUrl());
+    }
+
+    public function testCustomFriendBotUrlPropertyAccess(): void
+    {
+        $url = "http://localhost:8000/friendbot";
+        $bot = new CustomFriendBot($url);
+
+        // Direct property access
+        $this->assertEquals($url, $bot->friendBotUrl);
+
+        // Modify via property
+        $newUrl = "https://new-url.example.com";
+        $bot->friendBotUrl = $newUrl;
+        $this->assertEquals($newUrl, $bot->friendBotUrl);
+        $this->assertEquals($newUrl, $bot->getFriendBotUrl());
+    }
+
+    // StellarAmount fromXdr Tests
+
+    public function testStellarAmountFromXdr(): void
+    {
+        // Create XDR buffer with a 64-bit signed integer (100.5 XLM = 1005000000 stroops)
+        $stroops = 1005000000;
+        $xdrData = pack('J', $stroops); // 64-bit big-endian
+        $xdrBuffer = new XdrBuffer($xdrData);
+
+        $amount = StellarAmount::fromXdr($xdrBuffer);
+
+        $this->assertEquals("100.5000000", $amount->getDecimalValueAsString());
+        $this->assertEquals("1005000000", $amount->getStroopsAsString());
+    }
+
+    public function testStellarAmountFromXdrZero(): void
+    {
+        // Create XDR buffer with zero
+        $xdrData = pack('J', 0);
+        $xdrBuffer = new XdrBuffer($xdrData);
+
+        $amount = StellarAmount::fromXdr($xdrBuffer);
+
+        $this->assertEquals("0.0000000", $amount->getDecimalValueAsString());
+        $this->assertEquals("0", $amount->getStroopsAsString());
+    }
+
+    public function testStellarAmountFromXdrSmallValue(): void
+    {
+        // Create XDR buffer with 1 stroop (smallest amount)
+        $xdrData = pack('J', 1);
+        $xdrBuffer = new XdrBuffer($xdrData);
+
+        $amount = StellarAmount::fromXdr($xdrBuffer);
+
+        $this->assertEquals("0.0000001", $amount->getDecimalValueAsString());
+        $this->assertEquals("1", $amount->getStroopsAsString());
+    }
+
+    public function testStellarAmountFromXdrLargeValue(): void
+    {
+        // Create XDR buffer with a large value (1000 XLM)
+        $stroops = 10000000000; // 1000 XLM
+        $xdrData = pack('J', $stroops);
+        $xdrBuffer = new XdrBuffer($xdrData);
+
+        $amount = StellarAmount::fromXdr($xdrBuffer);
+
+        $this->assertEquals("1000.0000000", $amount->getDecimalValueAsString());
+        $this->assertEquals("10000000000", $amount->getStroopsAsString());
+    }
+
+    public function testStellarAmountFromStringAllZeroDecimals(): void
+    {
+        // Test with decimal part that is all zeros
+        $amount = StellarAmount::fromString("100.0000000");
+        $this->assertEquals("100.0000000", $amount->getDecimalValueAsString());
+        $this->assertEquals("1000000000", $amount->getStroopsAsString());
+    }
+
+    public function testStellarAmountFromStringLeadingDecimalZeros(): void
+    {
+        // Test with leading zeros in decimal part
+        $amount = StellarAmount::fromString("100.0001");
+        $this->assertEquals("100.0001000", $amount->getDecimalValueAsString());
+        $this->assertEquals("1000001000", $amount->getStroopsAsString());
     }
 }

@@ -20,10 +20,30 @@ use Soneso\StellarSDK\ChangeTrustOperation;
 use Soneso\StellarSDK\ManageDataOperation;
 use Soneso\StellarSDK\BumpSequenceOperation;
 use Soneso\StellarSDK\AccountMergeOperation;
+use Soneso\StellarSDK\PathPaymentStrictReceiveOperation;
+use Soneso\StellarSDK\PathPaymentStrictSendOperation;
+use Soneso\StellarSDK\ManageSellOfferOperation;
+use Soneso\StellarSDK\ManageBuyOfferOperation;
+use Soneso\StellarSDK\CreatePassiveSellOfferOperation;
+use Soneso\StellarSDK\AllowTrustOperation;
+use Soneso\StellarSDK\CreateClaimableBalanceOperation;
+use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
+use Soneso\StellarSDK\BeginSponsoringFutureReservesOperation;
+use Soneso\StellarSDK\EndSponsoringFutureReservesOperation;
+use Soneso\StellarSDK\RevokeSponsorshipOperation;
+use Soneso\StellarSDK\ClawbackOperation;
+use Soneso\StellarSDK\ClawbackClaimableBalanceOperation;
+use Soneso\StellarSDK\SetTrustLineFlagsOperation;
+use Soneso\StellarSDK\LiquidityPoolDepositOperation;
+use Soneso\StellarSDK\LiquidityPoolWithdrawOperation;
+use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\Xdr\XdrOperation;
+use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 use function PHPUnit\Framework\assertNull;
+use function PHPUnit\Framework\assertCount;
 
 class OperationTest extends TestCase
 {
@@ -240,5 +260,333 @@ class OperationTest extends TestCase
 
         $parsed = AbstractOperation::fromXdr($xdr);
         assertNull($parsed->getSourceAccount());
+    }
+
+    public function testPathPaymentStrictReceiveFromXdr()
+    {
+        $sendAsset = Asset::createNonNativeAsset("USD", "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $sendMax = "100.0000000";
+        $destinationId = "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR";
+        $destination = MuxedAccount::fromAccountId($destinationId);
+        $destAsset = Asset::createNonNativeAsset("EUR", "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR");
+        $destAmount = "50.0000000";
+        $path = [
+            Asset::native(),
+            Asset::createNonNativeAsset("BTC", "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO")
+        ];
+
+        $operation = new PathPaymentStrictReceiveOperation($sendAsset, $sendMax, $destination, $destAsset, $destAmount, $path);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(PathPaymentStrictReceiveOperation::class, get_class($parsed));
+        assertEquals("USD", $parsed->getSendAsset()->getCode());
+        assertEquals($sendMax, $parsed->getSendMax());
+        assertEquals($destinationId, $parsed->getDestination()->getAccountId());
+        assertEquals("EUR", $parsed->getDestAsset()->getCode());
+        assertEquals($destAmount, $parsed->getDestAmount());
+        assertCount(2, $parsed->getPath());
+        assertEquals(Asset::TYPE_NATIVE, $parsed->getPath()[0]->getType());
+        assertEquals("BTC", $parsed->getPath()[1]->getCode());
+    }
+
+    public function testPathPaymentStrictSendFromXdr()
+    {
+        $sendAsset = Asset::createNonNativeAsset("USD", "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $sendAmount = "100.0000000";
+        $destinationId = "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR";
+        $destination = MuxedAccount::fromAccountId($destinationId);
+        $destAsset = Asset::createNonNativeAsset("EUR", "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR");
+        $destMin = "50.0000000";
+        $path = [Asset::native()];
+
+        $operation = new PathPaymentStrictSendOperation($sendAsset, $sendAmount, $destination, $destAsset, $destMin, $path);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(PathPaymentStrictSendOperation::class, get_class($parsed));
+        assertEquals("USD", $parsed->getSendAsset()->getCode());
+        assertEquals($sendAmount, $parsed->getSendAmount());
+        assertEquals($destinationId, $parsed->getDestination()->getAccountId());
+        assertEquals("EUR", $parsed->getDestAsset()->getCode());
+        assertEquals($destMin, $parsed->getDestMin());
+        assertCount(1, $parsed->getPath());
+        assertEquals(Asset::TYPE_NATIVE, $parsed->getPath()[0]->getType());
+    }
+
+    public function testManageSellOfferFromXdr()
+    {
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $amount = "100.0000000";
+        $price = new Price(3, 2);
+        $offerId = 12345;
+
+        $operation = new ManageSellOfferOperation($selling, $buying, $amount, $price, $offerId);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(ManageSellOfferOperation::class, get_class($parsed));
+        assertEquals(Asset::TYPE_NATIVE, $parsed->getSelling()->getType());
+        assertEquals("USD", $parsed->getBuying()->getCode());
+        assertEquals($amount, $parsed->getAmount());
+        assertEquals(3, $parsed->getPrice()->getN());
+        assertEquals(2, $parsed->getPrice()->getD());
+        assertEquals($offerId, $parsed->getOfferId());
+    }
+
+    public function testManageBuyOfferFromXdr()
+    {
+        $selling = Asset::createNonNativeAsset("USD", "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $buying = Asset::native();
+        $amount = "50.0000000";
+        $price = new Price(5, 4);
+        $offerId = 0;
+
+        $operation = new ManageBuyOfferOperation($selling, $buying, $amount, $price, $offerId);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(ManageBuyOfferOperation::class, get_class($parsed));
+        assertEquals("USD", $parsed->getSelling()->getCode());
+        assertEquals(Asset::TYPE_NATIVE, $parsed->getBuying()->getType());
+        assertEquals($amount, $parsed->getAmount());
+        assertEquals(5, $parsed->getPrice()->getN());
+        assertEquals(4, $parsed->getPrice()->getD());
+        assertEquals(0, $parsed->getOfferId());
+    }
+
+    public function testCreatePassiveSellOfferFromXdr()
+    {
+        $selling = Asset::createNonNativeAsset("USD", "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $buying = Asset::createNonNativeAsset("EUR", "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR");
+        $amount = "1000.0000000";
+        $price = new Price(10, 9);
+
+        $operation = new CreatePassiveSellOfferOperation($selling, $buying, $amount, $price);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(CreatePassiveSellOfferOperation::class, get_class($parsed));
+        assertEquals("USD", $parsed->getSelling()->getCode());
+        assertEquals("EUR", $parsed->getBuying()->getCode());
+        assertEquals($amount, $parsed->getAmount());
+        assertEquals(10, $parsed->getPrice()->getN());
+        assertEquals(9, $parsed->getPrice()->getD());
+    }
+
+    public function testAllowTrustFromXdr()
+    {
+        $trustorId = "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO";
+        $assetCode = "USD";
+        $authorize = true;
+        $authorizeToMaintainLiabilities = false;
+
+        $operation = new AllowTrustOperation($trustorId, $assetCode, $authorize, $authorizeToMaintainLiabilities);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(AllowTrustOperation::class, get_class($parsed));
+        assertEquals($trustorId, $parsed->getTrustor());
+        assertEquals($assetCode, $parsed->getAssetCode());
+        assertEquals(true, $parsed->isAuthorize());
+        assertEquals(false, $parsed->isAuthorizeToMaintainLiabilities());
+    }
+
+    public function testAllowTrustMaintainLiabilitiesFromXdr()
+    {
+        $trustorId = "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO";
+        $assetCode = "ABCDEFGHIJKL";
+        $authorize = false;
+        $authorizeToMaintainLiabilities = true;
+
+        $operation = new AllowTrustOperation($trustorId, $assetCode, $authorize, $authorizeToMaintainLiabilities);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(AllowTrustOperation::class, get_class($parsed));
+        assertEquals($trustorId, $parsed->getTrustor());
+        assertEquals($assetCode, $parsed->getAssetCode());
+        assertEquals(false, $parsed->isAuthorize());
+        assertEquals(true, $parsed->isAuthorizeToMaintainLiabilities());
+    }
+
+    public function testCreateClaimableBalanceFromXdr()
+    {
+        $asset = Asset::createNonNativeAsset("USD", "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $amount = "100.0000000";
+        $claimant1 = new Claimant(
+            "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR",
+            Claimant::predicateUnconditional()
+        );
+        $claimant2 = new Claimant(
+            "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO",
+            Claimant::predicateBeforeAbsoluteTime(1234567890)
+        );
+        $claimants = [$claimant1, $claimant2];
+
+        $operation = new CreateClaimableBalanceOperation($claimants, $asset, $amount);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(CreateClaimableBalanceOperation::class, get_class($parsed));
+        assertEquals("USD", $parsed->getAsset()->getCode());
+        assertEquals($amount, $parsed->getAmount());
+        assertCount(2, $parsed->getClaimants());
+        assertEquals("GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", $parsed->getClaimants()[0]->getDestination());
+        assertEquals("GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO", $parsed->getClaimants()[1]->getDestination());
+    }
+
+    public function testClaimClaimableBalanceFromXdr()
+    {
+        $balanceId = "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+
+        $operation = new ClaimClaimableBalanceOperation($balanceId);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(ClaimClaimableBalanceOperation::class, get_class($parsed));
+        assertEquals($balanceId, $parsed->getBalanceId());
+    }
+
+    public function testBeginSponsoringFutureReservesFromXdr()
+    {
+        $sponsoredId = "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO";
+
+        $operation = new BeginSponsoringFutureReservesOperation($sponsoredId);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(BeginSponsoringFutureReservesOperation::class, get_class($parsed));
+        assertEquals($sponsoredId, $parsed->getSponsoredId());
+    }
+
+    public function testEndSponsoringFutureReservesFromXdr()
+    {
+        $operation = new EndSponsoringFutureReservesOperation();
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(EndSponsoringFutureReservesOperation::class, get_class($parsed));
+    }
+
+    public function testRevokeSponsorshipAccountFromXdr()
+    {
+        $accountId = "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO";
+        $ledgerKey = XdrLedgerKey::forAccountId($accountId);
+
+        $operation = new RevokeSponsorshipOperation();
+        $operation->setLedgerKey($ledgerKey);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(RevokeSponsorshipOperation::class, get_class($parsed));
+        assertNotNull($parsed->getLedgerKey());
+        assertNotNull($parsed->getLedgerKey()->getAccount());
+        assertEquals($accountId, $parsed->getLedgerKey()->getAccount()->getAccountId()->getAccountId());
+    }
+
+    public function testClawbackFromXdr()
+    {
+        $asset = Asset::createNonNativeAsset("USD", "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $fromId = "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR";
+        $from = MuxedAccount::fromAccountId($fromId);
+        $amount = "50.0000000";
+
+        $operation = new ClawbackOperation($asset, $from, $amount);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(ClawbackOperation::class, get_class($parsed));
+        assertEquals("USD", $parsed->getAsset()->getCode());
+        assertEquals($fromId, $parsed->getFrom()->getAccountId());
+        assertEquals($amount, $parsed->getAmount());
+    }
+
+    public function testClawbackClaimableBalanceFromXdr()
+    {
+        $balanceId = "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+
+        $operation = new ClawbackClaimableBalanceOperation($balanceId);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(ClawbackClaimableBalanceOperation::class, get_class($parsed));
+        assertEquals($balanceId, $parsed->getBalanceId());
+    }
+
+    public function testSetTrustLineFlagsFromXdr()
+    {
+        $trustorId = "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO";
+        $asset = Asset::createNonNativeAsset("USD", "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR");
+        $clearFlags = 2;
+        $setFlags = 1;
+
+        $operation = new SetTrustLineFlagsOperation($trustorId, $asset, $clearFlags, $setFlags);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(SetTrustLineFlagsOperation::class, get_class($parsed));
+        assertEquals($trustorId, $parsed->getTrustorId());
+        assertEquals("USD", $parsed->getAsset()->getCode());
+        assertEquals($clearFlags, $parsed->getClearFlags());
+        assertEquals($setFlags, $parsed->getSetFlags());
+    }
+
+    public function testLiquidityPoolDepositFromXdr()
+    {
+        $liquidityPoolId = "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7";
+        $maxAmountA = "100.0000000";
+        $maxAmountB = "200.0000000";
+        $minPrice = new Price(1, 2);
+        $maxPrice = new Price(2, 1);
+
+        $operation = new LiquidityPoolDepositOperation($liquidityPoolId, $maxAmountA, $maxAmountB, $minPrice, $maxPrice);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(LiquidityPoolDepositOperation::class, get_class($parsed));
+        assertEquals($liquidityPoolId, $parsed->getLiqudityPoolId());
+        assertEquals($maxAmountA, $parsed->getMaxAmountA());
+        assertEquals($maxAmountB, $parsed->getMaxAmountB());
+        assertEquals(1, $parsed->getMinPrice()->getN());
+        assertEquals(2, $parsed->getMinPrice()->getD());
+        assertEquals(2, $parsed->getMaxPrice()->getN());
+        assertEquals(1, $parsed->getMaxPrice()->getD());
+    }
+
+    public function testLiquidityPoolWithdrawFromXdr()
+    {
+        $liquidityPoolId = "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7";
+        $amount = "50.0000000";
+        $minAmountA = "25.0000000";
+        $minAmountB = "25.0000000";
+
+        $operation = new LiquidityPoolWithdrawOperation($liquidityPoolId, $amount, $minAmountA, $minAmountB);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(LiquidityPoolWithdrawOperation::class, get_class($parsed));
+        assertEquals($liquidityPoolId, $parsed->getLiqudityPoolId());
+        assertEquals($amount, $parsed->getAmount());
+        assertEquals($minAmountA, $parsed->getMinAmountA());
+        assertEquals($minAmountB, $parsed->getMinAmountB());
     }
 }

@@ -30,6 +30,7 @@
         </include>
         <exclude>
             <directory>Soneso/StellarSDKTests</directory>
+            <directory>Soneso/StellarSDK/Constants</directory>
         </exclude>
     </source>
 
