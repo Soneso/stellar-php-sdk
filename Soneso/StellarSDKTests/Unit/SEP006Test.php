@@ -949,4 +949,235 @@ class SEP006Test extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals(200, $response->getStatusCode());
     }
+
+    // Edge Case Tests - Error Responses and Timeout Handling
+
+    public function testInfoWithBadRequestError(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Invalid request']);
+        $mock = new MockHandler([
+            new Response(400, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $this->expectException(\Exception::class);
+        $transferService->info($this->jwtToken);
+    }
+
+    public function testInfoWithUnauthorizedError(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Unauthorized']);
+        $mock = new MockHandler([
+            new Response(401, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $this->expectException(\Exception::class);
+        $transferService->info($this->jwtToken);
+    }
+
+    public function testInfoWithServerError(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Internal server error']);
+        $mock = new MockHandler([
+            new Response(500, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $this->expectException(\Exception::class);
+        $transferService->info($this->jwtToken);
+    }
+
+    public function testDepositWithNotFoundError(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Asset not found']);
+        $mock = new MockHandler([
+            new Response(404, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new DepositRequest(
+            assetCode: "UNKNOWN",
+            account: $this->accountId,
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(\Exception::class);
+        $transferService->deposit($request);
+    }
+
+    public function testWithdrawWithConflictError(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Transaction already exists']);
+        $mock = new MockHandler([
+            new Response(409, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new WithdrawRequest(
+            assetCode: "XLM",
+            type: "crypto",
+            dest: "GCTTGO5ABSTHABXWL2FMHPZ2XFOZDXJYJN5CKFRKXMPAAWZW3Y3JZ3JK",
+            account: $this->accountId,
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(\Exception::class);
+        $transferService->withdraw($request);
+    }
+
+    public function testTransactionsWithMalformedJsonResponse(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $malformedJson = '{"transactions": [{"id": "test", "invalid_json';
+        $mock = new MockHandler([
+            new Response(200, [], $malformedJson)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new AnchorTransactionsRequest(
+            assetCode: "XLM",
+            account: $this->accountId,
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(\Exception::class);
+        $transferService->transactions($request);
+    }
+
+    public function testFeeWithMissingRequiredField(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Missing required parameter: operation']);
+        $mock = new MockHandler([
+            new Response(400, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new FeeRequest(
+            operation: "",
+            assetCode: "USD",
+            amount: 100.0,
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(\Exception::class);
+        $transferService->fee($request);
+    }
+
+    public function testDepositExchangeWithInvalidQuoteId(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Invalid or expired quote_id']);
+        $mock = new MockHandler([
+            new Response(400, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new DepositExchangeRequest(
+            destinationAsset: 'XYZ',
+            sourceAsset: 'iso4217:USD',
+            amount: '100',
+            account: $this->accountId,
+            quoteId: 'invalid_quote',
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(\Exception::class);
+        $transferService->depositExchange($request);
+    }
+
+    public function testWithdrawExchangeWithUnsupportedAsset(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Asset pair not supported for exchange']);
+        $mock = new MockHandler([
+            new Response(400, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new WithdrawExchangeRequest(
+            sourceAsset: 'UNSUPPORTED',
+            destinationAsset: 'iso4217:USD',
+            amount: '100',
+            type: 'bank_account',
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(\Exception::class);
+        $transferService->withdrawExchange($request);
+    }
+
+    public function testTransactionWithEmptyResponse(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $emptyResponse = json_encode([]);
+        $mock = new MockHandler([
+            new Response(200, [], $emptyResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new AnchorTransactionRequest();
+        $request->id = "nonexistent_id";
+        $request->jwt = $this->jwtToken;
+
+        $this->expectException(\Throwable::class);
+        $transferService->transaction($request);
+    }
+
+    public function testPatchTransactionWithForbiddenError(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Transaction cannot be modified in current state']);
+        $mock = new MockHandler([
+            new Response(403, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $fields = ['dest' => '12345'];
+        $request = new PatchTransactionRequest(
+            id: "completed_tx_id",
+            fields: $fields,
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(\Exception::class);
+        $transferService->patchTransaction($request);
+    }
+
+    public function testDepositWithRateLimitError(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $errorResponse = json_encode(['error' => 'Rate limit exceeded']);
+        $mock = new MockHandler([
+            new Response(429, [], $errorResponse)
+        ]);
+
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new DepositRequest(
+            assetCode: "USD",
+            account: $this->accountId,
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(\Exception::class);
+        $transferService->deposit($request);
+    }
 }

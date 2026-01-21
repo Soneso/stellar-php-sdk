@@ -1172,4 +1172,309 @@ class SEP024ExtendedTest extends TestCase
         $this->assertEquals('stellar', $stellarPayment->getIdType());
         $this->assertEquals('external', $externalPayment->getIdType());
     }
+
+    // Additional Transaction State Tests
+
+    public function testTransactionStateIncomplete(): void
+    {
+        $json = [
+            'id' => 'incomplete_tx',
+            'kind' => 'deposit',
+            'status' => 'incomplete',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'message' => 'More info needed from user'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('incomplete', $transaction->getStatus());
+        $this->assertEquals('More info needed from user', $transaction->getMessage());
+        $this->assertNull($transaction->getCompletedAt());
+    }
+
+    public function testTransactionStatePendingUserTransferStart(): void
+    {
+        $json = [
+            'id' => 'pending_user_start_tx',
+            'kind' => 'deposit',
+            'status' => 'pending_user_transfer_start',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'more_info_url' => 'https://example.com/instructions',
+            'message' => 'Please send funds to the provided address'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('pending_user_transfer_start', $transaction->getStatus());
+        $this->assertEquals('https://example.com/instructions', $transaction->getMoreInfoUrl());
+        $this->assertNotNull($transaction->getMessage());
+    }
+
+    public function testTransactionStatePendingUserTransferComplete(): void
+    {
+        $json = [
+            'id' => 'pending_complete_tx',
+            'kind' => 'deposit',
+            'status' => 'pending_user_transfer_complete',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'status_eta' => 600,
+            'message' => 'Waiting for user to complete the transfer'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('pending_user_transfer_complete', $transaction->getStatus());
+        $this->assertEquals(600, $transaction->getStatusEta());
+    }
+
+    public function testTransactionStatePendingTrust(): void
+    {
+        $json = [
+            'id' => 'pending_trust_tx',
+            'kind' => 'deposit',
+            'status' => 'pending_trust',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'to' => 'GACCOUNT123',
+            'message' => 'Destination account must establish trustline for asset'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('pending_trust', $transaction->getStatus());
+        $this->assertEquals('GACCOUNT123', $transaction->getTo());
+        $this->assertStringContainsString('trustline', $transaction->getMessage());
+    }
+
+    public function testTransactionStatePendingUser(): void
+    {
+        $json = [
+            'id' => 'pending_user_tx',
+            'kind' => 'withdrawal',
+            'status' => 'pending_user',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'user_action_required_by' => '2025-01-21T10:00:00Z',
+            'message' => 'User action required to complete withdrawal'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('pending_user', $transaction->getStatus());
+        $this->assertEquals('2025-01-21T10:00:00Z', $transaction->getUserActionRequiredBy());
+    }
+
+    public function testTransactionStateOnHold(): void
+    {
+        $json = [
+            'id' => 'on_hold_tx',
+            'kind' => 'deposit',
+            'status' => 'on_hold',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'message' => 'Transaction is on hold pending review'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('on_hold', $transaction->getStatus());
+        $this->assertNull($transaction->getStatusEta());
+    }
+
+    public function testTransactionStatePendingStellar(): void
+    {
+        $json = [
+            'id' => 'pending_stellar_tx',
+            'kind' => 'withdrawal',
+            'status' => 'pending_stellar',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'stellar_transaction_id' => 'stellar_hash_123',
+            'status_eta' => 30
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('pending_stellar', $transaction->getStatus());
+        $this->assertEquals('stellar_hash_123', $transaction->getStellarTransactionId());
+        $this->assertEquals(30, $transaction->getStatusEta());
+    }
+
+    public function testTransactionStateExpired(): void
+    {
+        $json = [
+            'id' => 'expired_tx',
+            'kind' => 'deposit',
+            'status' => 'expired',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'completed_at' => '2025-01-25T10:00:00Z',
+            'message' => 'Transaction expired due to inactivity'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('expired', $transaction->getStatus());
+        $this->assertNotNull($transaction->getCompletedAt());
+    }
+
+    public function testTransactionStateNoMarket(): void
+    {
+        $json = [
+            'id' => 'no_market_tx',
+            'kind' => 'withdrawal',
+            'status' => 'no_market',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'completed_at' => '2025-01-20T11:00:00Z',
+            'message' => 'No market available for this asset pair'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('no_market', $transaction->getStatus());
+    }
+
+    public function testTransactionStateTooSmall(): void
+    {
+        $json = [
+            'id' => 'too_small_tx',
+            'kind' => 'deposit',
+            'status' => 'too_small',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'amount_in' => '0.50',
+            'message' => 'Amount is below minimum threshold'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('too_small', $transaction->getStatus());
+        $this->assertEquals('0.50', $transaction->getAmountIn());
+    }
+
+    public function testTransactionStateTooLarge(): void
+    {
+        $json = [
+            'id' => 'too_large_tx',
+            'kind' => 'withdrawal',
+            'status' => 'too_large',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'amount_in' => '1000000.00',
+            'message' => 'Amount exceeds maximum threshold'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('too_large', $transaction->getStatus());
+        $this->assertEquals('1000000.00', $transaction->getAmountIn());
+    }
+
+    public function testTransactionStateError(): void
+    {
+        $json = [
+            'id' => 'error_tx',
+            'kind' => 'deposit',
+            'status' => 'error',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'completed_at' => '2025-01-20T10:30:00Z',
+            'message' => 'Transaction failed due to system error'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('error', $transaction->getStatus());
+        $this->assertNotNull($transaction->getMessage());
+        $this->assertNotNull($transaction->getCompletedAt());
+    }
+
+    public function testTransactionWithUserActionRequired(): void
+    {
+        $json = [
+            'id' => 'user_action_tx',
+            'kind' => 'withdrawal',
+            'status' => 'pending_user',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'user_action_required_by' => '2025-01-21T10:00:00Z',
+            'message' => 'Please provide additional information',
+            'more_info_url' => 'https://example.com/info'
+        ];
+
+        $transaction = SEP24Transaction::fromJson($json);
+
+        $this->assertEquals('pending_user', $transaction->getStatus());
+        $this->assertEquals('2025-01-21T10:00:00Z', $transaction->getUserActionRequiredBy());
+        $this->assertEquals('Please provide additional information', $transaction->getMessage());
+        $this->assertEquals('https://example.com/info', $transaction->getMoreInfoUrl());
+    }
+
+    public function testTransactionStateTransition(): void
+    {
+        $service = new InteractiveService($this->serviceAddress);
+
+        $incompleteResponse = '{"transaction": {"id": "transition_tx", "kind": "deposit", "status": "incomplete", "started_at": "2025-01-20T10:00:00Z"}}';
+        $pendingExternalResponse = '{"transaction": {"id": "transition_tx", "kind": "deposit", "status": "pending_external", "started_at": "2025-01-20T10:00:00Z", "status_eta": 3600}}';
+        $completedResponse = '{"transaction": {"id": "transition_tx", "kind": "deposit", "status": "completed", "started_at": "2025-01-20T10:00:00Z", "completed_at": "2025-01-20T11:00:00Z"}}';
+
+        $mock = new MockHandler([
+            new Response(200, [], $incompleteResponse),
+            new Response(200, [], $pendingExternalResponse),
+            new Response(200, [], $completedResponse)
+        ]);
+
+        $service->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new SEP24TransactionRequest();
+        $request->jwt = $this->jwtToken;
+        $request->id = 'transition_tx';
+
+        $response1 = $service->transaction($request);
+        $this->assertEquals('incomplete', $response1->getTransaction()->getStatus());
+
+        $response2 = $service->transaction($request);
+        $this->assertEquals('pending_external', $response2->getTransaction()->getStatus());
+        $this->assertEquals(3600, $response2->getTransaction()->getStatusEta());
+
+        $response3 = $service->transaction($request);
+        $this->assertEquals('completed', $response3->getTransaction()->getStatus());
+        $this->assertNotNull($response3->getTransaction()->getCompletedAt());
+    }
+
+    public function testTransactionWithDepositAndWithdrawalExchangeFields(): void
+    {
+        $depositExchangeJson = [
+            'id' => 'deposit_exchange_tx',
+            'kind' => 'deposit-exchange',
+            'status' => 'completed',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'amount_in' => '500',
+            'amount_in_asset' => 'iso4217:BRL',
+            'amount_out' => '100',
+            'amount_out_asset' => 'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+            'amount_fee' => '2.50',
+            'amount_fee_asset' => 'iso4217:BRL',
+            'quote_id' => 'quote_exchange_123'
+        ];
+
+        $withdrawalExchangeJson = [
+            'id' => 'withdrawal_exchange_tx',
+            'kind' => 'withdrawal-exchange',
+            'status' => 'completed',
+            'started_at' => '2025-01-20T10:00:00Z',
+            'amount_in' => '100',
+            'amount_in_asset' => 'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+            'amount_out' => '500',
+            'amount_out_asset' => 'iso4217:BRL',
+            'amount_fee' => '1.00',
+            'amount_fee_asset' => 'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+            'quote_id' => 'quote_exchange_456'
+        ];
+
+        $depositTx = SEP24Transaction::fromJson($depositExchangeJson);
+        $withdrawalTx = SEP24Transaction::fromJson($withdrawalExchangeJson);
+
+        $this->assertEquals('deposit-exchange', $depositTx->getKind());
+        $this->assertEquals('iso4217:BRL', $depositTx->getAmountInAsset());
+        $this->assertEquals('stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN', $depositTx->getAmountOutAsset());
+        $this->assertEquals('quote_exchange_123', $depositTx->getQuoteId());
+
+        $this->assertEquals('withdrawal-exchange', $withdrawalTx->getKind());
+        $this->assertEquals('stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN', $withdrawalTx->getAmountInAsset());
+        $this->assertEquals('iso4217:BRL', $withdrawalTx->getAmountOutAsset());
+        $this->assertEquals('quote_exchange_456', $withdrawalTx->getQuoteId());
+    }
 }
+

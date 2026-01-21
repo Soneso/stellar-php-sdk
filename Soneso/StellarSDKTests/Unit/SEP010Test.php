@@ -673,4 +673,116 @@ class SEP010Test extends TestCase
         $this->assertNotEmpty($jwt);
     }
 
+    // Edge Case Tests - Token Expiration and Challenge Validation
+
+    public function testChallengeExpirationAtLowerBound(): void
+    {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $now = time();
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($this->clientAccountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->setTimeBounds(new TimeBounds(
+                (new DateTime)->setTimestamp($now - 1),
+                (new DateTime)->setTimestamp($now + 1)
+            ))
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        $challengeResponse = json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $challengeResponse),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestJWTSuccess())
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $jwtToken = $webAuth->jwtToken($this->clientAccountId, [$userKeyPair]);
+        $this->assertEquals($this->successJWTToken, $jwtToken);
+    }
+
+    public function testChallengeWithExpiredMinTime(): void
+    {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $now = time();
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($this->clientAccountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->setTimeBounds(new TimeBounds(
+                (new DateTime)->setTimestamp($now - 700),
+                (new DateTime)->setTimestamp($now - 400)
+            ))
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        $challengeResponse = json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $challengeResponse)
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $exception = false;
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [$userKeyPair]);
+        } catch (ErrorException $e) {
+            if ($e instanceof ChallengeValidationErrorInvalidTimeBounds) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testChallengeValidationWithEmptyOperations(): void
+    {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+
+        $exception = false;
+        $exceptionMessage = '';
+        try {
+            $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+            $transaction = (new TransactionBuilder($transactionAccount))
+                ->setTimeBounds($this::validTimeBounds())
+                ->build();
+        } catch (\InvalidArgumentException $e) {
+            $exception = true;
+            $exceptionMessage = $e->getMessage();
+        }
+
+        $this->assertTrue($exception);
+        $this->assertStringContainsString('operation', $exceptionMessage);
+    }
+
+    public function testChallengeWithDifferentNetworkPassphrase(): void
+    {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::public());
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($this->clientAccountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->setTimeBounds($this::validTimeBounds())
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        $challengeResponse = json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $challengeResponse)
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $exception = false;
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [$userKeyPair]);
+        } catch (ErrorException $e) {
+            if ($e instanceof ChallengeValidationErrorInvalidSignature) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
 }
