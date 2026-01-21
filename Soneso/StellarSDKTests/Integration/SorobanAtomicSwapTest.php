@@ -35,8 +35,8 @@ use function PHPUnit\Framework\assertNotNull;
 class SorobanAtomicSwapTest extends TestCase
 {
 
-    const SWAP_CONTRACT_PATH = './wasm/soroban_atomic_swap_contract.wasm';
-    const TOKEN_CONTRACT_PATH = './wasm/soroban_token_contract.wasm';
+    const SWAP_CONTRACT_PATH = './../wasm/soroban_atomic_swap_contract.wasm';
+    const TOKEN_CONTRACT_PATH = './../wasm/soroban_token_contract.wasm';
 
     const TESTNET_SERVER_URL = "https://soroban-testnet.stellar.org";
     const FUTURENET_SERVER_URL = "https://rpc-futurenet.stellar.org";

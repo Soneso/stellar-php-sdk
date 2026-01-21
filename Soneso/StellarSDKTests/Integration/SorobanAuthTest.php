@@ -36,7 +36,7 @@ use function PHPUnit\Framework\assertNotNull;
 // see: https://developers.stellar.org/docs/smart-contracts/example-contracts/auth
 class SorobanAuthTest extends TestCase
 {
-    const AUTH_CONTRACT_PATH = './wasm/soroban_auth_contract.wasm';
+    const AUTH_CONTRACT_PATH = './../wasm/soroban_auth_contract.wasm';
 
     const TESTNET_SERVER_URL = "https://soroban-testnet.stellar.org";
     const FUTURENET_SERVER_URL = "https://rpc-futurenet.stellar.org";

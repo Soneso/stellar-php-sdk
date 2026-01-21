@@ -36,14 +36,22 @@ use Soneso\StellarSDK\ClawbackClaimableBalanceOperation;
 use Soneso\StellarSDK\SetTrustLineFlagsOperation;
 use Soneso\StellarSDK\LiquidityPoolDepositOperation;
 use Soneso\StellarSDK\LiquidityPoolWithdrawOperation;
+use Soneso\StellarSDK\ExtendFootprintTTLOperation;
+use Soneso\StellarSDK\RestoreFootprintOperation;
+use Soneso\StellarSDK\InvokeHostFunctionOperation;
+use Soneso\StellarSDK\InvokeContractHostFunction;
+use Soneso\StellarSDK\UploadContractWasmHostFunction;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Price;
 use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use function PHPUnit\Framework\assertCount;
+use function PHPUnit\Framework\assertEmpty;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 use function PHPUnit\Framework\assertNull;
-use function PHPUnit\Framework\assertCount;
 
 class OperationTest extends TestCase
 {
@@ -588,5 +596,150 @@ class OperationTest extends TestCase
         assertEquals($amount, $parsed->getAmount());
         assertEquals($minAmountA, $parsed->getMinAmountA());
         assertEquals($minAmountB, $parsed->getMinAmountB());
+    }
+
+    public function testExtendFootprintTTLFromXdr()
+    {
+        $extendTo = 1000;
+
+        $operation = new ExtendFootprintTTLOperation($extendTo);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(ExtendFootprintTTLOperation::class, get_class($parsed));
+        assertEquals($extendTo, $parsed->getExtendTo());
+    }
+
+    public function testRestoreFootprintFromXdr()
+    {
+        $operation = new RestoreFootprintOperation();
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(RestoreFootprintOperation::class, get_class($parsed));
+    }
+
+    public function testInvokeHostFunctionUploadWasmFromXdr()
+    {
+        // Create a simple WASM-like payload (just bytes for testing)
+        $wasmBytes = pack('C*', 0x00, 0x61, 0x73, 0x6D, 0x01, 0x00, 0x00, 0x00);
+
+        $hostFunction = new UploadContractWasmHostFunction($wasmBytes);
+        $operation = new InvokeHostFunctionOperation($hostFunction);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(InvokeHostFunctionOperation::class, get_class($parsed));
+        assertEquals(UploadContractWasmHostFunction::class, get_class($parsed->getFunction()));
+        assertEquals($wasmBytes, $parsed->getFunction()->getContractCodeBytes());
+    }
+
+    public function testExtendFootprintTTLGetterSetter()
+    {
+        $operation = new ExtendFootprintTTLOperation(100);
+        assertEquals(100, $operation->getExtendTo());
+
+        $operation->setExtendTo(200);
+        assertEquals(200, $operation->getExtendTo());
+    }
+
+    public function testInvokeHostFunctionGettersSetters()
+    {
+        $wasmBytes = "test_wasm_bytes";
+        $hostFunction = new UploadContractWasmHostFunction($wasmBytes);
+        $operation = new InvokeHostFunctionOperation($hostFunction);
+
+        assertEquals($hostFunction, $operation->getFunction());
+        assertEquals([], $operation->getAuth());
+
+        $newHostFunction = new UploadContractWasmHostFunction("new_wasm");
+        $operation->setFunction($newHostFunction);
+        assertEquals($newHostFunction, $operation->getFunction());
+
+        $operation->setAuth([]);
+        assertEquals([], $operation->getAuth());
+    }
+
+    public function testInvokeContractHostFunctionFromXdr()
+    {
+        $contractId = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+        $functionName = "transfer";
+
+        $arg1 = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_BOOL));
+        $arg1->b = true;
+
+        $hostFunction = new InvokeContractHostFunction($contractId, $functionName, [$arg1]);
+        $operation = new InvokeHostFunctionOperation($hostFunction);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(InvokeHostFunctionOperation::class, get_class($parsed));
+        assertEquals(InvokeContractHostFunction::class, get_class($parsed->getFunction()));
+        assertEquals($functionName, $parsed->getFunction()->functionName);
+    }
+
+    public function testInvokeHostFunctionToOperationBody()
+    {
+        $wasmBytes = "test_wasm_bytes";
+        $hostFunction = new UploadContractWasmHostFunction($wasmBytes);
+        $operation = new InvokeHostFunctionOperation($hostFunction);
+
+        $body = $operation->toOperationBody();
+
+        assertNotNull($body);
+        assertNotNull($body->getInvokeHostFunctionOperation());
+    }
+
+    public function testInvokeContractHostFunctionNoArgs()
+    {
+        $contractId = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+        $functionName = "get_balance";
+
+        $hostFunction = new InvokeContractHostFunction($contractId, $functionName);
+        $operation = new InvokeHostFunctionOperation($hostFunction);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(InvokeHostFunctionOperation::class, get_class($parsed));
+        assertEquals(InvokeContractHostFunction::class, get_class($parsed->getFunction()));
+        assertEquals($functionName, $parsed->getFunction()->functionName);
+        assertEmpty($parsed->getFunction()->arguments);
+    }
+
+    public function testInvokeContractHostFunctionWithMultipleArgs()
+    {
+        $contractId = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+        $functionName = "complex_fn";
+
+        $arg1 = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_BOOL));
+        $arg1->b = true;
+        $arg2 = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_BOOL));
+        $arg2->b = false;
+
+        $hostFunction = new InvokeContractHostFunction($contractId, $functionName, [$arg1, $arg2]);
+        $operation = new InvokeHostFunctionOperation($hostFunction);
+
+        $xdr = $operation->toXdr();
+        $parsed = AbstractOperation::fromXdr($xdr);
+
+        assertEquals(InvokeHostFunctionOperation::class, get_class($parsed));
+        assertCount(2, $parsed->getFunction()->arguments);
+    }
+
+    public function testInvokeHostFunctionWithSourceAccount()
+    {
+        $wasmBytes = "test_bytes";
+        $hostFunction = new UploadContractWasmHostFunction($wasmBytes);
+        $sourceAccount = MuxedAccount::fromAccountId("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H");
+
+        $operation = new InvokeHostFunctionOperation($hostFunction, [], $sourceAccount);
+
+        assertNotNull($operation->getSourceAccount());
+        assertEquals("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H", $operation->getSourceAccount()->getAccountId());
     }
 }

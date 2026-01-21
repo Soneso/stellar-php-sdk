@@ -42,8 +42,8 @@ use function PHPUnit\Framework\assertNotNull;
 class SorobanCustomAccountTest extends TestCase
 {
 
-    const CUSTOM_ACCOUNT_CONTRACT_PATH = './wasm/soroban_custom_account.wasm';
-    const TOKEN_CONTRACT_PATH = './wasm/soroban_token_contract.wasm';
+    const CUSTOM_ACCOUNT_CONTRACT_PATH = './../wasm/soroban_custom_account.wasm';
+    const TOKEN_CONTRACT_PATH = './../wasm/soroban_token_contract.wasm';
 
     const TESTNET_SERVER_URL = "https://soroban-testnet.stellar.org";
     const FUTURENET_SERVER_URL = "https://rpc-futurenet.stellar.org";

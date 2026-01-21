@@ -61,8 +61,8 @@ use function PHPUnit\Framework\assertNotNull;
 class SorobanTest extends TestCase
 {
 
-    const HELLO_CONTRACT_PATH = './wasm/soroban_hello_world_contract.wasm';
-    const EVENTS_CONTRACT_PATH = './wasm/soroban_events_contract.wasm';
+    const HELLO_CONTRACT_PATH = './../wasm/soroban_hello_world_contract.wasm';
+    const EVENTS_CONTRACT_PATH = './../wasm/soroban_events_contract.wasm';
 
     const TESTNET_SERVER_URL = "https://soroban-testnet.stellar.org";
     const FUTURENET_SERVER_URL = "https://rpc-futurenet.stellar.org";

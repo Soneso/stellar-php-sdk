@@ -51,10 +51,10 @@ use function PHPUnit\Framework\assertNotNull;
 
 class SorobanClientTest  extends TestCase
 {
-    const HELLO_CONTRACT_PATH = './wasm/soroban_hello_world_contract.wasm';
-    const AUTH_CONTRACT_PATH = './wasm/soroban_auth_contract.wasm';
-    const SWAP_CONTRACT_PATH = './wasm/soroban_atomic_swap_contract.wasm';
-    const TOKEN_CONTRACT_PATH = './wasm/soroban_token_contract.wasm';
+    const HELLO_CONTRACT_PATH = './../wasm/soroban_hello_world_contract.wasm';
+    const AUTH_CONTRACT_PATH = './../wasm/soroban_auth_contract.wasm';
+    const SWAP_CONTRACT_PATH = './../wasm/soroban_atomic_swap_contract.wasm';
+    const TOKEN_CONTRACT_PATH = './../wasm/soroban_token_contract.wasm';
     const TESTNET_RPC_URL = "https://soroban-testnet.stellar.org";
     const FUTURENET_RPC_URL = "https://rpc-futurenet.stellar.org";
 

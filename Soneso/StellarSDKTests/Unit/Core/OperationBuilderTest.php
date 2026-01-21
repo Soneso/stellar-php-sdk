@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests\Unit\Core;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use phpseclib3\Math\BigInteger;
@@ -22,7 +23,11 @@ use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
+use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
+use Soneso\StellarSDK\ManageBuyOfferOperationBuilder;
+use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
 use Soneso\StellarSDK\LiquidityPoolWithdrawOperationBuilder;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\PathPaymentStrictReceiveOperationBuilder;
@@ -1193,5 +1198,209 @@ class OperationBuilderTest extends TestCase
         $xdr = $operation->toXdr();
         $this->assertNotNull($xdr->getBody());
         $this->assertEquals("USD", $operation->getSelling()->getCode());
+    }
+
+    // ManageBuyOfferOperationBuilder Tests
+
+    public function testManageBuyOfferBasic(): void
+    {
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+
+        $builder = new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", "2.5");
+        $operation = $builder->build();
+
+        $this->assertNull($operation->getSourceAccount());
+        $this->assertEquals(0, $operation->getOfferId());
+    }
+
+    public function testManageBuyOfferWithOfferId(): void
+    {
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+
+        $builder = new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", "2.5");
+        $operation = $builder->setOfferId(12345)->build();
+
+        $this->assertEquals(12345, $operation->getOfferId());
+    }
+
+    public function testManageBuyOfferNegativeOfferIdThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid offer id: -1");
+
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+
+        $builder = new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", "2.5");
+        $builder->setOfferId(-1);
+    }
+
+    public function testManageBuyOfferWithSourceAccount(): void
+    {
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+
+        $builder = new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", "2.5");
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals($this->sourceAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testManageBuyOfferWithMuxedSourceAccount(): void
+    {
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $muxedAccount = MuxedAccount::fromAccountId($this->muxedAccountId);
+
+        $builder = new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", "2.5");
+        $operation = $builder->setMuxedSourceAccount($muxedAccount)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testManageBuyOfferMethodChaining(): void
+    {
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+
+        $builder = new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", "2.5");
+        $result = $builder->setOfferId(123);
+        $this->assertInstanceOf(ManageBuyOfferOperationBuilder::class, $result);
+
+        $result = $builder->setSourceAccount($this->sourceAccountId);
+        $this->assertInstanceOf(ManageBuyOfferOperationBuilder::class, $result);
+    }
+
+    // ManageSellOfferOperationBuilder Tests
+
+    public function testManageSellOfferBasic(): void
+    {
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::native();
+
+        $builder = new ManageSellOfferOperationBuilder($selling, $buying, "50.0", "0.5");
+        $operation = $builder->build();
+
+        $this->assertNull($operation->getSourceAccount());
+        $this->assertEquals(0, $operation->getOfferId());
+    }
+
+    public function testManageSellOfferWithOfferId(): void
+    {
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::native();
+
+        $builder = new ManageSellOfferOperationBuilder($selling, $buying, "50.0", "0.5");
+        $operation = $builder->setOfferId(67890)->build();
+
+        $this->assertEquals(67890, $operation->getOfferId());
+    }
+
+    public function testManageSellOfferNegativeOfferIdThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid offer id: -5");
+
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::native();
+
+        $builder = new ManageSellOfferOperationBuilder($selling, $buying, "50.0", "0.5");
+        $builder->setOfferId(-5);
+    }
+
+    public function testManageSellOfferWithSourceAccount(): void
+    {
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::native();
+
+        $builder = new ManageSellOfferOperationBuilder($selling, $buying, "50.0", "0.5");
+        $operation = $builder->setSourceAccount($this->destAccountId)->build();
+
+        $this->assertEquals($this->destAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testManageSellOfferWithMuxedSourceAccount(): void
+    {
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::native();
+        $muxedAccount = MuxedAccount::fromAccountId($this->muxedAccountId);
+
+        $builder = new ManageSellOfferOperationBuilder($selling, $buying, "50.0", "0.5");
+        $operation = $builder->setMuxedSourceAccount($muxedAccount)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testManageSellOfferMethodChaining(): void
+    {
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::native();
+
+        $builder = new ManageSellOfferOperationBuilder($selling, $buying, "50.0", "0.5");
+        $result = $builder->setOfferId(456);
+        $this->assertInstanceOf(ManageSellOfferOperationBuilder::class, $result);
+
+        $result = $builder->setSourceAccount($this->sourceAccountId);
+        $this->assertInstanceOf(ManageSellOfferOperationBuilder::class, $result);
+    }
+
+    // InvokeHostFunctionOperationBuilder Tests
+
+    public function testInvokeHostFunctionBasic(): void
+    {
+        $hostFunction = new UploadContractWasmHostFunction("test-wasm-code");
+        $builder = new InvokeHostFunctionOperationBuilder($hostFunction);
+        $operation = $builder->build();
+
+        $this->assertNull($operation->getSourceAccount());
+        $this->assertNotNull($operation->getFunction());
+    }
+
+    public function testInvokeHostFunctionWithSourceAccount(): void
+    {
+        $hostFunction = new UploadContractWasmHostFunction("test-wasm-code");
+        $builder = new InvokeHostFunctionOperationBuilder($hostFunction);
+        $operation = $builder->setSourceAccount($this->sourceAccountId)->build();
+
+        $this->assertEquals($this->sourceAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testInvokeHostFunctionWithMuxedSourceAccount(): void
+    {
+        $hostFunction = new UploadContractWasmHostFunction("test-wasm-code");
+        $muxedAccount = MuxedAccount::fromAccountId($this->muxedAccountId);
+
+        $builder = new InvokeHostFunctionOperationBuilder($hostFunction);
+        $operation = $builder->setMuxedSourceAccount($muxedAccount)->build();
+
+        $this->assertEquals($this->muxedAccountId, $operation->getSourceAccount()->getAccountId());
+    }
+
+    public function testInvokeHostFunctionMethodChaining(): void
+    {
+        $hostFunction = new UploadContractWasmHostFunction("test-wasm-code");
+
+        $builder = new InvokeHostFunctionOperationBuilder($hostFunction);
+        $result = $builder->setSourceAccount($this->sourceAccountId);
+        $this->assertInstanceOf(InvokeHostFunctionOperationBuilder::class, $result);
+
+        $builder2 = new InvokeHostFunctionOperationBuilder($hostFunction);
+        $muxedAccount = MuxedAccount::fromAccountId($this->muxedAccountId);
+        $result2 = $builder2->setMuxedSourceAccount($muxedAccount);
+        $this->assertInstanceOf(InvokeHostFunctionOperationBuilder::class, $result2);
+    }
+
+    public function testInvokeHostFunctionWithAuth(): void
+    {
+        $hostFunction = new UploadContractWasmHostFunction("test-wasm-code");
+        $auth = []; // Empty auth array
+
+        $builder = new InvokeHostFunctionOperationBuilder($hostFunction, $auth);
+        $operation = $builder->build();
+
+        $this->assertNotNull($operation);
+        $this->assertEmpty($operation->getAuth());
     }
 }
