@@ -184,10 +184,10 @@ class TxRep
             $lines += [$prefix . 'memo.id' => strval($memo->getValue())];
         } else if ($memo->getType() == Memo::MEMO_TYPE_HASH) {
             $lines += [$prefix . 'memo.type' => 'MEMO_HASH'];
-            $lines += [$prefix . 'memo.hash' => $memo->getValue()];
+            $lines += [$prefix . 'memo.hash' => bin2hex($memo->getValue())];
         } else if ($memo->getType() == Memo::MEMO_TYPE_RETURN) {
             $lines += [$prefix . 'memo.type' => 'MEMO_RETURN'];
-            $lines += [$prefix . 'memo.retHash' => $memo->getValue()];
+            $lines += [$prefix . 'memo.retHash' => bin2hex($memo->getValue())];
         }
 
         $operations = $tx->getOperations();
@@ -328,10 +328,10 @@ class TxRep
                 throw new InvalidArgumentException($prefix . 'memo.hash');
             }
             $txBuilder->addMemo(Memo::hash($hash));
-        } else if ($memoType == 'MEMO_RETURN' && self::getClearValue($prefix . 'memo.return', $map)) {
-            $hash = hex2bin(self::getClearValue($prefix . 'memo.return', $map));
+        } else if ($memoType == 'MEMO_RETURN' && self::getClearValue($prefix . 'memo.retHash', $map)) {
+            $hash = hex2bin(self::getClearValue($prefix . 'memo.retHash', $map));
             if (!$hash) {
-                throw new InvalidArgumentException($prefix . 'memo.return');
+                throw new InvalidArgumentException($prefix . 'memo.retHash');
             }
             $txBuilder->addMemo(Memo::return($hash));
         } else {
@@ -462,43 +462,26 @@ class TxRep
             if (self::getClearValue($precondPrefix . 'minSeqNum._present', $map) == 'true' && $minSeqNrStr != null) {
                 $minSeqNr = new BigInteger($minSeqNrStr);
                 $cond->setMinSeqNumber($minSeqNr);
-            } else {
-                throw new InvalidArgumentException('invalid ' . $precondPrefix . 'minSeqNum');
             }
             $minSeqAgeStr = self::getClearValue($precondPrefix . 'minSeqAge', $map);
-            if ($minSeqAgeStr != null) {
-                if (!is_numeric($minSeqAgeStr)) {
-                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'minSeqAge');
-                }
+            if ($minSeqAgeStr != null && is_numeric($minSeqAgeStr)) {
                 $minSeqAge = (int)$minSeqAgeStr;
                 $cond->setMinSeqAge($minSeqAge);
-            } else {
-                throw new InvalidArgumentException('missing ' . $precondPrefix . 'minSeqAge');
             }
             $minSeqLedgerGapStr = self::getClearValue($precondPrefix . 'minSeqLedgerGap', $map);
-            if ($minSeqLedgerGapStr != null) {
-                if (!is_numeric($minSeqLedgerGapStr)) {
-                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'minSeqLedgerGap');
-                }
+            if ($minSeqLedgerGapStr != null && is_numeric($minSeqLedgerGapStr)) {
                 $minSeqLedgerGap = (int)$minSeqLedgerGapStr;
                 $cond->setMinSeqLedgerGap($minSeqLedgerGap);
-            } else {
-                throw new InvalidArgumentException('missing ' . $precondPrefix . 'minSeqLedgerGap');
             }
 
             $extraSignersLen = self::getClearValue($precondPrefix . 'extraSigners.len', $map);
-            if (!$extraSignersLen) {
-                throw new InvalidArgumentException('missing ' . $precondPrefix . 'extraSigners.len');
-            }
-            if (!is_numeric($extraSignersLen)) {
-                throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners.len');
-            }
-            $nrOfExtraSigners = (int)$extraSignersLen;
-            if ($nrOfExtraSigners > 2) {
-                throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners.len - greater than 2');
-            }
-            $extraSigners = array();
-            for ($i = 0; $i < $nrOfExtraSigners; $i++) {
+            if ($extraSignersLen && is_numeric($extraSignersLen)) {
+                $nrOfExtraSigners = (int)$extraSignersLen;
+                if ($nrOfExtraSigners > 2) {
+                    throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners.len - greater than 2');
+                }
+                $extraSigners = array();
+                for ($i = 0; $i < $nrOfExtraSigners; $i++) {
                 $key = self::getClearValue($precondPrefix . 'extraSigners[' . strval($i) . ']', $map);
                 if (!$key) {
                     throw new InvalidArgumentException('missing ' . $precondPrefix . 'extraSigners[' . strval($i) . ']');
@@ -528,7 +511,8 @@ class TxRep
                     throw new InvalidArgumentException('invalid ' . $precondPrefix . 'extraSigners[' . strval($i) . ']');
                 }
             }
-            $cond->setExtraSigners($extraSigners);
+                $cond->setExtraSigners($extraSigners);
+            }
             return $cond;
         } else if ($preonditionsType == "PRECOND_NONE") {
             return null;
@@ -541,7 +525,13 @@ class TxRep
     {
         $minTimeStr = self::getClearValue($prefix . 'timeBounds.minTime', $map);
         $maxTimeStr = self::getClearValue($prefix . 'timeBounds.maxTime', $map);
-        if (self::getClearValue($prefix . 'timeBounds._present', $map) == 'true' && $minTimeStr != null && $maxTimeStr != null) {
+        $present = self::getClearValue($prefix . 'timeBounds._present', $map);
+
+        if ($present == 'false' || $present === null) {
+            return null;
+        }
+
+        if ($present == 'true' && $minTimeStr != null && $maxTimeStr != null) {
             if (!is_numeric($minTimeStr)) {
                 throw new InvalidArgumentException('invalid ' . $prefix . 'minTime');
             }
@@ -560,7 +550,13 @@ class TxRep
     {
         $minLedgerStr = self::getClearValue($prefix . 'ledgerBounds.minLedger', $map);
         $maxLedgerStr = self::getClearValue($prefix . 'ledgerBounds.maxLedger', $map);
-        if (self::getClearValue($prefix . 'ledgerBounds._present', $map) == 'true' && $minLedgerStr != null && $maxLedgerStr != null) {
+        $present = self::getClearValue($prefix . 'ledgerBounds._present', $map);
+
+        if ($present == 'false' || $present === null) {
+            return null;
+        }
+
+        if ($present == 'true' && $minLedgerStr != null && $maxLedgerStr != null) {
             if (!is_numeric($minLedgerStr)) {
                 throw new InvalidArgumentException('invalid ' . $prefix . 'minLedger');
             }
