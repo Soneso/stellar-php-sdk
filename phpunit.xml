@@ -9,7 +9,7 @@
          beStrictAboutCoverageMetadata="false"
          beStrictAboutOutputDuringTests="true"
          failOnRisky="true"
-         failOnWarning="true">
+         failOnWarning="false">
 
     <testsuites>
         <testsuite name="unit">

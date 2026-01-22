@@ -870,11 +870,6 @@ class StellarSDKTest extends TestCase
      *
      * Note: We test with envelope XDR directly to avoid complex transaction building
      */
-    public function testSubmitTransactionWithXdr(): void
-    {
-        $this->markTestSkipped('Transaction submission tested via submitTransactionEnvelopeXdrBase64');
-    }
-
     /**
      * Test submitTransactionEnvelopeXdrBase64 method
      */
@@ -893,16 +888,6 @@ class StellarSDKTest extends TestCase
     }
 
     /**
-     * Test submitAsyncTransaction method with XDR
-     *
-     * Note: We test with envelope XDR directly to avoid complex transaction building
-     */
-    public function testSubmitAsyncTransactionWithXdr(): void
-    {
-        $this->markTestSkipped('Async transaction submission tested via submitAsyncTransactionEnvelopeXdrBase64');
-    }
-
-    /**
      * Test submitAsyncTransactionEnvelopeXdrBase64 method
      */
     public function testSubmitAsyncTransactionEnvelopeXdrBase64(): void
@@ -916,16 +901,6 @@ class StellarSDKTest extends TestCase
         $this->assertInstanceOf(SubmitAsyncTransactionResponse::class, $response);
         $this->assertEquals(self::TEST_TRANSACTION_HASH, $response->hash);
         $this->assertEquals('PENDING', $response->txStatus);
-    }
-
-    /**
-     * Test checkMemoRequired functionality
-     *
-     * Note: checkMemoRequired requires complex transaction building and is better tested in integration tests
-     */
-    public function testCheckMemoRequiredSkipped(): void
-    {
-        $this->markTestSkipped('checkMemoRequired tested in integration tests due to complex transaction dependencies');
     }
 
     /**

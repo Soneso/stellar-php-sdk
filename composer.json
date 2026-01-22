@@ -36,6 +36,10 @@
 		"league/uri": "7.5.1"
 	},
 	"scripts": {
+		"test": "phpunit --testsuite unit",
+		"test:integration": "phpunit --testsuite integration",
+		"test:all": "phpunit --testsuite all",
+		"test:coverage": "XDEBUG_MODE=coverage phpunit --testsuite unit --coverage-clover coverage/clover.xml --coverage-html coverage/html",
 		"docs": "phpdoc run --config=phpdoc.xml",
 		"docs:clean": "rm -rf docs/api .phpdoc"
 	}
