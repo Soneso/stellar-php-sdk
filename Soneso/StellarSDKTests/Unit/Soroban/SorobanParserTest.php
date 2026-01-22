@@ -37,52 +37,348 @@ class SorobanParserTest extends TestCase
     {
         $contractCode = file_get_contents(self::CONTRACT_PATH, false);
         $contractInfo = SorobanContractParser::parseContractByteCode($contractCode);
+
+        // Validate spec and meta entry counts
         $this->assertCount(25, $contractInfo->specEntries);
         $this->assertCount(2, $contractInfo->metaEntries);
 
-        print("--------------------------------" . PHP_EOL);
-        print("Env Meta:" . PHP_EOL);
-        print(PHP_EOL);
-        print("Interface version: {$contractInfo->envInterfaceVersion}". PHP_EOL);
-        print("--------------------------------" . PHP_EOL);
-        print("Contract Meta:" . PHP_EOL);
-        print(PHP_EOL);
-        foreach ($contractInfo->metaEntries as  $key => $value) {
-            print("{$key}: {$value}" . PHP_EOL);
-        }
-        print("--------------------------------" . PHP_EOL);
+        // Validate environment interface version
+        $this->assertEquals(98784247808, $contractInfo->envInterfaceVersion);
 
-        print("Contract Spec:" . PHP_EOL);
-        print(PHP_EOL);
-        $index = 0;
-        foreach ($contractInfo->specEntries as $entry) {
-            switch ($entry->type->value) {
-                case XdrSCSpecEntryKind::SC_SPEC_ENTRY_FUNCTION_V0:
-                    $this->printFunction($entry->functionV0);
-                    break;
-                case XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0:
-                    $this->printUdtStruct($entry->udtStructV0);
-                    break;
-                case XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0:
-                    $this->printUdtUnion($entry->udtUnionV0);
-                    break;
-                case XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0:
-                    $this->printUdtEnum($entry->udtEnumV0);
-                    break;
-                case XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
-                    $this->printUdtErrorEnum($entry->udtErrorEnumV0);
-                    break;
-                case XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0:
-                    $this->printEvent($entry->eventV0);
-                    break;
-                default:
-                    print('specEntry [' . $index . '] -> kind(' . $entry->type->value .'): ' . 'unknown ' . PHP_EOL);
-                    break;
+        // Validate contract meta entries
+        $this->assertArrayHasKey('rsver', $contractInfo->metaEntries);
+        $this->assertEquals('1.89.0', $contractInfo->metaEntries['rsver']);
+        $this->assertArrayHasKey('rssdkver', $contractInfo->metaEntries);
+        $this->assertEquals('23.0.1#510d3feb724c2b01d7e7ab7652f03b9f8efc3f35', $contractInfo->metaEntries['rssdkver']);
+
+        // Validate categorized entries counts
+        $this->assertCount(13, $contractInfo->funcs);
+        $this->assertCount(3, $contractInfo->udtStructs);
+        $this->assertCount(1, $contractInfo->udtUnions);
+        $this->assertCount(0, $contractInfo->udtEnums);
+        $this->assertCount(0, $contractInfo->udtErrorEnums);
+        $this->assertCount(8, $contractInfo->events);
+
+        // Validate SetAdmin event
+        $setAdminEvent = $this->findEventByName($contractInfo->events, 'SetAdmin');
+        $this->assertNotNull($setAdminEvent);
+        $this->assertCount(1, $setAdminEvent->prefixTopics);
+        $this->assertEquals('set_admin', $setAdminEvent->prefixTopics[0]);
+        $this->assertCount(2, $setAdminEvent->params);
+        $this->assertEquals('admin', $setAdminEvent->params[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $setAdminEvent->params[0]->type->type->value);
+        $this->assertEquals(XdrSCSpecEventParamLocationV0::SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST, $setAdminEvent->params[0]->location->value);
+        $this->assertEquals('new_admin', $setAdminEvent->params[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $setAdminEvent->params[1]->type->type->value);
+        $this->assertEquals(XdrSCSpecEventParamLocationV0::SC_SPEC_EVENT_PARAM_LOCATION_DATA, $setAdminEvent->params[1]->location->value);
+        $this->assertEquals(XdrSCSpecEventDataFormat::SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE, $setAdminEvent->dataFormat->value);
+
+        // Validate __constructor function
+        $constructorFunc = $this->findFunctionByName($contractInfo->funcs, '__constructor');
+        $this->assertNotNull($constructorFunc);
+        $this->assertCount(4, $constructorFunc->inputs);
+        $this->assertEquals('admin', $constructorFunc->inputs[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $constructorFunc->inputs[0]->type->type->value);
+        $this->assertEquals('decimal', $constructorFunc->inputs[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_U32, $constructorFunc->inputs[1]->type->type->value);
+        $this->assertEquals('name', $constructorFunc->inputs[2]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_STRING, $constructorFunc->inputs[2]->type->type->value);
+        $this->assertEquals('symbol', $constructorFunc->inputs[3]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_STRING, $constructorFunc->inputs[3]->type->type->value);
+        $this->assertCount(0, $constructorFunc->outputs);
+
+        // Validate mint function
+        $mintFunc = $this->findFunctionByName($contractInfo->funcs, 'mint');
+        $this->assertNotNull($mintFunc);
+        $this->assertCount(2, $mintFunc->inputs);
+        $this->assertEquals('to', $mintFunc->inputs[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $mintFunc->inputs[0]->type->type->value);
+        $this->assertEquals('amount', $mintFunc->inputs[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $mintFunc->inputs[1]->type->type->value);
+        $this->assertCount(0, $mintFunc->outputs);
+
+        // Validate set_admin function
+        $setAdminFunc = $this->findFunctionByName($contractInfo->funcs, 'set_admin');
+        $this->assertNotNull($setAdminFunc);
+        $this->assertCount(1, $setAdminFunc->inputs);
+        $this->assertEquals('new_admin', $setAdminFunc->inputs[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $setAdminFunc->inputs[0]->type->type->value);
+        $this->assertCount(0, $setAdminFunc->outputs);
+
+        // Validate allowance function
+        $allowanceFunc = $this->findFunctionByName($contractInfo->funcs, 'allowance');
+        $this->assertNotNull($allowanceFunc);
+        $this->assertCount(2, $allowanceFunc->inputs);
+        $this->assertEquals('from', $allowanceFunc->inputs[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $allowanceFunc->inputs[0]->type->type->value);
+        $this->assertEquals('spender', $allowanceFunc->inputs[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $allowanceFunc->inputs[1]->type->type->value);
+        $this->assertCount(1, $allowanceFunc->outputs);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $allowanceFunc->outputs[0]->type->value);
+
+        // Validate approve function
+        $approveFunc = $this->findFunctionByName($contractInfo->funcs, 'approve');
+        $this->assertNotNull($approveFunc);
+        $this->assertCount(4, $approveFunc->inputs);
+        $this->assertEquals('from', $approveFunc->inputs[0]->name);
+        $this->assertEquals('spender', $approveFunc->inputs[1]->name);
+        $this->assertEquals('amount', $approveFunc->inputs[2]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $approveFunc->inputs[2]->type->type->value);
+        $this->assertEquals('expiration_ledger', $approveFunc->inputs[3]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_U32, $approveFunc->inputs[3]->type->type->value);
+        $this->assertCount(0, $approveFunc->outputs);
+
+        // Validate balance function
+        $balanceFunc = $this->findFunctionByName($contractInfo->funcs, 'balance');
+        $this->assertNotNull($balanceFunc);
+        $this->assertCount(1, $balanceFunc->inputs);
+        $this->assertEquals('id', $balanceFunc->inputs[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $balanceFunc->inputs[0]->type->type->value);
+        $this->assertCount(1, $balanceFunc->outputs);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $balanceFunc->outputs[0]->type->value);
+
+        // Validate transfer function (has unknown type for to_muxed)
+        $transferFunc = $this->findFunctionByName($contractInfo->funcs, 'transfer');
+        $this->assertNotNull($transferFunc);
+        $this->assertCount(3, $transferFunc->inputs);
+        $this->assertEquals('from', $transferFunc->inputs[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $transferFunc->inputs[0]->type->type->value);
+        $this->assertEquals('to_muxed', $transferFunc->inputs[1]->name);
+        $this->assertEquals('amount', $transferFunc->inputs[2]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $transferFunc->inputs[2]->type->type->value);
+        $this->assertCount(0, $transferFunc->outputs);
+
+        // Validate transfer_from function
+        $transferFromFunc = $this->findFunctionByName($contractInfo->funcs, 'transfer_from');
+        $this->assertNotNull($transferFromFunc);
+        $this->assertCount(4, $transferFromFunc->inputs);
+        $this->assertEquals('spender', $transferFromFunc->inputs[0]->name);
+        $this->assertEquals('from', $transferFromFunc->inputs[1]->name);
+        $this->assertEquals('to', $transferFromFunc->inputs[2]->name);
+        $this->assertEquals('amount', $transferFromFunc->inputs[3]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $transferFromFunc->inputs[3]->type->type->value);
+        $this->assertCount(0, $transferFromFunc->outputs);
+
+        // Validate burn function
+        $burnFunc = $this->findFunctionByName($contractInfo->funcs, 'burn');
+        $this->assertNotNull($burnFunc);
+        $this->assertCount(2, $burnFunc->inputs);
+        $this->assertEquals('from', $burnFunc->inputs[0]->name);
+        $this->assertEquals('amount', $burnFunc->inputs[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $burnFunc->inputs[1]->type->type->value);
+        $this->assertCount(0, $burnFunc->outputs);
+
+        // Validate burn_from function
+        $burnFromFunc = $this->findFunctionByName($contractInfo->funcs, 'burn_from');
+        $this->assertNotNull($burnFromFunc);
+        $this->assertCount(3, $burnFromFunc->inputs);
+        $this->assertEquals('spender', $burnFromFunc->inputs[0]->name);
+        $this->assertEquals('from', $burnFromFunc->inputs[1]->name);
+        $this->assertEquals('amount', $burnFromFunc->inputs[2]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $burnFromFunc->inputs[2]->type->type->value);
+        $this->assertCount(0, $burnFromFunc->outputs);
+
+        // Validate decimals function
+        $decimalsFunc = $this->findFunctionByName($contractInfo->funcs, 'decimals');
+        $this->assertNotNull($decimalsFunc);
+        $this->assertCount(0, $decimalsFunc->inputs);
+        $this->assertCount(1, $decimalsFunc->outputs);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_U32, $decimalsFunc->outputs[0]->type->value);
+
+        // Validate name function
+        $nameFunc = $this->findFunctionByName($contractInfo->funcs, 'name');
+        $this->assertNotNull($nameFunc);
+        $this->assertCount(0, $nameFunc->inputs);
+        $this->assertCount(1, $nameFunc->outputs);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_STRING, $nameFunc->outputs[0]->type->value);
+
+        // Validate symbol function
+        $symbolFunc = $this->findFunctionByName($contractInfo->funcs, 'symbol');
+        $this->assertNotNull($symbolFunc);
+        $this->assertCount(0, $symbolFunc->inputs);
+        $this->assertCount(1, $symbolFunc->outputs);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_STRING, $symbolFunc->outputs[0]->type->value);
+
+        // Validate AllowanceDataKey struct
+        $allowanceDataKeyStruct = $this->findStructByName($contractInfo->udtStructs, 'AllowanceDataKey');
+        $this->assertNotNull($allowanceDataKeyStruct);
+        $this->assertCount(2, $allowanceDataKeyStruct->fields);
+        $this->assertEquals('from', $allowanceDataKeyStruct->fields[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $allowanceDataKeyStruct->fields[0]->type->type->value);
+        $this->assertEquals('spender', $allowanceDataKeyStruct->fields[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $allowanceDataKeyStruct->fields[1]->type->type->value);
+
+        // Validate AllowanceValue struct
+        $allowanceValueStruct = $this->findStructByName($contractInfo->udtStructs, 'AllowanceValue');
+        $this->assertNotNull($allowanceValueStruct);
+        $this->assertCount(2, $allowanceValueStruct->fields);
+        $this->assertEquals('amount', $allowanceValueStruct->fields[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $allowanceValueStruct->fields[0]->type->type->value);
+        $this->assertEquals('expiration_ledger', $allowanceValueStruct->fields[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_U32, $allowanceValueStruct->fields[1]->type->type->value);
+
+        // Validate DataKey union
+        $dataKeyUnion = $this->findUnionByName($contractInfo->udtUnions, 'DataKey');
+        $this->assertNotNull($dataKeyUnion);
+        $this->assertCount(4, $dataKeyUnion->cases);
+
+        // Case 0: Allowance (tupleV0)
+        $this->assertEquals(XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_TUPLE_V0, $dataKeyUnion->cases[0]->kind->value);
+        $this->assertEquals('Allowance', $dataKeyUnion->cases[0]->tupleCase->name);
+        $this->assertCount(1, $dataKeyUnion->cases[0]->tupleCase->type);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_UDT, $dataKeyUnion->cases[0]->tupleCase->type[0]->type->value);
+        $this->assertEquals('AllowanceDataKey', $dataKeyUnion->cases[0]->tupleCase->type[0]->udt->name);
+
+        // Case 1: Balance (tupleV0)
+        $this->assertEquals(XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_TUPLE_V0, $dataKeyUnion->cases[1]->kind->value);
+        $this->assertEquals('Balance', $dataKeyUnion->cases[1]->tupleCase->name);
+        $this->assertCount(1, $dataKeyUnion->cases[1]->tupleCase->type);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $dataKeyUnion->cases[1]->tupleCase->type[0]->type->value);
+
+        // Case 2: State (tupleV0)
+        $this->assertEquals(XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_TUPLE_V0, $dataKeyUnion->cases[2]->kind->value);
+        $this->assertEquals('State', $dataKeyUnion->cases[2]->tupleCase->name);
+        $this->assertCount(1, $dataKeyUnion->cases[2]->tupleCase->type);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS, $dataKeyUnion->cases[2]->tupleCase->type[0]->type->value);
+
+        // Case 3: Admin (voidV0)
+        $this->assertEquals(XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_VOID_V0, $dataKeyUnion->cases[3]->kind->value);
+        $this->assertEquals('Admin', $dataKeyUnion->cases[3]->voidCase->name);
+
+        // Validate Approve event
+        $approveEvent = $this->findEventByName($contractInfo->events, 'Approve');
+        $this->assertNotNull($approveEvent);
+        $this->assertCount(1, $approveEvent->prefixTopics);
+        $this->assertEquals('approve', $approveEvent->prefixTopics[0]);
+        $this->assertCount(4, $approveEvent->params);
+        $this->assertEquals('from', $approveEvent->params[0]->name);
+        $this->assertEquals(XdrSCSpecEventParamLocationV0::SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST, $approveEvent->params[0]->location->value);
+        $this->assertEquals('spender', $approveEvent->params[1]->name);
+        $this->assertEquals(XdrSCSpecEventParamLocationV0::SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST, $approveEvent->params[1]->location->value);
+        $this->assertEquals('amount', $approveEvent->params[2]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_I128, $approveEvent->params[2]->type->type->value);
+        $this->assertEquals(XdrSCSpecEventParamLocationV0::SC_SPEC_EVENT_PARAM_LOCATION_DATA, $approveEvent->params[2]->location->value);
+        $this->assertEquals('expiration_ledger', $approveEvent->params[3]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_U32, $approveEvent->params[3]->type->type->value);
+        $this->assertEquals(XdrSCSpecEventParamLocationV0::SC_SPEC_EVENT_PARAM_LOCATION_DATA, $approveEvent->params[3]->location->value);
+        $this->assertEquals(XdrSCSpecEventDataFormat::SC_SPEC_EVENT_DATA_FORMAT_VEC, $approveEvent->dataFormat->value);
+
+        // Validate TransferWithAmountOnly event
+        $transferWithAmountOnlyEvent = $this->findEventByName($contractInfo->events, 'TransferWithAmountOnly');
+        $this->assertNotNull($transferWithAmountOnlyEvent);
+        $this->assertCount(1, $transferWithAmountOnlyEvent->prefixTopics);
+        $this->assertEquals('transfer', $transferWithAmountOnlyEvent->prefixTopics[0]);
+        $this->assertCount(3, $transferWithAmountOnlyEvent->params);
+        $this->assertEquals('from', $transferWithAmountOnlyEvent->params[0]->name);
+        $this->assertEquals('to', $transferWithAmountOnlyEvent->params[1]->name);
+        $this->assertEquals('amount', $transferWithAmountOnlyEvent->params[2]->name);
+        $this->assertEquals(XdrSCSpecEventDataFormat::SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE, $transferWithAmountOnlyEvent->dataFormat->value);
+
+        // Validate Transfer event
+        $transferEvent = $this->findEventByName($contractInfo->events, 'Transfer');
+        $this->assertNotNull($transferEvent);
+        $this->assertCount(1, $transferEvent->prefixTopics);
+        $this->assertEquals('transfer', $transferEvent->prefixTopics[0]);
+        $this->assertCount(4, $transferEvent->params);
+        $this->assertEquals('from', $transferEvent->params[0]->name);
+        $this->assertEquals('to', $transferEvent->params[1]->name);
+        $this->assertEquals('to_muxed_id', $transferEvent->params[2]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_OPTION, $transferEvent->params[2]->type->type->value);
+        $this->assertEquals('amount', $transferEvent->params[3]->name);
+        $this->assertEquals(XdrSCSpecEventDataFormat::SC_SPEC_EVENT_DATA_FORMAT_MAP, $transferEvent->dataFormat->value);
+
+        // Validate Burn event
+        $burnEvent = $this->findEventByName($contractInfo->events, 'Burn');
+        $this->assertNotNull($burnEvent);
+        $this->assertCount(1, $burnEvent->prefixTopics);
+        $this->assertEquals('burn', $burnEvent->prefixTopics[0]);
+        $this->assertCount(2, $burnEvent->params);
+        $this->assertEquals('from', $burnEvent->params[0]->name);
+        $this->assertEquals('amount', $burnEvent->params[1]->name);
+        $this->assertEquals(XdrSCSpecEventDataFormat::SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE, $burnEvent->dataFormat->value);
+
+        // Validate MintWithAmountOnly event
+        $mintWithAmountOnlyEvent = $this->findEventByName($contractInfo->events, 'MintWithAmountOnly');
+        $this->assertNotNull($mintWithAmountOnlyEvent);
+        $this->assertCount(1, $mintWithAmountOnlyEvent->prefixTopics);
+        $this->assertEquals('mint', $mintWithAmountOnlyEvent->prefixTopics[0]);
+        $this->assertCount(2, $mintWithAmountOnlyEvent->params);
+        $this->assertEquals('to', $mintWithAmountOnlyEvent->params[0]->name);
+        $this->assertEquals('amount', $mintWithAmountOnlyEvent->params[1]->name);
+        $this->assertEquals(XdrSCSpecEventDataFormat::SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE, $mintWithAmountOnlyEvent->dataFormat->value);
+
+        // Validate Mint event
+        $mintEvent = $this->findEventByName($contractInfo->events, 'Mint');
+        $this->assertNotNull($mintEvent);
+        $this->assertCount(1, $mintEvent->prefixTopics);
+        $this->assertEquals('mint', $mintEvent->prefixTopics[0]);
+        $this->assertCount(3, $mintEvent->params);
+        $this->assertEquals('to', $mintEvent->params[0]->name);
+        $this->assertEquals('to_muxed_id', $mintEvent->params[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_OPTION, $mintEvent->params[1]->type->type->value);
+        $this->assertEquals('amount', $mintEvent->params[2]->name);
+        $this->assertEquals(XdrSCSpecEventDataFormat::SC_SPEC_EVENT_DATA_FORMAT_MAP, $mintEvent->dataFormat->value);
+
+        // Validate Clawback event
+        $clawbackEvent = $this->findEventByName($contractInfo->events, 'Clawback');
+        $this->assertNotNull($clawbackEvent);
+        $this->assertCount(1, $clawbackEvent->prefixTopics);
+        $this->assertEquals('clawback', $clawbackEvent->prefixTopics[0]);
+        $this->assertCount(2, $clawbackEvent->params);
+        $this->assertEquals('from', $clawbackEvent->params[0]->name);
+        $this->assertEquals('amount', $clawbackEvent->params[1]->name);
+        $this->assertEquals(XdrSCSpecEventDataFormat::SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE, $clawbackEvent->dataFormat->value);
+
+        // Validate TokenMetadata struct
+        $tokenMetadataStruct = $this->findStructByName($contractInfo->udtStructs, 'TokenMetadata');
+        $this->assertNotNull($tokenMetadataStruct);
+        $this->assertCount(3, $tokenMetadataStruct->fields);
+        $this->assertEquals('decimal', $tokenMetadataStruct->fields[0]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_U32, $tokenMetadataStruct->fields[0]->type->type->value);
+        $this->assertEquals('name', $tokenMetadataStruct->fields[1]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_STRING, $tokenMetadataStruct->fields[1]->type->type->value);
+        $this->assertEquals('symbol', $tokenMetadataStruct->fields[2]->name);
+        $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_STRING, $tokenMetadataStruct->fields[2]->type->type->value);
+    }
+
+    private function findFunctionByName(array $funcs, string $name): ?XdrSCSpecFunctionV0
+    {
+        foreach ($funcs as $func) {
+            if ($func->name === $name) {
+                return $func;
             }
-            print(PHP_EOL);
-            $index++;
         }
-        print("--------------------------------");
+        return null;
+    }
+
+    private function findStructByName(array $structs, string $name): ?XdrSCSpecUDTStructV0
+    {
+        foreach ($structs as $struct) {
+            if ($struct->name === $name) {
+                return $struct;
+            }
+        }
+        return null;
+    }
+
+    private function findUnionByName(array $unions, string $name): ?XdrSCSpecUDTUnionV0
+    {
+        foreach ($unions as $union) {
+            if ($union->name === $name) {
+                return $union;
+            }
+        }
+        return null;
+    }
+
+    private function findEventByName(array $events, string $name): ?XdrSCSpecEventV0
+    {
+        foreach ($events as $event) {
+            if ($event->name === $name) {
+                return $event;
+            }
+        }
+        return null;
     }
 
     /**

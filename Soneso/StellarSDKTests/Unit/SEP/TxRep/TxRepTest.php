@@ -574,7 +574,7 @@ signatures[0].signature: 98f329b240374d898cfcb0171b37f495c488db1abd0e290c0678296
 
         $expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAADgAAAAAAAAAArNp9AAAAAAYAAAAAAAAAAAuiOmFFq87cZuu1CSK3h1T0eIlAF1Mj9Suv8jRtR5zQAAAAAAAAAAAAAAAAqET7C4FsSbQXWhmw7q34kok311muYZ4Dqu08ZcM0jxQAAAAFAAAAAAAAAZAAAAAAAAAAAK1e2JNktxHrOaF/LbYPJVgrhE4bK/Yh1McHtUfet8AlAAAABAAAAABkW5NcAAAAAAAAAABcA+HyrRa1LPxzCSMDoTZmrfyYI/NUaAckvLA2YkUeUwAAAAEAAAACAAAAAwAAAAEAAAAFAAAAAAAAAlgAAAAEAAAAAGRbk1wAAAAAAAAAANwOUwiGwf5aZ4cCDvs/L9tPl3yz9KcbB68pd+p9jepMAAAAAgAAAAIAAAAEAAAAAGInALMAAAAEAAAAAGIXvoUAAAAAAAAAAEWdKiVhvoNSQZnvNL90W3U1cLsgMSqyXb8YtztjnpckAAAAAwAAAAEAAAAFAAAAAAAAH0AAAAAAAAAAAezRl+8AAABAmPMpskA3TYmM/LAXGzf0lcSI2xq9DikMBngpbm2wnXc+bnPxSlGgF4CFhNHE2uExieRTn0r4uBtsyDD8Q+nVAA==";
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
-        print($expected);
+        //print($expected);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
         self::assertEquals($txRepRes,$txrep);
@@ -603,7 +603,7 @@ signatures[0].signature: 9475bef299458bb105f63ac58df4201064d60f7cfd8ffec8ac8fd34
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
     public function testSponsoring(): void {
@@ -632,7 +632,7 @@ signatures[0].signature: 194a962d2f51ae1af1c4bfa3e8eeca7aa2b6654a84ac03de37d1738
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
 
@@ -700,7 +700,7 @@ signatures[0].signature: 73c223f85c34f1399e9af3322a638a8877987724567e452179a9f2b
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
     public function testClwaback(): void {
@@ -728,7 +728,7 @@ signatures[0].signature: 336998785b7815aac464789d04735d06d0421c5f92d1307a9d164e2
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
 
@@ -755,7 +755,7 @@ signatures[0].signature: 6db5b9ff8e89c2103971550a485754286d1f782aa7fac17e2553bba
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
 
@@ -791,7 +791,7 @@ signatures[0].signature: 5d4569d07068fd4824c87bf531061cf962a820d9ac5d4fdda0a2728
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
     public function testLiquidityPool(): void {
@@ -829,7 +829,7 @@ signatures[0].signature: ed97d0d018a671c5a914a15346c1b38912d6695d1d152ffe976b8c9
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
 
@@ -837,7 +837,7 @@ signatures[0].signature: ed97d0d018a671c5a914a15346c1b38912d6695d1d152ffe976b8c9
 
         $xdr = "AAAAAgAAAQAAAAAAABODoXOW2Y6q7AdenusH1X8NBxVPFXEW+/PQFDiBQV05qf4DAAAAZAAKAJMAAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAKAJMAAAABAAAAAAAAAAEAAAABAAAAAgAAAACUkeBPpCcGYCoqeszK1YjZ1Ww1qY6fRI02d2hKG1nqvwAAAAHW9EEhELfDtkfmtBrXuEgEpTBlO8E/iQ2ZI/uNXLDV9AAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohc5bZjqrsB16e6wfVfw0HFU8VcRb789AUOIFBXTmp/gMAAAABAAABAAAAAAJPOttvlJHgT6QnBmAqKnrMytWI2dVsNamOn0SNNndoShtZ6r8AAAAAAAAAAADk4cAAAAAAAAAAATmp/gMAAABAvm+8CxO9sj4KEDwSS6hDxZAiUGdpIN2l+KOxTIkdI2joBFjT9B1U9YaORVDx4LTrLd4QM2taUuzXB51QtDQYDA==";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         $xdr2 = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($xdr2, $xdr);
     }
@@ -846,7 +846,7 @@ signatures[0].signature: ed97d0d018a671c5a914a15346c1b38912d6695d1d152ffe976b8c9
 
         $xdr = "AAAAAgAAAQAAAAAAABODoa9e0m5apwHpUf3/HzJOJeQ5q7+CwSWrnHXENS8XoAfmAAAAZAAJ/s4AAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAJ/s4AAAABAAAAAAAAAAEAAAABAAAAAgAAAAJulGoyRpAB8JhKT+ffEiXh8Kgd8qrEXfiG3aK69JgQlAAAAAM/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAACABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohr17SblqnAelR/f8fMk4l5Dmrv4LBJaucdcQ1LxegB+YAAAABAAABAAAAAAJPOttvipEw04NyfzwAhgQlf2S77YVGYbytcXKVNuM46+sMNAYAAAAAAAAAAADk4cAAAAAAAAAAARegB+YAAABAJG8wTpECV0rpq3TV9d26UL0MULmDxXKXGmKSJLiy9NCNJW3WMcrvrA6wiBsLHuCN7sIurD3o1/AKgntagup3Cw==";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         $xdr2 = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($xdr2, $xdr);
     }
@@ -872,52 +872,52 @@ signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd8
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txrep);
         self::assertEquals($expected,$xdr);
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($xdr);
-        print($txRepRes);
+        //print($txRepRes);
         self::assertEquals($txRepRes,$txrep);
     }
 
     public function testSoroban() : void {
         $invokeXdr = "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";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($invokeXdr);
-        print($txRepRes . PHP_EOL);
+        //print($txRepRes . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($invokeXdr, $xdr);
 
         $uploadContractXdr = "AAAAAgAAAABIX3Dc+6c1k4NV9BfTH6V5dracuPihPEgfi738DuxO1AABDGUAHd+JAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAgAAAhsAYXNtAQAAAAEPA2ACfn4BfmABfgF+YAAAAgcBAXYBZwAAAwMCAQIFAwEAEAYZA38BQYCAwAALfwBBgIDAAAt/AEGAgMAACwcxBQZtZW1vcnkCAAVoZWxsbwABAV8AAgpfX2RhdGFfZW5kAwELX19oZWFwX2Jhc2UDAgrIAQLCAQECfyOAgICAAEEgayIBJICAgIAAAkACQCAAp0H/AXEiAkEORg0AIAJBygBHDQELIAEgADcDCCABQo7o8di6AjcDAEEAIQIDQAJAIAJBEEcNAEEAIQICQANAIAJBEEYNASABQRBqIAJqIAEgAmopAwA3AwAgAkEIaiECDAALCyABQRBqrUIghkIEhEKEgICAIBCAgICAACEAIAFBIGokgICAgAAgAA8LIAFBEGogAmpCAjcDACACQQhqIQIMAAsLAAALAgALAEMOY29udHJhY3RzcGVjdjAAAAAAAAAAAAAAAAVoZWxsbwAAAAAAAAEAAAAAAAAAAnRvAAAAAAARAAAAAQAAA+oAAAARAB4RY29udHJhY3RlbnZtZXRhdjAAAAAAAAAAFAAAAAAAbw5jb250cmFjdG1ldGF2MAAAAAAAAAAFcnN2ZXIAAAAAAAAGMS43NC4xAAAAAAAAAAAACHJzc2RrdmVyAAAALzIwLjAuMCM4MjJjZTZjYzNlNDYxY2NjOTI1Mjc1YjQ3MmQ3N2I2Y2EzNWIyY2Q5AAAAAAAAAAAAAQAAAAAAAAABAAAAB8GmUFBvfCDI9NFqrnP4lPMCzQEdfvM63vVy8gs092U+AAAAAAAX8g8AAAKAAAAAAAAAAAAAAQwBAAAAAQ7sTtQAAABAxNCu+lC8Xuee36jeGsz7YXNEBvg3Eq6Wqd0ZQ6qnLv8LpxbubpDOzFo86rcpAAWzO70Wdyl3op2ZRSHzsnaRDg==";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($uploadContractXdr);
-        print($txRepRes . PHP_EOL);
+        //print($txRepRes . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($uploadContractXdr, $xdr);
 
 
         $createContractXdr = "AAAAAgAAAABIX3Dc+6c1k4NV9BfTH6V5dracuPihPEgfi738DuxO1AAWOa0AHd+JAAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAAAAAAAAAAAAEhfcNz7pzWTg1X0F9MfpXl2tpy4+KE8SB+LvfwO7E7Uim0WqDBGeseONDCj0peIZwJ4EOMpvMrpcR5GXffg4AkAAAAAwaZQUG98IMj00Wquc/iU8wLNAR1+8zre9XLyCzT3ZT4AAAABAAAAAAAAAAEAAAAAAAAAAAAAAABIX3Dc+6c1k4NV9BfTH6V5dracuPihPEgfi738DuxO1IptFqgwRnrHjjQwo9KXiGcCeBDjKbzK6XEeRl334OAJAAAAAMGmUFBvfCDI9NFqrnP4lPMCzQEdfvM63vVy8gs092U+AAAAAAAAAAEAAAAAAAAAAQAAAAfBplBQb3wgyPTRaq5z+JTzAs0BHX7zOt71cvILNPdlPgAAAAEAAAAGAAAAAXw9vhysdvciUg3nErv76mvhqOiPxqaxaUhacQTpSiicAAAAFAAAAAEAAlNNAAACgAAAAGgAAAAAABY5SQAAAAEO7E7UAAAAQN4uzM1B4G60lKSmytQbCS8zfwyi274rFhotmwBZN6qBb5ksBbVqC5r2q4QqxeJgxdXD5IjysZbFuUmTDbeS/QQ=";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($createContractXdr);
-        print($txRepRes . PHP_EOL);
+        //print($txRepRes . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($createContractXdr, $xdr);
 
 
         $restoreFootprintXdr = "AAAAAgAAAAC+5AsLKJXPTGnveUAhL2cjFaOe6mneuq0bWVUbZttrKQAB1kkAHeCGAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAaAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC2XAAAAAFm22spAAAAQPvw3PtxT3tzS15GMDjNUa0i7bykd0BJbr4O43QqrujSYe8RBv3Z6pj6e5dfQST6nz2BfUKB1bzXavNUPdDpTA8=";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($restoreFootprintXdr);
-        print($txRepRes . PHP_EOL);
+        //print($txRepRes . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($restoreFootprintXdr, $xdr);
 
         $extendFootprintXdr = "AAAAAgAAAAC+5AsLKJXPTGnveUAhL2cjFaOe6mneuq0bWVUbZttrKQAAtwUAHeCGAAAAAwAAAAAAAAAAAAAAAQAAAAAAAAAZAAAAAAAAJxAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAtqEAAAABZttrKQAAAEAeae7iCVUwUOWlG1ai0z9GfswZstfWW8x0iC+bvtqWvYvrkIFA4Hy6ZpCsvWgPcljuDN5X8oiy2WT15egFcFUB";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($extendFootprintXdr);
-        print($txRepRes . PHP_EOL);
+        //print($txRepRes . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($extendFootprintXdr, $xdr);
 
         $deploySacWithAssetXdr = "AAAAAgAAAABxW9E8HvJ8y/Uo60YQVQRdVxbZXkyyqJC//cKccViIQgBivo0AHeDLAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAEAAAACU09ORVNPAAAAAAAAAAAAAHFb0Twe8nzL9SjrRhBVBF1XFtleTLKokL/9wpxxWIhCAAAAAQAAAAAAAAABAAAAAAAAAAAAAAABAAAABgAAAAF2AfJVgDq1MvSnUdklLI+KInZbJj/1BbL2GfVMBtwTKQAAABQAAAABAAK6lgAAAAAAAAHoAAAAAABivikAAAABcViIQgAAAEBSslktJS0iD3ObWkvXUQetp459tfnQyL3acMFhdl9H7wmUCj6UWzvZmt/X5mt/wmJlxnsyHBX6TkQv4jFkIWcG";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($deploySacWithAssetXdr);
-        print($txRepRes . PHP_EOL);
+        //print($txRepRes . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($deploySacWithAssetXdr, $xdr);
 
         $deploySacWithSrcAccXdr = "AAAAAgAAAAAbabUDd9S4GOPKgqESpn8By1G0TregWA0BWOfVFU66bAAPsTsAHeDKAAAABgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAAAAAAAAAAAABtptQN31LgY48qCoRKmfwHLUbROt6BYDQFY59UVTrpsvNipWcbiYhu2d8eo1jDinP914WszeL5g2tae6RwdHB4AAAABAAAAAQAAAAAAAAABAAAAAAAAAAAAAAAAG2m1A3fUuBjjyoKhEqZ/ActRtE63oFgNAVjn1RVOumy82KlZxuJiG7Z3x6jWMOKc/3XhazN4vmDa1p7pHB0cHgAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAYAAAABPTcI9wETxIwLcM+S1/4yEsjMC/JU6l/Td2jwUvEQx4kAAAAUAAAAAQABuoEAAAAAAAAASAAAAAAAD7DXAAAAARVOumwAAABAZ8jZ2vKUTeuPjyeQBkj+pGJdzWATUXoSAlzo+5BeXhZsv5WizK+2kdEX4aeJULBnF/H+6AL9YLCqMjkmhvJ5BQ==";
         $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($deploySacWithSrcAccXdr);
-        print($txRepRes . PHP_EOL);
+        //print($txRepRes . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($deploySacWithSrcAccXdr, $xdr);
     }
