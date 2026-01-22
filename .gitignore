@@ -1,5 +1,10 @@
 /vendor/
 .idea/
 .phpunit.result.cache
+.phpunit.cache/
 composer.lock
 composer.phar
+__pycache__/
+
+# Test coverage
+/coverage/
