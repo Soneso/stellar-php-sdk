@@ -385,4 +385,196 @@ class KeyPairTest extends TestCase
         $keyPair->signPayloadDecorated($payload);
     }
 
+    public function testSignMessageAsciiMatchesSpecVector()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $expectedHex = '7cee5d6d885752104c85eea421dfdcb95abf01f1271d11c4bec3fcbd7874dccd6e2e98b97b8eb23b643cac4073bb77de5d07b0710139180ae9f3cbba78f2ba04';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $signature = $keyPair->signMessage("Hello, World!");
+
+        assertEquals($expectedHex, bin2hex($signature));
+    }
+
+    public function testVerifyMessageAsciiWithSpecSignature()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $signatureHex = '7cee5d6d885752104c85eea421dfdcb95abf01f1271d11c4bec3fcbd7874dccd6e2e98b97b8eb23b643cac4073bb77de5d07b0710139180ae9f3cbba78f2ba04';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $signature = hex2bin($signatureHex);
+
+        assertTrue($keyPair->verifyMessage("Hello, World!", $signature));
+    }
+
+    public function testSignMessageJapaneseMatchesSpecVector()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $expectedHex = '083536eb95ecf32dce59b07fe7a1fd8cf814b2ce46f40d2a16e4ea1f6cecd980e04e6fbef9d21f98011c785a81edb85f3776a6e7d942b435eb0adc07da4d4604';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $signature = $keyPair->signMessage("こんにちは、世界！");
+
+        assertEquals($expectedHex, bin2hex($signature));
+    }
+
+    public function testVerifyMessageJapaneseWithSpecSignature()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $signatureHex = '083536eb95ecf32dce59b07fe7a1fd8cf814b2ce46f40d2a16e4ea1f6cecd980e04e6fbef9d21f98011c785a81edb85f3776a6e7d942b435eb0adc07da4d4604';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $signature = hex2bin($signatureHex);
+
+        assertTrue($keyPair->verifyMessage("こんにちは、世界！", $signature));
+    }
+
+    public function testSignMessageBinaryMatchesSpecVector()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $expectedHex = '540d7eee179f370bf634a49c1fa9fe4a58e3d7990b0207be336c04edfcc539ff8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $binaryMessage = base64_decode('2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=');
+        $signature = $keyPair->signMessage($binaryMessage);
+
+        assertEquals($expectedHex, bin2hex($signature));
+    }
+
+    public function testVerifyMessageBinaryWithSpecSignature()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $signatureHex = '540d7eee179f370bf634a49c1fa9fe4a58e3d7990b0207be336c04edfcc539ff8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $binaryMessage = base64_decode('2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=');
+        $signature = hex2bin($signatureHex);
+
+        assertTrue($keyPair->verifyMessage($binaryMessage, $signature));
+    }
+
+    public function testSignAndVerifyMessageRoundTrip()
+    {
+        $keyPair = KeyPair::random();
+        $message = "Round-trip test message";
+
+        $signature = $keyPair->signMessage($message);
+        assertTrue($keyPair->verifyMessage($message, $signature));
+    }
+
+    public function testCrossConstructionSignAndVerifyMessage()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $specAddress = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
+
+        $signingKeyPair = KeyPair::fromSeed($specSeed);
+        $verifyingKeyPair = KeyPair::fromAccountId($specAddress);
+
+        $message = "Cross-construction test";
+        $signature = $signingKeyPair->signMessage($message);
+
+        assertTrue($verifyingKeyPair->verifyMessage($message, $signature));
+    }
+
+    public function testVerifyMessageWrongMessageFails()
+    {
+        $keyPair = KeyPair::random();
+        $signature = $keyPair->signMessage("Hello, World!");
+
+        assertFalse($keyPair->verifyMessage("Goodbye, World!", $signature));
+    }
+
+    public function testVerifyMessageWrongSignatureFails()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $wrongSignatureHex = '540d7eee179f370bf634a49c1fa9fe4a58e3d7990b0207be336c04edfcc539ff8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $wrongSignature = hex2bin($wrongSignatureHex);
+
+        assertFalse($keyPair->verifyMessage("Hello, World!", $wrongSignature));
+    }
+
+    public function testVerifyMessageWrongKeyPairFails()
+    {
+        $keyPairA = KeyPair::random();
+        $keyPairB = KeyPair::random();
+
+        $message = "Test message";
+        $signature = $keyPairA->signMessage($message);
+
+        assertFalse($keyPairB->verifyMessage($message, $signature));
+    }
+
+    public function testSignMessageWithoutPrivateKeyThrowsTypeError()
+    {
+        $specAddress = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
+
+        $keyPair = KeyPair::fromAccountId($specAddress);
+
+        $this->expectException(\TypeError::class);
+        $keyPair->signMessage("test");
+    }
+
+    public function testSignAndVerifyEmptyMessage()
+    {
+        $keyPair = KeyPair::random();
+        $signature = $keyPair->signMessage("");
+
+        assertTrue($keyPair->verifyMessage("", $signature));
+    }
+
+    public function testSignAndVerifyMessageViaBase64EncodedSignature()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $expectedBase64 = 'fO5dbYhXUhBMhe6kId/cuVq/AfEnHRHEvsP8vXh03M1uLpi5e46yO2Q8rEBzu3feXQewcQE5GArp88u6ePK6BA==';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $signature = $keyPair->signMessage("Hello, World!");
+        $base64Signature = base64_encode($signature);
+
+        assertEquals($expectedBase64, $base64Signature);
+
+        $decodedSignature = base64_decode($base64Signature);
+        assertTrue($keyPair->verifyMessage("Hello, World!", $decodedSignature));
+    }
+
+    public function testSignAndVerifyMessageViaHexEncodedSignature()
+    {
+        $specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+        $expectedHex = '7cee5d6d885752104c85eea421dfdcb95abf01f1271d11c4bec3fcbd7874dccd6e2e98b97b8eb23b643cac4073bb77de5d07b0710139180ae9f3cbba78f2ba04';
+
+        $keyPair = KeyPair::fromSeed($specSeed);
+        $signature = $keyPair->signMessage("Hello, World!");
+        $hexSignature = bin2hex($signature);
+
+        assertEquals($expectedHex, $hexSignature);
+
+        $decodedSignature = hex2bin($hexSignature);
+        assertTrue($keyPair->verifyMessage("Hello, World!", $decodedSignature));
+    }
+
+    public function testVerifySpecVectorFromBase64Signature()
+    {
+        $specAddress = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
+        $base64Signature = 'CDU265Xs8y3OWbB/56H9jPgUss5G9A0qFuTqH2zs2YDgTm+++dIfmAEceFqB7bhfN3am59lCtDXrCtwH2k1GBA==';
+
+        $keyPair = KeyPair::fromAccountId($specAddress);
+        $signature = base64_decode($base64Signature);
+
+        assertTrue($keyPair->verifyMessage("こんにちは、世界！", $signature));
+    }
+
+    public function testVerifySpecVectorFromHexSignature()
+    {
+        $specAddress = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
+        $hexSignature = '540d7eee179f370bf634a49c1fa9fe4a58e3d7990b0207be336c04edfcc539ff8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d';
+
+        $keyPair = KeyPair::fromAccountId($specAddress);
+        $binaryMessage = base64_decode('2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=');
+        $signature = hex2bin($hexSignature);
+
+        assertTrue($keyPair->verifyMessage($binaryMessage, $signature));
+    }
+
 }

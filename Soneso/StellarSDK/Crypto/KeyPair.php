@@ -12,6 +12,7 @@ use SodiumException;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\SEP\Derivation\HDNode;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
+use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
@@ -311,6 +312,68 @@ class KeyPair
         } catch (SodiumException $e) {
             return false;
         }
+    }
+
+    /**
+     * Calculates the hash for a message according to SEP-53
+     *
+     * Internal helper that prepends the "Stellar Signed Message:\n" prefix to the message
+     * and returns the SHA-256 hash as required by the SEP-53 specification.
+     *
+     * @param string $message The message to hash
+     * @return string The SHA-256 hash of the prefixed message (32 bytes)
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
+     */
+    private static function calculateMessageHash(string $message): string
+    {
+        $prefix = "Stellar Signed Message:\n";
+        return Hash::generate($prefix . $message);
+    }
+
+    /**
+     * Signs a message according to SEP-53 specification
+     *
+     * This method implements the SEP-53 message signing standard, which prepends
+     * "Stellar Signed Message:\n" to the message before hashing and signing.
+     * This prevents signed messages from being interpreted as valid transactions.
+     *
+     * SECURITY: Applications MUST display the full message content to users before
+     * signing to prevent phishing attacks where users unknowingly sign malicious content.
+     *
+     * For transmission, encode the signature using base64_encode() or bin2hex().
+     * To decode, use base64_decode() or hex2bin() respectively. SEP-53 does not
+     * mandate a specific string encoding format.
+     *
+     * @param string $message The message to sign (arbitrary text or binary data)
+     * @return string|null The raw signature bytes, or null if signing fails
+     * @throws TypeError If the keypair has no private key (under strict_types=1)
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
+     */
+    public function signMessage(string $message): ?string
+    {
+        $messageHash = self::calculateMessageHash($message);
+        return $this->sign($messageHash);
+    }
+
+    /**
+     * Verifies a SEP-53 message signature
+     *
+     * This method verifies that a signature was created by signing the message
+     * according to the SEP-53 specification with this keypair's private key.
+     *
+     * For signatures encoded as strings, decode them first using base64_decode()
+     * or hex2bin() before passing to this method. SEP-53 does not mandate a
+     * specific string encoding format.
+     *
+     * @param string $message The original message that was signed
+     * @param string $signature The raw signature bytes to verify
+     * @return bool True if the signature is valid for this message and public key, false otherwise
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
+     */
+    public function verifyMessage(string $message, string $signature): bool
+    {
+        $messageHash = self::calculateMessageHash($message);
+        return $this->verifySignature($signature, $messageHash);
     }
 
     /**
