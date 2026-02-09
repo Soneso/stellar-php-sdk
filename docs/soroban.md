@@ -1126,11 +1126,7 @@ $result = $txResponse->getResultValue();
 
 ### Deploy Stellar Asset Contract (SAC)
 
-Wrap a classic Stellar asset as a Soroban token contract.
-
-#### With Asset
-
-Deploy a contract for an existing Stellar asset (like USDC).
+Wrap a classic Stellar asset as a Soroban token contract. The protocol requires a `FROM_ASSET` contract ID preimage, so SAC deployment uses `DeploySACWithAssetHostFunction` with the asset to wrap.
 
 ```php
 <?php
@@ -1145,26 +1141,6 @@ $sacOp = (new InvokeHostFunctionOperationBuilder(
 ))->build();
 
 // Build, simulate, sign, and send
-```
-
-#### With Source Account
-
-Deploy a contract representing the native balance of a Stellar account.
-
-```php
-<?php
-use Soneso\StellarSDK\DeploySACWithSourceAccountHostFunction;
-use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
-use Soneso\StellarSDK\Soroban\Address;
-
-$sacOp = (new InvokeHostFunctionOperationBuilder(
-    new DeploySACWithSourceAccountHostFunction(
-        Address::fromAccountId($invokerAccountId)
-    )
-))->build();
-
-// Build, simulate, set auth, sign, and send
-$tx->setSorobanAuth($sim->getSorobanAuth());
 ```
 
 ### Direct Authorization Signing

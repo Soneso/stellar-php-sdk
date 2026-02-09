@@ -914,12 +914,6 @@ signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd8
         //print($txRepRes . PHP_EOL);
         $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
         self::assertEquals($deploySacWithAssetXdr, $xdr);
-
-        $deploySacWithSrcAccXdr = "AAAAAgAAAAAbabUDd9S4GOPKgqESpn8By1G0TregWA0BWOfVFU66bAAPsTsAHeDKAAAABgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAAAAAAAAAAAABtptQN31LgY48qCoRKmfwHLUbROt6BYDQFY59UVTrpsvNipWcbiYhu2d8eo1jDinP914WszeL5g2tae6RwdHB4AAAABAAAAAQAAAAAAAAABAAAAAAAAAAAAAAAAG2m1A3fUuBjjyoKhEqZ/ActRtE63oFgNAVjn1RVOumy82KlZxuJiG7Z3x6jWMOKc/3XhazN4vmDa1p7pHB0cHgAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAYAAAABPTcI9wETxIwLcM+S1/4yEsjMC/JU6l/Td2jwUvEQx4kAAAAUAAAAAQABuoEAAAAAAAAASAAAAAAAD7DXAAAAARVOumwAAABAZ8jZ2vKUTeuPjyeQBkj+pGJdzWATUXoSAlzo+5BeXhZsv5WizK+2kdEX4aeJULBnF/H+6AL9YLCqMjkmhvJ5BQ==";
-        $txRepRes = TxRep::fromTransactionEnvelopeXdrBase64($deploySacWithSrcAccXdr);
-        //print($txRepRes . PHP_EOL);
-        $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($txRepRes);
-        self::assertEquals($deploySacWithSrcAccXdr, $xdr);
     }
 }
 

@@ -21,7 +21,6 @@ use Soneso\StellarSDK\Xdr\XdrHostFunction;
  * - CreateContractWithConstructorHostFunction: Deploy contracts with constructor arguments
  * - UploadContractWasmHostFunction: Upload contract WASM code
  * - DeploySACWithAssetHostFunction: Deploy Stellar Asset Contracts for assets
- * - DeploySACWithSourceAccountHostFunction: Deploy Stellar Asset Contracts with source account
  *
  * Usage:
  * <code>
