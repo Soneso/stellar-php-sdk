@@ -11,11 +11,8 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\DeploySACWithAssetHostFunction;
-use Soneso\StellarSDK\DeploySACWithSourceAccountHostFunction;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\Soroban\Address;
-use Soneso\StellarSDK\Xdr\XdrHostFunction;
-use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Exception;
@@ -24,7 +21,7 @@ use Exception;
  * Unit tests for Soroban Host Function classes
  *
  * Tests CreateContractHostFunction, DeploySACWithAssetHostFunction,
- * DeploySACWithSourceAccountHostFunction, and InvokeContractHostFunction.
+ * and InvokeContractHostFunction.
  */
 class HostFunctionTest extends TestCase
 {
@@ -163,66 +160,6 @@ class HostFunctionTest extends TestCase
 
         $hostFunction->setAsset($asset2);
         $this->assertEquals("EUR", $hostFunction->getAsset()->getCode());
-    }
-
-    // DeploySACWithSourceAccountHostFunction Tests
-
-    public function testDeploySACWithSourceAccountConstructorWithoutSalt(): void
-    {
-        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
-        $hostFunction = new DeploySACWithSourceAccountHostFunction($address);
-
-        $this->assertEquals($address->accountId, $hostFunction->getAddress()->accountId);
-        $this->assertNotEmpty($hostFunction->getSalt());
-        $this->assertEquals(32, strlen($hostFunction->getSalt()));
-    }
-
-    public function testDeploySACWithSourceAccountConstructorWithSalt(): void
-    {
-        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
-        $salt = str_repeat("\x33", 32);
-
-        $hostFunction = new DeploySACWithSourceAccountHostFunction($address, $salt);
-
-        $this->assertEquals($salt, $hostFunction->getSalt());
-    }
-
-    public function testDeploySACWithSourceAccountToXdrRoundTrip(): void
-    {
-        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
-        $salt = str_repeat("\x44", 32);
-
-        $original = new DeploySACWithSourceAccountHostFunction($address, $salt);
-        $xdr = $original->toXdr();
-        $decoded = DeploySACWithSourceAccountHostFunction::fromXdr($xdr);
-
-        $this->assertEquals($original->getAddress()->accountId, $decoded->getAddress()->accountId);
-        $this->assertEquals($original->getSalt(), $decoded->getSalt());
-    }
-
-    public function testDeploySACWithSourceAccountSetAddress(): void
-    {
-        $address1 = Address::fromAccountId(self::TEST_ACCOUNT_ID);
-        $address2 = Address::fromAccountId(self::TEST_ISSUER_ID);
-
-        $hostFunction = new DeploySACWithSourceAccountHostFunction($address1);
-        $this->assertEquals($address1->accountId, $hostFunction->getAddress()->accountId);
-
-        $hostFunction->setAddress($address2);
-        $this->assertEquals($address2->accountId, $hostFunction->getAddress()->accountId);
-    }
-
-    public function testDeploySACWithSourceAccountSetSalt(): void
-    {
-        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
-        $salt1 = str_repeat("\x55", 32);
-        $salt2 = str_repeat("\x66", 32);
-
-        $hostFunction = new DeploySACWithSourceAccountHostFunction($address, $salt1);
-        $this->assertEquals($salt1, $hostFunction->getSalt());
-
-        $hostFunction->setSalt($salt2);
-        $this->assertEquals($salt2, $hostFunction->getSalt());
     }
 
     // InvokeContractHostFunction Tests
@@ -412,22 +349,6 @@ class HostFunctionTest extends TestCase
         DeploySACWithAssetHostFunction::fromXdr($xdr);
     }
 
-    public function testDeploySACWithSourceAccountFromXdrInvalidTypeThrows(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Invalid argument");
-
-        // Create XDR with wrong type (invoke contract instead of create contract)
-        $hostFunction = new InvokeContractHostFunction(
-            self::TEST_CONTRACT_ID,
-            "transfer"
-        );
-        $xdr = $hostFunction->toXdr();
-
-        // Try to decode as DeploySACWithSourceAccountHostFunction
-        DeploySACWithSourceAccountHostFunction::fromXdr($xdr);
-    }
-
     public function testInvokeContractFromXdrNullInvokeContractThrows(): void
     {
         $this->expectException(Exception::class);
@@ -460,7 +381,7 @@ class HostFunctionTest extends TestCase
         DeploySACWithAssetHostFunction::fromXdr($xdr);
     }
 
-    public function testDeploySACWithSourceAccountFromXdrWrongPreimageTypeThrows(): void
+    public function testCreateContractFromXdrWrongExecutableTypeThrows(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage("Invalid argument");
@@ -468,21 +389,6 @@ class HostFunctionTest extends TestCase
         // Create XDR with asset preimage type instead of address preimage type
         $asset = Asset::createNonNativeAsset("USD", self::TEST_ISSUER_ID);
         $deploySACHostFunction = new DeploySACWithAssetHostFunction($asset);
-        $xdr = $deploySACHostFunction->toXdr();
-
-        // Try to decode as DeploySACWithSourceAccountHostFunction
-        DeploySACWithSourceAccountHostFunction::fromXdr($xdr);
-    }
-
-    public function testCreateContractFromXdrWrongExecutableTypeThrows(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Invalid argument");
-
-        // Create XDR with stellar asset executable type instead of wasm
-        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
-        $salt = str_repeat("\x44", 32);
-        $deploySACHostFunction = new DeploySACWithSourceAccountHostFunction($address, $salt);
         $xdr = $deploySACHostFunction->toXdr();
 
         // Try to decode as CreateContractHostFunction

@@ -16,7 +16,6 @@ use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\DeploySACWithAssetHostFunction;
-use Soneso\StellarSDK\DeploySACWithSourceAccountHostFunction;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
@@ -461,86 +460,6 @@ class SorobanTest extends TestCase
                 $this->assertNotEquals("", trim($parameter->value));
                 print("Parameter type :" . $parameter->type . " value: " . $parameter->value . PHP_EOL);
             }
-        } else {
-            $this->fail();
-        }
-
-        // deploy create token contract with source account
-        $accountA = $this->server->getAccount($this->accountAId);
-        assertNotNull($accountA);
-
-        $deploySACWithSourceAccountHostFunction = new DeploySACWithSourceAccountHostFunction(Address::fromAccountId($this->accountAId));
-        $builder = new InvokeHostFunctionOperationBuilder($deploySACWithSourceAccountHostFunction);
-        $op = $builder->build();
-
-        $transaction = (new TransactionBuilder($accountA))
-            ->addOperation($op)->build();
-
-        // simulate first to get the transaction data + fee
-        $request = new SimulateTransactionRequest($transaction);
-        $simulateResponse = $this->server->simulateTransaction($request);
-
-        $this->assertNull($simulateResponse->error);
-        $this->assertNull($simulateResponse->resultError);
-        $this->assertNotNull($simulateResponse->results);
-        $this->assertNotNull($simulateResponse->latestLedger);
-        $this->assertEquals(1, $simulateResponse->results->count());
-        $this->assertNotNull($simulateResponse->getTransactionData());
-        $this->assertNotNull($simulateResponse->getSorobanAuth());
-        $this->assertNotNull($simulateResponse->getFootprint());
-        $this->assertGreaterThan(1, $simulateResponse->minResourceFee);
-        if ($this->testOn === 'futurenet') {
-            $this->assertNotNull($simulateResponse->stateChanges);
-            $stateChange = $simulateResponse->stateChanges[0];
-            $stateChange->getKeyXdr();
-            $after = $stateChange->getAfterXdr();
-            assertNotNull($after);
-        }
-
-        // set the transaction data and sign
-        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
-        $transaction->setSorobanAuth($simulateResponse->getSorobanAuth());
-        $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->sign($this->accountAKeyPair, $this->network);
-
-        // check transaction xdr encoding back and forth
-        $transctionEnvelopeXdr = $transaction->toEnvelopeXdrBase64();
-        $this->assertEquals($transctionEnvelopeXdr,
-            Transaction::fromEnvelopeBase64XdrString($transctionEnvelopeXdr)->toEnvelopeXdrBase64());
-
-        // send the transaction
-        $sendResponse = $this->server->sendTransaction($transaction);
-        $this->assertNull($sendResponse->error);
-        $this->assertNotNull($sendResponse->hash);
-        $this->assertNotNull($sendResponse->status);
-        $this->assertNotEquals(SendTransactionResponse::STATUS_ERROR, $sendResponse->status);
-
-        // poll until status is success or error
-        $statusResponse = $this->pollStatus($this->server, $sendResponse->hash);
-        $this->assertNotNull($statusResponse);
-        $ctcId = $statusResponse->getCreatedContractId();
-        $this->assertNotNull($ctcId);
-
-        sleep(5);
-        // check horizon response decoding.
-        $transactionResponse = $this->sdk->requestTransaction($sendResponse->hash);
-        $this->assertEquals(1, $transactionResponse->getOperationCount());
-        $this->assertEquals($transctionEnvelopeXdr, $transactionResponse->getEnvelopeXdr()->toBase64Xdr());
-        $meta = $transactionResponse->getResultMetaXdrBase64();
-
-        // parsing meta is working
-        if ($meta !== null) {
-            $metaXdr = XdrTransactionMeta::fromBase64Xdr($meta);
-            $this->assertEquals($meta, $metaXdr->toBase64Xdr());
-        }
-
-        // check horizon operation response
-        $operationsResponse = $this->sdk->operations()->forTransaction($sendResponse->hash)->limit(10)->order("desc")->execute();
-        $this->assertTrue($operationsResponse->getOperations()->count() == 1);
-        $firstOp = $operationsResponse->getOperations()->toArray()[0];
-        if ($firstOp instanceof InvokeHostFunctionOperationResponse) {
-            $hostFunctionType = $firstOp->function;
-            $this->assertEquals("HostFunctionTypeHostFunctionTypeCreateContract", $hostFunctionType);
         } else {
             $this->fail();
         }

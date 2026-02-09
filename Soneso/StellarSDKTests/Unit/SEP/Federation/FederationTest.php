@@ -15,6 +15,7 @@ use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Soneso\StellarSDK\SEP\Federation\Federation;
+use Soneso\StellarSDK\SEP\Federation\FederationRequestBuilder;
 
 class FederationTest extends TestCase
 {
@@ -23,7 +24,23 @@ class FederationTest extends TestCase
      */
     public function testResolveStellarAddress(): void
     {
-        $response = Federation::resolveStellarAddress("bob*soneso.com");
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->successResponse())
+        ]);
+
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
+            parse_str($request->getUri()->getQuery(), $query_array);
+            $this->assertEquals("name", $query_array["type"]);
+            $this->assertEquals("bob*soneso.com", $query_array["q"]);
+            return $request;
+        }));
+
+        $requestBuilder = (new FederationRequestBuilder(new Client(['handler' => $stack]), "https://stellarid.io/federation"))
+            ->forStringToLookUp("bob*soneso.com")
+            ->forType("name");
+        $response = $requestBuilder->execute();
         $this->assertNotNull($response);
         $this->assertEquals("bob*soneso.com", $response->getStellarAddress());
         $this->assertEquals("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI", $response->getAccountId());
@@ -33,13 +50,26 @@ class FederationTest extends TestCase
 
     public function testResolveStellarAccountId(): void
     {
-        $response = Federation::resolveStellarAccountId("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI", "https://stellarid.io/federation");
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->successResponse())
+        ]);
+
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
+            parse_str($request->getUri()->getQuery(), $query_array);
+            $this->assertEquals("id", $query_array["type"]);
+            $this->assertEquals("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI", $query_array["q"]);
+            return $request;
+        }));
+
+        $response = Federation::resolveStellarAccountId("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI",
+            "https://stellarid.io/federation", httpClient: new Client(['handler' => $stack]));
         $this->assertNotNull($response);
         $this->assertEquals("bob*soneso.com", $response->getStellarAddress());
         $this->assertEquals("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI", $response->getAccountId());
         $this->assertEquals("text", $response->getMemoType());
         $this->assertEquals("hello memo text", $response->getMemo());
-
     }
 
     private function successResponse() : string {
