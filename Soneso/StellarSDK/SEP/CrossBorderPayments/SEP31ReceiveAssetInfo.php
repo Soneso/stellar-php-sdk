@@ -100,6 +100,11 @@ class SEP31ReceiveAssetInfo
     public ?bool $quotesRequired = null;
 
     /**
+     * @var array<string>|null $fundingMethods (optional) Array of methods the anchor supports for receiving funds.
+     */
+    public ?array $fundingMethods = null;
+
+    /**
      * @param SEP12TypesInfo $sep12Info an object containing the description of required KYC fields.
      * @param float|null $minAmount (optional) Minimum amount. No limit if not specified.
      * @param float|null $maxAmount (optional) Maximum amount. No limit if not specified.
@@ -119,6 +124,7 @@ class SEP31ReceiveAssetInfo
      * listed in the SEP-38 GET /prices response in exchange for receiving the Stellar asset.
      * @param bool|null $quotesRequired (optional) If true, the Receiving Anchor can only deliver an off-chain asset
      * listed in the SEP-38 GET /prices response in exchange for receiving the Stellar asset.
+     * @param array<string>|null $fundingMethods (optional) Array of methods the anchor supports for receiving funds.
      */
     public function __construct(
         SEP12TypesInfo $sep12Info,
@@ -130,7 +136,8 @@ class SEP31ReceiveAssetInfo
         ?string $receiverSep12Type = null,
         ?array $fields = null,
         ?bool $quotesSupported = null,
-        ?bool $quotesRequired = null
+        ?bool $quotesRequired = null,
+        ?array $fundingMethods = null
     )
     {
         $this->sep12Info = $sep12Info;
@@ -140,6 +147,7 @@ class SEP31ReceiveAssetInfo
         $this->feePercent = $feePercent;
         $this->quotesSupported = $quotesSupported;
         $this->quotesRequired = $quotesRequired;
+        $this->fundingMethods = $fundingMethods;
     }
 
     /**
@@ -160,6 +168,7 @@ class SEP31ReceiveAssetInfo
         if (isset($json['fields'])) $result->fields = $json['fields'];
         if (isset($json['quotes_supported'])) $result->quotesSupported = $json['quotes_supported'];
         if (isset($json['quotes_required'])) $result->quotesRequired = $json['quotes_required'];
+        if (isset($json['funding_methods'])) $result->fundingMethods = $json['funding_methods'];
 
         return $result;
 

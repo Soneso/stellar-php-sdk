@@ -26,7 +26,7 @@ class CrossBorderPaymentsTest extends TestCase
     private string $serviceAddress = "http://api.stellar.org/direct-payment";
     private string $jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJHQTZVSVhYUEVXWUZJTE5VSVdBQzM3WTRRUEVaTVFWREpIREtWV0ZaSjJLQ1dVQklVNUlYWk5EQSIsImp0aSI6IjE0NGQzNjdiY2IwZTcyY2FiZmRiZGU2MGVhZTBhZDczM2NjNjVkMmE2NTg3MDgzZGFiM2Q2MTZmODg1MTkwMjQiLCJpc3MiOiJodHRwczovL2ZsYXBweS1iaXJkLWRhcHAuZmlyZWJhc2VhcHAuY29tLyIsImlhdCI6MTUzNDI1Nzk5NCwiZXhwIjoxNTM0MzQ0Mzk0fQ.8nbB83Z6vGBgC1X9r3N6oQCFTBzDiITAfCJasRft0z0";
 
-    private string $infoResponse = "{  \"receive\": {    \"USDC\": {      \"quotes_supported\": true,      \"quotes_required\": false,      \"fee_fixed\": 5,      \"fee_percent\": 1,      \"min_amount\": 0.1,      \"max_amount\": 1000,      \"sep12\": {        \"sender\": {          \"types\": {            \"sep31-sender\": {              \"description\": \"U.S. citizens limited to sending payments of less than $10,000 in value\"            },            \"sep31-large-sender\": {              \"description\": \"U.S. citizens that do not have sending limits\"            },            \"sep31-foreign-sender\": {              \"description\": \"non-U.S. citizens sending payments of less than $10,000 in value\"            }          }        },        \"receiver\": {          \"types\": {            \"sep31-receiver\": {              \"description\": \"U.S. citizens receiving USD\"            },            \"sep31-foreign-receiver\": {              \"description\": \"non-U.S. citizens receiving USD\"            }          }        }      }    }  }}";
+    private string $infoResponse = "{  \"receive\": {    \"USDC\": {      \"quotes_supported\": true,      \"quotes_required\": false,      \"funding_methods\": [\"bank_account\", \"cash\"],      \"fee_fixed\": 5,      \"fee_percent\": 1,      \"min_amount\": 0.1,      \"max_amount\": 1000,      \"sep12\": {        \"sender\": {          \"types\": {            \"sep31-sender\": {              \"description\": \"U.S. citizens limited to sending payments of less than $10,000 in value\"            },            \"sep31-large-sender\": {              \"description\": \"U.S. citizens that do not have sending limits\"            },            \"sep31-foreign-sender\": {              \"description\": \"non-U.S. citizens sending payments of less than $10,000 in value\"            }          }        },        \"receiver\": {          \"types\": {            \"sep31-receiver\": {              \"description\": \"U.S. citizens receiving USD\"            },            \"sep31-foreign-receiver\": {              \"description\": \"non-U.S. citizens receiving USD\"            }          }        }      }    }  }}";
     private string $postTransactionsResponse = "{    \"id\": \"82fhs729f63dh0v4\",    \"stellar_account_id\": \"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\",    \"stellar_memo\": \"123456789\",    \"stellar_memo_type\": \"id\"}";
     private string $txPendingExternal = "{  \"transaction\": {      \"id\": \"82fhs729f63dh0v4\",      \"status\": \"pending_external\",      \"status_eta\": 3600,      \"status_message\": \"Payment has been initiated via ACH deposit.\",      \"stellar_transaction_id\": \"b9d0b2292c4e09e8eb22d036171491e87b8d2086bf8b265874c8d182cb9c9020\",      \"external_transaction_id\": \"ABCDEFG1234567890\",      \"stellar_account_id\": \"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\",      \"stellar_memo\": \"123456789\",      \"stellar_memo_type\": \"id\",      \"amount_in\": \"18.34\",      \"amount_out\": \"18.24\",      \"amount_fee\": \"0.1\",      \"started_at\": \"2017-03-20T17:05:32Z\"    }}";
     private string $txPendingInfoUpdate = "{  \"transaction\": {      \"id\": \"82fhs729f63dh0v4\",      \"status\": \"pending_transaction_info_update\",      \"status_eta\": 3600,      \"stellar_transaction_id\": \"b9d0b2292c4e09e8eb22d036171491e87b8d2086bf8b265874c8d182cb9c9020\",      \"external_transaction_id\": \"ABCDEFG1234567890\",      \"amount_in\": \"18.34\",      \"amount_out\": \"18.24\",      \"amount_fee\": \"0.1\",      \"stellar_account_id\": \"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\",      \"stellar_memo\": \"123456789\",      \"stellar_memo_type\": \"id\",      \"started_at\": \"2017-03-20T17:05:32Z\",      \"required_info_message\": \"The bank reported an incorrect account number for the receiver, please ensure the account matches legal documents\",      \"required_info_updates\": {         \"transaction\": {            \"receiver_account_number\": {               \"description\": \"The receiver's bank account number\"            }         }      }    }}";
@@ -63,6 +63,10 @@ class CrossBorderPaymentsTest extends TestCase
         $this->assertEquals(1, $usdc->feePercent);
         $this->assertEquals(0.1, $usdc->minAmount);
         $this->assertEquals(1000, $usdc->maxAmount);
+        $this->assertNotNull($usdc->fundingMethods);
+        $this->assertCount(2, $usdc->fundingMethods);
+        $this->assertEquals('bank_account', $usdc->fundingMethods[0]);
+        $this->assertEquals('cash', $usdc->fundingMethods[1]);
         $sep12Info = $usdc->sep12Info;
         $this->assertNotNull($sep12Info);
         $this->assertCount(3, $sep12Info->senderTypes);
@@ -82,6 +86,34 @@ class CrossBorderPaymentsTest extends TestCase
         $this->assertArrayHasKey('sep31-foreign-receiver', $sep12Info->receiverTypes);
         $this->assertEquals('non-U.S. citizens receiving USD',
             $sep12Info->receiverTypes['sep31-foreign-receiver']);
+    }
+
+    public function testGetInfoWithoutFundingMethods(): void {
+        $infoResponseWithoutFundingMethods = "{  \"receive\": {    \"USDC\": {      \"quotes_supported\": true,      \"quotes_required\": false,      \"fee_fixed\": 5,      \"fee_percent\": 1,      \"min_amount\": 0.1,      \"max_amount\": 1000,      \"sep12\": {        \"sender\": {          \"types\": {            \"sep31-sender\": {              \"description\": \"U.S. citizens limited to sending payments of less than $10,000 in value\"            }          }        },        \"receiver\": {          \"types\": {            \"sep31-receiver\": {              \"description\": \"U.S. citizens receiving USD\"            }          }        }      }    }  }}";
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $infoResponseWithoutFundingMethods)
+        ]);
+
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
+            $headers = $request->getHeaders();
+            $auth = $headers["Authorization"][0];
+            $this->assertEquals("Bearer " . $this->jwtToken, $auth);
+            $this->assertEquals("GET", $request->getMethod());
+            return $request;
+        }));
+
+        $httpClient = new Client(['handler' => $stack]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+        $response = $service->info($this->jwtToken);
+        $assets = $response->receiveAssets;
+        $this->assertCount(1, $assets);
+        $this->assertArrayHasKey('USDC', $assets);
+        $usdc = $assets['USDC'];
+        $this->assertNotNull($usdc);
+        $this->assertNull($usdc->fundingMethods);
     }
 
     public function testPostTransactions(): void {
