@@ -359,6 +359,9 @@ class QueryTest extends TestCase
 
 
     public function testStreamPayments():void {
+        if (!function_exists('pcntl_fork')) {
+            $this->markTestSkipped('pcntl extension required for this test (Unix only).');
+        }
 
         $keypair1 = KeyPair::random();
         $keypair2 = KeyPair::random();

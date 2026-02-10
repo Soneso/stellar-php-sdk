@@ -21,9 +21,11 @@
 		"phpseclib/phpseclib" : "^3.0",
 		"yosymfony/toml" : "~1.0",
       	"ext-bcmath": "*",
-		"ext-pcntl": "*",
 		"ext-gmp": "*"
     },
+	"suggest": {
+		"ext-pcntl": "Required for process forking in streaming integration tests (Unix only)"
+	},
 	"license" : "Apache-2.0",
 	"authors" : [{
 			"name" : "Christian Rogobete",
