@@ -1,7 +1,7 @@
 # [Stellar SDK for PHP](https://github.com/Soneso/stellar-php-sdk)
 
-[![Latest Stable Version](https://poser.pugx.org/soneso/stellar-php-sdk/v/stable.svg)](https://packagist.org/packages/soneso/stellar-php-sdk)
-[![Total Downloads](https://poser.pugx.org/soneso/stellar-php-sdk/downloads.svg)](https://packagist.org/packages/soneso/stellar-php-sdk)
+[![Latest Stable Version](https://img.shields.io/packagist/v/soneso/stellar-php-sdk.svg)](https://packagist.org/packages/soneso/stellar-php-sdk)
+[![Total Downloads](https://img.shields.io/packagist/dt/soneso/stellar-php-sdk.svg)](https://packagist.org/packages/soneso/stellar-php-sdk)
 [![codecov](https://codecov.io/gh/Soneso/stellar-php-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/Soneso/stellar-php-sdk)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
 
