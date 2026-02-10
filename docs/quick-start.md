@@ -17,7 +17,7 @@ Install the SDK via Composer:
 composer require soneso/stellar-php-sdk
 ```
 
-**Requirements:** PHP 8.0 or higher (with `bcmath`, `gmp`, and `pcntl` extensions). See [Getting Started](getting-started.md) for full requirements.
+**Requirements:** PHP 8.0 or higher (with `bcmath` and `gmp` extensions). See [Getting Started](getting-started.md) for full requirements.
 
 ## Your First KeyPair
 

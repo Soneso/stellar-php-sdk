@@ -419,6 +419,10 @@ final class AccountTest extends TestCase
     }
 
     public function testStreamAccount(): void {
+        if (!function_exists('pcntl_fork')) {
+            $this->markTestSkipped('pcntl extension required for this test (Unix only).');
+        }
+
         // Create and fund test account
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
@@ -503,6 +507,10 @@ final class AccountTest extends TestCase
     }
 
     public function testStreamAccountData(): void {
+        if (!function_exists('pcntl_fork')) {
+            $this->markTestSkipped('pcntl extension required for this test (Unix only).');
+        }
+
         // Create and fund test account
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();

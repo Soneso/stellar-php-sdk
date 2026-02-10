@@ -12,7 +12,13 @@ use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\DeploySACWithAssetHostFunction;
 use Soneso\StellarSDK\InvokeContractHostFunction;
+use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
+use Soneso\StellarSDK\Xdr\XdrHostFunction;
+use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Exception;
@@ -393,5 +399,49 @@ class HostFunctionTest extends TestCase
 
         // Try to decode as CreateContractHostFunction
         CreateContractHostFunction::fromXdr($xdr);
+    }
+
+    // InvokeHostFunctionOperation::fromXdrOperation v2 deserialization tests
+
+    public function testDeploySACWithAssetFromXdrV2RoundTrip(): void
+    {
+        $asset = Asset::createNonNativeAsset("USD", self::TEST_ISSUER_ID);
+
+        // Build a CREATE_CONTRACT_V2 XdrHostFunction with FROM_ASSET preimage
+        $preimage = XdrContractIDPreimage::forAsset($asset->toXdr());
+        $executable = XdrContractExecutable::forToken();
+        $constructorArgs = [];
+        $createContractV2Args = new XdrCreateContractArgsV2($preimage, $executable, $constructorArgs);
+        $xdrHostFunction = XdrHostFunction::forCreatingContractV2WithArgs($createContractV2Args);
+
+        $xdrOp = new XdrInvokeHostFunctionOp($xdrHostFunction, []);
+
+        $operation = InvokeHostFunctionOperation::fromXdrOperation($xdrOp);
+
+        $this->assertInstanceOf(DeploySACWithAssetHostFunction::class, $operation->getFunction());
+        /** @var DeploySACWithAssetHostFunction $hostFunction */
+        $hostFunction = $operation->getFunction();
+        $this->assertEquals("USD", $hostFunction->getAsset()->getCode());
+    }
+
+    public function testDeploySACWithNativeAssetFromXdrV2RoundTrip(): void
+    {
+        $asset = new AssetTypeNative();
+
+        // Build a CREATE_CONTRACT_V2 XdrHostFunction with FROM_ASSET preimage (native asset)
+        $preimage = XdrContractIDPreimage::forAsset($asset->toXdr());
+        $executable = XdrContractExecutable::forToken();
+        $constructorArgs = [];
+        $createContractV2Args = new XdrCreateContractArgsV2($preimage, $executable, $constructorArgs);
+        $xdrHostFunction = XdrHostFunction::forCreatingContractV2WithArgs($createContractV2Args);
+
+        $xdrOp = new XdrInvokeHostFunctionOp($xdrHostFunction, []);
+
+        $operation = InvokeHostFunctionOperation::fromXdrOperation($xdrOp);
+
+        $this->assertInstanceOf(DeploySACWithAssetHostFunction::class, $operation->getFunction());
+        /** @var DeploySACWithAssetHostFunction $hostFunction */
+        $hostFunction = $operation->getFunction();
+        $this->assertInstanceOf(AssetTypeNative::class, $hostFunction->getAsset());
     }
 }
