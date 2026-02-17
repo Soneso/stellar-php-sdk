@@ -413,7 +413,8 @@ foreach ($response->accounts as $account) {
     echo "  Address: " . $account->address . "\n";
     foreach ($account->identities as $identity) {
         $auth = $identity->authenticated ? " (you)" : "";
-        echo "    Role: " . $identity->role . $auth . "\n";
+        $role = $identity->role ?? "(unspecified)";
+        echo "    Role: " . $role . $auth . "\n";
     }
 }
 

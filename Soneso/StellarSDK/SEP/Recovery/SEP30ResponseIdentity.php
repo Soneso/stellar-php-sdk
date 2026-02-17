@@ -19,11 +19,11 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 class SEP30ResponseIdentity
 {
     /**
-     * @param string $role The identity role (e.g., "owner", "sender", "receiver"). Client-defined value stored by server and returned in responses.
+     * @param string|null $role The identity role (e.g., "owner", "sender", "receiver"). Client-defined value stored by server and returned in responses.
      * @param bool|null $authenticated Whether the identity is authenticated.
      */
     public function __construct(
-        public string $role,
+        public ?string $role,
         public ?bool $authenticated = null,
     ) {
     }
@@ -40,15 +40,16 @@ class SEP30ResponseIdentity
         if (isset($json['authenticated'])) {
             $auth = $json['authenticated'];
         }
-        return new SEP30ResponseIdentity($json['role'], $auth);
+        $role = isset($json['role']) ? $json['role'] : null;
+        return new SEP30ResponseIdentity($role, $auth);
     }
 
     /**
      * Gets the identity role.
      *
-     * @return string The role (e.g., "owner", "sender", "receiver").
+     * @return string|null The role (e.g., "owner", "sender", "receiver").
      */
-    public function getRole(): string
+    public function getRole(): ?string
     {
         return $this->role;
     }
@@ -56,9 +57,9 @@ class SEP30ResponseIdentity
     /**
      * Sets the identity role.
      *
-     * @param string $role The role (e.g., "owner", "sender", "receiver").
+     * @param string|null $role The role (e.g., "owner", "sender", "receiver").
      */
-    public function setRole(string $role): void
+    public function setRole(?string $role): void
     {
         $this->role = $role;
     }

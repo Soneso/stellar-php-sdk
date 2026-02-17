@@ -208,6 +208,15 @@ class RecoveryTest extends TestCase
         $this->assertNull($identity->getAuthenticated());
     }
 
+    public function testResponseIdentityFromJsonWithoutRole(): void
+    {
+        $json = ['authenticated' => true];
+        $identity = SEP30ResponseIdentity::fromJson($json);
+
+        $this->assertNull($identity->getRole());
+        $this->assertTrue($identity->getAuthenticated());
+    }
+
     public function testResponseIdentityGettersSetters(): void
     {
         $identity = new SEP30ResponseIdentity('owner');
