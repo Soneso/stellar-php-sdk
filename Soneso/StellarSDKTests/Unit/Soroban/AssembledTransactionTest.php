@@ -21,6 +21,7 @@ use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\RestoreFootprintOperation;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\AssembledTransaction;
 use Soneso\StellarSDK\Soroban\Contract\AssembledTransactionOptions;
@@ -1000,6 +1001,35 @@ class AssembledTransactionTest extends TestCase
         $this->assertEquals(300, $options->timeoutInSeconds);
         $this->assertTrue($options->simulate);
         $this->assertTrue($options->restore);
+    }
+
+    public function testNeedsNonInvokerSigningByReturnsEmptyForNonInvokeHostFunctionOp(): void
+    {
+        $clientOptions = $this->createClientOptions();
+        $methodOptions = new MethodOptions(simulate: false);
+
+        $txOptions = new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions,
+            method: 'test',
+            arguments: []
+        );
+
+        $tx = $this->createMockedAssembledTransaction($txOptions);
+
+        // Replace the transaction with one containing a RestoreFootprintOperation
+        $account = new Account(
+            $clientOptions->sourceAccountKeyPair->getAccountId(),
+            new BigInteger(123456789)
+        );
+        $restoreOp = new RestoreFootprintOperation();
+        $txBuilder = new TransactionBuilder(sourceAccount: $account);
+        $txBuilder->addOperation($restoreOp);
+        $tx->tx = $txBuilder->build();
+
+        $needed = $tx->needsNonInvokerSigningBy();
+        $this->assertIsArray($needed);
+        $this->assertCount(0, $needed);
     }
 
     public function testClientOptionsWithAllParameters(): void
