@@ -38,7 +38,7 @@ class SEP24Transaction extends Response
     public string $id;
 
     /**
-     * @var string $kind Possible values: 'deposit' or 'withdrawal'.
+     * @var string $kind Possible values: 'deposit', 'withdrawal', 'deposit-exchange', or 'withdrawal-exchange'.
      */
     public string $kind;
 
@@ -333,7 +333,7 @@ class SEP24Transaction extends Response
     }
 
     /**
-     * @return string Possible values: 'deposit' or 'withdrawal'.
+     * @return string Possible values: 'deposit', 'withdrawal', 'deposit-exchange', or 'withdrawal-exchange'.
      */
     public function getKind(): string
     {
@@ -341,7 +341,7 @@ class SEP24Transaction extends Response
     }
 
     /**
-     * @param string $kind Possible values: 'deposit' or 'withdrawal'.
+     * @param string $kind Possible values: 'deposit', 'withdrawal', 'deposit-exchange', or 'withdrawal-exchange'.
      * @return void
      */
     public function setKind(string $kind): void

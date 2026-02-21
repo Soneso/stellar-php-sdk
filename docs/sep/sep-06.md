@@ -142,7 +142,7 @@ Request deposit instructions from the anchor by specifying the asset code and de
 
 > **Note:** The `account` parameter accepts both regular Stellar accounts (`G...`) and Soroban contract accounts (`C...`) per SEP-06 v4.3.0. Contract accounts can authenticate via SEP-45.
 
-> **Note:** The `type` parameter is deprecated in favor of `funding_method` per SEP-06 v4.3.0. While `type` continues to work for backwards compatibility, anchors may begin using `funding_method` in future versions.
+> **Note:** The `type` parameter corresponds to the SEP-06 `funding_method` concept introduced in v4.3.0. The SDK currently supports `type`; `funding_method` may be added in a future release.
 
 ```php
 <?php

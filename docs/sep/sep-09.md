@@ -109,18 +109,20 @@ $person = new NaturalPersonKYCFields();
 $person->firstName = 'John';
 $person->lastName = 'Doe';
 
-// Base64-encode document images for transmission
-$person->photoIdFront = base64_encode(file_get_contents('/path/to/passport-front.jpg'));
-$person->photoIdBack = base64_encode(file_get_contents('/path/to/passport-back.jpg'));
-$person->notaryApprovalOfPhotoId = base64_encode(file_get_contents('/path/to/notary-approval.pdf'));
-$person->photoProofResidence = base64_encode(file_get_contents('/path/to/utility-bill.pdf'));
-$person->proofOfIncome = base64_encode(file_get_contents('/path/to/payslip.pdf'));
-$person->proofOfLiveness = base64_encode(file_get_contents('/path/to/selfie-video.mp4'));
+// Load raw file bytes - the SDK handles multipart encoding internally
+$person->photoIdFront = file_get_contents('/path/to/passport-front.jpg');
+$person->photoIdBack = file_get_contents('/path/to/passport-back.jpg');
+$person->notaryApprovalOfPhotoId = file_get_contents('/path/to/notary-approval.pdf');
+$person->photoProofResidence = file_get_contents('/path/to/utility-bill.pdf');
+$person->proofOfIncome = file_get_contents('/path/to/payslip.pdf');
+$person->proofOfLiveness = file_get_contents('/path/to/selfie-video.mp4');
 
 // Get text fields and file fields separately
 $textFields = $person->fields();
 $fileFields = $person->files();
 ```
+
+> **Note:** Do not base64-encode file contents. The SDK sends file data as raw bytes via multipart/form-data. If you were previously wrapping file contents in `base64_encode()`, remove that call.
 
 ### Organization Fields
 

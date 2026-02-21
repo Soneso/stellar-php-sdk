@@ -229,7 +229,7 @@ class WebAuthForContracts
 
     /**
      * Sets whether to use application/x-www-form-urlencoded when submitting challenges.
-     * By default, application/json is used.
+     * By default, application/x-www-form-urlencoded is used.
      *
      * @param bool $useFormUrlEncoded true to use form-urlencoded, false for JSON
      */
@@ -258,7 +258,7 @@ class WebAuthForContracts
      * @param string|null $clientDomain Optional client domain for verification
      * @param KeyPair|null $clientDomainKeyPair Optional keypair for client domain signing
      * @param callable|null $clientDomainSigningCallback Optional callback for remote client domain signing.
-     *                                                    Callback signature: function(array $authEntries): array
+     *                                                    Callback signature: function(SorobanAuthorizationEntry $authEntry): SorobanAuthorizationEntry
      * @param int|null $signatureExpirationLedger Optional expiration ledger for signatures (for replay protection).
      *                                            If null and signers are provided, automatically set to current
      *                                            ledger + 10 (approximately 50-60 seconds). If signers array is empty,
