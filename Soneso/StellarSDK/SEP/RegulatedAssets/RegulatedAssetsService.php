@@ -78,6 +78,8 @@ class RegulatedAssetsService
             $this->httpClient = new Client();
         }
 
+        $this->tomlData = $tomlData;
+
         if ($horizonUrl !== null) {
             $this->sdk = new StellarSDK($horizonUrl);
         }
@@ -91,7 +93,7 @@ class RegulatedAssetsService
 
         if ($network === null && $tomlDataNetworkPassphrase !== null) {
             $this->network = new Network($tomlDataNetworkPassphrase);
-        } else {
+        } else if ($network === null) {
             throw new SEP08IncompleteInitData('could not find a network passphrase');
         }
 

@@ -981,4 +981,72 @@ class RegulatedAssetsTest extends TestCase
 
         self::assertInstanceOf(SEP08PostActionDone::class, $response);
     }
+
+    public function testServiceInitializationSetsTomlData(): void
+    {
+        $tomlData = new StellarToml(toml: $this->validTomlWithNetworkAndHorizon);
+        $service = new RegulatedAssetsService(tomlData: $tomlData);
+        self::assertSame($tomlData, $service->tomlData);
+    }
+
+    public function testPostTransactionActionRequiredDefaultsActionMethodToGet(): void
+    {
+        $txXdr = 'AAAAAgAAAAA=';
+        $approvalServer = 'https://approval.example.com/tx_approve';
+
+        $mock = new MockHandler([
+            new Response(200, [], json_encode([
+                'status' => 'action_required',
+                'message' => 'KYC required',
+                'action_url' => 'https://approval.example.com/kyc',
+            ]))
+        ]);
+
+        $httpClient = new Client(['handler' => new HandlerStack($mock)]);
+        $tomlData = new StellarToml(toml: $this->validTomlWithNetworkAndHorizon);
+        $service = new RegulatedAssetsService(tomlData: $tomlData, httpClient: $httpClient);
+
+        $response = $service->postTransaction($txXdr, $approvalServer);
+
+        self::assertInstanceOf(SEP08PostTransactionActionRequired::class, $response);
+        self::assertEquals('GET', $response->actionMethod);
+        self::assertNull($response->actionFields);
+    }
+
+    public function testPostTransactionResponseFromJsonActionRequiredDefaultMethod(): void
+    {
+        $json = [
+            'status' => 'action_required',
+            'message' => 'Action needed',
+            'action_url' => 'https://example.com/action',
+        ];
+
+        $response = SEP08PostTransactionResponse::fromJson($json);
+
+        self::assertInstanceOf(SEP08PostTransactionActionRequired::class, $response);
+        self::assertEquals('GET', $response->actionMethod);
+    }
+
+    public function testServiceInitializationWithExplicitNetwork(): void
+    {
+        $tomlData = new StellarToml(toml: $this->validTomlWithNetworkAndHorizon);
+        $network = Network::testnet();
+
+        $service = new RegulatedAssetsService(
+            tomlData: $tomlData,
+            network: $network
+        );
+
+        self::assertSame($network, $service->network);
+        self::assertNotNull($service->sdk);
+    }
+
+    public function testServiceInitializationFailsWithoutNetworkFromAnySource(): void
+    {
+        $this->expectException(SEP08IncompleteInitData::class);
+        $this->expectExceptionMessage('could not find a network passphrase');
+
+        $tomlData = new StellarToml(toml: $this->tomlMissingNetworkPassphrase);
+        new RegulatedAssetsService(tomlData: $tomlData);
+    }
 }

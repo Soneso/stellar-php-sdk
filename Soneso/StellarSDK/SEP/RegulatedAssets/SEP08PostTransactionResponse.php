@@ -88,7 +88,7 @@ abstract class SEP08PostTransactionResponse
             if (!isset($json['action_url'])) {
                 throw new SEP08InvalidPostTransactionResponse("Missing action_url in response");
             }
-            $actionMethod = $json['action_method'] ?? null;
+            $actionMethod = $json['action_method'] ?? 'GET';
             $actionFields = $json['action_fields'] ?? null;
 
             return new SEP08PostTransactionActionRequired(
