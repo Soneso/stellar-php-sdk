@@ -176,6 +176,7 @@ class WebAuth
      * @throws SubmitCompletedChallengeUnknownResponseException
      * @throws GuzzleException|ChallengeRequestErrorResponse|ChallengeValidationErrorInvalidOperationType
      * @throws InvalidArgumentException
+     * @throws \Soneso\StellarSDK\Crypto\CryptoException If a signer keypair fails to produce a signature
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md SEP-10 Complete Flow
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#verification SEP-10 Signature Verification
      */
@@ -270,6 +271,7 @@ class WebAuth
      * Callback signature: function(string $transactionXdr): string
      * @return string the signed transaction as base64 encoded transaction envelope
      * @throws ChallengeValidationError if the given base64 encoded transaction envelope has an invalid envelope type.
+     * @throws \Soneso\StellarSDK\Crypto\CryptoException If a signer keypair fails to produce a signature
      */
     private function signTransaction(string $challengeTransaction, array $signers, ?callable $clientDomainSigningCallback = null) : string {
         $b64TxEnvelopeToSign = $challengeTransaction;
@@ -286,10 +288,7 @@ class WebAuth
         $signatures = $envelopeXdr->getV1()->getSignatures();
         foreach ($signers as $signer) {
             if ($signer instanceof KeyPair) {
-                $signature = $signer->signDecorated($txHash);
-                if ($signature) {
-                    array_push($signatures, $signature);
-                }
+                array_push($signatures, $signer->signDecorated($txHash));
             }
         }
         $envelopeXdr->getV1()->setSignatures($signatures);
