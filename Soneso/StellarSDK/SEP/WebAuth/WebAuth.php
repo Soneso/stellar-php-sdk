@@ -280,7 +280,10 @@ class WebAuth
         if ($clientDomainSigningCallback != null) {
             $b64TxEnvelopeToSign = $clientDomainSigningCallback($challengeTransaction);
         }
-        $res = base64_decode($b64TxEnvelopeToSign);
+        $res = base64_decode($b64TxEnvelopeToSign, true);
+        if ($res === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded transaction envelope');
+        }
         $xdr = new XdrBuffer($res);
         $envelopeXdr = XdrTransactionEnvelope::decode($xdr);
         if ($envelopeXdr->getType()->getValue() != XdrEnvelopeType::ENVELOPE_TYPE_TX) {
@@ -344,7 +347,10 @@ class WebAuth
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Challenge Validation
      */
     private function validateChallenge(string $challengeTransaction, string $userAccountId,  ?string $clientDomainAccountId = null, ?int $timeBoundsGracePeriod = null, ?int $memo = null) {
-        $res = base64_decode($challengeTransaction);
+        $res = base64_decode($challengeTransaction, true);
+        if ($res === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded challenge transaction');
+        }
         $xdr = new XdrBuffer($res);
         $envelopeXdr = XdrTransactionEnvelope::decode($xdr);
 

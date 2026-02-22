@@ -452,7 +452,11 @@ class URIScheme
         $urlSignatureLess = str_replace($sigParam, '', $url);
         $payloadBytes = $this->getPayload($urlSignatureLess);
         $base64Signature = urldecode($urlEncodedBase64Signature);
-        return $signerPublicKey->verifySignature(base64_decode($base64Signature), $payloadBytes);
+        $signature = base64_decode($base64Signature, true);
+        if ($signature === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded signature');
+        }
+        return $signerPublicKey->verifySignature($signature, $payloadBytes);
     }
 
     /**

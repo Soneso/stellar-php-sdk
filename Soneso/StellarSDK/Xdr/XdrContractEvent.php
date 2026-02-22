@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+
 class XdrContractEvent
 {
     public XdrExtensionPoint $ext;
@@ -55,7 +57,10 @@ class XdrContractEvent
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrContractEvent {
-        $xdr = base64_decode($base64Xdr);
+        $xdr = base64_decode($base64Xdr, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrContractEvent::decode($xdrBuffer);
     }

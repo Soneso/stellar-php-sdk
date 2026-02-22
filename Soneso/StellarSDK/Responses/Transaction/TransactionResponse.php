@@ -13,6 +13,7 @@ use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryChange;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 
 /**
@@ -413,7 +414,10 @@ class TransactionResponse extends Response
         }
         if (isset($json['fee_meta_xdr'])) {
             $this->feeMetaXdrBase64 = $json['fee_meta_xdr'];
-            $xdr = base64_decode($this->feeMetaXdrBase64);
+            $xdr = base64_decode($this->feeMetaXdrBase64, true);
+            if ($xdr === false) {
+                throw new InvalidArgumentException('Invalid base64-encoded fee meta XDR');
+            }
             $xdrBuffer = new XdrBuffer($xdr);
             $this->feeMetaXdr = array();
             $valCount = $xdrBuffer->readInteger32();
@@ -428,8 +432,8 @@ class TransactionResponse extends Response
                 "none" => Memo::none(),
                 "text" => Memo::text($json['memo'] ?? ""),
                 "id" => Memo::id((int)$json['memo']),
-                "hash" => Memo::hash(base64_decode($json['memo'])),
-                "return" => Memo::return(base64_decode($json['memo'])),
+                "hash" => Memo::hash(base64_decode($json['memo'], true) ?: throw new InvalidArgumentException('Invalid base64-encoded memo hash')),
+                "return" => Memo::return(base64_decode($json['memo'], true) ?: throw new InvalidArgumentException('Invalid base64-encoded memo return hash')),
             };
         } else {
             $this->memo = Memo::none();

@@ -738,7 +738,10 @@ class WebAuthForContracts
     public function decodeAuthorizationEntries(string $base64Xdr): array
     {
         try {
-            $xdr = base64_decode($base64Xdr);
+            $xdr = base64_decode($base64Xdr, true);
+            if ($xdr === false) {
+                throw new InvalidArgumentException('Invalid base64-encoded XDR');
+            }
             $xdrBuffer = new XdrBuffer($xdr);
 
             // Decode as array of SorobanAuthorizationEntry

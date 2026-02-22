@@ -138,7 +138,10 @@ class TxRep
         $feeBump = null;
         $feeBumpSignatures = null;
 
-        $xdr = base64_decode($transactionEnvelopeXdrBase64);
+        $xdr = base64_decode($transactionEnvelopeXdrBase64, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded transaction envelope XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         $envelopeXdr = XdrTransactionEnvelope::decode($xdrBuffer);
 

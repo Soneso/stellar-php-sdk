@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 
 class XdrInnerTransactionResult
@@ -31,7 +32,10 @@ class XdrInnerTransactionResult
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrInnerTransactionResult {
-        $xdr = base64_decode($base64Xdr);
+        $xdr = base64_decode($base64Xdr, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrInnerTransactionResult::decode($xdrBuffer);
     }
