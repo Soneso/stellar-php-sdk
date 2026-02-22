@@ -530,7 +530,8 @@ class TransferServerService
             $headers = array_merge($headers, ['Authorization' => "Bearer " . $request->jwt]);
         }
 
-        $url = "/transaction/" . $request->id;
+        UrlValidator::validatePathSegment($request->id, 'id');
+        $url = $this->serviceAddress . "/transaction/" . $request->id;
         return $this->httpClient->request("PATCH", $url, [
             "json" => $request->fields,
             "headers" => $headers
