@@ -120,16 +120,16 @@ class QuoteService
     ) : SEP38PricesResponse {
 
         $url = $this->buildServiceUrl("prices");
-        $url .= '?sell_asset=' . $sellAsset . '&sell_amount=' . $sellAmount;
+        $url .= '?sell_asset=' . urlencode($sellAsset) . '&sell_amount=' . urlencode($sellAmount);
 
         if ($sellDeliveryMethod !== null) {
-            $url .= '&sell_delivery_method=' . $sellDeliveryMethod;
+            $url .= '&sell_delivery_method=' . urlencode($sellDeliveryMethod);
         }
         if ($buyDeliveryMethod !== null) {
-            $url .= '&buy_delivery_method=' . $buyDeliveryMethod;
+            $url .= '&buy_delivery_method=' . urlencode($buyDeliveryMethod);
         }
         if ($countryCode !== null) {
-            $url .= '&country_code=' . $countryCode;
+            $url .= '&country_code=' . urlencode($countryCode);
         }
 
         $response = $this->httpClient->get($url,
@@ -190,21 +190,21 @@ class QuoteService
         }
 
         $url = $this->buildServiceUrl("price");
-        $url .= '?sell_asset=' . $sellAsset . '&buy_asset=' . $buyAsset .'&context=' . $context;
+        $url .= '?sell_asset=' . urlencode($sellAsset) . '&buy_asset=' . urlencode($buyAsset) . '&context=' . urlencode($context);
 
         if ($sellAmount !== null) {
-            $url .= '&sell_amount=' . $sellAmount;
+            $url .= '&sell_amount=' . urlencode($sellAmount);
         } else if ($buyAmount !== null) {
-            $url .= '&buy_amount=' . $buyAmount;
+            $url .= '&buy_amount=' . urlencode($buyAmount);
         }
         if ($sellDeliveryMethod !== null) {
-            $url .= '&sell_delivery_method=' . $sellDeliveryMethod;
+            $url .= '&sell_delivery_method=' . urlencode($sellDeliveryMethod);
         }
         if ($buyDeliveryMethod !== null) {
-            $url .= '&buy_delivery_method=' . $buyDeliveryMethod;
+            $url .= '&buy_delivery_method=' . urlencode($buyDeliveryMethod);
         }
         if ($countryCode !== null) {
-            $url .= '&country_code=' . $countryCode;
+            $url .= '&country_code=' . urlencode($countryCode);
         }
 
         $response = $this->httpClient->get($url,
