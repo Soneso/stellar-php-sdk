@@ -24,7 +24,7 @@ class XdrClaimableBalanceEntryExt
 
     public function encode() : string {
         $bytes = XdrEncoder::integer32($this->discriminant);
-        if ($this->v1 != null) {
+        if ($this->v1 !== null) {
             $bytes .= $this->v1->encode();
         }
         return $bytes;

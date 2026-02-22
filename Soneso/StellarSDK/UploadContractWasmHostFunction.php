@@ -76,7 +76,7 @@ class UploadContractWasmHostFunction extends HostFunction
      */
     public static function fromXdr(XdrHostFunction $xdr) : UploadContractWasmHostFunction {
         $type = $xdr->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM || $xdr->wasm == null) {
+        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM || $xdr->wasm === null) {
             throw new Exception("Invalid argument");
         }
         $contractCode = $xdr->wasm->getValue();

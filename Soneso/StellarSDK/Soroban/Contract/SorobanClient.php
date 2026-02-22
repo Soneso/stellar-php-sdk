@@ -98,7 +98,7 @@ class SorobanClient
     public static function forClientOptions(ClientOptions $options) : SorobanClient {
         $server = new SorobanServer($options->rpcUrl);
         $info = $server->loadContractInfoForContractId($options->contractId);
-        if ($info != null) {
+        if ($info !== null) {
             return new SorobanClient($info->specEntries, $options);
         } else {
             throw new Exception("Could not load contract info for the contract: {$options->contractId}");

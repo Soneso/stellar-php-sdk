@@ -75,7 +75,7 @@ class CreatePassiveSellOfferOperationBuilder
      */
     public function build(): CreatePassiveSellOfferOperation {
         $result = new CreatePassiveSellOfferOperation($this->selling, $this->buying, $this->amount, $this->price);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

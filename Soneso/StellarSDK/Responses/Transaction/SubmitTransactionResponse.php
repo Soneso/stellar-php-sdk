@@ -78,7 +78,7 @@ class SubmitTransactionResponse extends TransactionResponse
         if ($result->result->resultCode->getValue() == XdrTransactionResultCode::SUCCESS) {
             return true;
         } else if ($result->result->resultCode->getValue() == XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS
-            && $result->result->innerResultPair != null) {
+            && $result->result->innerResultPair !== null) {
             $innerResultPair = $result->result->innerResultPair;
             if ($innerResultPair->result->result->resultCode->getValue() == XdrTransactionResultCode::SUCCESS) {
                 return true;

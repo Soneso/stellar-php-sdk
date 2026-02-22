@@ -44,10 +44,10 @@ class SimulateTransactionRequest
             'transaction' => $this->transaction->toEnvelopeXdrBase64()
         );
 
-        if ($this->resourceConfig != null) {
+        if ($this->resourceConfig !== null) {
             $params['resourceConfig'] = $this->resourceConfig->getRequestParams();
         }
-        if ($this->authMode != null) {
+        if ($this->authMode !== null) {
             $params['authMode'] = $this->authMode;
         }
         return $params;

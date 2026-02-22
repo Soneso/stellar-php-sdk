@@ -390,7 +390,7 @@ class SorobanServer
         $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
         if ($ledgerEntries->entries !== null && count($ledgerEntries->entries) > 0) {
             $ledgerEntryData = $ledgerEntries->entries[0]->getLedgerEntryDataXdr();
-            if ($ledgerEntryData->contractData != null && $ledgerEntryData->contractData->val->instance?->executable->wasmIdHex != null) {
+            if ($ledgerEntryData->contractData !== null && $ledgerEntryData->contractData->val->instance?->executable->wasmIdHex !== null) {
                 $wasmId = $ledgerEntryData->contractData->val->instance->executable->wasmIdHex;
                 return $this->loadContractCodeForWasmId($wasmId);
             }

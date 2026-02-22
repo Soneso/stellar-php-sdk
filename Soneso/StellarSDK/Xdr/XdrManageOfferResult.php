@@ -33,7 +33,7 @@ class XdrManageOfferResult
 
     public function encode() : string {
         $bytes = $this->code->encode();
-        if ($this->success != null && XdrManageOfferResultCode::SUCCESS == $this->code->getValue()) {
+        if ($this->success !== null && XdrManageOfferResultCode::SUCCESS == $this->code->getValue()) {
             $bytes .= $this->success->encode();
         }
         return $bytes;

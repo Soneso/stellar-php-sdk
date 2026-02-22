@@ -75,7 +75,7 @@ class Footprint
      */
     public function getContractCodeLedgerKey() : ?string {
         $key = $this->findFirstKeyOfType(XdrLedgerEntryType::CONTRACT_CODE());
-        if ($key != null) {
+        if ($key !== null) {
             return $key->toBase64Xdr();
         }
         return null;
@@ -88,7 +88,7 @@ class Footprint
      */
     public function getContractDataLedgerKey() : ?string {
         $key = $this->findFirstKeyOfType(XdrLedgerEntryType::CONTRACT_DATA());
-        if ($key != null) {
+        if ($key !== null) {
             return $key->toBase64Xdr();
         }
         return null;

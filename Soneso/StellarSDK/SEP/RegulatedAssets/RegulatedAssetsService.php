@@ -73,7 +73,7 @@ class RegulatedAssetsService
      */
     public function __construct(StellarToml $tomlData, ?string $horizonUrl = null, ?Network $network = null, ?Client $httpClient = null)
     {
-        if ($httpClient != null) {
+        if ($httpClient !== null) {
             $this->httpClient = $httpClient;
         } else {
             $this->httpClient = new Client();
@@ -99,9 +99,9 @@ class RegulatedAssetsService
         }
 
         $tomlDataHorizonUrl = $tomlData->getGeneralInformation()?->horizonUrl;
-        if ($horizonUrl == null && $tomlDataHorizonUrl != null) {
+        if ($horizonUrl === null && $tomlDataHorizonUrl !== null) {
             $this->sdk = new StellarSDK($tomlDataHorizonUrl);
-        } else if ($horizonUrl == null) {
+        } else if ($horizonUrl === null) {
             // try to init from known horizon urls
             if ($this->network->getNetworkPassphrase() == Network::public()->getNetworkPassphrase()) {
                 $this->sdk = StellarSDK::getPublicNetInstance();

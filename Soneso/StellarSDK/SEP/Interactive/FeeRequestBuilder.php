@@ -55,7 +55,7 @@ class FeeRequestBuilder extends RequestBuilder
          */
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
-        if ($this->jwtToken != null) {
+        if ($this->jwtToken !== null) {
             $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
         }
         $request = new Request("GET", $url, $headers);

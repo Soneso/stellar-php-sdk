@@ -146,7 +146,7 @@ class ClaimableBalanceResponse extends Response
 
         if (isset($json['asset'])) {
             $parsedAsset = Asset::createFromCanonicalForm($json['asset']);
-            if ($parsedAsset != null) {
+            if ($parsedAsset !== null) {
                 $this->asset = $parsedAsset;
             }
         }

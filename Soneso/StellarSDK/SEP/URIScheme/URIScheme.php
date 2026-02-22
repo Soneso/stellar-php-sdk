@@ -149,35 +149,35 @@ class URIScheme
 
         $queryParams[URIScheme::xdrParameterName] = urlencode($transactionEnvelopeXdrBase64);
 
-        if ($replace != null) {
+        if ($replace !== null) {
             $queryParams[URIScheme::replaceParameterName] = urlencode($replace);
         }
 
-        if ($callback != null) {
+        if ($callback !== null) {
             $queryParams[URIScheme::callbackParameterName] = urlencode($callback);
         }
 
-        if ($publicKey != null) {
+        if ($publicKey !== null) {
             $queryParams[URIScheme::publicKeyParameterName] = urlencode($publicKey);
         }
 
-        if ($chain != null) {
+        if ($chain !== null) {
             $queryParams[URIScheme::chainParameterName] = urlencode($chain);
         }
 
-        if ($message != null) {
+        if ($message !== null) {
             $queryParams[URIScheme::messageParameterName] = urlencode($message);
         }
 
-        if ($networkPassphrase != null) {
+        if ($networkPassphrase !== null) {
             $queryParams[URIScheme::networkPassphraseParameterName] = urlencode($networkPassphrase);
         }
 
-        if ($originDomain != null) {
+        if ($originDomain !== null) {
             $queryParams[URIScheme::originDomainParameterName] = urlencode($originDomain);
         }
 
-        if ($signature != null) {
+        if ($signature !== null) {
             $queryParams[URIScheme::signatureParameterName] = urlencode($signature);
         }
 
@@ -229,35 +229,35 @@ class URIScheme
 
         $queryParams[URIScheme::destinationParameterName] = urlencode($destinationAccountId);
 
-        if ($amount != null) {
+        if ($amount !== null) {
             $queryParams[URIScheme::amountParameterName] = urlencode($amount);
         }
 
-        if ($assetCode != null) {
+        if ($assetCode !== null) {
             $queryParams[URIScheme::assetCodeParameterName] = urlencode($assetCode);
         }
-        if ($assetIssuer != null) {
+        if ($assetIssuer !== null) {
             $queryParams[URIScheme::assetIssuerParameterName] = urlencode($assetIssuer);
         }
-        if ($memo != null) {
+        if ($memo !== null) {
             $queryParams[URIScheme::memoParameterName] = urlencode($memo);
         }
-        if ($memoType != null) {
+        if ($memoType !== null) {
             $queryParams[URIScheme::memoTypeParameterName] = urlencode($memoType);
         }
-        if ($callback != null) {
+        if ($callback !== null) {
             $queryParams[URIScheme::callbackParameterName] = urlencode($callback);
         }
-        if ($message != null) {
+        if ($message !== null) {
             $queryParams[URIScheme::messageParameterName] = urlencode($message);
         }
-        if ($networkPassphrase != null) {
+        if ($networkPassphrase !== null) {
             $queryParams[URIScheme::networkPassphraseParameterName] = urlencode($networkPassphrase);
         }
-        if ($originDomain != null) {
+        if ($originDomain !== null) {
             $queryParams[URIScheme::originDomainParameterName] = urlencode($originDomain);
         }
-        if ($signature != null) {
+        if ($signature !== null) {
             $queryParams[URIScheme::signatureParameterName] = urlencode($signature);
         }
 
@@ -292,7 +292,7 @@ class URIScheme
     public function signAndSubmitTransaction(string $url, KeyPair $signerKeyPair, ?Network $network = null) : SubmitUriSchemeTransactionResponse {
 
         $net = Network::public();
-        if ($network != null) {
+        if ($network !== null) {
             $net = $network;
         }
         $envelope = $this->getXdrTransactionEnvelope($url);
@@ -300,7 +300,7 @@ class URIScheme
         $absTransaction->sign($signerKeyPair,$net);
 
         $callback = $this->getParameterValue(URIScheme::callbackParameterName, $url);
-        if ($callback != null && str_starts_with($callback, "url:")) {
+        if ($callback !== null && str_starts_with($callback, "url:")) {
             $callbackUrl = substr($callback, 4);
             UrlValidator::validateHttpsRequired($callbackUrl);
             $headers = array();
@@ -383,7 +383,7 @@ class URIScheme
     public function checkUIRSchemeIsValid(string $url) : bool {
 
         $originDomain = $this->getParameterValue(URIScheme::originDomainParameterName, $url);
-        if ($originDomain == null) {
+        if ($originDomain === null) {
             throw new URISchemeError(code:URISchemeError::missingOriginDomain);
         }
 
@@ -392,7 +392,7 @@ class URIScheme
         }
 
         $signature = $this->getParameterValue(URIScheme::signatureParameterName, $url);
-        if ($signature == null) {
+        if ($signature === null) {
             throw new URISchemeError(code:URISchemeError::missingSignature);
         }
 
@@ -404,7 +404,7 @@ class URIScheme
         }
 
         $uriRequestSigningKey = $toml->getGeneralInformation()?->uriRequestSigningKey;
-        if ($uriRequestSigningKey == null) {
+        if ($uriRequestSigningKey === null) {
             throw new URISchemeError(code:URISchemeError::tomlSignatureMissing);
         }
 
@@ -516,7 +516,7 @@ class URIScheme
      */
     private function getXdrTransactionEnvelope(string $url): XdrTransactionEnvelope {
         $base64TransactionEnvelope = $this->getParameterValue(URIScheme::xdrParameterName, $url);
-        if ($base64TransactionEnvelope != null) {
+        if ($base64TransactionEnvelope !== null) {
             if (str_contains($base64TransactionEnvelope, '%')) {
                 $base64TransactionEnvelope = urldecode($base64TransactionEnvelope);
             }

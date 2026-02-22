@@ -38,7 +38,7 @@ class QuoteService
     {
         UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
-        if ($httpClient != null) {
+        if ($httpClient !== null) {
             $this->httpClient = $httpClient;
         } else {
             $this->httpClient = new Client();
@@ -316,7 +316,7 @@ class QuoteService
     private function buildHeaders(?string $jwt = null) : array {
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
-        if($jwt != null) {
+        if($jwt !== null) {
             $headers = array_merge($headers, ['Authorization' => "Bearer ". $jwt]);
         }
 

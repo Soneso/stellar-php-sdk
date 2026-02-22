@@ -88,7 +88,7 @@ class CreateContractWithConstructorHostFunction extends HostFunction
         $this->address = $address;
         $this->wasmId = $wasmId;
         $this->constructorArgs = $constructorArgs;
-        $this->salt = $salt != null ? $salt : random_bytes(32);
+        $this->salt = $salt !== null ? $salt : random_bytes(32);
         parent::__construct();
     }
 

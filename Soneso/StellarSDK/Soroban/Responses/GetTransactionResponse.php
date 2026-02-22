@@ -195,7 +195,7 @@ class GetTransactionResponse extends SorobanRpcResponse
      */
     public function getCreatedContractId(): ?string {
         $resultValue = $this->getResultValue();
-        if ($resultValue != null && $resultValue->type->value == XdrSCValType::SCV_ADDRESS && $resultValue->address != null) {
+        if ($resultValue !== null && $resultValue->type->value == XdrSCValType::SCV_ADDRESS && $resultValue->address !== null) {
             $address = $resultValue->address;
             if ($address->type->value == XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT) {
                 return $address->contractId;
@@ -209,12 +209,12 @@ class GetTransactionResponse extends SorobanRpcResponse
      * @return XdrSCVal|null the result value if available.
      */
     public function getResultValue(): ?XdrSCVal {
-        if ($this->error != null || $this->status != self::STATUS_SUCCESS || $this->resultMetaXdr == null) {
+        if ($this->error !== null || $this->status != self::STATUS_SUCCESS || $this->resultMetaXdr === null) {
             return null;
         }
 
         $meta = XdrTransactionMeta::fromBase64Xdr($this->resultMetaXdr);
-        if ($meta->v3 != null) {
+        if ($meta->v3 !== null) {
             return $meta->v3->sorobanMeta?->returnValue;
         }
         return $meta->v4?->sorobanMeta?->returnValue;
@@ -222,14 +222,14 @@ class GetTransactionResponse extends SorobanRpcResponse
 
     private function getBinHex(): ?string {
         $bin = $this->getBin();
-        if ($bin != null) {
+        if ($bin !== null) {
             return bin2hex($bin->getValue());
         }
         return null;
     }
     private function getBin(): ?XdrDataValueMandatory {
         $val = $this->getResultValue();
-        if ($val != null) {
+        if ($val !== null) {
             return $val->bytes;
         }
         return null;

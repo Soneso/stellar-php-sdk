@@ -69,7 +69,7 @@ class ClawbackClaimableBalanceOperationBuilder
      */
     public function build(): ClawbackClaimableBalanceOperation {
         $result = new ClawbackClaimableBalanceOperation($this->balanceId);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

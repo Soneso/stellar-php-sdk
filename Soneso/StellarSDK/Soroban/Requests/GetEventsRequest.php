@@ -47,15 +47,15 @@ class GetEventsRequest
          * @var array<string,mixed> $params
          */
         $params = array();
-        if ($this->startLedger != null) {
+        if ($this->startLedger !== null) {
             $params['startLedger'] = $this->startLedger;
         }
 
-        if ($this->endLedger != null) {
+        if ($this->endLedger !== null) {
             $params['endLedger'] = $this->endLedger;
         }
 
-        if ($this->filters != null) {
+        if ($this->filters !== null) {
             $filterParams = array();
             foreach ($this->filters as $filter) {
                 array_push($filterParams, $filter->getRequestParams());
@@ -63,7 +63,7 @@ class GetEventsRequest
             $params['filters'] = $filterParams;
         }
 
-        if ($this->paginationOptions != null) {
+        if ($this->paginationOptions !== null) {
             $params['pagination'] = $this->paginationOptions->getRequestParams();
         }
         return $params;

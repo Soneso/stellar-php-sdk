@@ -86,7 +86,7 @@ class SubmitAsyncTransactionRequestBuilder extends RequestBuilder
             return $response;
         } catch (HorizonRequestException $e) {
             $httpResponse = $e->getHttpResponse();
-            if ($httpResponse != null && (
+            if ($httpResponse !== null && (
                 $httpResponse->getStatusCode() === NetworkConstants::HTTP_BAD_REQUEST ||
                 $httpResponse->getStatusCode() === NetworkConstants::HTTP_FORBIDDEN ||
                 $httpResponse->getStatusCode() === NetworkConstants::HTTP_CONFLICT ||

@@ -318,14 +318,14 @@ class WebAuthForContracts
 
         // Determine client domain account ID if needed
         $clientDomainAccountId = null;
-        if ($clientDomain != null) {
-            if ($clientDomainKeyPair != null) {
+        if ($clientDomain !== null) {
+            if ($clientDomainKeyPair !== null) {
                 $clientDomainAccountId = $clientDomainKeyPair->getAccountId();
-            } else if ($clientDomainSigningCallback != null) {
+            } else if ($clientDomainSigningCallback !== null) {
                 try {
                     $toml = StellarToml::fromDomain($clientDomain, $this->httpClient);
                     $clientDomainAccountId = $toml->generalInformation?->signingKey;
-                    if ($clientDomainAccountId == null) {
+                    if ($clientDomainAccountId === null) {
                         throw new Exception("Could not find signing key in stellar.toml");
                     }
                 } catch (Exception $e) {
@@ -864,9 +864,9 @@ class WebAuthForContracts
     {
         try {
             $xdrCredentials = $entry->credentials->toXdr();
-            if ($entry->credentials->addressCredentials == null ||
+            if ($entry->credentials->addressCredentials === null ||
                 $xdrCredentials->type->value != XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS ||
-                $xdrCredentials->address == null) {
+                $xdrCredentials->address === null) {
                 return false;
             }
 

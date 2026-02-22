@@ -125,7 +125,7 @@ class PathPaymentStrictReceiveOperationBuilder
      */
     public function build(): PathPaymentStrictReceiveOperation {
         $result = new PathPaymentStrictReceiveOperation($this->sendAsset, $this->sendMax, $this->destination, $this->destAsset, $this->destAmount, $this->path);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

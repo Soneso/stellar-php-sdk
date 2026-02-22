@@ -117,9 +117,9 @@ class SorobanAuthorizationEntry
     public function sign(KeyPair $signer, Network $network): void
     {
         $xdrCredentials = $this->credentials->toXdr();
-        if ($this->credentials->addressCredentials == null ||
+        if ($this->credentials->addressCredentials === null ||
             $xdrCredentials->type->value != XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS ||
-            $xdrCredentials->address == null) {
+            $xdrCredentials->address === null) {
             throw new \RuntimeException("no soroban address credentials found");
         }
 
@@ -133,7 +133,7 @@ class SorobanAuthorizationEntry
         $signatureBytes = $signer->sign($payload);
         $signature = new AccountEd25519Signature($signer->getPublicKey(), $signatureBytes);
         $sigVal = $signature->toXdrSCVal();
-        if ($this->credentials->addressCredentials->signature->vec != null) {
+        if ($this->credentials->addressCredentials->signature->vec !== null) {
             array_push($this->credentials->addressCredentials->signature->vec, $sigVal);
         } else {
             $this->credentials->addressCredentials->signature = XdrSCVal::forVec([$sigVal]);

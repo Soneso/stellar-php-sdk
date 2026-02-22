@@ -53,10 +53,10 @@ class EventFilter
      */
     public function getRequestParams() : array {
         $params = array();
-        if ($this->type != null) {
+        if ($this->type !== null) {
             $params['type'] = $this->type;
         }
-        if ($this->contractIds != null) {
+        if ($this->contractIds !== null) {
             $cIds = array();
             foreach ($this->contractIds as $contractId) {
                 array_push($cIds, $contractId);
@@ -64,7 +64,7 @@ class EventFilter
             $params['contractIds'] = $cIds;
         }
 
-        if ($this->topics != null) {
+        if ($this->topics !== null) {
             $topicsParams = array();
             foreach ($this->topics as $topic) {
                 array_push($topicsParams, $topic->getRequestParams());

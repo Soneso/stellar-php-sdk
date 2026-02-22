@@ -168,7 +168,7 @@ class TransferServerService
         if ($request->locationId !== null) {
             $queryParameters += ["location_id" => $request->locationId];
         }
-        if ($request->extraFields != null) {
+        if ($request->extraFields !== null) {
             $queryParameters = array_merge($queryParameters, $request->extraFields);
         }
 
@@ -243,7 +243,7 @@ class TransferServerService
         if ($request->locationId !== null) {
             $queryParameters += ["location_id" => $request->locationId];
         }
-        if ($request->extraFields != null) {
+        if ($request->extraFields !== null) {
             $queryParameters = array_merge($queryParameters, $request->extraFields);
         }
 
@@ -319,7 +319,7 @@ class TransferServerService
         if ($request->locationId !== null) {
             $queryParameters += ["location_id" => $request->locationId];
         }
-        if ($request->extraFields != null) {
+        if ($request->extraFields !== null) {
             $queryParameters = array_merge($queryParameters, $request->extraFields);
         }
 
@@ -398,7 +398,7 @@ class TransferServerService
         if ($request->locationId !== null) {
             $queryParameters += ["location_id" => $request->locationId];
         }
-        if ($request->extraFields != null) {
+        if ($request->extraFields !== null) {
             $queryParameters = array_merge($queryParameters, $request->extraFields);
         }
 

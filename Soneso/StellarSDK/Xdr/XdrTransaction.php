@@ -45,19 +45,19 @@ class XdrTransaction
         $this->sourceAccount = $sourceAccount;
         $this->sequenceNumber = $sequenceNumber;
         $this->operations = $operations;
-        if ($fee == null) {
+        if ($fee === null) {
             $this->fee = StellarConstants::MIN_BASE_FEE_STROOPS;
         } else {
             $this->fee = $fee;
         }
-        if ($memo == null) {
+        if ($memo === null) {
 
             $this->memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
         } else {
             $this->memo = $memo;
         }
         $this->preconditions = $preconditions;
-        if ($ext != null) {
+        if ($ext !== null) {
             $this->ext = $ext;
         } else {
             $this->ext = new XdrTransactionExt(0);
@@ -101,10 +101,10 @@ class XdrTransaction
      */
     public function getTimeBounds(): ?XdrTimeBounds
     {
-        if ($this->preconditions != null) {
+        if ($this->preconditions !== null) {
             if ($this->preconditions->getType()->getValue() == XdrPreconditionType::TIME) {
                return $this->preconditions->getTimeBounds();
-            } else if ($this->preconditions->getType()->getValue() == XdrPreconditionType::V2 && $this->preconditions->getV2() != null) {
+            } else if ($this->preconditions->getType()->getValue() == XdrPreconditionType::V2 && $this->preconditions->getV2() !== null) {
                 return $this->preconditions->getV2()->getTimeBounds();
             }
         }
@@ -140,7 +140,7 @@ class XdrTransaction
 
         $bytes .= XdrEncoder::unsignedInteger32($this->fee);
         $bytes .= $this->sequenceNumber->encode();
-        if ($this->preconditions != null && $this->preconditions->getType()->getValue() != XdrPreconditionType::NONE) {
+        if ($this->preconditions !== null && $this->preconditions->getType()->getValue() != XdrPreconditionType::NONE) {
             $bytes .= $this->preconditions->encode();
         } else {
             $bytes .= XdrEncoder::integer32(0);

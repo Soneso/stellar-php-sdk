@@ -90,7 +90,7 @@ class Transaction extends AbstractTransaction
             }
         }
 
-        if ($fee == null) {
+        if ($fee === null) {
             $this->fee = StellarConstants::MIN_BASE_FEE_STROOPS * count($operations);
         } else {
             $this->fee = $fee;
@@ -206,7 +206,7 @@ class Transaction extends AbstractTransaction
      */
     public function getTimeBounds(): ?TimeBounds
     {
-        if ($this->preconditions != null) {
+        if ($this->preconditions !== null) {
             return $this->preconditions->getTimeBounds();
         }
         return null;
@@ -232,7 +232,7 @@ class Transaction extends AbstractTransaction
      */
     public function setSorobanAuth(?array $auth = array()) : void {
         $authToSet = $auth;
-        if ($authToSet == null) {
+        if ($authToSet === null) {
             $authToSet = array();
         }
         foreach ($this->operations as $operation) {
@@ -286,7 +286,7 @@ class Transaction extends AbstractTransaction
         $xdrMemo = $this->memo->toXdr();
         $xdrCond = $this->preconditions?->toXdr();
         $xdrExt = null;
-        if ($this->sorobanTransactionData != null) {
+        if ($this->sorobanTransactionData !== null) {
             $xdrExt = new XdrTransactionExt(1, $this->sorobanTransactionData);
         }
         return new XdrTransaction($xdrMuxedSourceAccount, $xdrSequenceNr, $xdrOperations, $this->fee, $xdrMemo, $xdrCond, $xdrExt);
@@ -333,7 +333,7 @@ class Transaction extends AbstractTransaction
         $memo = Memo::fromXdr($tx->getMemo());
         $operations = array();
         $cond = null;
-        if ($tx->getPreconditions() != null) {
+        if ($tx->getPreconditions() !== null) {
             $cond = TransactionPreconditions::fromXdr($tx->getPreconditions());
         }
         foreach($tx->getOperations() as $operation) {
@@ -365,7 +365,7 @@ class Transaction extends AbstractTransaction
         $memo = Memo::fromXdr($tx->getMemo());
         $operations = array();
         $cond = null;
-        if ($tx->getTimeBounds() != null) {
+        if ($tx->getTimeBounds() !== null) {
             $cond = new TransactionPreconditions();
             $cond->setTimeBounds(TimeBounds::fromXdr($tx->getTimeBounds()));
         }

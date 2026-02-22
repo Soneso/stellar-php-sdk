@@ -25,7 +25,7 @@ class XdrLedgerEntryV1
 
     public function encode(): string {
         $bytes = "";
-        if ($this->sponsoringID != null) {
+        if ($this->sponsoringID !== null) {
             $bytes = XdrEncoder::integer32(1);
             $bytes .= $this->sponsoringID->encode();
         } else {

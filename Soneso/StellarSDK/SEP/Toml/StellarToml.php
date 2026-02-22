@@ -230,7 +230,7 @@ class StellarToml
     public static function fromDomain(string $domain, ?Client $httpClient = null) : StellarToml {
         $url = "https://" . $domain . "/.well-known/stellar.toml";
         $client = $httpClient;
-        if ($client == null) {
+        if ($client === null) {
             $client = new Client();
         }
         try {

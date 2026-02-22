@@ -158,7 +158,7 @@ class TxRep
                 $feeBumpSignatures = $envelopeXdr->getFeeBump()->getSignatures();
                 break;
         }
-        $isFeeBump = $feeBump != null;
+        $isFeeBump = $feeBump !== null;
         $lines = array();
         $type = $isFeeBump ? 'ENVELOPE_TYPE_TX_FEE_BUMP' : 'ENVELOPE_TYPE_TX';
         $prefix = $isFeeBump ? 'feeBump.tx.innerTx.tx.' : 'tx.';
@@ -205,7 +205,7 @@ class TxRep
 
         $txXdr = $tx->toXdr();
         $lines += [$prefix . 'ext.v' => strval($txXdr->ext->discriminant)];
-        if ($txXdr->ext->sorobanTransactionData != null) {
+        if ($txXdr->ext->sorobanTransactionData !== null) {
             $lines = array_merge(
                 $lines,
                 self::getSorobanTransactionDataTx(
@@ -307,7 +307,7 @@ class TxRep
         $txBuilder = new TransactionBuilder($sourceAccount);
 
         $preconditions = self::parsePreconditions($map, $prefix);
-        if ($preconditions != null) {
+        if ($preconditions !== null) {
             $txBuilder->setPreconditions($preconditions);
         }
 
@@ -442,7 +442,7 @@ class TxRep
             $precondPrefix = $txPrefix . 'cond.';
             $minTimeStr = self::getClearValue($precondPrefix . 'timeBounds.minTime', $map);
             $maxTimeStr = self::getClearValue($precondPrefix . 'timeBounds.maxTime', $map);
-            if ($minTimeStr != null && $maxTimeStr != null) {
+            if ($minTimeStr !== null && $maxTimeStr !== null) {
                 if (!is_numeric($minTimeStr)) {
                     throw new InvalidArgumentException('invalid ' . $precondPrefix . 'minTime');
                 }
@@ -462,17 +462,17 @@ class TxRep
             $cond->setTimeBounds(self::parseTimeBounds($map, $precondPrefix));
             $cond->setLedgerBounds(self::parseLedgerBounds($map, $precondPrefix));
             $minSeqNrStr = self::getClearValue($precondPrefix . 'minSeqNum', $map);
-            if (self::getClearValue($precondPrefix . 'minSeqNum._present', $map) == 'true' && $minSeqNrStr != null) {
+            if (self::getClearValue($precondPrefix . 'minSeqNum._present', $map) == 'true' && $minSeqNrStr !== null) {
                 $minSeqNr = new BigInteger($minSeqNrStr);
                 $cond->setMinSeqNumber($minSeqNr);
             }
             $minSeqAgeStr = self::getClearValue($precondPrefix . 'minSeqAge', $map);
-            if ($minSeqAgeStr != null && is_numeric($minSeqAgeStr)) {
+            if ($minSeqAgeStr !== null && is_numeric($minSeqAgeStr)) {
                 $minSeqAge = (int)$minSeqAgeStr;
                 $cond->setMinSeqAge($minSeqAge);
             }
             $minSeqLedgerGapStr = self::getClearValue($precondPrefix . 'minSeqLedgerGap', $map);
-            if ($minSeqLedgerGapStr != null && is_numeric($minSeqLedgerGapStr)) {
+            if ($minSeqLedgerGapStr !== null && is_numeric($minSeqLedgerGapStr)) {
                 $minSeqLedgerGap = (int)$minSeqLedgerGapStr;
                 $cond->setMinSeqLedgerGap($minSeqLedgerGap);
             }
@@ -534,7 +534,7 @@ class TxRep
             return null;
         }
 
-        if ($present == 'true' && $minTimeStr != null && $maxTimeStr != null) {
+        if ($present == 'true' && $minTimeStr !== null && $maxTimeStr !== null) {
             if (!is_numeric($minTimeStr)) {
                 throw new InvalidArgumentException('invalid ' . $prefix . 'minTime');
             }
@@ -559,7 +559,7 @@ class TxRep
             return null;
         }
 
-        if ($present == 'true' && $minLedgerStr != null && $maxLedgerStr != null) {
+        if ($present == 'true' && $minLedgerStr !== null && $maxLedgerStr !== null) {
             if (!is_numeric($minLedgerStr)) {
                 throw new InvalidArgumentException('invalid ' . $prefix . 'minLedger');
             }
@@ -1306,7 +1306,7 @@ class TxRep
         }
 
         $amountStr = self::getClearValue($opPrefix.'amount', $map);
-        if ($amountStr == null) {
+        if ($amountStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'amount');
         }
         if (!is_numeric($amountStr)) {
@@ -1315,7 +1315,7 @@ class TxRep
         $amount = self::fromAmount($amountStr);
 
         $minAmountAStr = self::getClearValue($opPrefix.'minAmountA', $map);
-        if ($minAmountAStr == null) {
+        if ($minAmountAStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'minAmountA');
         }
         if (!is_numeric($minAmountAStr)) {
@@ -1324,7 +1324,7 @@ class TxRep
         $minAmountA = self::fromAmount($minAmountAStr);
 
         $minAmountBStr = self::getClearValue($opPrefix.'minAmountB', $map);
-        if ($minAmountBStr == null) {
+        if ($minAmountBStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'minAmountB');
         }
         if (!is_numeric($minAmountBStr)) {
@@ -1333,7 +1333,7 @@ class TxRep
         $minAmountB = self::fromAmount($minAmountBStr);
 
         $builder = new LiquidityPoolWithdrawOperationBuilder($liquidityPoolID,$amount, $minAmountA, $minAmountB);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1347,7 +1347,7 @@ class TxRep
         }
 
         $maxAmountAStr = self::getClearValue($opPrefix.'maxAmountA', $map);
-        if ($maxAmountAStr == null) {
+        if ($maxAmountAStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'maxAmountA');
         }
         if (!is_numeric($maxAmountAStr)) {
@@ -1356,7 +1356,7 @@ class TxRep
         $maxAmountA = self::fromAmount($maxAmountAStr);
 
         $maxAmountBStr = self::getClearValue($opPrefix.'maxAmountB', $map);
-        if ($maxAmountBStr == null) {
+        if ($maxAmountBStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'maxAmountB');
         }
         if (!is_numeric($maxAmountBStr)) {
@@ -1365,7 +1365,7 @@ class TxRep
         $maxAmountB = self::fromAmount($maxAmountBStr);
 
         $minPriceNStr = self::getClearValue($opPrefix.'minPrice.n', $map);
-        if ($minPriceNStr == null) {
+        if ($minPriceNStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'minPrice.n');
         }
         if (!is_numeric($minPriceNStr)) {
@@ -1374,7 +1374,7 @@ class TxRep
         $minPriceN = (int)($minPriceNStr);
 
         $minPriceDStr = self::getClearValue($opPrefix.'minPrice.d', $map);
-        if ($minPriceDStr == null) {
+        if ($minPriceDStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'minPrice.d');
         }
         if (!is_numeric($minPriceDStr)) {
@@ -1383,7 +1383,7 @@ class TxRep
         $minPriceD = (int)($minPriceDStr);
 
         $maxPriceNStr = self::getClearValue($opPrefix.'maxPrice.n', $map);
-        if ($maxPriceNStr == null) {
+        if ($maxPriceNStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'maxPrice.n');
         }
         if (!is_numeric($maxPriceNStr)) {
@@ -1392,7 +1392,7 @@ class TxRep
         $maxPriceN = (int)($maxPriceNStr);
 
         $maxPriceDStr = self::getClearValue($opPrefix.'maxPrice.d', $map);
-        if ($maxPriceDStr == null) {
+        if ($maxPriceDStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'maxPrice.d');
         }
         if (!is_numeric($maxPriceDStr)) {
@@ -1402,7 +1402,7 @@ class TxRep
 
         $builder = new LiquidityPoolDepositOperationBuilder($liquidityPoolID,$maxAmountA, $maxAmountB,
             new Price($minPriceN, $minPriceD), new Price($maxPriceN, $maxPriceD));
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1430,7 +1430,7 @@ class TxRep
         }
 
         $clearFlags = self::getClearValue($opPrefix . 'clearFlags', $map);
-        if ($clearFlags == null) {
+        if ($clearFlags === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'clearFlags');
         }
         if(!is_numeric($clearFlags)) {
@@ -1438,7 +1438,7 @@ class TxRep
         }
 
         $setFlags = self::getClearValue($opPrefix . 'setFlags', $map);
-        if ($setFlags == null) {
+        if ($setFlags === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'setFlags');
         }
         if(!is_numeric($setFlags)) {
@@ -1446,7 +1446,7 @@ class TxRep
         }
 
         $builder = new SetTrustLineFlagsOperationBuilder($trustor, $asset, (int)$clearFlags, (int)$setFlags);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1459,7 +1459,7 @@ class TxRep
             throw new InvalidArgumentException('missing ' . $opPrefix . 'balanceID.v0');
         }
         $builder = new ClawbackClaimableBalanceOperationBuilder($claimableBalanceId);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1476,7 +1476,7 @@ class TxRep
             throw new InvalidArgumentException('invalid ' . $opPrefix . 'asset');
         }
         $amountStr = self::getClearValue($opPrefix.'amount', $map);
-        if ($amountStr == null) {
+        if ($amountStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'amount');
         }
         if (!is_numeric($amountStr)) {
@@ -1495,7 +1495,7 @@ class TxRep
         }
 
         $builder = new ClawbackOperationBuilder($asset, MuxedAccount::fromAccountId($accountId), $amount);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1555,7 +1555,7 @@ class TxRep
                     throw new InvalidArgumentException('invalid '.$opPrefix.'ledgerKey.offer.sellerID');
                 }
                 $offerId = self::getClearValue($opPrefix . 'ledgerKey.offer.offerID', $map);
-                if ($offerId == null) {
+                if ($offerId === null) {
                     throw new InvalidArgumentException('missing '.$opPrefix.'ledgerKey.offer.offerID');
                 }
                 if(!is_numeric($offerId)) {
@@ -1610,7 +1610,7 @@ class TxRep
                 throw new InvalidArgumentException('invalid ' . $opPrefix . 'signer.signerKey');
             }
         }
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1619,7 +1619,7 @@ class TxRep
     private static function getEndSponsoringFutureReservesOp(?string $sourceAccountId) : EndSponsoringFutureReservesOperation
     {
         $builder = new EndSponsoringFutureReservesOperationBuilder();
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1632,7 +1632,7 @@ class TxRep
             throw new InvalidArgumentException('missing ' . $opPrefix . 'sponsoredID');
         }
         $builder = new BeginSponsoringFutureReservesOperationBuilder($sponsoredID);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1645,7 +1645,7 @@ class TxRep
             throw new InvalidArgumentException('missing ' . $opPrefix . 'balanceID.v0');
         }
         $builder = new ClaimClaimableBalanceOperationBuilder($claimableBalanceId);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1662,7 +1662,7 @@ class TxRep
             throw new InvalidArgumentException('invalid ' . $opPrefix . 'asset');
         }
         $amountStr = self::getClearValue($opPrefix.'amount', $map);
-        if ($amountStr == null) {
+        if ($amountStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'amount');
         }
         if (!is_numeric($amountStr)) {
@@ -1684,7 +1684,7 @@ class TxRep
             }
         }
         $builder = new CreateClaimableBalanceOperationBuilder($claimants,$asset,$amount);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1716,7 +1716,7 @@ class TxRep
                return new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL));
             case 'CLAIM_PREDICATE_AND':
                 $lenStr = self::getClearValue($prefix.'andPredicates.len', $map);
-                if ($lenStr == null) {
+                if ($lenStr === null) {
                     throw new InvalidArgumentException('missing ' . $prefix.'andPredicates.len');
                 }
                 if (!is_numeric($lenStr)) {
@@ -1736,7 +1736,7 @@ class TxRep
                 return $res;
             case 'CLAIM_PREDICATE_OR':
                 $lenStr = self::getClearValue($prefix.'orPredicates.len', $map);
-                if ($lenStr == null) {
+                if ($lenStr === null) {
                     throw new InvalidArgumentException('missing ' . $prefix.'orPredicates.len');
                 }
                 if (!is_numeric($lenStr)) {
@@ -1761,7 +1761,7 @@ class TxRep
             case 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME':
                 $res = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME));
                 $timeStr = self::getClearValue($prefix.'absBefore', $map);
-                if ($timeStr == null) {
+                if ($timeStr === null) {
                     throw new InvalidArgumentException('missing ' . $prefix.'absBefore');
                 }
                 if (!is_numeric($timeStr)) {
@@ -1772,7 +1772,7 @@ class TxRep
             case 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME':
                 $res = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME));
                 $timeStr = self::getClearValue($prefix.'relBefore', $map);
-                if ($timeStr == null) {
+                if ($timeStr === null) {
                     throw new InvalidArgumentException('missing ' . $prefix.'relBefore');
                 }
                 if (!is_numeric($timeStr)) {
@@ -1797,7 +1797,7 @@ class TxRep
             throw new InvalidArgumentException('invalid '.$opPrefix.'bumpTo');
         }
         $builder = new BumpSequenceOperationBuilder($sequenceNumber);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1829,7 +1829,7 @@ class TxRep
         }
 
         $builder = new ManageDataOperationBuilder($dataName, $dataValue);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1847,7 +1847,7 @@ class TxRep
             throw new InvalidArgumentException('invalid ' . $txPrefix.'operations['.strval($index).'].body.destination');
         }
         $builder = new AccountMergeOperationBuilder($destination);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1864,7 +1864,7 @@ class TxRep
             throw new InvalidArgumentException('missing '.$opPrefix.'asset');
         }
         $authStr = self::getClearValue($opPrefix.'authorize', $map);
-        if ($authStr == null) {
+        if ($authStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'authorize');
         }
         if (!is_numeric($authStr)) {
@@ -1877,7 +1877,7 @@ class TxRep
         $auth = $authorize == 1;
         $authToMaintainLiabilities = $authorize == 2;
         $builder = new AllowTrustOperationBuilder($trustor, $assetCode, $auth, $authToMaintainLiabilities);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1895,7 +1895,7 @@ class TxRep
         }
 
         $limitStr = self::getClearValue($opPrefix.'limit', $map);
-        if ($limitStr == null) {
+        if ($limitStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'limit');
         }
         if (!is_numeric($limitStr)) {
@@ -1903,7 +1903,7 @@ class TxRep
         }
         $limit = self::fromAmount($limitStr);
         $builder = new ChangeTrustOperationBuilder($asset, $limit);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -1930,7 +1930,7 @@ class TxRep
         $clearFlags = null;
         if ($present == 'true') {
             $clearFlagsStr = self::getClearValue($opPrefix . 'clearFlags', $map);
-            if ($clearFlagsStr == null) {
+            if ($clearFlagsStr === null) {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'clearFlags');
             }
             if (!is_numeric($clearFlagsStr)) {
@@ -1946,7 +1946,7 @@ class TxRep
         $setFlags = null;
         if ($present == 'true') {
             $setFlagsStr = self::getClearValue($opPrefix . 'setFlags', $map);
-            if ($setFlagsStr == null) {
+            if ($setFlagsStr === null) {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'setFlags');
             }
             if (!is_numeric($setFlagsStr)) {
@@ -1962,7 +1962,7 @@ class TxRep
         $masterWeight = null;
         if ($present == 'true') {
             $masterWeightStr = self::getClearValue($opPrefix . 'masterWeight', $map);
-            if ($masterWeightStr == null) {
+            if ($masterWeightStr === null) {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'masterWeight');
             }
             if (!is_numeric($masterWeightStr)) {
@@ -1994,7 +1994,7 @@ class TxRep
         $medThreshold = null;
         if ($present == 'true') {
             $medThresholdStr = self::getClearValue($opPrefix . 'medThreshold', $map);
-            if ($medThresholdStr == null) {
+            if ($medThresholdStr === null) {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'medThreshold');
             }
             if (!is_numeric($medThresholdStr)) {
@@ -2010,7 +2010,7 @@ class TxRep
         $highThreshold = null;
         if ($present == 'true') {
             $highThresholdStr = self::getClearValue($opPrefix . 'highThreshold', $map);
-            if ($highThresholdStr == null) {
+            if ($highThresholdStr === null) {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'highThreshold');
             }
             if (!is_numeric($highThresholdStr)) {
@@ -2040,7 +2040,7 @@ class TxRep
         $signerWeight = null;
         if ($present == 'true') {
             $signerWeightStr = self::getClearValue($opPrefix . 'signer.weight', $map);
-            if ($signerWeightStr == null) {
+            if ($signerWeightStr === null) {
                 throw new InvalidArgumentException('missing ' . $opPrefix . 'signer.weight');
             }
             if (!is_numeric($signerWeightStr)) {
@@ -2071,34 +2071,34 @@ class TxRep
         }
 
         $builder = new SetOptionsOperationBuilder();
-        if ($inflationDest != null) {
+        if ($inflationDest !== null) {
             $builder->setInflationDestination($inflationDest);
         }
-        if ($clearFlags != null) {
+        if ($clearFlags !== null) {
             $builder->setClearFlags($clearFlags);
         }
-        if ($setFlags != null) {
+        if ($setFlags !== null) {
             $builder->setSetFlags($setFlags);
         }
-        if ($masterWeight != null) {
+        if ($masterWeight !== null) {
             $builder->setMasterKeyWeight($masterWeight);
         }
-        if ($lowThreshold != null) {
+        if ($lowThreshold !== null) {
             $builder->setLowThreshold($lowThreshold);
         }
-        if ($medThreshold != null) {
+        if ($medThreshold !== null) {
             $builder->setMediumThreshold($medThreshold);
         }
-        if ($highThreshold != null) {
+        if ($highThreshold !== null) {
             $builder->setHighThreshold($highThreshold);
         }
-        if ($homeDomain != null) {
+        if ($homeDomain !== null) {
             $builder->setHomeDomain($homeDomain);
         }
-        if ($signer != null && $signerWeight != null) {
+        if ($signer !== null && $signerWeight !== null) {
             $builder->setSigner($signer, $signerWeight);
         }
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -2123,7 +2123,7 @@ class TxRep
         }
 
         $amountStr = self::getClearValue($opPrefix.'amount', $map);
-        if ($amountStr == null) {
+        if ($amountStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'amount');
         }
         if (!is_numeric($amountStr)) {
@@ -2132,7 +2132,7 @@ class TxRep
         $amount = self::fromAmount($amountStr);
 
         $priceNStr = self::getClearValue($opPrefix.'price.n', $map);
-        if ($priceNStr == null) {
+        if ($priceNStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'price.n');
         }
         if (!is_numeric($priceNStr)) {
@@ -2141,7 +2141,7 @@ class TxRep
         $priceN = (int)$priceNStr;
 
         $priceDStr = self::getClearValue($opPrefix.'price.d', $map);
-        if ($priceDStr == null) {
+        if ($priceDStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'price.d');
         }
         if (!is_numeric($priceDStr)) {
@@ -2155,7 +2155,7 @@ class TxRep
 
         $builder = new CreatePassiveSellOfferOperationBuilder($selling, $buying,$amount, $price);
 
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -2181,7 +2181,7 @@ class TxRep
         }
 
         $amountStr = self::getClearValue($opPrefix.'amount', $map);
-        if ($amountStr == null) {
+        if ($amountStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'amount');
         }
         if (!is_numeric($amountStr)) {
@@ -2190,7 +2190,7 @@ class TxRep
         $amount = self::fromAmount($amountStr);
 
         $priceNStr = self::getClearValue($opPrefix.'price.n', $map);
-        if ($priceNStr == null) {
+        if ($priceNStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'price.n');
         }
         if (!is_numeric($priceNStr)) {
@@ -2199,7 +2199,7 @@ class TxRep
         $priceN = (int)$priceNStr;
 
         $priceDStr = self::getClearValue($opPrefix.'price.d', $map);
-        if ($priceDStr == null) {
+        if ($priceDStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'price.d');
         }
         if (!is_numeric($priceDStr)) {
@@ -2211,7 +2211,7 @@ class TxRep
         }
         $dec = (float)$priceN / (float)$priceD;
         $offerIdStr = self::getClearValue($opPrefix.'offerID', $map);
-        if ($offerIdStr == null) {
+        if ($offerIdStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'offerID');
         }
         if (!is_numeric($offerIdStr)) {
@@ -2222,7 +2222,7 @@ class TxRep
         $builder = new ManageSellOfferOperationBuilder($selling, $buying,$amount, strval($dec));
 
         $builder->setOfferId($offerID);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -2248,7 +2248,7 @@ class TxRep
         }
 
         $amountStr = self::getClearValue($opPrefix.'buyAmount', $map);
-        if ($amountStr == null) {
+        if ($amountStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'buyAmount');
         }
         if (!is_numeric($amountStr)) {
@@ -2257,7 +2257,7 @@ class TxRep
         $amount = self::fromAmount($amountStr);
 
         $priceNStr = self::getClearValue($opPrefix.'price.n', $map);
-        if ($priceNStr == null) {
+        if ($priceNStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'price.n');
         }
         if (!is_numeric($priceNStr)) {
@@ -2266,7 +2266,7 @@ class TxRep
         $priceN = (int)$priceNStr;
 
         $priceDStr = self::getClearValue($opPrefix.'price.d', $map);
-        if ($priceDStr == null) {
+        if ($priceDStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'price.d');
         }
         if (!is_numeric($priceDStr)) {
@@ -2278,7 +2278,7 @@ class TxRep
         }
         $dec = (float)$priceN / (float)$priceD;
         $offerIdStr = self::getClearValue($opPrefix.'offerID', $map);
-        if ($offerIdStr == null) {
+        if ($offerIdStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'offerID');
         }
         if (!is_numeric($offerIdStr)) {
@@ -2289,7 +2289,7 @@ class TxRep
         $builder = new ManageBuyOfferOperationBuilder($selling, $buying,$amount, strval($dec));
 
         $builder->setOfferId($offerID);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -2306,7 +2306,7 @@ class TxRep
             throw new InvalidArgumentException('invalid ' . $opPrefix . 'sendAsset');
         }
         $sendAmountStr = self::getClearValue($opPrefix.'sendAmount', $map);
-        if ($sendAmountStr == null) {
+        if ($sendAmountStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'sendAmount');
         }
         if (!is_numeric($sendAmountStr)) {
@@ -2334,7 +2334,7 @@ class TxRep
         }
 
         $destMinStr= self::getClearValue($opPrefix.'destMin', $map);
-        if ($destMinStr == null) {
+        if ($destMinStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'destMin');
         }
         if (!is_numeric($destMinStr)) {
@@ -2345,7 +2345,7 @@ class TxRep
         $path = array();
         $pathLengthKey = $opPrefix.'path.len';
         $pathLengthStr = self::getClearValue($pathLengthKey, $map);
-        if ($pathLengthStr != null) {
+        if ($pathLengthStr !== null) {
             if (!is_numeric($pathLengthStr)) {
                 throw new InvalidArgumentException('invalid '.$pathLengthKey);
             }
@@ -2367,7 +2367,7 @@ class TxRep
         }
         $builder = new PathPaymentStrictSendOperationBuilder($sendAsset,$sendAmount,$destination,$destAsset,$destMin);
         $builder->setPath($path);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -2384,7 +2384,7 @@ class TxRep
             throw new InvalidArgumentException('invalid ' . $opPrefix . 'sendAsset');
         }
         $sendMaxStr = self::getClearValue($opPrefix.'sendMax', $map);
-        if ($sendMaxStr == null) {
+        if ($sendMaxStr === null) {
             throw new InvalidArgumentException('missing '.$opPrefix.'sendMax');
         }
         if (!is_numeric($sendMaxStr)) {
@@ -2423,7 +2423,7 @@ class TxRep
         $path = array();
         $pathLengthKey = $opPrefix.'path.len';
         $pathLengthStr = self::getClearValue($pathLengthKey, $map);
-        if ($pathLengthStr != null) {
+        if ($pathLengthStr !== null) {
             if (!is_numeric($pathLengthStr)) {
                throw new InvalidArgumentException('invalid '.$pathLengthKey);
            }
@@ -2433,7 +2433,7 @@ class TxRep
            }
            for ($i = 0; $i < $pathLen; $i++) {
                $nextAssetStr = self::getClearValue($opPrefix.'path['.strval($i).']', $map);
-               if ($nextAssetStr == null) {
+               if ($nextAssetStr === null) {
                    throw new InvalidArgumentException('missing '.$opPrefix.'path['.strval($i).']');
                }
                $nextAsset = Asset::createFromCanonicalForm($nextAssetStr);
@@ -2445,7 +2445,7 @@ class TxRep
         }
         $builder = new PathPaymentStrictReceiveOperationBuilder($sendAsset,$sendMax,$destination,$destAsset,$destAmount);
         $builder->setPath($path);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -2480,7 +2480,7 @@ class TxRep
         $amountValue = self::fromAmount($amountValue);
 
         $builder = new PaymentOperationBuilder($destination,$asset, $amountValue);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -2505,7 +2505,7 @@ class TxRep
         }
         $startingBalanceValue = self::fromAmount($startingBalanceValue);
         $builder = new CreateAccountOperationBuilder($destination, $startingBalanceValue);
-        if ($sourceAccountId != null) {
+        if ($sourceAccountId !== null) {
             $builder->setMuxedSourceAccount(MuxedAccount::fromAccountId($sourceAccountId));
         }
         return $builder->build();
@@ -2513,7 +2513,7 @@ class TxRep
 
     private static function getClearValue(string $key, array $map) : ?string {
         // check if exists
-        if (!array_key_exists($key, $map) || $map[$key] == null) {
+        if (!array_key_exists($key, $map) || $map[$key] === null) {
             return null;
         }
         // remove comment
@@ -2811,7 +2811,7 @@ class TxRep
             $ledgerKey = $operation->getLedgerKey();
             $signerKey = $operation->getSignerKey();
             $signer = $operation->getSignerAccount();
-            if($ledgerKey != null) {
+            if($ledgerKey !== null) {
                 $lines += [$prefix.'type' => 'REVOKE_SPONSORSHIP_LEDGER_ENTRY'];
                 if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::ACCOUNT) {
                     $lines += [$prefix.'ledgerKey.type' => 'ACCOUNT'];
@@ -2837,14 +2837,14 @@ class TxRep
                     $lines += [$prefix.'ledgerKey.claimableBalance.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
                     $lines += [$prefix.'ledgerKey.claimableBalance.balanceID.v0' => $ledgerKey->getBalanceID()->getHash()];
                 }
-            } else if($signerKey != null && $signer != null) {
+            } else if($signerKey !== null && $signer !== null) {
                 $lines += [$prefix.'type' => 'REVOKE_SPONSORSHIP_SIGNER'];
                 $lines += [$prefix.'signer.accountID' => $signer];
-                if($signerKey->getEd25519() != null) {
+                if($signerKey->getEd25519() !== null) {
                     $lines += [$prefix.'signer.signerKey' => StrKey::encodeAccountId($signerKey->getEd25519())];
-                } else if($signerKey->getPreAuthTx() != null) {
+                } else if($signerKey->getPreAuthTx() !== null) {
                     $lines += [$prefix.'signer.signerKey' => StrKey::encodePreAuthTx($signerKey->getPreAuthTx())];
-                } else if($signerKey->getHashX() != null) {
+                } else if($signerKey->getHashX() !== null) {
                     $lines += [$prefix.'signer.signerKey' => StrKey::encodeSha256Hash($signerKey->getHashX())];
                 }
             }
@@ -3101,7 +3101,7 @@ class TxRep
                 break;
             case XdrSCValType::SCV_VEC:
                 $lines += [$prefix.'type' => 'SCV_VEC'];
-                if ($val->vec == null) {
+                if ($val->vec === null) {
                     $lines += [$prefix . 'vec._present' => 'false'];
                     break;
                 }
@@ -3115,7 +3115,7 @@ class TxRep
                 break;
             case XdrSCValType::SCV_MAP:
                 $lines += [$prefix.'type' => 'SCV_MAP'];
-                if ($val->map == null) {
+                if ($val->map === null) {
                     $lines += [$prefix . 'map._present' => 'false'];
                     break;
                 }
@@ -3394,7 +3394,7 @@ class TxRep
             case XdrClaimPredicateType::NOT:
                 $lines += [$prefix.'type' => 'CLAIM_PREDICATE_NOT'];
                 $notPredicate = $predicate->getNotPredicate();
-                if ($notPredicate != null) {
+                if ($notPredicate !== null) {
                     $lines += [$prefix.'notPredicate._present' => 'true'];
                     $px = $prefix . 'notPredicate.';
                     $lines += self::getPredicateTx($px, $predicate->getNotPredicate());

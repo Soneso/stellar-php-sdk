@@ -159,7 +159,7 @@ class XdrBuffer
     {
         $strLen = $this->readUnsignedInteger32();
         $paddedLength = $this->roundTo4($strLen);
-        if ($maxLength != null && $strLen > $maxLength) throw new InvalidArgumentException(sprintf('maxLength of %s exceeded (string is %s bytes)', $maxLength, $strLen));
+        if ($maxLength !== null && $strLen > $maxLength) throw new InvalidArgumentException(sprintf('maxLength of %s exceeded (string is %s bytes)', $maxLength, $strLen));
         
         $this->assertBytesRemaining($paddedLength);
         

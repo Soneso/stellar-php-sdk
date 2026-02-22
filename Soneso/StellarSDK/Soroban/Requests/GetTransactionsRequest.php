@@ -40,10 +40,10 @@ class GetTransactionsRequest
          * @var array<string,mixed> $params
          */
         $params = array();
-        if ($this->startLedger != null) {
+        if ($this->startLedger !== null) {
             $params['startLedger'] = $this->startLedger;
         }
-        if ($this->paginationOptions != null) {
+        if ($this->paginationOptions !== null) {
             $params['pagination'] = $this->paginationOptions->getRequestParams();
         }
         return $params;

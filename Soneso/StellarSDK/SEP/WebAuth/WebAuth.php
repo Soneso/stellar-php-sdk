@@ -210,14 +210,14 @@ class WebAuth
         $transaction = $this->getChallenge($clientAccountId, $memo, $homeDomain, $clientDomain);
 
         $clientDomainSignerAccountId = null;
-        if ($clientDomain != null) {
-            if ($clientDomainKeyPair != null) {
+        if ($clientDomain !== null) {
+            if ($clientDomainKeyPair !== null) {
                 $clientDomainSignerAccountId = $clientDomainKeyPair?->getAccountId();
-            } else if ($clientDomainSigningCallback != null) {
+            } else if ($clientDomainSigningCallback !== null) {
                 try {
                     $toml = StellarToml::fromDomain($clientDomain, $this->httpClient);
                     $clientDomainSignerAccountId = $toml->generalInformation?->signingKey;
-                    if ($clientDomainSignerAccountId == null) {
+                    if ($clientDomainSignerAccountId === null) {
                         throw new Exception("Could not find signing key in stellar.toml");
                     }
                 } catch (Exception $e) {
@@ -293,7 +293,7 @@ class WebAuth
      */
     private function signTransaction(string $challengeTransaction, array $signers, ?callable $clientDomainSigningCallback = null) : string {
         $b64TxEnvelopeToSign = $challengeTransaction;
-        if ($clientDomainSigningCallback != null) {
+        if ($clientDomainSigningCallback !== null) {
             $b64TxEnvelopeToSign = $clientDomainSigningCallback($challengeTransaction);
         }
         $res = base64_decode($b64TxEnvelopeToSign, true);

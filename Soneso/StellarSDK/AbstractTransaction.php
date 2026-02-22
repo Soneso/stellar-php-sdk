@@ -59,7 +59,7 @@ abstract class AbstractTransaction
      * @throws \InvalidArgumentException If the signer does not have a private key
      */
     public function sign(KeyPair $signer, Network $network) : void {
-        if ($signer->getPrivateKey() == null) {
+        if ($signer->getPrivateKey() === null) {
             throw new \InvalidArgumentException("signer needs private key to be able to sign");
         }
         $txHash = $this->hash($network);
