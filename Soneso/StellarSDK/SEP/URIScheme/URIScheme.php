@@ -451,7 +451,10 @@ class URIScheme
      */
     private function verify(string $url, string $urlEncodedBase64Signature, KeyPair $signerPublicKey) : bool {
         $sigParam = '&'.URIScheme::signatureParameterName.'='.$urlEncodedBase64Signature;
-        $urlSignatureLess = str_replace($sigParam, '', $url);
+        $pos = strrpos($url, $sigParam);
+        $urlSignatureLess = ($pos !== false)
+            ? substr_replace($url, '', $pos, strlen($sigParam))
+            : $url;
         $payloadBytes = $this->getPayload($urlSignatureLess);
         $base64Signature = urldecode($urlEncodedBase64Signature);
         $signature = base64_decode($base64Signature, true);
