@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Implements SEP-0031 - Cross-Border Payments API (for sending anchors).
@@ -37,6 +38,7 @@ class CrossBorderPaymentsService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
         if ($httpClient != null) {
             $this->httpClient = $httpClient;

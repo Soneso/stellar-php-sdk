@@ -15,6 +15,7 @@ use GuzzleHttp\RequestOptions;
 use InvalidArgumentException;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Network;
@@ -152,12 +153,8 @@ class WebAuthForContracts
             );
         }
 
-        // Validate authEndpoint is a valid URL
-        if (filter_var($authEndpoint, FILTER_VALIDATE_URL) === false) {
-            throw new InvalidArgumentException(
-                "authEndpoint must be a valid URL"
-            );
-        }
+        // Validate authEndpoint is a valid HTTPS URL
+        UrlValidator::validateHttpsRequired($authEndpoint);
 
         // Validate serverHomeDomain is not empty
         if (empty(trim($serverHomeDomain))) {
@@ -184,6 +181,7 @@ class WebAuthForContracts
                 ? 'https://soroban-testnet.stellar.org'
                 : 'https://soroban.stellar.org';
         } else {
+            UrlValidator::validateHttpsRequired($sorobanRpcUrl);
             $this->sorobanRpcUrl = $sorobanRpcUrl;
         }
     }

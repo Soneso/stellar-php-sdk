@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Soneso\StellarSDK\Requests\RequestBuilder;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
@@ -69,6 +70,7 @@ class RecoveryService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
         if ($httpClient != null) {
             $this->httpClient = $httpClient;

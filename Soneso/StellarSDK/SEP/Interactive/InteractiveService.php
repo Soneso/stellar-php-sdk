@@ -13,6 +13,7 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\HandlerStack;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Implements SEP-0024 - Hosted Deposit and Withdrawal.
@@ -30,6 +31,7 @@ class InteractiveService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
         if (str_ends_with($this->serviceAddress, "/")) {
             $this->serviceAddress = substr($this->serviceAddress, 0, -1);

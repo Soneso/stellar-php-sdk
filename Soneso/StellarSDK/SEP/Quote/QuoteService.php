@@ -13,6 +13,7 @@ use GuzzleHttp\RequestOptions;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Implements SEP-0038 - Anchor RFQ API v2.5.0.
@@ -35,6 +36,7 @@ class QuoteService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
         if ($httpClient != null) {
             $this->httpClient = $httpClient;

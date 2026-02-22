@@ -13,6 +13,7 @@ use GuzzleHttp\HandlerStack;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Implements SEP-12 Customer Information and KYC API (v1.15.0)
@@ -77,6 +78,7 @@ class KYCService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
         if (str_ends_with($this->serviceAddress, "/")) {
             $this->serviceAddress = substr($this->serviceAddress, 0, -1);

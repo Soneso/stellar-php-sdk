@@ -14,6 +14,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\RequestOptions;
 use InvalidArgumentException;
 use Soneso\StellarSDK\AbstractTransaction;
+use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\MuxedAccount;
@@ -104,6 +105,7 @@ class WebAuth
      * @param ?Client $httpClient Optional http client to be used for requests.
      */
     public function __construct(string $authEndpoint, string $serverSigningKey, string $serverHomeDomain, Network $network, ?Client $httpClient = null) {
+        UrlValidator::validateHttpsRequired($authEndpoint);
         $this->authEndpoint = $authEndpoint;
         $this->serverSigningKey = $serverSigningKey;
         $this->network = $network;

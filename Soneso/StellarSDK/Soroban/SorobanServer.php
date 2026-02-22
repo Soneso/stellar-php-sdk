@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Requests\RequestBuilder;
+use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
 use Soneso\StellarSDK\Soroban\Requests\GetLedgersRequest;
@@ -147,6 +148,7 @@ class SorobanServer
      */
     public function __construct(string $endpoint)
     {
+        UrlValidator::validateHttpsRequired($endpoint);
         $this->endpoint = $endpoint;
         $this->httpClient = new Client([
             'base_uri' => $this->endpoint,

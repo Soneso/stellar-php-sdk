@@ -44,7 +44,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 class WebAuthTest extends TestCase
 {
     private string $domain = "place.domain.com";
-    private string $authServer = "http://api.stellar.org/auth";
+    private string $authServer = "https://api.stellar.org/auth";
     private string $serverAccountId = "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP";
     private string $serverSecretSeed = "SAWDHXQG6ROJSU4QGCW7NSTYFHPTPIVC2NC7QKVTO7PZCSO2WEBGM54W";
     private KeyPair $serverKeyPair;

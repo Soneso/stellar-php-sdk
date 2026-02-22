@@ -11,6 +11,7 @@ use GuzzleHttp\Client;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Federation protocol implementation for resolving Stellar addresses.
@@ -50,6 +51,7 @@ class Federation {
             throw new Exception("no federation server found for domain: " . $domain);
         }
 
+        UrlValidator::validateHttpsRequired($federationServerUrl);
         $client = $httpClient != null ? $httpClient : new Client();
 
         $requestBuilder = (new FederationRequestBuilder($client, $federationServerUrl))->forStringToLookUp($address)->forType("name");
@@ -66,6 +68,7 @@ class Federation {
      * @throws HorizonRequestException If federation request fails.
      */
     public static function resolveStellarAccountId(string $accountId, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
+        UrlValidator::validateHttpsRequired($federationServerUrl);
         $client = $httpClient != null ? $httpClient : new Client();
         $requestBuilder = (new FederationRequestBuilder($client, $federationServerUrl))->forStringToLookUp($accountId)->forType("id");
         return $requestBuilder->execute();
@@ -81,6 +84,7 @@ class Federation {
      * @throws HorizonRequestException If federation request fails.
      */
     public static function resolveStellarTransactionId(string $txId, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
+        UrlValidator::validateHttpsRequired($federationServerUrl);
         $client = $httpClient != null ? $httpClient : new Client();
         $requestBuilder = (new FederationRequestBuilder($client, $federationServerUrl))->forStringToLookUp($txId)->forType("txid");
         return $requestBuilder->execute();
@@ -102,6 +106,7 @@ class Federation {
      * @throws HorizonRequestException If federation request fails.
      */
     public static function resolveForward(array $queryParameters, string $federationServerUrl, ?Client $httpClient = null) : FederationResponse {
+        UrlValidator::validateHttpsRequired($federationServerUrl);
         $client = $httpClient != null ? $httpClient : new Client();
         $requestBuilder = (new FederationRequestBuilder($client, $federationServerUrl))->forType("forward")->forQueryParameters($queryParameters);
         return $requestBuilder->execute();
