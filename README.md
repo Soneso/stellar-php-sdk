@@ -56,6 +56,10 @@ $result = $client->invokeMethod('hello', [XdrSCVal::forSymbol('World')]);
 
 For complete walkthroughs, see the [documentation](docs/).
 
+## Agent Skill
+
+This repository includes an [Agent Skill](https://agentskills.io) that teaches AI coding agents how to use this SDK. See [skills/](skills/) for installation instructions.
+
 ## Documentation
 
 | Guide | Description |
