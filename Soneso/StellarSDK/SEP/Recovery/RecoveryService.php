@@ -9,6 +9,8 @@ namespace Soneso\StellarSDK\SEP\Recovery;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
+use InvalidArgumentException;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Util\UrlValidator;
 
@@ -110,6 +112,7 @@ class RecoveryService
      */
     public function registerAccount(string $address, SEP30Request $request, string $jwt) : SEP30AccountResponse {
 
+        $this->validateAccountAddress($address, 'address');
         $url = $this->buildServiceUrl("accounts/" . $address);
 
         $response = $this->httpClient->post($url,
@@ -171,6 +174,7 @@ class RecoveryService
      */
     public function updateIdentitiesForAccount(string $address, SEP30Request $request, string $jwt) : SEP30AccountResponse {
 
+        $this->validateAccountAddress($address, 'address');
         $url = $this->buildServiceUrl("accounts/" . $address);
 
         $response = $this->httpClient->put($url,
@@ -242,6 +246,8 @@ class RecoveryService
      */
     public function signTransaction(string $address, string $signingAddress, string $transaction, string $jwt) : SEP30SignatureResponse {
 
+        $this->validateAccountAddress($address, 'address');
+        $this->validateAccountAddress($signingAddress, 'signingAddress');
         $url = $this->buildServiceUrl("accounts/" . $address . "/sign/" . $signingAddress);
 
         $response = $this->httpClient->post($url,
@@ -300,6 +306,7 @@ class RecoveryService
      */
     public function accountDetails(string $address, string $jwt) : SEP30AccountResponse {
 
+        $this->validateAccountAddress($address, 'address');
         $url = $this->buildServiceUrl("accounts/" . $address);
 
         $response = $this->httpClient->get($url,
@@ -358,6 +365,7 @@ class RecoveryService
      */
     public function deleteAccount(string $address, string $jwt) : SEP30AccountResponse {
 
+        $this->validateAccountAddress($address, 'address');
         $url = $this->buildServiceUrl("accounts/" . $address);
 
         $response = $this->httpClient->delete($url,
@@ -415,8 +423,9 @@ class RecoveryService
     public function accounts(string $jwt, ?string $after = null) : SEP30AccountsResponse {
 
         $url = $this->buildServiceUrl("accounts");
-        if ($after != null) {
-            $url .= "?after=" . $after;
+        if ($after !== null) {
+            $this->validateAccountAddress($after, 'after');
+            $url .= "?after=" . urlencode($after);
         }
 
         $response = $this->httpClient->get($url,
@@ -443,6 +452,13 @@ class RecoveryService
             } else {
                 throw new SEP30UnknownResponseException($errorMsg, $statusCode);
             }
+        }
+    }
+
+    private function validateAccountAddress(string $address, string $paramName): void
+    {
+        if (!StrKey::isValidAccountId($address)) {
+            throw new InvalidArgumentException("Invalid Stellar account address for '$paramName'");
         }
     }
 

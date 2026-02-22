@@ -41,4 +41,25 @@ class UrlValidator
             'Service URL must use HTTPS. HTTP is only allowed for localhost.'
         );
     }
+
+    /**
+     * Validates that a string is safe to use as a URL path segment.
+     *
+     * Rejects values that contain path traversal sequences, path separators,
+     * query/fragment delimiters, null bytes, or are empty.
+     *
+     * @param string $value The value to validate
+     * @param string $paramName The parameter name for error messages
+     * @throws InvalidArgumentException If the value is not safe for use in a URL path
+     */
+    public static function validatePathSegment(string $value, string $paramName): void
+    {
+        if ($value === '' || str_contains($value, '/') || str_contains($value, '\\')
+            || str_contains($value, '..') || str_contains($value, "\0")
+            || str_contains($value, '?') || str_contains($value, '#')) {
+            throw new InvalidArgumentException(
+                "Invalid value for '$paramName': contains unsafe characters for URL path"
+            );
+        }
+    }
 }

@@ -285,6 +285,7 @@ class QuoteService
      */
     public function getQuote(string $id, string $jwt) : SEP38QuoteResponse {
 
+        UrlValidator::validatePathSegment($id, 'id');
         $url = $this->buildServiceUrl('quote/' . $id);
 
         $response = $this->httpClient->get($url,

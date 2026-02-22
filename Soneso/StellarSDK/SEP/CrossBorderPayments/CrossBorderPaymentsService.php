@@ -167,6 +167,7 @@ class CrossBorderPaymentsService
      */
     public function getTransaction(string $id, string $jwt) : SEP31TransactionResponse {
 
+        UrlValidator::validatePathSegment($id, 'id');
         $url = $this->buildServiceUrl("transactions/" . $id);
 
         $response = $this->httpClient->get($url,
@@ -222,6 +223,7 @@ class CrossBorderPaymentsService
     */
     public function putTransactionCallback(string $id, string $callbackUrl, string $jwt) : void {
 
+        UrlValidator::validatePathSegment($id, 'id');
         $url = $this->buildServiceUrl('transactions/'.$id.'/callback');
 
         $response = $this->httpClient->put($url,
@@ -275,6 +277,7 @@ class CrossBorderPaymentsService
      */
     public function patchTransaction(string $id, array $fields, string $jwt) : void {
 
+        UrlValidator::validatePathSegment($id, 'id');
         $url = $this->buildServiceUrl('transactions/'.$id);
 
         $response = $this->httpClient->patch($url,

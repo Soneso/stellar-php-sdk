@@ -11,6 +11,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\HandlerStack;
 use Psr\Http\Message\ResponseInterface;
+use InvalidArgumentException;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 use Soneso\StellarSDK\Util\UrlValidator;
@@ -263,6 +265,9 @@ class KYCService
             array_push($multipart, $arr);
         }
 
+        if (!StrKey::isValidAccountId($account)) {
+            throw new InvalidArgumentException("Invalid Stellar account address for 'account'");
+        }
         $url = $this->serviceAddress . "/customer/" . $account;
         return $this->httpClient->request("DELETE", $url, [
             "multipart" => $multipart,

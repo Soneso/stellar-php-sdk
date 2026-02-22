@@ -108,4 +108,56 @@ class UrlValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         UrlValidator::validateHttpsRequired('ftp://files.stellar.org/data');
     }
+
+    // validatePathSegment tests
+
+    public function testPathSegmentAcceptsValidId(): void
+    {
+        UrlValidator::validatePathSegment('abc123-def456', 'id');
+        UrlValidator::validatePathSegment('550e8400-e29b-41d4-a716-446655440000', 'id');
+        $this->assertTrue(true); // no exception thrown
+    }
+
+    public function testPathSegmentRejectsEmpty(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid value for 'id'");
+        UrlValidator::validatePathSegment('', 'id');
+    }
+
+    public function testPathSegmentRejectsPathTraversal(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('../../etc/passwd', 'id');
+    }
+
+    public function testPathSegmentRejectsForwardSlash(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('foo/bar', 'id');
+    }
+
+    public function testPathSegmentRejectsBackslash(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('foo\\bar', 'id');
+    }
+
+    public function testPathSegmentRejectsNullByte(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment("foo\0bar", 'id');
+    }
+
+    public function testPathSegmentRejectsQueryDelimiter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('id?param=value', 'id');
+    }
+
+    public function testPathSegmentRejectsFragmentDelimiter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('id#fragment', 'id');
+    }
 }
