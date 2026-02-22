@@ -256,6 +256,27 @@ class URISchemeTest extends TestCase
         $this->assertStringContainsString('signature=', $signedUri);
     }
 
+    /**
+     * Verifies the signing implementation against the test vector from the SEP-7 specification.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md#request-signing
+     */
+    public function testSignURIMatchesSpecTestVector(): void
+    {
+        $uri = 'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO'
+            . '&amount=120.1234567&memo=skdjfasf&memo_type=MEMO_TEXT'
+            . '&msg=pay%20me%20with%20lumens&origin_domain=someDomain.com';
+        $signer = KeyPair::fromSeed('SBPOVRVKTTV7W3IOX2FJPSMPCJ5L2WU2YKTP3HCLYPXNI5MDIGREVNYC');
+
+        $uriScheme = new URIScheme();
+        $signedUri = $uriScheme->signURI($uri, $signer);
+
+        $expectedSignature = 'tbsLtlK/fouvRWk2UWFP47yHYeI1g1NEC/fEQvuXG6V8P+beLxplYbOVtTk1g94Wp97cHZ3pVJy/tZNYobl3Cw==';
+        $parts = parse_url($signedUri);
+        parse_str($parts['query'] ?? '', $params);
+
+        $this->assertEquals($expectedSignature, $params['signature']);
+    }
+
     // ==================== signAndSubmitTransaction Tests ====================
 
     public function testSignAndSubmitTransactionToCallback(): void

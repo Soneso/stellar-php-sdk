@@ -499,54 +499,8 @@ class URIScheme
      * @see https://github.com/stellar/stellar-protocol/blob/v2.1.0/ecosystem/sep-0007.md#request-signing
      */
     private function getPayload(string $url) : string {
-        $payloadStart = array();
-        for ($i = 0; $i < 36; $i++) {
-            $payloadStart[$i] = pack('C', 0);
-        }
-        $payloadStart[35] = pack('C', 4);
-        $urlBytes = $this->stringToBinary(URIScheme::uriSchemePrefix . $url);
-        return implode('', $payloadStart) . $urlBytes;
-    }
-
-    /**
-     * Converts string to binary representation for payload generation.
-     *
-     * Internal utility for SEP-7 payload construction. Converts each character
-     * to its binary representation as part of signature payload generation.
-     *
-     * @param string $string Input string to convert
-     * @return string Space-separated binary representation
-     */
-    private function stringToBinary($string) : string {
-        $characters = str_split($string);
-
-        $binary = [];
-        foreach ($characters as $character) {
-            $data = unpack('H*', $character);
-            $binary[] = base_convert($data[1], 16, 2);
-        }
-
-        return implode(' ', $binary);
-    }
-
-    /**
-     * Converts binary representation back to string.
-     *
-     * Internal utility for reversing stringToBinary() operation.
-     * Not currently used in SEP-7 implementation but provided for completeness.
-     *
-     * @param string $binary Space-separated binary representation
-     * @return string Reconstructed string
-     */
-    private function binaryToString($binary) : string {
-        $binaries = explode(' ', $binary);
-
-        $string = null;
-        foreach ($binaries as $binary) {
-            $string .= pack('H*', dechex(bindec($binary)));
-        }
-
-        return $string;
+        $payloadStart = str_repeat("\x00", 35) . "\x04";
+        return $payloadStart . URIScheme::uriSchemePrefix . $url;
     }
 
     /**
