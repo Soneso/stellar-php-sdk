@@ -5,6 +5,8 @@
 composer.lock
 composer.phar
 __pycache__/
+.DS_Store
+.claude/
 
 # Test coverage
 /coverage/

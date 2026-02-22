@@ -497,6 +497,6 @@ class StrKey
     }
 
     private static function verifyChecksum(string $expectedChecksum, string $data) : bool {
-        return static::calculateChecksum($data) == $expectedChecksum;
+        return hash_equals($expectedChecksum, static::calculateChecksum($data));
     }
 }
