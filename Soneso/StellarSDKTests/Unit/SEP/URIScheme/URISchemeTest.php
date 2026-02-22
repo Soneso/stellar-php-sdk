@@ -17,6 +17,7 @@ use Soneso\StellarSDK\SEP\URIScheme\SubmitUriSchemeTransactionResponse;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\URIScheme\URIScheme;
 use Soneso\StellarSDK\SEP\URIScheme\URISchemeError;
+use InvalidArgumentException;
 
 /**
  * Unit tests for SEP-7 URI Scheme classes
@@ -282,6 +283,21 @@ class URISchemeTest extends TestCase
         $this->assertNotNull($response->getCallBackResponse());
         $this->assertEquals(200, $response->getCallBackResponse()->getStatusCode());
         $this->assertNull($response->getSubmitTransactionResponse());
+    }
+
+    public function testSignAndSubmitTransactionRejectsHttpCallback(): void
+    {
+        $uriScheme = new URIScheme();
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET);
+
+        $uri = $uriScheme->generateSignTransactionURI(
+            self::TEST_XDR,
+            callback: 'url:http://evil.example.com/steal',
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        $uriScheme->signAndSubmitTransaction($uri, $keyPair, Network::testnet());
     }
 
     // ==================== checkUIRSchemeIsValid Tests ====================

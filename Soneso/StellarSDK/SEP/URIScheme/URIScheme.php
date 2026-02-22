@@ -20,6 +20,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use InvalidArgumentException;
 
@@ -301,6 +302,7 @@ class URIScheme
         $callback = $this->getParameterValue(URIScheme::callbackParameterName, $url);
         if ($callback != null && str_starts_with($callback, "url:")) {
             $callbackUrl = substr($callback, 4);
+            UrlValidator::validateHttpsRequired($callbackUrl);
             $headers = array();
             $headers = array_merge($headers, RequestBuilder::HEADERS);
             $headers = array_merge($headers, ['Content-Type' => 'application/x-www-form-urlencoded']);
