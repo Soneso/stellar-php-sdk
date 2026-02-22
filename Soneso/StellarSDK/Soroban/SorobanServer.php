@@ -580,7 +580,7 @@ class SorobanServer
         $payload = array(
             'jsonrpc' => '2.0',
             'method' => $procedure,
-            'id' => mt_rand()
+            'id' => random_int(0, PHP_INT_MAX)
         );
 
         if (!empty($params)) {
