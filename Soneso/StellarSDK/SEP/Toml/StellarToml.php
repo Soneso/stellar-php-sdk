@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Requests\RequestBuilder;
+use Soneso\StellarSDK\Util\UrlValidator;
 use Yosymfony\Toml\Toml;
 
 /**
@@ -256,6 +257,7 @@ class StellarToml
      * @throws Exception If the currency TOML file cannot be fetched or parsed
      */
     public static function currencyFromUrl(string $toml) : Currency {
+        UrlValidator::validateHttpsRequired($toml);
         $httpClient = new Client();
         try {
             $request = new Request('GET', $toml, RequestBuilder::HEADERS);
