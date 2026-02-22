@@ -104,7 +104,8 @@ class WebAuth
      * @param Network $network The network used.
      * @param ?Client $httpClient Optional http client to be used for requests.
      */
-    public function __construct(string $authEndpoint, string $serverSigningKey, string $serverHomeDomain, Network $network, ?Client $httpClient = null) {
+    public function __construct(string $authEndpoint, string $serverSigningKey, string $serverHomeDomain, Network $network, ?Client $httpClient = null)
+    {
         UrlValidator::validateHttpsRequired($authEndpoint);
         $this->authEndpoint = $authEndpoint;
         $this->serverSigningKey = $serverSigningKey;
@@ -118,6 +119,21 @@ class WebAuth
         }
     }
 
+    /**
+     * Sets the grace period (in seconds) for challenge transaction time bounds validation.
+     *
+     * The grace period accommodates clock skew between the client and the auth server.
+     * A value of 0 enforces strict time bounds. Default is 300 seconds (5 minutes).
+     *
+     * @param int $seconds Grace period in seconds. Must be non-negative.
+     */
+    public function setGracePeriod(int $seconds): void
+    {
+        if ($seconds < 0) {
+            throw new InvalidArgumentException('Grace period must be non-negative');
+        }
+        $this->gracePeriod = $seconds;
+    }
 
     /** Creates a WebAuth instance by loading the needed data from the stellar.toml file hosted on the given domain.
      *  e.g. fromDomain("soneso.com", Network::testnet())
