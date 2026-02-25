@@ -291,6 +291,7 @@ class KYCService
 
         $multipartFields = array();
         if ($request->url) {
+            UrlValidator::validateHttpsRequired($request->url);
             $multipartFields += ["url" => $request->url];
         }
         if ($request->id) {

@@ -151,6 +151,7 @@ class TransferServerService
             $queryParameters += ["lang" => $request->lang];
         }
         if ($request->onChangeCallback !== null) {
+            UrlValidator::validateHttpsRequired($request->onChangeCallback);
             $queryParameters += ["on_change_callback" => $request->onChangeCallback];
         }
         if ($request->amount !== null) {
@@ -226,6 +227,7 @@ class TransferServerService
             $queryParameters += ["lang" => $request->lang];
         }
         if ($request->onChangeCallback !== null) {
+            UrlValidator::validateHttpsRequired($request->onChangeCallback);
             $queryParameters += ["on_change_callback" => $request->onChangeCallback];
         }
         if ($request->amount !== null) {
@@ -299,6 +301,7 @@ class TransferServerService
             $queryParameters += ["lang" => $request->lang];
         }
         if ($request->onChangeCallback !== null) {
+            UrlValidator::validateHttpsRequired($request->onChangeCallback);
             $queryParameters += ["on_change_callback" => $request->onChangeCallback];
         }
         if ($request->amount !== null) {
@@ -381,6 +384,7 @@ class TransferServerService
             $queryParameters += ["lang" => $request->lang];
         }
         if ($request->onChangeCallback !== null) {
+            UrlValidator::validateHttpsRequired($request->onChangeCallback);
             $queryParameters += ["on_change_callback" => $request->onChangeCallback];
         }
         if ($request->countryCode !== null) {

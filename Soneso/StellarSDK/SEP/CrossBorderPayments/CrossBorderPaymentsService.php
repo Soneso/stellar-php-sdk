@@ -224,6 +224,7 @@ class CrossBorderPaymentsService
     public function putTransactionCallback(string $id, string $callbackUrl, string $jwt) : void {
 
         UrlValidator::validatePathSegment($id, 'id');
+        UrlValidator::validateHttpsRequired($callbackUrl);
         $url = $this->buildServiceUrl('transactions/'.$id.'/callback');
 
         $response = $this->httpClient->put($url,
