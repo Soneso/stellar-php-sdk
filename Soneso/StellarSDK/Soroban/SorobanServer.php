@@ -42,6 +42,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractData;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use UnexpectedValueException;
 
 /**
  * Main entry point for interacting with Soroban RPC servers
@@ -167,7 +168,9 @@ class SorobanServer
     public function getHealth() : GetHealthResponse {
         $body = $this->prepareRequest(self::GET_HEALTH);
         $result = $this->request($body, self::GET_HEALTH);
-        assert($result instanceof GetHealthResponse);
+        if (!$result instanceof GetHealthResponse) {
+            throw new UnexpectedValueException('Expected GetHealthResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -183,7 +186,9 @@ class SorobanServer
     public function getNetwork() : GetNetworkResponse {
         $body = $this->prepareRequest(self::GET_NETWORK);
         $result = $this->request($body, self::GET_NETWORK);
-        assert($result instanceof GetNetworkResponse);
+        if (!$result instanceof GetNetworkResponse) {
+            throw new UnexpectedValueException('Expected GetNetworkResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -201,7 +206,9 @@ class SorobanServer
     public function getFeeStats() : GetFeeStatsResponse {
         $body = $this->prepareRequest(self::GET_FEE_STATS);
         $result = $this->request($body, self::GET_FEE_STATS);
-        assert($result instanceof GetFeeStatsResponse);
+        if (!$result instanceof GetFeeStatsResponse) {
+            throw new UnexpectedValueException('Expected GetFeeStatsResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -216,7 +223,9 @@ class SorobanServer
     public function getVersionInfo() : GetVersionInfoResponse {
         $body = $this->prepareRequest(self::GET_VERSION_INFO);
         $result = $this->request($body, self::GET_VERSION_INFO);
-        assert($result instanceof GetVersionInfoResponse);
+        if (!$result instanceof GetVersionInfoResponse) {
+            throw new UnexpectedValueException('Expected GetVersionInfoResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -231,7 +240,9 @@ class SorobanServer
     public function simulateTransaction(SimulateTransactionRequest $request) : SimulateTransactionResponse {
         $body = $this->prepareRequest(self::SIMULATE_TRANSACTION, $request->getRequestParams());
         $result = $this->request($body, self::SIMULATE_TRANSACTION);
-        assert($result instanceof SimulateTransactionResponse);
+        if (!$result instanceof SimulateTransactionResponse) {
+            throw new UnexpectedValueException('Expected SimulateTransactionResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -248,7 +259,9 @@ class SorobanServer
     public function sendTransaction(Transaction $transaction) : SendTransactionResponse {
         $body = $this->prepareRequest(self::SEND_TRANSACTION, ['transaction' => $transaction->toEnvelopeXdrBase64()]);
         $result = $this->request($body, self::SEND_TRANSACTION);
-        assert($result instanceof SendTransactionResponse);
+        if (!$result instanceof SendTransactionResponse) {
+            throw new UnexpectedValueException('Expected SendTransactionResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -265,7 +278,9 @@ class SorobanServer
     public function getTransaction(string $transactionId) : GetTransactionResponse {
         $body = $this->prepareRequest(self::GET_TRANSACTION, ['hash' => $transactionId]);
         $result = $this->request($body, self::GET_TRANSACTION);
-        assert($result instanceof GetTransactionResponse);
+        if (!$result instanceof GetTransactionResponse) {
+            throw new UnexpectedValueException('Expected GetTransactionResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -279,7 +294,9 @@ class SorobanServer
     public function getTransactions(GetTransactionsRequest $request) : GetTransactionsResponse {
         $body = $this->prepareRequest(self::GET_TRANSACTIONS, $request->getRequestParams());
         $result = $this->request($body, self::GET_TRANSACTIONS);
-        assert($result instanceof GetTransactionsResponse);
+        if (!$result instanceof GetTransactionsResponse) {
+            throw new UnexpectedValueException('Expected GetTransactionsResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -295,7 +312,9 @@ class SorobanServer
     public function getLedgers(GetLedgersRequest $request) : GetLedgersResponse {
         $body = $this->prepareRequest(self::GET_LEDGERS, $request->getRequestParams());
         $result = $this->request($body, self::GET_LEDGERS);
-        assert($result instanceof GetLedgersResponse);
+        if (!$result instanceof GetLedgersResponse) {
+            throw new UnexpectedValueException('Expected GetLedgersResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -313,7 +332,9 @@ class SorobanServer
     public function getLedgerEntries(array $base64EncodedKeys) : GetLedgerEntriesResponse {
         $body = $this->prepareRequest(self::GET_LEDGER_ENTRIES, ['keys' => $base64EncodedKeys]);
         $result = $this->request($body, self::GET_LEDGER_ENTRIES);
-        assert($result instanceof GetLedgerEntriesResponse);
+        if (!$result instanceof GetLedgerEntriesResponse) {
+            throw new UnexpectedValueException('Expected GetLedgerEntriesResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -327,7 +348,9 @@ class SorobanServer
     public function getLatestLedger() : GetLatestLedgerResponse {
         $body = $this->prepareRequest(self::GET_LATEST_LEDGER);
         $result = $this->request($body, self::GET_LATEST_LEDGER);
-        assert($result instanceof GetLatestLedgerResponse);
+        if (!$result instanceof GetLatestLedgerResponse) {
+            throw new UnexpectedValueException('Expected GetLatestLedgerResponse, got ' . get_class($result));
+        }
         return $result;
     }
 
@@ -343,7 +366,9 @@ class SorobanServer
     public function getEvents(GetEventsRequest $request) : GetEventsResponse {
         $body = $this->prepareRequest(self::GET_EVENTS, $request->getRequestParams());
         $result = $this->request($body, self::GET_EVENTS);
-        assert($result instanceof GetEventsResponse);
+        if (!$result instanceof GetEventsResponse) {
+            throw new UnexpectedValueException('Expected GetEventsResponse, got ' . get_class($result));
+        }
         return $result;
     }
 

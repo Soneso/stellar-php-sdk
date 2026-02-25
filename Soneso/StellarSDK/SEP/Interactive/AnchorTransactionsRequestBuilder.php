@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
+use UnexpectedValueException;
 
 class AnchorTransactionsRequestBuilder extends RequestBuilder
 {
@@ -57,7 +58,9 @@ class AnchorTransactionsRequestBuilder extends RequestBuilder
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
         $response = $responseHandler->handleResponse($response, RequestType::SEP24_TRANSACTIONS, $this->httpClient);
-        assert($response instanceof SEP24TransactionsResponse);
+        if (!$response instanceof SEP24TransactionsResponse) {
+            throw new UnexpectedValueException('Expected SEP24TransactionsResponse, got ' . get_class($response));
+        }
 
         return $response;
     }
