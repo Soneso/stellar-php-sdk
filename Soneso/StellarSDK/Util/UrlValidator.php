@@ -43,6 +43,26 @@ class UrlValidator
     }
 
     /**
+     * Validates that a string is a safe domain name for URL construction.
+     *
+     * Rejects values containing path separators, traversal sequences, whitespace,
+     * query/fragment delimiters, null bytes, or other characters not valid in hostnames.
+     * Only allows alphanumeric characters, hyphens, dots, colons (for ports),
+     * and square brackets (for IPv6 literals).
+     *
+     * @param string $domain The domain to validate
+     * @throws InvalidArgumentException If the domain contains unsafe characters
+     */
+    public static function validateDomain(string $domain): void
+    {
+        if ($domain === '' || !preg_match('/\A[a-zA-Z0-9.\-:\[\]]+\z/', $domain)) {
+            throw new InvalidArgumentException(
+                "Invalid domain: contains unsafe characters"
+            );
+        }
+    }
+
+    /**
      * Validates that a string is safe to use as a URL path segment.
      *
      * Rejects values that contain path traversal sequences, path separators,

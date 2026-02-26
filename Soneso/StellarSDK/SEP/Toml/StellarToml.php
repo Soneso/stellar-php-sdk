@@ -228,6 +228,7 @@ class StellarToml
      * @throws Exception If the stellar.toml file cannot be fetched or parsed
      */
     public static function fromDomain(string $domain, ?Client $httpClient = null) : StellarToml {
+        UrlValidator::validateDomain($domain);
         $url = "https://" . $domain . "/.well-known/stellar.toml";
         $client = $httpClient;
         if ($client === null) {
