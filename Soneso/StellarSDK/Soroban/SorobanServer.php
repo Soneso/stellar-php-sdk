@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Util\UrlValidator;
@@ -137,7 +138,7 @@ class SorobanServer
      */
     private const GET_VERSION_INFO = "getVersionInfo";
 
-    public bool $enableLogging = false;
+    private ?LoggerInterface $logger = null;
 
     /**
      * Creates a new Soroban RPC server client
@@ -156,6 +157,16 @@ class SorobanServer
         ]);
         $this->headers = array_merge($this->headers, RequestBuilder::HEADERS);
         $this->headers  = array_merge($this->headers, ['Content-Type' => "application/json"]);
+    }
+
+    /**
+     * Sets a PSR-3 logger for debug output of RPC responses.
+     *
+     * @param LoggerInterface $logger The logger instance
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -555,9 +566,7 @@ class SorobanServer
     private function handleRpcResponse(ResponseInterface $response, string $requestType) : SorobanRpcResponse
     {
         $content = $response->getBody()->__toString();
-        if ($this->enableLogging) {
-            print($requestType." response: ".$content . PHP_EOL);
-        }
+        $this->logger?->debug($requestType . ' response', ['body' => $content]);
         // not success
         // this should normally not happen since it will be handled by gruzzle (throwing corresponding gruzzle exception)
         if (300 <= $response->getStatusCode()) {

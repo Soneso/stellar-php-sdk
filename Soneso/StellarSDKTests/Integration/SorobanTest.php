@@ -42,6 +42,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDKTests\PrintLogger;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrContractEvent;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
@@ -82,13 +83,13 @@ class SorobanTest extends TestCase
             FriendBot::fundTestAccount($this->accountAId);
             $this->network = Network::testnet();
             $this->server = new SorobanServer(self::TESTNET_SERVER_URL);
-            $this->server->enableLogging = true;
+            $this->server->setLogger(new PrintLogger());
             $this->sdk = StellarSDK::getTestNetInstance();
         } elseif ($this->testOn === 'futurenet') {
             FuturenetFriendBot::fundTestAccount($this->accountAId);
             $this->network = Network::futurenet();
             $this->server = new SorobanServer(self::FUTURENET_SERVER_URL);
-            $this->server->enableLogging = true;
+            $this->server->setLogger(new PrintLogger());
             $this->sdk = StellarSDK::getFutureNetInstance();
         }
         sleep(5);

@@ -13,8 +13,8 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
-// Enable request/response logging for debugging
-$server->enableLogging = true;
+// Optional: enable PSR-3 request/response logging for debugging
+// $server->setLogger($yourPsr3Logger);
 ```
 
 ## Health & Network Info

@@ -487,8 +487,8 @@ function horizonRequestWithRetry(
 use Soneso\StellarSDK\Soroban\SorobanServer;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
-$server->enableLogging = true;
-// All RPC request/response JSON bodies are printed to stdout
+$server->setLogger($yourPsr3Logger); // any PSR-3 LoggerInterface
+// All RPC request/response JSON bodies are logged at debug level
 ```
 
 ### Inspect Transaction XDR Before Submission

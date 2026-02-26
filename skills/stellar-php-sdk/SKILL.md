@@ -280,7 +280,7 @@ RPC endpoint patterns for Soroban smart contract queries.
 use Soneso\StellarSDK\Soroban\SorobanServer;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
-$server->enableLogging = true; // optional: debug request/response
+$server->setLogger(new YourPsr3Logger()); // optional: PSR-3 debug logging
 $health = $server->getHealth(); // ->status
 ```
 

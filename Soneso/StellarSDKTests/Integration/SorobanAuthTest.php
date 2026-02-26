@@ -27,6 +27,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDKTests\PrintLogger;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use function PHPUnit\Framework\assertEquals;
@@ -53,12 +54,12 @@ class SorobanAuthTest extends TestCase
         if ($this->testOn === 'testnet') {
             $this->network = Network::testnet();
             $this->server = new SorobanServer(self::TESTNET_SERVER_URL);
-            $this->server->enableLogging = true;
+            $this->server->setLogger(new PrintLogger());
             $this->sdk = StellarSDK::getTestNetInstance();
         } elseif ($this->testOn === 'futurenet') {
             $this->network = Network::futurenet();
             $this->server = new SorobanServer(self::FUTURENET_SERVER_URL);
-            $this->server->enableLogging = true;
+            $this->server->setLogger(new PrintLogger());
             $this->sdk = StellarSDK::getFutureNetInstance();
         }
     }

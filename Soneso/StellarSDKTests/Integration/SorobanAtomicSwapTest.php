@@ -25,6 +25,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDKTests\PrintLogger;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
@@ -52,11 +53,11 @@ class SorobanAtomicSwapTest extends TestCase
         if ($this->testOn === 'testnet') {
             $this->network = Network::testnet();
             $this->server = new SorobanServer(self::TESTNET_SERVER_URL);
-            $this->server->enableLogging = true;
+            $this->server->setLogger(new PrintLogger());
         } elseif ($this->testOn === 'futurenet') {
             $this->network = Network::futurenet();
             $this->server = new SorobanServer(self::FUTURENET_SERVER_URL);
-            $this->server->enableLogging = true;
+            $this->server->setLogger(new PrintLogger());
         }
         sleep(5);
     }

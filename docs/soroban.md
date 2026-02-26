@@ -54,9 +54,12 @@ Connect to a Soroban RPC node to send requests and receive responses.
 ```php
 <?php
 use Soneso\StellarSDK\Soroban\SorobanServer;
+use Psr\Log\LoggerInterface;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
-$server->enableLogging = true; // Enable debug logging
+
+// Optional: enable debug logging with any PSR-3 logger
+// $server->setLogger($yourLogger);
 ```
 
 ### Health Check
@@ -882,7 +885,7 @@ $client = SorobanClient::forClientOptions(new ClientOptions(
     contractId: 'CCXYZ...',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org',
-    enableServerLogging: true  // Enable RPC logging
+    // logger: $yourPsr3Logger  // Optional: PSR-3 logger for debug output
 ));
 ```
 
