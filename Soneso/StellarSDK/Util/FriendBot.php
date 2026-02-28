@@ -46,7 +46,7 @@ class FriendBot
      */
     static function fundTestAccount(string $accountId) : bool {
         $httpClient = new Client();
-        $url = "https://friendbot.stellar.org/?addr=" . $accountId;
+        $url = "https://friendbot.stellar.org/?addr=" . urlencode($accountId);
         $request = new Request('GET', $url, RequestBuilder::HEADERS);
         $response = $httpClient->send($request);
         if ($response->getStatusCode() == NetworkConstants::HTTP_OK) {
