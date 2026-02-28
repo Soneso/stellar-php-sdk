@@ -49,23 +49,18 @@ class CustomFriendBot
     /**
      * Funds an account using the custom FriendBot endpoint
      *
-     * Note: Errors are printed to stdout for debugging purposes
-     *
      * @param string $accountId The Stellar account ID (56-character public key starting with 'G') to fund
      * @return bool True if funding succeeded, false otherwise
+     * @throws GuzzleException If the HTTP request fails
      */
     public function fundAccount(string $accountId): bool
     {
-        try {
-            $httpClient = new Client();
-            $url = $this->friendBotUrl . "?addr=" . $accountId;
-            $request = new Request('GET', $url, RequestBuilder::HEADERS);
-            $response = $httpClient->send($request);
-            if ($response->getStatusCode() == NetworkConstants::HTTP_OK) {
-                return true;
-            }
-        } catch (GuzzleException $e) {
-            print($e->getTraceAsString());
+        $httpClient = new Client();
+        $url = $this->friendBotUrl . "?addr=" . $accountId;
+        $request = new Request('GET', $url, RequestBuilder::HEADERS);
+        $response = $httpClient->send($request);
+        if ($response->getStatusCode() == NetworkConstants::HTTP_OK) {
+            return true;
         }
         return false;
     }
