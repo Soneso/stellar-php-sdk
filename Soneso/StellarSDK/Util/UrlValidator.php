@@ -55,7 +55,8 @@ class UrlValidator
      */
     public static function validateDomain(string $domain): void
     {
-        if ($domain === '' || !preg_match('/\A[a-zA-Z0-9.\-:\[\]]+\z/', $domain)) {
+        if ($domain === '' || !preg_match('/\A[a-zA-Z0-9.\-:\[\]]+\z/', $domain)
+            || !preg_match('/[a-zA-Z0-9]/', $domain)) {
             throw new InvalidArgumentException(
                 "Invalid domain: contains unsafe characters"
             );
@@ -74,9 +75,12 @@ class UrlValidator
      */
     public static function validatePathSegment(string $value, string $paramName): void
     {
-        if ($value === '' || str_contains($value, '/') || str_contains($value, '\\')
-            || str_contains($value, '..') || str_contains($value, "\0")
-            || str_contains($value, '?') || str_contains($value, '#')) {
+        $decoded = rawurldecode($value);
+        if ($value === '' || $decoded === ''
+            || str_contains($decoded, '/') || str_contains($decoded, '\\')
+            || str_contains($decoded, '..') || str_contains($decoded, "\0")
+            || str_contains($decoded, '?') || str_contains($decoded, '#')
+            || str_contains($value, '%00')) {
             throw new InvalidArgumentException(
                 "Invalid value for '$paramName': contains unsafe characters for URL path"
             );

@@ -432,8 +432,8 @@ class TransactionResponse extends Response
                 "none" => Memo::none(),
                 "text" => Memo::text($json['memo'] ?? ""),
                 "id" => Memo::id((int)$json['memo']),
-                "hash" => Memo::hash(base64_decode($json['memo'], true) ?: throw new InvalidArgumentException('Invalid base64-encoded memo hash')),
-                "return" => Memo::return(base64_decode($json['memo'], true) ?: throw new InvalidArgumentException('Invalid base64-encoded memo return hash')),
+                "hash" => Memo::hash(($decodedHash = base64_decode($json['memo'], true)) === false ? throw new InvalidArgumentException('Invalid base64-encoded memo hash') : $decodedHash),
+                "return" => Memo::return(($decodedReturn = base64_decode($json['memo'], true)) === false ? throw new InvalidArgumentException('Invalid base64-encoded memo return hash') : $decodedReturn),
             };
         } else {
             $this->memo = Memo::none();

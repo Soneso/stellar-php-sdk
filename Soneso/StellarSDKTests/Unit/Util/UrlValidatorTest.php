@@ -160,4 +160,98 @@ class UrlValidatorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         UrlValidator::validatePathSegment('id#fragment', 'id');
     }
+
+    public function testPathSegmentRejectsEncodedTraversal(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('%2e%2e%2fetc%2fpasswd', 'id');
+    }
+
+    public function testPathSegmentRejectsEncodedSlash(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('foo%2Fbar', 'id');
+    }
+
+    public function testPathSegmentRejectsEncodedNullByte(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('foo%00bar', 'id');
+    }
+
+    public function testPathSegmentRejectsDoubleDot(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validatePathSegment('..', 'id');
+    }
+
+    // validateDomain tests
+
+    public function testDomainAcceptsValidDomain(): void
+    {
+        UrlValidator::validateDomain('example.com');
+        UrlValidator::validateDomain('api.stellar.org');
+        UrlValidator::validateDomain('localhost');
+        $this->assertTrue(true);
+    }
+
+    public function testDomainAcceptsDomainWithPort(): void
+    {
+        UrlValidator::validateDomain('example.com:8443');
+        $this->assertTrue(true);
+    }
+
+    public function testDomainAcceptsIpv6Literal(): void
+    {
+        UrlValidator::validateDomain('[::1]');
+        $this->assertTrue(true);
+    }
+
+    public function testDomainRejectsEmpty(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validateDomain('');
+    }
+
+    public function testDomainRejectsPathTraversal(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validateDomain('../etc');
+    }
+
+    public function testDomainRejectsWhitespace(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validateDomain('example .com');
+    }
+
+    public function testDomainRejectsQueryCharacter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validateDomain('example.com?foo');
+    }
+
+    public function testDomainRejectsNullByte(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validateDomain("example.com\0evil");
+    }
+
+    public function testDomainRejectsAtSign(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validateDomain('user@example.com');
+    }
+
+    public function testDomainRejectsDotOnly(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validateDomain('...');
+    }
+
+    public function testDomainRejectsSingleDot(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        UrlValidator::validateDomain('.');
+    }
 }

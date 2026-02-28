@@ -48,6 +48,7 @@ use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalanceResponse;
 use Soneso\StellarSDK\Responses\Offers\OfferResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationResponse;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 
 /**
@@ -939,5 +940,12 @@ class StellarSDKTest extends TestCase
         $this->assertEquals('https://horizon.stellar.org', StellarSDK::$PUBLIC_NET_HORIZON_URL);
         $this->assertEquals('https://horizon-testnet.stellar.org', StellarSDK::$TEST_NET_HORIZON_URL);
         $this->assertEquals('https://horizon-futurenet.stellar.org', StellarSDK::$FUTURE_NET_HORIZON_URL);
+    }
+
+    public function testConstructorRejectsHttpUrl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        new StellarSDK('http://horizon-testnet.stellar.org');
     }
 }

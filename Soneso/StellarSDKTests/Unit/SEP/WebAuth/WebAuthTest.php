@@ -785,4 +785,86 @@ class WebAuthTest extends TestCase
         $this->assertTrue($exception);
     }
 
+    // Grace Period Tests
+
+    public function testSetGracePeriodRejectsNegative(): void
+    {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Grace period must be non-negative');
+        $webAuth->setGracePeriod(-1);
+    }
+
+    public function testSetGracePeriodZeroRejectsExpiredChallenge(): void
+    {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $webAuth->setGracePeriod(0);
+        $now = time();
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($this->clientAccountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->setTimeBounds(new TimeBounds(
+                (new DateTime)->setTimestamp($now - 2),
+                (new DateTime)->setTimestamp($now - 1)
+            ))
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        $challengeResponse = json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $challengeResponse)
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $exception = false;
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [$userKeyPair]);
+        } catch (ErrorException $e) {
+            if ($e instanceof ChallengeValidationErrorInvalidTimeBounds) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testSetGracePeriodLargeAcceptsOlderChallenge(): void
+    {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $webAuth->setGracePeriod(600);
+        $now = time();
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($this->clientAccountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->setTimeBounds(new TimeBounds(
+                (new DateTime)->setTimestamp($now - 400),
+                (new DateTime)->setTimestamp($now - 100)
+            ))
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        $challengeResponse = json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $challengeResponse),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestJWTSuccess())
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $jwtToken = $webAuth->jwtToken($this->clientAccountId, [$userKeyPair]);
+        $this->assertEquals($this->successJWTToken, $jwtToken);
+    }
+
+    // HTTPS Enforcement Tests
+
+    public function testConstructorRejectsHttpUrl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        new WebAuth('http://api.stellar.org/auth', $this->serverAccountId, $this->domain, Network::testnet());
+    }
+
 }
