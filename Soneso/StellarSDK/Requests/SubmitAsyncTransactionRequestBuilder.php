@@ -12,6 +12,7 @@ use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Transaction\SubmitAsyncTransactionResponse;
+use UnexpectedValueException;
 
 /**
  * Builds requests for submitting transactions asynchronously to Horizon
@@ -82,11 +83,13 @@ class SubmitAsyncTransactionRequestBuilder extends RequestBuilder
     public function request(string $url): SubmitAsyncTransactionResponse {
         try {
             $response = parent::executeRequest($url, RequestType::SUBMIT_ASYNC_TRANSACTION, "POST");
-            assert($response instanceof SubmitAsyncTransactionResponse);
+            if (!$response instanceof SubmitAsyncTransactionResponse) {
+                throw new UnexpectedValueException('Expected SubmitAsyncTransactionResponse, got ' . get_class($response));
+            }
             return $response;
         } catch (HorizonRequestException $e) {
             $httpResponse = $e->getHttpResponse();
-            if ($httpResponse != null && (
+            if ($httpResponse !== null && (
                 $httpResponse->getStatusCode() === NetworkConstants::HTTP_BAD_REQUEST ||
                 $httpResponse->getStatusCode() === NetworkConstants::HTTP_FORBIDDEN ||
                 $httpResponse->getStatusCode() === NetworkConstants::HTTP_CONFLICT ||

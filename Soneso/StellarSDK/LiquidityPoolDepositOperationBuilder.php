@@ -77,7 +77,7 @@ class LiquidityPoolDepositOperationBuilder
      */
     public function build(): LiquidityPoolDepositOperation {
         $result = new LiquidityPoolDepositOperation($this->liquidityPoolId, $this->maxAmountA, $this->maxAmountB, $this->minPrice, $this->maxPrice);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

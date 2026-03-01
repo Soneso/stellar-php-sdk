@@ -24,7 +24,7 @@ use Soneso\StellarSDK\SEP\Quote\SEP38PostQuoteRequest;
 
 class QuoteTest extends TestCase
 {
-    private string $serviceAddress = "http://api.stellar.org/quote";
+    private string $serviceAddress = "https://api.stellar.org/quote";
 
     private string $infoResponse = "{  \"assets\":  [    {      \"asset\": \"stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN\"    },    {      \"asset\": \"stellar:BRL:GDVKY2GU2DRXWTBEYJJWSFXIGBZV6AZNBVVSUHEPZI54LIS6BA7DVVSP\"    },    {      \"asset\": \"iso4217:BRL\",      \"country_codes\": [\"BRA\"],      \"sell_delivery_methods\": [        {          \"name\": \"cash\",          \"description\": \"Deposit cash BRL at one of our agent locations.\"        },        {          \"name\": \"ACH\",          \"description\": \"Send BRL directly to the Anchor's bank account.\"        },        {          \"name\": \"PIX\",          \"description\": \"Send BRL directly to the Anchor's bank account.\"        }      ],      \"buy_delivery_methods\": [        {          \"name\": \"cash\",          \"description\": \"Pick up cash BRL at one of our payout locations.\"        },        {          \"name\": \"ACH\",          \"description\": \"Have BRL sent directly to your bank account.\"        },        {          \"name\": \"PIX\",          \"description\": \"Have BRL sent directly to the account of your choice.\"        }      ]    }  ]}";
     private string $getPricesResponse = "{  \"buy_assets\": [    {      \"asset\": \"iso4217:BRL\",      \"price\": \"0.18\",      \"decimals\": 2    }  ]}";
@@ -498,5 +498,21 @@ class QuoteTest extends TestCase
             $thrown = true;
         }
         $this->assertTrue($thrown);
+    }
+
+    public function testConstructorRejectsHttpUrl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        new QuoteService('http://api.stellar.org/quotes');
+    }
+
+    public function testGetQuoteRejectsPathTraversal(): void
+    {
+        $service = new QuoteService($this->serviceAddress);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value for');
+        $service->getQuote('../admin', $this->jwtToken);
     }
 }

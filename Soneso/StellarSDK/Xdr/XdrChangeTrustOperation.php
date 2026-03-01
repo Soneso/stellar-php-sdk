@@ -17,7 +17,7 @@ class XdrChangeTrustOperation
 
     public function __construct(XdrChangeTrustAsset $line, ?BigInteger $limit = null) {
         $this->line = $line;
-        if ($limit != null) {
+        if ($limit !== null) {
             $this->limit = $limit;
         } else {
             $this->limit = new BigInteger(self::MAX_LIMIT);

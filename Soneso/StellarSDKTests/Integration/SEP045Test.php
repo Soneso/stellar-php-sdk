@@ -78,7 +78,6 @@ class SEP045Test extends TestCase
             rpcUrl: "https://soroban-testnet.stellar.org",
             network: Network::testnet(),
             sourceAccountKeyPair: $sourceKeyPair,
-            enableServerLogging: false
         );
 
         $wasmHash = SorobanClient::install($installRequest);
@@ -96,7 +95,6 @@ class SEP045Test extends TestCase
             sourceAccountKeyPair: $sourceKeyPair,
             wasmHash: $wasmHash,
             constructorArgs: $constructorArgs,
-            enableServerLogging: false
         );
 
         $client = SorobanClient::deploy($deployRequest);
@@ -179,7 +177,6 @@ class SEP045Test extends TestCase
             rpcUrl: "https://soroban-testnet.stellar.org",
             network: Network::testnet(),
             sourceAccountKeyPair: $sourceKeyPair,
-            enableServerLogging: false
         );
 
         $wasmHash = SorobanClient::install($installRequest);
@@ -197,7 +194,6 @@ class SEP045Test extends TestCase
             sourceAccountKeyPair: $sourceKeyPair,
             wasmHash: $wasmHash,
             constructorArgs: $constructorArgs,
-            enableServerLogging: false
         );
 
         $client = SorobanClient::deploy($deployRequest);

@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
+use UnexpectedValueException;
 
 /**
  * Builds requests for submitting transactions to Horizon
@@ -85,7 +86,9 @@ class SubmitTransactionRequestBuilder extends RequestBuilder
      */
     public function request(string $url): SubmitTransactionResponse {
         $response = parent::executeRequest($url, RequestType::SUBMIT_TRANSACTION, "POST");
-        assert($response instanceof SubmitTransactionResponse);
+        if (!$response instanceof SubmitTransactionResponse) {
+            throw new UnexpectedValueException('Expected SubmitTransactionResponse, got ' . get_class($response));
+        }
         return $response;
     }
 

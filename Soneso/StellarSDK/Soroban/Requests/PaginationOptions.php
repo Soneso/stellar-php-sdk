@@ -38,10 +38,10 @@ class PaginationOptions
 
     public function getRequestParams() : array {
         $params = array();
-        if ($this->cursor != null) {
+        if ($this->cursor !== null) {
             $params['cursor'] = $this->cursor;
         }
-        if ($this->limit != null) {
+        if ($this->limit !== null) {
             $params['limit'] = $this->limit;
         }
         return $params;

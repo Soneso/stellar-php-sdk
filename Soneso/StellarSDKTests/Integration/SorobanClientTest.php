@@ -21,6 +21,7 @@ use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDKTests\PrintLogger;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
@@ -121,7 +122,7 @@ class SorobanClientTest  extends TestCase
             contractId: $deployedClient->getContractId(),
             network: $this->network,
             rpcUrl: $rpcUrl,
-            enableServerLogging: true)
+            logger: new PrintLogger())
         );
         assertEquals($deployedClient->getContractId(), $client->getContractId());
 
@@ -615,7 +616,7 @@ class SorobanClientTest  extends TestCase
             rpcUrl: $rpcUrl,
             network: $this->network,
             sourceAccountKeyPair: $this->sourceAccountKeyPair,
-            enableServerLogging: true
+            logger: new PrintLogger()
         );
 
         return SorobanClient::install($installRequest);
@@ -635,7 +636,7 @@ class SorobanClientTest  extends TestCase
             sourceAccountKeyPair: $this->sourceAccountKeyPair,
             wasmHash: $wasmHash,
             constructorArgs: $constructorArgs,
-            enableServerLogging: true
+            logger: new PrintLogger()
         );
         return SorobanClient::deploy($deployRequest);
     }
@@ -701,7 +702,7 @@ class SorobanClientTest  extends TestCase
             contractId: $deployedClient->getContractId(),
             network: $this->network,
             rpcUrl: $rpcUrl,
-            enableServerLogging: true
+            logger: new PrintLogger()
         ));
         
         // Verify contract ID matches
@@ -779,7 +780,7 @@ class SorobanClientTest  extends TestCase
             contractId: $deployedClient->getContractId(),
             network: $this->network,
             rpcUrl: $rpcUrl,
-            enableServerLogging: true
+            logger: new PrintLogger()
         ));
         
         // Verify contract ID matches
@@ -974,7 +975,7 @@ class SorobanClientTest  extends TestCase
             contractId: $atomicSwapDeployed->getContractId(),
             network: $this->network,
             rpcUrl: $rpcUrl,
-            enableServerLogging: true
+            logger: new PrintLogger()
         ));
         
         $tokenAContract = TokenContract::forClientOptions(new ClientOptions(
@@ -982,7 +983,7 @@ class SorobanClientTest  extends TestCase
             contractId: $tokenAContractId,
             network: $this->network,
             rpcUrl: $rpcUrl,
-            enableServerLogging: true
+            logger: new PrintLogger()
         ));
         
         $tokenBContract = TokenContract::forClientOptions(new ClientOptions(
@@ -990,7 +991,7 @@ class SorobanClientTest  extends TestCase
             contractId: $tokenBContractId,
             network: $this->network,
             rpcUrl: $rpcUrl,
-            enableServerLogging: true
+            logger: new PrintLogger()
         ));
         
         // Mint tokens using bindings with build methods

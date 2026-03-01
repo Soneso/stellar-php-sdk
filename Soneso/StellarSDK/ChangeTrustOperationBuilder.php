@@ -71,7 +71,7 @@ class ChangeTrustOperationBuilder
      */
     public function build(): ChangeTrustOperation {
         $result = new ChangeTrustOperation($this->asset, $this->limit);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

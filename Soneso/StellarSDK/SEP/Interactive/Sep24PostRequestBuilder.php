@@ -11,6 +11,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
+use UnexpectedValueException;
 
 /**
  * Builder for SEP-24 POST requests to interactive deposit and withdrawal endpoints
@@ -110,7 +111,9 @@ class Sep24PostRequestBuilder extends RequestBuilder {
         ]);
         $responseHandler = new ResponseHandler();
         $response = $responseHandler->handleResponse($response, RequestType::SEP24_POST, $this->httpClient);
-        assert($response instanceof SEP24InteractiveResponse);
+        if (!$response instanceof SEP24InteractiveResponse) {
+            throw new UnexpectedValueException('Expected SEP24InteractiveResponse, got ' . get_class($response));
+        }
 
         return $response;
     }

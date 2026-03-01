@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+
 class XdrTransactionEnvelope
 {
     public XdrEnvelopeType $type;
@@ -104,7 +106,10 @@ class XdrTransactionEnvelope
     }
 
     public static function fromEnvelopeBase64XdrString(string $envelope) : XdrTransactionEnvelope {
-        $xdr = base64_decode($envelope);
+        $xdr = base64_decode($envelope, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrTransactionEnvelope::decode($xdrBuffer);
     }

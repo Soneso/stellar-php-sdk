@@ -125,7 +125,7 @@ class TransactionBuilder
      * @return TransactionBuilder Builder object so you can chain methods.
      */
     public function setTimeBounds(TimeBounds $timeBounds) : TransactionBuilder {
-        if ($this->preconditions == null) {
+        if ($this->preconditions === null) {
             $this->preconditions = new TransactionPreconditions();
         }
         $this->preconditions->setTimeBounds($timeBounds);
@@ -160,7 +160,7 @@ class TransactionBuilder
      * Builds a transaction. It will increment sequence number of the source account.
      */
     public function build() : Transaction {
-        if ($this->maxOperationFee == null) {
+        if ($this->maxOperationFee === null) {
             $this->maxOperationFee =  StellarConstants::MIN_BASE_FEE_STROOPS;
         }
 

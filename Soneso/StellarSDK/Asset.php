@@ -69,11 +69,11 @@ abstract class Asset {
         if (Asset::TYPE_NATIVE == $type) {
             return new AssetTypeNative();
         } else if (Asset::TYPE_CREDIT_ALPHANUM_4 == $type || Asset::TYPE_CREDIT_ALPHANUM_12 == $type) {
-            if ($code == null) {
+            if ($code === null) {
                 throw new \RuntimeException("asset code can not be null");
             }
 
-            if ($issuer == null) {
+            if ($issuer === null) {
                 throw new \RuntimeException("asset issuer can not be null");
             }
 

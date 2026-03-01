@@ -40,6 +40,8 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Asset;
+use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use phpseclib3\Math\BigInteger;
 
 /**
@@ -883,5 +885,57 @@ class SorobanServerTest extends TestCase
 
         $latest = $server->getLatestLedger();
         $this->assertEquals(123456, $latest->getSequence());
+    }
+
+    // Logger Tests
+
+    public function testSetLoggerReceivesDebugCalls(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->atLeastOnce())
+            ->method('debug')
+            ->with(
+                $this->stringContains('response'),
+                $this->arrayHasKey('body')
+            );
+
+        $mockResponse = new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => [
+                'status' => 'healthy',
+                'latestLedger' => 123456
+            ]
+        ]));
+
+        $server = $this->createMockedSorobanServer([$mockResponse]);
+        $server->setLogger($logger);
+        $server->getHealth();
+    }
+
+    public function testNoLoggerDoesNotThrow(): void
+    {
+        $mockResponse = new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => [
+                'status' => 'healthy',
+                'latestLedger' => 123456
+            ]
+        ]));
+
+        $server = $this->createMockedSorobanServer([$mockResponse]);
+        // No logger set — should not throw
+        $response = $server->getHealth();
+        $this->assertEquals('healthy', $response->getStatus());
+    }
+
+    // HTTPS Enforcement Tests
+
+    public function testConstructorRejectsHttpUrl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        new SorobanServer('http://soroban-testnet.stellar.org');
     }
 }

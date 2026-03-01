@@ -13,6 +13,7 @@ use GuzzleHttp\RequestOptions;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Implements SEP-0038 - Anchor RFQ API v2.5.0.
@@ -35,8 +36,9 @@ class QuoteService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
-        if ($httpClient != null) {
+        if ($httpClient !== null) {
             $this->httpClient = $httpClient;
         } else {
             $this->httpClient = new Client();
@@ -118,16 +120,16 @@ class QuoteService
     ) : SEP38PricesResponse {
 
         $url = $this->buildServiceUrl("prices");
-        $url .= '?sell_asset=' . $sellAsset . '&sell_amount=' . $sellAmount;
+        $url .= '?sell_asset=' . urlencode($sellAsset) . '&sell_amount=' . urlencode($sellAmount);
 
         if ($sellDeliveryMethod !== null) {
-            $url .= '&sell_delivery_method=' . $sellDeliveryMethod;
+            $url .= '&sell_delivery_method=' . urlencode($sellDeliveryMethod);
         }
         if ($buyDeliveryMethod !== null) {
-            $url .= '&buy_delivery_method=' . $buyDeliveryMethod;
+            $url .= '&buy_delivery_method=' . urlencode($buyDeliveryMethod);
         }
         if ($countryCode !== null) {
-            $url .= '&country_code=' . $countryCode;
+            $url .= '&country_code=' . urlencode($countryCode);
         }
 
         $response = $this->httpClient->get($url,
@@ -188,21 +190,21 @@ class QuoteService
         }
 
         $url = $this->buildServiceUrl("price");
-        $url .= '?sell_asset=' . $sellAsset . '&buy_asset=' . $buyAsset .'&context=' . $context;
+        $url .= '?sell_asset=' . urlencode($sellAsset) . '&buy_asset=' . urlencode($buyAsset) . '&context=' . urlencode($context);
 
         if ($sellAmount !== null) {
-            $url .= '&sell_amount=' . $sellAmount;
+            $url .= '&sell_amount=' . urlencode($sellAmount);
         } else if ($buyAmount !== null) {
-            $url .= '&buy_amount=' . $buyAmount;
+            $url .= '&buy_amount=' . urlencode($buyAmount);
         }
         if ($sellDeliveryMethod !== null) {
-            $url .= '&sell_delivery_method=' . $sellDeliveryMethod;
+            $url .= '&sell_delivery_method=' . urlencode($sellDeliveryMethod);
         }
         if ($buyDeliveryMethod !== null) {
-            $url .= '&buy_delivery_method=' . $buyDeliveryMethod;
+            $url .= '&buy_delivery_method=' . urlencode($buyDeliveryMethod);
         }
         if ($countryCode !== null) {
-            $url .= '&country_code=' . $countryCode;
+            $url .= '&country_code=' . urlencode($countryCode);
         }
 
         $response = $this->httpClient->get($url,
@@ -283,6 +285,7 @@ class QuoteService
      */
     public function getQuote(string $id, string $jwt) : SEP38QuoteResponse {
 
+        UrlValidator::validatePathSegment($id, 'id');
         $url = $this->buildServiceUrl('quote/' . $id);
 
         $response = $this->httpClient->get($url,
@@ -313,7 +316,7 @@ class QuoteService
     private function buildHeaders(?string $jwt = null) : array {
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
-        if($jwt != null) {
+        if($jwt !== null) {
             $headers = array_merge($headers, ['Authorization' => "Bearer ". $jwt]);
         }
 

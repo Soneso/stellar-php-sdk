@@ -7,6 +7,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+
 class XdrSorobanTransactionData
 {
     public XdrSorobanTransactionDataExt $ext;
@@ -42,7 +44,10 @@ class XdrSorobanTransactionData
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrSorobanTransactionData {
-        $xdr = base64_decode($base64Xdr);
+        $xdr = base64_decode($base64Xdr, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrSorobanTransactionData::decode($xdrBuffer);
     }

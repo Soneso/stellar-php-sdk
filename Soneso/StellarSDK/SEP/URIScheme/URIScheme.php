@@ -20,6 +20,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use InvalidArgumentException;
 
@@ -148,35 +149,35 @@ class URIScheme
 
         $queryParams[URIScheme::xdrParameterName] = urlencode($transactionEnvelopeXdrBase64);
 
-        if ($replace != null) {
+        if ($replace !== null) {
             $queryParams[URIScheme::replaceParameterName] = urlencode($replace);
         }
 
-        if ($callback != null) {
+        if ($callback !== null) {
             $queryParams[URIScheme::callbackParameterName] = urlencode($callback);
         }
 
-        if ($publicKey != null) {
+        if ($publicKey !== null) {
             $queryParams[URIScheme::publicKeyParameterName] = urlencode($publicKey);
         }
 
-        if ($chain != null) {
+        if ($chain !== null) {
             $queryParams[URIScheme::chainParameterName] = urlencode($chain);
         }
 
-        if ($message != null) {
+        if ($message !== null) {
             $queryParams[URIScheme::messageParameterName] = urlencode($message);
         }
 
-        if ($networkPassphrase != null) {
+        if ($networkPassphrase !== null) {
             $queryParams[URIScheme::networkPassphraseParameterName] = urlencode($networkPassphrase);
         }
 
-        if ($originDomain != null) {
+        if ($originDomain !== null) {
             $queryParams[URIScheme::originDomainParameterName] = urlencode($originDomain);
         }
 
-        if ($signature != null) {
+        if ($signature !== null) {
             $queryParams[URIScheme::signatureParameterName] = urlencode($signature);
         }
 
@@ -228,35 +229,35 @@ class URIScheme
 
         $queryParams[URIScheme::destinationParameterName] = urlencode($destinationAccountId);
 
-        if ($amount != null) {
+        if ($amount !== null) {
             $queryParams[URIScheme::amountParameterName] = urlencode($amount);
         }
 
-        if ($assetCode != null) {
+        if ($assetCode !== null) {
             $queryParams[URIScheme::assetCodeParameterName] = urlencode($assetCode);
         }
-        if ($assetIssuer != null) {
+        if ($assetIssuer !== null) {
             $queryParams[URIScheme::assetIssuerParameterName] = urlencode($assetIssuer);
         }
-        if ($memo != null) {
+        if ($memo !== null) {
             $queryParams[URIScheme::memoParameterName] = urlencode($memo);
         }
-        if ($memoType != null) {
+        if ($memoType !== null) {
             $queryParams[URIScheme::memoTypeParameterName] = urlencode($memoType);
         }
-        if ($callback != null) {
+        if ($callback !== null) {
             $queryParams[URIScheme::callbackParameterName] = urlencode($callback);
         }
-        if ($message != null) {
+        if ($message !== null) {
             $queryParams[URIScheme::messageParameterName] = urlencode($message);
         }
-        if ($networkPassphrase != null) {
+        if ($networkPassphrase !== null) {
             $queryParams[URIScheme::networkPassphraseParameterName] = urlencode($networkPassphrase);
         }
-        if ($originDomain != null) {
+        if ($originDomain !== null) {
             $queryParams[URIScheme::originDomainParameterName] = urlencode($originDomain);
         }
-        if ($signature != null) {
+        if ($signature !== null) {
             $queryParams[URIScheme::signatureParameterName] = urlencode($signature);
         }
 
@@ -291,7 +292,7 @@ class URIScheme
     public function signAndSubmitTransaction(string $url, KeyPair $signerKeyPair, ?Network $network = null) : SubmitUriSchemeTransactionResponse {
 
         $net = Network::public();
-        if ($network != null) {
+        if ($network !== null) {
             $net = $network;
         }
         $envelope = $this->getXdrTransactionEnvelope($url);
@@ -299,8 +300,9 @@ class URIScheme
         $absTransaction->sign($signerKeyPair,$net);
 
         $callback = $this->getParameterValue(URIScheme::callbackParameterName, $url);
-        if ($callback != null && str_starts_with($callback, "url:")) {
+        if ($callback !== null && str_starts_with($callback, "url:")) {
             $callbackUrl = substr($callback, 4);
+            UrlValidator::validateHttpsRequired($callbackUrl);
             $headers = array();
             $headers = array_merge($headers, RequestBuilder::HEADERS);
             $headers = array_merge($headers, ['Content-Type' => 'application/x-www-form-urlencoded']);
@@ -381,7 +383,7 @@ class URIScheme
     public function checkUIRSchemeIsValid(string $url) : bool {
 
         $originDomain = $this->getParameterValue(URIScheme::originDomainParameterName, $url);
-        if ($originDomain == null) {
+        if ($originDomain === null) {
             throw new URISchemeError(code:URISchemeError::missingOriginDomain);
         }
 
@@ -390,7 +392,7 @@ class URIScheme
         }
 
         $signature = $this->getParameterValue(URIScheme::signatureParameterName, $url);
-        if ($signature == null) {
+        if ($signature === null) {
             throw new URISchemeError(code:URISchemeError::missingSignature);
         }
 
@@ -402,7 +404,7 @@ class URIScheme
         }
 
         $uriRequestSigningKey = $toml->getGeneralInformation()?->uriRequestSigningKey;
-        if ($uriRequestSigningKey == null) {
+        if ($uriRequestSigningKey === null) {
             throw new URISchemeError(code:URISchemeError::tomlSignatureMissing);
         }
 
@@ -449,10 +451,17 @@ class URIScheme
      */
     private function verify(string $url, string $urlEncodedBase64Signature, KeyPair $signerPublicKey) : bool {
         $sigParam = '&'.URIScheme::signatureParameterName.'='.$urlEncodedBase64Signature;
-        $urlSignatureLess = str_replace($sigParam, '', $url);
+        $pos = strrpos($url, $sigParam);
+        $urlSignatureLess = ($pos !== false)
+            ? substr_replace($url, '', $pos, strlen($sigParam))
+            : $url;
         $payloadBytes = $this->getPayload($urlSignatureLess);
         $base64Signature = urldecode($urlEncodedBase64Signature);
-        return $signerPublicKey->verifySignature(base64_decode($base64Signature), $payloadBytes);
+        $signature = base64_decode($base64Signature, true);
+        if ($signature === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded signature');
+        }
+        return $signerPublicKey->verifySignature($signature, $payloadBytes);
     }
 
     /**
@@ -490,54 +499,8 @@ class URIScheme
      * @see https://github.com/stellar/stellar-protocol/blob/v2.1.0/ecosystem/sep-0007.md#request-signing
      */
     private function getPayload(string $url) : string {
-        $payloadStart = array();
-        for ($i = 0; $i < 36; $i++) {
-            $payloadStart[$i] = pack('C', 0);
-        }
-        $payloadStart[35] = pack('C', 4);
-        $urlBytes = $this->stringToBinary(URIScheme::uriSchemePrefix . $url);
-        return implode('', $payloadStart) . $urlBytes;
-    }
-
-    /**
-     * Converts string to binary representation for payload generation.
-     *
-     * Internal utility for SEP-7 payload construction. Converts each character
-     * to its binary representation as part of signature payload generation.
-     *
-     * @param string $string Input string to convert
-     * @return string Space-separated binary representation
-     */
-    private function stringToBinary($string) : string {
-        $characters = str_split($string);
-
-        $binary = [];
-        foreach ($characters as $character) {
-            $data = unpack('H*', $character);
-            $binary[] = base_convert($data[1], 16, 2);
-        }
-
-        return implode(' ', $binary);
-    }
-
-    /**
-     * Converts binary representation back to string.
-     *
-     * Internal utility for reversing stringToBinary() operation.
-     * Not currently used in SEP-7 implementation but provided for completeness.
-     *
-     * @param string $binary Space-separated binary representation
-     * @return string Reconstructed string
-     */
-    private function binaryToString($binary) : string {
-        $binaries = explode(' ', $binary);
-
-        $string = null;
-        foreach ($binaries as $binary) {
-            $string .= pack('H*', dechex(bindec($binary)));
-        }
-
-        return $string;
+        $payloadStart = str_repeat("\x00", 35) . "\x04";
+        return $payloadStart . URIScheme::uriSchemePrefix . $url;
     }
 
     /**
@@ -553,7 +516,7 @@ class URIScheme
      */
     private function getXdrTransactionEnvelope(string $url): XdrTransactionEnvelope {
         $base64TransactionEnvelope = $this->getParameterValue(URIScheme::xdrParameterName, $url);
-        if ($base64TransactionEnvelope != null) {
+        if ($base64TransactionEnvelope !== null) {
             if (str_contains($base64TransactionEnvelope, '%')) {
                 $base64TransactionEnvelope = urldecode($base64TransactionEnvelope);
             }

@@ -158,13 +158,13 @@ class OfferResponse extends Response
 
         if (isset($json['selling'])) {
             $parsedAsset = Asset::fromJson($json['selling']);
-            if ($parsedAsset != null) {
+            if ($parsedAsset !== null) {
                 $this->selling = $parsedAsset;
             }
         }
         if (isset($json['buying'])) {
             $parsedAsset = Asset::fromJson($json['buying']);
-            if ($parsedAsset != null) {
+            if ($parsedAsset !== null) {
                 $this->buying = $parsedAsset;
             }
         }

@@ -73,7 +73,7 @@ class ManageDataOperationBuilder
      */
     public function build(): ManageDataOperation {
         $result = new ManageDataOperation($this->key, $this->value);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

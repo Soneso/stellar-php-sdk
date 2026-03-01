@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Implements SEP-0031 - Cross-Border Payments API (for sending anchors).
@@ -37,8 +38,9 @@ class CrossBorderPaymentsService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
-        if ($httpClient != null) {
+        if ($httpClient !== null) {
             $this->httpClient = $httpClient;
         } else {
             $this->httpClient = new Client();
@@ -165,6 +167,7 @@ class CrossBorderPaymentsService
      */
     public function getTransaction(string $id, string $jwt) : SEP31TransactionResponse {
 
+        UrlValidator::validatePathSegment($id, 'id');
         $url = $this->buildServiceUrl("transactions/" . $id);
 
         $response = $this->httpClient->get($url,
@@ -220,6 +223,8 @@ class CrossBorderPaymentsService
     */
     public function putTransactionCallback(string $id, string $callbackUrl, string $jwt) : void {
 
+        UrlValidator::validatePathSegment($id, 'id');
+        UrlValidator::validateHttpsRequired($callbackUrl);
         $url = $this->buildServiceUrl('transactions/'.$id.'/callback');
 
         $response = $this->httpClient->put($url,
@@ -273,6 +278,7 @@ class CrossBorderPaymentsService
      */
     public function patchTransaction(string $id, array $fields, string $jwt) : void {
 
+        UrlValidator::validatePathSegment($id, 'id');
         $url = $this->buildServiceUrl('transactions/'.$id);
 
         $response = $this->httpClient->patch($url,
@@ -305,7 +311,7 @@ class CrossBorderPaymentsService
     private function buildHeaders(?string $jwt = null) : array {
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
-        if($jwt != null) {
+        if($jwt !== null) {
             $headers = array_merge($headers, ['Authorization' => "Bearer ". $jwt]);
         }
 

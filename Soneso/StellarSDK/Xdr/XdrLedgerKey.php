@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrLedgerKey
@@ -157,7 +158,10 @@ class XdrLedgerKey
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrLedgerKey {
-        $xdr = base64_decode($base64Xdr);
+        $xdr = base64_decode($base64Xdr, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrLedgerKey::decode($xdrBuffer);
     }

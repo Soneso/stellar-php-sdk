@@ -85,7 +85,7 @@ class InvokeContractHostFunction extends HostFunction
      */
     public function toXdr() : XdrHostFunction {
         $args = array();
-        if ($this->arguments != null) {
+        if ($this->arguments !== null) {
             $args = array_merge($args, $this->arguments);
         }
         // allow all kinds of addresses
@@ -104,7 +104,7 @@ class InvokeContractHostFunction extends HostFunction
      */
     public static function fromXdr(XdrHostFunction $xdr) : InvokeContractHostFunction {
         $invokeContract = $xdr->invokeContract;
-        if ($invokeContract == null) {
+        if ($invokeContract === null) {
             throw new Exception("Invalid argument");
         }
         // allow all types of addresses

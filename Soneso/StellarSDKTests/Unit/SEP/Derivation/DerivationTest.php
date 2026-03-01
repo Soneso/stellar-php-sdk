@@ -7,6 +7,7 @@
 
 namespace Soneso\StellarSDKTests\Unit\SEP\Derivation;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
@@ -325,6 +326,13 @@ class DerivationTest extends TestCase
         $kp0 = KeyPair::fromMnemonic($mnemonic, 0);
         $kp1 = KeyPair::fromBip39SeedHex($bip, 0);
         $this->assertEquals($kp0->getAccountId(), $kp1->getAccountId());
+    }
+
+    public function testWordListRejectsInvalidLanguage(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unsupported BIP39 language');
+        new WordList('../../etc/passwd');
     }
 
 }

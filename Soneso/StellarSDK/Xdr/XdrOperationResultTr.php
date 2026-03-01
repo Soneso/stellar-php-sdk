@@ -278,57 +278,57 @@ class XdrOperationResultTr
 
     public function encode(): string {
         $bytes = $this->type->encode();
-        if ($this->createAccountResult != null) {
+        if ($this->createAccountResult !== null) {
             $bytes .= $this->createAccountResult->encode();
-        } else if ($this->paymentResult != null) {
+        } else if ($this->paymentResult !== null) {
             $bytes .= $this->paymentResult->encode();
-        } else if ($this->pathPaymentStrictReceiveResult != null) {
+        } else if ($this->pathPaymentStrictReceiveResult !== null) {
             $bytes .= $this->pathPaymentStrictReceiveResult->encode();
-        } else if ($this->pathPaymentStrictSendResult != null) {
+        } else if ($this->pathPaymentStrictSendResult !== null) {
             $bytes .= $this->pathPaymentStrictSendResult->encode();
-        } else if ($this->createPassiveSellOfferResult != null) {
+        } else if ($this->createPassiveSellOfferResult !== null) {
             $bytes .= $this->createPassiveSellOfferResult->encode();
-        } else if ($this->setOptionsResult != null) {
+        } else if ($this->setOptionsResult !== null) {
             $bytes .= $this->setOptionsResult->encode();
-        } else if ($this->changeTrustResult != null) {
+        } else if ($this->changeTrustResult !== null) {
             $bytes .= $this->changeTrustResult->encode();
-        } else if ($this->allowTrustResult != null) {
+        } else if ($this->allowTrustResult !== null) {
             $bytes .= $this->allowTrustResult->encode();
-        } else if ($this->bumpSequenceResult != null) {
+        } else if ($this->bumpSequenceResult !== null) {
             $bytes .= $this->bumpSequenceResult->encode();
-        } else if ($this->accountMergeResult != null) {
+        } else if ($this->accountMergeResult !== null) {
             $bytes .= $this->accountMergeResult->encode();
-        } else if ($this->inflationResult != null) {
+        } else if ($this->inflationResult !== null) {
             $bytes .= $this->inflationResult->encode();
-        } else if ($this->manageDataResult != null) {
+        } else if ($this->manageDataResult !== null) {
             $bytes .= $this->manageDataResult->encode();
-        } else if ($this->manageOfferResult != null) {
+        } else if ($this->manageOfferResult !== null) {
             $bytes .= $this->manageOfferResult->encode();
-        } else if ($this->createClaimableBalanceResult != null) {
+        } else if ($this->createClaimableBalanceResult !== null) {
             $bytes .= $this->createClaimableBalanceResult->encode();
-        } else if ($this->claimClaimableBalanceResult != null) {
+        } else if ($this->claimClaimableBalanceResult !== null) {
             $bytes .= $this->claimClaimableBalanceResult->encode();
-        } else if ($this->beginSponsoringFutureReservesResult != null) {
+        } else if ($this->beginSponsoringFutureReservesResult !== null) {
             $bytes .= $this->beginSponsoringFutureReservesResult->encode();
-        } else if ($this->endSponsoringFutureReservesResult != null) {
+        } else if ($this->endSponsoringFutureReservesResult !== null) {
             $bytes .= $this->endSponsoringFutureReservesResult->encode();
-        } else if ($this->revokeSponsorshipResult != null) {
+        } else if ($this->revokeSponsorshipResult !== null) {
             $bytes .= $this->revokeSponsorshipResult->encode();
-        } else if ($this->clawbackResult != null) {
+        } else if ($this->clawbackResult !== null) {
             $bytes .= $this->clawbackResult->encode();
-        } else if ($this->clawbackClaimableBalanceResult != null) {
+        } else if ($this->clawbackClaimableBalanceResult !== null) {
             $bytes .= $this->clawbackClaimableBalanceResult->encode();
-        } else if ($this->setTrustLineFlagsResult != null) {
+        } else if ($this->setTrustLineFlagsResult !== null) {
             $bytes .= $this->setTrustLineFlagsResult->encode();
-        } else if ($this->liquidityPoolDepositResult != null) {
+        } else if ($this->liquidityPoolDepositResult !== null) {
             $bytes .= $this->liquidityPoolDepositResult->encode();
-        } else if ($this->liquidityPoolWithdrawResult != null) {
+        } else if ($this->liquidityPoolWithdrawResult !== null) {
             $bytes .= $this->liquidityPoolWithdrawResult->encode();
-        } else if ($this->invokeHostFunctionResult != null) {
+        } else if ($this->invokeHostFunctionResult !== null) {
             $bytes .= $this->invokeHostFunctionResult->encode();
-        } else if ($this->extendFootprintTTLResult != null) {
+        } else if ($this->extendFootprintTTLResult !== null) {
             $bytes .= $this->extendFootprintTTLResult->encode();
-        } else if ($this->restoreFootprintResult != null) {
+        } else if ($this->restoreFootprintResult !== null) {
             $bytes .= $this->restoreFootprintResult->encode();
         }
         return $bytes;

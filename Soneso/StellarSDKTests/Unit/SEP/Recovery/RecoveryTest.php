@@ -32,7 +32,7 @@ use Soneso\StellarSDK\SEP\Recovery\SEP30UnknownResponseException;
 class RecoveryTest extends TestCase
 {
     private const TEST_ACCOUNT = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
-    private const TEST_SIGNER = 'GBQECQVAS2FJ7DLCUXDASZAJQLWPXNTCR2FXSCTV2ATHWKIE6T7MKBU4';
+    private const TEST_SIGNER = 'GDRUPBJM7YIJ2NUNAIQJDJ2DQ2JDERY5SJVJVMM6MGE4UBDAMXBHARIA';
     private const TEST_JWT = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.test';
     private const TEST_SERVICE_URL = 'https://recovery.example.com';
 

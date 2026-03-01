@@ -65,7 +65,7 @@ class ClaimableBalanceCreatedEffectResponse extends EffectResponse
         if (isset($json['balance_id'])) $this->balanceId = $json['balance_id'];
         if (isset($json['asset'])) {
             $parsedAsset = Asset::createFromCanonicalForm($json['asset']);
-            if ($parsedAsset != null) {
+            if ($parsedAsset !== null) {
                 $this->asset = $parsedAsset;
             }
         }

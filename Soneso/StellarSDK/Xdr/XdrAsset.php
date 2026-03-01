@@ -69,12 +69,12 @@ class XdrAsset
             case XdrAssetType::ASSET_TYPE_NATIVE:
                 break;
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
-                if ($this->alphaNum4 != null) {
+                if ($this->alphaNum4 !== null) {
                     $bytes .= $this->alphaNum4->encode();
                 }
                 break;
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
-                if ($this->alphaNum12 != null) {
+                if ($this->alphaNum12 !== null) {
                     $bytes .= $this->alphaNum12->encode();
                 }
                 break;

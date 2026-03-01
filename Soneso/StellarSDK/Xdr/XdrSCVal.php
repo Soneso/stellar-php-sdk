@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 use GMP;
+use InvalidArgumentException;
 
 
 class XdrSCVal
@@ -102,7 +103,7 @@ class XdrSCVal
                 $bytes .= XdrEncoder::string($this->sym);
                 break;
             case XdrSCValType::SCV_VEC:
-                if ($this->vec != null) {
+                if ($this->vec !== null) {
                     $bytes .= XdrEncoder::integer32(1);
                     $bytes .= XdrEncoder::integer32(count($this->vec));
                     foreach($this->vec as $val) {
@@ -115,7 +116,7 @@ class XdrSCVal
                 }
                 break;
             case XdrSCValType::SCV_MAP:
-                if ($this->map != null) {
+                if ($this->map !== null) {
                     $bytes .= XdrEncoder::integer32(1);
                     $bytes .= XdrEncoder::integer32(count($this->map));
                     foreach($this->map as $val) {
@@ -703,7 +704,10 @@ class XdrSCVal
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrSCVal {
-        $xdr = base64_decode($base64Xdr);
+        $xdr = base64_decode($base64Xdr, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrSCVal::decode($xdrBuffer);
     }

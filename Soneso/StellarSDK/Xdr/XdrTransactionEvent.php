@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+
 /**
  * Represents a transaction-level event in metadata.
  * Currently, this is limited to the fee events (when fee is charged or refunded).
@@ -46,7 +48,10 @@ class XdrTransactionEvent
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrTransactionEvent {
-        $xdr = base64_decode($base64Xdr);
+        $xdr = base64_decode($base64Xdr, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrTransactionEvent::decode($xdrBuffer);
     }

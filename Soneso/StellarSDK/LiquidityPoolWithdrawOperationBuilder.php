@@ -75,7 +75,7 @@ class LiquidityPoolWithdrawOperationBuilder
      */
     public function build(): LiquidityPoolWithdrawOperation {
         $result = new LiquidityPoolWithdrawOperation($this->liquidityPoolId, $this->amount, $this->minAmountA, $this->minAmountB);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

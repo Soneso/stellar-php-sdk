@@ -15,6 +15,7 @@ use GuzzleHttp\RequestOptions;
 use InvalidArgumentException;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Network;
@@ -152,12 +153,8 @@ class WebAuthForContracts
             );
         }
 
-        // Validate authEndpoint is a valid URL
-        if (filter_var($authEndpoint, FILTER_VALIDATE_URL) === false) {
-            throw new InvalidArgumentException(
-                "authEndpoint must be a valid URL"
-            );
-        }
+        // Validate authEndpoint is a valid HTTPS URL
+        UrlValidator::validateHttpsRequired($authEndpoint);
 
         // Validate serverHomeDomain is not empty
         if (empty(trim($serverHomeDomain))) {
@@ -184,6 +181,7 @@ class WebAuthForContracts
                 ? 'https://soroban-testnet.stellar.org'
                 : 'https://soroban.stellar.org';
         } else {
+            UrlValidator::validateHttpsRequired($sorobanRpcUrl);
             $this->sorobanRpcUrl = $sorobanRpcUrl;
         }
     }
@@ -320,14 +318,14 @@ class WebAuthForContracts
 
         // Determine client domain account ID if needed
         $clientDomainAccountId = null;
-        if ($clientDomain != null) {
-            if ($clientDomainKeyPair != null) {
+        if ($clientDomain !== null) {
+            if ($clientDomainKeyPair !== null) {
                 $clientDomainAccountId = $clientDomainKeyPair->getAccountId();
-            } else if ($clientDomainSigningCallback != null) {
+            } else if ($clientDomainSigningCallback !== null) {
                 try {
                     $toml = StellarToml::fromDomain($clientDomain, $this->httpClient);
                     $clientDomainAccountId = $toml->generalInformation?->signingKey;
-                    if ($clientDomainAccountId == null) {
+                    if ($clientDomainAccountId === null) {
                         throw new Exception("Could not find signing key in stellar.toml");
                     }
                 } catch (Exception $e) {
@@ -740,7 +738,10 @@ class WebAuthForContracts
     public function decodeAuthorizationEntries(string $base64Xdr): array
     {
         try {
-            $xdr = base64_decode($base64Xdr);
+            $xdr = base64_decode($base64Xdr, true);
+            if ($xdr === false) {
+                throw new InvalidArgumentException('Invalid base64-encoded XDR');
+            }
             $xdrBuffer = new XdrBuffer($xdr);
 
             // Decode as array of SorobanAuthorizationEntry
@@ -863,9 +864,9 @@ class WebAuthForContracts
     {
         try {
             $xdrCredentials = $entry->credentials->toXdr();
-            if ($entry->credentials->addressCredentials == null ||
+            if ($entry->credentials->addressCredentials === null ||
                 $xdrCredentials->type->value != XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS ||
-                $xdrCredentials->address == null) {
+                $xdrCredentials->address === null) {
                 return false;
             }
 

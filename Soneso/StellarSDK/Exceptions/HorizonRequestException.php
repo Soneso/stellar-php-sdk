@@ -117,7 +117,7 @@ class HorizonRequestException extends \ErrorException
         $result->requestedUrl = $requestedUrl;
         $result->httpMethod = $httpMethod;
         $result->httpResponse = $httpResponse;
-        if ($httpResponse != null) {
+        if ($httpResponse !== null) {
             $result->statusCode = $httpResponse->getStatusCode();
         }
 
@@ -127,14 +127,14 @@ class HorizonRequestException extends \ErrorException
             $result->httpResponse = $httpResponse;
             $result->statusCode = $httpResponse->getStatusCode();
             $decoded = json_decode($e->getResponse()->getBody()->__toString(), true);
-            if ($decoded != null && $e instanceof BadResponseException && isset($decoded['type'])) {
+            if ($decoded !== null && $e instanceof BadResponseException && isset($decoded['type'])) {
                 $errorResponse = HorizonErrorResponse::fromJson($decoded);
                 $errorResponse->setHeaders($e->getResponse()->getHeaders());
                 $result->horizonErrorResponse = $errorResponse;
                 $result->message = $errorResponse->getDetail();
             }
         }
-        if ($httpResponse != null && 429 === $httpResponse->getStatusCode()) {
+        if ($httpResponse !== null && 429 === $httpResponse->getStatusCode()) {
             $headerArr = $httpResponse->getHeader("Retry-After");
             $count = count($headerArr);
             if ($count > 0) {

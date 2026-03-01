@@ -14,6 +14,7 @@ use GuzzleHttp\HandlerStack;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Main service class for SEP-06 Transfer Server protocol implementation.
@@ -54,6 +55,7 @@ class TransferServerService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
         if (str_ends_with($this->serviceAddress, "/")) {
             $this->serviceAddress = substr($this->serviceAddress, 0, -1);
@@ -149,6 +151,7 @@ class TransferServerService
             $queryParameters += ["lang" => $request->lang];
         }
         if ($request->onChangeCallback !== null) {
+            UrlValidator::validateHttpsRequired($request->onChangeCallback);
             $queryParameters += ["on_change_callback" => $request->onChangeCallback];
         }
         if ($request->amount !== null) {
@@ -166,7 +169,7 @@ class TransferServerService
         if ($request->locationId !== null) {
             $queryParameters += ["location_id" => $request->locationId];
         }
-        if ($request->extraFields != null) {
+        if ($request->extraFields !== null) {
             $queryParameters = array_merge($queryParameters, $request->extraFields);
         }
 
@@ -224,6 +227,7 @@ class TransferServerService
             $queryParameters += ["lang" => $request->lang];
         }
         if ($request->onChangeCallback !== null) {
+            UrlValidator::validateHttpsRequired($request->onChangeCallback);
             $queryParameters += ["on_change_callback" => $request->onChangeCallback];
         }
         if ($request->amount !== null) {
@@ -241,7 +245,7 @@ class TransferServerService
         if ($request->locationId !== null) {
             $queryParameters += ["location_id" => $request->locationId];
         }
-        if ($request->extraFields != null) {
+        if ($request->extraFields !== null) {
             $queryParameters = array_merge($queryParameters, $request->extraFields);
         }
 
@@ -297,6 +301,7 @@ class TransferServerService
             $queryParameters += ["lang" => $request->lang];
         }
         if ($request->onChangeCallback !== null) {
+            UrlValidator::validateHttpsRequired($request->onChangeCallback);
             $queryParameters += ["on_change_callback" => $request->onChangeCallback];
         }
         if ($request->amount !== null) {
@@ -317,7 +322,7 @@ class TransferServerService
         if ($request->locationId !== null) {
             $queryParameters += ["location_id" => $request->locationId];
         }
-        if ($request->extraFields != null) {
+        if ($request->extraFields !== null) {
             $queryParameters = array_merge($queryParameters, $request->extraFields);
         }
 
@@ -379,6 +384,7 @@ class TransferServerService
             $queryParameters += ["lang" => $request->lang];
         }
         if ($request->onChangeCallback !== null) {
+            UrlValidator::validateHttpsRequired($request->onChangeCallback);
             $queryParameters += ["on_change_callback" => $request->onChangeCallback];
         }
         if ($request->countryCode !== null) {
@@ -396,7 +402,7 @@ class TransferServerService
         if ($request->locationId !== null) {
             $queryParameters += ["location_id" => $request->locationId];
         }
-        if ($request->extraFields != null) {
+        if ($request->extraFields !== null) {
             $queryParameters = array_merge($queryParameters, $request->extraFields);
         }
 
@@ -528,7 +534,8 @@ class TransferServerService
             $headers = array_merge($headers, ['Authorization' => "Bearer " . $request->jwt]);
         }
 
-        $url = "/transaction/" . $request->id;
+        UrlValidator::validatePathSegment($request->id, 'id');
+        $url = $this->serviceAddress . "/transaction/" . $request->id;
         return $this->httpClient->request("PATCH", $url, [
             "json" => $request->fields,
             "headers" => $headers

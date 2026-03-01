@@ -70,7 +70,7 @@ class BeginSponsoringFutureReservesOperationBuilder
      */
     public function build(): BeginSponsoringFutureReservesOperation {
         $result = new BeginSponsoringFutureReservesOperation($this->sponsoredId);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

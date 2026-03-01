@@ -39,24 +39,19 @@ class FuturenetFriendBot
     /**
      * Funds a test account on the Stellar Futurenet
      *
-     * Note: Errors are printed to stdout for debugging purposes
-     *
      * @static
      * @param string $accountId The Stellar account ID (56-character public key starting with 'G') to fund
      * @return bool True if funding succeeded, false otherwise
+     * @throws GuzzleException If the HTTP request fails
      */
-    static function fundTestAccount(string $accountId): bool
+    static function fundTestAccount(string $accountId, ?Client $httpClient = null): bool
     {
-        try {
-            $httpClient = new Client();
-            $url = "https://friendbot-futurenet.stellar.org?addr=" . $accountId;
-            $request = new Request('GET', $url, RequestBuilder::HEADERS);
-            $response = $httpClient->send($request);
-            if ($response->getStatusCode() == NetworkConstants::HTTP_OK) {
-                return true;
-            }
-        } catch (GuzzleException $e) {
-            print($e->getTraceAsString());
+        $httpClient = $httpClient ?? new Client();
+        $url = "https://friendbot-futurenet.stellar.org?addr=" . urlencode($accountId);
+        $request = new Request('GET', $url, RequestBuilder::HEADERS);
+        $response = $httpClient->send($request);
+        if ($response->getStatusCode() == NetworkConstants::HTTP_OK) {
+            return true;
         }
         return false;
     }

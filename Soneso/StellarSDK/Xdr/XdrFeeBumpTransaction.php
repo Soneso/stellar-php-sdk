@@ -19,7 +19,7 @@ class XdrFeeBumpTransaction
         $this->feeSource = $feeSource;
         $this->fee = $fee;
         $this->innerTx = $innerTx;
-        if ($ext == null) {
+        if ($ext === null) {
             $this->ext = new XdrFeeBumpTransactionExt(0);
         } else {
             $this->ext = $ext;

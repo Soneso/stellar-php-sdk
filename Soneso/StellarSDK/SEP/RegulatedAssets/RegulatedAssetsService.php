@@ -14,6 +14,7 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Service for interacting with SEP-0008 Regulated Assets approval servers.
@@ -72,7 +73,7 @@ class RegulatedAssetsService
      */
     public function __construct(StellarToml $tomlData, ?string $horizonUrl = null, ?Network $network = null, ?Client $httpClient = null)
     {
-        if ($httpClient != null) {
+        if ($httpClient !== null) {
             $this->httpClient = $httpClient;
         } else {
             $this->httpClient = new Client();
@@ -98,9 +99,9 @@ class RegulatedAssetsService
         }
 
         $tomlDataHorizonUrl = $tomlData->getGeneralInformation()?->horizonUrl;
-        if ($horizonUrl == null && $tomlDataHorizonUrl != null) {
+        if ($horizonUrl === null && $tomlDataHorizonUrl !== null) {
             $this->sdk = new StellarSDK($tomlDataHorizonUrl);
-        } else if ($horizonUrl == null) {
+        } else if ($horizonUrl === null) {
             // try to init from known horizon urls
             if ($this->network->getNetworkPassphrase() == Network::public()->getNetworkPassphrase()) {
                 $this->sdk = StellarSDK::getPublicNetInstance();
@@ -222,7 +223,7 @@ class RegulatedAssetsService
      * @see https://github.com/stellar/stellar-protocol/blob/v1.7.4/ecosystem/sep-0008.md#post-endpoint SEP-0008 v1.7.4
      */
     public function postTransaction(string $tx, string $approvalServer) : SEP08PostTransactionResponse {
-
+        UrlValidator::validateHttpsRequired($approvalServer);
         $response = $this->httpClient->post($approvalServer, [RequestOptions::JSON => ['tx' => $tx], 'http_errors' => false]);
 
         $statusCode = $response->getStatusCode();
@@ -276,6 +277,7 @@ class RegulatedAssetsService
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md SEP-0009 Standard KYC/AML Fields
     */
     public function postAction(string $url, array $actionFields) : SEP08PostActionResponse {
+        UrlValidator::validateHttpsRequired($url);
         $response = $this->httpClient->post($url, [RequestOptions::JSON => $actionFields, 'http_errors' => false]);
         $statusCode = $response->getStatusCode();
         $content = $response->getBody()->__toString();

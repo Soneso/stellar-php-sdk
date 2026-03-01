@@ -248,32 +248,32 @@ class Address
      */
     public function toXdr(): XdrSCAddress {
         if ($this->type == Address::TYPE_ACCOUNT) {
-            if ($this->accountId != null) {
+            if ($this->accountId !== null) {
                 return XdrSCAddress::forAccountId($this->accountId);
             } else {
                 throw new RuntimeException("accountId is null");
             }
         }
         else if ($this->type == Address::TYPE_CONTRACT) {
-            if ($this->contractId != null) {
+            if ($this->contractId !== null) {
                 return XdrSCAddress::forContractId($this->contractId);
             } else {
                 throw new RuntimeException("contractId is null");
             }
         } else if ($this->type == Address::TYPE_MUXED_ACCOUNT) {
-            if ($this->muxedAccountId != null) {
+            if ($this->muxedAccountId !== null) {
                 return XdrSCAddress::forAccountId($this->muxedAccountId);
             } else {
                 throw new RuntimeException("muxedAccountId is null");
             }
         } else if ($this->type == Address::TYPE_CLAIMABLE_BALANCE) {
-            if ($this->claimableBalanceId != null) {
+            if ($this->claimableBalanceId !== null) {
                 return XdrSCAddress::forClaimableBalanceId($this->claimableBalanceId);
             } else {
                 throw new RuntimeException("claimableBalanceId is null");
             }
         } else if ($this->type == Address::TYPE_LIQUIDITY_POOL) {
-            if ($this->liquidityPoolId != null) {
+            if ($this->liquidityPoolId !== null) {
                 return XdrSCAddress::forLiquidityPoolId($this->liquidityPoolId);
             } else {
                 throw new RuntimeException("liquidityPoolId is null");

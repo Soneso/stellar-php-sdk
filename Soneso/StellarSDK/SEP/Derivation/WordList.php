@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\SEP\Derivation;
 
 use Exception;
+use InvalidArgumentException;
 
 /**
  * BIP-39 word list loader for multiple languages.
@@ -63,9 +64,26 @@ class WordList
      * @param string $language Language code for the word list. Default is English.
      * @throws Exception If the word list file is not found or does not contain exactly 2048 words.
      */
+    private const ALLOWED_LANGUAGES = [
+        self::LANGUAGE_ENGLISH,
+        self::LANGUAGE_CHINESE_SIMPLIFIED,
+        self::LANGUAGE_CHINESE_TRADITIONAL,
+        self::LANGUAGE_FRENCH,
+        self::LANGUAGE_ITALIAN,
+        self::LANGUAGE_JAPANESE,
+        self::LANGUAGE_KOREAN,
+        self::LANGUAGE_SPANISH,
+        self::LANGUAGE_MALAY,
+    ];
+
     public function __construct(string $language = WordList::LANGUAGE_ENGLISH)
     {
-        $this->language = trim($language);
+        if (!in_array($language, self::ALLOWED_LANGUAGES, true)) {
+            throw new InvalidArgumentException(
+                sprintf('Unsupported BIP39 language: "%s"', $language)
+            );
+        }
+        $this->language = $language;
         $this->words = [];
         $this->count = 0;
 

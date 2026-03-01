@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
+use UnexpectedValueException;
 
 /**
  * Request builder for GET /info endpoint operations.
@@ -95,7 +96,9 @@ class InfoRequestBuilder extends RequestBuilder
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
         $response = $responseHandler->handleResponse($response, RequestType::ANCHOR_INFO, $this->httpClient);
-        assert($response instanceof InfoResponse);
+        if (!$response instanceof InfoResponse) {
+            throw new UnexpectedValueException('Expected InfoResponse, got ' . get_class($response));
+        }
 
         return $response;
     }

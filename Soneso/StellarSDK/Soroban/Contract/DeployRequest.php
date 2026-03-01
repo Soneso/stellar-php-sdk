@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Soroban\Contract;
 
+use Psr\Log\LoggerInterface;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -69,9 +70,9 @@ class DeployRequest
     public MethodOptions $methodOptions;
 
     /**
-     * @var bool $enableServerLogging enable soroban server logging (helpful for debugging). Default: false.
+     * @var LoggerInterface|null $logger PSR-3 logger for debug output. Default: null (no logging).
      */
-    public bool $enableServerLogging = false;
+    public ?LoggerInterface $logger = null;
 
     /**
      * Constructor.
@@ -84,7 +85,7 @@ class DeployRequest
      * @param array<XdrSCVal>|null $constructorArgs Constructor/Initialization Args for the contract's `__constructor` method.
      * @param string|null $salt Salt used to generate the contract's ID. Default: random.
      * @param MethodOptions|null $methodOptions method options used to fine tune the transaction. Default: new MethodOptions()
-     * @param bool $enableServerLogging enable soroban server logging (helpful for debugging). Default: false.
+     * @param LoggerInterface|null $logger PSR-3 logger for debug output. Default: null (no logging).
      */
     public function __construct(string $rpcUrl,
                                 Network $network,
@@ -93,7 +94,7 @@ class DeployRequest
                                 ?array $constructorArgs = null,
                                 ?string $salt = null,
                                 ?MethodOptions $methodOptions = null,
-                                bool $enableServerLogging = false)
+                                ?LoggerInterface $logger = null)
     {
         $this->sourceAccountKeyPair = $sourceAccountKeyPair;
         $this->network = $network;
@@ -102,7 +103,7 @@ class DeployRequest
         $this->wasmHash = $wasmHash;
         $this->constructorArgs = $constructorArgs;
         $this->salt = $salt;
-        $this->enableServerLogging = $enableServerLogging;
+        $this->logger = $logger;
     }
 
 }
