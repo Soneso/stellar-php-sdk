@@ -29,6 +29,7 @@ use Soneso\StellarSDK\SEP\TransferServerService\TransferServerService;
 use Soneso\StellarSDK\SEP\TransferServerService\WithdrawAsset;
 use Soneso\StellarSDK\SEP\TransferServerService\WithdrawExchangeRequest;
 use Soneso\StellarSDK\SEP\TransferServerService\WithdrawRequest;
+use InvalidArgumentException;
 use function PHPUnit\Framework\assertNotNull;
 
 class TransferServerServiceTest extends TestCase
@@ -1179,5 +1180,29 @@ class TransferServerServiceTest extends TestCase
 
         $this->expectException(\Exception::class);
         $transferService->deposit($request);
+    }
+
+    public function testConstructorRejectsHttpUrl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        new TransferServerService('http://api.stellar.org/transfer');
+    }
+
+    public function testPatchTransactionRejectsPathTraversal(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $mock = new MockHandler([]);
+        $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+        $request = new PatchTransactionRequest(
+            id: '../admin',
+            fields: [],
+            jwt: $this->jwtToken
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value for');
+        $transferService->patchTransaction($request);
     }
 }

@@ -44,8 +44,8 @@ class FriendBot
      * @return bool True if funding succeeded, false otherwise
      * @throws GuzzleException If the HTTP request fails
      */
-    static function fundTestAccount(string $accountId) : bool {
-        $httpClient = new Client();
+    static function fundTestAccount(string $accountId, ?Client $httpClient = null) : bool {
+        $httpClient = $httpClient ?? new Client();
         $url = "https://friendbot.stellar.org/?addr=" . urlencode($accountId);
         $request = new Request('GET', $url, RequestBuilder::HEADERS);
         $response = $httpClient->send($request);

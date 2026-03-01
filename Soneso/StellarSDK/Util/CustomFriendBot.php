@@ -53,9 +53,9 @@ class CustomFriendBot
      * @return bool True if funding succeeded, false otherwise
      * @throws GuzzleException If the HTTP request fails
      */
-    public function fundAccount(string $accountId): bool
+    public function fundAccount(string $accountId, ?Client $httpClient = null): bool
     {
-        $httpClient = new Client();
+        $httpClient = $httpClient ?? new Client();
         $url = $this->friendBotUrl . "?addr=" . urlencode($accountId);
         $request = new Request('GET', $url, RequestBuilder::HEADERS);
         $response = $httpClient->send($request);

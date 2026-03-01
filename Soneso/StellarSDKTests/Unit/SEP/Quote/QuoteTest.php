@@ -499,4 +499,20 @@ class QuoteTest extends TestCase
         }
         $this->assertTrue($thrown);
     }
+
+    public function testConstructorRejectsHttpUrl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        new QuoteService('http://api.stellar.org/quotes');
+    }
+
+    public function testGetQuoteRejectsPathTraversal(): void
+    {
+        $service = new QuoteService($this->serviceAddress);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value for');
+        $service->getQuote('../admin', $this->jwtToken);
+    }
 }
