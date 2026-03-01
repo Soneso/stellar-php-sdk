@@ -3237,16 +3237,16 @@ ClientOptions $clientOptions
 MethodOptions $methodOptions
 string $method
 ?array $arguments
-?LoggerInterface $logger
-__construct(ClientOptions $clientOptions, MethodOptions $methodOptions, string $method, ?array $arguments = null, ?LoggerInterface $logger = null)
+bool $enableServerLogging
+__construct(ClientOptions $clientOptions, MethodOptions $methodOptions, string $method, ?array $arguments = null, bool $enableServerLogging = false)
 
 ## ClientOptions
 KeyPair $sourceAccountKeyPair
 string $contractId
 Network $network
 string $rpcUrl
-?LoggerInterface $logger
-__construct(KeyPair $sourceAccountKeyPair, string $contractId, Network $network, string $rpcUrl, ?LoggerInterface $logger = null)
+bool $enableServerLogging
+__construct(KeyPair $sourceAccountKeyPair, string $contractId, Network $network, string $rpcUrl, bool $enableServerLogging = false)
 
 ## ContractSpec
 array $entries
@@ -3270,8 +3270,8 @@ string $wasmHash
 ?array $constructorArgs
 ?string $salt
 MethodOptions $methodOptions
-?LoggerInterface $logger
-__construct(string $rpcUrl, Network $network, KeyPair $sourceAccountKeyPair, string $wasmHash, ?array $constructorArgs = null, ?string $salt = null, ?MethodOptions $methodOptions = null, ?LoggerInterface $logger = null)
+bool $enableServerLogging
+__construct(string $rpcUrl, Network $network, KeyPair $sourceAccountKeyPair, string $wasmHash, ?array $constructorArgs = null, ?string $salt = null, ?MethodOptions $methodOptions = null, bool $enableServerLogging = false)
 
 ## Footprint
 XdrLedgerFootprint $xdrFootprint
@@ -3289,8 +3289,8 @@ string $wasmBytes
 string $rpcUrl
 Network $network
 KeyPair $sourceAccountKeyPair
-?LoggerInterface $logger
-__construct(string $wasmBytes, string $rpcUrl, Network $network, KeyPair $sourceAccountKeyPair, ?LoggerInterface $logger = null)
+bool $enableServerLogging
+__construct(string $wasmBytes, string $rpcUrl, Network $network, KeyPair $sourceAccountKeyPair, bool $enableServerLogging = false)
 
 ## MethodOptions
 int $fee
@@ -3411,8 +3411,8 @@ getAddressCredentials(): ?SorobanAddressCredentials
 setAddressCredentials(?SorobanAddressCredentials $addressCredentials): void
 
 ## SorobanServer
+bool $enableLogging
 __construct(string $endpoint)
-setLogger(LoggerInterface $logger): void
 getHealth(): GetHealthResponse
 getNetwork(): GetNetworkResponse
 getFeeStats(): GetFeeStatsResponse
