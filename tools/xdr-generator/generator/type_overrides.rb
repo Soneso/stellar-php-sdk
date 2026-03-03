@@ -23,17 +23,26 @@
 # Phase 2: Populate with typedef resolution rules as types are audited.
 # ---------------------------------------------------------------------------
 TYPE_OVERRIDES = {
-  # Duration/TimePoint are typedef uint64 — SDK may use wrapper classes
-  # "XdrTimePoint" => "int",
-  # "XdrDuration"  => "int",
+  # Integer typedefs — SDK uses plain int
+  "XdrInt32" => "int",
+  "XdrUint32" => "int",
+  "XdrInt64" => "int",
+  "XdrUint64" => "int",
+  "XdrTimePoint" => "int",
+  "XdrDuration" => "int",
 
-  # Fixed-opaque typedefs the SDK inlines as string (no wrapper class)
-  # "XdrAssetCode4"  => "string",
-  # "XdrAssetCode12" => "string",
+  # Fixed-opaque typedefs — SDK uses string (binary)
+  "XdrHash" => "string",
+  "XdrUint256" => "string",
+  "XdrPoolID" => "string",
+  "XdrAssetCode4" => "string",
+  "XdrAssetCode12" => "string",
 
-  # String typedefs the SDK inlines as string
-  # "XdrSCSymbol" => "string",
-  # "XdrSCString" => "string",
+  # String typedefs — SDK uses string
+  "XdrString64" => "string",
+  "XdrString32" => "string",
+  "XdrString256" => "string",
+  "XdrString1000" => "string",
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -103,8 +112,6 @@ SKIP_TYPES = %w[
   XdrClaimAtom
   XdrClaimClaimableBalanceOperation
   XdrClaimClaimableBalanceResult
-  XdrClaimLiquidityAtom
-  XdrClaimOfferAtom
   XdrClaimOfferAtomV0
   XdrClaimPredicate
 
@@ -120,50 +127,33 @@ SKIP_TYPES = %w[
   XdrClawbackClaimableBalanceResult
   XdrClawbackOperation
   XdrClawbackResult
-  XdrConfigSettingContractBandwidthV0
-  XdrConfigSettingContractComputeV0
-  XdrConfigSettingContractEventsV0
-  XdrConfigSettingContractExecutionLanesV0
-  XdrConfigSettingContractHistoricalDataV0
-  XdrConfigSettingContractLedgerCostExtV0
-  XdrConfigSettingContractLedgerCostV0
-  XdrConfigSettingContractParallelComputeV0
   XdrConfigSettingEntry
   XdrConfigSettingID
-  XdrConfigSettingSCPTiming
   XdrConfigUpgradeSetKey
   XdrConstantProduct
-  XdrContractCodeCostInputs
   XdrContractCodeEntry
   XdrContractCodeEntryExt
   XdrContractCodeEntryExtV1
-  XdrContractCostParamEntry
   XdrContractCostParams
   XdrContractCostType
   XdrContractDataDurability
   XdrContractDataEntry
   XdrContractEvent
   XdrContractEventBody
-  XdrContractEventBodyV0
   XdrContractEventType
   XdrContractExecutable
   XdrContractExecutableType
   XdrContractIDPreimage
   XdrContractIDPreimageType
-  XdrCreateAccountOperation
   XdrCreateAccountResult
   XdrCreateClaimableBalanceOperation
   XdrCreateClaimableBalanceResult
-  XdrCreateContractArgs
-  XdrCreateContractArgsV2
-  XdrCreatePassiveSellOfferOperation
   XdrDataEntry
   XdrDataEntryExt
   XdrDataValue
   XdrDataValueMandatory
   XdrDecoder
   XdrDecoratedSignature
-  XdrDiagnosticEvent
   XdrEncoder
   XdrEndSponsoringFutureReservesResult
   XdrEvictionIterator
@@ -181,19 +171,15 @@ SKIP_TYPES = %w[
   XdrHashIDPreimageSorobanAuthorization
   XdrHostFunction
   XdrHostFunctionType
-  XdrInflationPayout
   XdrInflationResult
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
-  XdrInt128Parts
-  XdrInt256Parts
   XdrInvokeContractArgs
   XdrInvokeHostFunctionOp
   XdrInvokeHostFunctionResult
   XdrInvokeHostFunctionResultCode
   XdrInvokeHostFunctionSuccessPreImage
-  XdrLedgerBounds
   XdrLedgerEntry
   XdrLedgerEntryChange
   XdrLedgerEntryChangeType
@@ -205,8 +191,6 @@ SKIP_TYPES = %w[
   XdrLedgerFootprint
   XdrLedgerKey
   XdrLedgerKeyAccount
-  XdrLedgerKeyContractCode
-  XdrLedgerKeyContractData
   XdrLedgerKeyData
   XdrLedgerKeyOffer
   XdrLedgerKeyTTL
@@ -246,17 +230,14 @@ SKIP_TYPES = %w[
   XdrPathPaymentStrictReceiveResult
   XdrPathPaymentStrictSendOperation
   XdrPathPaymentStrictSendResult
-  XdrPaymentOperation
   XdrPaymentResult
 
   XdrPreconditions
   XdrPreconditionsV2
-  XdrPrice
   XdrRestoreFootprintOp
   XdrRestoreFootprintResult
   XdrRevokeSponsorshipOperation
   XdrRevokeSponsorshipResult
-  XdrRevokeSponsorshipSigner
 
   XdrSCAddress
   XdrSCAddressType
@@ -266,11 +247,9 @@ SKIP_TYPES = %w[
   XdrSCError
   XdrSCErrorCode
   XdrSCErrorType
-  XdrSCMapEntry
   XdrSCMetaEntry
   XdrSCMetaKind
   XdrSCMetaV0
-  XdrSCNonceKey
   XdrSCSpecEntry
   XdrSCSpecEntryKind
   XdrSCSpecEventDataFormat
@@ -301,7 +280,6 @@ SKIP_TYPES = %w[
   XdrSCSpecUDTUnionV0
   XdrSCVal
   XdrSCValType
-  XdrSequenceNumber
   XdrSetOptionsOperation
   XdrSetOptionsResult
   XdrSetTrustLineFlagsOperation
@@ -310,7 +288,7 @@ SKIP_TYPES = %w[
   XdrSigner
   XdrSignerKey
   XdrSignerKeyType
-  XdrSimplePaymentResult
+  XdrSequenceNumber
   XdrSorobanAddressCredentials
   XdrSorobanAuthorizationEntry
   XdrSorobanAuthorizedFunction
@@ -326,7 +304,6 @@ SKIP_TYPES = %w[
   XdrSorobanTransactionMetaExt
   XdrSorobanTransactionMetaExtV1
   XdrSorobanTransactionMetaV2
-  XdrStateArchivalSettings
   XdrTTLEntry
   XdrTimeBounds
   XdrTransaction
@@ -353,8 +330,6 @@ SKIP_TYPES = %w[
   XdrTrustLineEntryV1Ext
   XdrTrustLineFlags
   XdrTrustlineAsset
-  XdrUInt128Parts
-  XdrUInt256Parts
 ].freeze
 
 # ---------------------------------------------------------------------------

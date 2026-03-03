@@ -21,19 +21,54 @@
 # Field name overrides
 # ---------------------------------------------------------------------------
 FIELD_OVERRIDES = {
-  # Example (disabled):
-  # "XdrSignerKey" => {
-  #   "ed25519SignedPayload" => "signedPayload",
-  # },
+  # Batch 3: Field name differences between XDR spec and PHP SDK
+  "XdrClaimOfferAtom" => {
+    "sellerID" => "accountId",
+    "offerID" => "offerId",
+  },
+  "XdrRevokeSponsorshipSigner" => {
+    "accountID" => "accountId",
+  },
+  "XdrConfigSettingContractLedgerCostV0" => {
+    "ledgerMaxDiskReadEntries" => "ledgerMaxDiskReadLedgerEntries",
+  },
+  "XdrInt256Parts" => {
+    "hi_hi" => "hiHi",
+    "hi_lo" => "hiLo",
+    "lo_hi" => "loHi",
+    "lo_lo" => "loLo",
+  },
+  "XdrUInt256Parts" => {
+    "hi_hi" => "hiHi",
+    "hi_lo" => "hiLo",
+    "lo_hi" => "loHi",
+    "lo_lo" => "loLo",
+  },
 }.freeze
 
 # ---------------------------------------------------------------------------
 # Field type overrides
 # ---------------------------------------------------------------------------
 FIELD_TYPE_OVERRIDES = {
-  # XdrOfferEntry.offerID is represented as a phpseclib3 BigInteger in the
-  # PHP SDK rather than a plain int64.
+  # Batch 3: BigInteger fields — the PHP SDK uses phpseclib3 BigInteger
+  # instead of plain int for certain int64 fields (amounts, balances, etc.)
   "XdrOfferEntry" => { "offerID" => "BigInteger" },
-
-  # More BigInteger and other type overrides will be added during Phase 2 audit.
+  "XdrInflationPayout" => { "amount" => "BigInteger" },
+  "XdrCreateAccountOperation" => { "startingBalance" => "BigInteger" },
+  "XdrPaymentOperation" => { "amount" => "BigInteger" },
+  "XdrCreatePassiveSellOfferOperation" => { "amount" => "BigInteger" },
+  "XdrClaimOfferAtom" => {
+    "amountSold" => "BigInteger",
+    "amountBought" => "BigInteger",
+  },
+  "XdrClaimOfferAtomV0" => {
+    "amountSold" => "BigInteger",
+    "amountBought" => "BigInteger",
+  },
+  "XdrClaimLiquidityAtom" => {
+    "amountSold" => "BigInteger",
+    "amountBought" => "BigInteger",
+  },
+  "XdrSimplePaymentResult" => { "amount" => "BigInteger" },
+  "XdrSequenceNumber" => { "sequenceNumber" => "BigInteger" },
 }.freeze

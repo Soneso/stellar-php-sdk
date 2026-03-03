@@ -161,7 +161,12 @@ class Generator < Xdrgen::Generators::Base
     # Collect field info
     fields = collect_struct_fields(struct, struct_name)
 
+    has_big_integer = fields.any? { |f| f[:php_type] == "BigInteger" }
     out.puts GENERATED_HEADER
+    if has_big_integer
+      out.puts ""
+      out.puts "use phpseclib3\\Math\\BigInteger;"
+    end
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -207,9 +212,32 @@ class Generator < Xdrgen::Generators::Base
     render_struct_decode(out, struct_name, class_name, fields, is_base)
     out.puts ""
 
+    # Getters and setters for backward compatibility
+    render_struct_accessors(out, fields)
+
     render_base64_methods(out)
     out.puts "}"
     out.close
+  end
+
+  def render_struct_accessors(out, fields)
+    fields.each do |f|
+      next if f[:is_ext_point]
+      fname = f[:name]
+      uc_name = "#{fname[0].upcase}#{fname[1..]}"
+
+      if f[:is_optional]
+        type_hint = "?#{f[:php_type]}"
+      elsif f[:is_array]
+        type_hint = "array"
+      else
+        type_hint = f[:php_type]
+      end
+
+      out.puts "    public function get#{uc_name}(): #{type_hint} { return $this->#{fname}; }"
+      out.puts "    public function set#{uc_name}(#{type_hint} $#{fname}): void { $this->#{fname} = $#{fname}; }"
+    end
+    out.puts ""
   end
 
   def collect_struct_fields(struct, struct_name)
@@ -504,7 +532,28 @@ class Generator < Xdrgen::Generators::Base
     encode_expr = type_info[:encode]
     decode_expr = type_info[:decode]
 
+    # Apply per-field name override for typedefs
+    if FIELD_OVERRIDES.key?(php_name) && FIELD_OVERRIDES[php_name].key?(field_name)
+      field_name = FIELD_OVERRIDES[php_name][field_name]
+    end
+
+    # Apply per-field type override for typedefs (e.g., BigInteger)
+    if FIELD_TYPE_OVERRIDES.key?(php_name) && FIELD_TYPE_OVERRIDES[php_name].key?(field_name)
+      php_type = FIELD_TYPE_OVERRIDES[php_name][field_name]
+      if php_type == "BigInteger"
+        encode_expr = ->(fn) { "XdrEncoder::bigInteger64($this->#{fn})" }
+        decode_expr = -> { "$xdr->readBigInteger64()" }
+      end
+    end
+
+    imports = []
+    imports << "use phpseclib3\\Math\\BigInteger;" if php_type == "BigInteger"
+
     out.puts GENERATED_HEADER
+    unless imports.empty?
+      out.puts ""
+      imports.each { |imp| out.puts imp }
+    end
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -638,6 +687,10 @@ class Generator < Xdrgen::Generators::Base
     out = @output.open(file)
 
     field_name = underscore_field(php_name)
+    # Apply per-field name override for array typedefs
+    if FIELD_OVERRIDES.key?(php_name) && FIELD_OVERRIDES[php_name].key?(field_name)
+      field_name = FIELD_OVERRIDES[php_name][field_name]
+    end
 
     out.puts GENERATED_HEADER
     out.puts ""
@@ -1183,9 +1236,17 @@ class Generator < Xdrgen::Generators::Base
     if typespec && primitive_typespec?(typespec)
       return encode_call_for_typespec(typespec, accessor)
     end
+    # For typedefs overridden to primitives via TYPE_OVERRIDES, follow the
+    # typedef chain to get the correct encoding call.
+    if typespec
+      typedef_enc = resolve_typedef_encode(typespec, accessor)
+      return typedef_enc if typedef_enc
+    end
     case php_type
     when "bool"
       "XdrEncoder::boolean(#{accessor})"
+    when "BigInteger"
+      "XdrEncoder::bigInteger64(#{accessor})"
     when "string"
       "XdrEncoder::string(#{accessor})"
     else
@@ -1199,9 +1260,16 @@ class Generator < Xdrgen::Generators::Base
     if typespec && primitive_typespec?(typespec)
       return decode_call_for_typespec(typespec)
     end
+    # For typedefs overridden to primitives, follow the chain for decoding.
+    if typespec
+      typedef_dec = resolve_typedef_decode(typespec)
+      return typedef_dec if typedef_dec
+    end
     case php_type
     when "bool"
       "$xdr->readBoolean()"
+    when "BigInteger"
+      "$xdr->readBigInteger64()"
     when "string"
       "$xdr->readString()"
     else
@@ -1245,6 +1313,94 @@ class Generator < Xdrgen::Generators::Base
       "$xdr->readString()"
     else
       decode_type_call(php_type_for_typespec(typespec))
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Typedef chain resolution for encoding/decoding
+  #
+  # When TYPE_OVERRIDES maps a typedef to a primitive PHP type, we need to
+  # follow the typedef chain to determine the correct XdrEncoder/XdrBuffer
+  # call. For example, Hash → opaque[32] → opaqueFixed(32).
+  # ---------------------------------------------------------------------------
+
+  def resolve_typedef_encode(typespec, accessor)
+    return nil unless typespec.is_a?(AST::Typespecs::Simple)
+
+    resolved = typespec.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef)
+
+    resolved_name = name(resolved)
+    return nil unless TYPE_OVERRIDES.key?(resolved_name)
+
+    resolve_typedef_encode_inner(resolved.declaration, accessor)
+  end
+
+  def resolve_typedef_encode_inner(decl, accessor)
+    case decl
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        size = resolve_size(decl)
+        "XdrEncoder::opaqueFixed(#{accessor}, #{size})"
+      else
+        "XdrEncoder::opaqueVariable(#{accessor})"
+      end
+    when AST::Declarations::String
+      "XdrEncoder::string(#{accessor})"
+    else
+      # Simple declaration — follow to underlying type
+      if decl.respond_to?(:type)
+        ut = decl.type
+        if primitive_typespec?(ut)
+          encode_call_for_typespec(ut, accessor)
+        elsif ut.is_a?(AST::Typespecs::Simple) && ut.resolved_type.is_a?(AST::Definitions::Typedef)
+          # Chain further (e.g., PoolID → Hash → opaque[32])
+          resolve_typedef_encode_inner(ut.resolved_type.declaration, accessor)
+        else
+          nil
+        end
+      else
+        nil
+      end
+    end
+  end
+
+  def resolve_typedef_decode(typespec)
+    return nil unless typespec.is_a?(AST::Typespecs::Simple)
+
+    resolved = typespec.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef)
+
+    resolved_name = name(resolved)
+    return nil unless TYPE_OVERRIDES.key?(resolved_name)
+
+    resolve_typedef_decode_inner(resolved.declaration)
+  end
+
+  def resolve_typedef_decode_inner(decl)
+    case decl
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        size = resolve_size(decl)
+        "$xdr->readOpaqueFixed(#{size})"
+      else
+        "$xdr->readOpaqueVariable()"
+      end
+    when AST::Declarations::String
+      "$xdr->readString()"
+    else
+      if decl.respond_to?(:type)
+        ut = decl.type
+        if primitive_typespec?(ut)
+          decode_call_for_typespec(ut)
+        elsif ut.is_a?(AST::Typespecs::Simple) && ut.resolved_type.is_a?(AST::Definitions::Typedef)
+          resolve_typedef_decode_inner(ut.resolved_type.declaration)
+        else
+          nil
+        end
+      else
+        nil
+      end
     end
   end
 

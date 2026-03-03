@@ -23,3 +23,23 @@ Bugs discovered in existing hand-written XDR types during generator comparison.
 - **XdrTrustLineFlags**: `decode()` returns `XdrOperationType` instead of `XdrTrustLineFlags` (same pattern as XdrMemoType bug)
 - **XdrInvokeHostFunctionResultCode**: `decode()` is an instance method instead of static
 - **XdrContractCostType**: `decode()` is an instance method instead of static
+
+## Batch 3
+
+### XdrClaimOfferAtom — signed/unsigned mismatch for offerID
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimOfferAtom.php`
+- **Bug**: `offerID` encoded with `unsignedInteger64`/`readUnsignedInteger64`, but XDR spec defines `int64 offerID` (signed)
+- **Impact**: Low — values within signed range encode identically
+- **Fixed by**: Generator uses `integer64`/`readInteger64`
+
+### XdrCreatePassiveSellOfferOperation — spurious argument in decode()
+- **File**: `Soneso/StellarSDK/Xdr/XdrCreatePassiveSellOfferOperation.php`
+- **Bug**: `$xdr->readBigInteger64($xdr)` passes spurious `$xdr` argument
+- **Impact**: Low — PHP silently ignores extra arguments
+- **Fixed by**: Generator produces `$xdr->readBigInteger64()` (no extra arg)
+
+### XdrSimplePaymentResult — wrong destination type
+- **File**: `Soneso/StellarSDK/Xdr/XdrSimplePaymentResult.php`
+- **Bug**: `$destination` typed as `XdrMuxedAccount`, but XDR spec defines `AccountID destination`
+- **Impact**: Medium — incorrect XDR wire encoding for this field
+- **Fixed by**: Generator uses `XdrAccountID` per the spec
