@@ -7,62 +7,8 @@
 namespace Soneso\StellarSDK\Xdr;
 
 
-class XdrHostFunction
+class XdrHostFunction extends XdrHostFunctionBase
 {
-
-    public XdrHostFunctionType $type;
-    public ?XdrInvokeContractArgs $invokeContract = null;
-    public ?XdrCreateContractArgs $createContract = null;
-    public ?XdrCreateContractArgsV2 $createContractV2 = null;
-    public ?XdrDataValueMandatory $wasm = null;
-
-    /**
-     * @param XdrHostFunctionType $type
-     */
-    public function __construct(XdrHostFunctionType $type)
-    {
-        $this->type = $type;
-    }
-
-
-    public function encode(): string {
-        $bytes = $this->type->encode();
-
-        switch ($this->type->value) {
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                $bytes .= $this->invokeContract->encode();
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-                $bytes .= $this->createContract->encode();
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
-                $bytes .= $this->wasm->encode();
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
-                $bytes .= $this->createContractV2->encode();
-                break;
-        }
-        return $bytes;
-    }
-
-    public static function decode(XdrBuffer $xdr):  XdrHostFunction {
-        $result = new XdrHostFunction(XdrHostFunctionType::decode($xdr));
-        switch ($result->type->value) {
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
-                $result->invokeContract = XdrInvokeContractArgs::decode($xdr);
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
-                $result->createContract = XdrCreateContractArgs::decode($xdr);
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
-                $result->wasm = XdrDataValueMandatory::decode($xdr);
-                break;
-            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
-                $result->createContractV2 = XdrCreateContractArgsV2::decode($xdr);
-                break;
-        }
-        return $result;
-    }
 
     public static function forInvokingContractWithArgs(XdrInvokeContractArgs $args) :  XdrHostFunction {
         $result = new XdrHostFunction(XdrHostFunctionType::INVOKE_CONTRACT());

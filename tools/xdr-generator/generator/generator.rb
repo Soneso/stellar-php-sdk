@@ -275,8 +275,9 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def render_struct_decode(out, struct_name, class_name, fields, is_base)
-    decode_class = is_base ? class_name : struct_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_class} {"
+    decode_return = is_base ? "static" : struct_name
+    decode_class = is_base ? "static" : struct_name
+    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
     fields.each do |f|
       if f[:is_ext_point]
         out.puts "        $xdr->readInteger32(); // extension point"
@@ -405,8 +406,9 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def render_union_decode(out, union_name, class_name, disc_info, arms, is_base)
-    decode_class = is_base ? class_name : union_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_class} {"
+    decode_return = is_base ? "static" : union_name
+    decode_class = is_base ? "static" : union_name
+    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
 
     if disc_info[:kind] == :int
       out.puts "        $#{disc_info[:field_name]} = $xdr->readInteger32();"
@@ -516,8 +518,10 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return #{encode_expr.call(field_name)};"
     out.puts "    }"
     out.puts ""
-    out.puts "    public static function decode(XdrBuffer $xdr): #{class_name} {"
-    out.puts "        return new #{class_name}(#{decode_expr.call});"
+    decode_return = is_base ? "static" : class_name
+    decode_new = is_base ? "static" : class_name
+    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
+    out.puts "        return new #{decode_new}(#{decode_expr.call});"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
@@ -548,8 +552,10 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return XdrEncoder::opaqueFixed($this->#{field_name}, #{size});"
     out.puts "    }"
     out.puts ""
-    out.puts "    public static function decode(XdrBuffer $xdr): #{class_name} {"
-    out.puts "        return new #{class_name}($xdr->readOpaqueFixed(#{size}));"
+    decode_return = is_base ? "static" : class_name
+    decode_new = is_base ? "static" : class_name
+    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
+    out.puts "        return new #{decode_new}($xdr->readOpaqueFixed(#{size}));"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
@@ -579,8 +585,10 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return XdrEncoder::opaqueVariable($this->#{field_name});"
     out.puts "    }"
     out.puts ""
-    out.puts "    public static function decode(XdrBuffer $xdr): #{class_name} {"
-    out.puts "        return new #{class_name}($xdr->readOpaqueVariable());"
+    decode_return = is_base ? "static" : class_name
+    decode_new = is_base ? "static" : class_name
+    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
+    out.puts "        return new #{decode_new}($xdr->readOpaqueVariable());"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
@@ -610,8 +618,10 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return XdrEncoder::string($this->#{field_name});"
     out.puts "    }"
     out.puts ""
-    out.puts "    public static function decode(XdrBuffer $xdr): #{class_name} {"
-    out.puts "        return new #{class_name}($xdr->readString());"
+    decode_return = is_base ? "static" : class_name
+    decode_new = is_base ? "static" : class_name
+    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
+    out.puts "        return new #{decode_new}($xdr->readString());"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
@@ -660,7 +670,9 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return $bytes;"
     out.puts "    }"
     out.puts ""
-    out.puts "    public static function decode(XdrBuffer $xdr): #{class_name} {"
+    decode_return = is_base ? "static" : class_name
+    decode_new = is_base ? "static" : class_name
+    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
     out.puts "        $#{field_name} = [];"
 
     if decl.fixed?
@@ -676,7 +688,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        }"
     end
 
-    out.puts "        return new #{class_name}($#{field_name});"
+    out.puts "        return new #{decode_new}($#{field_name});"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)

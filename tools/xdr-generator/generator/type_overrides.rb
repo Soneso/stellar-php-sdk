@@ -42,6 +42,18 @@ TYPE_OVERRIDES = {
 # Phase 1: Populated when wrapper types are identified and created.
 # ---------------------------------------------------------------------------
 BASE_WRAPPER_TYPES = %w[
+  XdrAccountID
+  XdrClaimableBalanceID
+  XdrContractExecutable
+  XdrContractIDPreimage
+  XdrDecoratedSignature
+  XdrHostFunction
+  XdrLedgerKey
+  XdrMuxedAccount
+  XdrMuxedAccountMed25519
+  XdrSCAddress
+  XdrSCVal
+  XdrTransaction
 ].freeze
 
 # ---------------------------------------------------------------------------
@@ -49,6 +61,7 @@ BASE_WRAPPER_TYPES = %w[
 # Base types that import their own wrapper (e.g., XdrSCValBase has List<XdrSCVal>).
 # ---------------------------------------------------------------------------
 SELF_REFERENCING_BASE_TYPES = %w[
+  XdrSCVal
 ].freeze
 
 # ---------------------------------------------------------------------------
