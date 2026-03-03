@@ -44,6 +44,11 @@ FIELD_OVERRIDES = {
     "lo_hi" => "loHi",
     "lo_lo" => "loLo",
   },
+
+  # Batch 5: Reserved-word field name preserved (PHP allows property names like $function)
+  "XdrSorobanAuthorizedInvocation" => {
+    "function" => "function",
+  },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -71,4 +76,10 @@ FIELD_TYPE_OVERRIDES = {
   },
   "XdrSimplePaymentResult" => { "amount" => "BigInteger" },
   "XdrSequenceNumber" => { "sequenceNumber" => "BigInteger" },
+
+  # Batch 5: BigInteger fields
+  "XdrLiabilities" => {
+    "buying" => "BigInteger",
+    "selling" => "BigInteger",
+  },
 }.freeze

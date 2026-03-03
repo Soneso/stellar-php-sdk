@@ -43,6 +43,9 @@ TYPE_OVERRIDES = {
   "XdrString32" => "string",
   "XdrString256" => "string",
   "XdrString1000" => "string",
+
+  # Symbol typedef — SDK uses string
+  "XdrSCSymbol" => "string",
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -101,7 +104,6 @@ SKIP_TYPES = %w[
   XdrAssetAlphaNum12
   XdrAssetAlphaNum4
 
-  XdrBeginSponsoringFutureReservesOperation
   XdrBeginSponsoringFutureReservesResult
   XdrBuffer
   XdrBumpSequenceOperation
@@ -121,7 +123,6 @@ SKIP_TYPES = %w[
   XdrClaimableBalanceID
   XdrClaimant
 
-  XdrClaimantV0
   XdrClawbackClaimableBalanceOperation
   XdrClawbackClaimableBalanceResult
   XdrClawbackOperation
@@ -151,24 +152,17 @@ SKIP_TYPES = %w[
   XdrEncoder
   XdrEndSponsoringFutureReservesResult
   XdrEvictionIterator
-  XdrExtendFootprintTTLOp
   XdrExtendFootprintTTLResult
   XdrExtensionPoint
   XdrFeeBumpTransaction
-  XdrFeeBumpTransactionEnvelope
   XdrFeeBumpTransactionExt
   XdrFeeBumpTransactionInnerTx
   XdrHashIDPreimage
-  XdrHashIDPreimageContractID
-  XdrHashIDPreimageOperationID
-  XdrHashIDPreimageRevokeID
-  XdrHashIDPreimageSorobanAuthorization
   XdrHostFunction
   XdrInflationResult
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
-  XdrInvokeContractArgs
   XdrInvokeHostFunctionOp
   XdrInvokeHostFunctionResult
   XdrInvokeHostFunctionResultCode
@@ -179,14 +173,8 @@ SKIP_TYPES = %w[
   XdrLedgerEntryExt
   XdrLedgerEntryV1
   XdrLedgerEntryV1Ext
-  XdrLedgerFootprint
   XdrLedgerKey
   XdrLedgerKeyAccount
-  XdrLedgerKeyData
-  XdrLedgerKeyOffer
-  XdrLedgerKeyTTL
-  XdrLedgerKeyTrustLine
-  XdrLiabilities
   XdrLiquidityPoolBody
   XdrLiquidityPoolConstantProductParameters
   XdrLiquidityPoolDepositOperation
@@ -224,7 +212,6 @@ SKIP_TYPES = %w[
 
   XdrPreconditions
   XdrPreconditionsV2
-  XdrRestoreFootprintOp
   XdrRestoreFootprintResult
   XdrRevokeSponsorshipOperation
   XdrRevokeSponsorshipResult
@@ -245,14 +232,8 @@ SKIP_TYPES = %w[
   XdrSCSpecEventV0
   XdrSCSpecFunctionInputV0
   XdrSCSpecFunctionV0
-  XdrSCSpecTypeBytesN
   XdrSCSpecTypeDef
-  XdrSCSpecTypeMap
-  XdrSCSpecTypeOption
-  XdrSCSpecTypeResult
   XdrSCSpecTypeTuple
-  XdrSCSpecTypeUDT
-  XdrSCSpecTypeVec
   XdrSCSpecUDTEnumCaseV0
   XdrSCSpecUDTEnumV0
   XdrSCSpecUDTErrorEnumCaseV0
@@ -270,18 +251,14 @@ SKIP_TYPES = %w[
   XdrSetTrustLineFlagsOperation
   XdrSetTrustLineFlagsResult
   XdrSignedPayload
-  XdrSigner
   XdrSignerKey
   XdrSignerKeyType
   XdrSequenceNumber
-  XdrSorobanAddressCredentials
   XdrSorobanAuthorizationEntry
   XdrSorobanAuthorizedFunction
   XdrSorobanAuthorizedFunctionType
-  XdrSorobanAuthorizedInvocation
   XdrSorobanCredentials
   XdrSorobanCredentialsType
-  XdrSorobanResources
   XdrSorobanResourcesExtV0
   XdrSorobanTransactionData
   XdrSorobanTransactionDataExt
@@ -289,7 +266,6 @@ SKIP_TYPES = %w[
   XdrSorobanTransactionMetaExt
   XdrSorobanTransactionMetaExtV1
   XdrSorobanTransactionMetaV2
-  XdrTTLEntry
   XdrTimeBounds
   XdrTransaction
   XdrTransactionEnvelope
@@ -305,9 +281,7 @@ SKIP_TYPES = %w[
   XdrTransactionResultExt
   XdrTransactionResultResult
   XdrTransactionV0
-  XdrTransactionV0Envelope
   XdrTransactionV0Ext
-  XdrTransactionV1Envelope
   XdrTrustLineEntry
   XdrTrustLineEntryExt
   XdrTrustLineEntryExtensionV2

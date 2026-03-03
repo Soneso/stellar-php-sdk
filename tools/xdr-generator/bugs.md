@@ -43,3 +43,16 @@ Bugs discovered in existing hand-written XDR types during generator comparison.
 - **Bug**: `$destination` typed as `XdrMuxedAccount`, but XDR spec defines `AccountID destination`
 - **Impact**: Medium — incorrect XDR wire encoding for this field
 - **Fixed by**: Generator uses `XdrAccountID` per the spec
+
+## Batch 5
+
+### XdrLedgerKeyOffer — signed/unsigned mismatch for offerID
+- **File**: `Soneso/StellarSDK/Xdr/XdrLedgerKeyOffer.php`
+- **Bug**: `offerID` encoded with `unsignedInteger64`/`readUnsignedInteger64`, but XDR spec defines `int64 offerID` (signed)
+- **Impact**: Low — values within signed range encode identically (same pattern as XdrClaimOfferAtom)
+- **Fixed by**: Generator uses `integer64`/`readInteger64`
+
+### XdrLedgerKeyData — missing max-length validation on string encode/decode
+- **File**: `Soneso/StellarSDK/Xdr/XdrLedgerKeyData.php`
+- **Bug**: `getDataName()` return type annotated as `int|string` (should be `string`); also `XdrEncoder::string($this->dataName, 64)` passes max-length 64 but generator omits the limit parameter
+- **Impact**: Low — return type annotation is wrong but harmless; max-length validation is a defense-in-depth guard only
