@@ -27,6 +27,46 @@ class XdrPaymentResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::MALFORMED);
+    }
+
+    public static function UNDERFUNDED(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::UNDERFUNDED);
+    }
+
+    public static function SRC_NO_TRUST(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::SRC_NO_TRUST);
+    }
+
+    public static function SRC_NOT_AUTHORIZED(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::SRC_NOT_AUTHORIZED);
+    }
+
+    public static function NO_DESTINATION(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::NO_DESTINATION);
+    }
+
+    public static function NO_TRUST(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::NO_TRUST);
+    }
+
+    public static function NOT_AUTHORIZED(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::NOT_AUTHORIZED);
+    }
+
+    public static function LINE_FULL(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::LINE_FULL);
+    }
+
+    public static function NO_ISSUER(): XdrPaymentResultCode {
+        return new XdrPaymentResultCode(XdrPaymentResultCode::NO_ISSUER);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

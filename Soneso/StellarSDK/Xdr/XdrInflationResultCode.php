@@ -19,6 +19,14 @@ class XdrInflationResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrInflationResultCode {
+        return new XdrInflationResultCode(XdrInflationResultCode::SUCCESS);
+    }
+
+    public static function NOT_TIME(): XdrInflationResultCode {
+        return new XdrInflationResultCode(XdrInflationResultCode::NOT_TIME);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

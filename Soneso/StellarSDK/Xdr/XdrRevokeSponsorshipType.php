@@ -19,6 +19,14 @@ class XdrRevokeSponsorshipType {
         return $this->value;
     }
 
+    public static function LEDGER_ENTRY(): XdrRevokeSponsorshipType {
+        return new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY);
+    }
+
+    public static function SIGNER(): XdrRevokeSponsorshipType {
+        return new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::SIGNER);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

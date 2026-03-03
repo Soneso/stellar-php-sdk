@@ -35,6 +35,13 @@ MEMBER_OVERRIDES = {
     "REVOKE_SPONSORSHIP_SIGNER" => "SIGNER",
   },
 
+  # Batch 4: XdrContractEventType — XDR spec uses short names, SDK prefixed them
+  "XdrContractEventType" => {
+    "SYSTEM" => "CONTRACT_EVENT_TYPE_SYSTEM",
+    "CONTRACT" => "CONTRACT_EVENT_TYPE_CONTRACT",
+    "DIAGNOSTIC" => "CONTRACT_EVENT_TYPE_DIAGNOSTIC",
+  },
+
   # Batch 2: Individual overrides for constants that don't follow prefix-strip
   "XdrClawbackResultCode" => {
     "CLAWBACK_NOT_CLAWBACK_ENABLED" => "NOT_ENABLED",
@@ -76,4 +83,44 @@ MEMBER_PREFIX_STRIP = {
   "XdrSetOptionsResultCode" => "SET_OPTIONS_",
   "XdrSetTrustLineFlagsResultCode" => "SET_TRUST_LINE_FLAGS_",
   "XdrTransactionResultCode" => "tx",
+}.freeze
+
+# ---------------------------------------------------------------------------
+# FACTORY_PREFIX_STRIP
+# Maps PHP class names to the prefix stripped from constant names when
+# generating factory method names. Only affects factory method names, NOT
+# the constant definitions themselves.
+# ---------------------------------------------------------------------------
+FACTORY_PREFIX_STRIP = {
+  # Batch 4: Enums where factory methods use stripped names
+  "XdrLedgerEntryChangeType" => "LEDGER_ENTRY_",
+  "XdrSCSpecType" => "SC_SPEC_TYPE_",
+  "XdrSCValType" => "SCV_",
+  "XdrContractEventType" => "CONTRACT_EVENT_TYPE_",
+  "XdrHostFunctionType" => "HOST_FUNCTION_TYPE_",
+}.freeze
+
+# ---------------------------------------------------------------------------
+# FACTORY_NAME_OVERRIDES
+# Individual factory method name overrides. Checked before FACTORY_PREFIX_STRIP.
+# Maps (class, constant_name) → factory_method_name.
+# ---------------------------------------------------------------------------
+FACTORY_NAME_OVERRIDES = {
+  # XdrSCValType: two constants inconsistently keep the SCV_ prefix
+  "XdrSCValType" => {
+    "SCV_CONTRACT_INSTANCE" => "SCV_CONTRACT_INSTANCE",
+    "SCV_LEDGER_KEY_CONTRACT_INSTANCE" => "SCV_LEDGER_KEY_CONTRACT_INSTANCE",
+  },
+}.freeze
+
+# ---------------------------------------------------------------------------
+# FACTORY_ALIASES
+# Extra factory methods as backward-compatibility aliases.
+# Maps (class, alias_name) → constant_name to reference.
+# ---------------------------------------------------------------------------
+FACTORY_ALIASES = {
+  # LedgerEntryType: EXPIRATION was renamed to TTL in the Stellar spec
+  "XdrLedgerEntryType" => {
+    "EXPIRATION" => "TTL",
+  },
 }.freeze

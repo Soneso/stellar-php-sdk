@@ -22,6 +22,26 @@ class XdrCreateAccountResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrCreateAccountResultCode {
+        return new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrCreateAccountResultCode {
+        return new XdrCreateAccountResultCode(XdrCreateAccountResultCode::MALFORMED);
+    }
+
+    public static function UNDERFUNDED(): XdrCreateAccountResultCode {
+        return new XdrCreateAccountResultCode(XdrCreateAccountResultCode::UNDERFUNDED);
+    }
+
+    public static function LOW_RESERVE(): XdrCreateAccountResultCode {
+        return new XdrCreateAccountResultCode(XdrCreateAccountResultCode::LOW_RESERVE);
+    }
+
+    public static function ACCOUNT_ALREADY_EXIST(): XdrCreateAccountResultCode {
+        return new XdrCreateAccountResultCode(XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

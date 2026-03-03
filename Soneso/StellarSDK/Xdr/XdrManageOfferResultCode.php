@@ -30,6 +30,58 @@ class XdrManageOfferResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED);
+    }
+
+    public static function SELL_NO_TRUST(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_TRUST);
+    }
+
+    public static function BUY_NO_TRUST(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_TRUST);
+    }
+
+    public static function SELL_NOT_AUTHORIZED(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NOT_AUTHORIZED);
+    }
+
+    public static function BUY_NOT_AUTHORIZED(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NOT_AUTHORIZED);
+    }
+
+    public static function LINE_FULL(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::LINE_FULL);
+    }
+
+    public static function UNDERFUNDED(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::UNDERFUNDED);
+    }
+
+    public static function CROSS_SELF(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::CROSS_SELF);
+    }
+
+    public static function SELL_NO_ISSUER(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_ISSUER);
+    }
+
+    public static function BUY_NO_ISSUER(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_ISSUER);
+    }
+
+    public static function NOT_FOUND(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::NOT_FOUND);
+    }
+
+    public static function LOW_RESERVE(): XdrManageOfferResultCode {
+        return new XdrManageOfferResultCode(XdrManageOfferResultCode::LOW_RESERVE);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

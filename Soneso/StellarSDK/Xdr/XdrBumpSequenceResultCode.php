@@ -19,6 +19,14 @@ class XdrBumpSequenceResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrBumpSequenceResultCode {
+        return new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::SUCCESS);
+    }
+
+    public static function BAD_SEQ(): XdrBumpSequenceResultCode {
+        return new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::BAD_SEQ);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

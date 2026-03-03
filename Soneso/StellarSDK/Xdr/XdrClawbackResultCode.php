@@ -22,6 +22,26 @@ class XdrClawbackResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrClawbackResultCode {
+        return new XdrClawbackResultCode(XdrClawbackResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrClawbackResultCode {
+        return new XdrClawbackResultCode(XdrClawbackResultCode::MALFORMED);
+    }
+
+    public static function NOT_ENABLED(): XdrClawbackResultCode {
+        return new XdrClawbackResultCode(XdrClawbackResultCode::NOT_ENABLED);
+    }
+
+    public static function NO_TRUST(): XdrClawbackResultCode {
+        return new XdrClawbackResultCode(XdrClawbackResultCode::NO_TRUST);
+    }
+
+    public static function UNDERFUNDED(): XdrClawbackResultCode {
+        return new XdrClawbackResultCode(XdrClawbackResultCode::UNDERFUNDED);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

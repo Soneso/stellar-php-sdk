@@ -36,6 +36,82 @@ class XdrTransactionResultCode {
         return $this->value;
     }
 
+    public static function FEE_BUMP_INNER_SUCCESS(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS);
+    }
+
+    public static function SUCCESS(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS);
+    }
+
+    public static function FAILED(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::FAILED);
+    }
+
+    public static function TOO_EARLY(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY);
+    }
+
+    public static function TOO_LATE(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::TOO_LATE);
+    }
+
+    public static function MISSING_OPERATION(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::MISSING_OPERATION);
+    }
+
+    public static function BAD_SEQ(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SEQ);
+    }
+
+    public static function BAD_AUTH(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH);
+    }
+
+    public static function INSUFFICIENT_BALANCE(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_BALANCE);
+    }
+
+    public static function NO_ACCOUNT(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::NO_ACCOUNT);
+    }
+
+    public static function INSUFFICIENT_FEE(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_FEE);
+    }
+
+    public static function BAD_AUTH_EXTRA(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH_EXTRA);
+    }
+
+    public static function INTERNAL_ERROR(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::INTERNAL_ERROR);
+    }
+
+    public static function NOT_SUPPORTED(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::NOT_SUPPORTED);
+    }
+
+    public static function FEE_BUMP_INNER_FAILED(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::FEE_BUMP_INNER_FAILED);
+    }
+
+    public static function BAD_SPONSORSHIP(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SPONSORSHIP);
+    }
+
+    public static function BAD_MIN_SEQ_AGE_OR_GAP(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP);
+    }
+
+    public static function MALFORMED(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED);
+    }
+
+    public static function SOROBAN_INVALID(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

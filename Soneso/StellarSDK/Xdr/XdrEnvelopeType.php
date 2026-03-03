@@ -27,6 +27,46 @@ class XdrEnvelopeType {
         return $this->value;
     }
 
+    public static function ENVELOPE_TYPE_TX_V0(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0);
+    }
+
+    public static function ENVELOPE_TYPE_SCP(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SCP);
+    }
+
+    public static function ENVELOPE_TYPE_TX(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX);
+    }
+
+    public static function ENVELOPE_TYPE_AUTH(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_AUTH);
+    }
+
+    public static function ENVELOPE_TYPE_SCPVALUE(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SCPVALUE);
+    }
+
+    public static function ENVELOPE_TYPE_TX_FEE_BUMP(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP);
+    }
+
+    public static function ENVELOPE_TYPE_OP_ID(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_OP_ID);
+    }
+
+    public static function ENVELOPE_TYPE_POOL_REVOKE_OP_ID(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID);
+    }
+
+    public static function ENVELOPE_TYPE_CONTRACT_ID(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID);
+    }
+
+    public static function ENVELOPE_TYPE_SOROBAN_AUTHORIZATION(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

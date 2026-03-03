@@ -30,6 +30,58 @@ class XdrPathPaymentStrictReceiveResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::MALFORMED);
+    }
+
+    public static function UNDERFUNDED(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::UNDERFUNDED);
+    }
+
+    public static function SRC_NO_TRUST(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SRC_NO_TRUST);
+    }
+
+    public static function SRC_NOT_AUTHORIZED(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SRC_NOT_AUTHORIZED);
+    }
+
+    public static function NO_DESTINATION(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_DESTINATION);
+    }
+
+    public static function NO_TRUST(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_TRUST);
+    }
+
+    public static function NOT_AUTHORIZED(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NOT_AUTHORIZED);
+    }
+
+    public static function LINE_FULL(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::LINE_FULL);
+    }
+
+    public static function NO_ISSUER(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_ISSUER);
+    }
+
+    public static function TOO_FEW_OFFERS(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::TOO_FEW_OFFERS);
+    }
+
+    public static function OFFER_CROSS_SELF(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::OFFER_CROSS_SELF);
+    }
+
+    public static function OVER_SENDMAX(): XdrPathPaymentStrictReceiveResultCode {
+        return new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

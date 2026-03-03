@@ -21,6 +21,22 @@ class XdrClawbackClaimableBalanceResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrClawbackClaimableBalanceResultCode {
+        return new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::SUCCESS);
+    }
+
+    public static function DOES_NOT_EXIST(): XdrClawbackClaimableBalanceResultCode {
+        return new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::DOES_NOT_EXIST);
+    }
+
+    public static function NOT_ISSUER(): XdrClawbackClaimableBalanceResultCode {
+        return new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_ISSUER);
+    }
+
+    public static function NOT_CLAWBACK_ENABLED(): XdrClawbackClaimableBalanceResultCode {
+        return new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

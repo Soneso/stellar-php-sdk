@@ -21,6 +21,22 @@ class XdrBeginSponsoringFutureReservesResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrBeginSponsoringFutureReservesResultCode {
+        return new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrBeginSponsoringFutureReservesResultCode {
+        return new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::MALFORMED);
+    }
+
+    public static function ALREADY_SPONSORED(): XdrBeginSponsoringFutureReservesResultCode {
+        return new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::ALREADY_SPONSORED);
+    }
+
+    public static function RECURSIVE(): XdrBeginSponsoringFutureReservesResultCode {
+        return new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::RECURSIVE);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

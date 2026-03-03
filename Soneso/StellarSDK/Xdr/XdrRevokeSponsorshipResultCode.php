@@ -23,6 +23,30 @@ class XdrRevokeSponsorshipResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrRevokeSponsorshipResultCode {
+        return new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::SUCCESS);
+    }
+
+    public static function DOES_NOT_EXIST(): XdrRevokeSponsorshipResultCode {
+        return new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::DOES_NOT_EXIST);
+    }
+
+    public static function NOT_SPONSOR(): XdrRevokeSponsorshipResultCode {
+        return new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::NOT_SPONSOR);
+    }
+
+    public static function LOW_RESERVE(): XdrRevokeSponsorshipResultCode {
+        return new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::LOW_RESERVE);
+    }
+
+    public static function ONLY_TRANSFERABLE(): XdrRevokeSponsorshipResultCode {
+        return new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::ONLY_TRANSFERABLE);
+    }
+
+    public static function MALFORMED(): XdrRevokeSponsorshipResultCode {
+        return new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::MALFORMED);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

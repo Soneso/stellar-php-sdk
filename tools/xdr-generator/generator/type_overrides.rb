@@ -119,7 +119,6 @@ SKIP_TYPES = %w[
   XdrClaimableBalanceEntryExt
   XdrClaimableBalanceEntryExtV1
   XdrClaimableBalanceID
-  XdrClaimableBalanceIDType
   XdrClaimant
 
   XdrClaimantV0
@@ -128,7 +127,6 @@ SKIP_TYPES = %w[
   XdrClawbackOperation
   XdrClawbackResult
   XdrConfigSettingEntry
-  XdrConfigSettingID
   XdrConfigUpgradeSetKey
   XdrConstantProduct
   XdrContractCodeEntry
@@ -136,15 +134,11 @@ SKIP_TYPES = %w[
   XdrContractCodeEntryExtV1
   XdrContractCostParams
   XdrContractCostType
-  XdrContractDataDurability
   XdrContractDataEntry
   XdrContractEvent
   XdrContractEventBody
-  XdrContractEventType
   XdrContractExecutable
-  XdrContractExecutableType
   XdrContractIDPreimage
-  XdrContractIDPreimageType
   XdrCreateAccountResult
   XdrCreateClaimableBalanceOperation
   XdrCreateClaimableBalanceResult
@@ -170,7 +164,6 @@ SKIP_TYPES = %w[
   XdrHashIDPreimageRevokeID
   XdrHashIDPreimageSorobanAuthorization
   XdrHostFunction
-  XdrHostFunctionType
   XdrInflationResult
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
@@ -182,10 +175,8 @@ SKIP_TYPES = %w[
   XdrInvokeHostFunctionSuccessPreImage
   XdrLedgerEntry
   XdrLedgerEntryChange
-  XdrLedgerEntryChangeType
   XdrLedgerEntryData
   XdrLedgerEntryExt
-  XdrLedgerEntryType
   XdrLedgerEntryV1
   XdrLedgerEntryV1Ext
   XdrLedgerFootprint
@@ -224,7 +215,6 @@ SKIP_TYPES = %w[
   XdrOperationMetaV2
   XdrOperationResult
   XdrOperationResultTr
-  XdrOperationType
   XdrPathPaymentResultSuccess
   XdrPathPaymentStrictReceiveOperation
   XdrPathPaymentStrictReceiveResult
@@ -240,13 +230,10 @@ SKIP_TYPES = %w[
   XdrRevokeSponsorshipResult
 
   XdrSCAddress
-  XdrSCAddressType
   XdrSCContractInstance
   XdrSCEnvMetaEntry
   XdrSCEnvMetaKind
   XdrSCError
-  XdrSCErrorCode
-  XdrSCErrorType
   XdrSCMetaEntry
   XdrSCMetaKind
   XdrSCMetaV0
@@ -258,7 +245,6 @@ SKIP_TYPES = %w[
   XdrSCSpecEventV0
   XdrSCSpecFunctionInputV0
   XdrSCSpecFunctionV0
-  XdrSCSpecType
   XdrSCSpecTypeBytesN
   XdrSCSpecTypeDef
   XdrSCSpecTypeMap
@@ -279,7 +265,6 @@ SKIP_TYPES = %w[
   XdrSCSpecUDTUnionCaseVoidV0
   XdrSCSpecUDTUnionV0
   XdrSCVal
-  XdrSCValType
   XdrSetOptionsOperation
   XdrSetOptionsResult
   XdrSetTrustLineFlagsOperation

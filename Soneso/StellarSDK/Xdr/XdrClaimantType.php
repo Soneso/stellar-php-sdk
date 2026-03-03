@@ -18,6 +18,10 @@ class XdrClaimantType {
         return $this->value;
     }
 
+    public static function V0(): XdrClaimantType {
+        return new XdrClaimantType(XdrClaimantType::V0);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

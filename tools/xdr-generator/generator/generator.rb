@@ -124,6 +124,27 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return $this->value;"
     out.puts "    }"
     out.puts ""
+
+    # Factory methods — one per enum constant
+    enum_defn.members.each do |m|
+      member_name = resolve_member_name(php_name, m.name.to_s)
+      factory_name = resolve_factory_name(php_name, member_name)
+      out.puts "    public static function #{factory_name}(): #{php_name} {"
+      out.puts "        return new #{php_name}(#{php_name}::#{member_name});"
+      out.puts "    }"
+      out.puts ""
+    end
+
+    # Extra factory aliases (backward compatibility)
+    if defined?(FACTORY_ALIASES) && FACTORY_ALIASES.key?(php_name)
+      FACTORY_ALIASES[php_name].each do |alias_name, const_name|
+        out.puts "    public static function #{alias_name}(): #{php_name} {"
+        out.puts "        return new #{php_name}(#{php_name}::#{const_name});"
+        out.puts "    }"
+        out.puts ""
+      end
+    end
+
     out.puts "    public function encode(): string {"
     out.puts "        return XdrEncoder::integer32($this->value);"
     out.puts "    }"
@@ -1486,6 +1507,18 @@ class Generator < Xdrgen::Generators::Base
       xdr_member_name.delete_prefix(prefix)
     else
       xdr_member_name
+    end
+  end
+
+  def resolve_factory_name(type_name, member_name)
+    if defined?(FACTORY_NAME_OVERRIDES) && FACTORY_NAME_OVERRIDES.key?(type_name) &&
+       FACTORY_NAME_OVERRIDES[type_name].key?(member_name)
+      FACTORY_NAME_OVERRIDES[type_name][member_name]
+    elsif defined?(FACTORY_PREFIX_STRIP) && FACTORY_PREFIX_STRIP.key?(type_name)
+      prefix = FACTORY_PREFIX_STRIP[type_name]
+      member_name.delete_prefix(prefix)
+    else
+      member_name
     end
   end
 

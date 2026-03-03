@@ -28,6 +28,50 @@ class XdrSetOptionsResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::SUCCESS);
+    }
+
+    public static function LOW_RESERVE(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::LOW_RESERVE);
+    }
+
+    public static function TOO_MANY_SIGNERS(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::TOO_MANY_SIGNERS);
+    }
+
+    public static function BAD_FLAGS(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::BAD_FLAGS);
+    }
+
+    public static function INVALID_INFLATION(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::INVALID_INFLATION);
+    }
+
+    public static function CANT_CHANGE(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::CANT_CHANGE);
+    }
+
+    public static function UNKNOWN_FLAG(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::UNKNOWN_FLAG);
+    }
+
+    public static function THRESHOLD_OUT_OF_RANGE(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::THRESHOLD_OUT_OF_RANGE);
+    }
+
+    public static function BAD_SIGNER(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::BAD_SIGNER);
+    }
+
+    public static function INVALID_HOME_DOMAIN(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::INVALID_HOME_DOMAIN);
+    }
+
+    public static function AUTH_REVOCABLE_REQUIRED(): XdrSetOptionsResultCode {
+        return new XdrSetOptionsResultCode(XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

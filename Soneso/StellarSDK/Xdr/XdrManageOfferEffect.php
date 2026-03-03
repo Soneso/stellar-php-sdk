@@ -20,6 +20,18 @@ class XdrManageOfferEffect {
         return $this->value;
     }
 
+    public static function MANAGE_OFFER_CREATED(): XdrManageOfferEffect {
+        return new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_CREATED);
+    }
+
+    public static function MANAGE_OFFER_UPDATED(): XdrManageOfferEffect {
+        return new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_UPDATED);
+    }
+
+    public static function MANAGE_OFFER_DELETED(): XdrManageOfferEffect {
+        return new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

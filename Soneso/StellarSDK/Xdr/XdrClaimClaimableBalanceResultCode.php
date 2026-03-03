@@ -23,6 +23,30 @@ class XdrClaimClaimableBalanceResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrClaimClaimableBalanceResultCode {
+        return new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::SUCCESS);
+    }
+
+    public static function DOES_NOT_EXIST(): XdrClaimClaimableBalanceResultCode {
+        return new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::DOES_NOT_EXIST);
+    }
+
+    public static function CANNOT_CLAIM(): XdrClaimClaimableBalanceResultCode {
+        return new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::CANNOT_CLAIM);
+    }
+
+    public static function LINE_FULL(): XdrClaimClaimableBalanceResultCode {
+        return new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::LINE_FULL);
+    }
+
+    public static function NO_TRUST(): XdrClaimClaimableBalanceResultCode {
+        return new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NO_TRUST);
+    }
+
+    public static function NOT_AUTHORIZED(): XdrClaimClaimableBalanceResultCode {
+        return new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

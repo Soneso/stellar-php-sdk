@@ -21,6 +21,22 @@ class XdrRestoreFootprintResultCode {
         return $this->value;
     }
 
+    public static function RESTORE_FOOTPRINT_SUCCESS(): XdrRestoreFootprintResultCode {
+        return new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS);
+    }
+
+    public static function RESTORE_FOOTPRINT_MALFORMED(): XdrRestoreFootprintResultCode {
+        return new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_MALFORMED);
+    }
+
+    public static function RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED(): XdrRestoreFootprintResultCode {
+        return new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED);
+    }
+
+    public static function RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE(): XdrRestoreFootprintResultCode {
+        return new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

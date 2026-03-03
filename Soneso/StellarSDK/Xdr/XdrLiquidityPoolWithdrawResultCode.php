@@ -23,6 +23,30 @@ class XdrLiquidityPoolWithdrawResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrLiquidityPoolWithdrawResultCode {
+        return new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrLiquidityPoolWithdrawResultCode {
+        return new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::MALFORMED);
+    }
+
+    public static function NO_TRUST(): XdrLiquidityPoolWithdrawResultCode {
+        return new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::NO_TRUST);
+    }
+
+    public static function UNDERFUNDED(): XdrLiquidityPoolWithdrawResultCode {
+        return new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED);
+    }
+
+    public static function LINE_FULL(): XdrLiquidityPoolWithdrawResultCode {
+        return new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::LINE_FULL);
+    }
+
+    public static function UNDER_MINIMUM(): XdrLiquidityPoolWithdrawResultCode {
+        return new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

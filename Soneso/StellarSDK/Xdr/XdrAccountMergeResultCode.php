@@ -25,6 +25,38 @@ class XdrAccountMergeResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrAccountMergeResultCode {
+        return new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrAccountMergeResultCode {
+        return new XdrAccountMergeResultCode(XdrAccountMergeResultCode::MALFORMED);
+    }
+
+    public static function NO_ACCOUNT(): XdrAccountMergeResultCode {
+        return new XdrAccountMergeResultCode(XdrAccountMergeResultCode::NO_ACCOUNT);
+    }
+
+    public static function IMMUTABLE_SET(): XdrAccountMergeResultCode {
+        return new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IMMUTABLE_SET);
+    }
+
+    public static function HAS_SUB_ENTRIES(): XdrAccountMergeResultCode {
+        return new XdrAccountMergeResultCode(XdrAccountMergeResultCode::HAS_SUB_ENTRIES);
+    }
+
+    public static function SEQNUM_TOO_FAR(): XdrAccountMergeResultCode {
+        return new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SEQNUM_TOO_FAR);
+    }
+
+    public static function DEST_FULL(): XdrAccountMergeResultCode {
+        return new XdrAccountMergeResultCode(XdrAccountMergeResultCode::DEST_FULL);
+    }
+
+    public static function IS_SPONSOR(): XdrAccountMergeResultCode {
+        return new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IS_SPONSOR);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

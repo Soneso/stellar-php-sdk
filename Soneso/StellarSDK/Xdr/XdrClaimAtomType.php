@@ -20,6 +20,18 @@ class XdrClaimAtomType {
         return $this->value;
     }
 
+    public static function V0(): XdrClaimAtomType {
+        return new XdrClaimAtomType(XdrClaimAtomType::V0);
+    }
+
+    public static function ORDER_BOOK(): XdrClaimAtomType {
+        return new XdrClaimAtomType(XdrClaimAtomType::ORDER_BOOK);
+    }
+
+    public static function LIQUIDITY_POOL(): XdrClaimAtomType {
+        return new XdrClaimAtomType(XdrClaimAtomType::LIQUIDITY_POOL);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

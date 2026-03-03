@@ -25,6 +25,38 @@ class XdrLiquidityPoolDepositResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::MALFORMED);
+    }
+
+    public static function NO_TRUST(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NO_TRUST);
+    }
+
+    public static function NOT_AUTHORIZED(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NOT_AUTHORIZED);
+    }
+
+    public static function UNDERFUNDED(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::UNDERFUNDED);
+    }
+
+    public static function LINE_FULL(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::LINE_FULL);
+    }
+
+    public static function BAD_PRICE(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::BAD_PRICE);
+    }
+
+    public static function POOL_FULL(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::POOL_FULL);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

@@ -24,6 +24,34 @@ class XdrAllowTrustResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrAllowTrustResultCode {
+        return new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrAllowTrustResultCode {
+        return new XdrAllowTrustResultCode(XdrAllowTrustResultCode::MALFORMED);
+    }
+
+    public static function NO_TRUST_LINE(): XdrAllowTrustResultCode {
+        return new XdrAllowTrustResultCode(XdrAllowTrustResultCode::NO_TRUST_LINE);
+    }
+
+    public static function TRUST_NOT_REQUIRED(): XdrAllowTrustResultCode {
+        return new XdrAllowTrustResultCode(XdrAllowTrustResultCode::TRUST_NOT_REQUIRED);
+    }
+
+    public static function CANT_REVOKE(): XdrAllowTrustResultCode {
+        return new XdrAllowTrustResultCode(XdrAllowTrustResultCode::CANT_REVOKE);
+    }
+
+    public static function SELF_NOT_ALLOWED(): XdrAllowTrustResultCode {
+        return new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SELF_NOT_ALLOWED);
+    }
+
+    public static function LOW_RESERVE(): XdrAllowTrustResultCode {
+        return new XdrAllowTrustResultCode(XdrAllowTrustResultCode::LOW_RESERVE);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

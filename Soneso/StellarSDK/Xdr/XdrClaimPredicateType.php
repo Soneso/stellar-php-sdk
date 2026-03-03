@@ -23,6 +23,30 @@ class XdrClaimPredicateType {
         return $this->value;
     }
 
+    public static function UNCONDITIONAL(): XdrClaimPredicateType {
+        return new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL);
+    }
+
+    public static function AND(): XdrClaimPredicateType {
+        return new XdrClaimPredicateType(XdrClaimPredicateType::AND);
+    }
+
+    public static function OR(): XdrClaimPredicateType {
+        return new XdrClaimPredicateType(XdrClaimPredicateType::OR);
+    }
+
+    public static function NOT(): XdrClaimPredicateType {
+        return new XdrClaimPredicateType(XdrClaimPredicateType::NOT);
+    }
+
+    public static function BEFORE_ABSOLUTE_TIME(): XdrClaimPredicateType {
+        return new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME);
+    }
+
+    public static function BEFORE_RELATIVE_TIME(): XdrClaimPredicateType {
+        return new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

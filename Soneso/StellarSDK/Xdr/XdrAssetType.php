@@ -21,6 +21,22 @@ class XdrAssetType {
         return $this->value;
     }
 
+    public static function ASSET_TYPE_NATIVE(): XdrAssetType {
+        return new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE);
+    }
+
+    public static function ASSET_TYPE_CREDIT_ALPHANUM4(): XdrAssetType {
+        return new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4);
+    }
+
+    public static function ASSET_TYPE_CREDIT_ALPHANUM12(): XdrAssetType {
+        return new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12);
+    }
+
+    public static function ASSET_TYPE_POOL_SHARE(): XdrAssetType {
+        return new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

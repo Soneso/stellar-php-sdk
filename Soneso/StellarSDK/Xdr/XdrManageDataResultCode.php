@@ -22,6 +22,26 @@ class XdrManageDataResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrManageDataResultCode {
+        return new XdrManageDataResultCode(XdrManageDataResultCode::SUCCESS);
+    }
+
+    public static function NOT_SUPPORTED_YET(): XdrManageDataResultCode {
+        return new XdrManageDataResultCode(XdrManageDataResultCode::NOT_SUPPORTED_YET);
+    }
+
+    public static function NAME_NOT_FOUND(): XdrManageDataResultCode {
+        return new XdrManageDataResultCode(XdrManageDataResultCode::NAME_NOT_FOUND);
+    }
+
+    public static function LOW_RESERVE(): XdrManageDataResultCode {
+        return new XdrManageDataResultCode(XdrManageDataResultCode::LOW_RESERVE);
+    }
+
+    public static function INVALID_NAME(): XdrManageDataResultCode {
+        return new XdrManageDataResultCode(XdrManageDataResultCode::INVALID_NAME);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

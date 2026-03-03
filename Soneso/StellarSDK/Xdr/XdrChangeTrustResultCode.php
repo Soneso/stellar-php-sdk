@@ -26,6 +26,42 @@ class XdrChangeTrustResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::MALFORMED);
+    }
+
+    public static function NO_ISSUER(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::NO_ISSUER);
+    }
+
+    public static function INVALID_LIMIT(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::INVALID_LIMIT);
+    }
+
+    public static function LOW_RESERVE(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::LOW_RESERVE);
+    }
+
+    public static function SELF_NOT_ALLOWED(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SELF_NOT_ALLOWED);
+    }
+
+    public static function TRUST_LINE_MISSING(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::TRUST_LINE_MISSING);
+    }
+
+    public static function CANNOT_DELETE(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::CANNOT_DELETE);
+    }
+
+    public static function NOT_AUTH_MAINTAIN_LIABILITIES(): XdrChangeTrustResultCode {
+        return new XdrChangeTrustResultCode(XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

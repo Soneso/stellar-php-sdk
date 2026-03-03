@@ -20,6 +20,18 @@ class XdrPreconditionType {
         return $this->value;
     }
 
+    public static function NONE(): XdrPreconditionType {
+        return new XdrPreconditionType(XdrPreconditionType::NONE);
+    }
+
+    public static function TIME(): XdrPreconditionType {
+        return new XdrPreconditionType(XdrPreconditionType::TIME);
+    }
+
+    public static function V2(): XdrPreconditionType {
+        return new XdrPreconditionType(XdrPreconditionType::V2);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

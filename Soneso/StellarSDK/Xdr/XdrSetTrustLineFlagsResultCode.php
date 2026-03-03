@@ -23,6 +23,30 @@ class XdrSetTrustLineFlagsResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrSetTrustLineFlagsResultCode {
+        return new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::SUCCESS);
+    }
+
+    public static function MALFORMED(): XdrSetTrustLineFlagsResultCode {
+        return new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::MALFORMED);
+    }
+
+    public static function NO_TRUST_LINE(): XdrSetTrustLineFlagsResultCode {
+        return new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::NO_TRUST_LINE);
+    }
+
+    public static function CANT_REVOKE(): XdrSetTrustLineFlagsResultCode {
+        return new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::CANT_REVOKE);
+    }
+
+    public static function INVALID_STATE(): XdrSetTrustLineFlagsResultCode {
+        return new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::INVALID_STATE);
+    }
+
+    public static function LOW_RESERVE(): XdrSetTrustLineFlagsResultCode {
+        return new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::LOW_RESERVE);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

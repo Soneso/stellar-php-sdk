@@ -18,6 +18,10 @@ class XdrLiquidityPoolType {
         return $this->value;
     }
 
+    public static function LIQUIDITY_POOL_CONSTANT_PRODUCT(): XdrLiquidityPoolType {
+        return new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

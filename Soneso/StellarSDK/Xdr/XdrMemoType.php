@@ -22,6 +22,26 @@ class XdrMemoType {
         return $this->value;
     }
 
+    public static function MEMO_NONE(): XdrMemoType {
+        return new XdrMemoType(XdrMemoType::MEMO_NONE);
+    }
+
+    public static function MEMO_TEXT(): XdrMemoType {
+        return new XdrMemoType(XdrMemoType::MEMO_TEXT);
+    }
+
+    public static function MEMO_ID(): XdrMemoType {
+        return new XdrMemoType(XdrMemoType::MEMO_ID);
+    }
+
+    public static function MEMO_HASH(): XdrMemoType {
+        return new XdrMemoType(XdrMemoType::MEMO_HASH);
+    }
+
+    public static function MEMO_RETURN(): XdrMemoType {
+        return new XdrMemoType(XdrMemoType::MEMO_RETURN);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }

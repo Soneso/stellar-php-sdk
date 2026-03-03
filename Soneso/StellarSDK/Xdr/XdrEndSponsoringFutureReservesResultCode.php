@@ -19,6 +19,14 @@ class XdrEndSponsoringFutureReservesResultCode {
         return $this->value;
     }
 
+    public static function SUCCESS(): XdrEndSponsoringFutureReservesResultCode {
+        return new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::SUCCESS);
+    }
+
+    public static function NOT_SPONSORED(): XdrEndSponsoringFutureReservesResultCode {
+        return new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::NOT_SPONSORED);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
