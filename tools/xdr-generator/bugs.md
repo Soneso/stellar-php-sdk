@@ -102,3 +102,17 @@ Bugs discovered in existing hand-written XDR types during generator comparison.
 - **Bug**: Hand-written code had 44 constants (up to VerifyEcdsaSecp256r1Sig=44), missing 25 BLS12-381 constants (Bls12381EncodeFp=45 through Bls12381FrInv=69)
 - **Impact**: Medium — missing constants could cause unhandled cases for BLS12-381 operations
 - **Fixed by**: Generator produces all 70 constants from the XDR spec
+
+## Batch 9
+
+### XdrOperationMeta / XdrTransactionMetaV1 / XdrTransactionMetaV2 — silent XDR corruption from instanceof guard
+- **Files**: `Soneso/StellarSDK/Xdr/XdrOperationMeta.php`, `Soneso/StellarSDK/Xdr/XdrTransactionMetaV1.php`, `Soneso/StellarSDK/Xdr/XdrTransactionMetaV2.php`
+- **Bug**: encode() writes `integer32(count($array))` as the array length, then uses `if ($val instanceof XdrLedgerEntryChange)` or `if ($val instanceof XdrOperationMeta)` to conditionally encode each element — if a non-matching element were present, the encoded count would exceed the number of encoded items, producing corrupt XDR
+- **Impact**: Low — in practice the arrays always contain correct types, but the guard masks type errors rather than failing loudly (same pattern as PathPayment bug in Batch 7)
+- **Fixed by**: Generator encodes all array elements unconditionally
+
+### XdrCreateClaimableBalanceOperation — silent XDR corruption from instanceof guard
+- **File**: `Soneso/StellarSDK/Xdr/XdrCreateClaimableBalanceOperation.php`
+- **Bug**: Same instanceof guard pattern in encode() for `$claimants` array
+- **Impact**: Low — same pattern as above
+- **Fixed by**: Generator encodes all array elements unconditionally

@@ -46,6 +46,9 @@ TYPE_OVERRIDES = {
 
   # Symbol typedef — SDK uses string
   "XdrSCSymbol" => "string",
+
+  # Typedef-array — SDK inlines as array (no wrapper class)
+  "XdrLedgerEntryChanges" => "array",
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -132,7 +135,6 @@ SKIP_TYPES = %w[
   XdrContractExecutable
   XdrContractIDPreimage
   XdrCreateAccountResult
-  XdrCreateClaimableBalanceOperation
   XdrCreateClaimableBalanceResult
   XdrDataEntry
   XdrDataEntryExt
@@ -187,7 +189,6 @@ SKIP_TYPES = %w[
   XdrOfferEntryExt
   XdrOperation
   XdrOperationBody
-  XdrOperationMeta
   XdrOperationResult
   XdrOperationResultTr
   XdrPathPaymentResultSuccess
@@ -229,8 +230,6 @@ SKIP_TYPES = %w[
   XdrTransactionEnvelope
   XdrTransactionExt
   XdrTransactionMeta
-  XdrTransactionMetaV1
-  XdrTransactionMetaV2
   XdrTransactionMetaV3
   XdrTransactionMetaV4
   XdrTransactionResult

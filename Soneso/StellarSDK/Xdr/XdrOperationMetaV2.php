@@ -8,10 +8,10 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrOperationMetaV2 {
 
     public XdrExtensionPoint $ext;
-    public XdrLedgerEntryChanges $changes;
+    public array $changes;
     public array $events;
 
-    public function __construct(XdrExtensionPoint $ext, XdrLedgerEntryChanges $changes, array $events) {
+    public function __construct(XdrExtensionPoint $ext, array $changes, array $events) {
         $this->ext = $ext;
         $this->changes = $changes;
         $this->events = $events;
@@ -19,7 +19,11 @@ class XdrOperationMetaV2 {
 
     public function encode(): string {
         $bytes = $this->ext->encode();
-        $bytes .= $this->changes->encode();
+        $changesCount = count($this->changes);
+        $bytes .= XdrEncoder::integer32($changesCount);
+        foreach ($this->changes as $changesItem) {
+            $bytes .= $changesItem->encode();
+        }
         $eventsCount = count($this->events);
         $bytes .= XdrEncoder::integer32($eventsCount);
         foreach ($this->events as $eventsItem) {
@@ -30,7 +34,11 @@ class XdrOperationMetaV2 {
 
     public static function decode(XdrBuffer $xdr): XdrOperationMetaV2 {
         $ext = XdrExtensionPoint::decode($xdr);
-        $changes = XdrLedgerEntryChanges::decode($xdr);
+        $changes = [];
+        $changesSize = $xdr->readInteger32();
+        for ($i = 0; $i < $changesSize; $i++) {
+            $changes[] = XdrLedgerEntryChange::decode($xdr);
+        }
         $events = [];
         $eventsSize = $xdr->readInteger32();
         for ($i = 0; $i < $eventsSize; $i++) {
@@ -41,8 +49,8 @@ class XdrOperationMetaV2 {
 
     public function getExt(): XdrExtensionPoint { return $this->ext; }
     public function setExt(XdrExtensionPoint $ext): void { $this->ext = $ext; }
-    public function getChanges(): XdrLedgerEntryChanges { return $this->changes; }
-    public function setChanges(XdrLedgerEntryChanges $changes): void { $this->changes = $changes; }
+    public function getChanges(): array { return $this->changes; }
+    public function setChanges(array $changes): void { $this->changes = $changes; }
     public function getEvents(): array { return $this->events; }
     public function setEvents(array $events): void { $this->events = $events; }
 

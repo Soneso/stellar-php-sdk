@@ -286,6 +286,19 @@ class Generator < Xdrgen::Generators::Base
 
       is_array = !is_ext && decl.is_a?(AST::Declarations::Array)
 
+      # Inline typedef-arrays when TYPE_OVERRIDES maps them to "array".
+      # This handles typedefs like LedgerEntryChanges (typedef LedgerEntryChange<>)
+      # where the SDK uses a plain array instead of a wrapper class.
+      if !is_ext && !is_array && php_type == "array" &&
+         decl.respond_to?(:type) && decl.type.is_a?(AST::Typespecs::Simple)
+        resolved = decl.type.resolved_type
+        if resolved.is_a?(AST::Definitions::Typedef) &&
+           resolved.declaration.is_a?(AST::Declarations::Array)
+          decl = resolved.declaration
+          is_array = true
+        end
+      end
+
       {
         name: field_name,
         xdr_name: xdr_field_name,

@@ -60,6 +60,14 @@ FIELD_OVERRIDES = {
   "XdrSCMetaV0" => {
     "val" => "value",
   },
+
+  # Batch 9: Field name differences for typedef array fields
+  "XdrOperationMeta" => {
+    "changes" => "ledgerEntryChanges",
+  },
+  "XdrTransactionMetaV1" => {
+    "txChanges" => "ledgerEntryChanges",
+  },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -104,4 +112,7 @@ FIELD_TYPE_OVERRIDES = {
     "sendAmount" => "BigInteger",
     "destMin" => "BigInteger",
   },
+
+  # Batch 9: BigInteger fields
+  "XdrCreateClaimableBalanceOperation" => { "amount" => "BigInteger" },
 }.freeze
