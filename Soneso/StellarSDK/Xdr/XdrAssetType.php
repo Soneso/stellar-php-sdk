@@ -6,7 +6,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 class XdrAssetType {
-    private int $value;
+    public int $value;
 
     const ASSET_TYPE_NATIVE = 0;
     const ASSET_TYPE_CREDIT_ALPHANUM4 = 1;

@@ -6,7 +6,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 class XdrLiquidityPoolType {
-    private int $value;
+    public int $value;
 
     const LIQUIDITY_POOL_CONSTANT_PRODUCT = 0;
 

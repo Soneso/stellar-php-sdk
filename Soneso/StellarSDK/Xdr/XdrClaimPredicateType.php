@@ -6,7 +6,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 class XdrClaimPredicateType {
-    private int $value;
+    public int $value;
 
     const UNCONDITIONAL = 0;
     const AND = 1;

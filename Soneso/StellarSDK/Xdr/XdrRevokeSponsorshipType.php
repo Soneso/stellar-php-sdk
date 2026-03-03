@@ -6,7 +6,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 class XdrRevokeSponsorshipType {
-    private int $value;
+    public int $value;
 
     const LEDGER_ENTRY = 0;
     const SIGNER = 1;

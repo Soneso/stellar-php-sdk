@@ -6,7 +6,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 class XdrPreconditionType {
-    private int $value;
+    public int $value;
 
     const NONE = 0;
     const TIME = 1;

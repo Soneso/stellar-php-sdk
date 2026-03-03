@@ -34,4 +34,46 @@ MEMBER_OVERRIDES = {
     "REVOKE_SPONSORSHIP_LEDGER_ENTRY" => "LEDGER_ENTRY",
     "REVOKE_SPONSORSHIP_SIGNER" => "SIGNER",
   },
+
+  # Batch 2: Individual overrides for constants that don't follow prefix-strip
+  "XdrClawbackResultCode" => {
+    "CLAWBACK_NOT_CLAWBACK_ENABLED" => "NOT_ENABLED",
+  },
+  "XdrCreateAccountResultCode" => {
+    "CREATE_ACCOUNT_ALREADY_EXIST" => "ACCOUNT_ALREADY_EXIST",
+  },
+}.freeze
+
+# ---------------------------------------------------------------------------
+# MEMBER_PREFIX_STRIP
+# Maps PHP class names to the XDR constant prefix that the SDK strips.
+# Applied in resolve_member_name() when no individual MEMBER_OVERRIDE exists.
+# ---------------------------------------------------------------------------
+MEMBER_PREFIX_STRIP = {
+  # Batch 2: Result codes and simple type enums
+  "XdrAccountMergeResultCode" => "ACCOUNT_MERGE_",
+  "XdrAllowTrustResultCode" => "ALLOW_TRUST_",
+  "XdrBeginSponsoringFutureReservesResultCode" => "BEGIN_SPONSORING_FUTURE_RESERVES_",
+  "XdrBumpSequenceResultCode" => "BUMP_SEQUENCE_",
+  "XdrChangeTrustResultCode" => "CHANGE_TRUST_",
+  "XdrClaimAtomType" => "CLAIM_ATOM_TYPE_",
+  "XdrClaimClaimableBalanceResultCode" => "CLAIM_CLAIMABLE_BALANCE_",
+  "XdrClawbackClaimableBalanceResultCode" => "CLAWBACK_CLAIMABLE_BALANCE_",
+  "XdrClawbackResultCode" => "CLAWBACK_",
+  "XdrCreateAccountResultCode" => "CREATE_ACCOUNT_",
+  "XdrCreateClaimableBalanceResultCode" => "CREATE_CLAIMABLE_BALANCE_",
+  "XdrEndSponsoringFutureReservesResultCode" => "END_SPONSORING_FUTURE_RESERVES_",
+  "XdrInflationResultCode" => "INFLATION_",
+  "XdrLiquidityPoolDepositResultCode" => "LIQUIDITY_POOL_DEPOSIT_",
+  "XdrLiquidityPoolWithdrawResultCode" => "LIQUIDITY_POOL_WITHDRAW_",
+  "XdrManageDataResultCode" => "MANAGE_DATA_",
+  "XdrManageOfferResultCode" => "MANAGE_SELL_OFFER_",
+  "XdrOperationResultCode" => "op",
+  "XdrPathPaymentStrictReceiveResultCode" => "PATH_PAYMENT_STRICT_RECEIVE_",
+  "XdrPathPaymentStrictSendResultCode" => "PATH_PAYMENT_STRICT_SEND_",
+  "XdrPaymentResultCode" => "PAYMENT_",
+  "XdrRevokeSponsorshipResultCode" => "REVOKE_SPONSORSHIP_",
+  "XdrSetOptionsResultCode" => "SET_OPTIONS_",
+  "XdrSetTrustLineFlagsResultCode" => "SET_TRUST_LINE_FLAGS_",
+  "XdrTransactionResultCode" => "tx",
 }.freeze

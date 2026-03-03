@@ -6,7 +6,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 class XdrClaimantType {
-    private int $value;
+    public int $value;
 
     const V0 = 0;
 

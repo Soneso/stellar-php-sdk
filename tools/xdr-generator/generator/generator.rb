@@ -107,7 +107,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts GENERATED_HEADER
     out.puts ""
     out.puts "class #{php_name} {"
-    out.puts "    private int $value;"
+    out.puts "    public int $value;"
     out.puts ""
 
     enum_defn.members.each do |m|
@@ -1325,6 +1325,9 @@ class Generator < Xdrgen::Generators::Base
   def resolve_member_name(type_name, xdr_member_name)
     if MEMBER_OVERRIDES.key?(type_name) && MEMBER_OVERRIDES[type_name].key?(xdr_member_name)
       MEMBER_OVERRIDES[type_name][xdr_member_name]
+    elsif defined?(MEMBER_PREFIX_STRIP) && MEMBER_PREFIX_STRIP.key?(type_name)
+      prefix = MEMBER_PREFIX_STRIP[type_name]
+      xdr_member_name.delete_prefix(prefix)
     else
       xdr_member_name
     end

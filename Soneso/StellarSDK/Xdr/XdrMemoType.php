@@ -6,7 +6,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 class XdrMemoType {
-    private int $value;
+    public int $value;
 
     const MEMO_NONE = 0;
     const MEMO_TEXT = 1;
