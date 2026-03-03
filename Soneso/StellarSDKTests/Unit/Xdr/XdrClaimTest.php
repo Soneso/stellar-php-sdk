@@ -370,7 +370,7 @@ class XdrClaimTest extends TestCase
         $claimants = [$claimant];
         $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
         $amount = new BigInteger(1000000000);
-        $ext = new XdrClaimableBalanceEntryExt(0, null);
+        $ext = new XdrClaimableBalanceEntryExt(0);
 
         $entry = new XdrClaimableBalanceEntry($balanceId, $claimants, $asset, $amount, $ext);
 
@@ -415,7 +415,7 @@ class XdrClaimTest extends TestCase
         $claimants = [$claimant1, $claimant2];
         $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
         $amount = new BigInteger(5000000000);
-        $ext = new XdrClaimableBalanceEntryExt(0, null);
+        $ext = new XdrClaimableBalanceEntryExt(0);
 
         $entry = new XdrClaimableBalanceEntry($balanceId, $claimants, $asset, $amount, $ext);
 
@@ -438,7 +438,7 @@ class XdrClaimTest extends TestCase
 
     public function testXdrClaimableBalanceEntryExtV0(): void
     {
-        $ext = new XdrClaimableBalanceEntryExt(0, null);
+        $ext = new XdrClaimableBalanceEntryExt(0);
 
         $encoded = $ext->encode();
         $xdrBuffer = new XdrBuffer($encoded);

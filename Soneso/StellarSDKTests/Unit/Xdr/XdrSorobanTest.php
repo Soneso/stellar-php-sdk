@@ -234,7 +234,7 @@ class XdrSorobanTest extends TestCase
      */
     public function testSorobanTransactionMetaRoundTrip(): void
     {
-        $ext = new XdrSorobanTransactionMetaExt(0, null);
+        $ext = new XdrSorobanTransactionMetaExt(0);
         $events = [];
         $returnValue = $this->createTestSCValU32(42);
         $diagnosticEvents = [];

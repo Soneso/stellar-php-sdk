@@ -91,10 +91,7 @@ SELF_REFERENCING_BASE_TYPES = %w[
 # ---------------------------------------------------------------------------
 SKIP_TYPES = %w[
   XdrAccountEntry
-  XdrAccountEntryExt
-  XdrAccountEntryV1Ext
   XdrAccountEntryV2
-  XdrAccountEntryV2Ext
   XdrAccountID
   XdrAccountMergeOperation
   XdrAllowTrustOperationAsset
@@ -110,7 +107,6 @@ SKIP_TYPES = %w[
   XdrClaimPredicate
 
   XdrClaimableBalanceEntry
-  XdrClaimableBalanceEntryExt
   XdrClaimableBalanceEntryExtV1
   XdrClaimableBalanceID
   XdrClaimant
@@ -143,7 +139,6 @@ SKIP_TYPES = %w[
   XdrLedgerEntry
   XdrLedgerEntryChange
   XdrLedgerEntryData
-  XdrLedgerEntryExt
   XdrLedgerEntryV1
   XdrLedgerKey
   XdrLedgerKeyAccount
@@ -191,7 +186,6 @@ SKIP_TYPES = %w[
   XdrSorobanCredentials
   XdrSorobanTransactionData
   XdrSorobanTransactionMeta
-  XdrSorobanTransactionMetaExt
   XdrSorobanTransactionMetaV2
   XdrTimeBounds
   XdrTransaction
@@ -200,13 +194,10 @@ SKIP_TYPES = %w[
   XdrTransactionMetaV3
   XdrTransactionMetaV4
   XdrTransactionResult
-  XdrTransactionResultExt
   XdrTransactionResultResult
   XdrTransactionV0
   XdrTrustLineEntry
-  XdrTrustLineEntryExt
   XdrTrustLineEntryExtensionV2
-  XdrTrustLineEntryV1Ext
   XdrTrustlineAsset
 ].freeze
 

@@ -249,7 +249,7 @@ class XdrAccountTest extends TestCase
         );
         $signers = [$signer];
 
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $original = new XdrAccountEntry(
             $accountID,
@@ -306,9 +306,10 @@ class XdrAccountTest extends TestCase
             new BigInteger(100000),
             new BigInteger(200000)
         );
-        $v1Ext = new XdrAccountEntryV1Ext(0, null);
+        $v1Ext = new XdrAccountEntryV1Ext(0);
         $v1 = new XdrAccountEntryV1($liabilities, $v1Ext);
-        $ext = new XdrAccountEntryExt(1, $v1);
+        $ext = new XdrAccountEntryExt(1);
+        $ext->v1 = $v1;
 
         $original = new XdrAccountEntry(
             $accountID,
@@ -364,7 +365,7 @@ class XdrAccountTest extends TestCase
         $homeDomain = "";
         $thresholds = "\x00\x00\x00\x00";
         $signers = [];
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $original = new XdrAccountEntry(
             $accountID,
@@ -408,7 +409,7 @@ class XdrAccountTest extends TestCase
             new XdrSigner($this->createSignerKey(XdrSignerKeyType::HASH_X, str_repeat("\x33", 32)), 30),
         ];
 
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $original = new XdrAccountEntry(
             $accountID,

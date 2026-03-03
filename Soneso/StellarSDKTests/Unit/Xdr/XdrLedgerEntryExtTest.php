@@ -32,7 +32,7 @@ class XdrLedgerEntryExtTest extends TestCase
     #[Test]
     public function testTrustLineEntryExtV0RoundTrip(): void
     {
-        $ext = new XdrTrustLineEntryExt(0, null);
+        $ext = new XdrTrustLineEntryExt(0);
 
         $encoded = $ext->encode();
         $decoded = XdrTrustLineEntryExt::decode(new XdrBuffer($encoded));
@@ -51,7 +51,8 @@ class XdrLedgerEntryExtTest extends TestCase
         $v1Ext = new XdrTrustLineEntryV1Ext(0);
         $v1 = new XdrTrustLineEntryV1($liabilities, $v1Ext);
 
-        $ext = new XdrTrustLineEntryExt(1, $v1);
+        $ext = new XdrTrustLineEntryExt(1);
+        $ext->v1 = $v1;
 
         $encoded = $ext->encode();
         $decoded = XdrTrustLineEntryExt::decode(new XdrBuffer($encoded));
@@ -65,7 +66,7 @@ class XdrLedgerEntryExtTest extends TestCase
     #[Test]
     public function testTrustLineEntryExtGettersAndSetters(): void
     {
-        $ext = new XdrTrustLineEntryExt(0, null);
+        $ext = new XdrTrustLineEntryExt(0);
 
         $this->assertEquals(0, $ext->getDiscriminant());
         $this->assertNull($ext->getV1());
@@ -161,7 +162,7 @@ class XdrLedgerEntryExtTest extends TestCase
         $balance = 10000000;
         $limit = 100000000;
         $flags = 1;
-        $ext = new XdrTrustLineEntryExt(0, null);
+        $ext = new XdrTrustLineEntryExt(0);
 
         $trustLine = new XdrTrustLineEntry($accountId, $asset, $balance, $limit, $flags, $ext);
 
@@ -191,7 +192,8 @@ class XdrLedgerEntryExtTest extends TestCase
         );
         $v1Ext = new XdrTrustLineEntryV1Ext(0);
         $v1 = new XdrTrustLineEntryV1($liabilities, $v1Ext);
-        $ext = new XdrTrustLineEntryExt(1, $v1);
+        $ext = new XdrTrustLineEntryExt(1);
+        $ext->v1 = $v1;
 
         $trustLine = new XdrTrustLineEntry($accountId, $asset, $balance, $limit, $flags, $ext);
 
@@ -212,7 +214,7 @@ class XdrLedgerEntryExtTest extends TestCase
         $numSponsored = 5;
         $numSponsoring = 10;
         $signerSponsoringIDs = [];
-        $ext = new XdrAccountEntryV2Ext(0, null);
+        $ext = new XdrAccountEntryV2Ext(0);
 
         $accountEntryV2 = new XdrAccountEntryV2($numSponsored, $numSponsoring, $signerSponsoringIDs, $ext);
 
@@ -235,7 +237,7 @@ class XdrLedgerEntryExtTest extends TestCase
             null,
             XdrAccountID::fromAccountId(self::ACCOUNT_ID_2)
         ];
-        $ext = new XdrAccountEntryV2Ext(0, null);
+        $ext = new XdrAccountEntryV2Ext(0);
 
         $accountEntryV2 = new XdrAccountEntryV2($numSponsored, $numSponsoring, $signerSponsoringIDs, $ext);
 
@@ -253,7 +255,7 @@ class XdrLedgerEntryExtTest extends TestCase
     #[Test]
     public function testAccountEntryV2GettersAndSetters(): void
     {
-        $accountEntryV2 = new XdrAccountEntryV2(0, 0, [], new XdrAccountEntryV2Ext(0, null));
+        $accountEntryV2 = new XdrAccountEntryV2(0, 0, [], new XdrAccountEntryV2Ext(0));
 
         $this->assertEquals(0, $accountEntryV2->getNumSponsored());
         $this->assertEquals(0, $accountEntryV2->getNumSponsoring());
@@ -269,7 +271,7 @@ class XdrLedgerEntryExtTest extends TestCase
 
         $this->assertCount(1, $accountEntryV2->getSignerSponsoringIDs());
 
-        $newExt = new XdrAccountEntryV2Ext(3, null);
+        $newExt = new XdrAccountEntryV2Ext(3);
         $accountEntryV2->setExt($newExt);
 
         $this->assertEquals(3, $accountEntryV2->getExt()->getDiscriminant());
@@ -278,7 +280,7 @@ class XdrLedgerEntryExtTest extends TestCase
     #[Test]
     public function testAccountEntryV2ExtRoundTrip(): void
     {
-        $ext = new XdrAccountEntryV2Ext(0, null);
+        $ext = new XdrAccountEntryV2Ext(0);
 
         $encoded = $ext->encode();
         $decoded = XdrAccountEntryV2Ext::decode(new XdrBuffer($encoded));
@@ -295,7 +297,8 @@ class XdrLedgerEntryExtTest extends TestCase
         $seqTime = 1234567890;
         $v3 = new XdrAccountEntryV3($extensionPoint, $seqLedger, $seqTime);
 
-        $ext = new XdrAccountEntryV2Ext(3, $v3);
+        $ext = new XdrAccountEntryV2Ext(3);
+        $ext->v3 = $v3;
 
         $encoded = $ext->encode();
         $decoded = XdrAccountEntryV2Ext::decode(new XdrBuffer($encoded));
@@ -309,7 +312,7 @@ class XdrLedgerEntryExtTest extends TestCase
     #[Test]
     public function testAccountEntryV2ExtGettersAndSetters(): void
     {
-        $ext = new XdrAccountEntryV2Ext(0, null);
+        $ext = new XdrAccountEntryV2Ext(0);
 
         $this->assertEquals(0, $ext->getDiscriminant());
         $this->assertNull($ext->getV3());
@@ -424,7 +427,8 @@ class XdrLedgerEntryExtTest extends TestCase
     {
         $extensionPoint = new XdrExtensionPoint(0);
         $v3 = new XdrAccountEntryV3($extensionPoint, 77777, 88888);
-        $ext = new XdrAccountEntryV2Ext(3, $v3);
+        $ext = new XdrAccountEntryV2Ext(3);
+        $ext->v3 = $v3;
 
         $numSponsored = 1;
         $numSponsoring = 2;

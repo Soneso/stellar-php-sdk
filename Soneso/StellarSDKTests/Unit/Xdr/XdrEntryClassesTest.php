@@ -66,7 +66,7 @@ class XdrEntryClassesTest extends TestCase
         $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
         $balance = new BigInteger(10000000000);
         $seqNum = new XdrSequenceNumber(new BigInteger(12345));
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $accountEntry = new XdrAccountEntry(
             $accountId,
@@ -100,7 +100,7 @@ class XdrEntryClassesTest extends TestCase
         $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
         $nativeAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
         $asset = XdrTrustLineAsset::fromXdrAsset($nativeAsset);
-        $ext = new XdrTrustLineEntryExt(0, null);
+        $ext = new XdrTrustLineEntryExt(0);
 
         $trustLineEntry = new XdrTrustLineEntry(
             $accountId,
@@ -192,7 +192,7 @@ class XdrEntryClassesTest extends TestCase
 
         $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
         $amount = new BigInteger(1000000);
-        $ext = new XdrClaimableBalanceEntryExt(0, null);
+        $ext = new XdrClaimableBalanceEntryExt(0);
 
         $claimableBalanceEntry = new XdrClaimableBalanceEntry($balanceID, $claimants, $asset, $amount, $ext);
 
@@ -249,7 +249,7 @@ class XdrEntryClassesTest extends TestCase
         $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
         $balance = new BigInteger(10000000000);
         $seqNum = new XdrSequenceNumber(new BigInteger(12345));
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $accountEntry = new XdrAccountEntry(
             $accountId,
@@ -267,7 +267,7 @@ class XdrEntryClassesTest extends TestCase
         $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
         $ledgerEntryData->setAccount($accountEntry);
 
-        $ledgerEntry = new XdrLedgerEntry(123, $ledgerEntryData, new XdrLedgerEntryExt(0, null));
+        $ledgerEntry = new XdrLedgerEntry(123, $ledgerEntryData, new XdrLedgerEntryExt(0));
 
         $change = new XdrLedgerEntryChange(
             new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_CREATED)
@@ -287,7 +287,7 @@ class XdrEntryClassesTest extends TestCase
         $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
         $balance = new BigInteger(20000000000);
         $seqNum = new XdrSequenceNumber(new BigInteger(54321));
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $accountEntry = new XdrAccountEntry(
             $accountId,
@@ -305,7 +305,7 @@ class XdrEntryClassesTest extends TestCase
         $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
         $ledgerEntryData->setAccount($accountEntry);
 
-        $ledgerEntry = new XdrLedgerEntry(456, $ledgerEntryData, new XdrLedgerEntryExt(0, null));
+        $ledgerEntry = new XdrLedgerEntry(456, $ledgerEntryData, new XdrLedgerEntryExt(0));
 
         $change = new XdrLedgerEntryChange(
             new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_UPDATED)
@@ -346,7 +346,7 @@ class XdrEntryClassesTest extends TestCase
         $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
         $balance = new BigInteger(5000000000);
         $seqNum = new XdrSequenceNumber(new BigInteger(99999));
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $accountEntry = new XdrAccountEntry(
             $accountId,
@@ -364,7 +364,7 @@ class XdrEntryClassesTest extends TestCase
         $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
         $ledgerEntryData->setAccount($accountEntry);
 
-        $ledgerEntry = new XdrLedgerEntry(789, $ledgerEntryData, new XdrLedgerEntryExt(0, null));
+        $ledgerEntry = new XdrLedgerEntry(789, $ledgerEntryData, new XdrLedgerEntryExt(0));
 
         $change = new XdrLedgerEntryChange(
             new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_STATE)
@@ -384,7 +384,7 @@ class XdrEntryClassesTest extends TestCase
         $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID_2);
         $balance = new BigInteger(15000000000);
         $seqNum = new XdrSequenceNumber(new BigInteger(11111));
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $accountEntry = new XdrAccountEntry(
             $accountId,
@@ -402,7 +402,7 @@ class XdrEntryClassesTest extends TestCase
         $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
         $ledgerEntryData->setAccount($accountEntry);
 
-        $ledgerEntry = new XdrLedgerEntry(321, $ledgerEntryData, new XdrLedgerEntryExt(0, null));
+        $ledgerEntry = new XdrLedgerEntry(321, $ledgerEntryData, new XdrLedgerEntryExt(0));
 
         $change = new XdrLedgerEntryChange(
             new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_RESTORED)

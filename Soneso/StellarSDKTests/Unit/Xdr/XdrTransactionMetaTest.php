@@ -474,7 +474,7 @@ class XdrTransactionMetaTest extends TestCase
 
     private function createMinimalSorobanMeta(): XdrSorobanTransactionMeta
     {
-        $ext = new XdrSorobanTransactionMetaExt(0, null);
+        $ext = new XdrSorobanTransactionMetaExt(0);
         $returnValue = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID));
 
         return new XdrSorobanTransactionMeta(

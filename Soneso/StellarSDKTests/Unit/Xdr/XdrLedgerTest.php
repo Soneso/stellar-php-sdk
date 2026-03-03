@@ -105,7 +105,7 @@ class XdrLedgerTest extends TestCase
         $homeDomain = "";
         $thresholds = chr(1) . chr(0) . chr(0) . chr(0);
         $signers = [];
-        $ext = new XdrAccountEntryExt(0, null);
+        $ext = new XdrAccountEntryExt(0);
 
         $accountEntry = new XdrAccountEntry(
             $accountId,
@@ -143,7 +143,7 @@ class XdrLedgerTest extends TestCase
         $balance = 50000000;
         $limit = 100000000;
         $flags = 1;
-        $ext = new XdrTrustLineEntryExt(0, null);
+        $ext = new XdrTrustLineEntryExt(0);
 
         $trustLineEntry = new XdrTrustLineEntry(
             $accountId,
@@ -237,7 +237,7 @@ class XdrLedgerTest extends TestCase
         $homeDomain = "";
         $thresholds = chr(1) . chr(0) . chr(0) . chr(0);
         $signers = [];
-        $accountExt = new XdrAccountEntryExt(0, null);
+        $accountExt = new XdrAccountEntryExt(0);
 
         $accountEntry = new XdrAccountEntry(
             $accountId,
@@ -255,7 +255,7 @@ class XdrLedgerTest extends TestCase
         $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
         $ledgerEntryData->setAccount($accountEntry);
 
-        $ext = new XdrLedgerEntryExt(0, null);
+        $ext = new XdrLedgerEntryExt(0);
         $ledgerEntry = new XdrLedgerEntry($lastModifiedLedgerSeq, $ledgerEntryData, $ext);
 
         $encoded = $ledgerEntry->encode();
@@ -280,7 +280,7 @@ class XdrLedgerTest extends TestCase
         $homeDomain = "example.com";
         $thresholds = chr(1) . chr(1) . chr(1) . chr(1);
         $signers = [];
-        $accountExt = new XdrAccountEntryExt(0, null);
+        $accountExt = new XdrAccountEntryExt(0);
 
         $accountEntry = new XdrAccountEntry(
             $accountId,
@@ -298,7 +298,7 @@ class XdrLedgerTest extends TestCase
         $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
         $ledgerEntryData->setAccount($accountEntry);
 
-        $ext = new XdrLedgerEntryExt(0, null);
+        $ext = new XdrLedgerEntryExt(0);
         $ledgerEntry = new XdrLedgerEntry($lastModifiedLedgerSeq, $ledgerEntryData, $ext);
 
         $base64 = base64_encode($ledgerEntry->encode());
@@ -520,7 +520,7 @@ class XdrLedgerTest extends TestCase
 
     public function testXdrLedgerEntryExtV0(): void
     {
-        $ext = new XdrLedgerEntryExt(0, null);
+        $ext = new XdrLedgerEntryExt(0);
 
         $encoded = $ext->encode();
         $xdrBuffer = new XdrBuffer($encoded);
@@ -535,7 +535,8 @@ class XdrLedgerTest extends TestCase
         $sponsoringId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
         $v1Ext = new XdrLedgerEntryV1Ext(0);
         $v1 = new XdrLedgerEntryV1($sponsoringId, $v1Ext);
-        $ext = new XdrLedgerEntryExt(1, $v1);
+        $ext = new XdrLedgerEntryExt(1);
+        $ext->v1 = $v1;
 
         $encoded = $ext->encode();
         $xdrBuffer = new XdrBuffer($encoded);

@@ -166,3 +166,23 @@ _(No new bugs — 7 types generated cleanly)_
 ## Batch 14
 
 _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() callers migrated to public property access.)_
+
+## Batch 15
+
+### XdrClaimableBalanceEntryExt — encode() uses nullability check instead of discriminant switch
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimableBalanceEntryExt.php`
+- **Bug**: encode() checks `if ($this->v1 !== null)` instead of switching on the discriminant to control encoding
+- **Impact**: Low — functionally equivalent in normal usage, but would silently encode v1 even if discriminant is 0 when v1 was accidentally set (same pattern as XdrAccountMergeResult in Batch 12)
+- **Fixed by**: Generator uses proper switch on discriminant to control encoding
+
+### XdrClaimableBalanceEntryExt — missing getV1()/setV1() accessors
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimableBalanceEntryExt.php`
+- **Bug**: Hand-written code had public `$v1` property but no getter/setter methods, inconsistent with other ext unions
+- **Impact**: None — public property access still works
+- **Fixed by**: Generator produces consistent getV1()/setV1() accessors
+
+### XdrTransactionResultExt — private discriminant field
+- **File**: `Soneso/StellarSDK/Xdr/XdrTransactionResultExt.php`
+- **Bug**: `$discriminant` was `private` instead of `public`, inconsistent with all other ext union types
+- **Impact**: None — getter `getDiscriminant()` existed
+- **Fixed by**: Generator uses `public int $discriminant` consistently

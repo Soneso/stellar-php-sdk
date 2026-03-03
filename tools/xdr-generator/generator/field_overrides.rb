@@ -110,6 +110,17 @@ FIELD_OVERRIDES = {
   "XdrLedgerEntryV1Ext" => { "v" => "discriminant" },
   "XdrTransactionExt" => { "v" => "discriminant", "sorobanData" => "sorobanTransactionData" },
   "XdrSorobanTransactionDataExt" => { "v" => "discriminant" },
+
+  # Batch 15: Ext union discriminant name overrides
+  "XdrAccountEntryExt" => { "v" => "discriminant" },
+  "XdrAccountEntryV1Ext" => { "v" => "discriminant" },
+  "XdrAccountEntryV2Ext" => { "v" => "discriminant" },
+  "XdrClaimableBalanceEntryExt" => { "v" => "discriminant" },
+  "XdrLedgerEntryExt" => { "v" => "discriminant" },
+  "XdrTrustLineEntryExt" => { "v" => "discriminant" },
+  "XdrTrustLineEntryV1Ext" => { "v" => "discriminant" },
+  "XdrSorobanTransactionMetaExt" => { "v" => "discriminant" },
+  "XdrTransactionResultExt" => { "v" => "discriminant" },
 }.freeze
 
 # ---------------------------------------------------------------------------
