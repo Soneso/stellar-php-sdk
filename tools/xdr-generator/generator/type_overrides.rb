@@ -64,6 +64,7 @@ BASE_WRAPPER_TYPES = %w[
   XdrDecoratedSignature
   XdrHostFunction
   XdrLedgerKey
+  XdrLedgerKeyAccount
   XdrMuxedAccount
   XdrMuxedAccountMed25519
   XdrSCAddress
@@ -107,7 +108,6 @@ SKIP_TYPES = %w[
   XdrClaimPredicate
 
   XdrClaimableBalanceEntry
-  XdrClaimableBalanceEntryExtV1
   XdrClaimableBalanceID
   XdrClaimant
 
@@ -123,7 +123,6 @@ SKIP_TYPES = %w[
   XdrContractExecutable
   XdrContractIDPreimage
   XdrCreateClaimableBalanceResult
-  XdrDataEntry
   XdrDataValue
   XdrDataValueMandatory
   XdrDecoder
@@ -139,9 +138,7 @@ SKIP_TYPES = %w[
   XdrLedgerEntry
   XdrLedgerEntryChange
   XdrLedgerEntryData
-  XdrLedgerEntryV1
   XdrLedgerKey
-  XdrLedgerKeyAccount
   XdrLiquidityPoolBody
   XdrLiquidityPoolDepositOperation
   XdrLiquidityPoolEntry
@@ -197,7 +194,6 @@ SKIP_TYPES = %w[
   XdrTransactionResultResult
   XdrTransactionV0
   XdrTrustLineEntry
-  XdrTrustLineEntryExtensionV2
   XdrTrustlineAsset
 ].freeze
 
@@ -208,6 +204,7 @@ SKIP_TYPES = %w[
 # Phase 2: Populate as extension point fields are identified during audit.
 # ---------------------------------------------------------------------------
 EXTENSION_POINT_FIELDS = {
-  # "XdrDataEntry" => ["ext"],
-  # "XdrTransaction" => ["ext"],
+  # Batch 16: Struct fields that are void-only ext unions, simplified to int
+  "XdrClaimableBalanceEntryExtV1" => ["ext"],
+  "XdrTrustLineEntryExtensionV2" => ["ext"],
 }.freeze

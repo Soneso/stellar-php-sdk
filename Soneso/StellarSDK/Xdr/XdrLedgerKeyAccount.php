@@ -6,32 +6,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrLedgerKeyAccount
+class XdrLedgerKeyAccount extends XdrLedgerKeyAccountBase
 {
-    private XdrAccountID $accountID;
-
-    public function __construct(XdrAccountID $accountID) {
-        $this->accountID = $accountID;
-    }
-
-    /**
-     * @return XdrAccountID
-     */
-    public function getAccountID(): XdrAccountID
-    {
-        return $this->accountID;
-    }
-
-    public function encode(): string {
-        return $this->accountID->encode();
-    }
-
-    public static function decode(XdrBuffer $xdr) : XdrLedgerKeyAccount {
-        $acc = XdrAccountID::decode($xdr);
-        return new XdrLedgerKeyAccount($acc);
-    }
-
-    public static function forAccountId(String $accountId) : XdrLedgerKeyAccount {
+    public static function forAccountId(string $accountId): XdrLedgerKeyAccount {
         return new XdrLedgerKeyAccount(XdrAccountID::fromAccountId($accountId));
     }
 }

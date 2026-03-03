@@ -121,6 +121,10 @@ FIELD_OVERRIDES = {
   "XdrTrustLineEntryV1Ext" => { "v" => "discriminant" },
   "XdrSorobanTransactionMetaExt" => { "v" => "discriminant" },
   "XdrTransactionResultExt" => { "v" => "discriminant" },
+
+  # Batch 16: Extension point field renames + field name overrides
+  "XdrClaimableBalanceEntryExtV1" => { "ext" => "discriminant" },
+  "XdrTrustLineEntryExtensionV2" => { "ext" => "discriminant" },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -175,5 +179,8 @@ FIELD_TYPE_OVERRIDES = {
   # Batch 13: BigInteger fields for operations (keys are XDR field names, before rename)
   "XdrManageBuyOfferOperation" => { "buyAmount" => "BigInteger" },
   "XdrManageSellOfferOperation" => { "amount" => "BigInteger" },
+
+  # Batch 16: DataEntry uses XdrDataValueMandatory instead of XdrDataValue
+  "XdrDataEntry" => { "dataValue" => "XdrDataValueMandatory" },
 
 }.freeze

@@ -186,3 +186,17 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: `$discriminant` was `private` instead of `public`, inconsistent with all other ext union types
 - **Impact**: None — getter `getDiscriminant()` existed
 - **Fixed by**: Generator uses `public int $discriminant` consistently
+
+## Batch 16
+
+### XdrLedgerKeyAccount — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrLedgerKeyAccount.php`
+- **Bug**: `$accountID` was `private` instead of `public`, inconsistent with other generated types
+- **Impact**: None — getter `getAccountID()` existed; no code accessed the property directly
+- **Fixed by**: Generated base class uses `public` consistently; wrapper preserves `forAccountId()` helper
+
+### XdrDataEntry — missing string max-length validation on dataName
+- **File**: `Soneso/StellarSDK/Xdr/XdrDataEntry.php`
+- **Bug**: Hand-written code passed max-length 64 to `XdrEncoder::string()` and `readString()` for `dataName`; generated version omits the constraint
+- **Impact**: Low — max-length is a defense-in-depth validation; the network rejects oversized names anyway. This is a known generator-wide limitation (string max-lengths not propagated).
+- **Status**: Known generator limitation, not yet fixed

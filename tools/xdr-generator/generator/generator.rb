@@ -1286,18 +1286,17 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def php_type_string(decl, member = nil)
-    is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
-
+    # Note: optionality is handled by callers (property rendering, constructor,
+    # encode/decode) via the is_optional flag — do NOT add ? prefix here.
     case decl
     when AST::Declarations::Array
       "array"
     when AST::Declarations::Opaque
       "string"
     when AST::Declarations::String
-      is_optional ? "?string" : "string"
+      "string"
     else
-      base = php_type_for_typespec(decl.type)
-      is_optional ? "?#{base}" : base
+      php_type_for_typespec(decl.type)
     end
   end
 
