@@ -93,7 +93,7 @@ SKIP_TYPES = %w[
   XdrAsset
   XdrAssetAlphaNum12
   XdrAssetAlphaNum4
-  XdrAssetType
+
   XdrBeginSponsoringFutureReservesOperation
   XdrBeginSponsoringFutureReservesResult
   XdrBeginSponsoringFutureReservesResultCode
@@ -114,14 +114,14 @@ SKIP_TYPES = %w[
   XdrClaimOfferAtom
   XdrClaimOfferAtomV0
   XdrClaimPredicate
-  XdrClaimPredicateType
+
   XdrClaimableBalanceEntry
   XdrClaimableBalanceEntryExt
   XdrClaimableBalanceEntryExtV1
   XdrClaimableBalanceID
   XdrClaimableBalanceIDType
   XdrClaimant
-  XdrClaimantType
+
   XdrClaimantV0
   XdrClawbackClaimableBalanceOperation
   XdrClawbackClaimableBalanceResult
@@ -234,7 +234,7 @@ SKIP_TYPES = %w[
   XdrLiquidityPoolDepositResultCode
   XdrLiquidityPoolEntry
   XdrLiquidityPoolParameters
-  XdrLiquidityPoolType
+
   XdrLiquidityPoolWithdrawOperation
   XdrLiquidityPoolWithdrawResult
   XdrLiquidityPoolWithdrawResultCode
@@ -249,7 +249,7 @@ SKIP_TYPES = %w[
   XdrManageOfferSuccessResultOffer
   XdrManageSellOfferOperation
   XdrMemo
-  XdrMemoType
+
   XdrMuxedAccount
   XdrMuxedAccountMed25519
   XdrOfferEntry
@@ -272,7 +272,7 @@ SKIP_TYPES = %w[
   XdrPaymentOperation
   XdrPaymentResult
   XdrPaymentResultCode
-  XdrPreconditionType
+
   XdrPreconditions
   XdrPreconditionsV2
   XdrPrice
@@ -283,7 +283,7 @@ SKIP_TYPES = %w[
   XdrRevokeSponsorshipResult
   XdrRevokeSponsorshipResultCode
   XdrRevokeSponsorshipSigner
-  XdrRevokeSponsorshipType
+
   XdrSCAddress
   XdrSCAddressType
   XdrSCContractInstance

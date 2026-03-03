@@ -10,12 +10,28 @@
 #     },
 #   }
 #
-# Phase 2 note: This is a skeleton. A full audit of all enum and union members
-# across all 309 types will be performed in Phase 2 to populate this map.
+# Populated incrementally during batch processing.
 
 MEMBER_OVERRIDES = {
-  # Example (disabled):
-  # "XdrMemoType" => {
-  #   "MEMO_NONE" => "MEMO_TYPE_NONE",
-  # },
+  # Batch 1: Simple enums — SDK strips the type prefix from constant names
+  "XdrClaimantType" => {
+    "CLAIMANT_TYPE_V0" => "V0",
+  },
+  "XdrClaimPredicateType" => {
+    "CLAIM_PREDICATE_UNCONDITIONAL" => "UNCONDITIONAL",
+    "CLAIM_PREDICATE_AND" => "AND",
+    "CLAIM_PREDICATE_OR" => "OR",
+    "CLAIM_PREDICATE_NOT" => "NOT",
+    "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME" => "BEFORE_ABSOLUTE_TIME",
+    "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME" => "BEFORE_RELATIVE_TIME",
+  },
+  "XdrPreconditionType" => {
+    "PRECOND_NONE" => "NONE",
+    "PRECOND_TIME" => "TIME",
+    "PRECOND_V2" => "V2",
+  },
+  "XdrRevokeSponsorshipType" => {
+    "REVOKE_SPONSORSHIP_LEDGER_ENTRY" => "LEDGER_ENTRY",
+    "REVOKE_SPONSORSHIP_SIGNER" => "SIGNER",
+  },
 }.freeze
