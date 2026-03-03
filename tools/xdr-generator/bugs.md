@@ -148,3 +148,17 @@ _(No new bugs — 7 types generated cleanly)_
 - **Bug**: encode() checks `if ($this->sourceAccountBalance !== null)` instead of switching on the discriminant code
 - **Impact**: Low — functionally equivalent in normal usage, but would silently skip encoding if balance were null with SUCCESS code
 - **Fixed by**: Generator uses proper switch on discriminant to control encoding
+
+## Batch 13
+
+### XdrManageBuyOfferOperation / XdrManageSellOfferOperation — spurious argument in decode()
+- **Files**: `Soneso/StellarSDK/Xdr/XdrManageBuyOfferOperation.php`, `Soneso/StellarSDK/Xdr/XdrManageSellOfferOperation.php`
+- **Bug**: `$xdr->readBigInteger64($xdr)` passes spurious `$xdr` argument (same pattern as XdrCreatePassiveSellOfferOperation in Batch 3)
+- **Impact**: Low — PHP silently ignores extra arguments
+- **Fixed by**: Generator produces `$xdr->readBigInteger64()` (no extra arg)
+
+### XdrManageBuyOfferOperation / XdrManageSellOfferOperation — signed/unsigned mismatch for offerID
+- **Files**: `Soneso/StellarSDK/Xdr/XdrManageBuyOfferOperation.php`, `Soneso/StellarSDK/Xdr/XdrManageSellOfferOperation.php`
+- **Bug**: `offerID` encoded with `unsignedInteger64`/`readUnsignedInteger64`, but XDR spec defines `int64 offerID` (signed)
+- **Impact**: Low — values within signed range encode identically (same pattern as XdrClaimOfferAtom in Batch 3, XdrLedgerKeyOffer in Batch 5)
+- **Fixed by**: Generator uses `integer64`/`readInteger64`

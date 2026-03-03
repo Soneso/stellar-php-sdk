@@ -90,6 +90,19 @@ FIELD_OVERRIDES = {
   "XdrExtensionPoint" => { "v" => "discriminant" },
   "XdrAccountMergeResult" => { "code" => "resultCode" },
   "XdrInvokeHostFunctionResult" => { "code" => "type" },
+
+  # Batch 13: Field name overrides for operations
+  "XdrManageBuyOfferOperation" => {
+    "buyAmount" => "amount",
+    "offerID" => "offerId",
+  },
+  "XdrManageSellOfferOperation" => {
+    "offerID" => "offerId",
+  },
+
+  # Batch 13: Union discriminant name overrides
+  "XdrFeeBumpTransactionExt" => { "v" => "discriminant" },
+  "XdrTransactionV0Ext" => { "v" => "discriminant" },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -140,5 +153,9 @@ FIELD_TYPE_OVERRIDES = {
 
   # Batch 12: BigInteger fields for union arms
   "XdrAccountMergeResult" => { "sourceAccountBalance" => "BigInteger" },
+
+  # Batch 13: BigInteger fields for operations (keys are XDR field names, before rename)
+  "XdrManageBuyOfferOperation" => { "buyAmount" => "BigInteger" },
+  "XdrManageSellOfferOperation" => { "amount" => "BigInteger" },
 
 }.freeze

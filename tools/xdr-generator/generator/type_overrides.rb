@@ -135,7 +135,6 @@ SKIP_TYPES = %w[
   XdrDecoratedSignature
   XdrEncoder
   XdrFeeBumpTransaction
-  XdrFeeBumpTransactionExt
   XdrFeeBumpTransactionInnerTx
   XdrHashIDPreimage
   XdrHostFunction
@@ -151,18 +150,15 @@ SKIP_TYPES = %w[
   XdrLedgerKey
   XdrLedgerKeyAccount
   XdrLiquidityPoolBody
-  XdrLiquidityPoolConstantProductParameters
   XdrLiquidityPoolDepositOperation
   XdrLiquidityPoolEntry
   XdrLiquidityPoolParameters
 
   XdrLiquidityPoolWithdrawOperation
-  XdrManageBuyOfferOperation
   XdrManageDataOperation
   XdrManageOfferResult
   XdrManageOfferSuccessResult
   XdrManageOfferSuccessResultOffer
-  XdrManageSellOfferOperation
   XdrMemo
 
   XdrMuxedAccount
@@ -213,7 +209,6 @@ SKIP_TYPES = %w[
   XdrTransactionResultExt
   XdrTransactionResultResult
   XdrTransactionV0
-  XdrTransactionV0Ext
   XdrTrustLineEntry
   XdrTrustLineEntryExt
   XdrTrustLineEntryExtensionV2
