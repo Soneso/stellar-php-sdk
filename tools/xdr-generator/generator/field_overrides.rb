@@ -93,4 +93,15 @@ FIELD_TYPE_OVERRIDES = {
     "buying" => "BigInteger",
     "selling" => "BigInteger",
   },
+
+  # Batch 7: BigInteger fields
+  "XdrClawbackOperation" => { "amount" => "BigInteger" },
+  "XdrPathPaymentStrictReceiveOperation" => {
+    "sendMax" => "BigInteger",
+    "destAmount" => "BigInteger",
+  },
+  "XdrPathPaymentStrictSendOperation" => {
+    "sendAmount" => "BigInteger",
+    "destMin" => "BigInteger",
+  },
 }.freeze

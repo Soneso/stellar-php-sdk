@@ -103,7 +103,6 @@ SKIP_TYPES = %w[
 
   XdrBeginSponsoringFutureReservesResult
   XdrBuffer
-  XdrBumpSequenceOperation
   XdrBumpSequenceResult
   XdrChangeTrustAsset
   XdrChangeTrustOperation
@@ -120,17 +119,15 @@ SKIP_TYPES = %w[
   XdrClaimant
 
   XdrClawbackClaimableBalanceResult
-  XdrClawbackOperation
   XdrClawbackResult
   XdrConfigSettingEntry
-  XdrConfigUpgradeSetKey
   XdrConstantProduct
+  XdrConfigUpgradeSetKey
   XdrContractCodeEntry
   XdrContractCodeEntryExt
   XdrContractCodeEntryExtV1
   XdrContractCostParams
   XdrContractCostType
-  XdrContractDataEntry
   XdrContractEvent
   XdrContractEventBody
   XdrContractExecutable
@@ -196,9 +193,7 @@ SKIP_TYPES = %w[
   XdrOperationResult
   XdrOperationResultTr
   XdrPathPaymentResultSuccess
-  XdrPathPaymentStrictReceiveOperation
   XdrPathPaymentStrictReceiveResult
-  XdrPathPaymentStrictSendOperation
   XdrPathPaymentStrictSendResult
   XdrPaymentResult
 
@@ -240,8 +235,6 @@ SKIP_TYPES = %w[
   XdrTimeBounds
   XdrTransaction
   XdrTransactionEnvelope
-  XdrTransactionEvent
-  XdrTransactionEventStage
   XdrTransactionExt
   XdrTransactionMeta
   XdrTransactionMetaV1

@@ -74,3 +74,11 @@ Bugs discovered in existing hand-written XDR types during generator comparison.
 - **File**: `Soneso/StellarSDK/Xdr/XdrSCMetaV0.php`
 - **Bug**: Field named `$value` instead of `$val` (XDR spec: `string val<>`)
 - **Impact**: None — field name is internal, getter/property access preserved via override
+
+## Batch 7
+
+### XdrPathPaymentStrictReceiveOperation / XdrPathPaymentStrictSendOperation — silent XDR corruption from instanceof guard
+- **Files**: `Soneso/StellarSDK/Xdr/XdrPathPaymentStrictReceiveOperation.php`, `Soneso/StellarSDK/Xdr/XdrPathPaymentStrictSendOperation.php`
+- **Bug**: encode() writes `integer32(count($this->path))` as the array length, then uses `if ($asset instanceof XdrAsset)` to conditionally encode each element — if a non-XdrAsset element were present, the encoded count would exceed the number of encoded items, producing corrupt XDR
+- **Impact**: Low — in practice the array always contains XdrAsset instances, but the guard masks type errors rather than failing loudly
+- **Fixed by**: Generator encodes all array elements unconditionally, letting PHP's type system catch errors
