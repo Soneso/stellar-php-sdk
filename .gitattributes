@@ -1,0 +1,10 @@
+# All XDR files are generated except infrastructure and wrappers
+Soneso/StellarSDK/Xdr/*.php linguist-generated=true
+
+# Exclude hand-written infrastructure (override back to false)
+Soneso/StellarSDK/Xdr/XdrEncoder.php linguist-generated=false
+Soneso/StellarSDK/Xdr/XdrDecoder.php linguist-generated=false
+Soneso/StellarSDK/Xdr/XdrBuffer.php linguist-generated=false
+
+# Wrapper files will be excluded here as they are identified during Phase 1
+# Example: Soneso/StellarSDK/Xdr/XdrAccountID.php linguist-generated=false
