@@ -18,6 +18,7 @@ use Soneso\StellarSDK\Xdr\XdrBumpSequenceResultCode;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustResult;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode;
 use Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult;
+use Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode;
 use Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode;
 use Soneso\StellarSDK\Xdr\XdrCreateAccountResult;
 use Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult;
@@ -87,12 +88,12 @@ class XdrOperationResultTest extends TestCase
     public function testCreateAccountResultRoundTrip(): void
     {
         $result = new XdrCreateAccountResult();
-        $result->setResultCode(new XdrOperationResultCode(XdrOperationResultCode::INNER));
+        $result->setResultCode(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS));
 
         $encoded = $result->encode();
         $decoded = XdrCreateAccountResult::decode(new XdrBuffer($encoded));
 
-        $this->assertEquals(XdrOperationResultCode::INNER, $decoded->getResultCode()->getValue());
+        $this->assertEquals(XdrCreateAccountResultCode::SUCCESS, $decoded->getResultCode()->getValue());
     }
 
     #[Test]
@@ -330,7 +331,7 @@ class XdrOperationResultTest extends TestCase
         $buffer = new XdrBuffer($encoded);
 
         $createAccountResult = new XdrCreateAccountResult();
-        $createAccountResult->setResultCode(new XdrOperationResultCode(XdrOperationResultCode::INNER));
+        $createAccountResult->setResultCode(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS));
         $buffer = new XdrBuffer($type->encode() . $createAccountResult->encode());
 
         $decoded = XdrOperationResultTr::decode($buffer);
@@ -1211,7 +1212,7 @@ class XdrOperationResultTest extends TestCase
     {
         $type = new XdrOperationType(XdrOperationType::CREATE_ACCOUNT);
         $createAccountResult = new XdrCreateAccountResult();
-        $createAccountResult->setResultCode(new XdrOperationResultCode(XdrOperationResultCode::INNER));
+        $createAccountResult->setResultCode(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS));
 
         $originalBuffer = $type->encode() . $createAccountResult->encode();
         $decoded = XdrOperationResultTr::decode(new XdrBuffer($originalBuffer));

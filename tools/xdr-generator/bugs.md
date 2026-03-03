@@ -119,5 +119,12 @@ Bugs discovered in existing hand-written XDR types during generator comparison.
 
 ## Batch 10
 
-### Bugs in types deferred to later batches (not yet fixed)
-- **XdrCreateAccountResult**: `decode()` returns `XdrOperationResultCode` instead of `XdrCreateAccountResultCode` — same wrong-type pattern as XdrMemoType (Batch 1) and XdrTrustLineFlags (Batch 8)
+_(No new bugs — 7 types generated cleanly)_
+
+## Batch 11
+
+### XdrCreateAccountResult — decode() uses wrong discriminant type
+- **File**: `Soneso/StellarSDK/Xdr/XdrCreateAccountResult.php`
+- **Bug**: Hand-written code used `XdrOperationResultCode` as the discriminant type instead of `XdrCreateAccountResultCode` — same wrong-type pattern as XdrMemoType (Batch 1) and XdrTrustLineFlags (Batch 8)
+- **Impact**: Medium — tests were written against the buggy type and passed because both types are int-based enums with overlapping wire values
+- **Fixed by**: Generator produces correct `XdrCreateAccountResultCode` discriminant; tests updated to match

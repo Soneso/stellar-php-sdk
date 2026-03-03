@@ -69,16 +69,22 @@ FIELD_OVERRIDES = {
     "txChanges" => "ledgerEntryChanges",
   },
 
-  # Batch 10: Union discriminant name overrides (XDR spec: "code", PHP SDK: "resultCode")
-  "XdrClawbackResult" => {
-    "code" => "resultCode",
-  },
-  "XdrClawbackClaimableBalanceResult" => {
-    "code" => "resultCode",
-  },
-  "XdrRevokeSponsorshipResult" => {
-    "code" => "resultCode",
-  },
+  # Batch 10+11: Union discriminant name overrides (XDR spec: "code", PHP SDK: "resultCode")
+  "XdrClawbackResult" => { "code" => "resultCode" },
+  "XdrClawbackClaimableBalanceResult" => { "code" => "resultCode" },
+  "XdrRevokeSponsorshipResult" => { "code" => "resultCode" },
+  "XdrAllowTrustResult" => { "code" => "resultCode" },
+  "XdrBeginSponsoringFutureReservesResult" => { "code" => "resultCode" },
+  "XdrBumpSequenceResult" => { "code" => "resultCode" },
+  "XdrChangeTrustResult" => { "code" => "resultCode" },
+  "XdrClaimClaimableBalanceResult" => { "code" => "resultCode" },
+  "XdrCreateAccountResult" => { "code" => "resultCode" },
+  "XdrEndSponsoringFutureReservesResult" => { "code" => "resultCode" },
+  "XdrLiquidityPoolDepositResult" => { "code" => "resultCode" },
+  "XdrLiquidityPoolWithdrawResult" => { "code" => "resultCode" },
+  "XdrPaymentResult" => { "code" => "resultCode" },
+  "XdrSetOptionsResult" => { "code" => "resultCode" },
+  "XdrSetTrustLineFlagsResult" => { "code" => "resultCode" },
 }.freeze
 
 # ---------------------------------------------------------------------------

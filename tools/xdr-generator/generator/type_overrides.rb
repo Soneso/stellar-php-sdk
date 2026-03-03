@@ -99,19 +99,14 @@ SKIP_TYPES = %w[
   XdrAccountMergeOperation
   XdrAccountMergeResult
   XdrAllowTrustOperationAsset
-  XdrAllowTrustResult
   XdrAsset
   XdrAssetAlphaNum12
   XdrAssetAlphaNum4
 
-  XdrBeginSponsoringFutureReservesResult
   XdrBuffer
-  XdrBumpSequenceResult
   XdrChangeTrustAsset
   XdrChangeTrustOperation
-  XdrChangeTrustResult
   XdrClaimAtom
-  XdrClaimClaimableBalanceResult
   XdrClaimOfferAtomV0
   XdrClaimPredicate
 
@@ -132,7 +127,6 @@ SKIP_TYPES = %w[
   XdrContractEventBody
   XdrContractExecutable
   XdrContractIDPreimage
-  XdrCreateAccountResult
   XdrCreateClaimableBalanceResult
   XdrDataEntry
   XdrDataEntryExt
@@ -141,7 +135,6 @@ SKIP_TYPES = %w[
   XdrDecoder
   XdrDecoratedSignature
   XdrEncoder
-  XdrEndSponsoringFutureReservesResult
   XdrExtensionPoint
   XdrFeeBumpTransaction
   XdrFeeBumpTransactionExt
@@ -164,12 +157,10 @@ SKIP_TYPES = %w[
   XdrLiquidityPoolBody
   XdrLiquidityPoolConstantProductParameters
   XdrLiquidityPoolDepositOperation
-  XdrLiquidityPoolDepositResult
   XdrLiquidityPoolEntry
   XdrLiquidityPoolParameters
 
   XdrLiquidityPoolWithdrawOperation
-  XdrLiquidityPoolWithdrawResult
   XdrManageBuyOfferOperation
   XdrManageDataOperation
   XdrManageOfferResult
@@ -189,7 +180,6 @@ SKIP_TYPES = %w[
   XdrPathPaymentResultSuccess
   XdrPathPaymentStrictReceiveResult
   XdrPathPaymentStrictSendResult
-  XdrPaymentResult
 
   XdrPreconditions
   XdrPreconditionsV2
@@ -205,8 +195,6 @@ SKIP_TYPES = %w[
   XdrSCSpecUDTUnionCaseV0
   XdrSCVal
   XdrSetOptionsOperation
-  XdrSetOptionsResult
-  XdrSetTrustLineFlagsResult
   XdrSignedPayload
   XdrSignerKey
   XdrSignerKeyType

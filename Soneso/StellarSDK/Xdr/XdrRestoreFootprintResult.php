@@ -9,8 +9,10 @@ class XdrRestoreFootprintResult {
 
     public XdrRestoreFootprintResultCode $code;
 
-    public function __construct(XdrRestoreFootprintResultCode $code) {
-        $this->code = $code;
+    public function __construct(?XdrRestoreFootprintResultCode $code = null) {
+        if ($code !== null) {
+            $this->code = $code;
+        }
     }
 
     public function encode(): string {

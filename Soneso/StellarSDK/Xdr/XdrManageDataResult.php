@@ -9,8 +9,10 @@ class XdrManageDataResult {
 
     public XdrManageDataResultCode $code;
 
-    public function __construct(XdrManageDataResultCode $code) {
-        $this->code = $code;
+    public function __construct(?XdrManageDataResultCode $code = null) {
+        if ($code !== null) {
+            $this->code = $code;
+        }
     }
 
     public function encode(): string {

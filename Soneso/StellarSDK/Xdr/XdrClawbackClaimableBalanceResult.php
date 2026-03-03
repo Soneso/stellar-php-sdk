@@ -9,8 +9,10 @@ class XdrClawbackClaimableBalanceResult {
 
     public XdrClawbackClaimableBalanceResultCode $resultCode;
 
-    public function __construct(XdrClawbackClaimableBalanceResultCode $resultCode) {
-        $this->resultCode = $resultCode;
+    public function __construct(?XdrClawbackClaimableBalanceResultCode $resultCode = null) {
+        if ($resultCode !== null) {
+            $this->resultCode = $resultCode;
+        }
     }
 
     public function encode(): string {

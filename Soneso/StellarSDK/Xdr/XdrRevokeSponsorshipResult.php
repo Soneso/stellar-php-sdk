@@ -9,8 +9,10 @@ class XdrRevokeSponsorshipResult {
 
     public XdrRevokeSponsorshipResultCode $resultCode;
 
-    public function __construct(XdrRevokeSponsorshipResultCode $resultCode) {
-        $this->resultCode = $resultCode;
+    public function __construct(?XdrRevokeSponsorshipResultCode $resultCode = null) {
+        if ($resultCode !== null) {
+            $this->resultCode = $resultCode;
+        }
     }
 
     public function encode(): string {

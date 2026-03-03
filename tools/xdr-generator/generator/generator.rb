@@ -408,14 +408,17 @@ class Generator < Xdrgen::Generators::Base
 
     out.puts ""
 
-    # Constructor
+    # Constructor — discriminant is optional to support no-arg construction
+    # (some hand-written types use new Type() + setter instead of constructor args)
     if disc_info[:kind] == :int
-      out.puts "    public function __construct(int $#{df}) {"
+      out.puts "    public function __construct(?int $#{df} = null) {"
     else
       disc_type = disc_info[:php_name]
-      out.puts "    public function __construct(#{disc_type} $#{df}) {"
+      out.puts "    public function __construct(?#{disc_type} $#{df} = null) {"
     end
-    out.puts "        $this->#{df} = $#{df};"
+    out.puts "        if ($#{df} !== null) {"
+    out.puts "            $this->#{df} = $#{df};"
+    out.puts "        }"
     out.puts "    }"
     out.puts ""
 

@@ -9,8 +9,10 @@ class XdrClawbackResult {
 
     public XdrClawbackResultCode $resultCode;
 
-    public function __construct(XdrClawbackResultCode $resultCode) {
-        $this->resultCode = $resultCode;
+    public function __construct(?XdrClawbackResultCode $resultCode = null) {
+        if ($resultCode !== null) {
+            $this->resultCode = $resultCode;
+        }
     }
 
     public function encode(): string {
