@@ -85,6 +85,11 @@ FIELD_OVERRIDES = {
   "XdrPaymentResult" => { "code" => "resultCode" },
   "XdrSetOptionsResult" => { "code" => "resultCode" },
   "XdrSetTrustLineFlagsResult" => { "code" => "resultCode" },
+
+  # Batch 12: Union discriminant name overrides
+  "XdrExtensionPoint" => { "v" => "discriminant" },
+  "XdrAccountMergeResult" => { "code" => "resultCode" },
+  "XdrInvokeHostFunctionResult" => { "code" => "type" },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -132,5 +137,8 @@ FIELD_TYPE_OVERRIDES = {
 
   # Batch 9: BigInteger fields
   "XdrCreateClaimableBalanceOperation" => { "amount" => "BigInteger" },
+
+  # Batch 12: BigInteger fields for union arms
+  "XdrAccountMergeResult" => { "sourceAccountBalance" => "BigInteger" },
 
 }.freeze

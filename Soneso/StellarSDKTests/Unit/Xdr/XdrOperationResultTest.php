@@ -969,7 +969,8 @@ class XdrOperationResultTest extends TestCase
     #[Test]
     public function testInflationResultSuccess(): void
     {
-        $result = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::SUCCESS), []);
+        $result = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::SUCCESS));
+        $result->payouts = [];
 
         $encoded = $result->encode();
         $decoded = XdrInflationResult::decode(new XdrBuffer($encoded));

@@ -386,7 +386,14 @@ class Generator < Xdrgen::Generators::Base
     # This is handled at the field level in structs via EXTENSION_POINT_FIELDS,
     # so the class itself is still generated unless SKIP_TYPES contains it.
 
+    # Imports
+    needs_bigint = arms.any? { |a| !a[:void] && a[:php_type] == "BigInteger" }
+
     out.puts GENERATED_HEADER
+    if needs_bigint
+      out.puts ""
+      out.puts "use phpseclib3\\Math\\BigInteger;"
+    end
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -534,12 +541,12 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    public function get#{uc_disc}(): #{disc_type} { return $this->#{df}; }"
     out.puts "    public function set#{uc_disc}(#{disc_type} $#{df}): void { $this->#{df} = $#{df}; }"
 
-    # Arm field getters/setters (nullable)
+    # Arm field getters/setters (nullable — arm fields are always nullable with = null default)
     arms.each do |arm|
       next if arm[:void]
       fn = arm[:field_name]
       uc_fn = "#{fn[0].upcase}#{fn[1..]}"
-      type_hint = arm[:php_type] == "array" ? "array" : "?#{arm[:php_type]}"
+      type_hint = "?#{arm[:php_type]}"
       out.puts "    public function get#{uc_fn}(): #{type_hint} { return $this->#{fn}; }"
       out.puts "    public function set#{uc_fn}(#{type_hint} $#{fn}): void { $this->#{fn} = $#{fn}; }"
     end
@@ -1064,6 +1071,12 @@ class Generator < Xdrgen::Generators::Base
         labels = arm.cases.map { |c| format_case_label(c.value, disc_info) }
         arm_info = resolve_php_arm_info(arm, union_name)
 
+        # Apply per-field type override for union arms (e.g., BigInteger)
+        if FIELD_TYPE_OVERRIDES.key?(union_name) && FIELD_TYPE_OVERRIDES[union_name].key?(field_name)
+          arm_info[:php_type] = FIELD_TYPE_OVERRIDES[union_name][field_name]
+          arm_info[:typespec] = nil  # Force fallback to php_type dispatch
+        end
+
         arms << {
           case_labels: labels,
           void: false,
@@ -1094,6 +1107,13 @@ class Generator < Xdrgen::Generators::Base
       else
         field_name = resolve_field_name(union_name, da.name)
         arm_info = resolve_php_arm_info(da, union_name)
+
+        # Apply per-field type override for default arms (e.g., BigInteger)
+        if FIELD_TYPE_OVERRIDES.key?(union_name) && FIELD_TYPE_OVERRIDES[union_name].key?(field_name)
+          arm_info[:php_type] = FIELD_TYPE_OVERRIDES[union_name][field_name]
+          arm_info[:typespec] = nil
+        end
+
         arms << {
           case_labels: ["default"],
           void: false,

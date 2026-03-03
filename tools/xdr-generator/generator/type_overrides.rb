@@ -97,7 +97,6 @@ SKIP_TYPES = %w[
   XdrAccountEntryV2Ext
   XdrAccountID
   XdrAccountMergeOperation
-  XdrAccountMergeResult
   XdrAllowTrustOperationAsset
   XdrAsset
   XdrAssetAlphaNum12
@@ -135,17 +134,14 @@ SKIP_TYPES = %w[
   XdrDecoder
   XdrDecoratedSignature
   XdrEncoder
-  XdrExtensionPoint
   XdrFeeBumpTransaction
   XdrFeeBumpTransactionExt
   XdrFeeBumpTransactionInnerTx
   XdrHashIDPreimage
   XdrHostFunction
-  XdrInflationResult
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
-  XdrInvokeHostFunctionResult
   XdrLedgerEntry
   XdrLedgerEntryChange
   XdrLedgerEntryData

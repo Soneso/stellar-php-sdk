@@ -128,3 +128,23 @@ _(No new bugs — 7 types generated cleanly)_
 - **Bug**: Hand-written code used `XdrOperationResultCode` as the discriminant type instead of `XdrCreateAccountResultCode` — same wrong-type pattern as XdrMemoType (Batch 1) and XdrTrustLineFlags (Batch 8)
 - **Impact**: Medium — tests were written against the buggy type and passed because both types are int-based enums with overlapping wire values
 - **Fixed by**: Generator produces correct `XdrCreateAccountResultCode` discriminant; tests updated to match
+
+## Batch 12
+
+### XdrInvokeHostFunctionResult — double concatenation in encode()
+- **File**: `Soneso/StellarSDK/Xdr/XdrInvokeHostFunctionResult.php`
+- **Bug**: `$bytes .= $bytes .= XdrEncoder::opaqueFixed($this->success, 32)` — the double `.=` causes the entire $bytes string to be doubled on the SUCCESS arm
+- **Impact**: High — produces corrupt (doubled) XDR output for successful InvokeHostFunction results. Only survived because tests round-trip through decode which reads the first valid portion and ignores trailing bytes.
+- **Fixed by**: Generator produces correct single `$bytes .= XdrEncoder::opaqueFixed($this->success, 32)`
+
+### XdrInflationResult — silent XDR corruption from instanceof guard
+- **File**: `Soneso/StellarSDK/Xdr/XdrInflationResult.php`
+- **Bug**: encode() uses `if ($val instanceof XdrInflationPayout)` to conditionally encode array elements (same pattern as Batch 7/9)
+- **Impact**: Low — in practice the array always contains XdrInflationPayout instances
+- **Fixed by**: Generator encodes all array elements unconditionally
+
+### XdrAccountMergeResult — encode() uses nullability check instead of discriminant
+- **File**: `Soneso/StellarSDK/Xdr/XdrAccountMergeResult.php`
+- **Bug**: encode() checks `if ($this->sourceAccountBalance !== null)` instead of switching on the discriminant code
+- **Impact**: Low — functionally equivalent in normal usage, but would silently skip encoding if balance were null with SUCCESS code
+- **Fixed by**: Generator uses proper switch on discriminant to control encoding
