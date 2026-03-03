@@ -8,6 +8,7 @@ namespace Soneso\StellarSDKTests\Unit\Crypto;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Crypto\CryptoException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
 use function PHPUnit\Framework\assertEquals;
@@ -144,8 +145,9 @@ class KeyPairTest extends TestCase
 
         $message = "test message";
 
-        // Signing without private key should trigger exception
-        $this->expectException(\TypeError::class);
+        // Signing without private key should throw CryptoException
+        $this->expectException(CryptoException::class);
+        $this->expectExceptionMessage("cannot derive secret key: no private key available");
         $keyPair->sign($message);
     }
 
@@ -367,8 +369,8 @@ class KeyPairTest extends TestCase
 
         $message = "test message";
 
-        // signDecorated without private key should trigger exception in sign()
-        $this->expectException(\TypeError::class);
+        // signDecorated without private key should throw CryptoException
+        $this->expectException(CryptoException::class);
         $keyPair->signDecorated($message);
     }
 
@@ -380,8 +382,8 @@ class KeyPairTest extends TestCase
 
         $payload = "test payload";
 
-        // signPayloadDecorated without private key should trigger exception
-        $this->expectException(\TypeError::class);
+        // signPayloadDecorated without private key should throw CryptoException
+        $this->expectException(CryptoException::class);
         $keyPair->signPayloadDecorated($payload);
     }
 
@@ -506,13 +508,13 @@ class KeyPairTest extends TestCase
         assertFalse($keyPairB->verifyMessage($message, $signature));
     }
 
-    public function testSignMessageWithoutPrivateKeyThrowsTypeError()
+    public function testSignMessageWithoutPrivateKeyThrowsCryptoException()
     {
         $specAddress = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
 
         $keyPair = KeyPair::fromAccountId($specAddress);
 
-        $this->expectException(\TypeError::class);
+        $this->expectException(CryptoException::class);
         $keyPair->signMessage("test");
     }
 

@@ -245,7 +245,7 @@ class RevokeSponsorshipOperationBuilder
         $result->setLedgerKey($this->ledgerKey);
         $result->setSignerAccount($this->signerAccount);
         $result->setSignerKey($this->signerKey);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

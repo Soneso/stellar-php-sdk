@@ -219,16 +219,12 @@ class KeyPair
      * SECURITY: This method requires the private key to be present in this keypair.
      *
      * @param string $value The raw data to sign
-     * @return XdrDecoratedSignature|null The decorated signature or null if signing fails
+     * @return XdrDecoratedSignature The decorated signature
+     * @throws CryptoException If signing fails (no private key or cryptographic error)
      */
-    public function signDecorated(string $value): ?XdrDecoratedSignature
+    public function signDecorated(string $value): XdrDecoratedSignature
     {
-        $sig = $this->sign($value);
-        if (!$sig){
-            return null;
-        }
-
-        return new XdrDecoratedSignature($this->getHint(),$sig);
+        return new XdrDecoratedSignature($this->getHint(), $this->sign($value));
     }
 
     /**
@@ -240,10 +236,11 @@ class KeyPair
      * SECURITY: This method requires the private key to be present in this keypair.
      *
      * @param string $signerPayload The signer payload to sign
-     * @return XdrDecoratedSignature|null The decorated signature with XORed hint or null if signing fails
+     * @return XdrDecoratedSignature The decorated signature with XORed hint
+     * @throws CryptoException If signing fails (no private key or cryptographic error)
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
      */
-    public function signPayloadDecorated(string $signerPayload): ?XdrDecoratedSignature
+    public function signPayloadDecorated(string $signerPayload): XdrDecoratedSignature
     {
         $payloadSignature = $this->signDecorated($signerPayload);
         $payloadSignatureHint = str_split($payloadSignature->getHint());
@@ -287,14 +284,15 @@ class KeyPair
      * the Stellar network.
      *
      * @param string $value The raw data to sign
-     * @return string|null The raw signature bytes or null if signing fails (no private key or error)
+     * @return string The raw signature bytes
+     * @throws CryptoException If signing fails (no private key or cryptographic error)
      */
-    public function sign(string $value): ?string
+    public function sign(string $value): string
     {
         try {
             return Ed25519::sign_detached($value, $this->getEd25519SecretKey());
         } catch (SodiumException $e) {
-            return null;
+            throw new CryptoException("Ed25519 signing failed", 0, $e);
         }
     }
 
@@ -345,11 +343,11 @@ class KeyPair
      * mandate a specific string encoding format.
      *
      * @param string $message The message to sign (arbitrary text or binary data)
-     * @return string|null The raw signature bytes, or null if signing fails
-     * @throws TypeError If the keypair has no private key (under strict_types=1)
+     * @return string The raw signature bytes
+     * @throws CryptoException If signing fails (no private key or cryptographic error)
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
      */
-    public function signMessage(string $message): ?string
+    public function signMessage(string $message): string
     {
         $messageHash = self::calculateMessageHash($message);
         return $this->sign($messageHash);
@@ -454,21 +452,21 @@ class KeyPair
      *
      * Internal method for signature operations.
      *
-     * @return string|null The 64-byte Ed25519 secret key, or null if no private key
+     * @return string The 64-byte Ed25519 secret key
+     * @throws CryptoException If no private key is available or key derivation fails
      */
-    protected function getEd25519SecretKey(): ?string
+    protected function getEd25519SecretKey(): string
     {
         if (!$this->privateKey) {
-            return null;
+            throw new CryptoException("cannot derive secret key: no private key available");
         }
 
-        $sk = '';
-
         try {
+            $sk = '';
             $pk = '';
             Ed25519::seed_keypair($pk, $sk, $this->privateKey);
         } catch (SodiumException $e) {
-            return null;
+            throw new CryptoException("Ed25519 key derivation failed", 0, $e);
         }
 
         return $sk;

@@ -29,7 +29,7 @@ class XdrChangeTrustAsset extends XdrAsset
 
     public function encode() : string {
         $bytes = parent::encode();
-        if ($this->type->getValue() == XdrAssetType::ASSET_TYPE_POOL_SHARE && $this->liquidityPool != null) {
+        if ($this->type->getValue() == XdrAssetType::ASSET_TYPE_POOL_SHARE && $this->liquidityPool !== null) {
             $bytes .= $this->liquidityPool->encode();
         }
         return $bytes;

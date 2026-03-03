@@ -74,7 +74,7 @@ class ClawbackOperationBuilder
      */
     public function build(): ClawbackOperation {
         $result = new ClawbackOperation($this->asset, $this->from, $this->amount);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

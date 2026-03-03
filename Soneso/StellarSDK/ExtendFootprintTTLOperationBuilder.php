@@ -71,7 +71,7 @@ class ExtendFootprintTTLOperationBuilder
      */
     public function build(): ExtendFootprintTTLOperation {
         $result = new ExtendFootprintTTLOperation($this->extendTo);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

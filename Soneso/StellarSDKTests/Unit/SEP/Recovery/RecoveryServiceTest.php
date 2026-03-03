@@ -13,6 +13,7 @@ use GuzzleHttp\Middleware;
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
+use InvalidArgumentException;
 use Soneso\StellarSDK\SEP\Recovery\SEP30AuthMethod;
 use Soneso\StellarSDK\SEP\Recovery\RecoveryService;
 use Soneso\StellarSDK\SEP\Recovery\SEP30BadRequestResponseException;
@@ -26,7 +27,7 @@ use Soneso\StellarSDK\SEP\Recovery\SEP30UnauthorizedResponseException;
 class RecoveryServiceTest extends TestCase
 {
 
-    private string $serviceAddress = "http://api.stellar.org/recovery";
+    private string $serviceAddress = "https://api.stellar.org/recovery";
     private string $addressA = "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP";
     private string $signingAddress = "GDRUPBJM7YIJ2NUNAIQJDJ2DQ2JDERY5SJVJVMM6MGE4UBDAMXBHARIA";
     private string $jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJHQTZVSVhYUEVXWUZJTE5VSVdBQzM3WTRRUEVaTVFWREpIREtWV0ZaSjJLQ1dVQklVNUlYWk5EQSIsImp0aSI6IjE0NGQzNjdiY2IwZTcyY2FiZmRiZGU2MGVhZTBhZDczM2NjNjVkMmE2NTg3MDgzZGFiM2Q2MTZmODg1MTkwMjQiLCJpc3MiOiJodHRwczovL2ZsYXBweS1iaXJkLWRhcHAuZmlyZWJhc2VhcHAuY29tLyIsImlhdCI6MTUzNDI1Nzk5NCwiZXhwIjoxNTM0MzQ0Mzk0fQ.8nbB83Z6vGBgC1X9r3N6oQCFTBzDiITAfCJasRft0z0";
@@ -531,5 +532,65 @@ class RecoveryServiceTest extends TestCase
         $updatedDetails = $service->accountDetails($this->addressA, $this->jwtToken);
         $this->assertCount(1, $updatedDetails->signers);
         $this->assertEquals("GBTPAH6NWK25GESZYJ3XWPTNQUIMYNK7VU7R4NSTMZXOEKCOBKJVJ2XY", $updatedDetails->signers[0]->key);
+    }
+
+    // Address validation tests
+
+    public function testRegisterAccountRejectsInvalidAddress(): void
+    {
+        $service = new RecoveryService($this->serviceAddress);
+        $request = new SEP30Request([$this->senderIdentity]);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid Stellar account address for 'address'");
+        $service->registerAccount('../../admin', $request, $this->jwtToken);
+    }
+
+    public function testUpdateIdentitiesRejectsInvalidAddress(): void
+    {
+        $service = new RecoveryService($this->serviceAddress);
+        $request = new SEP30Request([$this->senderIdentity]);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid Stellar account address for 'address'");
+        $service->updateIdentitiesForAccount('not-a-stellar-address', $request, $this->jwtToken);
+    }
+
+    public function testSignTransactionRejectsInvalidAddress(): void
+    {
+        $service = new RecoveryService($this->serviceAddress);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid Stellar account address for 'address'");
+        $service->signTransaction('invalid', $this->signingAddress, $this->transaction, $this->jwtToken);
+    }
+
+    public function testSignTransactionRejectsInvalidSigningAddress(): void
+    {
+        $service = new RecoveryService($this->serviceAddress);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid Stellar account address for 'signingAddress'");
+        $service->signTransaction($this->addressA, '../inject', $this->transaction, $this->jwtToken);
+    }
+
+    public function testAccountDetailsRejectsInvalidAddress(): void
+    {
+        $service = new RecoveryService($this->serviceAddress);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid Stellar account address for 'address'");
+        $service->accountDetails('INVALID', $this->jwtToken);
+    }
+
+    public function testDeleteAccountRejectsInvalidAddress(): void
+    {
+        $service = new RecoveryService($this->serviceAddress);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid Stellar account address for 'address'");
+        $service->deleteAccount('../../etc/passwd', $this->jwtToken);
+    }
+
+    public function testAccountsRejectsInvalidAfterCursor(): void
+    {
+        $service = new RecoveryService($this->serviceAddress);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid Stellar account address for 'after'");
+        $service->accounts($this->jwtToken, 'not-an-account-id');
     }
 }

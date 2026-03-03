@@ -1335,7 +1335,7 @@ class WebAuthForContractsTest extends TestCase
             );
             $this->fail("Expected InvalidArgumentException for invalid authEndpoint");
         } catch (InvalidArgumentException $e) {
-            $this->assertStringContainsString("authEndpoint must be a valid URL", $e->getMessage());
+            $this->assertStringContainsString("Service URL must use HTTPS", $e->getMessage());
         }
 
         // Test empty serverHomeDomain

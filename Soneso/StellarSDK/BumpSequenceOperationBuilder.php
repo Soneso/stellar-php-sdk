@@ -73,7 +73,7 @@ class BumpSequenceOperationBuilder
      */
     public function build(): BumpSequenceOperation {
         $result = new BumpSequenceOperation($this->bumpTo);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

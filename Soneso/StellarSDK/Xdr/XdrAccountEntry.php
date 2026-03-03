@@ -56,7 +56,7 @@ class XdrAccountEntry
         $bytes .= XdrEncoder::bigInteger64($this->balance);
         $bytes .= $this->seqNum->encode();
         $bytes .= XdrEncoder::unsignedInteger32($this->numSubEntries);
-        if ($this->inflationDest != null) {
+        if ($this->inflationDest !== null) {
             $bytes .= XdrEncoder::integer32(1);
             $bytes .= $this->inflationDest->encode();
         } else {

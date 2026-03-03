@@ -212,7 +212,7 @@ class SetOptionsOperationBuilder
         $result = new SetOptionsOperation($this->inflationDestination, $this->clearFlags, $this->setFlags,
             $this->masterKeyWeight, $this->lowThreshold, $this->mediumThreshold, $this->highThreshold,
             $this->homeDomain, $this->signerKey, $this->signerWeight);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

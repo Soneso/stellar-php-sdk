@@ -69,7 +69,7 @@ class ClaimClaimableBalanceOperationBuilder
      */
     public function build(): ClaimClaimableBalanceOperation {
         $result = new ClaimClaimableBalanceOperation($this->balanceId);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

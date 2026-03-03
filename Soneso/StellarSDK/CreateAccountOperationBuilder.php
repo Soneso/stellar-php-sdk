@@ -72,7 +72,7 @@ class CreateAccountOperationBuilder
      */
     public function build(): CreateAccountOperation {
         $result = new CreateAccountOperation($this->destination, $this->startingBalance);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

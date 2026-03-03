@@ -87,7 +87,7 @@ class AccountMergeOperationBuilder
      */
     public function build(): AccountMergeOperation {
         $result = new AccountMergeOperation($this->destination);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

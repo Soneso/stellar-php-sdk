@@ -107,7 +107,7 @@ class ManageBuyOfferOperationBuilder
      */
     public function build(): ManageBuyOfferOperation {
         $result = new ManageBuyOfferOperation($this->selling, $this->buying, $this->amount, $this->price, $this->offerId);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

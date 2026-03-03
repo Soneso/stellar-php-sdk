@@ -91,7 +91,7 @@ class PaymentOperationBuilder
      */
     public function build(): PaymentOperation {
         $result = new PaymentOperation($this->destination, $this->asset, $this->amount);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

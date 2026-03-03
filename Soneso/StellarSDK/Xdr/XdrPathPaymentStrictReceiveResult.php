@@ -39,9 +39,9 @@ class XdrPathPaymentStrictReceiveResult
 
     public function encode(): string {
         $bytes = $this->code->encode();
-        if ($this->success != null) {
+        if ($this->success !== null) {
             $bytes .= $this->success->encode();
-        } else if ($this->noIssuer != null) {
+        } else if ($this->noIssuer !== null) {
             $bytes .= $this->noIssuer->encode();
         }
         return $bytes;

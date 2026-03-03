@@ -83,7 +83,7 @@ class SorobanCredentials
      * @return SorobanCredentials the decoded credentials
      */
     public static function fromXdr(XdrSorobanCredentials $xdr) : SorobanCredentials {
-        if ($xdr->type->value == XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS && $xdr->address != null) {
+        if ($xdr->type->value == XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS && $xdr->address !== null) {
             return new SorobanCredentials(SorobanAddressCredentials::fromXdr($xdr->address));
         }
         return new SorobanCredentials();
@@ -95,7 +95,7 @@ class SorobanCredentials
      * @return XdrSorobanCredentials the XDR encoded credentials
      */
     public function toXdr(): XdrSorobanCredentials {
-        if ($this->addressCredentials != null) {
+        if ($this->addressCredentials !== null) {
             $xdr = new XdrSorobanCredentials(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS());
             $xdr->address = $this->addressCredentials->toXdr();
             return $xdr;

@@ -44,7 +44,7 @@ class XdrLiquidityPoolParameters
     public function encode() : string {
         $bytes = $this->type->encode();
         if ($this->type->getValue() == XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT
-            && $this->constantProduct != null) {
+            && $this->constantProduct !== null) {
             $bytes .= $this->constantProduct->encode();
         }
         return $bytes;

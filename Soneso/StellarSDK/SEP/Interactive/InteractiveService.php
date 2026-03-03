@@ -13,6 +13,7 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\HandlerStack;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
  * Implements SEP-0024 - Hosted Deposit and Withdrawal.
@@ -30,6 +31,7 @@ class InteractiveService
      */
     public function __construct(string $serviceAddress, ?Client $httpClient = null)
     {
+        UrlValidator::validateHttpsRequired($serviceAddress);
         $this->serviceAddress = $serviceAddress;
         if (str_ends_with($this->serviceAddress, "/")) {
             $this->serviceAddress = substr($this->serviceAddress, 0, -1);
@@ -96,7 +98,7 @@ class InteractiveService
          */
         $queryParameters = ["operation" => $request->operation,
             "asset_code" => $request->assetCode, "amount" => $request->amount];
-        if ($request->type != null) {
+        if ($request->type !== null) {
             $queryParameters ["type"] = $request->type;
         }
 
@@ -188,58 +190,58 @@ class InteractiveService
          */
         $files = array();
 
-        if ($request->assetIssuer != null) {
+        if ($request->assetIssuer !== null) {
             $fields += ["asset_issuer" => $request->assetIssuer];
         }
-        if ($request->sourceAsset != null) {
+        if ($request->sourceAsset !== null) {
             $fields += ["source_asset" => $request->sourceAsset];
         }
-        if ($request->amount != null) {
+        if ($request->amount !== null) {
             $fields += ["amount" => $request->amount];
         }
-        if ($request->quoteId != null) {
+        if ($request->quoteId !== null) {
             $fields += ["quote_id" => $request->quoteId];
         }
-        if ($request->account != null) {
+        if ($request->account !== null) {
             $fields += ["account" => $request->account];
         }
-        if ($request->memoType != null) {
+        if ($request->memoType !== null) {
             $fields += ["memo_type" => $request->memoType];
         }
-        if ($request->memo != null) {
+        if ($request->memo !== null) {
             $fields += ["memo" => $request->memo];
         }
-        if ($request->walletName != null) {
+        if ($request->walletName !== null) {
             $fields += ["wallet_name" => $request->walletName];
         }
-        if ($request->walletUrl != null) {
+        if ($request->walletUrl !== null) {
             $fields += ["wallet_url" => $request->walletUrl];
         }
-        if ($request->lang != null) {
+        if ($request->lang !== null) {
             $fields += ["lang" => $request->lang];
         }
-        if ($request->claimableBalanceSupported != null) {
+        if ($request->claimableBalanceSupported !== null) {
             $fields += ["claimable_balance_supported" => $request->claimableBalanceSupported];
         }
-        if ($request->customerId != null) {
+        if ($request->customerId !== null) {
             $fields += ["customer_id" => $request->customerId];
         }
-        if ($request->kycFields != null && $request->kycFields->naturalPersonKYCFields != null) {
+        if ($request->kycFields !== null && $request->kycFields->naturalPersonKYCFields !== null) {
             $fields += $request->kycFields->naturalPersonKYCFields->fields();
         }
-        if ($request->kycFields != null && $request->kycFields->organizationKYCFields != null) {
+        if ($request->kycFields !== null && $request->kycFields->organizationKYCFields !== null) {
             $fields += $request->kycFields->organizationKYCFields->fields();
         }
-        if ($request->customFields != null) {
+        if ($request->customFields !== null) {
             $fields += $request->customFields;
         }
-        if ($request->kycFields != null && $request->kycFields->naturalPersonKYCFields != null) {
+        if ($request->kycFields !== null && $request->kycFields->naturalPersonKYCFields !== null) {
             $files += $request->kycFields->naturalPersonKYCFields->files();
         }
-        if ($request->kycFields != null && $request->kycFields->organizationKYCFields != null) {
+        if ($request->kycFields !== null && $request->kycFields->organizationKYCFields !== null) {
             $files += $request->kycFields->organizationKYCFields->files();
         }
-        if ($request->customFiles != null) {
+        if ($request->customFiles !== null) {
             $files += $request->customFiles;
         }
 
@@ -286,62 +288,62 @@ class InteractiveService
          */
         $files = array();
 
-        if ($request->destinationAsset != null) {
+        if ($request->destinationAsset !== null) {
             $fields += ["destination_asset" => $request->destinationAsset];
         }
-        if ($request->assetIssuer != null) {
+        if ($request->assetIssuer !== null) {
             $fields += ["asset_issuer" => $request->assetIssuer];
         }
-        if ($request->amount != null) {
+        if ($request->amount !== null) {
             $fields += ["amount" => $request->amount];
         }
-        if ($request->quoteId != null) {
+        if ($request->quoteId !== null) {
             $fields += ["quote_id" => $request->quoteId];
         }
-        if ($request->account != null) {
+        if ($request->account !== null) {
             $fields += ["account" => $request->account];
         }
-        if ($request->memoType != null) {
+        if ($request->memoType !== null) {
             $fields += ["memo_type" => $request->memoType];
         }
-        if ($request->memo != null) {
+        if ($request->memo !== null) {
             $fields += ["memo" => $request->memo];
         }
-        if ($request->walletName != null) {
+        if ($request->walletName !== null) {
             $fields += ["wallet_name" => $request->walletName];
         }
-        if ($request->walletUrl != null) {
+        if ($request->walletUrl !== null) {
             $fields += ["wallet_url" => $request->walletUrl];
         }
-        if ($request->lang != null) {
+        if ($request->lang !== null) {
             $fields += ["lang" => $request->lang];
         }
-        if ($request->refundMemo != null) {
+        if ($request->refundMemo !== null) {
             $fields += ["refund_memo" => $request->refundMemo];
         }
-        if ($request->refundMemoType != null) {
+        if ($request->refundMemoType !== null) {
             $fields += ["refund_memo_type" => $request->refundMemoType];
         }
-        if ($request->customerId != null) {
+        if ($request->customerId !== null) {
             $fields += ["customer_id" => $request->customerId];
         }
-        if ($request->kycFields != null && $request->kycFields->naturalPersonKYCFields != null) {
+        if ($request->kycFields !== null && $request->kycFields->naturalPersonKYCFields !== null) {
             $fields += $request->kycFields->naturalPersonKYCFields->fields();
         }
-        if ($request->kycFields != null && $request->kycFields->organizationKYCFields != null) {
+        if ($request->kycFields !== null && $request->kycFields->organizationKYCFields !== null) {
             $fields += $request->kycFields->organizationKYCFields->fields();
         }
 
-        if ($request->customFields != null) {
+        if ($request->customFields !== null) {
             $fields += $request->customFields;
         }
-        if ($request->kycFields != null && $request->kycFields->naturalPersonKYCFields != null) {
+        if ($request->kycFields !== null && $request->kycFields->naturalPersonKYCFields !== null) {
             $files += $request->kycFields->naturalPersonKYCFields->files();
         }
-        if ($request->kycFields != null && $request->kycFields->organizationKYCFields != null) {
+        if ($request->kycFields !== null && $request->kycFields->organizationKYCFields !== null) {
             $files += $request->kycFields->organizationKYCFields->files();
         }
-        if ($request->customFiles != null) {
+        if ($request->customFiles !== null) {
             $files += $request->customFiles;
         }
 

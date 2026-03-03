@@ -25,7 +25,7 @@ class XdrSorobanTransactionMetaV2
 
     public function encode(): string {
         $bytes = $this->ext->encode();
-        if ($this->returnValue != null) {
+        if ($this->returnValue !== null) {
             $bytes .= XdrEncoder::integer32(1);
             $bytes .= $this->returnValue->encode();
         } else {

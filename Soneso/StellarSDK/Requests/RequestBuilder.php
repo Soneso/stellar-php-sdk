@@ -50,7 +50,7 @@ abstract class RequestBuilder
         $this->httpClient = $httpClient;
         $this->segments = array();
         $this->queryParameters = array();
-        if ($defaultSegment != null) {
+        if ($defaultSegment !== null) {
             $this->setSegments($defaultSegment);
         }
         $this->segmentsAdded = false; // Allow overwriting segments

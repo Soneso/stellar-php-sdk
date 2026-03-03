@@ -88,13 +88,13 @@ class OrderBookResponse extends Response
 
         if (isset($json['base'])) {
             $parsedAsset = Asset::fromJson($json['base']);
-            if ($parsedAsset != null) {
+            if ($parsedAsset !== null) {
                 $this->base = $parsedAsset;
             }
         }
         if (isset($json['counter'])) {
             $parsedAsset = Asset::fromJson($json['counter']);
-            if ($parsedAsset != null) {
+            if ($parsedAsset !== null) {
                 $this->counter = $parsedAsset;
             }
         }

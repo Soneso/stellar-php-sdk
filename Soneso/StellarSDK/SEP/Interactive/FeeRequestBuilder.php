@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
+use UnexpectedValueException;
 
 class FeeRequestBuilder extends RequestBuilder
 {
@@ -55,14 +56,16 @@ class FeeRequestBuilder extends RequestBuilder
          */
         $headers = array();
         $headers = array_merge($headers, RequestBuilder::HEADERS);
-        if ($this->jwtToken != null) {
+        if ($this->jwtToken !== null) {
             $headers = array_merge($headers, ['Authorization' => "Bearer ".$this->jwtToken]);
         }
         $request = new Request("GET", $url, $headers);
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
         $response = $responseHandler->handleResponse($response, RequestType::SEP24_FEE, $this->httpClient);
-        assert($response instanceof SEP24FeeResponse);
+        if (!$response instanceof SEP24FeeResponse) {
+            throw new UnexpectedValueException('Expected SEP24FeeResponse, got ' . get_class($response));
+        }
 
         return $response;
     }

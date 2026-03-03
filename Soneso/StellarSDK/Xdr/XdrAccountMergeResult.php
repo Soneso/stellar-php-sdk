@@ -34,7 +34,7 @@ class XdrAccountMergeResult
     public function encode(): string
     {
         $bytes = $this->resultCode->encode();
-        if ($this->sourceAccountBalance != null) {
+        if ($this->sourceAccountBalance !== null) {
             $bytes .= XdrEncoder::bigInteger64($this->sourceAccountBalance);
         }
         return $bytes;

@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
+use UnexpectedValueException;
 
 /**
  * Request builder for GET /fee endpoint operations.
@@ -98,7 +99,9 @@ class FeeRequestBuilder extends RequestBuilder
         $response = $this->httpClient->send($request);
         $responseHandler = new ResponseHandler();
         $response = $responseHandler->handleResponse($response, RequestType::ANCHOR_FEE, $this->httpClient);
-        assert($response instanceof FeeResponse);
+        if (!$response instanceof FeeResponse) {
+            throw new UnexpectedValueException('Expected FeeResponse, got ' . get_class($response));
+        }
 
         return $response;
     }

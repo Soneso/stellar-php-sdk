@@ -60,7 +60,7 @@ class EndSponsoringFutureReservesOperationBuilder
      */
     public function build(): EndSponsoringFutureReservesOperation {
         $result = new EndSponsoringFutureReservesOperation();
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

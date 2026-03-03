@@ -76,7 +76,7 @@ class CreateContractHostFunction extends HostFunction
     {
         $this->address = $address;
         $this->wasmId = $wasmId;
-        $this->salt = $salt != null ? $salt : random_bytes(32);
+        $this->salt = $salt !== null ? $salt : random_bytes(32);
         parent::__construct();
     }
 
@@ -98,7 +98,7 @@ class CreateContractHostFunction extends HostFunction
      */
     public static function fromXdr(XdrHostFunction $xdr) : CreateContractHostFunction {
         $type = $xdr->type;
-        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $xdr->createContract == null
+        if ($type->value != XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT || $xdr->createContract === null
             || $xdr->createContract->contractIDPreimage->type->value != XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS
             || $xdr->createContract->executable->type->value != XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM) {
             throw new Exception("Invalid argument");
@@ -106,7 +106,7 @@ class CreateContractHostFunction extends HostFunction
         $wasmId = $xdr->createContract->executable->wasmIdHex;
         $xdrAddress = $xdr->createContract->contractIDPreimage->address;
 
-        if ($wasmId == null || $xdrAddress == null) {
+        if ($wasmId === null || $xdrAddress === null) {
             throw new Exception("invalid argument");
         }
         return new CreateContractHostFunction(Address::fromXdr($xdrAddress), $wasmId, $xdr->createContract->contractIDPreimage->salt);

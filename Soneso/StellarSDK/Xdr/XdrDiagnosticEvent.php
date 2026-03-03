@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+
 class XdrDiagnosticEvent
 {
 
@@ -34,7 +36,10 @@ class XdrDiagnosticEvent
     }
 
     public static function fromBase64Xdr(String $base64Xdr) : XdrDiagnosticEvent {
-        $xdr = base64_decode($base64Xdr);
+        $xdr = base64_decode($base64Xdr, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return XdrDiagnosticEvent::decode($xdrBuffer);
     }

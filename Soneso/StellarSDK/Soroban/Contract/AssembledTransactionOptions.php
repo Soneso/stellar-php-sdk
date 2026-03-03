@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Soroban\Contract;
 
+use Psr\Log\LoggerInterface;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
@@ -28,14 +29,14 @@ class AssembledTransactionOptions
      * @param MethodOptions $methodOptions Method options.
      * @param string $method The name of the contract method to call.
      * @param array<XdrSCVal>|null $arguments Arguments to pass to the method call.
-     * @param bool $enableServerLogging Enable soroban server logging (helpful for debugging). Default: false.
+     * @param LoggerInterface|null $logger PSR-3 logger for debug output. Default: null (no logging).
      */
     public function __construct(
         public ClientOptions $clientOptions,
         public MethodOptions $methodOptions,
         public string $method,
         public ?array $arguments = null,
-        public bool $enableServerLogging = false,
+        public ?LoggerInterface $logger = null,
     ) {
     }
 

@@ -116,7 +116,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
      * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getFootprint() : ?Footprint {
-        if ($this->transactionData != null) {
+        if ($this->transactionData !== null) {
             $xdrFootprint = $this->transactionData->resources->footprint;
             return new Footprint($xdrFootprint);
         }
@@ -129,7 +129,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse
      */
     public function getSorobanAuth() : ?array {
         $results = $this->results;
-        if ($results!= null && $results->count() > 0 && $results->toArray()[0]->auth != null) {
+        if ($results !== null && $results->count() > 0 && $results->toArray()[0]->auth !== null) {
             $result = array();
             foreach($results->toArray()[0]->auth as $nextAuthXdr) {
                 array_push($result, SorobanAuthorizationEntry::fromBase64Xdr($nextAuthXdr));

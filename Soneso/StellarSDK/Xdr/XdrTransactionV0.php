@@ -37,19 +37,19 @@ class XdrTransactionV0
         $this->sourceAccountEd25519 = $sourceAccountEd25519;
         $this->sequenceNumber = $sequenceNumber;
         $this->operations = $operations;
-        if ($fee == null) {
+        if ($fee === null) {
             $this->fee = StellarConstants::MIN_BASE_FEE_STROOPS;
         } else {
             $this->fee = $fee;
         }
-        if ($memo == null) {
+        if ($memo === null) {
 
             $this->memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
         } else {
             $this->memo = $memo;
         }
         $this->timeBounds = $timeBounds;
-        if ($ext != null) {
+        if ($ext !== null) {
             $this->ext = $ext;
         } else {
             $this->ext = new XdrTransactionV0Ext(0);
@@ -115,7 +115,7 @@ class XdrTransactionV0
     public function encode() : string {
         $bytes = XdrEncoder::unsignedInteger256($this->sourceAccountEd25519);
         $bytes .= XdrEncoder::unsignedInteger32($this->fee);
-        if ($this->timeBounds != null) {
+        if ($this->timeBounds !== null) {
             $bytes .= XdrEncoder::integer32(1);
             $bytes .= $this->timeBounds->encode();
         } else {

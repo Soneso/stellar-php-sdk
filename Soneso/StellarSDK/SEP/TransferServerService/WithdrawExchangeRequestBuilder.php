@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
+use UnexpectedValueException;
 
 /**
  * Request builder for GET /withdraw-exchange endpoint operations.
@@ -118,7 +119,9 @@ class WithdrawExchangeRequestBuilder extends RequestBuilder
         }
         $responseHandler = new ResponseHandler();
         $response = $responseHandler->handleResponse($response, RequestType::ANCHOR_WITHDRAW, $this->httpClient);
-        assert($response instanceof WithdrawResponse);
+        if (!$response instanceof WithdrawResponse) {
+            throw new UnexpectedValueException('Expected WithdrawResponse, got ' . get_class($response));
+        }
 
         return $response;
     }

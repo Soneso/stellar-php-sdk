@@ -34,7 +34,7 @@ class ChangeTrustOperation extends AbstractOperation
      */
     public function __construct(Asset $asset, ?string $limit = null) {
         $this->asset = $asset;
-        if ($limit != null) {
+        if ($limit !== null) {
             $this->limit = AbstractOperation::toXdrAmount($limit);
         } else {
             $this->limit = StellarAmount::maximum()->getStroops();

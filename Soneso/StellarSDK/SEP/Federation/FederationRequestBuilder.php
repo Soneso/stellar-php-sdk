@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
+use UnexpectedValueException;
 
 /**
  * Request builder for SEP-0002 federation queries.
@@ -100,7 +101,9 @@ class FederationRequestBuilder extends RequestBuilder
      */
     public function request(string $url) : FederationResponse {
         $response = parent::executeRequest($url,RequestType::FEDERATION);
-        assert($response instanceof FederationResponse);
+        if (!$response instanceof FederationResponse) {
+            throw new UnexpectedValueException('Expected FederationResponse, got ' . get_class($response));
+        }
         return $response;
     }
 

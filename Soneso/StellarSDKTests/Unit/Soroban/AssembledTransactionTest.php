@@ -48,6 +48,7 @@ use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
+use Psr\Log\NullLogger;
 
 class AssembledTransactionTest extends TestCase
 {
@@ -175,14 +176,13 @@ class AssembledTransactionTest extends TestCase
             methodOptions: $methodOptions,
             method: 'test',
             arguments: null,
-            enableServerLogging: false
         );
 
         $this->assertSame($clientOptions, $options->clientOptions);
         $this->assertSame($methodOptions, $options->methodOptions);
         $this->assertEquals('test', $options->method);
         $this->assertNull($options->arguments);
-        $this->assertFalse($options->enableServerLogging);
+        $this->assertNull($options->logger);
     }
 
     public function testClientOptionsConstruction(): void
@@ -193,7 +193,7 @@ class AssembledTransactionTest extends TestCase
         $this->assertEquals(self::TEST_CONTRACT_ID, $options->contractId);
         $this->assertEquals("Test SDF Network ; September 2015", $options->network->getNetworkPassphrase());
         $this->assertEquals(self::TEST_RPC_URL, $options->rpcUrl);
-        $this->assertFalse($options->enableServerLogging);
+        $this->assertNull($options->logger);
     }
 
     public function testMethodOptionsDefaultValues(): void
@@ -658,7 +658,6 @@ class AssembledTransactionTest extends TestCase
             contractId: self::TEST_CONTRACT_ID,
             network: $this->testNetwork,
             rpcUrl: self::TEST_RPC_URL,
-            enableServerLogging: false
         );
     }
 
@@ -669,7 +668,6 @@ class AssembledTransactionTest extends TestCase
             contractId: self::TEST_CONTRACT_ID,
             network: $this->testNetwork,
             rpcUrl: self::TEST_RPC_URL,
-            enableServerLogging: false
         );
     }
 
@@ -1039,18 +1037,19 @@ class AssembledTransactionTest extends TestCase
         $contractId = self::TEST_CONTRACT_ID;
         $rpcUrl = self::TEST_RPC_URL;
 
+        $logger = new NullLogger();
         $options = new ClientOptions(
             sourceAccountKeyPair: $keyPair,
             contractId: $contractId,
             network: $network,
             rpcUrl: $rpcUrl,
-            enableServerLogging: true
+            logger: $logger
         );
 
         $this->assertSame($keyPair, $options->sourceAccountKeyPair);
         $this->assertEquals($contractId, $options->contractId);
         $this->assertSame($network, $options->network);
         $this->assertEquals($rpcUrl, $options->rpcUrl);
-        $this->assertTrue($options->enableServerLogging);
+        $this->assertSame($logger, $options->logger);
     }
 }

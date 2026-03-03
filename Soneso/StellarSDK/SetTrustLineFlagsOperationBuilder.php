@@ -76,7 +76,7 @@ class SetTrustLineFlagsOperationBuilder
      */
     public function build(): SetTrustLineFlagsOperation {
         $result = new SetTrustLineFlagsOperation($this->trustorId, $this->asset, $this->clearFlags, $this->setFlags);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

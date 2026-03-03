@@ -42,8 +42,8 @@ class XdrOperation
 
 
     public function encode() : string {
-        $bytes = $this->sourceAccount != null ? XdrEncoder::integer32(1) : XdrEncoder::integer32(0);
-        if ($this->sourceAccount != null) {
+        $bytes = $this->sourceAccount !== null ? XdrEncoder::integer32(1) : XdrEncoder::integer32(0);
+        if ($this->sourceAccount !== null) {
             $bytes .= $this->sourceAccount->encode();
         }
         $bytes .= $this->body->encode();

@@ -56,7 +56,7 @@ class SorobanAuthorizedFunction
         ?XdrCreateContractArgs $createContractHostFn = null,
         ?XdrCreateContractArgsV2 $createContractV2HostFn = null)
     {
-        if ($contractFn == null && $createContractHostFn == null && $createContractV2HostFn == null) {
+        if ($contractFn === null && $createContractHostFn === null && $createContractV2HostFn === null) {
             throw new InvalidArgumentException("Invalid arguments");
         }
 
@@ -105,9 +105,9 @@ class SorobanAuthorizedFunction
      * @return SorobanAuthorizedFunction the decoded authorized function
      */
     public static function fromXdr(XdrSorobanAuthorizedFunction $xdr) : SorobanAuthorizedFunction {
-        if ($xdr->type->value == XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN && $xdr->contractFn != null) {
+        if ($xdr->type->value == XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN && $xdr->contractFn !== null) {
             return new SorobanAuthorizedFunction($xdr->contractFn);
-        } else if ($xdr->type->value == XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN && $xdr->createContractHostFn != null) {
+        } else if ($xdr->type->value == XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN && $xdr->createContractHostFn !== null) {
             return new SorobanAuthorizedFunction(null, $xdr->createContractHostFn);
         }
         return new SorobanAuthorizedFunction(null, null, $xdr->createContractV2HostFn);
@@ -119,11 +119,11 @@ class SorobanAuthorizedFunction
      * @return XdrSorobanAuthorizedFunction the XDR encoded authorized function
      */
     public function toXdr(): XdrSorobanAuthorizedFunction {
-        if ($this->contractFn != null) {
+        if ($this->contractFn !== null) {
             $af = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN());
             $af->contractFn = $this->contractFn;
             return $af;
-        } else if ($this->createContractHostFn != null) {
+        } else if ($this->createContractHostFn !== null) {
             $af = new XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN());
             $af->createContractHostFn = $this->createContractHostFn;
             return $af;

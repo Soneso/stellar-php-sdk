@@ -68,7 +68,7 @@ class InvokeHostFunctionOperation extends AbstractOperation
                 return new InvokeHostFunctionOperation(UploadContractWasmHostFunction::fromXdr($xdrFunction), $auth);
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
                 $createContract = $xdrFunction->createContract;
-                if ($createContract == null) {
+                if ($createContract === null) {
                     throw new Exception("invalid argument");
                 }
                 $contractIdPreimageTypeVal = $createContract->contractIDPreimage->type->value;
@@ -83,7 +83,7 @@ class InvokeHostFunctionOperation extends AbstractOperation
                 break;
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
                 $createContractV2 = $xdrFunction->createContractV2;
-                if ($createContractV2 == null) {
+                if ($createContractV2 === null) {
                     throw new Exception("invalid argument");
                 }
                 $contractIdPreimageTypeVal = $createContractV2->contractIDPreimage->type->value;

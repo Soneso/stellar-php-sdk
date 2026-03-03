@@ -82,7 +82,7 @@ class AllowTrustOperationBuilder
      */
     public function build(): AllowTrustOperation {
         $result = new AllowTrustOperation($this->trustor, $this->assetCode, $this->authorized, $this->authorizedToMaintainLiabilities);
-        if ($this->sourceAccount != null) {
+        if ($this->sourceAccount !== null) {
             $result->setSourceAccount($this->sourceAccount);
         }
         return $result;

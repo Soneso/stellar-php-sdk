@@ -47,7 +47,7 @@ class XdrOperationResult
 
     public function encode(): string {
         $bytes = $this->resultCode->encode();
-        if ($this->resultTr != null) {
+        if ($this->resultTr !== null) {
             $bytes .= $this->resultTr->encode();
         }
         return $bytes;

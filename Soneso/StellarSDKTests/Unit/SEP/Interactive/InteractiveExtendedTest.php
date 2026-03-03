@@ -38,7 +38,7 @@ use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
  */
 class InteractiveExtendedTest extends TestCase
 {
-    private string $serviceAddress = "http://api.stellar.org/transfer-sep24/";
+    private string $serviceAddress = "https://api.stellar.org/transfer-sep24/";
     private string $jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test";
 
     // SEP24Transaction Tests

@@ -273,7 +273,9 @@ class AssembledTransaction
     {
         $this->options= $options;
         $this->server = new SorobanServer(endpoint: $options->clientOptions->rpcUrl);
-        $this->server->enableLogging = $options->enableServerLogging;
+        if ($options->logger !== null) {
+            $this->server->setLogger($options->logger);
+        }
 
     }
 
@@ -373,6 +375,7 @@ class AssembledTransaction
 
                 $this->raw->addOperation($builder->build());
                 $this->simulate();
+                return;
             }
             throw new Exception("Automatic restore failed! You set 'restore: true' but the 
             attempted restore did not work. Status: {$result->status} , transaction result xdr: {$result->resultXdr}");

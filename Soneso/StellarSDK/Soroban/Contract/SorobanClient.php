@@ -97,8 +97,11 @@ class SorobanClient
      */
     public static function forClientOptions(ClientOptions $options) : SorobanClient {
         $server = new SorobanServer($options->rpcUrl);
+        if ($options->logger !== null) {
+            $server->setLogger($options->logger);
+        }
         $info = $server->loadContractInfoForContractId($options->contractId);
-        if ($info != null) {
+        if ($info !== null) {
             return new SorobanClient($info->specEntries, $options);
         } else {
             throw new Exception("Could not load contract info for the contract: {$options->contractId}");
@@ -135,14 +138,14 @@ class SorobanClient
             contractId: "ignored",
             network: $deployRequest->network,
             rpcUrl: $deployRequest->rpcUrl,
-            enableServerLogging: $deployRequest->enableServerLogging
+            logger: $deployRequest->logger
         );
         $options = new AssembledTransactionOptions(
             clientOptions:$clientOptions,
             methodOptions: $deployRequest->methodOptions,
             method: self::CONSTRUCTOR_FUNC,
             arguments: $deployRequest->constructorArgs,
-            enableServerLogging: $deployRequest->enableServerLogging);
+            logger: $deployRequest->logger);
 
         $tx = AssembledTransaction::buildWithOp(operation: $op, options: $options);
         $response = $tx->signAndSend();
@@ -176,13 +179,13 @@ class SorobanClient
             contractId: "ignored",
             network: $installRequest->network,
             rpcUrl: $installRequest->rpcUrl,
-            enableServerLogging: $installRequest->enableServerLogging
+            logger: $installRequest->logger
         );
         $options = new AssembledTransactionOptions(
             clientOptions:$clientOptions,
             methodOptions: new MethodOptions(),
             method: "ignored",
-            enableServerLogging: $installRequest->enableServerLogging);
+            logger: $installRequest->logger);
 
         $tx = AssembledTransaction::buildWithOp(operation: $op, options: $options);
         if (!$force && $tx->isReadCall()) {
@@ -309,7 +312,7 @@ class SorobanClient
             methodOptions: $methodOptions ?? new MethodOptions(),
             method: $name,
             arguments: $args,
-            enableServerLogging: $this->options->enableServerLogging);
+            logger: $this->options->logger);
         return AssembledTransaction::build($options);
     }
 

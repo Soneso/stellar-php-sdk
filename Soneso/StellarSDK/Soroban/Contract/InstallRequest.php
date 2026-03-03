@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Soroban\Contract;
 
+use Psr\Log\LoggerInterface;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
@@ -33,14 +34,14 @@ class InstallRequest
      * @param Network $network The Stellar network this contract is to be installed to.
      * @param KeyPair $sourceAccountKeyPair Keypair of the Stellar account that will send this transaction.
      *                                      The keypair must contain the private key for signing.
-     * @param bool $enableServerLogging Enable soroban server logging (helpful for debugging). Default: false.
+     * @param LoggerInterface|null $logger PSR-3 logger for debug output. Default: null (no logging).
      */
     public function __construct(
         public string $wasmBytes,
         public string $rpcUrl,
         public Network $network,
         public KeyPair $sourceAccountKeyPair,
-        public bool $enableServerLogging = false,
+        public ?LoggerInterface $logger = null,
     ) {
     }
 

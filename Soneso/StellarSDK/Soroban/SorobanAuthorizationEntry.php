@@ -15,6 +15,7 @@ use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorization;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
 
@@ -85,7 +86,10 @@ class SorobanAuthorizationEntry
      * @throws \Exception if XDR decoding fails
      */
     public static function fromBase64Xdr(string $base64Xdr) : SorobanAuthorizationEntry {
-        $xdr = base64_decode($base64Xdr);
+        $xdr = base64_decode($base64Xdr, true);
+        if ($xdr === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
+        }
         $xdrBuffer = new XdrBuffer($xdr);
         return SorobanAuthorizationEntry::fromXdr(XdrSorobanAuthorizationEntry::decode($xdrBuffer));
     }
@@ -113,9 +117,9 @@ class SorobanAuthorizationEntry
     public function sign(KeyPair $signer, Network $network): void
     {
         $xdrCredentials = $this->credentials->toXdr();
-        if ($this->credentials->addressCredentials == null ||
+        if ($this->credentials->addressCredentials === null ||
             $xdrCredentials->type->value != XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS ||
-            $xdrCredentials->address == null) {
+            $xdrCredentials->address === null) {
             throw new \RuntimeException("no soroban address credentials found");
         }
 
@@ -129,7 +133,7 @@ class SorobanAuthorizationEntry
         $signatureBytes = $signer->sign($payload);
         $signature = new AccountEd25519Signature($signer->getPublicKey(), $signatureBytes);
         $sigVal = $signature->toXdrSCVal();
-        if ($this->credentials->addressCredentials->signature->vec != null) {
+        if ($this->credentials->addressCredentials->signature->vec !== null) {
             array_push($this->credentials->addressCredentials->signature->vec, $sigVal);
         } else {
             $this->credentials->addressCredentials->signature = XdrSCVal::forVec([$sigVal]);

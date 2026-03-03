@@ -248,8 +248,8 @@ class TransactionPreconditions
      * @return bool True if V2 preconditions are required, false otherwise
      */
     public function hasV2(): bool {
-        return $this->ledgerBounds != null ||
-            $this->minSeqNumber != null ||
+        return $this->ledgerBounds !== null ||
+            $this->minSeqNumber !== null ||
             $this->minSeqAge > 0 ||
             $this->minSeqLedgerGap > 0 ||
             count($this->extraSigners) > 0;
@@ -271,13 +271,13 @@ class TransactionPreconditions
         if ($this->hasV2()) {
             $precond = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::V2));
             $precondV2 = new XdrPreconditionsV2();
-            if ($this->timeBounds != null) {
+            if ($this->timeBounds !== null) {
                 $precondV2->setTimeBounds($this->timeBounds->toXdr());
             }
-            if ($this->ledgerBounds != null) {
+            if ($this->ledgerBounds !== null) {
                 $precondV2->setLedgerBounds($this->ledgerBounds->toXdr());
             }
-            if ($this->minSeqNumber != null) {
+            if ($this->minSeqNumber !== null) {
                 $precondV2->setMinSeqNum(new XdrSequenceNumber($this->minSeqNumber));
             }
             $precondV2->setMinSeqAge($this->minSeqAge);
@@ -285,7 +285,7 @@ class TransactionPreconditions
             $precondV2->setExtraSigners($this->extraSigners);
             $precond->setV2($precondV2);
             return $precond;
-        } else if ($this->timeBounds != null) {
+        } else if ($this->timeBounds !== null) {
             $precond = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::TIME));
             $precond->setTimeBounds($this->timeBounds->toXdr());
             return $precond;
@@ -309,14 +309,14 @@ class TransactionPreconditions
         $cond = new TransactionPreconditions();
         if ($xdr->getType()->getValue() == XdrPreconditionType::V2) {
             $xdrV2 = $xdr->getV2();
-            if ($xdrV2 != null) {
-                if ($xdrV2->getTimeBounds() != null) {
+            if ($xdrV2 !== null) {
+                if ($xdrV2->getTimeBounds() !== null) {
                     $cond->setTimeBounds(TimeBounds::fromXdr($xdrV2->getTimeBounds()));
                 }
-                if ($xdrV2->getLedgerBounds() != null) {
+                if ($xdrV2->getLedgerBounds() !== null) {
                     $cond->setLedgerBounds(LedgerBounds::fromXdr($xdrV2->getLedgerBounds()));
                 }
-                if ($xdrV2->getMinSeqNum() != null) {
+                if ($xdrV2->getMinSeqNum() !== null) {
                     $cond->setMinSeqNumber($xdrV2->getMinSeqNum()->getValue());
                 }
                 $cond->setMinSeqAge($xdrV2->getMinSeqAge());
@@ -324,7 +324,7 @@ class TransactionPreconditions
                 $cond->setExtraSigners($xdrV2->getExtraSigners());
             }
         } else if ($xdr->getType()->getValue() == XdrPreconditionType::TIME) {
-            if ($xdr->getTimeBounds() != null) {
+            if ($xdr->getTimeBounds() !== null) {
                 $cond->setTimeBounds(TimeBounds::fromXdr($xdr->getTimeBounds()));
             }
         }

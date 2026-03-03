@@ -98,7 +98,7 @@ abstract class AbstractOperation
     public static function fromXdr(XdrOperation $xdrOp) : AbstractOperation {
         $body = $xdrOp->getBody();
         $sourceAccount = null;
-        if ($xdrOp->getSourceAccount() != null) {
+        if ($xdrOp->getSourceAccount() !== null) {
             $sourceAccount = MuxedAccount::fromXdr($xdrOp->getSourceAccount());
         }
         $type = $body->getType()->getValue();
@@ -137,7 +137,7 @@ abstract class AbstractOperation
 
     private static function restoreFootprint(XdrOperationBody $body) : RestoreFootprintOperation {
         $op = $body->getRestoreFootprintOp();
-        if ($op != null) {
+        if ($op !== null) {
             return RestoreFootprintOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing invoke host function operation in xdr operation body");
@@ -146,7 +146,7 @@ abstract class AbstractOperation
 
     private static function extendFootprintTTL(XdrOperationBody $body) : ExtendFootprintTTLOperation {
         $op = $body->getExtendFootprintTTLOp();
-        if ($op != null) {
+        if ($op !== null) {
             return ExtendFootprintTTLOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing invoke host function operation in xdr operation body");
@@ -155,7 +155,7 @@ abstract class AbstractOperation
 
     private static function invokeHostFunction(XdrOperationBody $body) : InvokeHostFunctionOperation {
         $op = $body->getInvokeHostFunctionOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return InvokeHostFunctionOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing invoke host function operation in xdr operation body");
@@ -164,7 +164,7 @@ abstract class AbstractOperation
 
     private static function liquidityPoolWithdraw(XdrOperationBody $body) : LiquidityPoolWithdrawOperation {
         $op = $body->getLiquidityPoolWithdrawOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return LiquidityPoolWithdrawOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing liquidity pool withdraw operation in xdr operation body");
@@ -173,7 +173,7 @@ abstract class AbstractOperation
 
     private static function liquidityPoolDeposit(XdrOperationBody $body) : LiquidityPoolDepositOperation {
         $op = $body->getLiquidityPoolDepositOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return LiquidityPoolDepositOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing liquidity pool deposit operation in xdr operation body");
@@ -182,7 +182,7 @@ abstract class AbstractOperation
 
     private static function setTrustlineFlags(XdrOperationBody $body) : SetTrustlineFlagsOperation {
         $op = $body->getSetTrustLineFlagsOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return SetTrustLineFlagsOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing set trustline flags operation in xdr operation body");
@@ -191,7 +191,7 @@ abstract class AbstractOperation
 
     private static function clawbackClaimableBalance(XdrOperationBody $body) : ClawbackClaimableBalanceOperation {
         $op = $body->getClawbackClaimableBalanceOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return ClawbackClaimableBalanceOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing clawback claimable operation in xdr operation body");
@@ -200,7 +200,7 @@ abstract class AbstractOperation
 
     private static function clawback(XdrOperationBody $body) : ClawbackOperation {
         $op = $body->getClawbackOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return ClawbackOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing clawback operation in xdr operation body");
@@ -209,7 +209,7 @@ abstract class AbstractOperation
 
     private static function revokeSponsorship(XdrOperationBody $body) : RevokeSponsorshipOperation {
         $op = $body->getRevokeSponsorshipOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return RevokeSponsorshipOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing revoke sponsorship operation in xdr operation body");
@@ -218,7 +218,7 @@ abstract class AbstractOperation
 
     private static function beginSponsoringFutureReserves(XdrOperationBody $body) : BeginSponsoringFutureReservesOperation {
         $op = $body->getBeginSponsoringFutureReservesOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return BeginSponsoringFutureReservesOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing begin sponsoring future reserves operation in xdr operation body");
@@ -227,7 +227,7 @@ abstract class AbstractOperation
 
     private static function claimClaimableClaimableBalance(XdrOperationBody $body) : ClaimClaimableBalanceOperation {
         $op = $body->getClaimClaimableBalanceOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return ClaimClaimableBalanceOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing claim claimable balance operation in xdr operation body");
@@ -236,7 +236,7 @@ abstract class AbstractOperation
 
     private static function createClaimableBalance(XdrOperationBody $body) : CreateClaimableBalanceOperation {
         $op = $body->getCreateClaimableBalanceOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return CreateClaimableBalanceOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing create claimable balance operation in xdr operation body");
@@ -245,7 +245,7 @@ abstract class AbstractOperation
 
     private static function pathPaymentStrictSendOperation(XdrOperationBody $body) : PathPaymentStrictSendOperation {
         $op = $body->getPathPaymentStrictSendOp();
-        if ($op != null) {
+        if ($op !== null) {
             return PathPaymentStrictSendOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing path payment strict send operation in xdr operation body");
@@ -254,7 +254,7 @@ abstract class AbstractOperation
 
     private static function manageBuyOfferOperation(XdrOperationBody $body) : ManageBuyOfferOperation {
         $op = $body->getManageBuyOfferOp();
-        if ($op != null) {
+        if ($op !== null) {
             return ManageBuyOfferOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing manage buy offer operation in xdr operation body");
@@ -263,7 +263,7 @@ abstract class AbstractOperation
 
     private static function bumpSequence(XdrOperationBody $body) : BumpSequenceOperation {
         $op = $body->getBumpSequenceOp();
-        if ($op != null) {
+        if ($op !== null) {
             return BumpSequenceOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing bump sequence operation in xdr operation body");
@@ -272,7 +272,7 @@ abstract class AbstractOperation
 
     private static function manageData(XdrOperationBody $body) : ManageDataOperation {
         $op = $body->getManageDataOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return ManageDataOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing manage data operation in xdr operation body");
@@ -281,7 +281,7 @@ abstract class AbstractOperation
 
     private static function accountMerge(XdrOperationBody $body) : AccountMergeOperation {
         $op = $body->getAccountMergeOp();
-        if ($op != null) {
+        if ($op !== null) {
             return AccountMergeOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing account merge operation in xdr operation body");
@@ -290,7 +290,7 @@ abstract class AbstractOperation
 
     private static function creatAccountOperation(XdrOperationBody $body) : CreateAccountOperation {
         $caOp = $body->getCreateAccountOp();
-        if ($caOp != null) {
+        if ($caOp !== null) {
             return CreateAccountOperation::fromXdrOperation($caOp);
         } else {
             throw new InvalidArgumentException("missing create account operation in xdr operation body");
@@ -299,7 +299,7 @@ abstract class AbstractOperation
 
     private static function paymentOperation(XdrOperationBody $body) : PaymentOperation {
         $op = $body->getPaymentOp();
-        if ($op != null) {
+        if ($op !== null) {
             return PaymentOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing payment operation in xdr operation body");
@@ -308,7 +308,7 @@ abstract class AbstractOperation
 
     private static function pathPaymentStrictReceiveOperation(XdrOperationBody $body) : PathPaymentStrictReceiveOperation {
         $op = $body->getPathPaymentStrictReceiveOp();
-        if ($op != null) {
+        if ($op !== null) {
             return PathPaymentStrictReceiveOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing path payment strict receive operation in xdr operation body");
@@ -317,7 +317,7 @@ abstract class AbstractOperation
 
     private static function manageSellOfferOperation(XdrOperationBody $body) : ManageSellOfferOperation {
         $op = $body->getManageSellOfferOp();
-        if ($op != null) {
+        if ($op !== null) {
             return ManageSellOfferOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing manage sell offer operation in xdr operation body");
@@ -326,7 +326,7 @@ abstract class AbstractOperation
 
     private static function createPassiveSellOfferOperation(XdrOperationBody $body) : CreatePassiveSellOfferOperation {
         $op = $body->getCreatePassiveSellOfferOp();
-        if ($op != null) {
+        if ($op !== null) {
             return CreatePassiveSellOfferOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing create passive sell offer operation in xdr operation body");
@@ -335,7 +335,7 @@ abstract class AbstractOperation
 
     private static function setOptionsOperation(XdrOperationBody $body) : SetOptionsOperation {
         $op = $body->getSetOptionsOp();
-        if ($op != null) {
+        if ($op !== null) {
             return SetOptionsOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing set options operation in xdr operation body");
@@ -344,7 +344,7 @@ abstract class AbstractOperation
 
     private static function changeTrustOperation(XdrOperationBody $body) : ChangeTrustOperation {
         $op = $body->getChangeTrustOp();
-        if ($op != null) {
+        if ($op !== null) {
             return ChangeTrustOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing change trust operation in xdr operation body");
@@ -353,7 +353,7 @@ abstract class AbstractOperation
 
     private static function allowTrustOperation(XdrOperationBody $body) : AllowTrustOperation {
         $op = $body->getAllowTrustOperation();
-        if ($op != null) {
+        if ($op !== null) {
             return AllowTrustOperation::fromXdrOperation($op);
         } else {
             throw new InvalidArgumentException("missing allow trust operation in xdr operation body");

@@ -82,7 +82,7 @@ class MuxedAccount
      */
     public function getAccountId(): string
     {
-        if ($this->accountId == null) {
+        if ($this->accountId === null) {
             $xdrMuxedAccount = $this->getXdr();
             if ($xdrMuxedAccount->getDiscriminant() == CryptoKeyType::KEY_TYPE_MUXED_ED25519) {
                 $bytes = $xdrMuxedAccount->getMed25519()->encodeInverted();
@@ -100,7 +100,7 @@ class MuxedAccount
      * @return XdrMuxedAccount The XDR muxed account
      */
     public function getXdr() : XdrMuxedAccount {
-        if ($this->xdr == null) {
+        if ($this->xdr === null) {
             $this->xdr = $this->toXdr();
         }
         return $this->toXdr();

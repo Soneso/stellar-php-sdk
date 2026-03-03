@@ -76,7 +76,7 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse
         if (isset($json['amount'])) $this->amount = $json['amount'];
         if (isset($json['asset'])) {
             $parsedAsset = Asset::createFromCanonicalForm($json['asset']);
-            if ($parsedAsset != null) {
+            if ($parsedAsset !== null) {
                 $this->asset = $parsedAsset;
             }
         }

@@ -133,7 +133,7 @@ class FinancialAccountKYCFields
          * @var array<array-key, mixed> $fields
          */
         $fields = array();
-        if ($this->bankName != null) {
+        if ($this->bankName !== null) {
             $fields += [ $keyPrefix . self::BANK_NAME_KEY => $this->bankName ];
         }
         if ($this->bankAccountType) {

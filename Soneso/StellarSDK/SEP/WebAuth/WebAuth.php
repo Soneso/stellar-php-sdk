@@ -14,6 +14,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\RequestOptions;
 use InvalidArgumentException;
 use Soneso\StellarSDK\AbstractTransaction;
+use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\MuxedAccount;
@@ -103,7 +104,9 @@ class WebAuth
      * @param Network $network The network used.
      * @param ?Client $httpClient Optional http client to be used for requests.
      */
-    public function __construct(string $authEndpoint, string $serverSigningKey, string $serverHomeDomain, Network $network, ?Client $httpClient = null) {
+    public function __construct(string $authEndpoint, string $serverSigningKey, string $serverHomeDomain, Network $network, ?Client $httpClient = null)
+    {
+        UrlValidator::validateHttpsRequired($authEndpoint);
         $this->authEndpoint = $authEndpoint;
         $this->serverSigningKey = $serverSigningKey;
         $this->network = $network;
@@ -116,6 +119,21 @@ class WebAuth
         }
     }
 
+    /**
+     * Sets the grace period (in seconds) for challenge transaction time bounds validation.
+     *
+     * The grace period accommodates clock skew between the client and the auth server.
+     * A value of 0 enforces strict time bounds. Default is 300 seconds (5 minutes).
+     *
+     * @param int $seconds Grace period in seconds. Must be non-negative.
+     */
+    public function setGracePeriod(int $seconds): void
+    {
+        if ($seconds < 0) {
+            throw new InvalidArgumentException('Grace period must be non-negative');
+        }
+        $this->gracePeriod = $seconds;
+    }
 
     /** Creates a WebAuth instance by loading the needed data from the stellar.toml file hosted on the given domain.
      *  e.g. fromDomain("soneso.com", Network::testnet())
@@ -176,6 +194,7 @@ class WebAuth
      * @throws SubmitCompletedChallengeUnknownResponseException
      * @throws GuzzleException|ChallengeRequestErrorResponse|ChallengeValidationErrorInvalidOperationType
      * @throws InvalidArgumentException
+     * @throws \Soneso\StellarSDK\Crypto\CryptoException If a signer keypair fails to produce a signature
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md SEP-10 Complete Flow
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#verification SEP-10 Signature Verification
      */
@@ -191,14 +210,14 @@ class WebAuth
         $transaction = $this->getChallenge($clientAccountId, $memo, $homeDomain, $clientDomain);
 
         $clientDomainSignerAccountId = null;
-        if ($clientDomain != null) {
-            if ($clientDomainKeyPair != null) {
+        if ($clientDomain !== null) {
+            if ($clientDomainKeyPair !== null) {
                 $clientDomainSignerAccountId = $clientDomainKeyPair?->getAccountId();
-            } else if ($clientDomainSigningCallback != null) {
+            } else if ($clientDomainSigningCallback !== null) {
                 try {
                     $toml = StellarToml::fromDomain($clientDomain, $this->httpClient);
                     $clientDomainSignerAccountId = $toml->generalInformation?->signingKey;
-                    if ($clientDomainSignerAccountId == null) {
+                    if ($clientDomainSignerAccountId === null) {
                         throw new Exception("Could not find signing key in stellar.toml");
                     }
                 } catch (Exception $e) {
@@ -270,13 +289,17 @@ class WebAuth
      * Callback signature: function(string $transactionXdr): string
      * @return string the signed transaction as base64 encoded transaction envelope
      * @throws ChallengeValidationError if the given base64 encoded transaction envelope has an invalid envelope type.
+     * @throws \Soneso\StellarSDK\Crypto\CryptoException If a signer keypair fails to produce a signature
      */
     private function signTransaction(string $challengeTransaction, array $signers, ?callable $clientDomainSigningCallback = null) : string {
         $b64TxEnvelopeToSign = $challengeTransaction;
-        if ($clientDomainSigningCallback != null) {
+        if ($clientDomainSigningCallback !== null) {
             $b64TxEnvelopeToSign = $clientDomainSigningCallback($challengeTransaction);
         }
-        $res = base64_decode($b64TxEnvelopeToSign);
+        $res = base64_decode($b64TxEnvelopeToSign, true);
+        if ($res === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded transaction envelope');
+        }
         $xdr = new XdrBuffer($res);
         $envelopeXdr = XdrTransactionEnvelope::decode($xdr);
         if ($envelopeXdr->getType()->getValue() != XdrEnvelopeType::ENVELOPE_TYPE_TX) {
@@ -286,10 +309,7 @@ class WebAuth
         $signatures = $envelopeXdr->getV1()->getSignatures();
         foreach ($signers as $signer) {
             if ($signer instanceof KeyPair) {
-                $signature = $signer->signDecorated($txHash);
-                if ($signature) {
-                    array_push($signatures, $signature);
-                }
+                array_push($signatures, $signer->signDecorated($txHash));
             }
         }
         $envelopeXdr->getV1()->setSignatures($signatures);
@@ -343,7 +363,10 @@ class WebAuth
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Challenge Validation
      */
     private function validateChallenge(string $challengeTransaction, string $userAccountId,  ?string $clientDomainAccountId = null, ?int $timeBoundsGracePeriod = null, ?int $memo = null) {
-        $res = base64_decode($challengeTransaction);
+        $res = base64_decode($challengeTransaction, true);
+        if ($res === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded challenge transaction');
+        }
         $xdr = new XdrBuffer($res);
         $envelopeXdr = XdrTransactionEnvelope::decode($xdr);
 

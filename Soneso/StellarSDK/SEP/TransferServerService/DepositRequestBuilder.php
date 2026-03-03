@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 use Soneso\StellarSDK\Responses\ResponseHandler;
+use UnexpectedValueException;
 
 /**
  * Request builder for GET /deposit endpoint operations.
@@ -119,7 +120,9 @@ class DepositRequestBuilder extends RequestBuilder
         }
         $responseHandler = new ResponseHandler();
         $response = $responseHandler->handleResponse($response, RequestType::ANCHOR_DEPOSIT, $this->httpClient);
-        assert($response instanceof DepositResponse);
+        if (!$response instanceof DepositResponse) {
+            throw new UnexpectedValueException('Expected DepositResponse, got ' . get_class($response));
+        }
 
         return $response;
     }
