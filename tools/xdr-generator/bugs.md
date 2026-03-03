@@ -82,3 +82,23 @@ Bugs discovered in existing hand-written XDR types during generator comparison.
 - **Bug**: encode() writes `integer32(count($this->path))` as the array length, then uses `if ($asset instanceof XdrAsset)` to conditionally encode each element — if a non-XdrAsset element were present, the encoded count would exceed the number of encoded items, producing corrupt XDR
 - **Impact**: Low — in practice the array always contains XdrAsset instances, but the guard masks type errors rather than failing loudly
 - **Fixed by**: Generator encodes all array elements unconditionally, letting PHP's type system catch errors
+
+## Batch 8
+
+### XdrContractCostType — decode() is instance method instead of static
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractCostType.php`
+- **Bug**: `decode()` is an instance method (`public function decode`) instead of `public static function decode`
+- **Impact**: Low — decode() was never called anywhere in the codebase
+- **Fixed by**: Generator produces correct static decode method
+
+### XdrTrustLineFlags — decode() returns wrong type
+- **File**: `Soneso/StellarSDK/Xdr/XdrTrustLineFlags.php`
+- **Bug**: `decode()` returns `XdrOperationType` and creates `new XdrOperationType($value)` instead of `XdrTrustLineFlags`
+- **Impact**: Low — decode() was never called anywhere in the codebase (same pattern as XdrMemoType bug in Batch 1)
+- **Fixed by**: Generator produces correct `XdrTrustLineFlags::decode()` returning `new XdrTrustLineFlags($value)`
+
+### XdrContractCostType — missing 25 enum constants
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractCostType.php`
+- **Bug**: Hand-written code had 44 constants (up to VerifyEcdsaSecp256r1Sig=44), missing 25 BLS12-381 constants (Bls12381EncodeFp=45 through Bls12381FrInv=69)
+- **Impact**: Medium — missing constants could cause unhandled cases for BLS12-381 operations
+- **Fixed by**: Generator produces all 70 constants from the XDR spec

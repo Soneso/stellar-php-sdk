@@ -49,6 +49,11 @@ MEMBER_OVERRIDES = {
   "XdrCreateAccountResultCode" => {
     "CREATE_ACCOUNT_ALREADY_EXIST" => "ACCOUNT_ALREADY_EXIST",
   },
+
+  # Batch 8: XdrContractCostType capitalization mismatch
+  "XdrContractCostType" => {
+    "InvokeVmFunction" => "InvokeVMFunction",
+  },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -98,6 +103,10 @@ FACTORY_PREFIX_STRIP = {
   "XdrSCValType" => "SCV_",
   "XdrContractEventType" => "CONTRACT_EVENT_TYPE_",
   "XdrHostFunctionType" => "HOST_FUNCTION_TYPE_",
+
+  # Batch 8: Enums where factory methods use stripped names
+  "XdrSCEnvMetaKind" => "SC_ENV_META_KIND_",
+  "XdrSCSpecEntryKind" => "SC_SPEC_ENTRY_",
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -110,6 +119,12 @@ FACTORY_NAME_OVERRIDES = {
   "XdrSCValType" => {
     "SCV_CONTRACT_INSTANCE" => "SCV_CONTRACT_INSTANCE",
     "SCV_LEDGER_KEY_CONTRACT_INSTANCE" => "SCV_LEDGER_KEY_CONTRACT_INSTANCE",
+  },
+
+  # Batch 8: XdrSCSpecUDTUnionCaseV0Kind uses custom factory names
+  "XdrSCSpecUDTUnionCaseV0Kind" => {
+    "SC_SPEC_UDT_UNION_CASE_VOID_V0" => "forVoid",
+    "SC_SPEC_UDT_UNION_CASE_TUPLE_V0" => "forTuple",
   },
 }.freeze
 

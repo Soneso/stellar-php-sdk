@@ -127,7 +127,6 @@ SKIP_TYPES = %w[
   XdrContractCodeEntryExt
   XdrContractCodeEntryExtV1
   XdrContractCostParams
-  XdrContractCostType
   XdrContractEvent
   XdrContractEventBody
   XdrContractExecutable
@@ -156,7 +155,6 @@ SKIP_TYPES = %w[
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
   XdrInvokeHostFunctionResult
-  XdrInvokeHostFunctionResultCode
   XdrLedgerEntry
   XdrLedgerEntryChange
   XdrLedgerEntryData
@@ -206,15 +204,11 @@ SKIP_TYPES = %w[
   XdrSCAddress
   XdrSCContractInstance
   XdrSCEnvMetaEntry
-  XdrSCEnvMetaKind
   XdrSCError
   XdrSCMetaEntry
-  XdrSCMetaKind
   XdrSCSpecEntry
-  XdrSCSpecEntryKind
   XdrSCSpecTypeDef
   XdrSCSpecUDTUnionCaseV0
-  XdrSCSpecUDTUnionCaseV0Kind
   XdrSCVal
   XdrSetOptionsOperation
   XdrSetOptionsResult
@@ -224,9 +218,7 @@ SKIP_TYPES = %w[
   XdrSignerKeyType
   XdrSequenceNumber
   XdrSorobanAuthorizedFunction
-  XdrSorobanAuthorizedFunctionType
   XdrSorobanCredentials
-  XdrSorobanCredentialsType
   XdrSorobanTransactionData
   XdrSorobanTransactionDataExt
   XdrSorobanTransactionMeta
@@ -250,7 +242,6 @@ SKIP_TYPES = %w[
   XdrTrustLineEntryExt
   XdrTrustLineEntryExtensionV2
   XdrTrustLineEntryV1Ext
-  XdrTrustLineFlags
   XdrTrustlineAsset
 ].freeze
 
