@@ -1256,8 +1256,8 @@ class TxRep
                 $next = self::getInt($prefix . 'sorobanData.ext.archivedSorobanEntries[' . $i . '].', $map);
                 $archivedEntries[] = $next;
             }
-            $ext = new XdrSorobanTransactionDataExt(discriminant: 1,
-                resourceExt: new XdrSorobanResourcesExtV0($archivedEntries));
+            $ext = new XdrSorobanTransactionDataExt(1);
+            $ext->resourceExt = new XdrSorobanResourcesExtV0($archivedEntries);
         }
         $resources = self::getSorobanResources($prefix . 'sorobanData.resources.', $map);
         $resourcesFee = self::getInt($prefix . 'sorobanData.resourceFee', $map);

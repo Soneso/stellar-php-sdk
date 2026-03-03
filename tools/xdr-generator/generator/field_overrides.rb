@@ -103,6 +103,13 @@ FIELD_OVERRIDES = {
   # Batch 13: Union discriminant name overrides
   "XdrFeeBumpTransactionExt" => { "v" => "discriminant" },
   "XdrTransactionV0Ext" => { "v" => "discriminant" },
+
+  # Batch 14: Union discriminant name overrides + field renames
+  "XdrDataEntryExt" => { "v" => "discriminant" },
+  "XdrOfferEntryExt" => { "v" => "discriminant" },
+  "XdrLedgerEntryV1Ext" => { "v" => "discriminant" },
+  "XdrTransactionExt" => { "v" => "discriminant", "sorobanData" => "sorobanTransactionData" },
+  "XdrSorobanTransactionDataExt" => { "v" => "discriminant" },
 }.freeze
 
 # ---------------------------------------------------------------------------

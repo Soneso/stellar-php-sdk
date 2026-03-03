@@ -50,7 +50,7 @@ class BumpSequenceOperation extends AbstractOperation
      * @return BumpSequenceOperation The resulting BumpSequenceOperation instance
      */
     public static function fromXdrOperation(XdrBumpSequenceOperation $xdrOp): BumpSequenceOperation {
-        $bumpTo = $xdrOp->getBumpTo()->getValue();
+        $bumpTo = $xdrOp->getBumpTo()->sequenceNumber;
         return new BumpSequenceOperation($bumpTo);
     }
 

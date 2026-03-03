@@ -393,7 +393,7 @@ class XdrOperationTest extends TestCase
         $encoded = $operation->encode();
         $decoded = XdrBumpSequenceOperation::decode(new XdrBuffer($encoded));
 
-        $this->assertEquals("9999999999", $decoded->getBumpTo()->getValue()->toString());
+        $this->assertEquals("9999999999", $decoded->getBumpTo()->sequenceNumber->toString());
     }
 
     /**

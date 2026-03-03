@@ -66,7 +66,7 @@ class XdrTransactionTest extends TestCase
 
             $this->assertEquals(
                 $value->toString(),
-                $decoded->getValue()->toString(),
+                $decoded->sequenceNumber->toString(),
                 "Sequence number roundtrip failed for: " . $value->toString()
             );
         }
@@ -314,7 +314,7 @@ class XdrTransactionTest extends TestCase
         $decoded = XdrTransaction::decode($xdrBuffer);
 
         $this->assertEquals(100, $decoded->getFee());
-        $this->assertEquals('12345', $decoded->getSequenceNumber()->getValue()->toString());
+        $this->assertEquals('12345', $decoded->getSequenceNumber()->sequenceNumber->toString());
         $this->assertCount(1, $decoded->getOperations());
         $this->assertEquals(XdrMemoType::MEMO_NONE, $decoded->getMemo()->getType()->getValue());
     }
@@ -356,7 +356,7 @@ class XdrTransactionTest extends TestCase
         $decoded = XdrTransaction::decode($xdrBuffer);
 
         $this->assertEquals(500, $decoded->getFee());
-        $this->assertEquals('99999', $decoded->getSequenceNumber()->getValue()->toString());
+        $this->assertEquals('99999', $decoded->getSequenceNumber()->sequenceNumber->toString());
         $this->assertCount(2, $decoded->getOperations());
         $this->assertEquals(XdrMemoType::MEMO_TEXT, $decoded->getMemo()->getType()->getValue());
         $this->assertEquals("Test transaction", $decoded->getMemo()->getText());
@@ -695,7 +695,7 @@ class XdrTransactionTest extends TestCase
         $decoded = XdrTransaction::decode($xdrBuffer);
 
         $this->assertCount(5, $decoded->getOperations());
-        $this->assertEquals('54321', $decoded->getSequenceNumber()->getValue()->toString());
+        $this->assertEquals('54321', $decoded->getSequenceNumber()->sequenceNumber->toString());
     }
 
     /**

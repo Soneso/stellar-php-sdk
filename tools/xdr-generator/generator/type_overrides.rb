@@ -128,7 +128,6 @@ SKIP_TYPES = %w[
   XdrContractIDPreimage
   XdrCreateClaimableBalanceResult
   XdrDataEntry
-  XdrDataEntryExt
   XdrDataValue
   XdrDataValueMandatory
   XdrDecoder
@@ -146,7 +145,6 @@ SKIP_TYPES = %w[
   XdrLedgerEntryData
   XdrLedgerEntryExt
   XdrLedgerEntryV1
-  XdrLedgerEntryV1Ext
   XdrLedgerKey
   XdrLedgerKeyAccount
   XdrLiquidityPoolBody
@@ -164,7 +162,6 @@ SKIP_TYPES = %w[
   XdrMuxedAccount
   XdrMuxedAccountMed25519
   XdrOfferEntry
-  XdrOfferEntryExt
   XdrOperation
   XdrOperationBody
   XdrOperationResult
@@ -190,18 +187,15 @@ SKIP_TYPES = %w[
   XdrSignedPayload
   XdrSignerKey
   XdrSignerKeyType
-  XdrSequenceNumber
   XdrSorobanAuthorizedFunction
   XdrSorobanCredentials
   XdrSorobanTransactionData
-  XdrSorobanTransactionDataExt
   XdrSorobanTransactionMeta
   XdrSorobanTransactionMetaExt
   XdrSorobanTransactionMetaV2
   XdrTimeBounds
   XdrTransaction
   XdrTransactionEnvelope
-  XdrTransactionExt
   XdrTransactionMeta
   XdrTransactionMetaV3
   XdrTransactionMetaV4

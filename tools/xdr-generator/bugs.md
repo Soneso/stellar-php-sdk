@@ -162,3 +162,7 @@ _(No new bugs — 7 types generated cleanly)_
 - **Bug**: `offerID` encoded with `unsignedInteger64`/`readUnsignedInteger64`, but XDR spec defines `int64 offerID` (signed)
 - **Impact**: Low — values within signed range encode identically (same pattern as XdrClaimOfferAtom in Batch 3, XdrLedgerKeyOffer in Batch 5)
 - **Fixed by**: Generator uses `integer64`/`readInteger64`
+
+## Batch 14
+
+_(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() callers migrated to public property access.)_

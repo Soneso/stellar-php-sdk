@@ -317,7 +317,7 @@ class TransactionPreconditions
                     $cond->setLedgerBounds(LedgerBounds::fromXdr($xdrV2->getLedgerBounds()));
                 }
                 if ($xdrV2->getMinSeqNum() !== null) {
-                    $cond->setMinSeqNumber($xdrV2->getMinSeqNum()->getValue());
+                    $cond->setMinSeqNumber($xdrV2->getMinSeqNum()->sequenceNumber);
                 }
                 $cond->setMinSeqAge($xdrV2->getMinSeqAge());
                 $cond->setMinSeqLedgerGap($xdrV2->getMinSeqLedgerGap());

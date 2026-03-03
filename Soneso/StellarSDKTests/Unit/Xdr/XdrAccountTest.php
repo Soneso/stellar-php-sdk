@@ -274,7 +274,7 @@ class XdrAccountTest extends TestCase
         // Verify all fields match
         $this->assertEquals($original->getAccountID()->getAccountId(), $decoded->getAccountID()->getAccountId());
         $this->assertEquals($original->getBalance()->toString(), $decoded->getBalance()->toString());
-        $this->assertEquals($original->getSeqNum()->getValue()->toString(), $decoded->getSeqNum()->getValue()->toString());
+        $this->assertEquals($original->getSeqNum()->sequenceNumber->toString(), $decoded->getSeqNum()->sequenceNumber->toString());
         $this->assertEquals($original->getNumSubEntries(), $decoded->getNumSubEntries());
         $this->assertEquals($original->getInflationDest()->getAccountId(), $decoded->getInflationDest()->getAccountId());
         $this->assertEquals($original->getFlags(), $decoded->getFlags());
@@ -333,7 +333,7 @@ class XdrAccountTest extends TestCase
         // Verify all fields match
         $this->assertEquals($original->getAccountID()->getAccountId(), $decoded->getAccountID()->getAccountId());
         $this->assertEquals($original->getBalance()->toString(), $decoded->getBalance()->toString());
-        $this->assertEquals($original->getSeqNum()->getValue()->toString(), $decoded->getSeqNum()->getValue()->toString());
+        $this->assertEquals($original->getSeqNum()->sequenceNumber->toString(), $decoded->getSeqNum()->sequenceNumber->toString());
         $this->assertNull($decoded->getInflationDest());
         $this->assertEquals(1, $decoded->getExt()->getDiscriminant());
         $this->assertNotNull($decoded->getExt()->getV1());
