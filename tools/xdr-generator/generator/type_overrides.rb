@@ -89,15 +89,12 @@ SELF_REFERENCING_BASE_TYPES = %w[
 SKIP_TYPES = %w[
   XdrAccountEntry
   XdrAccountEntryExt
-  XdrAccountEntryV1
   XdrAccountEntryV1Ext
   XdrAccountEntryV2
   XdrAccountEntryV2Ext
-  XdrAccountEntryV3
   XdrAccountID
   XdrAccountMergeOperation
   XdrAccountMergeResult
-  XdrAllowTrustOperation
   XdrAllowTrustOperationAsset
   XdrAllowTrustResult
   XdrAsset
@@ -112,7 +109,6 @@ SKIP_TYPES = %w[
   XdrChangeTrustOperation
   XdrChangeTrustResult
   XdrClaimAtom
-  XdrClaimClaimableBalanceOperation
   XdrClaimClaimableBalanceResult
   XdrClaimOfferAtomV0
   XdrClaimPredicate
@@ -123,7 +119,6 @@ SKIP_TYPES = %w[
   XdrClaimableBalanceID
   XdrClaimant
 
-  XdrClawbackClaimableBalanceOperation
   XdrClawbackClaimableBalanceResult
   XdrClawbackOperation
   XdrClawbackResult
@@ -163,10 +158,8 @@ SKIP_TYPES = %w[
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
-  XdrInvokeHostFunctionOp
   XdrInvokeHostFunctionResult
   XdrInvokeHostFunctionResultCode
-  XdrInvokeHostFunctionSuccessPreImage
   XdrLedgerEntry
   XdrLedgerEntryChange
   XdrLedgerEntryData
@@ -200,7 +193,6 @@ SKIP_TYPES = %w[
   XdrOperation
   XdrOperationBody
   XdrOperationMeta
-  XdrOperationMetaV2
   XdrOperationResult
   XdrOperationResultTr
   XdrPathPaymentResultSuccess
@@ -223,48 +215,27 @@ SKIP_TYPES = %w[
   XdrSCError
   XdrSCMetaEntry
   XdrSCMetaKind
-  XdrSCMetaV0
   XdrSCSpecEntry
   XdrSCSpecEntryKind
-  XdrSCSpecEventDataFormat
-  XdrSCSpecEventParamLocationV0
-  XdrSCSpecEventParamV0
-  XdrSCSpecEventV0
-  XdrSCSpecFunctionInputV0
-  XdrSCSpecFunctionV0
   XdrSCSpecTypeDef
-  XdrSCSpecTypeTuple
-  XdrSCSpecUDTEnumCaseV0
-  XdrSCSpecUDTEnumV0
-  XdrSCSpecUDTErrorEnumCaseV0
-  XdrSCSpecUDTErrorEnumV0
-  XdrSCSpecUDTStructFieldV0
-  XdrSCSpecUDTStructV0
-  XdrSCSpecUDTUnionCaseTupleV0
   XdrSCSpecUDTUnionCaseV0
   XdrSCSpecUDTUnionCaseV0Kind
-  XdrSCSpecUDTUnionCaseVoidV0
-  XdrSCSpecUDTUnionV0
   XdrSCVal
   XdrSetOptionsOperation
   XdrSetOptionsResult
-  XdrSetTrustLineFlagsOperation
   XdrSetTrustLineFlagsResult
   XdrSignedPayload
   XdrSignerKey
   XdrSignerKeyType
   XdrSequenceNumber
-  XdrSorobanAuthorizationEntry
   XdrSorobanAuthorizedFunction
   XdrSorobanAuthorizedFunctionType
   XdrSorobanCredentials
   XdrSorobanCredentialsType
-  XdrSorobanResourcesExtV0
   XdrSorobanTransactionData
   XdrSorobanTransactionDataExt
   XdrSorobanTransactionMeta
   XdrSorobanTransactionMetaExt
-  XdrSorobanTransactionMetaExtV1
   XdrSorobanTransactionMetaV2
   XdrTimeBounds
   XdrTransaction
@@ -285,7 +256,6 @@ SKIP_TYPES = %w[
   XdrTrustLineEntry
   XdrTrustLineEntryExt
   XdrTrustLineEntryExtensionV2
-  XdrTrustLineEntryV1
   XdrTrustLineEntryV1Ext
   XdrTrustLineFlags
   XdrTrustlineAsset

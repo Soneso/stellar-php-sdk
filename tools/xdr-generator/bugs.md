@@ -56,3 +56,21 @@ Bugs discovered in existing hand-written XDR types during generator comparison.
 - **File**: `Soneso/StellarSDK/Xdr/XdrLedgerKeyData.php`
 - **Bug**: `getDataName()` return type annotated as `int|string` (should be `string`); also `XdrEncoder::string($this->dataName, 64)` passes max-length 64 but generator omits the limit parameter
 - **Impact**: Low — return type annotation is wrong but harmless; max-length validation is a defense-in-depth guard only
+
+## Batch 6
+
+### XdrAllowTrustOperation — signed/unsigned mismatch for authorize field
+- **File**: `Soneso/StellarSDK/Xdr/XdrAllowTrustOperation.php`
+- **Bug**: `authorized` encoded with `integer32`/`readInteger32` (signed), but XDR spec defines `uint32 authorize` (unsigned)
+- **Impact**: Low — valid authorize values (0, 1, 2) encode identically in signed vs unsigned
+- **Fixed by**: Generator uses `unsignedInteger32`/`readUnsignedInteger32`
+
+### XdrSetTrustLineFlagsOperation — field name mismatch
+- **File**: `Soneso/StellarSDK/Xdr/XdrSetTrustLineFlagsOperation.php`
+- **Bug**: Field named `$accountID` instead of `$trustor` (XDR spec: `AccountID trustor`)
+- **Impact**: None — field name is internal, getter name `getAccountID()` preserved via override
+
+### XdrSCMetaV0 — field name mismatch
+- **File**: `Soneso/StellarSDK/Xdr/XdrSCMetaV0.php`
+- **Bug**: Field named `$value` instead of `$val` (XDR spec: `string val<>`)
+- **Impact**: None — field name is internal, getter/property access preserved via override

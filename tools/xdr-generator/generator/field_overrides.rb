@@ -49,6 +49,17 @@ FIELD_OVERRIDES = {
   "XdrSorobanAuthorizedInvocation" => {
     "function" => "function",
   },
+
+  # Batch 6: Field name differences between XDR spec and PHP SDK
+  "XdrAllowTrustOperation" => {
+    "authorize" => "authorized",
+  },
+  "XdrSetTrustLineFlagsOperation" => {
+    "trustor" => "accountID",
+  },
+  "XdrSCMetaV0" => {
+    "val" => "value",
+  },
 }.freeze
 
 # ---------------------------------------------------------------------------
