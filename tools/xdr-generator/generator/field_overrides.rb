@@ -68,6 +68,17 @@ FIELD_OVERRIDES = {
   "XdrTransactionMetaV1" => {
     "txChanges" => "ledgerEntryChanges",
   },
+
+  # Batch 10: Union discriminant name overrides (XDR spec: "code", PHP SDK: "resultCode")
+  "XdrClawbackResult" => {
+    "code" => "resultCode",
+  },
+  "XdrClawbackClaimableBalanceResult" => {
+    "code" => "resultCode",
+  },
+  "XdrRevokeSponsorshipResult" => {
+    "code" => "resultCode",
+  },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -115,4 +126,5 @@ FIELD_TYPE_OVERRIDES = {
 
   # Batch 9: BigInteger fields
   "XdrCreateClaimableBalanceOperation" => { "amount" => "BigInteger" },
+
 }.freeze

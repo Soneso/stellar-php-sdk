@@ -121,8 +121,6 @@ SKIP_TYPES = %w[
   XdrClaimableBalanceID
   XdrClaimant
 
-  XdrClawbackClaimableBalanceResult
-  XdrClawbackResult
   XdrConfigSettingEntry
   XdrConstantProduct
   XdrConfigUpgradeSetKey
@@ -144,8 +142,6 @@ SKIP_TYPES = %w[
   XdrDecoratedSignature
   XdrEncoder
   XdrEndSponsoringFutureReservesResult
-  XdrEvictionIterator
-  XdrExtendFootprintTTLResult
   XdrExtensionPoint
   XdrFeeBumpTransaction
   XdrFeeBumpTransactionExt
@@ -176,7 +172,6 @@ SKIP_TYPES = %w[
   XdrLiquidityPoolWithdrawResult
   XdrManageBuyOfferOperation
   XdrManageDataOperation
-  XdrManageDataResult
   XdrManageOfferResult
   XdrManageOfferSuccessResult
   XdrManageOfferSuccessResultOffer
@@ -198,9 +193,7 @@ SKIP_TYPES = %w[
 
   XdrPreconditions
   XdrPreconditionsV2
-  XdrRestoreFootprintResult
   XdrRevokeSponsorshipOperation
-  XdrRevokeSponsorshipResult
 
   XdrSCAddress
   XdrSCContractInstance

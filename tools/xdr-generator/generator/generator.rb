@@ -255,7 +255,12 @@ class Generator < Xdrgen::Generators::Base
         type_hint = f[:php_type]
       end
 
-      out.puts "    public function get#{uc_name}(): #{type_hint} { return $this->#{fname}; }"
+      # Boolean fields starting with "is" use the field name directly as getter (Java Bean convention)
+      if f[:php_type] == "bool" && fname.start_with?("is") && fname.length > 2
+        out.puts "    public function #{fname}(): bool { return $this->#{fname}; }"
+      else
+        out.puts "    public function get#{uc_name}(): #{type_hint} { return $this->#{fname}; }"
+      end
       out.puts "    public function set#{uc_name}(#{type_hint} $#{fname}): void { $this->#{fname} = $#{fname}; }"
     end
     out.puts ""
@@ -422,6 +427,9 @@ class Generator < Xdrgen::Generators::Base
     render_union_decode(out, union_name, class_name, disc_info, arms, is_base)
     out.puts ""
 
+    # Getters and setters for backward compatibility
+    render_union_accessors(out, disc_info, arms)
+
     render_base64_methods(out)
     out.puts "}"
     out.close
@@ -513,6 +521,26 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        }"
     out.puts "        return $result;"
     out.puts "    }"
+  end
+
+  def render_union_accessors(out, disc_info, arms)
+    # Discriminant getter/setter
+    df = disc_info[:field_name]
+    uc_disc = "#{df[0].upcase}#{df[1..]}"
+    disc_type = disc_info[:kind] == :int ? "int" : disc_info[:php_name]
+    out.puts "    public function get#{uc_disc}(): #{disc_type} { return $this->#{df}; }"
+    out.puts "    public function set#{uc_disc}(#{disc_type} $#{df}): void { $this->#{df} = $#{df}; }"
+
+    # Arm field getters/setters (nullable)
+    arms.each do |arm|
+      next if arm[:void]
+      fn = arm[:field_name]
+      uc_fn = "#{fn[0].upcase}#{fn[1..]}"
+      type_hint = arm[:php_type] == "array" ? "array" : "?#{arm[:php_type]}"
+      out.puts "    public function get#{uc_fn}(): #{type_hint} { return $this->#{fn}; }"
+      out.puts "    public function set#{uc_fn}(#{type_hint} $#{fn}): void { $this->#{fn} = $#{fn}; }"
+    end
+    out.puts ""
   end
 
   # ---------------------------------------------------------------------------
@@ -994,8 +1022,9 @@ class Generator < Xdrgen::Generators::Base
   # ---------------------------------------------------------------------------
 
   def resolve_discriminant_info(union)
+    union_name = name(union)
     dtype = union.discriminant.type
-    disc_field_name = union.discriminant.name.to_s
+    disc_field_name = resolve_field_name(union_name, union.discriminant.name.to_s)
 
     if dtype.respond_to?(:resolved_type)
       resolved = dtype.resolved_type
@@ -1086,7 +1115,8 @@ class Generator < Xdrgen::Generators::Base
   def format_case_label(value, disc_info)
     if value.is_a?(AST::Identifier)
       if disc_info[:kind] == :enum
-        "#{disc_info[:php_name]}::#{value.name}"
+        member = resolve_member_name(disc_info[:php_name], value.name.to_s)
+        "#{disc_info[:php_name]}::#{member}"
       else
         value.name.to_s
       end

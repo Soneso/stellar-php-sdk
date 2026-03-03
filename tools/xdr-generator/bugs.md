@@ -116,3 +116,8 @@ Bugs discovered in existing hand-written XDR types during generator comparison.
 - **Bug**: Same instanceof guard pattern in encode() for `$claimants` array
 - **Impact**: Low — same pattern as above
 - **Fixed by**: Generator encodes all array elements unconditionally
+
+## Batch 10
+
+### Bugs in types deferred to later batches (not yet fixed)
+- **XdrCreateAccountResult**: `decode()` returns `XdrOperationResultCode` instead of `XdrCreateAccountResultCode` — same wrong-type pattern as XdrMemoType (Batch 1) and XdrTrustLineFlags (Batch 8)
