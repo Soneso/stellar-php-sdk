@@ -422,3 +422,17 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 ### XdrContractCostParams — no new bugs
 - **File**: `Soneso/StellarSDK/Xdr/XdrContractCostParams.php`
 - **Note**: Hand-written code was functionally correct. Generator only changes are cosmetic (formatting, `array_push` → `[]`, `static` return type on `fromBase64Xdr`)
+
+## Batch 24
+
+### XdrConfigSettingEntry — inconsistent discriminant access (`.value` vs `.getValue()`)
+- **File**: `Soneso/StellarSDK/Xdr/XdrConfigSettingEntry.php`
+- **Bug**: Hand-written encode() used `$this->configSettingID->value` (direct property) instead of `$this->configSettingID->getValue()` (method call); decode() used raw `$v` integer directly in switch instead of `->getValue()`
+- **Impact**: None — both yield the same integer value (same pattern as previous batches)
+- **Fixed by**: Generator uses consistent `->getValue()` method call throughout
+
+### XdrConfigSettingEntry — missing toBase64Xdr/fromBase64Xdr
+- **File**: `Soneso/StellarSDK/Xdr/XdrConfigSettingEntry.php`
+- **Bug**: Hand-written version lacked convenience methods
+- **Impact**: Low — callers must manually encode/decode base64
+- **Fixed by**: Generator adds these methods to all types

@@ -114,15 +114,16 @@ SKIP_TYPES = %w[
   XdrClaimableBalanceEntry
   XdrClaimableBalanceID
 
-  XdrConfigSettingEntry
   XdrConstantProduct
   XdrConfigUpgradeSetKey
   XdrContractCodeEntryExt
   XdrContractCodeEntryExtV1
   XdrContractCodeEntryV1
+  XdrSCContractInstance
   XdrContractEventBody
   XdrContractEventBodyV0
   XdrContractEventV0
+  XdrLiquidityPoolBody
   XdrContractExecutable
   XdrContractIDPreimage
   XdrDataValue
@@ -136,7 +137,6 @@ SKIP_TYPES = %w[
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
   XdrLedgerKey
-  XdrLiquidityPoolBody
   XdrLiquidityPoolDepositOperation
   XdrLiquidityPoolEntryConstantProduct
 
@@ -157,7 +157,6 @@ SKIP_TYPES = %w[
   XdrPreconditionsV2
 
   XdrSCAddress
-  XdrSCContractInstance
   XdrSCEnvMetaEntry
   XdrSCEnvMetaEntryInterfaceVersion
   XdrSCSpecEntry
