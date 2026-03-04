@@ -334,3 +334,41 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: All 6 fields were `private` with getters only (no setters); generated version uses `public` with getters/setters
 - **Impact**: None — public access is additive
 - **Fixed by**: Generator uses `public` consistently
+
+## Batch 21
+
+### XdrPreconditions — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrPreconditions.php`
+- **Bug**: All 3 fields (`type`, `timeBounds`, `v2`) were `private`; generated version uses `public`
+- **Impact**: None — public access is additive; getters/setters remain available
+- **Fixed by**: Generator uses `public` consistently
+
+### XdrPreconditions — if/else if encode pattern instead of switch/case
+- **File**: `Soneso/StellarSDK/Xdr/XdrPreconditions.php`
+- **Bug**: Hand-written encode()/decode() used `if`/`else if` on `getValue()` instead of `switch`/`case`; also omitted the NONE arm (harmless but inconsistent)
+- **Impact**: Low — functionally equivalent, but switch/case is clearer and consistent with all other unions
+- **Fixed by**: Generator uses switch/case consistently
+
+### XdrPreconditions — missing toBase64Xdr/fromBase64Xdr
+- **File**: `Soneso/StellarSDK/Xdr/XdrPreconditions.php`
+- **Bug**: Hand-written version lacked `toBase64Xdr()` and `fromBase64Xdr()` convenience methods
+- **Impact**: Low — callers must manually encode/decode base64
+- **Fixed by**: Generator adds these methods to all types
+
+### XdrTransactionMeta — instanceof guard in encode (case 0)
+- **File**: `Soneso/StellarSDK/Xdr/XdrTransactionMeta.php`
+- **Bug**: Hand-written encode() for case 0 used `if ($val instanceof XdrOperationMeta)` inside foreach, silently skipping non-matching entries instead of encoding all items
+- **Impact**: Medium — if array contained wrong types, bytes would be silently missing (count encoded but items skipped)
+- **Fixed by**: Generator encodes all items unconditionally
+
+### XdrTransactionMetaV3 — instanceof guards in encode (3 arrays)
+- **File**: `Soneso/StellarSDK/Xdr/XdrTransactionMetaV3.php`
+- **Bug**: Hand-written encode() used `instanceof` guards inside all 3 foreach loops (txChangesBefore, operations, txChangesAfter), silently skipping non-matching entries
+- **Impact**: Medium — count/items mismatch if wrong types present in arrays
+- **Fixed by**: Generator encodes all items unconditionally
+
+### XdrTransactionMetaV4 — instanceof guards in encode (5 arrays)
+- **File**: `Soneso/StellarSDK/Xdr/XdrTransactionMetaV4.php`
+- **Bug**: Hand-written encode() used `instanceof` guards inside all 5 foreach loops (txChangesBefore, operations, txChangesAfter, events, diagnosticEvents)
+- **Impact**: Medium — count/items mismatch if wrong types present in arrays
+- **Fixed by**: Generator encodes all items unconditionally

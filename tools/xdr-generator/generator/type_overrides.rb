@@ -158,7 +158,6 @@ SKIP_TYPES = %w[
   XdrPathPaymentStrictReceiveResult
   XdrPathPaymentStrictSendResult
 
-  XdrPreconditions
   XdrPreconditionsV2
 
   XdrSCAddress
@@ -174,9 +173,6 @@ SKIP_TYPES = %w[
   XdrTimeBounds
   XdrTransaction
   XdrTransactionEnvelope
-  XdrTransactionMeta
-  XdrTransactionMetaV3
-  XdrTransactionMetaV4
   XdrTransactionResult
   XdrTransactionResultResult
   XdrTransactionV0
