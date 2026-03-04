@@ -208,8 +208,14 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # Constructor — ext point fields excluded (they have default values)
+    # PHP 8.1+: optional params (with defaults) must not precede required params.
+    # Fix: reorder so required params come first, optional params last.
     constructor_fields = fields.reject { |f| f[:is_ext_point] }
-    constructor_params = constructor_fields.map { |f|
+    required_fields = constructor_fields.reject { |f| f[:is_optional] }
+    optional_fields = constructor_fields.select { |f| f[:is_optional] }
+    ordered_fields = required_fields + optional_fields
+
+    constructor_params = ordered_fields.map { |f|
       if f[:is_optional]
         "?#{f[:php_type]} $#{f[:name]} = null"
       elsif f[:is_array]
@@ -219,7 +225,7 @@ class Generator < Xdrgen::Generators::Base
       end
     }.join(", ")
     out.puts "    public function __construct(#{constructor_params}) {"
-    constructor_fields.each do |f|
+    ordered_fields.each do |f|
       out.puts "        $this->#{f[:name]} = $#{f[:name]};"
     end
     out.puts "    }"
@@ -352,9 +358,13 @@ class Generator < Xdrgen::Generators::Base
         render_decode_field_php(out, f[:name], f)
       end
     end
-    # Build constructor call using non-ext fields
+    # Build constructor call using non-ext fields, reordered to match constructor
+    # (required first, optional last)
     constructor_fields = fields.reject { |f| f[:is_ext_point] }
-    args = constructor_fields.map { |f| "$#{f[:name]}" }.join(", ")
+    required_fields = constructor_fields.reject { |f| f[:is_optional] }
+    optional_fields = constructor_fields.select { |f| f[:is_optional] }
+    ordered_fields = required_fields + optional_fields
+    args = ordered_fields.map { |f| "$#{f[:name]}" }.join(", ")
     out.puts "        return new #{decode_class}(#{args});"
     out.puts "    }"
   end
@@ -416,7 +426,8 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # Constructor — discriminant is optional to support no-arg construction
-    # (some hand-written types use new Type() + setter instead of constructor args)
+    # pattern used by hand-written code: new Type() → setDiscriminant() → encode().
+    # This matches the existing codebase convention throughout the SDK.
     if disc_info[:kind] == :int
       out.puts "    public function __construct(?int $#{df} = null) {"
     else

@@ -450,3 +450,65 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: Hand-written version lacked convenience methods
 - **Impact**: Low — callers must manually encode/decode base64
 - **Fixed by**: Generator adds these methods to all types
+
+## Batch 26
+
+### XdrSetOptionsOperation — `optionalUnsignedInteger`/`optionalString` replaced with explicit pattern
+- **File**: `Soneso/StellarSDK/Xdr/XdrSetOptionsOperation.php`
+- **Bug**: Not a bug — hand-written used convenience methods (`optionalUnsignedInteger`, `optionalString`), generator uses explicit if/else presence-flag pattern. Byte-identical output.
+- **Impact**: None
+- **Note**: Generator does not pass max length to `readString()` for `homeDomain` (defined as `string<32>`). Network validates on creation, so no functional impact, but loses client-side length validation.
+
+### XdrPathPaymentResultSuccess — `instanceof` guard in encode
+- **File**: `Soneso/StellarSDK/Xdr/XdrPathPaymentResultSuccess.php`
+- **Bug**: Hand-written encode had `if ($val instanceof XdrClaimAtom)` guard that silently skips non-matching array entries
+- **Impact**: Defensive but masks type errors — if a non-XdrClaimAtom element is in the array, it's silently dropped rather than causing an error
+- **Fixed by**: Generator encodes all array elements without instanceof guard
+
+### XdrSetOptionsOperation — missing toBase64Xdr/fromBase64Xdr
+- **File**: `Soneso/StellarSDK/Xdr/XdrSetOptionsOperation.php`
+- **Bug**: Hand-written version lacked convenience methods
+- **Impact**: Low
+- **Fixed by**: Generator adds these methods
+
+### XdrPathPaymentResultSuccess — missing toBase64Xdr/fromBase64Xdr + setters
+- **File**: `Soneso/StellarSDK/Xdr/XdrPathPaymentResultSuccess.php`
+- **Bug**: Hand-written version lacked convenience methods and setters
+- **Impact**: Low
+- **Fixed by**: Generator adds these methods
+
+## Batch 27
+
+### XdrPreconditionsV2 — `instanceof` guard in encode
+- **File**: `Soneso/StellarSDK/Xdr/XdrPreconditionsV2.php`
+- **Bug**: Hand-written encode had `if ($extraSigner instanceof XdrSignerKey)` guard that silently skips non-matching array entries
+- **Impact**: Masks type errors — non-XdrSignerKey elements silently dropped
+- **Fixed by**: Generated Base encodes all array elements without instanceof guard
+
+### XdrPreconditionsV2 — first wrapper type generated
+- **File**: `Soneso/StellarSDK/Xdr/XdrPreconditionsV2.php` + `XdrPreconditionsV2Base.php`
+- **Note**: First struct using the BASE_WRAPPER_TYPES pattern. Wrapper provides no-arg constructor with all defaults; Base has the generated encode/decode logic.
+
+## Batch 28
+
+### XdrPathPaymentStrictReceiveResult — proper switch/case replaces if/else
+- **File**: `Soneso/StellarSDK/Xdr/XdrPathPaymentStrictReceiveResult.php`
+- **Bug**: Hand-written encode used `if ($this->success !== null) ... else if ($this->noIssuer !== null)` which doesn't respect the discriminant — it encodes based on which field is set rather than which case the discriminant indicates
+- **Impact**: Low — in practice, fields are set correctly corresponding to the code
+- **Fixed by**: Generated code uses proper `switch ($this->code->getValue())` pattern
+
+### XdrPathPaymentStrictSendResult — same if/else issue
+- **File**: `Soneso/StellarSDK/Xdr/XdrPathPaymentStrictSendResult.php`
+- **Bug**: Same as StrictReceive — encode used if/else on fields instead of switch on discriminant
+- **Fixed by**: Generated code uses proper switch pattern
+
+### XdrPathPaymentStrictReceiveResult/StrictSendResult — missing break in decode NO_ISSUER case
+- **File**: Both hand-written files
+- **Bug**: `decode()` switch had missing `break` after the NO_ISSUER case, causing unintended fall-through
+- **Fixed by**: Generated code has proper break statements on all cases
+
+### XdrOperationResultTest — dead-code no-arg constructor calls
+- **File**: `Soneso/StellarSDKTests/Unit/Xdr/XdrOperationResultTest.php`
+- **Bug**: 4 test methods created `new XdrPathPaymentStrictReceiveResult()` / `new XdrPathPaymentStrictSendResult()` objects that were never used (dead code). These masked the fact that a no-arg constructor on a union type leaves the discriminant property uninitialized.
+- **Impact**: Tests passed by coincidence — the unused objects were never encoded/decoded
+- **Fixed by**: Removed the 4 dead-code lines

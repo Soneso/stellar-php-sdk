@@ -76,6 +76,7 @@ BASE_WRAPPER_TYPES = %w[
   XdrSCVal
   XdrSorobanAuthorizedFunction
   XdrSorobanCredentials
+  XdrPreconditionsV2
   XdrSorobanTransactionData
   XdrTransaction
 ].freeze
@@ -148,19 +149,12 @@ SKIP_TYPES = %w[
   XdrOperationBody
   XdrOperationResult
   XdrOperationResultTr
-  XdrPathPaymentResultSuccess
-  XdrPathPaymentStrictReceiveResult
-  XdrPathPaymentStrictSendResult
-
-  XdrPreconditionsV2
-
   XdrSCAddress
   XdrSCEnvMetaEntry
   XdrSCEnvMetaEntryInterfaceVersion
   XdrSCSpecEntry
   XdrSCSpecTypeDef
   XdrSCVal
-  XdrSetOptionsOperation
   XdrSignerKey
   XdrSignerKeyType
   XdrTimeBounds

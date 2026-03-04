@@ -15,14 +15,14 @@ class XdrTransactionMetaV4 {
     public array $events;
     public array $diagnosticEvents;
 
-    public function __construct(XdrExtensionPoint $ext, array $txChangesBefore, array $operations, array $txChangesAfter, ?XdrSorobanTransactionMetaV2 $sorobanMeta = null, array $events, array $diagnosticEvents) {
+    public function __construct(XdrExtensionPoint $ext, array $txChangesBefore, array $operations, array $txChangesAfter, array $events, array $diagnosticEvents, ?XdrSorobanTransactionMetaV2 $sorobanMeta = null) {
         $this->ext = $ext;
         $this->txChangesBefore = $txChangesBefore;
         $this->operations = $operations;
         $this->txChangesAfter = $txChangesAfter;
-        $this->sorobanMeta = $sorobanMeta;
         $this->events = $events;
         $this->diagnosticEvents = $diagnosticEvents;
+        $this->sorobanMeta = $sorobanMeta;
     }
 
     public function encode(): string {
@@ -92,7 +92,7 @@ class XdrTransactionMetaV4 {
         for ($i = 0; $i < $diagnosticEventsSize; $i++) {
             $diagnosticEvents[] = XdrDiagnosticEvent::decode($xdr);
         }
-        return new XdrTransactionMetaV4($ext, $txChangesBefore, $operations, $txChangesAfter, $sorobanMeta, $events, $diagnosticEvents);
+        return new XdrTransactionMetaV4($ext, $txChangesBefore, $operations, $txChangesAfter, $events, $diagnosticEvents, $sorobanMeta);
     }
 
     public function getExt(): XdrExtensionPoint { return $this->ext; }

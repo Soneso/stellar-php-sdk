@@ -534,7 +534,7 @@ class XdrLedgerTest extends TestCase
     {
         $sponsoringId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
         $v1Ext = new XdrLedgerEntryV1Ext(0);
-        $v1 = new XdrLedgerEntryV1($sponsoringId, $v1Ext);
+        $v1 = new XdrLedgerEntryV1($v1Ext, $sponsoringId);
         $ext = new XdrLedgerEntryExt(1);
         $ext->v1 = $v1;
 

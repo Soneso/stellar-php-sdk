@@ -10,9 +10,9 @@ class XdrLedgerEntryV1 {
     public ?XdrAccountID $sponsoringID = null;
     public XdrLedgerEntryV1Ext $ext;
 
-    public function __construct(?XdrAccountID $sponsoringID = null, XdrLedgerEntryV1Ext $ext) {
-        $this->sponsoringID = $sponsoringID;
+    public function __construct(XdrLedgerEntryV1Ext $ext, ?XdrAccountID $sponsoringID = null) {
         $this->ext = $ext;
+        $this->sponsoringID = $sponsoringID;
     }
 
     public function encode(): string {
@@ -32,7 +32,7 @@ class XdrLedgerEntryV1 {
             $sponsoringID = XdrAccountID::decode($xdr);
         }
         $ext = XdrLedgerEntryV1Ext::decode($xdr);
-        return new XdrLedgerEntryV1($sponsoringID, $ext);
+        return new XdrLedgerEntryV1($ext, $sponsoringID);
     }
 
     public function getSponsoringID(): ?XdrAccountID { return $this->sponsoringID; }

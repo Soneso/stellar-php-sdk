@@ -112,7 +112,6 @@ class XdrOperationResultTest extends TestCase
     #[Test]
     public function testPathPaymentStrictReceiveResultSuccess(): void
     {
-        $result = new XdrPathPaymentStrictReceiveResult();
         $code = new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SUCCESS);
 
         $encoded = $code->encode();
@@ -124,7 +123,6 @@ class XdrOperationResultTest extends TestCase
     #[Test]
     public function testPathPaymentStrictSendResultSuccess(): void
     {
-        $result = new XdrPathPaymentStrictSendResult();
         $code = new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SUCCESS);
 
         $encoded = $code->encode();
@@ -525,7 +523,6 @@ class XdrOperationResultTest extends TestCase
         $encoded = $code->encode();
         $decoded = XdrPathPaymentStrictReceiveResultCode::decode(new XdrBuffer($encoded));
 
-        $result = new XdrPathPaymentStrictReceiveResult();
         $buffer = new XdrBuffer($type->encode() . $decoded->encode());
         $decodedTr = XdrOperationResultTr::decode($buffer);
 
@@ -546,7 +543,6 @@ class XdrOperationResultTest extends TestCase
         $encoded = $code->encode();
         $decoded = XdrPathPaymentStrictSendResultCode::decode(new XdrBuffer($encoded));
 
-        $result = new XdrPathPaymentStrictSendResult();
         $buffer = new XdrBuffer($type->encode() . $decoded->encode());
         $decodedTr = XdrOperationResultTr::decode($buffer);
 

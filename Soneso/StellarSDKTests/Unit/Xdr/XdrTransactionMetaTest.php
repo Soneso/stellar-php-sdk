@@ -258,9 +258,9 @@ class XdrTransactionMetaTest extends TestCase
             $txChangesBefore,
             $operations,
             $txChangesAfter,
-            $sorobanMeta,
             $events,
-            $diagnosticEvents
+            $diagnosticEvents,
+            $sorobanMeta
         );
         $meta = new XdrTransactionMeta(4);
         $meta->setV4($metaV4);
@@ -292,9 +292,9 @@ class XdrTransactionMetaTest extends TestCase
             $txChangesBefore,
             $operations,
             $txChangesAfter,
-            $sorobanMeta,
             $events,
-            $diagnosticEvents
+            $diagnosticEvents,
+            $sorobanMeta
         );
 
         $this->assertCount(0, $metaV4->getTxChangesBefore());
@@ -309,7 +309,7 @@ class XdrTransactionMetaTest extends TestCase
     public function testTransactionMetaV4Setters(): void
     {
         $ext = new XdrExtensionPoint(0);
-        $metaV4 = new XdrTransactionMetaV4($ext, [], [], [], null, [], []);
+        $metaV4 = new XdrTransactionMetaV4($ext, [], [], [], [], []);
 
         $newChangesBefore = [
             new XdrLedgerEntryChange(
@@ -355,7 +355,7 @@ class XdrTransactionMetaTest extends TestCase
         $metaV3->setV3(new XdrTransactionMetaV3($ext, [], [], [], $this->createMinimalSorobanMeta()));
 
         $metaV4 = new XdrTransactionMeta(4);
-        $metaV4->setV4(new XdrTransactionMetaV4($ext, [], [], [], null, [], []));
+        $metaV4->setV4(new XdrTransactionMetaV4($ext, [], [], [], [], []));
 
         $encodedV0 = $metaV0->encode();
         $encodedV1 = $metaV1->encode();
@@ -467,7 +467,7 @@ class XdrTransactionMetaTest extends TestCase
         $meta->setV3($metaV3);
         $this->assertNotNull($meta->getV3());
 
-        $metaV4 = new XdrTransactionMetaV4($ext, [], [], [], null, [], []);
+        $metaV4 = new XdrTransactionMetaV4($ext, [], [], [], [], []);
         $meta->setV4($metaV4);
         $this->assertNotNull($meta->getV4());
     }

@@ -12,11 +12,11 @@ class XdrContractEvent {
     public XdrContractEventType $type;
     public XdrContractEventBody $body;
 
-    public function __construct(XdrExtensionPoint $ext, ?string $hash = null, XdrContractEventType $type, XdrContractEventBody $body) {
+    public function __construct(XdrExtensionPoint $ext, XdrContractEventType $type, XdrContractEventBody $body, ?string $hash = null) {
         $this->ext = $ext;
-        $this->hash = $hash;
         $this->type = $type;
         $this->body = $body;
+        $this->hash = $hash;
     }
 
     public function encode(): string {
@@ -40,7 +40,7 @@ class XdrContractEvent {
         }
         $type = XdrContractEventType::decode($xdr);
         $body = XdrContractEventBody::decode($xdr);
-        return new XdrContractEvent($ext, $hash, $type, $body);
+        return new XdrContractEvent($ext, $type, $body, $hash);
     }
 
     public function getExt(): XdrExtensionPoint { return $this->ext; }
