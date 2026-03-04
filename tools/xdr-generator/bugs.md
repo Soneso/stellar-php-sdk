@@ -436,3 +436,17 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: Hand-written version lacked convenience methods
 - **Impact**: Low — callers must manually encode/decode base64
 - **Fixed by**: Generator adds these methods to all types
+
+## Batch 25
+
+### XdrContractCodeEntryExt — inner struct naming: `XdrContractCodeEntryExtV1` renamed to `XdrContractCodeEntryV1`
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractCodeEntryExt.php`
+- **Bug**: Hand-written code named the v1 arm struct `XdrContractCodeEntryExtV1`; generator names it `XdrContractCodeEntryV1` (derived from parent struct `ContractCodeEntry` + arm `v1`)
+- **Impact**: None — no external code referenced `XdrContractCodeEntryExtV1` directly. The old file becomes orphaned.
+- **Fixed by**: Generator produces correctly-named `XdrContractCodeEntryV1` class
+
+### XdrContractCodeEntryExt — missing toBase64Xdr/fromBase64Xdr
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractCodeEntryExt.php`
+- **Bug**: Hand-written version lacked convenience methods
+- **Impact**: Low — callers must manually encode/decode base64
+- **Fixed by**: Generator adds these methods to all types
