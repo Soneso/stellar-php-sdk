@@ -120,7 +120,6 @@ SKIP_TYPES = %w[
   XdrContractCodeEntryExt
   XdrContractCodeEntryExtV1
   XdrContractCodeEntryV1
-  XdrContractCostParams
   XdrContractEventBody
   XdrContractEventBodyV0
   XdrContractEventV0
@@ -136,7 +135,6 @@ SKIP_TYPES = %w[
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
-  XdrLedgerEntryData
   XdrLedgerKey
   XdrLiquidityPoolBody
   XdrLiquidityPoolDepositOperation

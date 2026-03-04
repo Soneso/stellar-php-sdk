@@ -404,3 +404,21 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: Hand-written version lacked convenience methods
 - **Impact**: Low — callers must manually encode/decode base64
 - **Fixed by**: Generator adds these methods to all types
+
+## Batch 23
+
+### XdrLedgerEntryData — inconsistent discriminant access (`.value` vs `.getValue()`)
+- **File**: `Soneso/StellarSDK/Xdr/XdrLedgerEntryData.php`
+- **Bug**: Hand-written encode()/decode() used `$this->type->value` (direct property) instead of `$this->type->getValue()` (method call)
+- **Impact**: None — both yield the same integer value (same pattern as XdrSCSpecUDTUnionCaseV0 in Batch 18, XdrSorobanAuthorizedFunction in Batch 19)
+- **Fixed by**: Generator uses consistent `->getValue()` method call throughout
+
+### XdrLedgerEntryData — inconsistent field casing `trustline` vs `trustLine`
+- **File**: `Soneso/StellarSDK/Xdr/XdrLedgerEntryData.php`
+- **Bug**: Hand-written code used `$trustline` (lowercase L); XDR spec field name is `trustLine` (camelCase). No external code accessed the property directly.
+- **Impact**: None — only internal references; getters/setters use `getTrustLine()`/`setTrustLine()` consistently
+- **Fixed by**: Generator uses consistent camelCase `$trustLine`
+
+### XdrContractCostParams — no new bugs
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractCostParams.php`
+- **Note**: Hand-written code was functionally correct. Generator only changes are cosmetic (formatting, `array_push` → `[]`, `static` return type on `fromBase64Xdr`)

@@ -140,6 +140,10 @@ FIELD_OVERRIDES = {
 
   # Batch 19: Field name overrides
   "XdrMemo" => { "retHash" => "returnHash" },
+
+  # Batch 23: Field name overrides
+  "XdrLedgerEntryData" => { "ttl" => "ttlEntry" },
+  "XdrContractCostParams" => { "contractCostParams" => "entries" },
 }.freeze
 
 # ---------------------------------------------------------------------------
