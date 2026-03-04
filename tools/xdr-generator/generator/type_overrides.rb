@@ -69,11 +69,14 @@ BASE_WRAPPER_TYPES = %w[
   XdrHostFunction
   XdrLedgerKey
   XdrLedgerKeyAccount
+  XdrMemo
   XdrMuxedAccount
   XdrMuxedAccountMed25519
   XdrSCAddress
   XdrSCVal
+  XdrSorobanAuthorizedFunction
   XdrSorobanCredentials
+  XdrSorobanTransactionData
   XdrTransaction
 ].freeze
 
@@ -119,6 +122,7 @@ SKIP_TYPES = %w[
   XdrConfigUpgradeSetKey
   XdrContractCodeEntryExt
   XdrContractCodeEntryExtV1
+  XdrContractCodeEntryV1
   XdrContractCostParams
   XdrContractEventBody
   XdrContractEventV0
@@ -130,12 +134,10 @@ SKIP_TYPES = %w[
   XdrDecoratedSignature
   XdrEncoder
   XdrFeeBumpTransaction
-  XdrHashIDPreimage
   XdrHostFunction
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
-  XdrLedgerEntryChange
   XdrLedgerEntryData
   XdrLedgerKey
   XdrLiquidityPoolBody
@@ -147,7 +149,6 @@ SKIP_TYPES = %w[
   XdrManageOfferResult
   XdrManageOfferSuccessResult
   XdrManageOfferSuccessResultOffer
-  XdrMemo
 
   XdrMuxedAccount
   XdrMuxedAccountMed25519
@@ -162,7 +163,6 @@ SKIP_TYPES = %w[
 
   XdrPreconditions
   XdrPreconditionsV2
-  XdrRevokeSponsorshipOperation
 
   XdrSCAddress
   XdrSCContractInstance
@@ -174,8 +174,6 @@ SKIP_TYPES = %w[
   XdrSetOptionsOperation
   XdrSignerKey
   XdrSignerKeyType
-  XdrSorobanAuthorizedFunction
-  XdrSorobanTransactionData
   XdrSorobanTransactionMeta
   XdrTimeBounds
   XdrTransaction

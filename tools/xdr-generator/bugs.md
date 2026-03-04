@@ -252,3 +252,41 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: encode() used `$this->type->value` (direct property) while decode() used `$type->getValue()` (method call) for discriminant access
 - **Impact**: None — both yield the same integer value
 - **Fixed by**: Generator uses consistent `->getValue()` method call throughout
+
+## Batch 19
+
+### XdrRevokeSponsorshipOperation — encode() uses nullability check instead of discriminant switch
+- **File**: `Soneso/StellarSDK/Xdr/XdrRevokeSponsorshipOperation.php`
+- **Bug**: encode() checks `if ($this->ledgerKey)` / `else if ($this->signer)` instead of switching on the discriminant `$this->type` to control encoding
+- **Impact**: Low — functionally equivalent in normal usage, but would encode the wrong arm if both fields were accidentally set (same pattern as XdrAccountMergeResult in Batch 12, XdrClaimableBalanceEntryExt in Batch 15, XdrLiquidityPoolParameters in Batch 18)
+- **Fixed by**: Generator uses proper switch on discriminant to control encoding
+
+### XdrRevokeSponsorshipOperation — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrRevokeSponsorshipOperation.php`
+- **Bug**: `$type`, `$ledgerKey`, `$signer` were all `private` with getters/setters; generated version uses `public`
+- **Impact**: None — public access is additive; getters/setters preserved
+- **Fixed by**: Generator uses `public` consistently
+
+### XdrLedgerEntryChange — missing restored getter/setter
+- **File**: `Soneso/StellarSDK/Xdr/XdrLedgerEntryChange.php`
+- **Bug**: Had getters/setters for `type`, `created`, `updated`, `removed`, and `state` but NOT for `restored` — the field was only accessible via public property
+- **Impact**: None — public property access worked; inconsistency with other fields only
+- **Fixed by**: Generator produces consistent getters/setters for all union arms
+
+### XdrMemo — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrMemo.php`
+- **Bug**: `$type`, `$text`, `$id`, `$hash`, `$returnHash` were all `private` with getters/setters; generated base uses `public`
+- **Impact**: None — public access is additive; getters/setters preserved
+- **Fixed by**: Generated base class uses `public` consistently
+
+### XdrMemo — missing string max-length in generated base
+- **File**: `Soneso/StellarSDK/Xdr/XdrMemoBase.php`
+- **Bug**: Hand-written code used `XdrEncoder::string($this->getText(), static::VALUE_TEXT_MAX_SIZE)` with max-length 28; generated base uses `XdrEncoder::string($this->text)` without the limit
+- **Impact**: Low — max-length is defense-in-depth validation; the network rejects oversized memos anyway. Same known generator-wide limitation as XdrDataEntry (Batch 16) and XdrSignedPayload (Batch 17)
+- **Status**: Known generator limitation, not yet fixed
+
+### XdrSorobanAuthorizedFunction — inconsistent discriminant access
+- **File**: `Soneso/StellarSDK/Xdr/XdrSorobanAuthorizedFunction.php`
+- **Bug**: Hand-written code used `$this->type->value` (direct property) in encode/decode switch; generated base uses `$this->type->getValue()` (method call)
+- **Impact**: None — both yield the same integer value (same pattern as XdrSCSpecUDTUnionCaseV0 in Batch 18)
+- **Fixed by**: Generator uses consistent `->getValue()` method call throughout

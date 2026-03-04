@@ -133,6 +133,9 @@ FIELD_OVERRIDES = {
   # Batch 18: Union discriminant name overrides
   "XdrSCMetaEntry" => { "kind" => "type" },
   "XdrSCEnvMetaEntry" => { "kind" => "type" },
+
+  # Batch 19: Field name overrides
+  "XdrMemo" => { "retHash" => "returnHash" },
 }.freeze
 
 # ---------------------------------------------------------------------------
