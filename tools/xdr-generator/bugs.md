@@ -372,3 +372,35 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: Hand-written encode() used `instanceof` guards inside all 5 foreach loops (txChangesBefore, operations, txChangesAfter, events, diagnosticEvents)
 - **Impact**: Medium — count/items mismatch if wrong types present in arrays
 - **Fixed by**: Generator encodes all items unconditionally
+
+## Batch 22
+
+### XdrClaimPredicate — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimPredicate.php`
+- **Bug**: All 6 fields were `private`; generated version uses `public`
+- **Impact**: None — public access is additive; getters/setters remain available
+- **Fixed by**: Generator uses `public` consistently
+
+### XdrClaimPredicate — instanceof guards in AND/OR encode
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimPredicate.php`
+- **Bug**: Hand-written encode() used `instanceof XdrClaimPredicate` guards inside AND/OR foreach loops, silently skipping non-matching entries
+- **Impact**: Medium — count/items mismatch if wrong types present in arrays
+- **Fixed by**: Generator encodes all items unconditionally
+
+### XdrClaimPredicate — NOT arm decode reads as array instead of optional
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimPredicate.php`
+- **Bug**: Hand-written decode() for NOT arm read a size + loop (array pattern) then took `$notPredicates[0]`; generated version uses optional pattern (present flag + conditional decode). Both produce identical XDR bytes, but the array pattern is incorrect for an XDR optional pointer
+- **Impact**: Low — functionally equivalent; correct XDR pattern is optional
+- **Fixed by**: Generator uses proper optional (present flag + conditional) pattern
+
+### XdrClaimPredicate — missing toBase64Xdr/fromBase64Xdr
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimPredicate.php`
+- **Bug**: Hand-written version lacked convenience methods
+- **Impact**: Low — callers must manually encode/decode base64
+- **Fixed by**: Generator adds these methods to all types
+
+### XdrTrustLineEntry — missing toBase64Xdr/fromBase64Xdr
+- **File**: `Soneso/StellarSDK/Xdr/XdrTrustLineEntry.php`
+- **Bug**: Hand-written version lacked convenience methods
+- **Impact**: Low — callers must manually encode/decode base64
+- **Fixed by**: Generator adds these methods to all types

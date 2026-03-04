@@ -102,7 +102,6 @@ SKIP_TYPES = %w[
   XdrAccountEntry
   XdrAccountEntryV2
   XdrAccountID
-  XdrAccountMergeOperation
   XdrAllowTrustOperationAsset
   XdrAsset
   XdrAssetAlphaNum12
@@ -111,7 +110,6 @@ SKIP_TYPES = %w[
   XdrBuffer
   XdrChangeTrustAsset
   XdrChangeTrustOperation
-  XdrClaimPredicate
 
   XdrClaimableBalanceEntry
   XdrClaimableBalanceID
@@ -176,7 +174,6 @@ SKIP_TYPES = %w[
   XdrTransactionResult
   XdrTransactionResultResult
   XdrTransactionV0
-  XdrTrustLineEntry
   XdrTrustlineAsset
 ].freeze
 
