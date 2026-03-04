@@ -82,6 +82,7 @@ BASE_WRAPPER_TYPES = %w[
   XdrTransaction
   XdrSCSpecEntry
   XdrSCSpecTypeDef
+  XdrSignerKeyType
 ].freeze
 
 # ---------------------------------------------------------------------------
@@ -142,8 +143,6 @@ SKIP_TYPES = %w[
   XdrSCAddress
   XdrSCEnvMetaEntry
   XdrSCVal
-  XdrSignerKey
-  XdrSignerKeyType
   XdrTimeBounds
   XdrTransaction
   XdrTransactionEnvelope

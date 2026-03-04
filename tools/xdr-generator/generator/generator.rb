@@ -101,12 +101,14 @@ class Generator < Xdrgen::Generators::Base
 
   def render_enum(enum_defn)
     php_name = name(enum_defn)
-    file = file_name(php_name)
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+    class_name = is_base ? "#{php_name}Base" : php_name
+    file = file_name(class_name)
     out = @output.open(file)
 
     out.puts GENERATED_HEADER
     out.puts ""
-    out.puts "class #{php_name} {"
+    out.puts "class #{class_name} {"
     out.puts "    public int $value;"
     out.puts ""
 
@@ -126,11 +128,13 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # Factory methods — one per enum constant
+    return_type = is_base ? "static" : php_name
+    new_call = is_base ? "new static" : "new #{php_name}"
     enum_defn.members.each do |m|
       member_name = resolve_member_name(php_name, m.name.to_s)
       factory_name = resolve_factory_name(php_name, member_name)
-      out.puts "    public static function #{factory_name}(): #{php_name} {"
-      out.puts "        return new #{php_name}(#{php_name}::#{member_name});"
+      out.puts "    public static function #{factory_name}(): #{return_type} {"
+      out.puts "        return #{new_call}(#{class_name}::#{member_name});"
       out.puts "    }"
       out.puts ""
     end
@@ -138,8 +142,8 @@ class Generator < Xdrgen::Generators::Base
     # Extra factory aliases (backward compatibility)
     if defined?(FACTORY_ALIASES) && FACTORY_ALIASES.key?(php_name)
       FACTORY_ALIASES[php_name].each do |alias_name, const_name|
-        out.puts "    public static function #{alias_name}(): #{php_name} {"
-        out.puts "        return new #{php_name}(#{php_name}::#{const_name});"
+        out.puts "    public static function #{alias_name}(): #{return_type} {"
+        out.puts "        return #{new_call}(#{class_name}::#{const_name});"
         out.puts "    }"
         out.puts ""
       end
@@ -149,9 +153,11 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return XdrEncoder::integer32($this->value);"
     out.puts "    }"
     out.puts ""
-    out.puts "    public static function decode(XdrBuffer $xdr): #{php_name} {"
+    decode_return = is_base ? "static" : php_name
+    decode_new = is_base ? "new static" : "new #{php_name}"
+    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
     out.puts "        $value = $xdr->readInteger32();"
-    out.puts "        return new #{php_name}($value);"
+    out.puts "        return #{decode_new}($value);"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)

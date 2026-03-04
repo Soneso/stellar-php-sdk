@@ -1,40 +1,13 @@
 <?php declare(strict_types=1);
 
-// Copyright 2021 The Stellar PHP SDK Authors. All rights reserved.
-// Use of this source code is governed by a license that can be
-// found in the LICENSE file.
-
-
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrSignerKeyType
+class XdrSignerKeyType extends XdrSignerKeyTypeBase
 {
-    const ED25519 = 0;
-    const PRE_AUTH_TX = 1;
-    const HASH_X  = 2;
-    const ED25519_SIGNED_PAYLOAD = 3;
+    // Short-name aliases for backward compatibility
+    const ED25519 = self::SIGNER_KEY_TYPE_ED25519;
+    const PRE_AUTH_TX = self::SIGNER_KEY_TYPE_PRE_AUTH_TX;
+    const HASH_X = self::SIGNER_KEY_TYPE_HASH_X;
+    const ED25519_SIGNED_PAYLOAD = self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD;
     const MUXED_ED25519 = 0x100;
-
-    private int $value;
-
-    public function __construct(int $value) {
-        $this->value = $value;
-    }
-
-    /**
-     * @return int
-     */
-    public function getValue(): int
-    {
-        return $this->value;
-    }
-
-    public function encode(): string {
-        return XdrEncoder::integer32($this->value);
-    }
-
-    public static function decode(XdrBuffer $xdr) : XdrSignerKeyType {
-        $value = $xdr->readInteger32();
-        return new XdrSignerKeyType($value);
-    }
 }

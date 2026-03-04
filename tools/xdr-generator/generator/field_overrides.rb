@@ -149,6 +149,9 @@ FIELD_OVERRIDES = {
   "XdrTransactionResultResult" => { "code" => "resultCode" },
   "XdrOperationResult" => { "code" => "resultCode" },
   "XdrSCSpecEntry" => { "kind" => "type" },
+
+  # Batch 35: Field name overrides
+  "XdrSignerKey" => { "ed25519SignedPayload" => "signedPayload" },
 }.freeze
 
 # ---------------------------------------------------------------------------
