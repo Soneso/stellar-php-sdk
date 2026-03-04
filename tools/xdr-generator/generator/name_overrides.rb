@@ -109,6 +109,9 @@ NAME_OVERRIDES = {
   "SCPStatementPledgesConfirm" => "XdrSCPStatementConfirm",
   "SCPStatementPledgesExternalize" => "XdrSCPStatementExternalize",
 
+  # ContractEvent inner struct naming
+  "ContractEventV0" => "XdrContractEventBodyV0",
+
   # Miscellaneous inline/nested types
   "LedgerEntryExtensionV1Ext" => "XdrLedgerEntryV1Ext",
   "TrustLineEntryExtV1Ext" => "XdrTrustLineEntryV1Ext",

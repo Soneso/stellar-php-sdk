@@ -117,8 +117,6 @@ SKIP_TYPES = %w[
 
   XdrConstantProduct
   XdrConfigUpgradeSetKey
-  XdrContractEventBody
-  XdrContractEventV0
   XdrContractExecutable
   XdrContractIDPreimage
   XdrDataValue
