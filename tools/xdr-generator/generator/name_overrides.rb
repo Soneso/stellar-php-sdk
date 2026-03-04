@@ -41,8 +41,8 @@ NAME_OVERRIDES = {
   # LiquidityPoolEntryBody -> XdrLiquidityPoolBody
   "LiquidityPoolEntryBody" => "XdrLiquidityPoolBody",
 
-  # LiquidityPoolEntryBodyConstantProduct -> XdrConstantProduct
-  "LiquidityPoolEntryBodyConstantProduct" => "XdrConstantProduct",
+  # LiquidityPoolEntryConstantProduct -> XdrConstantProduct
+  "LiquidityPoolEntryConstantProduct" => "XdrConstantProduct",
 
   # LedgerKeyTtl -> XdrLedgerKeyTTL (uppercase TTL)
   "LedgerKeyTtl" => "XdrLedgerKeyTTL",

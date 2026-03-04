@@ -52,6 +52,7 @@ TYPE_OVERRIDES = {
 
   # Typedef-array — SDK inlines as array (no wrapper class)
   "XdrLedgerEntryChanges" => "array",
+  "XdrSCMap" => "array",
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -117,12 +118,8 @@ SKIP_TYPES = %w[
 
   XdrConstantProduct
   XdrConfigUpgradeSetKey
-  XdrContractCodeEntryExtV1
-  XdrSCContractInstance
   XdrContractEventBody
-  XdrContractEventBodyV0
   XdrContractEventV0
-  XdrLiquidityPoolBody
   XdrContractExecutable
   XdrContractIDPreimage
   XdrDataValue
@@ -134,11 +131,8 @@ SKIP_TYPES = %w[
   XdrHostFunction
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
-  XdrInnerTransactionResultResult
   XdrLedgerKey
   XdrLiquidityPoolDepositOperation
-  XdrLiquidityPoolEntryConstantProduct
-
   XdrLiquidityPoolWithdrawOperation
   XdrManageDataOperation
   XdrManageOfferResult
@@ -151,7 +145,6 @@ SKIP_TYPES = %w[
   XdrOperationResultTr
   XdrSCAddress
   XdrSCEnvMetaEntry
-  XdrSCEnvMetaEntryInterfaceVersion
   XdrSCSpecEntry
   XdrSCSpecTypeDef
   XdrSCVal

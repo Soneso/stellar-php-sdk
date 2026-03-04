@@ -512,3 +512,39 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: 4 test methods created `new XdrPathPaymentStrictReceiveResult()` / `new XdrPathPaymentStrictSendResult()` objects that were never used (dead code). These masked the fact that a no-arg constructor on a union type leaves the discriminant property uninitialized.
 - **Impact**: Tests passed by coincidence — the unused objects were never encoded/decoded
 - **Fixed by**: Removed the 4 dead-code lines
+
+## Batch 29
+
+### XdrContractCodeEntryExtV1 — generated identically
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractCodeEntryExtV1.php`
+- **Note**: Hand-written code matched generator output exactly. No bugs found. Removed from SKIP_TYPES.
+
+### XdrContractEventBodyV0 — generated identically
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractEventBodyV0.php`
+- **Note**: Hand-written code matched generator output exactly. No bugs found. Removed from SKIP_TYPES. (instanceof guard in encode was the only difference, but file matched because generator also produces without the guard)
+
+### XdrContractEventBody — BLOCKED: inner struct naming mismatch
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractEventBody.php`
+- **Issue**: Generator names the anonymous inner struct `XdrContractEventV0` but hand-written code uses `XdrContractEventBodyV0`. Need name override `"ContractEventV0" => "XdrContractEventBodyV0"` to align.
+- **Status**: Kept in SKIP_TYPES pending name override fix
+
+### XdrSignerKeyType — BLOCKED: enum constant naming mismatch
+- **File**: `Soneso/StellarSDK/Xdr/XdrSignerKeyType.php`
+- **Issue**: Generator uses full XDR constant names (`SIGNER_KEY_TYPE_ED25519`, `SIGNER_KEY_TYPE_PRE_AUTH_TX`, etc.) but SDK uses short names (`ED25519`, `PRE_AUTH_TX`, etc.). 30+ callsites reference short names. Also has an unused `MUXED_ED25519 = 0x100` constant not in the XDR spec.
+- **Status**: Kept in SKIP_TYPES — generator needs enum constant name shortening feature or per-type constant name overrides
+
+### XdrAllowTrustOperationAsset — BLOCKED: asset code padding behavior
+- **File**: `Soneso/StellarSDK/Xdr/XdrAllowTrustOperationAsset.php`
+- **Issue**: Hand-written code uses `opaqueFixed($value, 4, true)` to null-pad short asset codes (e.g., "USD" → "USD\0") and `readOpaqueFixedString(4)` to strip trailing nulls on decode. Generator uses `opaqueFixed($value, 4)` which throws on shorter-than-expected values. Also has `fromAlphaNumAssetCode()` factory method not reproducible by generator.
+- **Status**: Kept in SKIP_TYPES — generator needs opaque-fixed padding support or a wrapper pattern
+
+### XdrManageDataOperation — BLOCKED: double optional encoding
+- **File**: `Soneso/StellarSDK/Xdr/XdrManageDataOperation.php`
+- **Issue**: SDK's `XdrDataValue` class bakes in the optional presence flag (`DataValue*`). Generated ManageDataOp adds an EXTERNAL optional flag (`integer32(1)` + `XdrDataValue::encode()`) ON TOP of XdrDataValue's internal flag, producing double-encoded presence bytes. Wire-incompatible.
+- **Status**: Kept in SKIP_TYPES — requires either: (a) adding `XdrDataValue` to TYPE_OVERRIDES as `string`, or (b) refactoring XdrDataValue to not include the optional flag
+
+### XdrInnerTransactionResultPair — `$$` variable typo + wrong return type
+- **File**: `Soneso/StellarSDK/Xdr/XdrInnerTransactionResultPair.php`
+- **Bug**: Line 29 has `$$transactionHashBytes` (double dollar — PHP variable variable), and `fromBase64Xdr()` returns `XdrInnerTransactionResult` instead of `XdrInnerTransactionResultPair`
+- **Impact**: Medium — `$$` creates an accidental variable variable; wrong return type means callers get unexpected type
+- **Status**: Not yet fixed (type still in SKIP_TYPES)

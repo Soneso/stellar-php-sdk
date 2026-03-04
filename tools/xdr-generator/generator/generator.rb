@@ -861,7 +861,26 @@ class Generator < Xdrgen::Generators::Base
     when AST::Declarations::Array
       element_typespec = decl.type
       element_type = php_type_for_typespec(element_typespec)
-      if decl.fixed?
+      if is_optional
+        out.puts "        if (#{accessor} !== null) {"
+        out.puts "            #{prefix} XdrEncoder::integer32(1);"
+        if decl.fixed?
+          size = resolve_size(decl)
+          out.puts "            $bytes .= \"\";"
+          out.puts "            for ($i = 0; $i < #{size}; $i++) {"
+          out.puts "                $bytes .= #{encode_type_call(element_type, "#{accessor}[$i]", typespec: element_typespec)};"
+          out.puts "            }"
+        else
+          out.puts "            $#{field_info[:name]}Count = count(#{accessor});"
+          out.puts "            $bytes .= XdrEncoder::integer32($#{field_info[:name]}Count);"
+          out.puts "            foreach (#{accessor} as $#{field_info[:name]}Item) {"
+          out.puts "                $bytes .= #{encode_type_call(element_type, "$#{field_info[:name]}Item", typespec: element_typespec)};"
+          out.puts "            }"
+        end
+        out.puts "        } else {"
+        out.puts "            #{prefix} XdrEncoder::integer32(0);"
+        out.puts "        }"
+      elsif decl.fixed?
         size = resolve_size(decl)
         out.puts "        #{prefix} \"\";"
         out.puts "        for ($i = 0; $i < #{size}; $i++) {"
@@ -930,16 +949,32 @@ class Generator < Xdrgen::Generators::Base
     when AST::Declarations::Array
       element_typespec = decl.type
       element_type = php_type_for_typespec(element_typespec)
-      out.puts "        $#{local_name} = [];"
-      if decl.fixed?
-        size = resolve_size(decl)
-        out.puts "        for ($i = 0; $i < #{size}; $i++) {"
+      if is_optional
+        out.puts "        $#{local_name} = null;"
+        out.puts "        if ($xdr->readInteger32() !== 0) {"
+        out.puts "            $#{local_name} = [];"
+        if decl.fixed?
+          size = resolve_size(decl)
+          out.puts "            for ($i = 0; $i < #{size}; $i++) {"
+        else
+          out.puts "            $#{local_name}Size = $xdr->readInteger32();"
+          out.puts "            for ($i = 0; $i < $#{local_name}Size; $i++) {"
+        end
+        out.puts "                $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
+        out.puts "            }"
+        out.puts "        }"
       else
-        out.puts "        $#{local_name}Size = $xdr->readInteger32();"
-        out.puts "        for ($i = 0; $i < $#{local_name}Size; $i++) {"
+        out.puts "        $#{local_name} = [];"
+        if decl.fixed?
+          size = resolve_size(decl)
+          out.puts "        for ($i = 0; $i < #{size}; $i++) {"
+        else
+          out.puts "        $#{local_name}Size = $xdr->readInteger32();"
+          out.puts "        for ($i = 0; $i < $#{local_name}Size; $i++) {"
+        end
+        out.puts "            $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
+        out.puts "        }"
       end
-      out.puts "            $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
-      out.puts "        }"
     when AST::Declarations::Opaque
       if decl.fixed?
         size = resolve_size(decl)
