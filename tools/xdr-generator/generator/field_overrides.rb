@@ -26,6 +26,10 @@ FIELD_OVERRIDES = {
     "sellerID" => "accountId",
     "offerID" => "offerId",
   },
+  # Batch 20: Field name differences
+  "XdrClaimOfferAtomV0" => {
+    "offerID" => "offerId",
+  },
   "XdrRevokeSponsorshipSigner" => {
     "accountID" => "accountId",
   },

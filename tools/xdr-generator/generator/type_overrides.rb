@@ -111,7 +111,6 @@ SKIP_TYPES = %w[
   XdrBuffer
   XdrChangeTrustAsset
   XdrChangeTrustOperation
-  XdrClaimOfferAtomV0
   XdrClaimPredicate
 
   XdrClaimableBalanceEntry
@@ -125,6 +124,7 @@ SKIP_TYPES = %w[
   XdrContractCodeEntryV1
   XdrContractCostParams
   XdrContractEventBody
+  XdrContractEventBodyV0
   XdrContractEventV0
   XdrContractExecutable
   XdrContractIDPreimage
@@ -147,9 +147,6 @@ SKIP_TYPES = %w[
   XdrLiquidityPoolWithdrawOperation
   XdrManageDataOperation
   XdrManageOfferResult
-  XdrManageOfferSuccessResult
-  XdrManageOfferSuccessResultOffer
-
   XdrMuxedAccount
   XdrMuxedAccountMed25519
   XdrOfferEntry
@@ -174,7 +171,6 @@ SKIP_TYPES = %w[
   XdrSetOptionsOperation
   XdrSignerKey
   XdrSignerKeyType
-  XdrSorobanTransactionMeta
   XdrTimeBounds
   XdrTransaction
   XdrTransactionEnvelope

@@ -290,3 +290,47 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: Hand-written code used `$this->type->value` (direct property) in encode/decode switch; generated base uses `$this->type->getValue()` (method call)
 - **Impact**: None — both yield the same integer value (same pattern as XdrSCSpecUDTUnionCaseV0 in Batch 18)
 - **Fixed by**: Generator uses consistent `->getValue()` method call throughout
+
+## Batch 20
+
+### XdrSorobanTransactionMeta — copy-paste bug in encode() for diagnosticEvents
+- **File**: `Soneso/StellarSDK/Xdr/XdrSorobanTransactionMeta.php`
+- **Bug**: encode() iterated over `$this->events` twice — both for the `events` array AND the `diagnosticEvents` array — instead of iterating `$this->diagnosticEvents` for the second loop. The decode() was correct (decoded `XdrDiagnosticEvent` for the second array), so decoded data would re-encode differently.
+- **Impact**: High — produces corrupt XDR for any SorobanTransactionMeta with diagnostic events different from regular events. Encode/decode round-trip would fail.
+- **Fixed by**: Generator correctly iterates `$this->diagnosticEvents` for the second array
+
+### XdrManageOfferResult — encode() uses nullability check instead of discriminant switch
+- **File**: `Soneso/StellarSDK/Xdr/XdrManageOfferResult.php`
+- **Bug**: encode() checks `if ($this->success !== null && XdrManageOfferResultCode::SUCCESS == $this->code->getValue())` — a combined null-check and discriminant comparison — instead of a clean switch on the discriminant
+- **Impact**: Low — functionally equivalent, but the double check is redundant (same pattern as previous batches)
+- **Status**: Not fixed in this batch (XdrManageOfferResult has a class naming mismatch — XDR spec name is `ManageSellOfferResult`)
+
+### XdrManageOfferSuccessResult — silent XDR corruption from instanceof guard
+- **File**: `Soneso/StellarSDK/Xdr/XdrManageOfferSuccessResult.php`
+- **Bug**: encode() uses `if ($offerClaimed instanceof XdrClaimAtom)` to conditionally encode array elements (same pattern as Batch 7/9/12)
+- **Impact**: Low — in practice the array always contains correct types
+- **Fixed by**: Generator encodes all array elements unconditionally
+
+### XdrManageOfferSuccessResult — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrManageOfferSuccessResult.php`
+- **Bug**: `$offersClaimed` and `$offer` were `private` with no setters; generated version uses `public` with getters/setters
+- **Impact**: None — public access is additive
+- **Fixed by**: Generator uses `public` consistently
+
+### XdrManageOfferSuccessResultOffer — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrManageOfferSuccessResultOffer.php`
+- **Bug**: `$effect` and `$offer` were `private` with getters only (no setters); generated version uses `public` with getters/setters
+- **Impact**: None — public access is additive
+- **Fixed by**: Generator uses `public` consistently
+
+### XdrClaimOfferAtomV0 — signed/unsigned mismatch for offerID
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimOfferAtomV0.php`
+- **Bug**: `offerId` encoded with `unsignedInteger64`/`readUnsignedInteger64`, but XDR spec defines `int64 offerID` (signed). Same pattern as XdrClaimOfferAtom (Batch 3), XdrLedgerKeyOffer (Batch 5), XdrManageBuyOfferOperation/XdrManageSellOfferOperation (Batch 13)
+- **Impact**: Low — values within signed range encode identically
+- **Fixed by**: Generator uses `integer64`/`readInteger64`
+
+### XdrClaimOfferAtomV0 — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimOfferAtomV0.php`
+- **Bug**: All 6 fields were `private` with getters only (no setters); generated version uses `public` with getters/setters
+- **Impact**: None — public access is additive
+- **Fixed by**: Generator uses `public` consistently
