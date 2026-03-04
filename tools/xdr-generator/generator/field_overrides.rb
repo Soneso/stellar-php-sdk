@@ -125,6 +125,10 @@ FIELD_OVERRIDES = {
   # Batch 16: Extension point field renames + field name overrides
   "XdrClaimableBalanceEntryExtV1" => { "ext" => "discriminant" },
   "XdrTrustLineEntryExtensionV2" => { "ext" => "discriminant" },
+
+  # Batch 17: Field name overrides
+  "XdrContractCodeEntry" => { "hash" => "cHash" },
+  "XdrContractEvent" => { "contractID" => "hash" },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -182,5 +186,8 @@ FIELD_TYPE_OVERRIDES = {
 
   # Batch 16: DataEntry uses XdrDataValueMandatory instead of XdrDataValue
   "XdrDataEntry" => { "dataValue" => "XdrDataValueMandatory" },
+
+  # Batch 17: Type overrides
+  "XdrContractCodeEntry" => { "code" => "XdrDataValueMandatory" },
 
 }.freeze

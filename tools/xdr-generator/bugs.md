@@ -198,5 +198,19 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 ### XdrDataEntry — missing string max-length validation on dataName
 - **File**: `Soneso/StellarSDK/Xdr/XdrDataEntry.php`
 - **Bug**: Hand-written code passed max-length 64 to `XdrEncoder::string()` and `readString()` for `dataName`; generated version omits the constraint
-- **Impact**: Low — max-length is a defense-in-depth validation; the network rejects oversized names anyway. This is a known generator-wide limitation (string max-lengths not propagated).
+- **Impact**: Low — max-length is a defense-in-depth validation; the network rejects oversized names anyway. This is a known generator-wide limitation (string/opaque max-lengths not propagated).
 - **Status**: Known generator limitation, not yet fixed
+
+## Batch 17
+
+### XdrSignedPayload — missing opaque max-length validation on payload decode
+- **File**: `Soneso/StellarSDK/Xdr/XdrSignedPayload.php`
+- **Bug**: Hand-written code passed max-length 64 to `readOpaqueVariable(64)` for `payload`; generated version omits the constraint
+- **Impact**: Low — same known generator-wide limitation as XdrDataEntry above (max-lengths not propagated for string/opaque fields)
+- **Status**: Known generator limitation, not yet fixed
+
+### XdrSignedPayload — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrSignedPayload.php`
+- **Bug**: `$ed25519` and `$payload` were `private` in hand-written code; generated version uses `public`
+- **Impact**: None — getters/setters preserved; public access is additive
+- **Fixed by**: Generator uses `public` consistently

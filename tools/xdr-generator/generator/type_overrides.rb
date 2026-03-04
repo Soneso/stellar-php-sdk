@@ -47,6 +47,9 @@ TYPE_OVERRIDES = {
   # Symbol typedef — SDK uses string
   "XdrSCSymbol" => "string",
 
+  # Hash-based typedefs — SDK uses string (binary)
+  "XdrContractID" => "string",
+
   # Typedef-array — SDK inlines as array (no wrapper class)
   "XdrLedgerEntryChanges" => "array",
 }.freeze
@@ -114,11 +117,9 @@ SKIP_TYPES = %w[
   XdrConfigSettingEntry
   XdrConstantProduct
   XdrConfigUpgradeSetKey
-  XdrContractCodeEntry
   XdrContractCodeEntryExt
   XdrContractCodeEntryExtV1
   XdrContractCostParams
-  XdrContractEvent
   XdrContractEventBody
   XdrContractExecutable
   XdrContractIDPreimage
@@ -135,13 +136,11 @@ SKIP_TYPES = %w[
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrInnerTransactionResultResult
-  XdrLedgerEntry
   XdrLedgerEntryChange
   XdrLedgerEntryData
   XdrLedgerKey
   XdrLiquidityPoolBody
   XdrLiquidityPoolDepositOperation
-  XdrLiquidityPoolEntry
   XdrLiquidityPoolParameters
 
   XdrLiquidityPoolWithdrawOperation
@@ -176,14 +175,12 @@ SKIP_TYPES = %w[
   XdrSCSpecUDTUnionCaseV0
   XdrSCVal
   XdrSetOptionsOperation
-  XdrSignedPayload
   XdrSignerKey
   XdrSignerKeyType
   XdrSorobanAuthorizedFunction
   XdrSorobanCredentials
   XdrSorobanTransactionData
   XdrSorobanTransactionMeta
-  XdrSorobanTransactionMetaV2
   XdrTimeBounds
   XdrTransaction
   XdrTransactionEnvelope
