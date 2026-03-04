@@ -129,6 +129,10 @@ FIELD_OVERRIDES = {
   # Batch 17: Field name overrides
   "XdrContractCodeEntry" => { "hash" => "cHash" },
   "XdrContractEvent" => { "contractID" => "hash" },
+
+  # Batch 18: Union discriminant name overrides
+  "XdrSCMetaEntry" => { "kind" => "type" },
+  "XdrSCEnvMetaEntry" => { "kind" => "type" },
 }.freeze
 
 # ---------------------------------------------------------------------------

@@ -214,3 +214,41 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: `$ed25519` and `$payload` were `private` in hand-written code; generated version uses `public`
 - **Impact**: None — getters/setters preserved; public access is additive
 - **Fixed by**: Generator uses `public` consistently
+
+## Batch 18
+
+### XdrSCError — incorrect void arms for SCE_WASM_VM through SCE_AUTH
+- **File**: `Soneso/StellarSDK/Xdr/XdrSCError.php`
+- **Bug**: Hand-written code treated `SCE_WASM_VM`, `SCE_CONTEXT`, `SCE_STORAGE`, `SCE_OBJECT`, `SCE_CRYPTO`, `SCE_EVENTS`, `SCE_BUDGET`, `SCE_VALUE`, and `SCE_AUTH` as void union arms, but the XDR spec defines them all as sharing `SCErrorCode code` via fall-through semantics (only `SCE_CONTRACT` has `uint32 contractCode`)
+- **Impact**: High — encode/decode produces corrupt XDR for any SCError with these types, silently dropping the error code
+- **Fixed by**: Generator correctly groups all fall-through arms with `SCErrorCode code`
+
+### XdrLiquidityPoolParameters — encode() uses nullability check instead of discriminant switch
+- **File**: `Soneso/StellarSDK/Xdr/XdrLiquidityPoolParameters.php`
+- **Bug**: encode() checks `if ($this->constantProduct !== null)` instead of switching on the discriminant type to control encoding
+- **Impact**: Low — functionally equivalent in normal usage, but would silently encode constantProduct even if discriminant were wrong (same pattern as XdrAccountMergeResult in Batch 12, XdrClaimableBalanceEntryExt in Batch 15)
+- **Fixed by**: Generator uses proper switch on discriminant to control encoding
+
+### XdrClaimant — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimant.php`
+- **Bug**: `$v0` was `private` with getter/setter; generated version uses `public`
+- **Impact**: None — public access is additive
+- **Fixed by**: Generator uses `public` consistently
+
+### XdrClaimAtom — private field visibility
+- **File**: `Soneso/StellarSDK/Xdr/XdrClaimAtom.php`
+- **Bug**: `$v0`, `$orderBook`, and `$liquidityPool` were `private` with getters/setters; generated version uses `public`
+- **Impact**: None — public access is additive
+- **Fixed by**: Generator uses `public` consistently
+
+### XdrCreateClaimableBalanceResult — no-arg constructor pattern
+- **File**: `Soneso/StellarSDK/Xdr/XdrCreateClaimableBalanceResult.php`
+- **Bug**: Constructor took no arguments (discriminant set via public property), no getter/setter accessors, and encode used `if ($this->balanceID !== null)` null-check instead of discriminant-based switch
+- **Impact**: Low — functionally works but inconsistent with standard union patterns
+- **Fixed by**: Generator produces typed discriminant constructor with proper switch-based encode
+
+### XdrSCSpecUDTUnionCaseV0 — inconsistent encode/decode discriminant access
+- **File**: `Soneso/StellarSDK/Xdr/XdrSCSpecUDTUnionCaseV0.php`
+- **Bug**: encode() used `$this->type->value` (direct property) while decode() used `$type->getValue()` (method call) for discriminant access
+- **Impact**: None — both yield the same integer value
+- **Fixed by**: Generator uses consistent `->getValue()` method call throughout

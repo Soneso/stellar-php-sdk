@@ -22,6 +22,7 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecUDTErrorEnumV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructFieldV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseVoidV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat;
@@ -283,7 +284,8 @@ class XdrSCSpecEntryTest extends TestCase
     private function createUnion(): XdrSCSpecUDTUnionV0
     {
         $voidCase = new XdrSCSpecUDTUnionCaseVoidV0("case doc", "Case1");
-        $case = XdrSCSpecUDTUnionCaseV0::forVoidCase($voidCase);
+        $case = new XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind::forVoid());
+        $case->voidCase = $voidCase;
 
         return new XdrSCSpecUDTUnionV0("Union doc", "test_lib", "TestUnion", [$case]);
     }

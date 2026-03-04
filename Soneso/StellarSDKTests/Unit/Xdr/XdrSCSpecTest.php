@@ -642,11 +642,13 @@ class XdrSCSpecTest extends TestCase
         $name = "Result";
 
         $voidCase = new XdrSCSpecUDTUnionCaseVoidV0("Success case", "Ok");
-        $case1 = XdrSCSpecUDTUnionCaseV0::forVoidCase($voidCase);
+        $case1 = new XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind::forVoid());
+        $case1->voidCase = $voidCase;
 
         $tupleTypes = [XdrSCSpecTypeDef::STRING()];
         $tupleCase = new XdrSCSpecUDTUnionCaseTupleV0("Error case", "Err", $tupleTypes);
-        $case2 = XdrSCSpecUDTUnionCaseV0::forTupleCase($tupleCase);
+        $case2 = new XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind::forTuple());
+        $case2->tupleCase = $tupleCase;
 
         $cases = [$case1, $case2];
 
@@ -733,7 +735,8 @@ class XdrSCSpecTest extends TestCase
     public function testXdrSCSpecEntryUDTUnionV0RoundTrip(): void
     {
         $voidCase = new XdrSCSpecUDTUnionCaseVoidV0("None", "None");
-        $case1 = XdrSCSpecUDTUnionCaseV0::forVoidCase($voidCase);
+        $case1 = new XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind::forVoid());
+        $case1->voidCase = $voidCase;
 
         $union = new XdrSCSpecUDTUnionV0("Option type", "std", "Option", [$case1]);
 

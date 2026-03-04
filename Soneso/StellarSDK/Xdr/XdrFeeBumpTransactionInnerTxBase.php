@@ -5,12 +5,12 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrSCMetaEntry {
+class XdrFeeBumpTransactionInnerTxBase {
 
-    public XdrSCMetaKind $type;
-    public ?XdrSCMetaV0 $v0 = null;
+    public XdrEnvelopeType $type;
+    public ?XdrTransactionV1Envelope $v1 = null;
 
-    public function __construct(?XdrSCMetaKind $type = null) {
+    public function __construct(?XdrEnvelopeType $type = null) {
         if ($type !== null) {
             $this->type = $type;
         }
@@ -19,8 +19,8 @@ class XdrSCMetaEntry {
     public function encode(): string {
         $bytes = $this->type->encode();
         switch ($this->type->getValue()) {
-            case XdrSCMetaKind::SC_META_V0:
-                $bytes .= $this->v0->encode();
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX:
+                $bytes .= $this->v1->encode();
                 break;
             default:
                 break;
@@ -28,11 +28,11 @@ class XdrSCMetaEntry {
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr): XdrSCMetaEntry {
-        $result = new XdrSCMetaEntry(XdrSCMetaKind::decode($xdr));
+    public static function decode(XdrBuffer $xdr): static {
+        $result = new static(XdrEnvelopeType::decode($xdr));
         switch ($result->type->getValue()) {
-            case XdrSCMetaKind::SC_META_V0:
-                $result->v0 = XdrSCMetaV0::decode($xdr);
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX:
+                $result->v1 = XdrTransactionV1Envelope::decode($xdr);
                 break;
             default:
                 break;
@@ -40,10 +40,10 @@ class XdrSCMetaEntry {
         return $result;
     }
 
-    public function getType(): XdrSCMetaKind { return $this->type; }
-    public function setType(XdrSCMetaKind $type): void { $this->type = $type; }
-    public function getV0(): ?XdrSCMetaV0 { return $this->v0; }
-    public function setV0(?XdrSCMetaV0 $v0): void { $this->v0 = $v0; }
+    public function getType(): XdrEnvelopeType { return $this->type; }
+    public function setType(XdrEnvelopeType $type): void { $this->type = $type; }
+    public function getV1(): ?XdrTransactionV1Envelope { return $this->v1; }
+    public function setV1(?XdrTransactionV1Envelope $v1): void { $this->v1 = $v1; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());

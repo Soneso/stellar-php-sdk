@@ -188,7 +188,7 @@ class XdrSCValTest extends TestCase
     }
 
     /**
-     * Test XdrSCVal for error types without additional data
+     * Test XdrSCVal for error types with SCErrorCode (per XDR spec, all non-CONTRACT types have a code)
      */
     public function testXdrSCValErrorSimpleTypes(): void
     {
@@ -203,14 +203,18 @@ class XdrSCValTest extends TestCase
             XdrSCErrorType::SCE_VALUE(),
         ];
 
+        $defaultCode = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INTERNAL_ERROR);
+
         foreach ($errorTypes as $errorType) {
             $error = new XdrSCError($errorType);
+            $error->code = $defaultCode;
             $original = XdrSCVal::forError($error);
 
             $encoded = $original->encode();
             $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
 
             $this->assertEquals($errorType->getValue(), $decoded->getError()->getType()->getValue());
+            $this->assertEquals($defaultCode->getValue(), $decoded->getError()->getCode()->getValue());
             $this->assertEquals($encoded, $decoded->encode());
         }
     }
