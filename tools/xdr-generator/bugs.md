@@ -577,3 +577,25 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: Hand-written encode() used switch with only SUCCESS/FAILED and FEE_BUMP_INNER_SUCCESS/FEE_BUMP_INNER_FAILED cases. 15 error codes (TOO_EARLY through SOROBAN_INVALID) fell through to default without explicit void handling. Also used `instanceof XdrOperationResult` guard in encode.
 - **Impact**: Low — default/break handled the void cases correctly, but explicit handling is clearer
 - **Fixed by**: Generator produces explicit void cases for all 15 error discriminants
+
+## Batch 32
+
+### XdrContractEventBody — inner struct naming mismatch
+- **File**: `Soneso/StellarSDK/Xdr/XdrContractEventBody.php`
+- **Issue**: Generator referenced `XdrContractEventV0` but SDK uses `XdrContractEventBodyV0`
+- **Fixed by**: Added name override `"ContractEventV0" => "XdrContractEventBodyV0"`
+
+## Batch 33
+
+### XdrSCSpecEntry — converted to BASE_WRAPPER pattern
+- **File**: `Soneso/StellarSDK/Xdr/XdrSCSpecEntry.php`
+- **Issue**: 6 factory methods blocked direct regeneration
+- **Fixed by**: BASE_WRAPPER pattern — generated base handles encode/decode, wrapper preserves factory methods
+- **Also regenerated**: `XdrContractEventBodyV0.php` — removed instanceof guard in encode, added base64 helpers
+
+## Batch 34
+
+### XdrSCSpecTypeDef — converted to BASE_WRAPPER pattern
+- **File**: `Soneso/StellarSDK/Xdr/XdrSCSpecTypeDef.php`
+- **Issue**: 25 factory methods (7 parameterized + 18 primitive) blocked direct regeneration
+- **Fixed by**: BASE_WRAPPER pattern — generated base handles encode/decode with all 19 void + 7 arm cases, wrapper preserves all factory methods
