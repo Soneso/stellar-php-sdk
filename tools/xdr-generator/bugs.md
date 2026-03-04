@@ -548,3 +548,32 @@ _(No new bugs — 6 types generated cleanly. XdrSequenceNumber getValue() caller
 - **Bug**: Line 29 has `$$transactionHashBytes` (double dollar — PHP variable variable), and `fromBase64Xdr()` returns `XdrInnerTransactionResult` instead of `XdrInnerTransactionResultPair`
 - **Impact**: Medium — `$$` creates an accidental variable variable; wrong return type means callers get unexpected type
 - **Status**: Not yet fixed (type still in SKIP_TYPES)
+
+## Batch 30
+
+### XdrSCContractInstance — generated with optional array fix
+- **File**: `Soneso/StellarSDK/Xdr/XdrSCContractInstance.php`
+- **Note**: Required generator fix for optional array encoding/decoding (presence flag handling in Array case for `is_optional` fields). Wire-compatible with hand-written version.
+
+### XdrLiquidityPoolBody — inner struct name override fix
+- **File**: `Soneso/StellarSDK/Xdr/XdrLiquidityPoolBody.php`
+- **Note**: Required fixing name_overrides.rb key from `LiquidityPoolEntryBodyConstantProduct` to `LiquidityPoolEntryConstantProduct`
+
+### XdrInnerTransactionResultResult — hand-written encode was wire-incompatible
+- **File**: `Soneso/StellarSDK/Xdr/XdrInnerTransactionResultResult.php`
+- **Bug**: Hand-written encode() always encoded `count($this->operations)` followed by all operations regardless of the result code — error codes like `BAD_AUTH` or `TOO_EARLY` have void arms in XDR and should produce no payload beyond the discriminant
+- **Impact**: High — produces corrupt XDR when encoding error result codes (extra bytes appended)
+- **Fixed by**: Generator uses proper switch/case for encode, matching the existing correct decode logic
+
+### XdrSCEnvMetaEntry — BLOCKED: XDR spec changed
+- **File**: `Soneso/StellarSDK/Xdr/XdrSCEnvMetaEntry.php`
+- **Issue**: XDR spec changed `interfaceVersion` from `uint64` to struct `{uint32 protocol, uint32 preRelease}`. Hand-written code is outdated. 3 callers expect `int`.
+- **Status**: Kept in SKIP_TYPES — requires dedicated migration of callers
+
+## Batch 31
+
+### XdrTransactionResultResult — encode() used switch on discriminant but was missing void cases
+- **File**: `Soneso/StellarSDK/Xdr/XdrTransactionResultResult.php`
+- **Bug**: Hand-written encode() used switch with only SUCCESS/FAILED and FEE_BUMP_INNER_SUCCESS/FEE_BUMP_INNER_FAILED cases. 15 error codes (TOO_EARLY through SOROBAN_INVALID) fell through to default without explicit void handling. Also used `instanceof XdrOperationResult` guard in encode.
+- **Impact**: Low — default/break handled the void cases correctly, but explicit handling is clearer
+- **Fixed by**: Generator produces explicit void cases for all 15 error discriminants

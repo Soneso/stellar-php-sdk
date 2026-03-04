@@ -144,6 +144,11 @@ FIELD_OVERRIDES = {
   # Batch 23: Field name overrides
   "XdrLedgerEntryData" => { "ttl" => "ttlEntry" },
   "XdrContractCostParams" => { "contractCostParams" => "entries" },
+
+  # Batch 31: Union discriminant name overrides
+  "XdrTransactionResultResult" => { "code" => "resultCode" },
+  "XdrOperationResult" => { "code" => "resultCode" },
+  "XdrSCSpecEntry" => { "kind" => "type" },
 }.freeze
 
 # ---------------------------------------------------------------------------

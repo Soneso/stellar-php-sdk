@@ -109,7 +109,6 @@ SKIP_TYPES = %w[
   XdrAssetAlphaNum12
   XdrAssetAlphaNum4
 
-  XdrBuffer
   XdrChangeTrustAsset
   XdrChangeTrustOperation
 
@@ -123,10 +122,7 @@ SKIP_TYPES = %w[
   XdrContractExecutable
   XdrContractIDPreimage
   XdrDataValue
-  XdrDataValueMandatory
-  XdrDecoder
   XdrDecoratedSignature
-  XdrEncoder
   XdrFeeBumpTransaction
   XdrHostFunction
   XdrInnerTransactionResult
@@ -154,7 +150,6 @@ SKIP_TYPES = %w[
   XdrTransaction
   XdrTransactionEnvelope
   XdrTransactionResult
-  XdrTransactionResultResult
   XdrTransactionV0
   XdrTrustlineAsset
 ].freeze
