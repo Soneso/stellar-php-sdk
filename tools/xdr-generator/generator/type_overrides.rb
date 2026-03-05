@@ -86,6 +86,12 @@ BASE_WRAPPER_TYPES = %w[
   XdrAllowTrustOperationAsset
   XdrTransactionEnvelope
   XdrFeeBumpTransaction
+  XdrConfigUpgradeSetKey
+  XdrLiquidityPoolDepositOperation
+  XdrLiquidityPoolWithdrawOperation
+  XdrAssetAlphaNum4
+  XdrAssetAlphaNum12
+  XdrChangeTrustOperation
 ].freeze
 
 # ---------------------------------------------------------------------------
@@ -111,17 +117,11 @@ SKIP_TYPES = %w[
   XdrAccountEntryV2
   XdrAccountID
   XdrAsset
-  XdrAssetAlphaNum12
-  XdrAssetAlphaNum4
 
   XdrChangeTrustAsset
-  XdrChangeTrustOperation
 
-  XdrClaimableBalanceEntry
   XdrClaimableBalanceID
 
-  XdrConstantProduct
-  XdrConfigUpgradeSetKey
   XdrContractExecutable
   XdrContractIDPreimage
   XdrDataValue
@@ -130,8 +130,6 @@ SKIP_TYPES = %w[
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
   XdrLedgerKey
-  XdrLiquidityPoolDepositOperation
-  XdrLiquidityPoolWithdrawOperation
   XdrManageDataOperation
   XdrManageOfferResult
   XdrMuxedAccount

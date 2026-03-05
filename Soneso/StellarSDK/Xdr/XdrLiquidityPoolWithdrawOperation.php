@@ -1,70 +1,12 @@
 <?php declare(strict_types=1);
 
-// Copyright 2021 The Stellar PHP SDK Authors. All rights reserved.
-// Use of this source code is governed by a license that can be
-// found in the LICENSE file.
-
-
-
 namespace Soneso\StellarSDK\Xdr;
 
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Crypto\StrKey;
 
-class XdrLiquidityPoolWithdrawOperation
+class XdrLiquidityPoolWithdrawOperation extends XdrLiquidityPoolWithdrawOperationBase
 {
-    private string $liquidityPoolID; //hash
-    private BigInteger $amount;
-    private BigInteger $minAmountA;
-    private BigInteger $minAmountB;
-
-    /**
-     * @param string $liquidityPoolID
-     * @param BigInteger $amount
-     * @param BigInteger $minAmountA
-     * @param BigInteger $minAmountB
-     */
-    public function __construct(string $liquidityPoolID, BigInteger $amount, BigInteger $minAmountA, BigInteger $minAmountB)
-    {
-        $this->liquidityPoolID = $liquidityPoolID;
-        $this->amount = $amount;
-        $this->minAmountA = $minAmountA;
-        $this->minAmountB = $minAmountB;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLiquidityPoolID(): string
-    {
-        return $this->liquidityPoolID;
-    }
-
-    /**
-     * @return BigInteger
-     */
-    public function getAmount(): BigInteger
-    {
-        return $this->amount;
-    }
-
-    /**
-     * @return BigInteger
-     */
-    public function getMinAmountA(): BigInteger
-    {
-        return $this->minAmountA;
-    }
-
-    /**
-     * @return BigInteger
-     */
-    public function getMinAmountB(): BigInteger
-    {
-        return $this->minAmountB;
-    }
-
-
     public function encode(): string {
         $idHex = $this->liquidityPoolID;
         if (str_starts_with($idHex, "L")) {
@@ -81,11 +23,11 @@ class XdrLiquidityPoolWithdrawOperation
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr) : XdrLiquidityPoolWithdrawOperation {
+    public static function decode(XdrBuffer $xdr): static {
         $liquidityPoolID = bin2hex($xdr->readOpaqueFixed(32));
         $amount = $xdr->readBigInteger64();
         $minAmountA = $xdr->readBigInteger64();
         $minAmountB = $xdr->readBigInteger64();
-        return new XdrLiquidityPoolWithdrawOperation($liquidityPoolID, $amount, $minAmountA, $minAmountB);
+        return new static($liquidityPoolID, $amount, $minAmountA, $minAmountB);
     }
 }

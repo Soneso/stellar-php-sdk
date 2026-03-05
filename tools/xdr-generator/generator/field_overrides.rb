@@ -152,6 +152,9 @@ FIELD_OVERRIDES = {
 
   # Batch 35: Field name overrides
   "XdrSignerKey" => { "ed25519SignedPayload" => "signedPayload" },
+
+  # Field name overrides for ClaimableBalanceEntry
+  "XdrClaimableBalanceEntry" => { "balanceID" => "accountID" },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -212,5 +215,29 @@ FIELD_TYPE_OVERRIDES = {
 
   # Batch 17: Type overrides
   "XdrContractCodeEntry" => { "code" => "XdrDataValueMandatory" },
+
+  # Liquidity pool operations: BigInteger for int64 amount fields
+  "XdrLiquidityPoolDepositOperation" => {
+    "maxAmountA" => "BigInteger",
+    "maxAmountB" => "BigInteger",
+  },
+  "XdrLiquidityPoolWithdrawOperation" => {
+    "amount" => "BigInteger",
+    "minAmountA" => "BigInteger",
+    "minAmountB" => "BigInteger",
+  },
+
+  # BigInteger fields for constant product and claimable balance
+  "XdrConstantProduct" => {
+    "reserveA" => "BigInteger",
+    "reserveB" => "BigInteger",
+    "totalPoolShares" => "BigInteger",
+  },
+  "XdrClaimableBalanceEntry" => {
+    "amount" => "BigInteger",
+  },
+  "XdrChangeTrustOperation" => {
+    "limit" => "BigInteger",
+  },
 
 }.freeze
