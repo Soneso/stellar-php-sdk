@@ -83,6 +83,9 @@ BASE_WRAPPER_TYPES = %w[
   XdrSCSpecEntry
   XdrSCSpecTypeDef
   XdrSignerKeyType
+  XdrAllowTrustOperationAsset
+  XdrTransactionEnvelope
+  XdrFeeBumpTransaction
 ].freeze
 
 # ---------------------------------------------------------------------------
@@ -107,7 +110,6 @@ SKIP_TYPES = %w[
   XdrAccountEntry
   XdrAccountEntryV2
   XdrAccountID
-  XdrAllowTrustOperationAsset
   XdrAsset
   XdrAssetAlphaNum12
   XdrAssetAlphaNum4
@@ -124,7 +126,6 @@ SKIP_TYPES = %w[
   XdrContractIDPreimage
   XdrDataValue
   XdrDecoratedSignature
-  XdrFeeBumpTransaction
   XdrHostFunction
   XdrInnerTransactionResult
   XdrInnerTransactionResultPair
@@ -145,7 +146,6 @@ SKIP_TYPES = %w[
   XdrSCVal
   XdrTimeBounds
   XdrTransaction
-  XdrTransactionEnvelope
   XdrTransactionResult
   XdrTransactionV0
   XdrTrustlineAsset
