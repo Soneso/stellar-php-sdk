@@ -131,15 +131,7 @@ class XdrEntryClassesTest extends TestCase
         $price = new XdrPrice(1, 2);
         $ext = new XdrOfferEntryExt(0);
 
-        $offerEntry = new XdrOfferEntry();
-        $offerEntry->setSellerID($sellerId);
-        $offerEntry->setOfferId(12345);
-        $offerEntry->setSelling($selling);
-        $offerEntry->setBuying($buying);
-        $offerEntry->setAmount(new \phpseclib3\Math\BigInteger(1000000));
-        $offerEntry->setPrice($price);
-        $offerEntry->setFlags(0);
-        $offerEntry->setExt($ext);
+        $offerEntry = new XdrOfferEntry($sellerId, 12345, $selling, $buying, new \phpseclib3\Math\BigInteger(1000000), $price, 0, $ext);
 
         $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::OFFER());
         $ledgerEntryData->setOffer($offerEntry);

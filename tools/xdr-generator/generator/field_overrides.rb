@@ -155,6 +155,9 @@ FIELD_OVERRIDES = {
 
   # Field name overrides for ClaimableBalanceEntry
   "XdrClaimableBalanceEntry" => { "balanceID" => "accountID" },
+
+  # XdrOfferEntry: field name case difference
+  "XdrOfferEntry" => { "offerID" => "offerId" },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -163,7 +166,7 @@ FIELD_OVERRIDES = {
 FIELD_TYPE_OVERRIDES = {
   # Batch 3: BigInteger fields — the PHP SDK uses phpseclib3 BigInteger
   # instead of plain int for certain int64 fields (amounts, balances, etc.)
-  "XdrOfferEntry" => { "offerID" => "BigInteger" },
+  "XdrOfferEntry" => { "amount" => "BigInteger" },
   "XdrInflationPayout" => { "amount" => "BigInteger" },
   "XdrCreateAccountOperation" => { "startingBalance" => "BigInteger" },
   "XdrPaymentOperation" => { "amount" => "BigInteger" },

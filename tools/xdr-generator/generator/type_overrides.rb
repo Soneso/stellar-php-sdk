@@ -92,6 +92,8 @@ BASE_WRAPPER_TYPES = %w[
   XdrAssetAlphaNum4
   XdrAssetAlphaNum12
   XdrChangeTrustOperation
+  XdrInnerTransactionResultPair
+  XdrManageOfferResult
 ].freeze
 
 # ---------------------------------------------------------------------------
@@ -128,13 +130,10 @@ SKIP_TYPES = %w[
   XdrDecoratedSignature
   XdrHostFunction
   XdrInnerTransactionResult
-  XdrInnerTransactionResultPair
   XdrLedgerKey
   XdrManageDataOperation
-  XdrManageOfferResult
   XdrMuxedAccount
   XdrMuxedAccountMed25519
-  XdrOfferEntry
   XdrOperation
   XdrOperationBody
   XdrOperationResult

@@ -178,17 +178,9 @@ class XdrLedgerTest extends TestCase
         $amount = new BigInteger(1000000);
         $price = new XdrPrice(1, 1);
         $flags = 0;
-        $ext = new XdrOfferEntryExt(0, null);
+        $ext = new XdrOfferEntryExt(0);
 
-        $offerEntry = new XdrOfferEntry();
-        $offerEntry->setSellerID($sellerId);
-        $offerEntry->setOfferId($offerId);
-        $offerEntry->setSelling($selling);
-        $offerEntry->setBuying($buying);
-        $offerEntry->setAmount($amount);
-        $offerEntry->setPrice($price);
-        $offerEntry->setFlags($flags);
-        $offerEntry->setExt($ext);
+        $offerEntry = new XdrOfferEntry($sellerId, $offerId, $selling, $buying, $amount, $price, $flags, $ext);
 
         $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::OFFER());
         $ledgerEntryData->setOffer($offerEntry);
