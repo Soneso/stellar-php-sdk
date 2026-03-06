@@ -916,15 +916,15 @@ class XdrOperationResultTest extends TestCase
     #[Test]
     public function testInnerTransactionResultRoundTrip(): void
     {
-        $innerResult = new XdrInnerTransactionResult();
-        $innerResult->feeCharged = new BigInteger(10000);
-
         $resultResult = new XdrTransactionResultResult();
         $resultResult->resultCode = new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS);
         $resultResult->results = [];
-        $innerResult->result = $resultResult;
 
-        $innerResult->ext = new XdrTransactionResultExt(0);
+        $innerResult = new XdrInnerTransactionResult(
+            new BigInteger(10000),
+            $resultResult,
+            new XdrTransactionResultExt(0),
+        );
 
         $encoded = $innerResult->encode();
         $decoded = XdrInnerTransactionResult::decode(new XdrBuffer($encoded));
@@ -942,15 +942,15 @@ class XdrOperationResultTest extends TestCase
     {
         $txHash = hash('sha256', 'test-transaction', false);
 
-        $innerResult = new XdrInnerTransactionResult();
-        $innerResult->feeCharged = new BigInteger(5000);
-
         $resultResult = new XdrTransactionResultResult();
         $resultResult->resultCode = new XdrTransactionResultCode(XdrTransactionResultCode::FAILED);
         $resultResult->results = [];
-        $innerResult->result = $resultResult;
 
-        $innerResult->ext = new XdrTransactionResultExt(0);
+        $innerResult = new XdrInnerTransactionResult(
+            new BigInteger(5000),
+            $resultResult,
+            new XdrTransactionResultExt(0),
+        );
 
         $pair = new XdrInnerTransactionResultPair($txHash, $innerResult);
 

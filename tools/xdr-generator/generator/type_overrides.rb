@@ -129,7 +129,6 @@ SKIP_TYPES = %w[
   XdrDataValue
   XdrDecoratedSignature
   XdrHostFunction
-  XdrInnerTransactionResult
   XdrLedgerKey
   XdrManageDataOperation
   XdrMuxedAccount
@@ -143,7 +142,6 @@ SKIP_TYPES = %w[
   XdrSCVal
   XdrTimeBounds
   XdrTransaction
-  XdrTransactionResult
   XdrTransactionV0
   XdrTrustlineAsset
 ].freeze

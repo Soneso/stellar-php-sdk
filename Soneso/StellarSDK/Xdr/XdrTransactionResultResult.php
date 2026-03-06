@@ -8,7 +8,6 @@ namespace Soneso\StellarSDK\Xdr;
 class XdrTransactionResultResult {
 
     public XdrTransactionResultCode $resultCode;
-    public ?XdrInnerTransactionResultPair $innerResultPair = null;
     public ?array $results = null;
 
     public function __construct(?XdrTransactionResultCode $resultCode = null) {
@@ -20,10 +19,6 @@ class XdrTransactionResultResult {
     public function encode(): string {
         $bytes = $this->resultCode->encode();
         switch ($this->resultCode->getValue()) {
-            case XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS:
-            case XdrTransactionResultCode::FEE_BUMP_INNER_FAILED:
-                $bytes .= $this->innerResultPair->encode();
-                break;
             case XdrTransactionResultCode::SUCCESS:
             case XdrTransactionResultCode::FAILED:
                 $resultsCount = count($this->results);
@@ -57,10 +52,6 @@ class XdrTransactionResultResult {
     public static function decode(XdrBuffer $xdr): XdrTransactionResultResult {
         $result = new XdrTransactionResultResult(XdrTransactionResultCode::decode($xdr));
         switch ($result->resultCode->getValue()) {
-            case XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS:
-            case XdrTransactionResultCode::FEE_BUMP_INNER_FAILED:
-                $result->innerResultPair = XdrInnerTransactionResultPair::decode($xdr);
-                break;
             case XdrTransactionResultCode::SUCCESS:
             case XdrTransactionResultCode::FAILED:
                 $result->results = [];
@@ -93,8 +84,6 @@ class XdrTransactionResultResult {
 
     public function getResultCode(): XdrTransactionResultCode { return $this->resultCode; }
     public function setResultCode(XdrTransactionResultCode $resultCode): void { $this->resultCode = $resultCode; }
-    public function getInnerResultPair(): ?XdrInnerTransactionResultPair { return $this->innerResultPair; }
-    public function setInnerResultPair(?XdrInnerTransactionResultPair $innerResultPair): void { $this->innerResultPair = $innerResultPair; }
     public function getResults(): ?array { return $this->results; }
     public function setResults(?array $results): void { $this->results = $results; }
 

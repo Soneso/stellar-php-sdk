@@ -243,4 +243,12 @@ FIELD_TYPE_OVERRIDES = {
     "limit" => "BigInteger",
   },
 
+  # BigInteger for feeCharged (int64) in transaction results
+  "XdrInnerTransactionResult" => {
+    "feeCharged" => "BigInteger",
+  },
+  "XdrTransactionResult" => {
+    "feeCharged" => "BigInteger",
+  },
+
 }.freeze

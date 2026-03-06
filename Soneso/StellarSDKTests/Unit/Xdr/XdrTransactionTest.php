@@ -568,16 +568,16 @@ class XdrTransactionTest extends TestCase
      */
     public function testTransactionResultSuccessRoundTrip(): void
     {
-        $result = new XdrTransactionResult();
-        $result->setFeeCharged(new BigInteger('100'));
-
         $resultResult = new XdrTransactionResultResult();
         $resultCode = new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS);
         $resultResult->setResultCode($resultCode);
         $resultResult->setResults([]);
 
-        $result->setResult($resultResult);
-        $result->setExt(new XdrTransactionResultExt(0));
+        $result = new XdrTransactionResult(
+            new BigInteger('100'),
+            $resultResult,
+            new XdrTransactionResultExt(0),
+        );
 
         $encoded = $result->encode();
         $xdrBuffer = new XdrBuffer($encoded);
@@ -592,16 +592,16 @@ class XdrTransactionTest extends TestCase
      */
     public function testTransactionResultBase64Conversion(): void
     {
-        $result = new XdrTransactionResult();
-        $result->setFeeCharged(new BigInteger('250'));
-
         $resultResult = new XdrTransactionResultResult();
         $resultCode = new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS);
         $resultResult->setResultCode($resultCode);
         $resultResult->setResults([]);
 
-        $result->setResult($resultResult);
-        $result->setExt(new XdrTransactionResultExt(0));
+        $result = new XdrTransactionResult(
+            new BigInteger('250'),
+            $resultResult,
+            new XdrTransactionResultExt(0),
+        );
 
         $base64 = $result->toBase64Xdr();
         $this->assertNotEmpty($base64);
