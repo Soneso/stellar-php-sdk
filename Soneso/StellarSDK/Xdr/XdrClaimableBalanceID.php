@@ -6,8 +6,47 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase
 {
+    public function __construct(XdrClaimableBalanceIDType $type, string $hash) {
+        parent::__construct($type);
+        $this->hash = $hash;
+    }
+
+    public function encode(): string {
+        $bytes = $this->type->encode();
+        switch ($this->type->getValue()) {
+            case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
+                $idHex = $this->hash;
+                if (str_starts_with($idHex, "B")) {
+                    $idHex = StrKey::decodeClaimableBalanceIdHex($idHex);
+                }
+                $balanceIdBytes = pack("H*", $idHex);
+                if (strlen($balanceIdBytes) > 32) {
+                    $balanceIdBytes = substr($balanceIdBytes, -32);
+                }
+                $bytes .= XdrEncoder::opaqueFixed($balanceIdBytes, 32);
+                break;
+            default:
+                break;
+        }
+        return $bytes;
+    }
+
+    public static function decode(XdrBuffer $xdr): static {
+        $type = XdrClaimableBalanceIDType::decode($xdr);
+        $hash = '';
+        switch ($type->getValue()) {
+            case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
+                $hash = bin2hex($xdr->readOpaqueFixed(32));
+                break;
+            default:
+                break;
+        }
+        return new static($type, $hash);
+    }
 
     /**
      * Returns the balance id as hex string with leading zeros, so it can be used in horizon requests.

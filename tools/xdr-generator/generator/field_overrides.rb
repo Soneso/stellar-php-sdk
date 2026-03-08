@@ -158,6 +158,12 @@ FIELD_OVERRIDES = {
 
   # XdrOfferEntry: field name case difference
   "XdrOfferEntry" => { "offerID" => "offerId" },
+
+  # XdrClaimableBalanceID: arm name differs from PHP SDK field name
+  "XdrClaimableBalanceID" => { "v0" => "hash" },
+
+  # XdrContractExecutable: XDR arm wasm_hash → PHP wasmIdHex
+  "XdrContractExecutable" => { "wasm_hash" => "wasmIdHex" },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -242,6 +248,9 @@ FIELD_TYPE_OVERRIDES = {
   "XdrChangeTrustOperation" => {
     "limit" => "BigInteger",
   },
+
+  # XdrHostFunction: wasm arm uses XdrDataValueMandatory instead of string
+  "XdrHostFunction" => { "wasm" => "XdrDataValueMandatory" },
 
   # BigInteger for feeCharged (int64) in transaction results
   "XdrInnerTransactionResult" => {

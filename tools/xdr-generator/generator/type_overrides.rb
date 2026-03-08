@@ -37,6 +37,8 @@ TYPE_OVERRIDES = {
   "XdrPoolID" => "string",
   "XdrAssetCode4" => "string",
   "XdrAssetCode12" => "string",
+  "XdrSignatureHint" => "string",
+  "XdrSignature" => "string",
 
   # String typedefs — SDK uses string
   "XdrString64" => "string",
@@ -122,17 +124,11 @@ SKIP_TYPES = %w[
 
   XdrChangeTrustAsset
 
-  XdrClaimableBalanceID
-
-  XdrContractExecutable
   XdrContractIDPreimage
   XdrDataValue
-  XdrDecoratedSignature
-  XdrHostFunction
   XdrLedgerKey
   XdrManageDataOperation
   XdrMuxedAccount
-  XdrMuxedAccountMed25519
   XdrOperation
   XdrOperationBody
   XdrOperationResult
