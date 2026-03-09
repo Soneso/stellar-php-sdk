@@ -1041,6 +1041,19 @@ class Generator < Xdrgen::Generators::Base
       out.puts "                } else {"
       out.puts "                    $bytes .= XdrEncoder::integer32(0);"
       out.puts "                }"
+    when :optional_array
+      element_type = arm[:element_type]
+      element_typespec = arm[:element_typespec]
+      out.puts "                if (#{accessor} !== null) {"
+      out.puts "                    $bytes .= XdrEncoder::integer32(1);"
+      out.puts "                    $#{arm[:field_name]}Count = count(#{accessor});"
+      out.puts "                    $bytes .= XdrEncoder::integer32($#{arm[:field_name]}Count);"
+      out.puts "                    foreach (#{accessor} as $#{arm[:field_name]}Item) {"
+      out.puts "                        $bytes .= #{encode_type_call(element_type, "$#{arm[:field_name]}Item", typespec: element_typespec)};"
+      out.puts "                    }"
+      out.puts "                } else {"
+      out.puts "                    $bytes .= XdrEncoder::integer32(0);"
+      out.puts "                }"
     when :simple
       type_str = arm[:php_type]
       typespec = arm[:typespec]
@@ -1071,6 +1084,16 @@ class Generator < Xdrgen::Generators::Base
       inner_typespec = arm[:inner_typespec]
       out.puts "                if ($xdr->readInteger32() !== 0) {"
       out.puts "                    #{target}->#{field} = #{decode_type_call(inner_type, typespec: inner_typespec)};"
+      out.puts "                }"
+    when :optional_array
+      element_type = arm[:element_type]
+      element_typespec = arm[:element_typespec]
+      out.puts "                if ($xdr->readInteger32() !== 0) {"
+      out.puts "                    #{target}->#{field} = [];"
+      out.puts "                    $#{field}Size = $xdr->readInteger32();"
+      out.puts "                    for ($i = 0; $i < $#{field}Size; $i++) {"
+      out.puts "                        #{target}->#{field}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
+      out.puts "                    }"
       out.puts "                }"
     when :simple
       type_str = arm[:php_type]
@@ -1220,6 +1243,29 @@ class Generator < Xdrgen::Generators::Base
     when AST::Declarations::Optional
       inner_typespec = decl.type
       inner_type = php_type_for_typespec(inner_typespec)
+
+      # Check if inner type resolves to an array typedef (e.g., SCVec = SCVal<>)
+      if inner_type == "array" && inner_typespec.is_a?(AST::Typespecs::Simple)
+        resolved = inner_typespec.resolved_type
+        if resolved.is_a?(AST::Definitions::Typedef) &&
+           resolved.declaration.is_a?(AST::Declarations::Array)
+          arr_decl = resolved.declaration
+          element_typespec = arr_decl.type
+          element_type = php_type_for_typespec(element_typespec)
+          return {
+            php_type: "array",
+            encode_style: :optional_array,
+            decode_style: :optional_array,
+            element_type: element_type,
+            element_typespec: element_typespec,
+            inner_type: nil,
+            inner_typespec: nil,
+            fixed_size: nil,
+            typespec: nil,
+          }
+        end
+      end
+
       {
         php_type: inner_type,
         encode_style: :optional,

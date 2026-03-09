@@ -197,6 +197,9 @@ FIELD_OVERRIDES = {
     "invokeHostFunctionOp" => "invokeHostFunctionOperation",
   },
 
+  # XdrSCVal: snake_case → camelCase field name
+  "XdrSCVal" => { "nonce_key" => "nonceKey" },
+
   # XdrTimeBounds: rename to avoid return type conflict with wrapper's getMinTime(): DateTime
   "XdrTimeBounds" => {
     "minTime" => "minTimestamp",
@@ -308,5 +311,8 @@ FIELD_TYPE_OVERRIDES = {
   "XdrTransactionResult" => {
     "feeCharged" => "BigInteger",
   },
+
+  # XdrSCVal: bytes arm uses XdrDataValueMandatory instead of raw opaque string
+  "XdrSCVal" => { "bytes" => "XdrDataValueMandatory" },
 
 }.freeze
