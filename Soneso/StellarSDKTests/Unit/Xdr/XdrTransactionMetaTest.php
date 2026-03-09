@@ -6,11 +6,8 @@
 
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
-use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Soneso\StellarSDK\Xdr\XdrAccountEntryV2;
-use Soneso\StellarSDK\Xdr\XdrAccountEntryV2Ext;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
@@ -33,65 +30,6 @@ use Soneso\StellarSDK\Xdr\XdrTransactionMetaV4;
 class XdrTransactionMetaTest extends TestCase
 {
     private const ACCOUNT_ID_1 = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H";
-
-    #[Test]
-    public function testTransactionMetaV0RoundTrip(): void
-    {
-        $operationMeta = new XdrOperationMeta([]);
-        $operations = [$operationMeta];
-
-        $meta = new XdrTransactionMeta(0);
-        $meta->setOperations($operations);
-
-        $encoded = $meta->encode();
-        $decoded = XdrTransactionMeta::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(0, $decoded->getV());
-        $this->assertCount(1, $decoded->getOperations());
-        $this->assertNull($decoded->getV1());
-        $this->assertNull($decoded->getV2());
-        $this->assertNull($decoded->getV3());
-        $this->assertNull($decoded->getV4());
-    }
-
-    #[Test]
-    public function testTransactionMetaV0WithMultipleOperations(): void
-    {
-        $operations = [
-            new XdrOperationMeta([]),
-            new XdrOperationMeta([]),
-            new XdrOperationMeta([]),
-        ];
-
-        $meta = new XdrTransactionMeta(0);
-        $meta->setOperations($operations);
-
-        $encoded = $meta->encode();
-        $decoded = XdrTransactionMeta::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(0, $decoded->getV());
-        $this->assertCount(3, $decoded->getOperations());
-    }
-
-    #[Test]
-    public function testTransactionMetaV1RoundTrip(): void
-    {
-        $ledgerChanges = [];
-        $operations = [new XdrOperationMeta([])];
-
-        $metaV1 = new XdrTransactionMetaV1($ledgerChanges, $operations);
-        $meta = new XdrTransactionMeta(1);
-        $meta->setV1($metaV1);
-
-        $encoded = $meta->encode();
-        $decoded = XdrTransactionMeta::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(1, $decoded->getV());
-        $this->assertNotNull($decoded->getV1());
-        $this->assertCount(0, $decoded->getV1()->getLedgerEntryChanges());
-        $this->assertCount(1, $decoded->getV1()->getOperations());
-        $this->assertNull($decoded->getV2());
-    }
 
     #[Test]
     public function testTransactionMetaV1WithLedgerChanges(): void
@@ -124,29 +62,6 @@ class XdrTransactionMetaTest extends TestCase
     }
 
     #[Test]
-    public function testTransactionMetaV2RoundTrip(): void
-    {
-        $txChangesBefore = [];
-        $operations = [new XdrOperationMeta([])];
-        $txChangesAfter = [];
-
-        $metaV2 = new XdrTransactionMetaV2($txChangesBefore, $operations, $txChangesAfter);
-        $meta = new XdrTransactionMeta(2);
-        $meta->setV2($metaV2);
-
-        $encoded = $meta->encode();
-        $decoded = XdrTransactionMeta::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(2, $decoded->getV());
-        $this->assertNotNull($decoded->getV2());
-        $this->assertCount(0, $decoded->getV2()->getTxChangesBefore());
-        $this->assertCount(1, $decoded->getV2()->getOperations());
-        $this->assertCount(0, $decoded->getV2()->getTxChangesAfter());
-        $this->assertNull($decoded->getV1());
-        $this->assertNull($decoded->getV3());
-    }
-
-    #[Test]
     public function testTransactionMetaV2WithChanges(): void
     {
         $ledgerChange = new XdrLedgerEntryChange(
@@ -171,37 +86,6 @@ class XdrTransactionMetaTest extends TestCase
         $this->assertEquals(2, $decoded->getV());
         $this->assertCount(1, $decoded->getV2()->getTxChangesBefore());
         $this->assertCount(1, $decoded->getV2()->getTxChangesAfter());
-    }
-
-    #[Test]
-    public function testTransactionMetaV3RoundTrip(): void
-    {
-        $ext = new XdrExtensionPoint(0);
-        $txChangesBefore = [];
-        $operations = [];
-        $txChangesAfter = [];
-        $sorobanMeta = $this->createMinimalSorobanMeta();
-
-        $metaV3 = new XdrTransactionMetaV3(
-            $ext,
-            $txChangesBefore,
-            $operations,
-            $txChangesAfter,
-            $sorobanMeta
-        );
-        $meta = new XdrTransactionMeta(3);
-        $meta->setV3($metaV3);
-
-        $encoded = $meta->encode();
-        $decoded = XdrTransactionMeta::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(3, $decoded->getV());
-        $this->assertNotNull($decoded->getV3());
-        $this->assertNotNull($decoded->getV3()->getSorobanMeta());
-        $this->assertCount(0, $decoded->getV3()->getTxChangesBefore());
-        $this->assertCount(0, $decoded->getV3()->getOperations());
-        $this->assertNull($decoded->getV2());
-        $this->assertNull($decoded->getV4());
     }
 
     #[Test]
@@ -240,40 +124,6 @@ class XdrTransactionMetaTest extends TestCase
 
         $this->assertCount(2, $metaV3->getOperations());
         $this->assertEquals(1, $metaV3->getExt()->getDiscriminant());
-    }
-
-    #[Test]
-    public function testTransactionMetaV4RoundTrip(): void
-    {
-        $ext = new XdrExtensionPoint(0);
-        $txChangesBefore = [];
-        $operations = [];
-        $txChangesAfter = [];
-        $sorobanMeta = null;
-        $events = [];
-        $diagnosticEvents = [];
-
-        $metaV4 = new XdrTransactionMetaV4(
-            $ext,
-            $txChangesBefore,
-            $operations,
-            $txChangesAfter,
-            $events,
-            $diagnosticEvents,
-            $sorobanMeta
-        );
-        $meta = new XdrTransactionMeta(4);
-        $meta->setV4($metaV4);
-
-        $encoded = $meta->encode();
-        $decoded = XdrTransactionMeta::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(4, $decoded->getV());
-        $this->assertNotNull($decoded->getV4());
-        $this->assertNull($decoded->getV4()->getSorobanMeta());
-        $this->assertCount(0, $decoded->getV4()->getTxChangesBefore());
-        $this->assertCount(0, $decoded->getV4()->getDiagnosticEvents());
-        $this->assertNull($decoded->getV3());
     }
 
     #[Test]

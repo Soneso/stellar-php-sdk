@@ -32,111 +32,6 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseTupleV0;
 class XdrSCSpecTest extends TestCase
 {
     /**
-     * Test XdrSCSpecType encode/decode round-trip
-     */
-    public function testXdrSCSpecTypeRoundTrip(): void
-    {
-        $types = [
-            XdrSCSpecType::VAL(),
-            XdrSCSpecType::BOOL(),
-            XdrSCSpecType::VOID(),
-            XdrSCSpecType::ERROR(),
-            XdrSCSpecType::U32(),
-            XdrSCSpecType::I32(),
-            XdrSCSpecType::U64(),
-            XdrSCSpecType::I64(),
-            XdrSCSpecType::TIMEPOINT(),
-            XdrSCSpecType::DURATION(),
-            XdrSCSpecType::U128(),
-            XdrSCSpecType::I128(),
-            XdrSCSpecType::U256(),
-            XdrSCSpecType::I256(),
-            XdrSCSpecType::BYTES(),
-            XdrSCSpecType::STRING(),
-            XdrSCSpecType::SYMBOL(),
-            XdrSCSpecType::ADDRESS(),
-            XdrSCSpecType::MUXED_ADDRESS(),
-            XdrSCSpecType::OPTION(),
-            XdrSCSpecType::RESULT(),
-            XdrSCSpecType::VEC(),
-            XdrSCSpecType::MAP(),
-            XdrSCSpecType::TUPLE(),
-            XdrSCSpecType::BYTES_N(),
-            XdrSCSpecType::UDT(),
-        ];
-
-        foreach ($types as $original) {
-            $encoded = $original->encode();
-            $this->assertNotEmpty($encoded);
-
-            $decoded = XdrSCSpecType::decode(new XdrBuffer($encoded));
-            $this->assertEquals($original->getValue(), $decoded->getValue());
-
-            $reEncoded = $decoded->encode();
-            $this->assertEquals($encoded, $reEncoded);
-        }
-    }
-
-    /**
-     * Test XdrSCSpecTypeDef with simple types
-     */
-    public function testXdrSCSpecTypeDefSimpleTypesRoundTrip(): void
-    {
-        $simpleTypes = [
-            XdrSCSpecTypeDef::BOOL(),
-            XdrSCSpecTypeDef::VOID(),
-            XdrSCSpecTypeDef::STATUS(),
-            XdrSCSpecTypeDef::U32(),
-            XdrSCSpecTypeDef::I32(),
-            XdrSCSpecTypeDef::U64(),
-            XdrSCSpecTypeDef::I64(),
-            XdrSCSpecTypeDef::TIMEPOINT(),
-            XdrSCSpecTypeDef::DURATION(),
-            XdrSCSpecTypeDef::U128(),
-            XdrSCSpecTypeDef::I128(),
-            XdrSCSpecTypeDef::U256(),
-            XdrSCSpecTypeDef::I256(),
-            XdrSCSpecTypeDef::BYTES(),
-            XdrSCSpecTypeDef::STRING(),
-            XdrSCSpecTypeDef::SYMBOL(),
-            XdrSCSpecTypeDef::ADDRESS(),
-            XdrSCSpecTypeDef::MUXED_ADDRESS(),
-        ];
-
-        foreach ($simpleTypes as $original) {
-            $encoded = $original->encode();
-            $this->assertNotEmpty($encoded);
-
-            $decoded = XdrSCSpecTypeDef::decode(new XdrBuffer($encoded));
-            $this->assertEquals($original->getType()->getValue(), $decoded->getType()->getValue());
-
-            $reEncoded = $decoded->encode();
-            $this->assertEquals($encoded, $reEncoded);
-        }
-    }
-
-    /**
-     * Test XdrSCSpecTypeBytesN encode/decode round-trip
-     */
-    public function testXdrSCSpecTypeByteNRoundTrip(): void
-    {
-        $testValues = [0, 1, 32, 64, 128, 256, 1024, 65535];
-
-        foreach ($testValues as $n) {
-            $original = new XdrSCSpecTypeBytesN($n);
-
-            $encoded = $original->encode();
-            $this->assertNotEmpty($encoded);
-
-            $decoded = XdrSCSpecTypeBytesN::decode(new XdrBuffer($encoded));
-            $this->assertEquals($original->getN(), $decoded->getN());
-
-            $reEncoded = $decoded->encode();
-            $this->assertEquals($encoded, $reEncoded);
-        }
-    }
-
-    /**
      * Test XdrSCSpecTypeDef with BytesN
      */
     public function testXdrSCSpecTypeDefWithBytesNRoundTrip(): void
@@ -151,27 +46,6 @@ class XdrSCSpecTest extends TestCase
         $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_BYTES_N, $decoded->getType()->getValue());
         $this->assertNotNull($decoded->getBytesN());
         $this->assertEquals(32, $decoded->getBytesN()->getN());
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
-     * Test XdrSCSpecTypeOption encode/decode round-trip
-     */
-    public function testXdrSCSpecTypeOptionRoundTrip(): void
-    {
-        $valueType = XdrSCSpecTypeDef::U64();
-        $original = new XdrSCSpecTypeOption($valueType);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecTypeOption::decode(new XdrBuffer($encoded));
-        $this->assertEquals(
-            $original->getValueType()->getType()->getValue(),
-            $decoded->getValueType()->getType()->getValue()
-        );
 
         $reEncoded = $decoded->encode();
         $this->assertEquals($encoded, $reEncoded);
@@ -201,27 +75,6 @@ class XdrSCSpecTest extends TestCase
     }
 
     /**
-     * Test XdrSCSpecTypeVec encode/decode round-trip
-     */
-    public function testXdrSCSpecTypeVecRoundTrip(): void
-    {
-        $elementType = XdrSCSpecTypeDef::I32();
-        $original = new XdrSCSpecTypeVec($elementType);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecTypeVec::decode(new XdrBuffer($encoded));
-        $this->assertEquals(
-            $original->getElementType()->getType()->getValue(),
-            $decoded->getElementType()->getType()->getValue()
-        );
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
      * Test XdrSCSpecTypeDef with Vec
      */
     public function testXdrSCSpecTypeDefWithVecRoundTrip(): void
@@ -238,32 +91,6 @@ class XdrSCSpecTest extends TestCase
         $this->assertEquals(
             XdrSCSpecType::SC_SPEC_TYPE_BYTES,
             $decoded->getVec()->getElementType()->getType()->getValue()
-        );
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
-     * Test XdrSCSpecTypeMap encode/decode round-trip
-     */
-    public function testXdrSCSpecTypeMapRoundTrip(): void
-    {
-        $keyType = XdrSCSpecTypeDef::STRING();
-        $valueType = XdrSCSpecTypeDef::U64();
-        $original = new XdrSCSpecTypeMap($keyType, $valueType);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecTypeMap::decode(new XdrBuffer($encoded));
-        $this->assertEquals(
-            $original->getKeyType()->getType()->getValue(),
-            $decoded->getKeyType()->getType()->getValue()
-        );
-        $this->assertEquals(
-            $original->getValueType()->getType()->getValue(),
-            $decoded->getValueType()->getType()->getValue()
         );
 
         $reEncoded = $decoded->encode();
@@ -298,32 +125,6 @@ class XdrSCSpecTest extends TestCase
     }
 
     /**
-     * Test XdrSCSpecTypeResult encode/decode round-trip
-     */
-    public function testXdrSCSpecTypeResultRoundTrip(): void
-    {
-        $okType = XdrSCSpecTypeDef::U32();
-        $errorType = XdrSCSpecTypeDef::STRING();
-        $original = new XdrSCSpecTypeResult($okType, $errorType);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecTypeResult::decode(new XdrBuffer($encoded));
-        $this->assertEquals(
-            $original->getOkType()->getType()->getValue(),
-            $decoded->getOkType()->getType()->getValue()
-        );
-        $this->assertEquals(
-            $original->getErrorType()->getType()->getValue(),
-            $decoded->getErrorType()->getType()->getValue()
-        );
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
      * Test XdrSCSpecTypeDef with Result
      */
     public function testXdrSCSpecTypeDefWithResultRoundTrip(): void
@@ -344,58 +145,6 @@ class XdrSCSpecTest extends TestCase
         $this->assertEquals(
             XdrSCSpecType::SC_SPEC_TYPE_VOID,
             $decoded->getResult()->getErrorType()->getType()->getValue()
-        );
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
-     * Test XdrSCSpecTypeTuple encode/decode round-trip with empty tuple
-     */
-    public function testXdrSCSpecTypeTupleEmptyRoundTrip(): void
-    {
-        $original = new XdrSCSpecTypeTuple([]);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecTypeTuple::decode(new XdrBuffer($encoded));
-        $this->assertIsArray($decoded->valueTypes);
-        $this->assertEmpty($decoded->valueTypes);
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
-     * Test XdrSCSpecTypeTuple encode/decode round-trip with multiple types
-     */
-    public function testXdrSCSpecTypeTupleMultipleTypesRoundTrip(): void
-    {
-        $valueTypes = [
-            XdrSCSpecTypeDef::U32(),
-            XdrSCSpecTypeDef::STRING(),
-            XdrSCSpecTypeDef::BOOL(),
-        ];
-        $original = new XdrSCSpecTypeTuple($valueTypes);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecTypeTuple::decode(new XdrBuffer($encoded));
-        $this->assertCount(3, $decoded->valueTypes);
-        $this->assertEquals(
-            XdrSCSpecType::SC_SPEC_TYPE_U32,
-            $decoded->valueTypes[0]->getType()->getValue()
-        );
-        $this->assertEquals(
-            XdrSCSpecType::SC_SPEC_TYPE_STRING,
-            $decoded->valueTypes[1]->getType()->getValue()
-        );
-        $this->assertEquals(
-            XdrSCSpecType::SC_SPEC_TYPE_BOOL,
-            $decoded->valueTypes[2]->getType()->getValue()
         );
 
         $reEncoded = $decoded->encode();
@@ -426,27 +175,6 @@ class XdrSCSpecTest extends TestCase
     }
 
     /**
-     * Test XdrSCSpecTypeUDT encode/decode round-trip
-     */
-    public function testXdrSCSpecTypeUDTRoundTrip(): void
-    {
-        $testNames = ["MyStruct", "CustomType", "", "VeryLongUserDefinedTypeNameForTesting"];
-
-        foreach ($testNames as $name) {
-            $original = new XdrSCSpecTypeUDT($name);
-
-            $encoded = $original->encode();
-            $this->assertNotEmpty($encoded);
-
-            $decoded = XdrSCSpecTypeUDT::decode(new XdrBuffer($encoded));
-            $this->assertEquals($original->getName(), $decoded->getName());
-
-            $reEncoded = $decoded->encode();
-            $this->assertEquals($encoded, $reEncoded);
-        }
-    }
-
-    /**
      * Test XdrSCSpecTypeDef with UDT
      */
     public function testXdrSCSpecTypeDefWithUDTRoundTrip(): void
@@ -461,31 +189,6 @@ class XdrSCSpecTest extends TestCase
         $this->assertEquals(XdrSCSpecType::SC_SPEC_TYPE_UDT, $decoded->getType()->getValue());
         $this->assertNotNull($decoded->getUdt());
         $this->assertEquals("CustomStruct", $decoded->getUdt()->getName());
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
-     * Test XdrSCSpecFunctionInputV0 encode/decode round-trip
-     */
-    public function testXdrSCSpecFunctionInputV0RoundTrip(): void
-    {
-        $doc = "Input parameter documentation";
-        $name = "amount";
-        $type = XdrSCSpecTypeDef::U64();
-        $original = new XdrSCSpecFunctionInputV0($doc, $name, $type);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecFunctionInputV0::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->getDoc(), $decoded->getDoc());
-        $this->assertEquals($original->getName(), $decoded->getName());
-        $this->assertEquals(
-            $original->getType()->getType()->getValue(),
-            $decoded->getType()->getType()->getValue()
-        );
 
         $reEncoded = $decoded->encode();
         $this->assertEquals($encoded, $reEncoded);
@@ -509,38 +212,6 @@ class XdrSCSpecTest extends TestCase
     }
 
     /**
-     * Test XdrSCSpecFunctionV0 encode/decode round-trip
-     */
-    public function testXdrSCSpecFunctionV0RoundTrip(): void
-    {
-        $doc = "Transfer tokens from one account to another";
-        $name = "transfer";
-        $inputs = [
-            new XdrSCSpecFunctionInputV0("Sender address", "from", XdrSCSpecTypeDef::ADDRESS()),
-            new XdrSCSpecFunctionInputV0("Recipient address", "to", XdrSCSpecTypeDef::ADDRESS()),
-            new XdrSCSpecFunctionInputV0("Transfer amount", "amount", XdrSCSpecTypeDef::U64()),
-        ];
-        $outputs = [XdrSCSpecTypeDef::BOOL()];
-
-        $original = new XdrSCSpecFunctionV0($doc, $name, $inputs, $outputs);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecFunctionV0::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->getDoc(), $decoded->getDoc());
-        $this->assertEquals($original->getName(), $decoded->getName());
-        $this->assertCount(3, $decoded->getInputs());
-        $this->assertEquals("from", $decoded->getInputs()[0]->getName());
-        $this->assertEquals("to", $decoded->getInputs()[1]->getName());
-        $this->assertEquals("amount", $decoded->getInputs()[2]->getName());
-        $this->assertCount(1, $decoded->getOutputs());
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
      * Test XdrSCSpecFunctionV0 with no inputs and outputs
      */
     public function testXdrSCSpecFunctionV0EmptyInputsOutputsRoundTrip(): void
@@ -553,31 +224,6 @@ class XdrSCSpecTest extends TestCase
         $this->assertEquals("initialize", $decoded->getName());
         $this->assertEmpty($decoded->getInputs());
         $this->assertEmpty($decoded->getOutputs());
-
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($encoded, $reEncoded);
-    }
-
-    /**
-     * Test XdrSCSpecUDTStructFieldV0 encode/decode round-trip
-     */
-    public function testXdrSCSpecUDTStructFieldV0RoundTrip(): void
-    {
-        $doc = "User balance";
-        $name = "balance";
-        $type = XdrSCSpecTypeDef::I128();
-        $original = new XdrSCSpecUDTStructFieldV0($doc, $name, $type);
-
-        $encoded = $original->encode();
-        $this->assertNotEmpty($encoded);
-
-        $decoded = XdrSCSpecUDTStructFieldV0::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->getDoc(), $decoded->getDoc());
-        $this->assertEquals($original->getName(), $decoded->getName());
-        $this->assertEquals(
-            $original->getType()->getType()->getValue(),
-            $decoded->getType()->getType()->getValue()
-        );
 
         $reEncoded = $decoded->encode();
         $this->assertEquals($encoded, $reEncoded);

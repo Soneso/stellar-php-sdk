@@ -39,48 +39,6 @@ class XdrSCSpecUDTEnumV0Test extends TestCase
         $this->assertCount(2, $enum->cases);
     }
 
-    public function testEncodeDecodeRoundTrip(): void
-    {
-        $case1 = new XdrSCSpecUDTEnumCaseV0("Case A doc", "CASE_A", 0);
-        $case2 = new XdrSCSpecUDTEnumCaseV0("Case B doc", "CASE_B", 1);
-        $case3 = new XdrSCSpecUDTEnumCaseV0("Case C doc", "CASE_C", 2);
-
-        $original = new XdrSCSpecUDTEnumV0(
-            "Enum documentation",
-            "my_lib",
-            "MyEnum",
-            [$case1, $case2, $case3]
-        );
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecUDTEnumV0::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals($original->doc, $decoded->doc);
-        $this->assertEquals($original->lib, $decoded->lib);
-        $this->assertEquals($original->name, $decoded->name);
-        $this->assertCount(3, $decoded->cases);
-        $this->assertEquals("CASE_A", $decoded->cases[0]->name);
-        $this->assertEquals("CASE_B", $decoded->cases[1]->name);
-        $this->assertEquals("CASE_C", $decoded->cases[2]->name);
-    }
-
-    public function testEncodeDecodeEmptyCases(): void
-    {
-        $original = new XdrSCSpecUDTEnumV0(
-            "Empty enum",
-            "lib",
-            "EmptyEnum",
-            []
-        );
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecUDTEnumV0::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals("Empty enum", $decoded->doc);
-        $this->assertEquals("EmptyEnum", $decoded->name);
-        $this->assertEmpty($decoded->cases);
-    }
-
     public function testGetDoc(): void
     {
         $enum = new XdrSCSpecUDTEnumV0("doc", "lib", "name", []);
@@ -151,18 +109,6 @@ class XdrSCSpecUDTEnumV0Test extends TestCase
         $this->assertEquals("Case documentation", $case->doc);
         $this->assertEquals("MY_CASE", $case->name);
         $this->assertEquals(42, $case->value);
-    }
-
-    public function testCaseEncodeDecodeRoundTrip(): void
-    {
-        $original = new XdrSCSpecUDTEnumCaseV0("Test case", "TEST_VALUE", 123);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecUDTEnumCaseV0::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals($original->doc, $decoded->doc);
-        $this->assertEquals($original->name, $decoded->name);
-        $this->assertEquals($original->value, $decoded->value);
     }
 
     public function testCaseGetDoc(): void

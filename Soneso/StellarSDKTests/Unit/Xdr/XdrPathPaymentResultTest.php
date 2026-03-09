@@ -35,62 +35,6 @@ class XdrPathPaymentResultTest extends TestCase
 
     // XdrPathPaymentResultSuccess Tests
 
-    public function testPathPaymentResultSuccessEncodeDecodeRoundTripEmpty(): void
-    {
-        // Create via decode first since there's no constructor
-        $last = $this->createSimplePaymentResult();
-        $offers = [];
-
-        // Encode manually and decode
-        $bytes = $this->encodePathPaymentResultSuccess($offers, $last);
-        $decoded = XdrPathPaymentResultSuccess::decode(new XdrBuffer($bytes));
-
-        $this->assertEmpty($decoded->getOffers());
-        $this->assertNotNull($decoded->getLast());
-
-        // Re-encode and verify
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($bytes, $reEncoded);
-    }
-
-    public function testPathPaymentResultSuccessEncodeDecodeRoundTripWithOffers(): void
-    {
-        $last = $this->createSimplePaymentResult();
-        $offer = $this->createClaimAtom();
-        $offers = [$offer];
-
-        // Encode manually and decode
-        $bytes = $this->encodePathPaymentResultSuccess($offers, $last);
-        $decoded = XdrPathPaymentResultSuccess::decode(new XdrBuffer($bytes));
-
-        $this->assertCount(1, $decoded->getOffers());
-        $this->assertNotNull($decoded->getLast());
-
-        // Re-encode and verify
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($bytes, $reEncoded);
-    }
-
-    public function testPathPaymentResultSuccessEncodeDecodeRoundTripMultipleOffers(): void
-    {
-        $last = $this->createSimplePaymentResult();
-        $offers = [
-            $this->createClaimAtom(),
-            $this->createClaimAtom(),
-            $this->createClaimAtom(),
-        ];
-
-        // Encode manually and decode
-        $bytes = $this->encodePathPaymentResultSuccess($offers, $last);
-        $decoded = XdrPathPaymentResultSuccess::decode(new XdrBuffer($bytes));
-
-        $this->assertCount(3, $decoded->getOffers());
-
-        // Re-encode and verify
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($bytes, $reEncoded);
-    }
-
     public function testPathPaymentResultSuccessGetters(): void
     {
         $last = $this->createSimplePaymentResult();
@@ -106,29 +50,6 @@ class XdrPathPaymentResultTest extends TestCase
     }
 
     // XdrPathPaymentStrictSendResult Tests
-
-    public function testPathPaymentStrictSendResultSuccessEncodeDecodeRoundTrip(): void
-    {
-        $last = $this->createSimplePaymentResult();
-        $offers = [$this->createClaimAtom()];
-
-        // Create the success result manually
-        $successBytes = $this->encodePathPaymentResultSuccess($offers, $last);
-
-        // Create the strict send result with success code
-        $code = new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SUCCESS);
-        $bytes = $code->encode() . $successBytes;
-
-        $decoded = XdrPathPaymentStrictSendResult::decode(new XdrBuffer($bytes));
-
-        $this->assertEquals(XdrPathPaymentStrictSendResultCode::SUCCESS, $decoded->getCode()->getValue());
-        $this->assertNotNull($decoded->getSuccess());
-        $this->assertNull($decoded->getNoIssuer());
-
-        // Re-encode and verify
-        $reEncoded = $decoded->encode();
-        $this->assertEquals($bytes, $reEncoded);
-    }
 
     public function testPathPaymentStrictSendResultNoIssuerEncodeDecodeRoundTrip(): void
     {

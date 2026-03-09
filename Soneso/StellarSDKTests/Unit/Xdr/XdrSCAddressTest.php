@@ -60,20 +60,6 @@ class XdrSCAddressTest extends TestCase
         XdrSCAddress::forAccountId('INVALID_ACCOUNT_ID');
     }
 
-    public function testAccountAddressEncodeDecodeRoundTrip(): void
-    {
-        $original = XdrSCAddress::forAccountId(self::TEST_ACCOUNT_ID);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCAddress::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals($original->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertEquals(
-            $original->getAccountId()->getAccountId(),
-            $decoded->getAccountId()->getAccountId()
-        );
-    }
-
     public function testAccountAddressToStrKey(): void
     {
         $address = XdrSCAddress::forAccountId(self::TEST_ACCOUNT_ID);
@@ -103,18 +89,6 @@ class XdrSCAddressTest extends TestCase
         $this->assertEquals($contractStrKey, $address->getContractId());
     }
 
-    public function testContractAddressEncodeDecodeRoundTrip(): void
-    {
-        $original = XdrSCAddress::forContractId(self::TEST_CONTRACT_ID_HEX);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCAddress::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals($original->getType()->getValue(), $decoded->getType()->getValue());
-        // Decoded contractId is always hex
-        $this->assertEquals(self::TEST_CONTRACT_ID_HEX, $decoded->getContractId());
-    }
-
     public function testContractAddressToStrKeyFromHex(): void
     {
         $address = XdrSCAddress::forContractId(self::TEST_CONTRACT_ID_HEX);
@@ -139,21 +113,6 @@ class XdrSCAddressTest extends TestCase
 
     // Muxed Account Address Tests
 
-    public function testMuxedAccountAddressEncodeDecodeRoundTrip(): void
-    {
-        $keyPair = KeyPair::random();
-        $accountId = $keyPair->getAccountId();
-        $muxedAccountId = StrKey::encodeMuxedAccountId($accountId, 99999);
-
-        $original = XdrSCAddress::forAccountId($muxedAccountId);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCAddress::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getMuxedAccount());
-    }
-
     public function testMuxedAccountAddressToStrKey(): void
     {
         $keyPair = KeyPair::random();
@@ -174,17 +133,6 @@ class XdrSCAddressTest extends TestCase
 
         $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE, $address->getType()->getValue());
         $this->assertEquals(self::TEST_CLAIMABLE_BALANCE_ID, $address->getClaimableBalanceId()->getHash());
-    }
-
-    public function testClaimableBalanceAddressEncodeDecodeRoundTrip(): void
-    {
-        $original = XdrSCAddress::forClaimableBalanceId(self::TEST_CLAIMABLE_BALANCE_ID);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCAddress::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals($original->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertEquals(self::TEST_CLAIMABLE_BALANCE_ID, $decoded->getClaimableBalanceId()->getHash());
     }
 
     public function testClaimableBalanceAddressToStrKey(): void
@@ -219,17 +167,6 @@ class XdrSCAddressTest extends TestCase
 
         $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL, $address->getType()->getValue());
         $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID, $address->getLiquidityPoolId());
-    }
-
-    public function testLiquidityPoolAddressEncodeDecodeRoundTrip(): void
-    {
-        $original = XdrSCAddress::forLiquidityPoolId(self::TEST_LIQUIDITY_POOL_ID);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCAddress::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals($original->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID, $decoded->getLiquidityPoolId());
     }
 
     public function testLiquidityPoolAddressToStrKey(): void

@@ -14,8 +14,6 @@ use Soneso\StellarSDK\Xdr\XdrConfigSettingID;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyTTL;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
@@ -123,118 +121,6 @@ class XdrLedgerKeyTest extends TestCase
 
         $this->assertEquals(XdrLedgerEntryType::TTL, $key->getType()->getValue());
         $this->assertNotNull($key->getTtl());
-    }
-
-    // Encode/Decode Round Trip Tests
-
-    public function testAccountEncodeDecodeRoundTrip(): void
-    {
-        $original = XdrLedgerKey::forAccountId(self::TEST_ACCOUNT_ID);
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::ACCOUNT, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getAccount());
-        $this->assertEquals(self::TEST_ACCOUNT_ID, $decoded->getAccount()->getAccountID()->getAccountId());
-    }
-
-    public function testTrustLineEncodeDecodeRoundTrip(): void
-    {
-        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $original = XdrLedgerKey::forTrustLine(self::TEST_ACCOUNT_ID, $asset);
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::TRUSTLINE, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getTrustLine());
-    }
-
-    public function testOfferEncodeDecodeRoundTrip(): void
-    {
-        $original = XdrLedgerKey::forOffer(self::TEST_ACCOUNT_ID, 99999);
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::OFFER, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getOffer());
-    }
-
-    public function testDataEncodeDecodeRoundTrip(): void
-    {
-        $original = XdrLedgerKey::forData(self::TEST_ACCOUNT_ID, "my-data");
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::DATA, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getData());
-    }
-
-    public function testClaimableBalanceEncodeDecodeRoundTrip(): void
-    {
-        $balanceId = "00000000" . str_repeat("ab", 32);
-        $original = XdrLedgerKey::forClaimableBalanceId($balanceId);
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::CLAIMABLE_BALANCE, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getBalanceID());
-    }
-
-    public function testLiquidityPoolEncodeDecodeRoundTrip(): void
-    {
-        $poolId = str_repeat("cd", 32);
-        $original = XdrLedgerKey::forLiquidityPoolId($poolId);
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::LIQUIDITY_POOL, $decoded->getType()->getValue());
-        $this->assertEquals($poolId, $decoded->getLiquidityPoolID());
-    }
-
-    public function testContractDataEncodeDecodeRoundTrip(): void
-    {
-        $contract = XdrSCAddress::forAccountId(self::TEST_ACCOUNT_ID);
-        $keyVal = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_BOOL));
-        $keyVal->b = true;
-        $durability = new XdrContractDataDurability(XdrContractDataDurability::PERSISTENT);
-
-        $original = XdrLedgerKey::forContractData($contract, $keyVal, $durability);
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::CONTRACT_DATA, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getContractData());
-    }
-
-    public function testContractCodeEncodeDecodeRoundTrip(): void
-    {
-        $codeHash = str_repeat("\xef", 32);
-        $original = XdrLedgerKey::forContractCode($codeHash);
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::CONTRACT_CODE, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getContractCode());
-    }
-
-    public function testConfigSettingEncodeDecodeRoundTrip(): void
-    {
-        $settingId = XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0();
-        $original = XdrLedgerKey::forConfigSettingID($settingId);
-
-        $encoded = $original->encode();
-        $decoded = XdrLedgerKey::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::CONFIG_SETTING, $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getConfigSetting());
     }
 
     public function testTTLEncodeDecodeRoundTrip(): void

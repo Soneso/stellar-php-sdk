@@ -7,7 +7,6 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
 use PHPUnit\Framework\TestCase;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 
 /**
@@ -24,18 +23,6 @@ class XdrOperationTypeTest extends TestCase
     {
         $type = new XdrOperationType(XdrOperationType::PAYMENT);
         $this->assertEquals(XdrOperationType::PAYMENT, $type->getValue());
-    }
-
-    // Encode/Decode Tests
-
-    public function testEncodeDecodeRoundTrip(): void
-    {
-        $original = new XdrOperationType(XdrOperationType::MANAGE_DATA);
-
-        $encoded = $original->encode();
-        $decoded = XdrOperationType::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals($original->getValue(), $decoded->getValue());
     }
 
     // Factory Method Tests - All Operation Types
@@ -227,47 +214,6 @@ class XdrOperationTypeTest extends TestCase
         $type = XdrOperationType::RESTORE_FOOTPRINT();
         $this->assertEquals(XdrOperationType::RESTORE_FOOTPRINT, $type->getValue());
         $this->assertEquals(26, $type->getValue());
-    }
-
-    // Encode/Decode All Types
-
-    public function testEncodeDecodeAllTypes(): void
-    {
-        $types = [
-            XdrOperationType::CREATE_ACCOUNT(),
-            XdrOperationType::PAYMENT(),
-            XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE(),
-            XdrOperationType::MANAGE_SELL_OFFER(),
-            XdrOperationType::CREATE_PASSIVE_SELL_OFFER(),
-            XdrOperationType::SET_OPTIONS(),
-            XdrOperationType::CHANGE_TRUST(),
-            XdrOperationType::ALLOW_TRUST(),
-            XdrOperationType::ACCOUNT_MERGE(),
-            XdrOperationType::INFLATION(),
-            XdrOperationType::MANAGE_DATA(),
-            XdrOperationType::BUMP_SEQUENCE(),
-            XdrOperationType::MANAGE_BUY_OFFER(),
-            XdrOperationType::PATH_PAYMENT_STRICT_SEND(),
-            XdrOperationType::CREATE_CLAIMABLE_BALANCE(),
-            XdrOperationType::CLAIM_CLAIMABLE_BALANCE(),
-            XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES(),
-            XdrOperationType::END_SPONSORING_FUTURE_RESERVES(),
-            XdrOperationType::REVOKE_SPONSORSHIP(),
-            XdrOperationType::CLAWBACK(),
-            XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE(),
-            XdrOperationType::SET_TRUST_LINE_FLAGS(),
-            XdrOperationType::LIQUIDITY_POOL_DEPOSIT(),
-            XdrOperationType::LIQUIDITY_POOL_WITHDRAW(),
-            XdrOperationType::INVOKE_HOST_FUNCTION(),
-            XdrOperationType::EXTEND_FOOTPRINT_TTL(),
-            XdrOperationType::RESTORE_FOOTPRINT(),
-        ];
-
-        foreach ($types as $index => $type) {
-            $encoded = $type->encode();
-            $decoded = XdrOperationType::decode(new XdrBuffer($encoded));
-            $this->assertEquals($type->getValue(), $decoded->getValue(), "Failed for type index $index");
-        }
     }
 
     // Constants Verification

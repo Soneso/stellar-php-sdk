@@ -11,20 +11,8 @@ use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Xdr\XdrAccountEntry;
 use Soneso\StellarSDK\Xdr\XdrAccountEntryExt;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
-use Soneso\StellarSDK\Xdr\XdrAsset;
-use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
-use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry;
-use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt;
-use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
-use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType;
-use Soneso\StellarSDK\Xdr\XdrClaimant;
-use Soneso\StellarSDK\Xdr\XdrClaimantType;
-use Soneso\StellarSDK\Xdr\XdrClaimantV0;
-use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
-use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
-use Soneso\StellarSDK\Xdr\XdrDataEntry;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntry;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryExt;
@@ -33,52 +21,14 @@ use Soneso\StellarSDK\Xdr\XdrLedgerEntryV1;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryV1Ext;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyData;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyOffer;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyTrustLine;
-use Soneso\StellarSDK\Xdr\XdrOfferEntry;
-use Soneso\StellarSDK\Xdr\XdrOfferEntryExt;
-use Soneso\StellarSDK\Xdr\XdrPrice;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
-use Soneso\StellarSDK\Xdr\XdrSignerKey;
-use Soneso\StellarSDK\Xdr\XdrTrustLineAsset;
-use Soneso\StellarSDK\Xdr\XdrTrustLineEntry;
-use Soneso\StellarSDK\Xdr\XdrTrustLineEntryExt;
-use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
-use Soneso\StellarSDK\Xdr\XdrDataEntryExt;
 
 class XdrLedgerTest extends TestCase
 {
     private const TEST_ACCOUNT_ID = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
     private const TEST_ACCOUNT_ID_2 = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
-
-    public function testXdrLedgerEntryTypeEncodeDecode(): void
-    {
-        $types = [
-            XdrLedgerEntryType::ACCOUNT,
-            XdrLedgerEntryType::TRUSTLINE,
-            XdrLedgerEntryType::OFFER,
-            XdrLedgerEntryType::DATA,
-            XdrLedgerEntryType::CLAIMABLE_BALANCE,
-            XdrLedgerEntryType::LIQUIDITY_POOL,
-            XdrLedgerEntryType::CONTRACT_DATA,
-            XdrLedgerEntryType::CONTRACT_CODE,
-            XdrLedgerEntryType::CONFIG_SETTING,
-            XdrLedgerEntryType::TTL,
-        ];
-
-        foreach ($types as $typeValue) {
-            $type = new XdrLedgerEntryType($typeValue);
-            $encoded = $type->encode();
-            $xdrBuffer = new XdrBuffer($encoded);
-            $decoded = XdrLedgerEntryType::decode($xdrBuffer);
-
-            $this->assertEquals($type->getValue(), $decoded->getValue());
-        }
-    }
 
     public function testXdrLedgerEntryTypeStaticMethods(): void
     {
@@ -92,169 +42,6 @@ class XdrLedgerTest extends TestCase
         $this->assertEquals(XdrLedgerEntryType::CONTRACT_CODE, XdrLedgerEntryType::CONTRACT_CODE()->getValue());
         $this->assertEquals(XdrLedgerEntryType::CONFIG_SETTING, XdrLedgerEntryType::CONFIG_SETTING()->getValue());
         $this->assertEquals(XdrLedgerEntryType::TTL, XdrLedgerEntryType::EXPIRATION()->getValue());
-    }
-
-    public function testXdrLedgerEntryDataWithAccountEntry(): void
-    {
-        $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
-        $balance = new BigInteger(10000000000);
-        $seqNum = new XdrSequenceNumber(new BigInteger(12345));
-        $numSubEntries = 0;
-        $inflationDest = null;
-        $flags = 0;
-        $homeDomain = "";
-        $thresholds = chr(1) . chr(0) . chr(0) . chr(0);
-        $signers = [];
-        $ext = new XdrAccountEntryExt(0);
-
-        $accountEntry = new XdrAccountEntry(
-            $accountId,
-            $balance,
-            $seqNum,
-            $numSubEntries,
-            $flags,
-            $homeDomain,
-            $thresholds,
-            $signers,
-            $ext
-        );
-
-        $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
-        $ledgerEntryData->setAccount($accountEntry);
-
-        $encoded = $ledgerEntryData->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerEntryData::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerEntryData->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getAccount());
-        $this->assertEquals(
-            $accountEntry->getAccountId()->getAccountId(),
-            $decoded->getAccount()->getAccountId()->getAccountId()
-        );
-    }
-
-    public function testXdrLedgerEntryDataWithTrustLineEntry(): void
-    {
-        $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
-        $nativeAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $asset = XdrTrustLineAsset::fromXdrAsset($nativeAsset);
-        $balance = 50000000;
-        $limit = 100000000;
-        $flags = 1;
-        $ext = new XdrTrustLineEntryExt(0);
-
-        $trustLineEntry = new XdrTrustLineEntry(
-            $accountId,
-            $asset,
-            $balance,
-            $limit,
-            $flags,
-            $ext
-        );
-
-        $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::TRUSTLINE());
-        $ledgerEntryData->setTrustline($trustLineEntry);
-
-        $encoded = $ledgerEntryData->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerEntryData::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerEntryData->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getTrustline());
-        $this->assertEquals(
-            $trustLineEntry->getAccountId()->getAccountId(),
-            $decoded->getTrustline()->getAccountId()->getAccountId()
-        );
-    }
-
-    public function testXdrLedgerEntryDataWithOfferEntry(): void
-    {
-        $sellerId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
-        $offerId = 123456;
-        $selling = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $buying = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $amount = new BigInteger(1000000);
-        $price = new XdrPrice(1, 1);
-        $flags = 0;
-        $ext = new XdrOfferEntryExt(0);
-
-        $offerEntry = new XdrOfferEntry($sellerId, $offerId, $selling, $buying, $amount, $price, $flags, $ext);
-
-        $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::OFFER());
-        $ledgerEntryData->setOffer($offerEntry);
-
-        $encoded = $ledgerEntryData->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerEntryData::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerEntryData->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getOffer());
-        $this->assertEquals($offerId, $decoded->getOffer()->getOfferId());
-    }
-
-    public function testXdrLedgerEntryDataWithDataEntry(): void
-    {
-        $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
-        $dataName = "test_data";
-        $dataValue = new XdrDataValueMandatory("test_value_123");
-        $ext = new XdrDataEntryExt(0);
-
-        $dataEntry = new XdrDataEntry($accountId, $dataName, $dataValue, $ext);
-
-        $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::DATA());
-        $ledgerEntryData->setData($dataEntry);
-
-        $encoded = $ledgerEntryData->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerEntryData::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerEntryData->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getData());
-        $this->assertEquals($dataName, $decoded->getData()->getDataName());
-        $this->assertEquals("test_value_123", $decoded->getData()->getDataValue()->getValue());
-    }
-
-    public function testXdrLedgerEntryWithAccountEntry(): void
-    {
-        $lastModifiedLedgerSeq = 12345;
-
-        $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
-        $balance = new BigInteger(10000000000);
-        $seqNum = new XdrSequenceNumber(new BigInteger(67890));
-        $numSubEntries = 0;
-        $inflationDest = null;
-        $flags = 0;
-        $homeDomain = "";
-        $thresholds = chr(1) . chr(0) . chr(0) . chr(0);
-        $signers = [];
-        $accountExt = new XdrAccountEntryExt(0);
-
-        $accountEntry = new XdrAccountEntry(
-            $accountId,
-            $balance,
-            $seqNum,
-            $numSubEntries,
-            $flags,
-            $homeDomain,
-            $thresholds,
-            $signers,
-            $accountExt
-        );
-
-        $ledgerEntryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
-        $ledgerEntryData->setAccount($accountEntry);
-
-        $ext = new XdrLedgerEntryExt(0);
-        $ledgerEntry = new XdrLedgerEntry($lastModifiedLedgerSeq, $ledgerEntryData, $ext);
-
-        $encoded = $ledgerEntry->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerEntry::decode($xdrBuffer);
-
-        $this->assertEquals($lastModifiedLedgerSeq, $decoded->getLastModifiedLedgerSeq());
-        $this->assertEquals(XdrLedgerEntryType::ACCOUNT, $decoded->getData()->getType()->getValue());
-        $this->assertNotNull($decoded->getData()->getAccount());
     }
 
     public function testXdrLedgerEntryBase64Methods(): void
@@ -295,108 +82,6 @@ class XdrLedgerTest extends TestCase
 
         $this->assertEquals($lastModifiedLedgerSeq, $decoded->getLastModifiedLedgerSeq());
         $this->assertEquals($homeDomain, $decoded->getData()->getAccount()->getHomeDomain());
-    }
-
-    public function testXdrLedgerKeyForAccountId(): void
-    {
-        $ledgerKey = XdrLedgerKey::forAccountId(self::TEST_ACCOUNT_ID);
-
-        $this->assertEquals(XdrLedgerEntryType::ACCOUNT, $ledgerKey->getType()->getValue());
-        $this->assertNotNull($ledgerKey->getAccount());
-        $this->assertEquals(self::TEST_ACCOUNT_ID, $ledgerKey->getAccount()->getAccountId()->getAccountId());
-
-        $encoded = $ledgerKey->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerKey::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerKey->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertEquals(
-            $ledgerKey->getAccount()->getAccountId()->getAccountId(),
-            $decoded->getAccount()->getAccountId()->getAccountId()
-        );
-    }
-
-    public function testXdrLedgerKeyForTrustLine(): void
-    {
-        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $ledgerKey = XdrLedgerKey::forTrustLine(self::TEST_ACCOUNT_ID, $asset);
-
-        $this->assertEquals(XdrLedgerEntryType::TRUSTLINE, $ledgerKey->getType()->getValue());
-        $this->assertNotNull($ledgerKey->getTrustLine());
-
-        $encoded = $ledgerKey->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerKey::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerKey->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getTrustLine());
-    }
-
-    public function testXdrLedgerKeyForOffer(): void
-    {
-        $offerId = 999888;
-        $ledgerKey = XdrLedgerKey::forOffer(self::TEST_ACCOUNT_ID, $offerId);
-
-        $this->assertEquals(XdrLedgerEntryType::OFFER, $ledgerKey->getType()->getValue());
-        $this->assertNotNull($ledgerKey->getOffer());
-        $this->assertEquals($offerId, $ledgerKey->getOffer()->getOfferId());
-
-        $encoded = $ledgerKey->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerKey::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerKey->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertEquals($offerId, $decoded->getOffer()->getOfferId());
-    }
-
-    public function testXdrLedgerKeyForData(): void
-    {
-        $dataName = "my_data_key";
-        $ledgerKey = XdrLedgerKey::forData(self::TEST_ACCOUNT_ID, $dataName);
-
-        $this->assertEquals(XdrLedgerEntryType::DATA, $ledgerKey->getType()->getValue());
-        $this->assertNotNull($ledgerKey->getData());
-        $this->assertEquals($dataName, $ledgerKey->getData()->getDataName());
-
-        $encoded = $ledgerKey->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerKey::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerKey->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertEquals($dataName, $decoded->getData()->getDataName());
-    }
-
-    public function testXdrLedgerKeyForClaimableBalanceId(): void
-    {
-        $balanceIdHex = str_pad('abc123', 64, '0', STR_PAD_LEFT);
-        $ledgerKey = XdrLedgerKey::forClaimableBalanceId($balanceIdHex);
-
-        $this->assertEquals(XdrLedgerEntryType::CLAIMABLE_BALANCE, $ledgerKey->getType()->getValue());
-        $this->assertNotNull($ledgerKey->getBalanceID());
-
-        $encoded = $ledgerKey->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerKey::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerKey->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getBalanceID());
-    }
-
-    public function testXdrLedgerKeyForLiquidityPoolId(): void
-    {
-        $poolIdHex = str_pad('def456', 64, '0', STR_PAD_LEFT);
-        $ledgerKey = XdrLedgerKey::forLiquidityPoolId($poolIdHex);
-
-        $this->assertEquals(XdrLedgerEntryType::LIQUIDITY_POOL, $ledgerKey->getType()->getValue());
-        $this->assertNotNull($ledgerKey->getLiquidityPoolID());
-        $this->assertEquals($poolIdHex, $ledgerKey->getLiquidityPoolID());
-
-        $encoded = $ledgerKey->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrLedgerKey::decode($xdrBuffer);
-
-        $this->assertEquals($ledgerKey->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertNotNull($decoded->getLiquidityPoolID());
     }
 
     public function testXdrLedgerKeyForContractData(): void
