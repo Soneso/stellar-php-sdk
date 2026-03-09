@@ -212,16 +212,66 @@ abstract class Asset {
                 $assetCode12 = $xdrAsset->getAlphaNum12()->getAssetCode();
                 $issuer = $xdrAsset->getAlphaNum12()->getIssuer()->getAccountId();
                 return new AssetTypeCreditAlphanum12($assetCode12, $issuer);
-            case XdrAssetType::ASSET_TYPE_POOL_SHARE:
-                if ($xdrAsset instanceof XdrChangeTrustAsset) {
-                    $a = $xdrAsset->getLiquidityPool()->getConstantProduct()->getAssetA();
-                    $b = $xdrAsset->getLiquidityPool()->getConstantProduct()->getAssetB();
-                    return new AssetTypePoolShare(Asset::fromXdr($a), Asset::fromXdr($b));
-                } else {
-                    throw new InvalidArgumentException("Unknown pool share asset type");
-                }
             default:
                 throw new InvalidArgumentException("Unknown asset type " . $xdrAsset->getType()->getValue());
+        }
+    }
+
+    /**
+     * Creates an Asset from its XDR ChangeTrustAsset representation.
+     *
+     * Handles all asset types including POOL_SHARE.
+     *
+     * @param XdrChangeTrustAsset $xdrAsset The XDR change trust asset data
+     * @return Asset The reconstructed asset
+     * @throws InvalidArgumentException If the asset type is unknown
+     */
+    public static function fromXdrChangeTrustAsset(XdrChangeTrustAsset $xdrAsset) : Asset {
+        switch ($xdrAsset->getType()->getValue()) {
+            case XdrAssetType::ASSET_TYPE_NATIVE:
+                return new AssetTypeNative();
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
+                $assetCode4 = $xdrAsset->getAlphaNum4()->getAssetCode();
+                $issuer = $xdrAsset->getAlphaNum4()->getIssuer()->getAccountId();
+                return new AssetTypeCreditAlphanum4($assetCode4, $issuer);
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
+                $assetCode12 = $xdrAsset->getAlphaNum12()->getAssetCode();
+                $issuer = $xdrAsset->getAlphaNum12()->getIssuer()->getAccountId();
+                return new AssetTypeCreditAlphanum12($assetCode12, $issuer);
+            case XdrAssetType::ASSET_TYPE_POOL_SHARE:
+                $a = $xdrAsset->getLiquidityPool()->getConstantProduct()->getAssetA();
+                $b = $xdrAsset->getLiquidityPool()->getConstantProduct()->getAssetB();
+                return new AssetTypePoolShare(Asset::fromXdr($a), Asset::fromXdr($b));
+            default:
+                throw new InvalidArgumentException("Unknown asset type " . $xdrAsset->getType()->getValue());
+        }
+    }
+
+    /**
+     * Creates an Asset from its XDR TrustlineAsset representation.
+     *
+     * Handles NATIVE, CREDIT_ALPHANUM4, and CREDIT_ALPHANUM12.
+     * POOL_SHARE trustline assets contain only a pool ID hash and cannot be
+     * reconstructed into an AssetTypePoolShare (which requires both reserve assets).
+     *
+     * @param XdrTrustlineAsset $xdrAsset The XDR trustline asset data
+     * @return Asset The reconstructed asset
+     * @throws InvalidArgumentException If the asset type is POOL_SHARE or unknown
+     */
+    public static function fromXdrTrustlineAsset(XdrTrustlineAsset $xdrAsset) : Asset {
+        switch ($xdrAsset->getType()->getValue()) {
+            case XdrAssetType::ASSET_TYPE_NATIVE:
+                return new AssetTypeNative();
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
+                $assetCode4 = $xdrAsset->getAlphaNum4()->getAssetCode();
+                $issuer = $xdrAsset->getAlphaNum4()->getIssuer()->getAccountId();
+                return new AssetTypeCreditAlphanum4($assetCode4, $issuer);
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
+                $assetCode12 = $xdrAsset->getAlphaNum12()->getAssetCode();
+                $issuer = $xdrAsset->getAlphaNum12()->getIssuer()->getAccountId();
+                return new AssetTypeCreditAlphanum12($assetCode12, $issuer);
+            default:
+                throw new InvalidArgumentException("Unknown or unsupported trustline asset type " . $xdrAsset->getType()->getValue());
         }
     }
 

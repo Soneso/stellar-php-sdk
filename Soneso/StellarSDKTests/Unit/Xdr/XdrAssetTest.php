@@ -15,6 +15,9 @@ use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
 use Soneso\StellarSDK\Xdr\XdrTrustlineAsset;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
 
 class XdrAssetTest extends TestCase
 {
@@ -302,6 +305,42 @@ class XdrAssetTest extends TestCase
         $this->assertEquals(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12, $decoded->getType()->getValue());
         $this->assertNotNull($decoded->getAlphaNum12());
         $this->assertEquals($assetCode, $decoded->getAlphaNum12()->getAssetCode());
+
+        $reEncoded = $decoded->encode();
+        $this->assertEquals($encoded, $reEncoded);
+    }
+
+    /**
+     * Test XdrChangeTrustAsset with POOL_SHARE (liquidity pool)
+     */
+    public function testXdrChangeTrustAssetPoolShareRoundTrip(): void
+    {
+        $issuer = XdrAccountID::fromAccountId(self::TEST_ISSUER);
+        $assetA = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $assetB = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        $assetB->setAlphaNum4(new XdrAssetAlphaNum4("USD", $issuer));
+
+        $constantProduct = new XdrLiquidityPoolConstantProductParameters($assetA, $assetB, 30);
+        $poolParams = new XdrLiquidityPoolParameters(
+            new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)
+        );
+        $poolParams->setConstantProduct($constantProduct);
+
+        $original = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
+        $original->setLiquidityPool($poolParams);
+
+        $encoded = $original->encode();
+        $decoded = XdrChangeTrustAsset::decode(new XdrBuffer($encoded));
+
+        $this->assertEquals(XdrAssetType::ASSET_TYPE_POOL_SHARE, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getLiquidityPool());
+
+        $decodedProduct = $decoded->getLiquidityPool()->getConstantProduct();
+        $this->assertNotNull($decodedProduct);
+        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decodedProduct->getAssetA()->getType()->getValue());
+        $this->assertEquals(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4, $decodedProduct->getAssetB()->getType()->getValue());
+        $this->assertEquals("USD", $decodedProduct->getAssetB()->getAlphaNum4()->getAssetCode());
+        $this->assertEquals(30, $decodedProduct->getFee());
 
         $reEncoded = $decoded->encode();
         $this->assertEquals($encoded, $reEncoded);

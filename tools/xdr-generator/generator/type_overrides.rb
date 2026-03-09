@@ -107,6 +107,8 @@ BASE_WRAPPER_TYPES = %w[
   XdrOperationResultTr
   XdrManageDataOperation
   XdrTransactionV0
+  XdrChangeTrustAsset
+  XdrTrustlineAsset
 ].freeze
 
 # ---------------------------------------------------------------------------
@@ -128,12 +130,7 @@ SELF_REFERENCING_BASE_TYPES = %w[
 # Batches will progressively remove entries as types are verified.
 # ---------------------------------------------------------------------------
 SKIP_TYPES = %w[
-  XdrAsset
-
-  XdrChangeTrustAsset
-
   XdrDataValue
-  XdrTrustlineAsset
 ].freeze
 
 # ---------------------------------------------------------------------------

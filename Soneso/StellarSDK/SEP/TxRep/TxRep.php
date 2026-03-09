@@ -2820,7 +2820,7 @@ class TxRep
                 else if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::TRUSTLINE) {
                     $lines += [$prefix.'ledgerKey.type' => 'TRUSTLINE'];
                     $lines += [$prefix.'ledgerKey.trustLine.accountID' => $ledgerKey->getTrustline()->getAccountID()->getAccountId()];
-                    $lines += [$prefix.'ledgerKey.trustLine.asset' => self::encodeAsset(Asset::fromXdr($ledgerKey->getTrustline()->getAsset()))];
+                    $lines += [$prefix.'ledgerKey.trustLine.asset' => self::encodeAsset(Asset::fromXdrTrustlineAsset($ledgerKey->getTrustline()->getAsset()))];
                 }
                 else if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::OFFER) {
                     $lines += [$prefix.'ledgerKey.type' => 'OFFER'];
@@ -3280,7 +3280,7 @@ class TxRep
         else if ($type === XdrLedgerEntryType::TRUSTLINE) {
             $lines += [$prefix.'type' => 'TRUSTLINE'];
             $lines += [$prefix.'trustLine.accountID' => $ledgerKey->getTrustline()->getAccountID()->getAccountId()];
-            $lines += [$prefix.'trustLine.asset' => self::encodeAsset(Asset::fromXdr($ledgerKey->getTrustline()->getAsset()))];
+            $lines += [$prefix.'trustLine.asset' => self::encodeAsset(Asset::fromXdrTrustlineAsset($ledgerKey->getTrustline()->getAsset()))];
         }
         else if ($type === XdrLedgerEntryType::OFFER) {
             $lines += [$prefix.'type' => 'OFFER'];

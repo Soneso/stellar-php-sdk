@@ -67,7 +67,7 @@ class ChangeTrustOperation extends AbstractOperation
      * @return ChangeTrustOperation The resulting ChangeTrustOperation instance
      */
     public static function fromXdrOperation(XdrChangeTrustOperation $xdrOp): ChangeTrustOperation {
-        $asset = Asset::fromXdr($xdrOp->getLine());
+        $asset = Asset::fromXdrChangeTrustAsset($xdrOp->getLine());
         $amount = AbstractOperation::fromXdrAmount($xdrOp->getLimit());
         return new ChangeTrustOperation($asset, $amount);
     }

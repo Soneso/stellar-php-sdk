@@ -5,11 +5,12 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrAsset {
+class XdrChangeTrustAssetBase {
 
     public XdrAssetType $type;
     public ?XdrAssetAlphaNum4 $alphaNum4 = null;
     public ?XdrAssetAlphaNum12 $alphaNum12 = null;
+    public ?XdrLiquidityPoolParameters $liquidityPool = null;
 
     public function __construct(?XdrAssetType $type = null) {
         if ($type !== null) {
@@ -28,14 +29,17 @@ class XdrAsset {
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 $bytes .= $this->alphaNum12->encode();
                 break;
+            case XdrAssetType::ASSET_TYPE_POOL_SHARE:
+                $bytes .= $this->liquidityPool->encode();
+                break;
             default:
                 break;
         }
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr): XdrAsset {
-        $result = new XdrAsset(XdrAssetType::decode($xdr));
+    public static function decode(XdrBuffer $xdr): static {
+        $result = new static(XdrAssetType::decode($xdr));
         switch ($result->type->getValue()) {
             case XdrAssetType::ASSET_TYPE_NATIVE:
                 break;
@@ -44,6 +48,9 @@ class XdrAsset {
                 break;
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 $result->alphaNum12 = XdrAssetAlphaNum12::decode($xdr);
+                break;
+            case XdrAssetType::ASSET_TYPE_POOL_SHARE:
+                $result->liquidityPool = XdrLiquidityPoolParameters::decode($xdr);
                 break;
             default:
                 break;
@@ -57,6 +64,8 @@ class XdrAsset {
     public function setAlphaNum4(?XdrAssetAlphaNum4 $alphaNum4): void { $this->alphaNum4 = $alphaNum4; }
     public function getAlphaNum12(): ?XdrAssetAlphaNum12 { return $this->alphaNum12; }
     public function setAlphaNum12(?XdrAssetAlphaNum12 $alphaNum12): void { $this->alphaNum12 = $alphaNum12; }
+    public function getLiquidityPool(): ?XdrLiquidityPoolParameters { return $this->liquidityPool; }
+    public function setLiquidityPool(?XdrLiquidityPoolParameters $liquidityPool): void { $this->liquidityPool = $liquidityPool; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
