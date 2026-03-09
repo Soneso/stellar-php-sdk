@@ -270,19 +270,14 @@ class TransactionPreconditions
 
         if ($this->hasV2()) {
             $precond = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::V2));
-            $precondV2 = new XdrPreconditionsV2();
-            if ($this->timeBounds !== null) {
-                $precondV2->setTimeBounds($this->timeBounds->toXdr());
-            }
-            if ($this->ledgerBounds !== null) {
-                $precondV2->setLedgerBounds($this->ledgerBounds->toXdr());
-            }
-            if ($this->minSeqNumber !== null) {
-                $precondV2->setMinSeqNum(new XdrSequenceNumber($this->minSeqNumber));
-            }
-            $precondV2->setMinSeqAge($this->minSeqAge);
-            $precondV2->setMinSeqLedgerGap($this->minSeqLedgerGap);
-            $precondV2->setExtraSigners($this->extraSigners);
+            $precondV2 = new XdrPreconditionsV2(
+                $this->minSeqAge,
+                $this->minSeqLedgerGap,
+                $this->extraSigners,
+                $this->timeBounds !== null ? $this->timeBounds->toXdr() : null,
+                $this->ledgerBounds !== null ? $this->ledgerBounds->toXdr() : null,
+                $this->minSeqNumber !== null ? new XdrSequenceNumber($this->minSeqNumber) : null,
+            );
             $precond->setV2($precondV2);
             return $precond;
         } else if ($this->timeBounds !== null) {

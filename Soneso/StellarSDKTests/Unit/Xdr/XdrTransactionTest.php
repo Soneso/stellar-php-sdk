@@ -15,6 +15,7 @@ use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionExt;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx;
 use Soneso\StellarSDK\Xdr\XdrLedgerBounds;
 use Soneso\StellarSDK\Xdr\XdrMemo;
@@ -155,8 +156,8 @@ class XdrTransactionTest extends TestCase
 
         $innerTx = new XdrFeeBumpTransactionInnerTx(
             new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX),
-            $v1Envelope
         );
+        $innerTx->v1 = $v1Envelope;
 
         $encoded = $innerTx->encode();
         $xdrBuffer = new XdrBuffer($encoded);
@@ -189,10 +190,10 @@ class XdrTransactionTest extends TestCase
 
         $innerTx = new XdrFeeBumpTransactionInnerTx(
             new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX),
-            $v1Envelope
         );
+        $innerTx->v1 = $v1Envelope;
 
-        $feeBumpTx = new XdrFeeBumpTransaction($feeSource, 200, $innerTx);
+        $feeBumpTx = new XdrFeeBumpTransaction($feeSource, 200, $innerTx, new XdrFeeBumpTransactionExt(0));
         $encoded = $feeBumpTx->encode();
         $xdrBuffer = new XdrBuffer($encoded);
         $decoded = XdrFeeBumpTransaction::decode($xdrBuffer);
@@ -224,10 +225,10 @@ class XdrTransactionTest extends TestCase
 
         $innerTx = new XdrFeeBumpTransactionInnerTx(
             new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX),
-            $v1Envelope
         );
+        $innerTx->v1 = $v1Envelope;
 
-        $feeBumpTx = new XdrFeeBumpTransaction($feeSource, 200, $innerTx);
+        $feeBumpTx = new XdrFeeBumpTransaction($feeSource, 200, $innerTx, new XdrFeeBumpTransactionExt(0));
         $feeBumpSignatures = [
             $this->createDecoratedSignature('feesig1'),
             $this->createDecoratedSignature('feesig2')

@@ -112,13 +112,11 @@ use Soneso\StellarSDK\Xdr\XdrManageDataResult;
 use Soneso\StellarSDK\Xdr\XdrManageDataResultCode;
 use Soneso\StellarSDK\Xdr\XdrManageOfferEffect;
 use Soneso\StellarSDK\Xdr\XdrManageOfferResult;
-use Soneso\StellarSDK\Xdr\XdrManageOfferResultBase;
 use Soneso\StellarSDK\Xdr\XdrManageOfferResultCode;
 use Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult;
 use Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer;
 use Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrMemo;
-use Soneso\StellarSDK\Xdr\XdrMemoBase;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrOfferEntry;
@@ -138,7 +136,6 @@ use Soneso\StellarSDK\Xdr\XdrPaymentResultCode;
 use Soneso\StellarSDK\Xdr\XdrPreconditionType;
 use Soneso\StellarSDK\Xdr\XdrPreconditions;
 use Soneso\StellarSDK\Xdr\XdrPreconditionsV2;
-use Soneso\StellarSDK\Xdr\XdrPreconditionsV2Base;
 use Soneso\StellarSDK\Xdr\XdrPrice;
 use Soneso\StellarSDK\Xdr\XdrRestoreFootprintOp;
 use Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult;
@@ -175,7 +172,6 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanResourcesExtV0;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
-use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataBase;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 use Soneso\StellarSDK\Xdr\XdrTimeBoundsBase;
@@ -1952,17 +1948,6 @@ class XdrTransactionGenTest extends TestCase
         $obj->getReturnHash();
     }
 
-    public function testXdrMemoBaseRoundTrip(): void
-    {
-        $original = new XdrMemoBase(new XdrMemoType(XdrMemoType::MEMO_NONE));
-        $encoded = $original->encode();
-        $decoded = XdrMemoBase::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $original->toBase64Xdr();
-        $fromB64 = XdrMemoBase::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
-    }
-
     public function testXdrTimeBoundsStructRoundTrip(): void
     {
         $original = new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000'));
@@ -2083,23 +2068,6 @@ class XdrTransactionGenTest extends TestCase
         $obj->setMinSeqLedgerGap($newVal);
         $this->assertSame($newVal, $obj->getMinSeqLedgerGap());
         $this->assertIsArray($obj->getExtraSigners());
-    }
-
-    public function testXdrPreconditionsV2BaseGettersSetters(): void
-    {
-        $obj = new XdrPreconditionsV2Base(42, 42, [], null, null, null);
-        $this->assertNull($obj->getTimeBounds());
-        $this->assertNull($obj->getLedgerBounds());
-        $this->assertNull($obj->getMinSeqNum());
-        $this->assertNotNull($obj->getMinSeqAge());
-        $this->assertNotNull($obj->getMinSeqLedgerGap());
-        $this->assertIsArray($obj->getExtraSigners());
-        $encoded = $obj->encode();
-        $decoded = XdrPreconditionsV2Base::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $obj->toBase64Xdr();
-        $fromB64 = XdrPreconditionsV2Base::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
     }
 
     public function testXdrPreconditionTypeEnumRoundTrip(): void
@@ -2299,20 +2267,6 @@ class XdrTransactionGenTest extends TestCase
         $newVal = 42;
         $obj->setResourceFee($newVal);
         $this->assertSame($newVal, $obj->getResourceFee());
-    }
-
-    public function testXdrSorobanTransactionDataBaseGettersSetters(): void
-    {
-        $obj = new XdrSorobanTransactionDataBase(new XdrSorobanTransactionDataExt(0), new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42), 42);
-        $this->assertNotNull($obj->getExt());
-        $this->assertNotNull($obj->getResources());
-        $this->assertNotNull($obj->getResourceFee());
-        $encoded = $obj->encode();
-        $decoded = XdrSorobanTransactionDataBase::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $obj->toBase64Xdr();
-        $fromB64 = XdrSorobanTransactionDataBase::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
     }
 
     public function testXdrSorobanTransactionDataExt_1_ArmRoundTrip(): void
@@ -3006,17 +2960,6 @@ class XdrTransactionGenTest extends TestCase
         $obj = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED));
         $this->assertNotNull($obj->getCode());
         $obj->getSuccess();
-    }
-
-    public function testXdrManageOfferResultBaseRoundTrip(): void
-    {
-        $original = new XdrManageOfferResultBase(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED));
-        $encoded = $original->encode();
-        $decoded = XdrManageOfferResultBase::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $original->toBase64Xdr();
-        $fromB64 = XdrManageOfferResultBase::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
     }
 
     public function testXdrSetOptionsResultCodeEnumRoundTrip(): void

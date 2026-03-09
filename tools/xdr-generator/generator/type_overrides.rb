@@ -75,26 +75,21 @@ BASE_WRAPPER_TYPES = %w[
   XdrContractExecutable
   XdrContractIDPreimage
   XdrDecoratedSignature
-  XdrFeeBumpTransactionInnerTx
   XdrHostFunction
   XdrLedgerKey
   XdrLedgerKeyAccount
-  XdrMemo
   XdrMuxedAccount
   XdrMuxedAccountMed25519
   XdrSCAddress
   XdrSCVal
   XdrSorobanAuthorizedFunction
   XdrSorobanCredentials
-  XdrPreconditionsV2
-  XdrSorobanTransactionData
   XdrTransaction
   XdrSCSpecEntry
   XdrSCSpecTypeDef
   XdrSignerKeyType
   XdrAllowTrustOperationAsset
   XdrTransactionEnvelope
-  XdrFeeBumpTransaction
   XdrConfigUpgradeSetKey
   XdrLiquidityPoolDepositOperation
   XdrLiquidityPoolWithdrawOperation
@@ -102,7 +97,6 @@ BASE_WRAPPER_TYPES = %w[
   XdrAssetAlphaNum12
   XdrChangeTrustOperation
   XdrInnerTransactionResultPair
-  XdrManageOfferResult
   XdrTimeBounds
   XdrOperationResultTr
   XdrManageDataOperation
