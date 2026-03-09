@@ -53,7 +53,17 @@ class XdrClaimPredicateType {
 
     public static function decode(XdrBuffer $xdr): XdrClaimPredicateType {
         $value = $xdr->readInteger32();
-        return new XdrClaimPredicateType($value);
+        switch ($value) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                return new XdrClaimPredicateType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

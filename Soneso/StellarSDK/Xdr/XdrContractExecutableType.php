@@ -33,7 +33,13 @@ class XdrContractExecutableType {
 
     public static function decode(XdrBuffer $xdr): XdrContractExecutableType {
         $value = $xdr->readInteger32();
-        return new XdrContractExecutableType($value);
+        switch ($value) {
+            case 0:
+            case 1:
+                return new XdrContractExecutableType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

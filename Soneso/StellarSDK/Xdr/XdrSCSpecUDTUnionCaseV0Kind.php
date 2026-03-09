@@ -33,7 +33,13 @@ class XdrSCSpecUDTUnionCaseV0Kind {
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecUDTUnionCaseV0Kind {
         $value = $xdr->readInteger32();
-        return new XdrSCSpecUDTUnionCaseV0Kind($value);
+        switch ($value) {
+            case 0:
+            case 1:
+                return new XdrSCSpecUDTUnionCaseV0Kind($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

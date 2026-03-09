@@ -43,7 +43,15 @@ class XdrHostFunctionType {
 
     public static function decode(XdrBuffer $xdr): XdrHostFunctionType {
         $value = $xdr->readInteger32();
-        return new XdrHostFunctionType($value);
+        switch ($value) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                return new XdrHostFunctionType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

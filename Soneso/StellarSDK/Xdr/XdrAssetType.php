@@ -43,7 +43,15 @@ class XdrAssetType {
 
     public static function decode(XdrBuffer $xdr): XdrAssetType {
         $value = $xdr->readInteger32();
-        return new XdrAssetType($value);
+        switch ($value) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                return new XdrAssetType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

@@ -38,7 +38,14 @@ class XdrManageOfferEffect {
 
     public static function decode(XdrBuffer $xdr): XdrManageOfferEffect {
         $value = $xdr->readInteger32();
-        return new XdrManageOfferEffect($value);
+        switch ($value) {
+            case 0:
+            case 1:
+            case 2:
+                return new XdrManageOfferEffect($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

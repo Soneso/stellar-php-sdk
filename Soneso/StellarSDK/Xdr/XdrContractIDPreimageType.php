@@ -33,7 +33,13 @@ class XdrContractIDPreimageType {
 
     public static function decode(XdrBuffer $xdr): XdrContractIDPreimageType {
         $value = $xdr->readInteger32();
-        return new XdrContractIDPreimageType($value);
+        switch ($value) {
+            case 0:
+            case 1:
+                return new XdrContractIDPreimageType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

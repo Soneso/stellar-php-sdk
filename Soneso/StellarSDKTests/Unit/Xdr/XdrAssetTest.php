@@ -537,4 +537,40 @@ class XdrAssetTest extends TestCase
             $this->assertEquals($encoded, $reEncoded);
         }
     }
+
+    /**
+     * Test that decoding an unknown enum value throws InvalidArgumentException
+     */
+    public function testEnumDecodeThrowsOnUnknownValue(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown enum value: 99');
+
+        $invalidXdr = new XdrBuffer(\Soneso\StellarSDK\Xdr\XdrEncoder::integer32(99));
+        XdrAssetType::decode($invalidXdr);
+    }
+
+    /**
+     * Test enum decode validation with negative-value enum (XdrTransactionResultCode)
+     */
+    public function testEnumDecodeThrowsOnUnknownNegativeValue(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown enum value: -99');
+
+        $invalidXdr = new XdrBuffer(\Soneso\StellarSDK\Xdr\XdrEncoder::integer32(-99));
+        \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::decode($invalidXdr);
+    }
+
+    /**
+     * Test enum decode validation with non-contiguous enum (XdrCryptoKeyType has gap: 0-3, 256)
+     */
+    public function testEnumDecodeThrowsOnValueInGap(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown enum value: 5');
+
+        $invalidXdr = new XdrBuffer(\Soneso\StellarSDK\Xdr\XdrEncoder::integer32(5));
+        \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::decode($invalidXdr);
+    }
 }

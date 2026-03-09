@@ -28,7 +28,12 @@ class XdrClaimantType {
 
     public static function decode(XdrBuffer $xdr): XdrClaimantType {
         $value = $xdr->readInteger32();
-        return new XdrClaimantType($value);
+        switch ($value) {
+            case 0:
+                return new XdrClaimantType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

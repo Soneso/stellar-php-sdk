@@ -33,7 +33,13 @@ class XdrContractDataDurability {
 
     public static function decode(XdrBuffer $xdr): XdrContractDataDurability {
         $value = $xdr->readInteger32();
-        return new XdrContractDataDurability($value);
+        switch ($value) {
+            case 0:
+            case 1:
+                return new XdrContractDataDurability($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

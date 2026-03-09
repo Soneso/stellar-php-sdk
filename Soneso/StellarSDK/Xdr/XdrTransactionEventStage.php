@@ -38,7 +38,14 @@ class XdrTransactionEventStage {
 
     public static function decode(XdrBuffer $xdr): XdrTransactionEventStage {
         $value = $xdr->readInteger32();
-        return new XdrTransactionEventStage($value);
+        switch ($value) {
+            case 0:
+            case 1:
+            case 2:
+                return new XdrTransactionEventStage($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

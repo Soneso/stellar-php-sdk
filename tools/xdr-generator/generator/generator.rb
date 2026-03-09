@@ -157,7 +157,14 @@ class Generator < Xdrgen::Generators::Base
     decode_new = is_base ? "new static" : "new #{php_name}"
     out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
     out.puts "        $value = $xdr->readInteger32();"
-    out.puts "        return #{decode_new}($value);"
+    out.puts "        switch ($value) {"
+    enum_defn.members.each do |m|
+      out.puts "            case #{m.value}:"
+    end
+    out.puts "                return #{decode_new}($value);"
+    out.puts "            default:"
+    out.puts "                throw new \\InvalidArgumentException(\"Unknown enum value: $value\");"
+    out.puts "        }"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)

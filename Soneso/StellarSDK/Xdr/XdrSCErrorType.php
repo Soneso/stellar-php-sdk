@@ -73,7 +73,21 @@ class XdrSCErrorType {
 
     public static function decode(XdrBuffer $xdr): XdrSCErrorType {
         $value = $xdr->readInteger32();
-        return new XdrSCErrorType($value);
+        switch ($value) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                return new XdrSCErrorType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

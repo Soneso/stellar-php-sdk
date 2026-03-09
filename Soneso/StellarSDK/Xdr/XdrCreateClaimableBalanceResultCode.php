@@ -53,7 +53,17 @@ class XdrCreateClaimableBalanceResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrCreateClaimableBalanceResultCode {
         $value = $xdr->readInteger32();
-        return new XdrCreateClaimableBalanceResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+            case -2:
+            case -3:
+            case -4:
+            case -5:
+                return new XdrCreateClaimableBalanceResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

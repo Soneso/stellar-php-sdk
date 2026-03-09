@@ -48,7 +48,16 @@ class XdrCreateAccountResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrCreateAccountResultCode {
         $value = $xdr->readInteger32();
-        return new XdrCreateAccountResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+            case -2:
+            case -3:
+            case -4:
+                return new XdrCreateAccountResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

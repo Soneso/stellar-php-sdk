@@ -43,7 +43,15 @@ class XdrExtendFootprintTTLResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrExtendFootprintTTLResultCode {
         $value = $xdr->readInteger32();
-        return new XdrExtendFootprintTTLResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+            case -2:
+            case -3:
+                return new XdrExtendFootprintTTLResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

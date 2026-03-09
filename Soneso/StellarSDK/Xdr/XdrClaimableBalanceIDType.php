@@ -28,7 +28,12 @@ class XdrClaimableBalanceIDType {
 
     public static function decode(XdrBuffer $xdr): XdrClaimableBalanceIDType {
         $value = $xdr->readInteger32();
-        return new XdrClaimableBalanceIDType($value);
+        switch ($value) {
+            case 0:
+                return new XdrClaimableBalanceIDType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

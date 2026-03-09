@@ -73,7 +73,21 @@ class XdrPaymentResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrPaymentResultCode {
         $value = $xdr->readInteger32();
-        return new XdrPaymentResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+            case -2:
+            case -3:
+            case -4:
+            case -5:
+            case -6:
+            case -7:
+            case -8:
+            case -9:
+                return new XdrPaymentResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

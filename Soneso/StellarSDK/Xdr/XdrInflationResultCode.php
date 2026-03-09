@@ -33,7 +33,13 @@ class XdrInflationResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrInflationResultCode {
         $value = $xdr->readInteger32();
-        return new XdrInflationResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+                return new XdrInflationResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

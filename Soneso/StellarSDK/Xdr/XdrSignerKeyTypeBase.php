@@ -43,7 +43,15 @@ class XdrSignerKeyTypeBase {
 
     public static function decode(XdrBuffer $xdr): static {
         $value = $xdr->readInteger32();
-        return new static($value);
+        switch ($value) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                return new static($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

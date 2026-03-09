@@ -28,7 +28,12 @@ class XdrLiquidityPoolType {
 
     public static function decode(XdrBuffer $xdr): XdrLiquidityPoolType {
         $value = $xdr->readInteger32();
-        return new XdrLiquidityPoolType($value);
+        switch ($value) {
+            case 0:
+                return new XdrLiquidityPoolType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

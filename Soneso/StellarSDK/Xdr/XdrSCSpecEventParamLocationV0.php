@@ -33,7 +33,13 @@ class XdrSCSpecEventParamLocationV0 {
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecEventParamLocationV0 {
         $value = $xdr->readInteger32();
-        return new XdrSCSpecEventParamLocationV0($value);
+        switch ($value) {
+            case 0:
+            case 1:
+                return new XdrSCSpecEventParamLocationV0($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

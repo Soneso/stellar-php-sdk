@@ -48,7 +48,16 @@ class XdrManageDataResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrManageDataResultCode {
         $value = $xdr->readInteger32();
-        return new XdrManageDataResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+            case -2:
+            case -3:
+            case -4:
+                return new XdrManageDataResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

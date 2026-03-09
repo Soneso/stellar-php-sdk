@@ -38,7 +38,14 @@ class XdrTrustLineFlags {
 
     public static function decode(XdrBuffer $xdr): XdrTrustLineFlags {
         $value = $xdr->readInteger32();
-        return new XdrTrustLineFlags($value);
+        switch ($value) {
+            case 1:
+            case 2:
+            case 4:
+                return new XdrTrustLineFlags($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

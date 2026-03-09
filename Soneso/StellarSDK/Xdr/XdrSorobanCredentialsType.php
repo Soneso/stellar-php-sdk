@@ -33,7 +33,13 @@ class XdrSorobanCredentialsType {
 
     public static function decode(XdrBuffer $xdr): XdrSorobanCredentialsType {
         $value = $xdr->readInteger32();
-        return new XdrSorobanCredentialsType($value);
+        switch ($value) {
+            case 0:
+            case 1:
+                return new XdrSorobanCredentialsType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

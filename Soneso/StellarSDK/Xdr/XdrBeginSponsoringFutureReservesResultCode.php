@@ -43,7 +43,15 @@ class XdrBeginSponsoringFutureReservesResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrBeginSponsoringFutureReservesResultCode {
         $value = $xdr->readInteger32();
-        return new XdrBeginSponsoringFutureReservesResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+            case -2:
+            case -3:
+                return new XdrBeginSponsoringFutureReservesResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

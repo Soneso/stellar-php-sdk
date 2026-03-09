@@ -63,7 +63,19 @@ class XdrAccountMergeResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrAccountMergeResultCode {
         $value = $xdr->readInteger32();
-        return new XdrAccountMergeResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+            case -2:
+            case -3:
+            case -4:
+            case -5:
+            case -6:
+            case -7:
+                return new XdrAccountMergeResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

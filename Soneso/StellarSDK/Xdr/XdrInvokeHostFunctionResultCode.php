@@ -53,7 +53,17 @@ class XdrInvokeHostFunctionResultCode {
 
     public static function decode(XdrBuffer $xdr): XdrInvokeHostFunctionResultCode {
         $value = $xdr->readInteger32();
-        return new XdrInvokeHostFunctionResultCode($value);
+        switch ($value) {
+            case 0:
+            case -1:
+            case -2:
+            case -3:
+            case -4:
+            case -5:
+                return new XdrInvokeHostFunctionResultCode($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {

@@ -48,7 +48,16 @@ class XdrLedgerEntryChangeType {
 
     public static function decode(XdrBuffer $xdr): XdrLedgerEntryChangeType {
         $value = $xdr->readInteger32();
-        return new XdrLedgerEntryChangeType($value);
+        switch ($value) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                return new XdrLedgerEntryChangeType($value);
+            default:
+                throw new \InvalidArgumentException("Unknown enum value: $value");
+        }
     }
 
     public function toBase64Xdr(): string {
