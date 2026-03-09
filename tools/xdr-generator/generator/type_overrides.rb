@@ -56,6 +56,7 @@ TYPE_OVERRIDES = {
   # Opaque/string typedefs — SDK uses string (binary or text)
   "XdrSCBytes" => "string",   # typedef opaque SCBytes<>
   "XdrSCString" => "string",  # typedef string SCString<SCVAL_LIMIT>
+  "XdrDataValue" => "string", # typedef opaque DataValue<64>
 
   # Typedef-array — SDK inlines as array (no wrapper class)
   "XdrLedgerEntryChanges" => "array",
@@ -104,6 +105,8 @@ BASE_WRAPPER_TYPES = %w[
   XdrManageOfferResult
   XdrTimeBounds
   XdrOperationResultTr
+  XdrManageDataOperation
+  XdrTransactionV0
 ].freeze
 
 # ---------------------------------------------------------------------------
@@ -130,8 +133,6 @@ SKIP_TYPES = %w[
   XdrChangeTrustAsset
 
   XdrDataValue
-  XdrManageDataOperation
-  XdrTransactionV0
   XdrTrustlineAsset
 ].freeze
 

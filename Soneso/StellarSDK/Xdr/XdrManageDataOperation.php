@@ -6,14 +6,10 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrManageDataOperation
+class XdrManageDataOperation extends XdrManageDataOperationBase
 {
-    private string $key;
-    private XdrDataValue $value;
-
     public function __construct(string $key, XdrDataValue $value) {
-        $this->key = $key;
-        $this->value = $value;
+        parent::__construct($key, $value->getValue());
     }
 
     /**
@@ -21,7 +17,7 @@ class XdrManageDataOperation
      */
     public function getKey(): string
     {
-        return $this->key;
+        return $this->dataName;
     }
 
     /**
@@ -29,18 +25,16 @@ class XdrManageDataOperation
      */
     public function getValue(): XdrDataValue
     {
-        return $this->value;
+        return new XdrDataValue($this->dataValue);
     }
 
-    public function encode(): string {
-        $bytes = XdrEncoder::string($this->key, 64);
-        $bytes .= $this->value->encode();
-        return $bytes;
-    }
-
-    public static function decode(XdrBuffer $xdr) : XdrManageDataOperation {
-        $key = $xdr->readString(64);
-        $value = XdrDataValue::decode($xdr);
-        return new XdrManageDataOperation($key, $value);
+    public static function decode(XdrBuffer $xdr): static {
+        $dataName = $xdr->readString();
+        $dataValue = null;
+        if ($xdr->readInteger32() !== 0) {
+            $dataValue = $xdr->readOpaqueVariable();
+        }
+        $instance = new static($dataName, new XdrDataValue($dataValue));
+        return $instance;
     }
 }
