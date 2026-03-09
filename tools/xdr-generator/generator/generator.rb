@@ -316,6 +316,17 @@ class Generator < Xdrgen::Generators::Base
         end
       end
 
+      # For array fields whose element type is an optional typedef
+      # (e.g., SponsorshipDescriptor = typedef AccountID*), the optionality
+      # applies to each element, not the whole field. Track this separately.
+      # Distinguish from truly optional array fields (e.g., SCMap* storage)
+      # where optionality comes from m.type.sub_type == :optional.
+      elements_optional = false
+      if is_array && is_optional && m.type.sub_type != :optional
+        is_optional = false
+        elements_optional = true
+      end
+
       {
         name: field_name,
         xdr_name: xdr_field_name,
@@ -326,6 +337,7 @@ class Generator < Xdrgen::Generators::Base
         is_array: is_array,
         is_ext_point: is_ext,
         type_overridden: type_overridden,
+        elements_optional: elements_optional,
       }
     end
   end
@@ -895,9 +907,20 @@ class Generator < Xdrgen::Generators::Base
       else
         out.puts "        $#{field_info[:name]}Count = count(#{accessor});"
         out.puts "        #{prefix} XdrEncoder::integer32($#{field_info[:name]}Count);"
-        out.puts "        foreach (#{accessor} as $#{field_info[:name]}Item) {"
-        out.puts "            $bytes .= #{encode_type_call(element_type, "$#{field_info[:name]}Item", typespec: element_typespec)};"
-        out.puts "        }"
+        if field_info[:elements_optional]
+          out.puts "        foreach (#{accessor} as $#{field_info[:name]}Item) {"
+          out.puts "            if ($#{field_info[:name]}Item !== null) {"
+          out.puts "                $bytes .= XdrEncoder::integer32(1);"
+          out.puts "                $bytes .= #{encode_type_call(element_type, "$#{field_info[:name]}Item", typespec: element_typespec)};"
+          out.puts "            } else {"
+          out.puts "                $bytes .= XdrEncoder::integer32(0);"
+          out.puts "            }"
+          out.puts "        }"
+        else
+          out.puts "        foreach (#{accessor} as $#{field_info[:name]}Item) {"
+          out.puts "            $bytes .= #{encode_type_call(element_type, "$#{field_info[:name]}Item", typespec: element_typespec)};"
+          out.puts "        }"
+        end
       end
     when AST::Declarations::Opaque
       if decl.fixed?
@@ -978,7 +1001,15 @@ class Generator < Xdrgen::Generators::Base
           out.puts "        $#{local_name}Size = $xdr->readInteger32();"
           out.puts "        for ($i = 0; $i < $#{local_name}Size; $i++) {"
         end
-        out.puts "            $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
+        if field_info[:elements_optional]
+          out.puts "            if ($xdr->readInteger32() !== 0) {"
+          out.puts "                $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
+          out.puts "            } else {"
+          out.puts "                $#{local_name}[] = null;"
+          out.puts "            }"
+        else
+          out.puts "            $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
+        end
         out.puts "        }"
       end
     when AST::Declarations::Opaque

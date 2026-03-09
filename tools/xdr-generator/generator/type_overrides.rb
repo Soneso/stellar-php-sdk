@@ -39,6 +39,7 @@ TYPE_OVERRIDES = {
   "XdrAssetCode12" => "string",
   "XdrSignatureHint" => "string",
   "XdrSignature" => "string",
+  "XdrThresholds" => "string",
 
   # String typedefs — SDK uses string
   "XdrString64" => "string",
@@ -124,9 +125,6 @@ SELF_REFERENCING_BASE_TYPES = %w[
 # Batches will progressively remove entries as types are verified.
 # ---------------------------------------------------------------------------
 SKIP_TYPES = %w[
-  XdrAccountEntry
-  XdrAccountEntryV2
-  XdrAccountID
   XdrAsset
 
   XdrChangeTrustAsset

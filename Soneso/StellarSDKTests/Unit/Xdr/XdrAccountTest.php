@@ -256,12 +256,12 @@ class XdrAccountTest extends TestCase
             $balance,
             $seqNum,
             $numSubEntries,
-            $inflationDest,
             $flags,
             $homeDomain,
             $thresholds,
             $signers,
-            $ext
+            $ext,
+            $inflationDest
         );
 
         // Encode to bytes
@@ -316,7 +316,6 @@ class XdrAccountTest extends TestCase
             $balance,
             $seqNum,
             $numSubEntries,
-            null,
             $flags,
             $homeDomain,
             $thresholds,
@@ -372,7 +371,6 @@ class XdrAccountTest extends TestCase
             $balance,
             $seqNum,
             $numSubEntries,
-            null,
             $flags,
             $homeDomain,
             $thresholds,
@@ -416,7 +414,6 @@ class XdrAccountTest extends TestCase
             $balance,
             $seqNum,
             $numSubEntries,
-            null,
             $flags,
             $homeDomain,
             $thresholds,

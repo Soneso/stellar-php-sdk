@@ -315,4 +315,7 @@ FIELD_TYPE_OVERRIDES = {
   # XdrSCVal: bytes arm uses XdrDataValueMandatory instead of raw opaque string
   "XdrSCVal" => { "bytes" => "XdrDataValueMandatory" },
 
+  # XdrAccountEntry: balance is BigInteger (int64 amount field)
+  "XdrAccountEntry" => { "balance" => "BigInteger" },
+
 }.freeze
