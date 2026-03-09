@@ -42,8 +42,9 @@ class SorobanParserTest extends TestCase
         $this->assertCount(25, $contractInfo->specEntries);
         $this->assertCount(2, $contractInfo->metaEntries);
 
-        // Validate environment interface version
-        $this->assertEquals(98784247808, $contractInfo->envInterfaceVersion);
+        // Validate environment meta
+        $this->assertEquals(23, $contractInfo->envMetaProtocol);
+        $this->assertEquals(0, $contractInfo->envMetaPreRelease);
 
         // Validate contract meta entries
         $this->assertArrayHasKey('rsver', $contractInfo->metaEntries);
@@ -392,9 +393,9 @@ class SorobanParserTest extends TestCase
         $contractCode = file_get_contents(self::CONTRACT_PATH, false);
         $contractInfo = SorobanContractParser::parseContractByteCode($contractCode);
 
-        // Validate environment interface version
-        $this->assertGreaterThan(0, $contractInfo->envInterfaceVersion,
-            'Environment interface version should be greater than 0');
+        // Validate environment meta
+        $this->assertGreaterThan(0, $contractInfo->envMetaProtocol,
+            'Environment meta protocol should be greater than 0');
 
         // Validate meta entries
         $this->assertCount(2, $contractInfo->metaEntries,
@@ -996,42 +997,42 @@ class SorobanParserTest extends TestCase
             'sep' => '1,10,24',
             'other' => 'value'
         ];
-        $info1 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithMultipleSeps);
+        $info1 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, 0, [], $metaWithMultipleSeps);
         $this->assertEquals(['1', '10', '24'], $info1->supportedSeps);
 
         // Test with single SEP
         $metaWithSingleSep = ['sep' => '47'];
-        $info2 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithSingleSep);
+        $info2 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, 0, [], $metaWithSingleSep);
         $this->assertEquals(['47'], $info2->supportedSeps);
 
         // Test with no SEP meta entry
         $metaWithoutSep = ['other' => 'value'];
-        $info3 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithoutSep);
+        $info3 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, 0, [], $metaWithoutSep);
         $this->assertEmpty($info3->supportedSeps);
 
         // Test with empty SEP value
         $metaWithEmptySep = ['sep' => ''];
-        $info4 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithEmptySep);
+        $info4 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, 0, [], $metaWithEmptySep);
         $this->assertEmpty($info4->supportedSeps);
 
         // Test with SEPs containing extra spaces
         $metaWithSpaces = ['sep' => '  1  ,  2  ,  3  '];
-        $info5 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithSpaces);
+        $info5 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, 0, [], $metaWithSpaces);
         $this->assertEquals(['1', '2', '3'], $info5->supportedSeps);
 
         // Test with trailing/leading commas
         $metaWithCommas = ['sep' => ',41,40,'];
-        $info6 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithCommas);
+        $info6 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, 0, [], $metaWithCommas);
         $this->assertEquals(['41', '40'], $info6->supportedSeps);
 
         // Test with duplicate SEPs (should be deduplicated)
         $metaWithDuplicates = ['sep' => '1,10,1,24,10'];
-        $info7 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaWithDuplicates);
+        $info7 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, 0, [], $metaWithDuplicates);
         $this->assertEquals(['1', '10', '24'], $info7->supportedSeps);
 
         // Test with real-world example from SEP-47 spec
         $metaRealWorld = ['sep' => '41,40'];
-        $info8 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, [], $metaRealWorld);
+        $info8 = new \Soneso\StellarSDK\Soroban\SorobanContractInfo(1, 0, [], $metaRealWorld);
         $this->assertEquals(['41', '40'], $info8->supportedSeps);
     }
 

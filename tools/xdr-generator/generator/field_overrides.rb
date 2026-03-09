@@ -147,7 +147,7 @@ FIELD_OVERRIDES = {
 
   # Batch 31: Union discriminant name overrides
   "XdrTransactionResultResult" => { "code" => "resultCode" },
-  "XdrOperationResult" => { "code" => "resultCode" },
+  "XdrOperationResult" => { "code" => "resultCode", "tr" => "resultTr" },
   "XdrSCSpecEntry" => { "kind" => "type" },
 
   # Batch 35: Field name overrides
@@ -159,11 +159,49 @@ FIELD_OVERRIDES = {
   # XdrOfferEntry: field name case difference
   "XdrOfferEntry" => { "offerID" => "offerId" },
 
+  # XdrTransaction: field name differences between XDR spec and PHP SDK
+  "XdrTransaction" => {
+    "seqNum" => "sequenceNumber",
+    "cond" => "preconditions",
+  },
+
+  # XdrLedgerKey: arm name differs from hand-written SDK field name
+  "XdrLedgerKey" => { "claimableBalance" => "balanceID" },
+
   # XdrClaimableBalanceID: arm name differs from PHP SDK field name
   "XdrClaimableBalanceID" => { "v0" => "hash" },
 
   # XdrContractExecutable: XDR arm wasm_hash → PHP wasmIdHex
   "XdrContractExecutable" => { "wasm_hash" => "wasmIdHex" },
+
+  # XdrOperationResultTr: XDR arm name → PHP property name overrides
+  "XdrOperationResultTr" => {
+    "manageSellOfferResult" => "manageOfferResult",
+    "bumpSeqResult" => "bumpSequenceResult",
+  },
+
+  # XdrOperationBody: XDR arm name → PHP property name overrides
+  "XdrOperationBody" => {
+    "destination" => "accountMergeOp",
+    "allowTrustOp" => "allowTrustOperation",
+    "manageDataOp" => "manageDataOperation",
+    "createClaimableBalanceOp" => "createClaimableBalanceOperation",
+    "claimClaimableBalanceOp" => "claimClaimableBalanceOperation",
+    "beginSponsoringFutureReservesOp" => "beginSponsoringFutureReservesOperation",
+    "revokeSponsorshipOp" => "revokeSponsorshipOperation",
+    "clawbackOp" => "clawbackOperation",
+    "clawbackClaimableBalanceOp" => "clawbackClaimableBalanceOperation",
+    "setTrustLineFlagsOp" => "setTrustLineFlagsOperation",
+    "liquidityPoolDepositOp" => "liquidityPoolDepositOperation",
+    "liquidityPoolWithdrawOp" => "liquidityPoolWithdrawOperation",
+    "invokeHostFunctionOp" => "invokeHostFunctionOperation",
+  },
+
+  # XdrTimeBounds: rename to avoid return type conflict with wrapper's getMinTime(): DateTime
+  "XdrTimeBounds" => {
+    "minTime" => "minTimestamp",
+    "maxTime" => "maxTimestamp",
+  },
 }.freeze
 
 # ---------------------------------------------------------------------------
@@ -251,6 +289,17 @@ FIELD_TYPE_OVERRIDES = {
 
   # XdrHostFunction: wasm arm uses XdrDataValueMandatory instead of string
   "XdrHostFunction" => { "wasm" => "XdrDataValueMandatory" },
+
+  # XdrOperationBody: ACCOUNT_MERGE arm wraps MuxedAccount in XdrAccountMergeOperation
+  # Key uses resolved name (after FIELD_OVERRIDES rename destination → accountMergeOp)
+  "XdrOperationBody" => { "accountMergeOp" => "XdrAccountMergeOperation" },
+
+  # XdrLedgerKey: unwrap single-field nested structs to match hand-written SDK types
+  # Keys use resolved field names (after FIELD_OVERRIDES rename)
+  "XdrLedgerKey" => {
+    "balanceID" => "XdrClaimableBalanceID",
+    "configSetting" => "XdrConfigSettingID",
+  },
 
   # BigInteger for feeCharged (int64) in transaction results
   "XdrInnerTransactionResult" => {

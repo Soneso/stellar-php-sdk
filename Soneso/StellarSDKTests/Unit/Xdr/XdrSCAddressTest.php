@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 
@@ -172,7 +173,7 @@ class XdrSCAddressTest extends TestCase
         $address = XdrSCAddress::forClaimableBalanceId(self::TEST_CLAIMABLE_BALANCE_ID);
 
         $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE, $address->getType()->getValue());
-        $this->assertEquals(self::TEST_CLAIMABLE_BALANCE_ID, $address->getClaimableBalanceId());
+        $this->assertEquals(self::TEST_CLAIMABLE_BALANCE_ID, $address->getClaimableBalanceId()->getHash());
     }
 
     public function testClaimableBalanceAddressEncodeDecodeRoundTrip(): void
@@ -183,7 +184,7 @@ class XdrSCAddressTest extends TestCase
         $decoded = XdrSCAddress::decode(new XdrBuffer($encoded));
 
         $this->assertEquals($original->getType()->getValue(), $decoded->getType()->getValue());
-        $this->assertEquals(self::TEST_CLAIMABLE_BALANCE_ID, $decoded->getClaimableBalanceId());
+        $this->assertEquals(self::TEST_CLAIMABLE_BALANCE_ID, $decoded->getClaimableBalanceId()->getHash());
     }
 
     public function testClaimableBalanceAddressToStrKey(): void
@@ -293,11 +294,11 @@ class XdrSCAddressTest extends TestCase
     {
         $address = XdrSCAddress::forClaimableBalanceId(self::TEST_CLAIMABLE_BALANCE_ID);
 
-        $this->assertEquals(self::TEST_CLAIMABLE_BALANCE_ID, $address->getClaimableBalanceId());
+        $this->assertEquals(self::TEST_CLAIMABLE_BALANCE_ID, $address->getClaimableBalanceId()->getHash());
 
         $newId = 'ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00';
-        $address->setClaimableBalanceId($newId);
-        $this->assertEquals($newId, $address->getClaimableBalanceId());
+        $address->setClaimableBalanceId(XdrClaimableBalanceID::forClaimableBalanceId($newId));
+        $this->assertEquals($newId, $address->getClaimableBalanceId()->getHash());
     }
 
     public function testGetSetLiquidityPoolId(): void

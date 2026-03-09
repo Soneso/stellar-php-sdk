@@ -2929,7 +2929,7 @@ class TxRep
             case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
                 $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE'];
                 $lines += [$prefix . 'claimableBalanceId.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
-                $lines += [$prefix . 'claimableBalanceId.balanceID.v0' => $address->getClaimableBalanceId()];
+                $lines += [$prefix . 'claimableBalanceId.balanceID.v0' => $address->getClaimableBalanceId()?->getHash()];
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                 $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_LIQUIDITY_POOL'];

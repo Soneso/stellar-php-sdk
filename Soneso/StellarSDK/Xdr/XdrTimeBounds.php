@@ -8,23 +8,20 @@ namespace Soneso\StellarSDK\Xdr;
 
 use DateTime;
 
-class XdrTimeBounds
+class XdrTimeBounds extends XdrTimeBoundsBase
 {
 
-    /**
-     * @var DateTime
-     */
     private DateTime $minTime;
-
-    /**
-     * @var DateTime
-     */
     private DateTime $maxTime;
 
     public function __construct(DateTime $minTime, DateTime $maxTime)
     {
         $this->minTime = $minTime;
         $this->maxTime = $maxTime;
+        parent::__construct(
+            (int)$minTime->format('U'),
+            (int)$maxTime->format('U')
+        );
     }
 
     /**
@@ -43,32 +40,11 @@ class XdrTimeBounds
         return $this->maxTime;
     }
 
-    public function encode(): string
+    public static function decode(XdrBuffer $xdr): static
     {
-        $bytes = XdrEncoder::unsignedInteger64($this->getMinTimestamp());
-        $bytes .= XdrEncoder::unsignedInteger64($this->getMaxTimestamp());
-        return $bytes;
-    }
-
-    public static function decode(XdrBuffer $xdr) : XdrTimeBounds
-    {
-        return new XdrTimeBounds(DateTime::createFromFormat('U', strval($xdr->readUnsignedInteger64())),
-            DateTime::createFromFormat('U', strval($xdr->readUnsignedInteger64())));
-    }
-
-    /**
-     * @return int
-     */
-    public function getMinTimestamp() : int
-    {
-        return (int)$this->minTime->format('U');
-    }
-
-    /**
-     * @return int
-     */
-    public function getMaxTimestamp() : int
-    {
-        return (int)$this->maxTime->format('U');
+        return new static(
+            DateTime::createFromFormat('U', strval($xdr->readUnsignedInteger64())),
+            DateTime::createFromFormat('U', strval($xdr->readUnsignedInteger64()))
+        );
     }
 }

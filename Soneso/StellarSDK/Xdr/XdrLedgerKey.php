@@ -6,8 +6,37 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrLedgerKey extends XdrLedgerKeyBase
 {
+    // Backward-compatible field: hex-encoded pool ID (base uses XdrLedgerKeyLiquidityPool with raw binary)
+    public ?string $liquidityPoolID = null;
+
+    public function encode(): string {
+        // Sync hex liquidityPoolID → base's binary liquidityPool struct before encoding
+        if ($this->liquidityPoolID !== null && $this->liquidityPool === null) {
+            $idHex = $this->liquidityPoolID;
+            if (str_starts_with($idHex, "L")) {
+                $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
+            }
+            $this->liquidityPool = new XdrLedgerKeyLiquidityPool(hex2bin($idHex));
+        }
+        return parent::encode();
+    }
+
+    public static function decode(XdrBuffer $xdr): static {
+        $result = parent::decode($xdr);
+        // Sync base's binary liquidityPool → hex liquidityPoolID after decoding
+        if ($result->liquidityPool !== null) {
+            $result->liquidityPoolID = bin2hex($result->liquidityPool->liquidityPoolID);
+        }
+        return $result;
+    }
+
+    // Backward-compatible getters/setters for liquidityPoolID
+    public function getLiquidityPoolID(): ?string { return $this->liquidityPoolID; }
+    public function setLiquidityPoolID(?string $liquidityPoolID): void { $this->liquidityPoolID = $liquidityPoolID; }
 
     public static function forAccountId(string $accountId) : XdrLedgerKey {
         $result = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
@@ -183,22 +212,6 @@ class XdrLedgerKey extends XdrLedgerKeyBase
     public function setBalanceID(?XdrClaimableBalanceID $balanceID): void
     {
         $this->balanceID = $balanceID;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getLiquidityPoolID(): ?string
-    {
-        return $this->liquidityPoolID;
-    }
-
-    /**
-     * @param string|null $liquidityPoolID
-     */
-    public function setLiquidityPoolID(?string $liquidityPoolID): void
-    {
-        $this->liquidityPoolID = $liquidityPoolID;
     }
 
     /**

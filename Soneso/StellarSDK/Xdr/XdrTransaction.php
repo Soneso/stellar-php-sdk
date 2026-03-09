@@ -40,7 +40,25 @@ class XdrTransaction extends XdrTransactionBase
         if ($ext === null) {
             $ext = new XdrTransactionExt(0);
         }
-        parent::__construct($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext);
+        if ($preconditions === null) {
+            $preconditions = new XdrPreconditions(XdrPreconditionType::NONE());
+        }
+        parent::__construct($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
+    }
+
+    public static function decode(XdrBuffer $xdr): static {
+        $sourceAccount = XdrMuxedAccount::decode($xdr);
+        $fee = $xdr->readUnsignedInteger32();
+        $sequenceNumber = XdrSequenceNumber::decode($xdr);
+        $preconditions = XdrPreconditions::decode($xdr);
+        $memo = XdrMemo::decode($xdr);
+        $operations = [];
+        $operationsSize = $xdr->readInteger32();
+        for ($i = 0; $i < $operationsSize; $i++) {
+            $operations[] = XdrOperation::decode($xdr);
+        }
+        $ext = XdrTransactionExt::decode($xdr);
+        return new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext);
     }
 
     /**
@@ -68,9 +86,9 @@ class XdrTransaction extends XdrTransactionBase
     }
 
     /**
-     * @return XdrPreconditions|null
+     * @return XdrPreconditions
      */
-    public function getPreconditions(): ?XdrPreconditions
+    public function getPreconditions(): XdrPreconditions
     {
         return $this->preconditions;
     }

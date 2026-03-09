@@ -22,7 +22,29 @@ class XdrMuxedAccount extends XdrMuxedAccountBase
             throw new \InvalidArgumentException("can not accept both ed25519 and med25519");
         }
 
-        parent::__construct($ed25519, $med25519);
+        if ($ed25519) {
+            parent::__construct(XdrCryptoKeyType::KEY_TYPE_ED25519());
+            $this->ed25519 = $ed25519;
+        } else {
+            parent::__construct(XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519());
+            $this->med25519 = $med25519;
+        }
+    }
 
+    public static function decode(XdrBuffer $xdr): static {
+        $type = XdrCryptoKeyType::decode($xdr);
+        switch ($type->getValue()) {
+            case XdrCryptoKeyType::KEY_TYPE_ED25519:
+                return new static($xdr->readOpaqueFixed(32));
+            case XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519:
+                return new static(null, XdrMuxedAccountMed25519::decode($xdr));
+            default:
+                throw new \InvalidArgumentException("wrong discriminant " . $type->getValue() . " in xdrBuffer");
+        }
+    }
+
+    public function getDiscriminant(): int
+    {
+        return $this->type->getValue();
     }
 }
