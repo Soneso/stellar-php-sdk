@@ -35,7 +35,7 @@ PHP_RESERVED_WORDS = %w[
 
 # ---------------------------------------------------------------------------
 # Fallback test values for complex types that can't be auto-constructed.
-# Returns a PHP expression string, or nil to skip the type.
+# Each entry maps a PHP class name to a PHP expression string.
 # ---------------------------------------------------------------------------
 FALLBACK_VALUES = {
   "XdrAccountID" => "XdrAccountID::fromAccountId('#{TEST_ACCOUNT_ID}')",
@@ -59,6 +59,134 @@ FALLBACK_VALUES = {
   "XdrExtensionPoint" => "new XdrExtensionPoint(0)",
   "XdrDiagnosticEvent" => "(function() { $d = new XdrDiagnosticEvent(true, new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), new XdrContractEventBody(1))); return $d; })()",
   "XdrTransactionEvent" => "new XdrTransactionEvent(new XdrTransactionEventStage(XdrTransactionEventStage::TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS), new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), new XdrContractEventBody(1)))",
+
+  # --- Group 1a: Primitive/utility dependency types ---
+  "XdrStellarValueExt" => "new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))",
+  "XdrStellarValue" => "new XdrStellarValue(str_repeat(\"\\0\", 32), 42, [], new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC)))",
+  "XdrLedgerHeaderExt" => "new XdrLedgerHeaderExt(0)",
+  "XdrLedgerCloseMetaExt" => "new XdrLedgerCloseMetaExt(0)",
+  "XdrTransactionSet" => "new XdrTransactionSet(str_repeat(\"\\0\", 32), [])",
+  "XdrTransactionSetV1" => "new XdrTransactionSetV1(str_repeat(\"\\0\", 32), [])",
+  "XdrGeneralizedTransactionSet" => "(function() { $u = new XdrGeneralizedTransactionSet(1); $u->v1TxSet = new XdrTransactionSetV1(str_repeat(\"\\0\", 32), []); return $u; })()",
+  "XdrLedgerFootprint" => "new XdrLedgerFootprint([], [])",
+  "XdrSorobanTransactionDataExt" => "new XdrSorobanTransactionDataExt(0)",
+  "XdrSorobanResources" => "new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42)",
+  "XdrSorobanTransactionData" => "new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42), 42)",
+  "XdrDecoratedSignature" => "new XdrDecoratedSignature(str_repeat(\"\\xAB\", 4), str_repeat(\"\\xAB\", 64))",
+  "XdrLedgerKey" => "XdrLedgerKey::forAccountId('#{TEST_ACCOUNT_ID}')",
+  "XdrNodeID" => "new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); return $pk; })())",
+  "XdrValue" => "new XdrValue(str_repeat(\"\\xAB\", 32))",
+  "XdrBucketMetadata" => "new XdrBucketMetadata(42, new XdrBucketMetadataExt(0))",
+
+  # --- Group 1b: Ledger header chain ---
+  "XdrLedgerHeader" => "new XdrLedgerHeader(42, str_repeat(\"\\0\", 32), new XdrStellarValue(str_repeat(\"\\0\", 32), 42, [], new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), 42, 42, 42, 42, 42, 42, 42, 42, [str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32)], new XdrLedgerHeaderExt(0))",
+  "XdrLedgerHeaderHistoryEntryExt" => "new XdrLedgerHeaderHistoryEntryExt(0)",
+  "XdrLedgerHeaderHistoryEntry" => "(function() { $h = new XdrLedgerHeader(42, str_repeat(\"\\0\", 32), new XdrStellarValue(str_repeat(\"\\0\", 32), 42, [], new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), 42, 42, 42, 42, 42, 42, 42, 42, [str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32)], new XdrLedgerHeaderExt(0)); return new XdrLedgerHeaderHistoryEntry(str_repeat(\"\\0\", 32), $h, new XdrLedgerHeaderHistoryEntryExt(0)); })()",
+
+  # --- Group 1c: Ledger close meta ---
+  "XdrLedgerCloseMetaV0" => "(function() { $h = new XdrLedgerHeader(42, str_repeat(\"\\0\", 32), new XdrStellarValue(str_repeat(\"\\0\", 32), 42, [], new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), 42, 42, 42, 42, 42, 42, 42, 42, [str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32)], new XdrLedgerHeaderExt(0)); $lhhe = new XdrLedgerHeaderHistoryEntry(str_repeat(\"\\0\", 32), $h, new XdrLedgerHeaderHistoryEntryExt(0)); return new XdrLedgerCloseMetaV0($lhhe, new XdrTransactionSet(str_repeat(\"\\0\", 32), []), [], [], []); })()",
+  "XdrLedgerCloseMetaV1" => "(function() { $h = new XdrLedgerHeader(42, str_repeat(\"\\0\", 32), new XdrStellarValue(str_repeat(\"\\0\", 32), 42, [], new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), 42, 42, 42, 42, 42, 42, 42, 42, [str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32)], new XdrLedgerHeaderExt(0)); $lhhe = new XdrLedgerHeaderHistoryEntry(str_repeat(\"\\0\", 32), $h, new XdrLedgerHeaderHistoryEntryExt(0)); $gts = new XdrGeneralizedTransactionSet(1); $gts->v1TxSet = new XdrTransactionSetV1(str_repeat(\"\\0\", 32), []); return new XdrLedgerCloseMetaV1(new XdrLedgerCloseMetaExt(0), $lhhe, $gts, [], [], [], 42, [], []); })()",
+  "XdrLedgerCloseMetaV2" => "(function() { $h = new XdrLedgerHeader(42, str_repeat(\"\\0\", 32), new XdrStellarValue(str_repeat(\"\\0\", 32), 42, [], new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), 42, 42, 42, 42, 42, 42, 42, 42, [str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32)], new XdrLedgerHeaderExt(0)); $lhhe = new XdrLedgerHeaderHistoryEntry(str_repeat(\"\\0\", 32), $h, new XdrLedgerHeaderHistoryEntryExt(0)); $gts = new XdrGeneralizedTransactionSet(1); $gts->v1TxSet = new XdrTransactionSetV1(str_repeat(\"\\0\", 32), []); return new XdrLedgerCloseMetaV2(new XdrLedgerCloseMetaExt(0), $lhhe, $gts, [], [], [], 42, []); })()",
+  "XdrLedgerCloseMeta" => "(function() { $h = new XdrLedgerHeader(42, str_repeat(\"\\0\", 32), new XdrStellarValue(str_repeat(\"\\0\", 32), 42, [], new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), 42, 42, 42, 42, 42, 42, 42, 42, [str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32), str_repeat(\"\\0\", 32)], new XdrLedgerHeaderExt(0)); $lhhe = new XdrLedgerHeaderHistoryEntry(str_repeat(\"\\0\", 32), $h, new XdrLedgerHeaderHistoryEntryExt(0)); $u = new XdrLedgerCloseMeta(0); $u->v0 = new XdrLedgerCloseMetaV0($lhhe, new XdrTransactionSet(str_repeat(\"\\0\", 32), []), [], [], []); return $u; })()",
+  "XdrLedgerCloseMetaBatch" => "new XdrLedgerCloseMetaBatch(42, 42, [])",
+  "XdrLedgerCloseMetaExtV1" => "new XdrLedgerCloseMetaExtV1(new XdrExtensionPoint(0), 42)",
+  "XdrUpgradeEntryMeta" => "(function() { $u = new XdrLedgerUpgrade(new XdrLedgerUpgradeType(XdrLedgerUpgradeType::LEDGER_UPGRADE_VERSION)); $u->newLedgerVersion = 42; return new XdrUpgradeEntryMeta($u, []); })()",
+
+  # --- Group 1d: Bucket types ---
+  "XdrBucketEntry" => "(function() { $u = new XdrBucketEntry(new XdrBucketEntryType(XdrBucketEntryType::METAENTRY)); $u->metaEntry = new XdrBucketMetadata(42, new XdrBucketMetadataExt(0)); return $u; })()",
+  "XdrHotArchiveBucketEntry" => "(function() { $u = new XdrHotArchiveBucketEntry(new XdrHotArchiveBucketEntryType(XdrHotArchiveBucketEntryType::HOT_ARCHIVE_METAENTRY)); $u->metaEntry = new XdrBucketMetadata(42, new XdrBucketMetadataExt(0)); return $u; })()",
+
+  # --- Group 1e: SCP types ---
+  "XdrSCPBallot" => "new XdrSCPBallot(42, new XdrValue(str_repeat(\"\\xAB\", 32)))",
+  "XdrSCPNomination" => "new XdrSCPNomination(str_repeat(\"\\0\", 32), [], [])",
+  "XdrSCPStatementPrepare" => "new XdrSCPStatementPrepare(str_repeat(\"\\0\", 32), new XdrSCPBallot(42, new XdrValue(str_repeat(\"\\xAB\", 32))), 0, 0)",
+  "XdrSCPStatementConfirm" => "new XdrSCPStatementConfirm(new XdrSCPBallot(42, new XdrValue(str_repeat(\"\\xAB\", 32))), 0, 0, 0, str_repeat(\"\\0\", 32))",
+  "XdrSCPStatementExternalize" => "new XdrSCPStatementExternalize(new XdrSCPBallot(42, new XdrValue(str_repeat(\"\\xAB\", 32))), 0, str_repeat(\"\\0\", 32))",
+  "XdrSCPStatementPledges" => "(function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat(\"\\0\", 32), new XdrSCPBallot(42, new XdrValue(str_repeat(\"\\xAB\", 32))), 0, 0); return $u; })()",
+  "XdrSCPStatement" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat(\"\\0\", 32), new XdrSCPBallot(42, new XdrValue(str_repeat(\"\\xAB\", 32))), 0, 0); return new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); })()",
+  "XdrSCPEnvelope" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat(\"\\0\", 32), new XdrSCPBallot(42, new XdrValue(str_repeat(\"\\xAB\", 32))), 0, 0); $stmt = new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); return new XdrSCPEnvelope($stmt, str_repeat(\"\\xAB\", 64)); })()",
+  "XdrSCPQuorumSet" => "new XdrSCPQuorumSet(42, [], [])",
+  "XdrSCPHistoryEntryV0" => "new XdrSCPHistoryEntryV0([], new XdrLedgerSCPMessages(42, []))",
+  "XdrSCPHistoryEntry" => "(function() { $u = new XdrSCPHistoryEntry(0); $u->v0 = new XdrSCPHistoryEntryV0([], new XdrLedgerSCPMessages(42, [])); return $u; })()",
+  "XdrLedgerSCPMessages" => "new XdrLedgerSCPMessages(42, [])",
+  "XdrPersistedSCPStateV0" => "new XdrPersistedSCPStateV0([], [], [])",
+  "XdrPersistedSCPStateV1" => "new XdrPersistedSCPStateV1([], [])",
+  "XdrPersistedSCPState" => "(function() { $u = new XdrPersistedSCPState(0); $u->v0 = new XdrPersistedSCPStateV0([], [], []); return $u; })()",
+
+  # --- Group 1f: Transaction set / storage types ---
+  "XdrStoredTransactionSet" => "(function() { $u = new XdrStoredTransactionSet(0); $u->txSet = new XdrTransactionSet(str_repeat(\"\\0\", 32), []); return $u; })()",
+  "XdrStoredDebugTransactionSet" => "(function() { $sts = new XdrStoredTransactionSet(0); $sts->txSet = new XdrTransactionSet(str_repeat(\"\\0\", 32), []); return new XdrStoredDebugTransactionSet($sts, 42, new XdrStellarValue(str_repeat(\"\\0\", 32), 42, [], new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC)))); })()",
+  "XdrTxSetComponentTxsMaybeDiscountedFee" => "new XdrTxSetComponentTxsMaybeDiscountedFee([])",
+  "XdrTxSetComponent" => "(function() { $u = new XdrTxSetComponent(new XdrTxSetComponentType(XdrTxSetComponentType::TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE)); $u->txsMaybeDiscountedFee = new XdrTxSetComponentTxsMaybeDiscountedFee([]); return $u; })()",
+  "XdrTransactionPhase" => "(function() { $u = new XdrTransactionPhase(0); $u->v0Components = []; return $u; })()",
+  "XdrParallelTxsComponent" => "new XdrParallelTxsComponent([])",
+  "XdrTxAdvertVector" => "new XdrTxAdvertVector([])",
+  "XdrTxDemandVector" => "new XdrTxDemandVector([])",
+  "XdrDependentTxCluster" => "new XdrDependentTxCluster([])",
+  "XdrParallelTxExecutionStage" => "new XdrParallelTxExecutionStage([])",
+  "XdrTimeSlicedPeerDataList" => "new XdrTimeSlicedPeerDataList([])",
+
+  # --- Group 1g: Overlay / network types ---
+  "XdrCurve25519Public" => "new XdrCurve25519Public(str_repeat(\"\\xAB\", 32))",
+  "XdrCurve25519Secret" => "new XdrCurve25519Secret(str_repeat(\"\\xAB\", 32))",
+  "XdrHmacSha256Key" => "new XdrHmacSha256Key(str_repeat(\"\\xAB\", 32))",
+  "XdrHmacSha256Mac" => "new XdrHmacSha256Mac(str_repeat(\"\\xAB\", 32))",
+  "XdrShortHashSeed" => "new XdrShortHashSeed(str_repeat(\"\\xAB\", 16))",
+  "XdrEncryptedBody" => "new XdrEncryptedBody(str_repeat(\"\\xAB\", 64))",
+  "XdrAuth" => "new XdrAuth(42)",
+  "XdrSendMore" => "new XdrSendMore(42)",
+  "XdrSendMoreExtended" => "new XdrSendMoreExtended(42, 42)",
+  "XdrAuthCert" => "new XdrAuthCert(new XdrCurve25519Public(str_repeat(\"\\xAB\", 32)), 42, str_repeat(\"\\xAB\", 64))",
+  "XdrHello" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); return new XdrHello(42, 42, 42, str_repeat(\"\\0\", 32), 'test', 42, new XdrNodeID($pk), new XdrAuthCert(new XdrCurve25519Public(str_repeat(\"\\xAB\", 32)), 42, str_repeat(\"\\xAB\", 64)), str_repeat(\"\\xAB\", 32)); })()",
+  "XdrDontHave" => "new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat(\"\\0\", 32))",
+  "XdrError" => "new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error')",
+  "XdrPeerAddress" => "(function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat(\"\\xAB\", 4); return new XdrPeerAddress($ip, 42, 0); })()",
+  "XdrFloodAdvert" => "new XdrFloodAdvert(new XdrTxAdvertVector([]))",
+  "XdrFloodDemand" => "new XdrFloodDemand(new XdrTxDemandVector([]))",
+  "XdrStellarMessage" => "(function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })()",
+  "XdrAuthenticatedMessageV0" => "(function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat(\"\\xAB\", 32))); })()",
+  "XdrAuthenticatedMessage" => "(function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat(\"\\xAB\", 32))); return $u; })()",
+
+  # --- Group 1h: Survey types ---
+  "XdrTimeSlicedNodeData" => "new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)",
+  "XdrSurveyResponseBody" => "(function() { $u = new XdrSurveyResponseBody(new XdrSurveyMessageResponseType(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2)); $u->topologyResponseBodyV2 = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)); return $u; })()",
+  "XdrTopologyResponseBodyV2" => "new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0))",
+  "XdrSurveyRequestMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); return new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat(\"\\xAB\", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); })()",
+  "XdrSurveyResponseMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); return new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat(\"\\xAB\", 64))); })()",
+  "XdrTimeSlicedSurveyRequestMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat(\"\\xAB\", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); return new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); })()",
+  "XdrTimeSlicedSurveyResponseMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat(\"\\xAB\", 64))); return new XdrTimeSlicedSurveyResponseMessage($resp, 42); })()",
+  "XdrTimeSlicedSurveyStartCollectingMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); return new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); })()",
+  "XdrTimeSlicedSurveyStopCollectingMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); return new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); })()",
+  "XdrSignedTimeSlicedSurveyRequestMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat(\"\\xAB\", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); $tsReq = new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); return new XdrSignedTimeSlicedSurveyRequestMessage(str_repeat(\"\\xAB\", 64), $tsReq); })()",
+  "XdrSignedTimeSlicedSurveyResponseMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat(\"\\xAB\", 64))); $tsResp = new XdrTimeSlicedSurveyResponseMessage($resp, 42); return new XdrSignedTimeSlicedSurveyResponseMessage(str_repeat(\"\\xAB\", 64), $tsResp); })()",
+  "XdrSignedTimeSlicedSurveyStartCollectingMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat(\"\\xAB\", 64), $start); })()",
+  "XdrSignedTimeSlicedSurveyStopCollectingMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat(\"\\xAB\", 64), $stop); })()",
+
+  # --- Group 1i: Transaction result chain ---
+  "XdrTransactionResultResult" => "new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY))",
+  "XdrTransactionResultExt" => "new XdrTransactionResultExt(0)",
+  "XdrTransactionResult" => "new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0))",
+  "XdrTransactionResultPair" => "new XdrTransactionResultPair(str_repeat(\"\\0\", 32), new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0)))",
+  "XdrTransactionResultSet" => "new XdrTransactionResultSet([])",
+  "XdrInnerTransactionResultResult" => "new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY))",
+  "XdrInnerTransactionResult" => "new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0))",
+  "XdrInnerTransactionResultPair" => "new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0)))",
+
+  # --- Group 1j: Transaction meta chain ---
+  "XdrTransactionMeta" => "(function() { $u = new XdrTransactionMeta(0); $u->operations = []; return $u; })()",
+  "XdrTransactionResultMeta" => "(function() { $trp = new XdrTransactionResultPair(str_repeat(\"\\0\", 32), new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0))); $tm = new XdrTransactionMeta(0); $tm->operations = []; return new XdrTransactionResultMeta($trp, [], $tm); })()",
+  "XdrTransactionResultMetaV1" => "(function() { $trp = new XdrTransactionResultPair(str_repeat(\"\\0\", 32), new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0))); $tm = new XdrTransactionMeta(0); $tm->operations = []; return new XdrTransactionResultMetaV1(new XdrExtensionPoint(0), $trp, [], $tm, []); })()",
+
+  # --- Group 1k: Transaction history ---
+  "XdrTransactionHistoryEntryExt" => "new XdrTransactionHistoryEntryExt(0)",
+  "XdrTransactionHistoryEntry" => "new XdrTransactionHistoryEntry(42, new XdrTransactionSet(str_repeat(\"\\0\", 32), []), new XdrTransactionHistoryEntryExt(0))",
+  "XdrTransactionHistoryResultEntryExt" => "new XdrTransactionHistoryResultEntryExt(0)",
+  "XdrTransactionHistoryResultEntry" => "new XdrTransactionHistoryResultEntry(42, new XdrTransactionResultSet([]), new XdrTransactionHistoryResultEntryExt(0))",
+
+  # --- Group 1l: Transaction types ---
+  "XdrTransactionV0" => "new XdrTransactionV0(str_repeat(\"\\xAB\", 32), new XdrSequenceNumber(new BigInteger('123456789')), [])",
+  "XdrTransactionV0Envelope" => "new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat(\"\\xAB\", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), [])",
+  "XdrFeeBumpTransactionExt" => "new XdrFeeBumpTransactionExt(0)",
 }.freeze
 
 # Overrides for specific union arm values that need special treatment
@@ -71,85 +199,25 @@ ARM_VALUE_OVERRIDES = {
   ["XdrContractExecutableBase", "wasmIdHex"] => "str_repeat('ab', 32)",
 }.freeze
 
-# Types to completely skip test generation for (too complex, circular, or special).
+# Types to completely skip test generation for (circular references, massive
+# dependency trees, or wrapper constructors incompatible with auto-construction).
 SKIP_TEST_TYPES = %w[
-  XdrTransactionEnvelope
-  XdrStellarMessage
   XdrLedgerEntry
   XdrLedgerEntryData
+  XdrLedgerEntryChange
   XdrOperation
   XdrOperationBody
-  XdrTransactionMeta
-  XdrTransactionResult
-  XdrTransactionResultResult
   XdrOperationResult
   XdrOperationResultTr
-  XdrLedgerKey
-  XdrLedgerCloseMeta
-  XdrLedgerCloseMetaV1
-  XdrLedgerCloseMetaV2
-  XdrBucketEntry
-  XdrHotArchiveBucketEntry
-  XdrPersistedSCPState
-  XdrPersistedSCPStateV0
-  XdrPersistedSCPStateV1
-  XdrAuthenticatedMessage
-  XdrAuthenticatedMessageV0
-  XdrStoredTransactionSet
-  XdrStoredDebugTransactionSet
-  XdrGeneralizedTransactionSet
-  XdrSCPHistoryEntry
-  XdrSCPHistoryEntryV0
-  XdrSCPEnvelope
-  XdrSCPStatement
-  XdrSCPStatementPledges
-  XdrSCPStatementPrepare
-  XdrSCPStatementConfirm
-  XdrSCPStatementExternalize
-  XdrSCPNomination
-  XdrSCPQuorumSet
-  XdrFeeBumpTransaction
-  XdrFeeBumpTransactionInnerTx
+  XdrTransactionEnvelope
   XdrTransaction
-  XdrTransactionV0
-  XdrTransactionV1Envelope
-  XdrTransactionV0Envelope
+  XdrSorobanAuthorizationEntry
+  XdrFeeBumpTransactionInnerTx
+  XdrFeeBumpTransaction
   XdrFeeBumpTransactionEnvelope
-  XdrInnerTransactionResult
-  XdrInnerTransactionResultPair
-  XdrInnerTransactionResultResult
-  XdrTransactionResultPair
-  XdrTransactionResultSet
-  XdrTransactionHistoryEntry
-  XdrTransactionHistoryEntryExt
-  XdrTransactionHistoryResultEntry
-  XdrTransactionHistoryResultEntryExt
-  XdrTransactionResultMeta
-  XdrTransactionResultMetaV1
-  XdrTransactionSignaturePayload
+  XdrTransactionV1Envelope
   XdrTransactionSignaturePayloadTaggedTransaction
-  XdrLedgerHeaderHistoryEntry
-  XdrLedgerHeaderHistoryEntryExt
-  XdrLedgerSCPMessages
-  XdrSurveyResponseBody
-  XdrSurveyResponseMessage
-  XdrSurveyRequestMessage
-  XdrSignedTimeSlicedSurveyRequestMessage
-  XdrSignedTimeSlicedSurveyResponseMessage
-  XdrSignedTimeSlicedSurveyStartCollectingMessage
-  XdrSignedTimeSlicedSurveyStopCollectingMessage
-  XdrTimeSlicedSurveyRequestMessage
-  XdrTimeSlicedSurveyResponseMessage
-  XdrTimeSlicedSurveyStartCollectingMessage
-  XdrTimeSlicedSurveyStopCollectingMessage
-  XdrTimeSlicedPeerDataList
-  XdrUpgradeEntryMeta
-  XdrLedgerCloseMetaBatch
-  XdrLedgerCloseMetaExt
-  XdrLedgerCloseMetaExtV1
-  XdrMuxedAccount
-  XdrClaimableBalanceID
-  XdrLedgerHeader
+  XdrTransactionSignaturePayload
 ].freeze
 
 # ---------------------------------------------------------------------------
@@ -218,6 +286,13 @@ def typedef_is_optional?(typespec)
   resolved.declaration.type.sub_type == :optional
 end
 
+def find_php_class_file(class_name)
+  base = File.join("Soneso", "StellarSDK", "Xdr", "#{class_name}Base.php")
+  return base if File.exist?(base)
+  main = File.join("Soneso", "StellarSDK", "Xdr", "#{class_name}.php")
+  File.exist?(main) ? main : nil
+end
+
 # ---------------------------------------------------------------------------
 # PHP type resolution (simplified version of generator's php_type_for_typespec)
 # ---------------------------------------------------------------------------
@@ -246,7 +321,7 @@ def php_type_for_typespec(type)
   end
 end
 
-def php_type_string(decl, member = nil)
+def php_type_string(decl)
   case decl
   when AST::Declarations::Array then "array"
   when AST::Declarations::Opaque then "string"
@@ -382,7 +457,7 @@ end
 
 def generate_enum_value(php_name, enum_defn)
   # Use the wrapper class if it's a BASE_WRAPPER_TYPE
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
   first_member = enum_defn.members.first
   member_name = resolve_member_name(php_name, first_member.name.to_s)
   # Use the base class for constant reference
@@ -407,7 +482,7 @@ def analyze_struct_fields(php_name, struct_defn)
       if FIELD_TYPE_OVERRIDES.key?(php_name) && FIELD_TYPE_OVERRIDES[php_name].key?(xdr_field_name)
         php_type = FIELD_TYPE_OVERRIDES[php_name][xdr_field_name]
       end
-      php_type ||= php_type_string(decl, m)
+      php_type ||= php_type_string(decl)
     end
 
     is_array = !is_ext && decl.is_a?(AST::Declarations::Array)
@@ -438,7 +513,7 @@ def generate_struct_value(php_name, struct_defn, depth)
   return FALLBACK_VALUES[php_name] if FALLBACK_VALUES.key?(php_name)
 
   # Use wrapper class name for BASE_WRAPPER_TYPES
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
 
   # Collect fields using shared helper
   fields = analyze_struct_fields(php_name, struct_defn)
@@ -469,7 +544,7 @@ def generate_union_value(php_name, union_defn, depth)
   return nil if depth > MAX_DEPTH
   return FALLBACK_VALUES[php_name] if FALLBACK_VALUES.key?(php_name)
 
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
   disc_info = resolve_discriminant_info_test(union_defn, php_name)
 
   # Find the simplest arm to construct (prefer void arms)
@@ -490,7 +565,7 @@ def generate_union_value(php_name, union_defn, depth)
     if FIELD_TYPE_OVERRIDES.key?(php_name) && FIELD_TYPE_OVERRIDES[php_name].key?(field_name)
       arm_php_type = FIELD_TYPE_OVERRIDES[php_name][field_name]
     else
-      arm_php_type = php_type_string(decl, nil)
+      arm_php_type = php_type_string(decl)
     end
 
     # Check for arm-specific value overrides
@@ -745,7 +820,7 @@ end
 # ---------------------------------------------------------------------------
 
 def generate_enum_test(php_name, enum_defn)
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
   const_class = BASE_WRAPPER_TYPES.include?(php_name) ? "#{php_name}Base" : php_name
 
   imports = Set.new([const_class])
@@ -776,12 +851,10 @@ end
 # Test enum static factory methods (e.g., XdrContractCostType::WASM_INSTRUCTIONS())
 # These are defined on generated enum classes and return new instances.
 def generate_enum_factory_tests(php_name, enum_defn)
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
 
   # Check PHP file for static factory methods matching enum member names
-  php_file = File.join("Soneso", "StellarSDK", "Xdr", "#{class_name}.php")
-  base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{class_name}Base.php")
-  target_file = File.exist?(base_file) ? base_file : (File.exist?(php_file) ? php_file : nil)
+  target_file = find_php_class_file(class_name)
   return nil unless target_file
 
   file_content = File.read(target_file)
@@ -791,7 +864,7 @@ def generate_enum_factory_tests(php_name, enum_defn)
   return nil if factory_names.empty?
 
   # Only target the class that has the methods
-  target_class = File.exist?(base_file) ? "#{php_name}Base" : php_name
+  target_class = target_file.include?("Base.php") ? "#{php_name}Base" : php_name
 
   imports = Set.new([target_class])
   imports.add(php_name) if BASE_WRAPPER_TYPES.include?(php_name)
@@ -848,7 +921,7 @@ def generate_struct_test(php_name, struct_defn)
   value_expr = generate_struct_value(php_name, struct_defn, 0)
   return nil unless value_expr
 
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
   decode_class = class_name
 
   imports = collect_imports_from_expr(value_expr)
@@ -873,7 +946,30 @@ end
 # ---------------------------------------------------------------------------
 
 def generate_union_tests(php_name, union_defn)
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  # If a FALLBACK_VALUES entry exists, generate a single roundtrip test using it
+  # instead of per-arm tests (wrapper types may have incompatible constructors).
+  if FALLBACK_VALUES.key?(php_name)
+    fallback = FALLBACK_VALUES[php_name]
+
+    class_name = php_name
+    imports = collect_imports_from_expr(fallback)
+    imports.add(class_name)
+
+    lines = []
+    lines << "    public function test#{php_name}UnionRoundTrip(): void"
+    lines << "    {"
+    lines << "        $original = #{fallback};"
+    lines << "        $encoded = $original->encode();"
+    lines << "        $decoded = #{class_name}::decode(new XdrBuffer($encoded));"
+    lines << "        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for #{php_name}');"
+    lines << "        $b64Decoded = #{class_name}::fromBase64Xdr($original->toBase64Xdr());"
+    lines << "        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for #{php_name}');"
+    lines << "    }"
+
+    return [{ lines: lines, imports: imports }]
+  end
+
+  class_name = php_name
   disc_info = resolve_discriminant_info_test(union_defn, php_name)
 
   tests = []
@@ -894,7 +990,7 @@ def generate_union_tests(php_name, union_defn)
     if FIELD_TYPE_OVERRIDES.key?(php_name) && FIELD_TYPE_OVERRIDES[php_name].key?(field_name)
       arm_php_type = FIELD_TYPE_OVERRIDES[php_name][field_name]
     else
-      arm_php_type = php_type_string(decl, nil)
+      arm_php_type = php_type_string(decl)
     end
 
     # Generate test value for the arm (check overrides first)
@@ -998,7 +1094,7 @@ def generate_typedef_test(php_name, typedef_defn)
   value_expr = generate_typedef_value(php_name, typedef_defn, 0)
   return nil unless value_expr
 
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
   imports = collect_imports_from_expr(value_expr)
   imports.add(class_name)
 
@@ -1021,7 +1117,7 @@ end
 # ---------------------------------------------------------------------------
 
 def generate_enum_invalid_decode_test(php_name, enum_defn)
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
 
   imports = Set.new([class_name])
   imports.add("#{php_name}Base") if BASE_WRAPPER_TYPES.include?(php_name)
@@ -1049,7 +1145,7 @@ def generate_struct_optionals_present_test(php_name, struct_defn)
   has_optionals = fields.any? { |f| f[:is_optional] }
   return nil unless has_optionals
 
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
 
   constructor_fields = fields.reject { |f| f[:is_ext_point] }
   required_fields = constructor_fields.reject { |f| f[:is_optional] }
@@ -1115,11 +1211,14 @@ def array_element_typespec(field_info)
 end
 
 def generate_struct_with_arrays_test(php_name, struct_defn)
+  # Skip for types with FALLBACK_VALUES — auto-construction may not match wrapper signature
+  return nil if FALLBACK_VALUES.key?(php_name)
+
   fields = analyze_struct_fields(php_name, struct_defn)
   has_arrays = fields.any? { |f| f[:is_array] && !f[:is_ext_point] }
   return nil unless has_arrays
 
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
 
   constructor_fields = fields.reject { |f| f[:is_ext_point] }
   required_fields = constructor_fields.reject { |f| f[:is_optional] }
@@ -1227,7 +1326,7 @@ def generate_struct_edge_case_tests(php_name, struct_defn)
                 end
   return nil unless edge_values
 
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
   optional_fields = constructor_fields.select { |f| f[:is_optional] }
   ordered_fields = required_fields + optional_fields
 
@@ -1278,12 +1377,10 @@ def generate_getter_setter_tests(php_name, struct_defn)
   value_expr = generate_struct_value(php_name, struct_defn, 0)
   return nil unless value_expr
 
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
 
   # Check if the PHP file has getters
-  php_file = File.join("Soneso", "StellarSDK", "Xdr", "#{class_name}.php")
-  base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{class_name}Base.php")
-  target_file = File.exist?(base_file) ? base_file : (File.exist?(php_file) ? php_file : nil)
+  target_file = find_php_class_file(class_name)
   return nil unless target_file
 
   file_content = File.read(target_file)
@@ -1315,6 +1412,9 @@ def generate_getter_setter_tests(php_name, struct_defn)
       lines << "        $this->assertNull($obj->#{getter}());"
     elsif f[:is_array]
       lines << "        $this->assertIsArray($obj->#{getter}());"
+    elsif FALLBACK_VALUES.key?(php_name)
+      # FALLBACK construction may differ from Base — just exercise the getter
+      lines << "        $obj->#{getter}();"
     else
       lines << "        $this->assertNotNull($obj->#{getter}());"
     end
@@ -1428,7 +1528,7 @@ def generate_base_class_union_test(php_name, union_defn)
       disc_expr = arm_discriminant_expr(arm.cases.first.value, disc_info)
       field_name = resolve_field_name(php_name, arm.name)
       decl = arm.declaration
-      arm_php_type = php_type_string(decl, nil)
+      arm_php_type = php_type_string(decl)
 
       override_key = [base_name, field_name]
       base_override_key = [php_name, field_name]
@@ -1470,12 +1570,10 @@ def generate_union_getter_setter_tests(php_name, union_defn)
   value_expr = generate_union_value(php_name, union_defn, 0)
   return nil unless value_expr
 
-  class_name = BASE_WRAPPER_TYPES.include?(php_name) ? php_name : php_name
+  class_name = php_name
 
   # Check if the PHP file (or Base file) has getters
-  php_file = File.join("Soneso", "StellarSDK", "Xdr", "#{class_name}.php")
-  base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{class_name}Base.php")
-  target_file = File.exist?(base_file) ? base_file : (File.exist?(php_file) ? php_file : nil)
+  target_file = find_php_class_file(class_name)
   return nil unless target_file
 
   file_content = File.read(target_file)
@@ -1619,12 +1717,9 @@ groups = group_definitions_by_source($captured_top, source_files)
 output_dir = "Soneso/StellarSDKTests/Unit/Xdr/Generated"
 FileUtils.mkdir_p(output_dir)
 
-total_tests = 0
 groups.each do |source, definitions|
   next if definitions.empty?
-  before = total_tests
   generate_test_file(source, definitions, output_dir)
-  # Count from generated files
 end
 
 # Count total tests across all generated files

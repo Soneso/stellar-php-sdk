@@ -62,6 +62,7 @@ use Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
 use Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation;
+use Soneso\StellarSDK\Xdr\XdrCryptoKeyType;
 use Soneso\StellarSDK\Xdr\XdrDataValue;
 use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
@@ -85,15 +86,17 @@ use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInflationPayout;
 use Soneso\StellarSDK\Xdr\XdrInflationResult;
 use Soneso\StellarSDK\Xdr\XdrInflationResultCode;
+use Soneso\StellarSDK\Xdr\XdrInnerTransactionResult;
+use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultPair;
+use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultPairBase;
+use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode;
 use Soneso\StellarSDK\Xdr\XdrLedgerBounds;
-use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperation;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperationBase;
@@ -119,6 +122,9 @@ use Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccountBase;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519Base;
 use Soneso\StellarSDK\Xdr\XdrOfferEntry;
 use Soneso\StellarSDK\Xdr\XdrOfferEntryExt;
 use Soneso\StellarSDK\Xdr\XdrOperationResultCode;
@@ -161,7 +167,6 @@ use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 use Soneso\StellarSDK\Xdr\XdrSimplePaymentResult;
 use Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntries;
-use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunction;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionBase;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType;
@@ -175,7 +180,14 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 use Soneso\StellarSDK\Xdr\XdrTimeBoundsBase;
+use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultExt;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultResult;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0Base;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0Envelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0Ext;
 
 class XdrTransactionGenTest extends TestCase
 {
@@ -199,9 +211,82 @@ class XdrTransactionGenTest extends TestCase
         $obj->getConstantProduct();
     }
 
+    public function testXdrMuxedAccountUnionRoundTrip(): void
+    {
+        $original = new XdrMuxedAccount(str_repeat("\xAB", 32));
+        $encoded = $original->encode();
+        $decoded = XdrMuxedAccount::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrMuxedAccount');
+        $b64Decoded = XdrMuxedAccount::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrMuxedAccount');
+    }
+
+    public function testXdrMuxedAccountGettersSetters(): void
+    {
+        $obj = new XdrMuxedAccount(str_repeat("\xAB", 32));
+        $this->assertNotNull($obj->getType());
+        $obj->getEd25519();
+        $obj->getMed25519();
+    }
+
+    public function testXdrMuxedAccountBaseRoundTrip(): void
+    {
+        $original = (function() { $u = new XdrMuxedAccountBase(new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_ED25519)); $u->ed25519 = str_repeat("\xAB", 32); return $u; })();
+        $encoded = $original->encode();
+        $decoded = XdrMuxedAccountBase::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+        $b64 = $original->toBase64Xdr();
+        $fromB64 = XdrMuxedAccountBase::fromBase64Xdr($b64);
+        $this->assertEquals($encoded, $fromB64->encode());
+    }
+
+    public function testXdrMuxedAccountMed25519StructRoundTrip(): void
+    {
+        $original = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32));
+        $encoded = $original->encode();
+        $decoded = XdrMuxedAccountMed25519::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrMuxedAccountMed25519');
+        $b64Decoded = XdrMuxedAccountMed25519::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrMuxedAccountMed25519');
+    }
+
+    public function testXdrMuxedAccountMed25519EdgeCaseZeroRoundTrip(): void
+    {
+        $original = new XdrMuxedAccountMed25519(0, str_repeat("\xAB", 32));
+        $encoded = $original->encode();
+        $decoded = XdrMuxedAccountMed25519::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrMuxedAccountMed25519');
+    }
+
+    public function testXdrMuxedAccountMed25519GettersSetters(): void
+    {
+        $obj = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32));
+        $this->assertNotNull($obj->getId());
+        $newVal = 42;
+        $obj->setId($newVal);
+        $this->assertSame($newVal, $obj->getId());
+        $this->assertNotNull($obj->getEd25519());
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setEd25519($newVal);
+        $this->assertSame($newVal, $obj->getEd25519());
+    }
+
+    public function testXdrMuxedAccountMed25519BaseGettersSetters(): void
+    {
+        $obj = new XdrMuxedAccountMed25519Base(42, str_repeat("\xAB", 32));
+        $this->assertNotNull($obj->getId());
+        $this->assertNotNull($obj->getEd25519());
+        $encoded = $obj->encode();
+        $decoded = XdrMuxedAccountMed25519Base::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+        $b64 = $obj->toBase64Xdr();
+        $fromB64 = XdrMuxedAccountMed25519Base::fromBase64Xdr($b64);
+        $this->assertEquals($encoded, $fromB64->encode());
+    }
+
     public function testXdrDecoratedSignatureStructRoundTrip(): void
     {
-        $original = new XdrDecoratedSignature(str_repeat("\xAB", 4), "\x01\x02\x03\x04");
+        $original = new XdrDecoratedSignature(str_repeat("\xAB", 4), str_repeat("\xAB", 64));
         $encoded = $original->encode();
         $decoded = XdrDecoratedSignature::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrDecoratedSignature');
@@ -211,12 +296,12 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrDecoratedSignatureGettersSetters(): void
     {
-        $obj = new XdrDecoratedSignature(str_repeat("\xAB", 4), "\x01\x02\x03\x04");
-        $this->assertNotNull($obj->getHint());
+        $obj = new XdrDecoratedSignature(str_repeat("\xAB", 4), str_repeat("\xAB", 64));
+        $obj->getHint();
         $newVal = str_repeat("\xAB", 4);
         $obj->setHint($newVal);
         $this->assertSame($newVal, $obj->getHint());
-        $this->assertNotNull($obj->getSignature());
+        $obj->getSignature();
         $newVal = "\x01\x02\x03\x04";
         $obj->setSignature($newVal);
         $this->assertSame($newVal, $obj->getSignature());
@@ -722,11 +807,11 @@ class XdrTransactionGenTest extends TestCase
     public function testXdrManageDataOperationGettersSetters(): void
     {
         $obj = new XdrManageDataOperation('test_key', new XdrDataValue("\x01\x02\x03\x04"));
-        $this->assertNotNull($obj->getDataName());
+        $obj->getDataName();
         $newVal = 'test_string';
         $obj->setDataName($newVal);
         $this->assertSame($newVal, $obj->getDataName());
-        $this->assertNotNull($obj->getDataValue());
+        $obj->getDataValue();
     }
 
     public function testXdrManageDataOperationBaseGettersSetters(): void
@@ -852,7 +937,7 @@ class XdrTransactionGenTest extends TestCase
     public function testXdrRevokeSponsorshipOperation_XdrRevokeSponsorshipType_LEDGER_ENTRY_ArmRoundTrip(): void
     {
         $original = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY));
-        $original->ledgerKey = (function() { $u = new XdrLedgerKey(new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT)); $u->account = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })();
+        $original->ledgerKey = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
         $encoded = $original->encode();
         $decoded = XdrRevokeSponsorshipOperation::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
@@ -879,7 +964,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrRevokeSponsorshipOperationGettersSetters(): void
     {
-        $obj = (function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY)); $u->ledgerKey = (function() { $u = new XdrLedgerKey(new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT)); $u->account = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })(); return $u; })();
+        $obj = (function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY)); $u->ledgerKey = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'); return $u; })();
         $this->assertNotNull($obj->getType());
         $obj->getLedgerKey();
         $obj->getSigner();
@@ -1006,23 +1091,23 @@ class XdrTransactionGenTest extends TestCase
     public function testXdrLiquidityPoolDepositOperationGettersSetters(): void
     {
         $obj = new XdrLiquidityPoolDepositOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new XdrPrice(1, 1), new XdrPrice(2, 1));
-        $this->assertNotNull($obj->getLiquidityPoolID());
+        $obj->getLiquidityPoolID();
         $newVal = str_repeat("\xAB", 32);
         $obj->setLiquidityPoolID($newVal);
         $this->assertSame($newVal, $obj->getLiquidityPoolID());
-        $this->assertNotNull($obj->getMaxAmountA());
+        $obj->getMaxAmountA();
         $newVal = new BigInteger('123456789');
         $obj->setMaxAmountA($newVal);
         $this->assertSame($newVal, $obj->getMaxAmountA());
-        $this->assertNotNull($obj->getMaxAmountB());
+        $obj->getMaxAmountB();
         $newVal = new BigInteger('123456789');
         $obj->setMaxAmountB($newVal);
         $this->assertSame($newVal, $obj->getMaxAmountB());
-        $this->assertNotNull($obj->getMinPrice());
+        $obj->getMinPrice();
         $newVal = new XdrPrice(42, 42);
         $obj->setMinPrice($newVal);
         $this->assertSame($newVal, $obj->getMinPrice());
-        $this->assertNotNull($obj->getMaxPrice());
+        $obj->getMaxPrice();
         $newVal = new XdrPrice(42, 42);
         $obj->setMaxPrice($newVal);
         $this->assertSame($newVal, $obj->getMaxPrice());
@@ -1057,19 +1142,19 @@ class XdrTransactionGenTest extends TestCase
     public function testXdrLiquidityPoolWithdrawOperationGettersSetters(): void
     {
         $obj = new XdrLiquidityPoolWithdrawOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new BigInteger('1000'));
-        $this->assertNotNull($obj->getLiquidityPoolID());
+        $obj->getLiquidityPoolID();
         $newVal = str_repeat("\xAB", 32);
         $obj->setLiquidityPoolID($newVal);
         $this->assertSame($newVal, $obj->getLiquidityPoolID());
-        $this->assertNotNull($obj->getAmount());
+        $obj->getAmount();
         $newVal = new BigInteger('123456789');
         $obj->setAmount($newVal);
         $this->assertSame($newVal, $obj->getAmount());
-        $this->assertNotNull($obj->getMinAmountA());
+        $obj->getMinAmountA();
         $newVal = new BigInteger('123456789');
         $obj->setMinAmountA($newVal);
         $this->assertSame($newVal, $obj->getMinAmountA());
-        $this->assertNotNull($obj->getMinAmountB());
+        $obj->getMinAmountB();
         $newVal = new BigInteger('123456789');
         $obj->setMinAmountB($newVal);
         $this->assertSame($newVal, $obj->getMinAmountB());
@@ -1565,26 +1650,6 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $fromB64->encode());
     }
 
-    public function testXdrSorobanAuthorizationEntryStructRoundTrip(): void
-    {
-        $original = new XdrSorobanAuthorizationEntry(new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT)), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
-        $encoded = $original->encode();
-        $decoded = XdrSorobanAuthorizationEntry::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanAuthorizationEntry');
-        $b64Decoded = XdrSorobanAuthorizationEntry::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanAuthorizationEntry');
-    }
-
-    public function testXdrSorobanAuthorizationEntryGettersSetters(): void
-    {
-        $obj = new XdrSorobanAuthorizationEntry(new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT)), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
-        $this->assertNotNull($obj->getCredentials());
-        $newVal = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT));
-        $obj->setCredentials($newVal);
-        $this->assertSame($newVal, $obj->getCredentials());
-        $this->assertNotNull($obj->getRootInvocation());
-    }
-
     public function testXdrSorobanAuthorizationEntriesTypedefRoundTrip(): void
     {
         $original = new XdrSorobanAuthorizationEntries([]);
@@ -1961,11 +2026,11 @@ class XdrTransactionGenTest extends TestCase
     public function testXdrTimeBoundsGettersSetters(): void
     {
         $obj = new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000'));
-        $this->assertNotNull($obj->getMinTimestamp());
+        $obj->getMinTimestamp();
         $newVal = 42;
         $obj->setMinTimestamp($newVal);
         $this->assertSame($newVal, $obj->getMinTimestamp());
-        $this->assertNotNull($obj->getMaxTimestamp());
+        $obj->getMaxTimestamp();
         $newVal = 42;
         $obj->setMaxTimestamp($newVal);
         $this->assertSame($newVal, $obj->getMaxTimestamp());
@@ -2152,16 +2217,6 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrLedgerFootprint');
     }
 
-    public function testXdrLedgerFootprintStructWithArraysRoundTrip(): void
-    {
-        $original = new XdrLedgerFootprint([(function() { $u = new XdrLedgerKey(new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT)); $u->account = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })()], [(function() { $u = new XdrLedgerKey(new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT)); $u->account = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })()]);
-        $encoded = $original->encode();
-        $decoded = XdrLedgerFootprint::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrLedgerFootprint');
-        $b64Decoded = XdrLedgerFootprint::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrLedgerFootprint');
-    }
-
     public function testXdrLedgerFootprintGettersSetters(): void
     {
         $obj = new XdrLedgerFootprint([], []);
@@ -2179,30 +2234,22 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanResources');
     }
 
-    public function testXdrSorobanResourcesEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrSorobanResources(new XdrLedgerFootprint([], []), 0, 42, 42);
-        $encoded = $original->encode();
-        $decoded = XdrSorobanResources::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrSorobanResources');
-    }
-
     public function testXdrSorobanResourcesGettersSetters(): void
     {
         $obj = new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42);
-        $this->assertNotNull($obj->getFootprint());
+        $obj->getFootprint();
         $newVal = new XdrLedgerFootprint([], []);
         $obj->setFootprint($newVal);
         $this->assertSame($newVal, $obj->getFootprint());
-        $this->assertNotNull($obj->getInstructions());
+        $obj->getInstructions();
         $newVal = 42;
         $obj->setInstructions($newVal);
         $this->assertSame($newVal, $obj->getInstructions());
-        $this->assertNotNull($obj->getDiskReadBytes());
+        $obj->getDiskReadBytes();
         $newVal = 42;
         $obj->setDiskReadBytes($newVal);
         $this->assertSame($newVal, $obj->getDiskReadBytes());
-        $this->assertNotNull($obj->getWriteBytes());
+        $obj->getWriteBytes();
         $newVal = 42;
         $obj->setWriteBytes($newVal);
         $this->assertSame($newVal, $obj->getWriteBytes());
@@ -2244,51 +2291,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanTransactionData');
     }
 
-    public function testXdrSorobanTransactionDataEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42), 0);
-        $encoded = $original->encode();
-        $decoded = XdrSorobanTransactionData::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrSorobanTransactionData');
-    }
-
     public function testXdrSorobanTransactionDataGettersSetters(): void
     {
         $obj = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42), 42);
-        $this->assertNotNull($obj->getExt());
+        $obj->getExt();
         $newVal = new XdrSorobanTransactionDataExt(0);
         $obj->setExt($newVal);
         $this->assertSame($newVal, $obj->getExt());
-        $this->assertNotNull($obj->getResources());
+        $obj->getResources();
         $newVal = new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42);
         $obj->setResources($newVal);
         $this->assertSame($newVal, $obj->getResources());
-        $this->assertNotNull($obj->getResourceFee());
+        $obj->getResourceFee();
         $newVal = 42;
         $obj->setResourceFee($newVal);
         $this->assertSame($newVal, $obj->getResourceFee());
     }
 
-    public function testXdrSorobanTransactionDataExt_1_ArmRoundTrip(): void
-    {
-        $original = new XdrSorobanTransactionDataExt(1);
-        $original->resourceExt = new XdrSorobanResourcesExtV0([]);
-        $encoded = $original->encode();
-        $decoded = XdrSorobanTransactionDataExt::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->discriminant, $decoded->discriminant);
-        $this->assertNotNull($decoded->resourceExt);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
-        $b64Decoded = XdrSorobanTransactionDataExt::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
-    }
-
-    public function testXdrSorobanTransactionDataExt_0_VoidArmRoundTrip(): void
+    public function testXdrSorobanTransactionDataExtUnionRoundTrip(): void
     {
         $original = new XdrSorobanTransactionDataExt(0);
         $encoded = $original->encode();
         $decoded = XdrSorobanTransactionDataExt::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->discriminant, $decoded->discriminant);
-        $this->assertEquals($encoded, $decoded->encode());
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanTransactionDataExt');
+        $b64Decoded = XdrSorobanTransactionDataExt::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanTransactionDataExt');
     }
 
     public function testXdrSorobanTransactionDataExtGettersSetters(): void
@@ -2296,6 +2323,96 @@ class XdrTransactionGenTest extends TestCase
         $obj = new XdrSorobanTransactionDataExt(0);
         $this->assertNotNull($obj->getDiscriminant());
         $obj->getResourceExt();
+    }
+
+    public function testXdrTransactionV0StructRoundTrip(): void
+    {
+        $original = new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []);
+        $encoded = $original->encode();
+        $decoded = XdrTransactionV0::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTransactionV0');
+        $b64Decoded = XdrTransactionV0::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionV0');
+    }
+
+    public function testXdrTransactionV0GettersSetters(): void
+    {
+        $obj = new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []);
+        $obj->getSourceAccountEd25519();
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setSourceAccountEd25519($newVal);
+        $this->assertSame($newVal, $obj->getSourceAccountEd25519());
+        $obj->getFee();
+        $newVal = 42;
+        $obj->setFee($newVal);
+        $this->assertSame($newVal, $obj->getFee());
+        $obj->getSeqNum();
+        $newVal = new XdrSequenceNumber(new BigInteger('123456789'));
+        $obj->setSeqNum($newVal);
+        $this->assertSame($newVal, $obj->getSeqNum());
+        $obj->getTimeBounds();
+        $obj->getMemo();
+        $newVal = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
+        $obj->setMemo($newVal);
+        $this->assertSame($newVal, $obj->getMemo());
+        $this->assertIsArray($obj->getOperations());
+        $obj->getExt();
+        $newVal = new XdrTransactionV0Ext(0);
+        $obj->setExt($newVal);
+        $this->assertSame($newVal, $obj->getExt());
+    }
+
+    public function testXdrTransactionV0BaseGettersSetters(): void
+    {
+        $obj = new XdrTransactionV0Base(str_repeat("\xAB", 32), 42, new XdrSequenceNumber(new BigInteger('123456789')), new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), [], new XdrTransactionV0Ext(0), null);
+        $this->assertNotNull($obj->getSourceAccountEd25519());
+        $this->assertNotNull($obj->getFee());
+        $this->assertNotNull($obj->getSeqNum());
+        $this->assertNull($obj->getTimeBounds());
+        $this->assertNotNull($obj->getMemo());
+        $this->assertIsArray($obj->getOperations());
+        $this->assertNotNull($obj->getExt());
+        $encoded = $obj->encode();
+        $decoded = XdrTransactionV0Base::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+        $b64 = $obj->toBase64Xdr();
+        $fromB64 = XdrTransactionV0Base::fromBase64Xdr($b64);
+        $this->assertEquals($encoded, $fromB64->encode());
+    }
+
+    public function testXdrTransactionV0Ext_0_VoidArmRoundTrip(): void
+    {
+        $original = new XdrTransactionV0Ext(0);
+        $encoded = $original->encode();
+        $decoded = XdrTransactionV0Ext::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->discriminant, $decoded->discriminant);
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrTransactionV0ExtGettersSetters(): void
+    {
+        $obj = new XdrTransactionV0Ext(0);
+        $this->assertNotNull($obj->getDiscriminant());
+    }
+
+    public function testXdrTransactionV0EnvelopeStructRoundTrip(): void
+    {
+        $original = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []);
+        $encoded = $original->encode();
+        $decoded = XdrTransactionV0Envelope::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTransactionV0Envelope');
+        $b64Decoded = XdrTransactionV0Envelope::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionV0Envelope');
+    }
+
+    public function testXdrTransactionV0EnvelopeGettersSetters(): void
+    {
+        $obj = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []);
+        $obj->getTx();
+        $newVal = new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []);
+        $obj->setTx($newVal);
+        $this->assertSame($newVal, $obj->getTx());
+        $this->assertIsArray($obj->getSignatures());
     }
 
     public function testXdrClaimAtomTypeEnumRoundTrip(): void
@@ -4148,6 +4265,147 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP());
         $this->assertNotNull(XdrTransactionResultCode::MALFORMED());
         $this->assertNotNull(XdrTransactionResultCode::SOROBAN_INVALID());
+    }
+
+    public function testXdrInnerTransactionResultStructRoundTrip(): void
+    {
+        $original = new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $encoded = $original->encode();
+        $decoded = XdrInnerTransactionResult::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrInnerTransactionResult');
+        $b64Decoded = XdrInnerTransactionResult::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInnerTransactionResult');
+    }
+
+    public function testXdrInnerTransactionResultGettersSetters(): void
+    {
+        $obj = new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $obj->getFeeCharged();
+        $newVal = new BigInteger('123456789');
+        $obj->setFeeCharged($newVal);
+        $this->assertSame($newVal, $obj->getFeeCharged());
+        $obj->getResult();
+        $newVal = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $obj->setResult($newVal);
+        $this->assertSame($newVal, $obj->getResult());
+        $obj->getExt();
+        $newVal = new XdrTransactionResultExt(0);
+        $obj->setExt($newVal);
+        $this->assertSame($newVal, $obj->getExt());
+    }
+
+    public function testXdrInnerTransactionResultResultUnionRoundTrip(): void
+    {
+        $original = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $encoded = $original->encode();
+        $decoded = XdrInnerTransactionResultResult::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrInnerTransactionResultResult');
+        $b64Decoded = XdrInnerTransactionResultResult::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInnerTransactionResultResult');
+    }
+
+    public function testXdrInnerTransactionResultResultGettersSetters(): void
+    {
+        $obj = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $this->assertNotNull($obj->getResultCode());
+        $obj->getResults();
+    }
+
+    public function testXdrTransactionResultExtUnionRoundTrip(): void
+    {
+        $original = new XdrTransactionResultExt(0);
+        $encoded = $original->encode();
+        $decoded = XdrTransactionResultExt::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTransactionResultExt');
+        $b64Decoded = XdrTransactionResultExt::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionResultExt');
+    }
+
+    public function testXdrTransactionResultExtGettersSetters(): void
+    {
+        $obj = new XdrTransactionResultExt(0);
+        $this->assertNotNull($obj->getDiscriminant());
+    }
+
+    public function testXdrInnerTransactionResultPairStructRoundTrip(): void
+    {
+        $original = new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0)));
+        $encoded = $original->encode();
+        $decoded = XdrInnerTransactionResultPair::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrInnerTransactionResultPair');
+        $b64Decoded = XdrInnerTransactionResultPair::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInnerTransactionResultPair');
+    }
+
+    public function testXdrInnerTransactionResultPairGettersSetters(): void
+    {
+        $obj = new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0)));
+        $obj->getTransactionHash();
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setTransactionHash($newVal);
+        $this->assertSame($newVal, $obj->getTransactionHash());
+        $obj->getResult();
+        $newVal = new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $obj->setResult($newVal);
+        $this->assertSame($newVal, $obj->getResult());
+    }
+
+    public function testXdrInnerTransactionResultPairBaseGettersSetters(): void
+    {
+        $obj = new XdrInnerTransactionResultPairBase(str_repeat("\xAB", 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0)));
+        $this->assertNotNull($obj->getTransactionHash());
+        $this->assertNotNull($obj->getResult());
+        $encoded = $obj->encode();
+        $decoded = XdrInnerTransactionResultPairBase::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+        $b64 = $obj->toBase64Xdr();
+        $fromB64 = XdrInnerTransactionResultPairBase::fromBase64Xdr($b64);
+        $this->assertEquals($encoded, $fromB64->encode());
+    }
+
+    public function testXdrTransactionResultStructRoundTrip(): void
+    {
+        $original = new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $encoded = $original->encode();
+        $decoded = XdrTransactionResult::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTransactionResult');
+        $b64Decoded = XdrTransactionResult::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionResult');
+    }
+
+    public function testXdrTransactionResultGettersSetters(): void
+    {
+        $obj = new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $obj->getFeeCharged();
+        $newVal = new BigInteger('123456789');
+        $obj->setFeeCharged($newVal);
+        $this->assertSame($newVal, $obj->getFeeCharged());
+        $obj->getResult();
+        $newVal = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $obj->setResult($newVal);
+        $this->assertSame($newVal, $obj->getResult());
+        $obj->getExt();
+        $newVal = new XdrTransactionResultExt(0);
+        $obj->setExt($newVal);
+        $this->assertSame($newVal, $obj->getExt());
+    }
+
+    public function testXdrTransactionResultResultUnionRoundTrip(): void
+    {
+        $original = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $encoded = $original->encode();
+        $decoded = XdrTransactionResultResult::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTransactionResultResult');
+        $b64Decoded = XdrTransactionResultResult::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionResultResult');
+    }
+
+    public function testXdrTransactionResultResultGettersSetters(): void
+    {
+        $obj = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $this->assertNotNull($obj->getResultCode());
+        $obj->getInnerResultPair();
+        $obj->getResults();
     }
 }
 

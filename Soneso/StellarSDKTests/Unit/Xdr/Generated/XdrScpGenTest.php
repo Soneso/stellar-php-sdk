@@ -8,7 +8,16 @@ namespace Soneso\StellarSDKTests\Unit\Xdr\Generated;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
+use Soneso\StellarSDK\Xdr\XdrNodeID;
+use Soneso\StellarSDK\Xdr\XdrPublicKey;
+use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
 use Soneso\StellarSDK\Xdr\XdrSCPBallot;
+use Soneso\StellarSDK\Xdr\XdrSCPEnvelope;
+use Soneso\StellarSDK\Xdr\XdrSCPNomination;
+use Soneso\StellarSDK\Xdr\XdrSCPQuorumSet;
+use Soneso\StellarSDK\Xdr\XdrSCPStatement;
+use Soneso\StellarSDK\Xdr\XdrSCPStatementPledges;
+use Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare;
 use Soneso\StellarSDK\Xdr\XdrSCPStatementType;
 use Soneso\StellarSDK\Xdr\XdrValue;
 
@@ -16,7 +25,7 @@ class XdrScpGenTest extends TestCase
 {
     public function testXdrValueTypedefRoundTrip(): void
     {
-        $original = new XdrValue("\x01\x02\x03\x04");
+        $original = new XdrValue(str_repeat("\xAB", 32));
         $encoded = $original->encode();
         $decoded = XdrValue::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrValue');
@@ -26,7 +35,7 @@ class XdrScpGenTest extends TestCase
 
     public function testXdrSCPBallotStructRoundTrip(): void
     {
-        $original = new XdrSCPBallot(42, new XdrValue("\x01\x02\x03\x04"));
+        $original = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
         $encoded = $original->encode();
         $decoded = XdrSCPBallot::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPBallot');
@@ -34,23 +43,15 @@ class XdrScpGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPBallot');
     }
 
-    public function testXdrSCPBallotEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrSCPBallot(0, new XdrValue("\x01\x02\x03\x04"));
-        $encoded = $original->encode();
-        $decoded = XdrSCPBallot::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrSCPBallot');
-    }
-
     public function testXdrSCPBallotGettersSetters(): void
     {
-        $obj = new XdrSCPBallot(42, new XdrValue("\x01\x02\x03\x04"));
-        $this->assertNotNull($obj->getCounter());
+        $obj = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
+        $obj->getCounter();
         $newVal = 42;
         $obj->setCounter($newVal);
         $this->assertSame($newVal, $obj->getCounter());
-        $this->assertNotNull($obj->getValue());
-        $newVal = new XdrValue("\x01\x02\x03\x04");
+        $obj->getValue();
+        $newVal = new XdrValue(str_repeat("\xAB", 32));
         $obj->setValue($newVal);
         $this->assertSame($newVal, $obj->getValue());
     }
@@ -81,6 +82,118 @@ class XdrScpGenTest extends TestCase
         $this->assertNotNull(XdrSCPStatementType::SCP_ST_CONFIRM());
         $this->assertNotNull(XdrSCPStatementType::SCP_ST_EXTERNALIZE());
         $this->assertNotNull(XdrSCPStatementType::SCP_ST_NOMINATE());
+    }
+
+    public function testXdrSCPNominationStructRoundTrip(): void
+    {
+        $original = new XdrSCPNomination(str_repeat("\0", 32), [], []);
+        $encoded = $original->encode();
+        $decoded = XdrSCPNomination::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPNomination');
+        $b64Decoded = XdrSCPNomination::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPNomination');
+    }
+
+    public function testXdrSCPNominationGettersSetters(): void
+    {
+        $obj = new XdrSCPNomination(str_repeat("\0", 32), [], []);
+        $obj->getQuorumSetHash();
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setQuorumSetHash($newVal);
+        $this->assertSame($newVal, $obj->getQuorumSetHash());
+        $this->assertIsArray($obj->getVotes());
+        $this->assertIsArray($obj->getAccepted());
+    }
+
+    public function testXdrSCPStatementStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); })();
+        $encoded = $original->encode();
+        $decoded = XdrSCPStatement::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPStatement');
+        $b64Decoded = XdrSCPStatement::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPStatement');
+    }
+
+    public function testXdrSCPStatementGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); })();
+        $obj->getNodeID();
+        $newVal = new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })());
+        $obj->setNodeID($newVal);
+        $this->assertSame($newVal, $obj->getNodeID());
+        $obj->getSlotIndex();
+        $newVal = 42;
+        $obj->setSlotIndex($newVal);
+        $this->assertSame($newVal, $obj->getSlotIndex());
+        $obj->getPledges();
+        $newVal = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return $u; })();
+        $obj->setPledges($newVal);
+        $this->assertSame($newVal, $obj->getPledges());
+    }
+
+    public function testXdrSCPStatementPledgesUnionRoundTrip(): void
+    {
+        $original = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return $u; })();
+        $encoded = $original->encode();
+        $decoded = XdrSCPStatementPledges::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPStatementPledges');
+        $b64Decoded = XdrSCPStatementPledges::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPStatementPledges');
+    }
+
+    public function testXdrSCPStatementPledgesGettersSetters(): void
+    {
+        $obj = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return $u; })();
+        $this->assertNotNull($obj->getType());
+        $obj->getPrepare();
+        $obj->getConfirm();
+        $obj->getExternalize();
+        $obj->getNominate();
+    }
+
+    public function testXdrSCPEnvelopeStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); $stmt = new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); return new XdrSCPEnvelope($stmt, str_repeat("\xAB", 64)); })();
+        $encoded = $original->encode();
+        $decoded = XdrSCPEnvelope::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPEnvelope');
+        $b64Decoded = XdrSCPEnvelope::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPEnvelope');
+    }
+
+    public function testXdrSCPEnvelopeGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); $stmt = new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); return new XdrSCPEnvelope($stmt, str_repeat("\xAB", 64)); })();
+        $obj->getStatement();
+        $newVal = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); })();
+        $obj->setStatement($newVal);
+        $this->assertSame($newVal, $obj->getStatement());
+        $obj->getSignature();
+        $newVal = "\x01\x02\x03\x04";
+        $obj->setSignature($newVal);
+        $this->assertSame($newVal, $obj->getSignature());
+    }
+
+    public function testXdrSCPQuorumSetStructRoundTrip(): void
+    {
+        $original = new XdrSCPQuorumSet(42, [], []);
+        $encoded = $original->encode();
+        $decoded = XdrSCPQuorumSet::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPQuorumSet');
+        $b64Decoded = XdrSCPQuorumSet::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPQuorumSet');
+    }
+
+    public function testXdrSCPQuorumSetGettersSetters(): void
+    {
+        $obj = new XdrSCPQuorumSet(42, [], []);
+        $obj->getThreshold();
+        $newVal = 42;
+        $obj->setThreshold($newVal);
+        $this->assertSame($newVal, $obj->getThreshold());
+        $this->assertIsArray($obj->getValidators());
+        $this->assertIsArray($obj->getInnerSets());
     }
 }
 

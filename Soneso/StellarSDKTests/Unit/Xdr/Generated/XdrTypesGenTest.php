@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDBase;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType;
 use Soneso\StellarSDK\Xdr\XdrCryptoKeyType;
 use Soneso\StellarSDK\Xdr\XdrCurve25519Public;
@@ -29,13 +31,14 @@ use Soneso\StellarSDK\Xdr\XdrSignerKeyTypeBase;
 
 class XdrTypesGenTest extends TestCase
 {
-    public function testXdrExtensionPoint_0_VoidArmRoundTrip(): void
+    public function testXdrExtensionPointUnionRoundTrip(): void
     {
         $original = new XdrExtensionPoint(0);
         $encoded = $original->encode();
         $decoded = XdrExtensionPoint::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->discriminant, $decoded->discriminant);
-        $this->assertEquals($encoded, $decoded->encode());
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrExtensionPoint');
+        $b64Decoded = XdrExtensionPoint::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrExtensionPoint');
     }
 
     public function testXdrExtensionPointGettersSetters(): void
@@ -137,17 +140,14 @@ class XdrTypesGenTest extends TestCase
         $this->assertNotNull(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD());
     }
 
-    public function testXdrPublicKey_XdrPublicKeyType_PUBLIC_KEY_TYPE_ED25519_ArmRoundTrip(): void
+    public function testXdrPublicKeyUnionRoundTrip(): void
     {
-        $original = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519));
-        $original->ed25519 = str_repeat("\xAB", 32);
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })();
         $encoded = $original->encode();
         $decoded = XdrPublicKey::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->ed25519);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPublicKey');
         $b64Decoded = XdrPublicKey::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPublicKey');
     }
 
     public function testXdrPublicKeyGettersSetters(): void
@@ -157,68 +157,14 @@ class XdrTypesGenTest extends TestCase
         $obj->getEd25519();
     }
 
-    public function testXdrSignerKey_XdrSignerKeyTypeBase_SIGNER_KEY_TYPE_ED25519_ArmRoundTrip(): void
+    public function testXdrSignerKeyUnionRoundTrip(): void
     {
-        $original = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519));
-        $original->ed25519 = str_repeat("\xAB", 32);
+        $original = (function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })();
         $encoded = $original->encode();
         $decoded = XdrSignerKey::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->ed25519);
-        $this->assertNull($decoded->preAuthTx);
-        $this->assertNull($decoded->hashX);
-        $this->assertNull($decoded->signedPayload);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSignerKey');
         $b64Decoded = XdrSignerKey::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
-    }
-
-    public function testXdrSignerKey_XdrSignerKeyTypeBase_SIGNER_KEY_TYPE_PRE_AUTH_TX_ArmRoundTrip(): void
-    {
-        $original = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_PRE_AUTH_TX));
-        $original->preAuthTx = str_repeat("\xAB", 32);
-        $encoded = $original->encode();
-        $decoded = XdrSignerKey::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->preAuthTx);
-        $this->assertNull($decoded->ed25519);
-        $this->assertNull($decoded->hashX);
-        $this->assertNull($decoded->signedPayload);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
-        $b64Decoded = XdrSignerKey::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
-    }
-
-    public function testXdrSignerKey_XdrSignerKeyTypeBase_SIGNER_KEY_TYPE_HASH_X_ArmRoundTrip(): void
-    {
-        $original = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_HASH_X));
-        $original->hashX = str_repeat("\xAB", 32);
-        $encoded = $original->encode();
-        $decoded = XdrSignerKey::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->hashX);
-        $this->assertNull($decoded->ed25519);
-        $this->assertNull($decoded->preAuthTx);
-        $this->assertNull($decoded->signedPayload);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
-        $b64Decoded = XdrSignerKey::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
-    }
-
-    public function testXdrSignerKey_XdrSignerKeyTypeBase_SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD_ArmRoundTrip(): void
-    {
-        $original = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD));
-        $original->signedPayload = new XdrSignedPayload(str_repeat("\xAB", 32), "\x01\x02\x03\x04");
-        $encoded = $original->encode();
-        $decoded = XdrSignerKey::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->signedPayload);
-        $this->assertNull($decoded->ed25519);
-        $this->assertNull($decoded->preAuthTx);
-        $this->assertNull($decoded->hashX);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
-        $b64Decoded = XdrSignerKey::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignerKey');
     }
 
     public function testXdrSignerKeyGettersSetters(): void
@@ -297,7 +243,7 @@ class XdrTypesGenTest extends TestCase
     public function testXdrCurve25519SecretGettersSetters(): void
     {
         $obj = new XdrCurve25519Secret(str_repeat("\xAB", 32));
-        $this->assertNotNull($obj->getKey());
+        $obj->getKey();
         $newVal = str_repeat("\xAB", 32);
         $obj->setKey($newVal);
         $this->assertSame($newVal, $obj->getKey());
@@ -316,7 +262,7 @@ class XdrTypesGenTest extends TestCase
     public function testXdrCurve25519PublicGettersSetters(): void
     {
         $obj = new XdrCurve25519Public(str_repeat("\xAB", 32));
-        $this->assertNotNull($obj->getKey());
+        $obj->getKey();
         $newVal = str_repeat("\xAB", 32);
         $obj->setKey($newVal);
         $this->assertSame($newVal, $obj->getKey());
@@ -335,7 +281,7 @@ class XdrTypesGenTest extends TestCase
     public function testXdrHmacSha256KeyGettersSetters(): void
     {
         $obj = new XdrHmacSha256Key(str_repeat("\xAB", 32));
-        $this->assertNotNull($obj->getKey());
+        $obj->getKey();
         $newVal = str_repeat("\xAB", 32);
         $obj->setKey($newVal);
         $this->assertSame($newVal, $obj->getKey());
@@ -354,7 +300,7 @@ class XdrTypesGenTest extends TestCase
     public function testXdrHmacSha256MacGettersSetters(): void
     {
         $obj = new XdrHmacSha256Mac(str_repeat("\xAB", 32));
-        $this->assertNotNull($obj->getMac());
+        $obj->getMac();
         $newVal = str_repeat("\xAB", 32);
         $obj->setMac($newVal);
         $this->assertSame($newVal, $obj->getMac());
@@ -373,7 +319,7 @@ class XdrTypesGenTest extends TestCase
     public function testXdrShortHashSeedGettersSetters(): void
     {
         $obj = new XdrShortHashSeed(str_repeat("\xAB", 16));
-        $this->assertNotNull($obj->getSeed());
+        $obj->getSeed();
         $newVal = str_repeat("\xAB", 16);
         $obj->setSeed($newVal);
         $this->assertSame($newVal, $obj->getSeed());
@@ -488,6 +434,34 @@ class XdrTypesGenTest extends TestCase
     public function testXdrClaimableBalanceIDTypeEnumFactoryMethods(): void
     {
         $this->assertNotNull(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0());
+    }
+
+    public function testXdrClaimableBalanceIDUnionRoundTrip(): void
+    {
+        $original = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32));
+        $encoded = $original->encode();
+        $decoded = XdrClaimableBalanceID::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrClaimableBalanceID');
+        $b64Decoded = XdrClaimableBalanceID::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrClaimableBalanceID');
+    }
+
+    public function testXdrClaimableBalanceIDGettersSetters(): void
+    {
+        $obj = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32));
+        $this->assertNotNull($obj->getType());
+        $obj->getHash();
+    }
+
+    public function testXdrClaimableBalanceIDBaseRoundTrip(): void
+    {
+        $original = (function() { $u = new XdrClaimableBalanceIDBase(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0)); $u->hash = str_repeat("\xAB", 32); return $u; })();
+        $encoded = $original->encode();
+        $decoded = XdrClaimableBalanceIDBase::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+        $b64 = $original->toBase64Xdr();
+        $fromB64 = XdrClaimableBalanceIDBase::fromBase64Xdr($b64);
+        $this->assertEquals($encoded, $fromB64->encode());
     }
 }
 

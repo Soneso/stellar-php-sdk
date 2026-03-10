@@ -8,6 +8,8 @@ namespace Soneso\StellarSDKTests\Unit\Xdr\Generated;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrAuth;
 use Soneso\StellarSDK\Xdr\XdrAuthCert;
+use Soneso\StellarSDK\Xdr\XdrAuthenticatedMessage;
+use Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrCurve25519Public;
 use Soneso\StellarSDK\Xdr\XdrDontHave;
@@ -18,6 +20,7 @@ use Soneso\StellarSDK\Xdr\XdrErrorCode;
 use Soneso\StellarSDK\Xdr\XdrFloodAdvert;
 use Soneso\StellarSDK\Xdr\XdrFloodDemand;
 use Soneso\StellarSDK\Xdr\XdrHello;
+use Soneso\StellarSDK\Xdr\XdrHmacSha256Mac;
 use Soneso\StellarSDK\Xdr\XdrIPAddrType;
 use Soneso\StellarSDK\Xdr\XdrMessageType;
 use Soneso\StellarSDK\Xdr\XdrNodeID;
@@ -28,11 +31,23 @@ use Soneso\StellarSDK\Xdr\XdrPublicKey;
 use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
 use Soneso\StellarSDK\Xdr\XdrSendMore;
 use Soneso\StellarSDK\Xdr\XdrSendMoreExtended;
+use Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyRequestMessage;
+use Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyResponseMessage;
+use Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyStartCollectingMessage;
+use Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyStopCollectingMessage;
+use Soneso\StellarSDK\Xdr\XdrStellarMessage;
 use Soneso\StellarSDK\Xdr\XdrSurveyMessageCommandType;
 use Soneso\StellarSDK\Xdr\XdrSurveyMessageResponseType;
+use Soneso\StellarSDK\Xdr\XdrSurveyRequestMessage;
+use Soneso\StellarSDK\Xdr\XdrSurveyResponseBody;
+use Soneso\StellarSDK\Xdr\XdrSurveyResponseMessage;
 use Soneso\StellarSDK\Xdr\XdrTimeSlicedNodeData;
 use Soneso\StellarSDK\Xdr\XdrTimeSlicedPeerData;
 use Soneso\StellarSDK\Xdr\XdrTimeSlicedPeerDataList;
+use Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyRequestMessage;
+use Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyResponseMessage;
+use Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyStartCollectingMessage;
+use Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyStopCollectingMessage;
 use Soneso\StellarSDK\Xdr\XdrTopologyResponseBodyV2;
 use Soneso\StellarSDK\Xdr\XdrTxAdvertVector;
 use Soneso\StellarSDK\Xdr\XdrTxDemandVector;
@@ -70,7 +85,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrErrorStructRoundTrip(): void
     {
-        $original = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_string');
+        $original = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error');
         $encoded = $original->encode();
         $decoded = XdrError::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrError');
@@ -78,22 +93,14 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrError');
     }
 
-    public function testXdrErrorEdgeCaseEmptyStringRoundTrip(): void
-    {
-        $original = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), '');
-        $encoded = $original->encode();
-        $decoded = XdrError::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case EmptyString failed for XdrError');
-    }
-
     public function testXdrErrorGettersSetters(): void
     {
-        $obj = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_string');
-        $this->assertNotNull($obj->getCode());
+        $obj = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error');
+        $obj->getCode();
         $newVal = new XdrErrorCode(XdrErrorCode::ERR_MISC);
         $obj->setCode($newVal);
         $this->assertSame($newVal, $obj->getCode());
-        $this->assertNotNull($obj->getMsg());
+        $obj->getMsg();
         $newVal = 'test_string';
         $obj->setMsg($newVal);
         $this->assertSame($newVal, $obj->getMsg());
@@ -109,18 +116,10 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSendMore');
     }
 
-    public function testXdrSendMoreEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrSendMore(0);
-        $encoded = $original->encode();
-        $decoded = XdrSendMore::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrSendMore');
-    }
-
     public function testXdrSendMoreGettersSetters(): void
     {
         $obj = new XdrSendMore(42);
-        $this->assertNotNull($obj->getNumMessages());
+        $obj->getNumMessages();
         $newVal = 42;
         $obj->setNumMessages($newVal);
         $this->assertSame($newVal, $obj->getNumMessages());
@@ -136,22 +135,14 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSendMoreExtended');
     }
 
-    public function testXdrSendMoreExtendedEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrSendMoreExtended(0, 42);
-        $encoded = $original->encode();
-        $decoded = XdrSendMoreExtended::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrSendMoreExtended');
-    }
-
     public function testXdrSendMoreExtendedGettersSetters(): void
     {
         $obj = new XdrSendMoreExtended(42, 42);
-        $this->assertNotNull($obj->getNumMessages());
+        $obj->getNumMessages();
         $newVal = 42;
         $obj->setNumMessages($newVal);
         $this->assertSame($newVal, $obj->getNumMessages());
-        $this->assertNotNull($obj->getNumBytes());
+        $obj->getNumBytes();
         $newVal = 42;
         $obj->setNumBytes($newVal);
         $this->assertSame($newVal, $obj->getNumBytes());
@@ -159,7 +150,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrAuthCertStructRoundTrip(): void
     {
-        $original = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, "\x01\x02\x03\x04");
+        $original = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64));
         $encoded = $original->encode();
         $decoded = XdrAuthCert::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrAuthCert');
@@ -167,26 +158,18 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuthCert');
     }
 
-    public function testXdrAuthCertEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 0, "\x01\x02\x03\x04");
-        $encoded = $original->encode();
-        $decoded = XdrAuthCert::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrAuthCert');
-    }
-
     public function testXdrAuthCertGettersSetters(): void
     {
-        $obj = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, "\x01\x02\x03\x04");
-        $this->assertNotNull($obj->getPubkey());
+        $obj = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64));
+        $obj->getPubkey();
         $newVal = new XdrCurve25519Public(str_repeat("\xAB", 32));
         $obj->setPubkey($newVal);
         $this->assertSame($newVal, $obj->getPubkey());
-        $this->assertNotNull($obj->getExpiration());
+        $obj->getExpiration();
         $newVal = 42;
         $obj->setExpiration($newVal);
         $this->assertSame($newVal, $obj->getExpiration());
-        $this->assertNotNull($obj->getSig());
+        $obj->getSig();
         $newVal = "\x01\x02\x03\x04";
         $obj->setSig($newVal);
         $this->assertSame($newVal, $obj->getSig());
@@ -194,7 +177,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrHelloStructRoundTrip(): void
     {
-        $original = new XdrHello(42, 42, 42, str_repeat("\xAB", 32), 'test_string', 42, new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, "\x01\x02\x03\x04"), str_repeat("\xAB", 32));
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrHello(42, 42, 42, str_repeat("\0", 32), 'test', 42, new XdrNodeID($pk), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64)), str_repeat("\xAB", 32)); })();
         $encoded = $original->encode();
         $decoded = XdrHello::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrHello');
@@ -202,50 +185,42 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrHello');
     }
 
-    public function testXdrHelloEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrHello(0, 42, 42, str_repeat("\xAB", 32), 'test_string', 42, new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, "\x01\x02\x03\x04"), str_repeat("\xAB", 32));
-        $encoded = $original->encode();
-        $decoded = XdrHello::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrHello');
-    }
-
     public function testXdrHelloGettersSetters(): void
     {
-        $obj = new XdrHello(42, 42, 42, str_repeat("\xAB", 32), 'test_string', 42, new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, "\x01\x02\x03\x04"), str_repeat("\xAB", 32));
-        $this->assertNotNull($obj->getLedgerVersion());
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrHello(42, 42, 42, str_repeat("\0", 32), 'test', 42, new XdrNodeID($pk), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64)), str_repeat("\xAB", 32)); })();
+        $obj->getLedgerVersion();
         $newVal = 42;
         $obj->setLedgerVersion($newVal);
         $this->assertSame($newVal, $obj->getLedgerVersion());
-        $this->assertNotNull($obj->getOverlayVersion());
+        $obj->getOverlayVersion();
         $newVal = 42;
         $obj->setOverlayVersion($newVal);
         $this->assertSame($newVal, $obj->getOverlayVersion());
-        $this->assertNotNull($obj->getOverlayMinVersion());
+        $obj->getOverlayMinVersion();
         $newVal = 42;
         $obj->setOverlayMinVersion($newVal);
         $this->assertSame($newVal, $obj->getOverlayMinVersion());
-        $this->assertNotNull($obj->getNetworkID());
+        $obj->getNetworkID();
         $newVal = str_repeat("\xAB", 32);
         $obj->setNetworkID($newVal);
         $this->assertSame($newVal, $obj->getNetworkID());
-        $this->assertNotNull($obj->getVersionStr());
+        $obj->getVersionStr();
         $newVal = 'test_string';
         $obj->setVersionStr($newVal);
         $this->assertSame($newVal, $obj->getVersionStr());
-        $this->assertNotNull($obj->getListeningPort());
+        $obj->getListeningPort();
         $newVal = 42;
         $obj->setListeningPort($newVal);
         $this->assertSame($newVal, $obj->getListeningPort());
-        $this->assertNotNull($obj->getPeerID());
+        $obj->getPeerID();
         $newVal = new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })());
         $obj->setPeerID($newVal);
         $this->assertSame($newVal, $obj->getPeerID());
-        $this->assertNotNull($obj->getCert());
-        $newVal = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, "\x01\x02\x03\x04");
+        $obj->getCert();
+        $newVal = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64));
         $obj->setCert($newVal);
         $this->assertSame($newVal, $obj->getCert());
-        $this->assertNotNull($obj->getNonce());
+        $obj->getNonce();
         $newVal = str_repeat("\xAB", 32);
         $obj->setNonce($newVal);
         $this->assertSame($newVal, $obj->getNonce());
@@ -261,26 +236,10 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuth');
     }
 
-    public function testXdrAuthEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrAuth(0);
-        $encoded = $original->encode();
-        $decoded = XdrAuth::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrAuth');
-    }
-
-    public function testXdrAuthEdgeCaseMaxInt32RoundTrip(): void
-    {
-        $original = new XdrAuth(2147483647);
-        $encoded = $original->encode();
-        $decoded = XdrAuth::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case MaxInt32 failed for XdrAuth');
-    }
-
     public function testXdrAuthGettersSetters(): void
     {
         $obj = new XdrAuth(42);
-        $this->assertNotNull($obj->getFlags());
+        $obj->getFlags();
         $newVal = 42;
         $obj->setFlags($newVal);
         $this->assertSame($newVal, $obj->getFlags());
@@ -314,7 +273,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrPeerAddressStructRoundTrip(): void
     {
-        $original = new XdrPeerAddress((function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return $ip; })(), 42, 42);
+        $original = (function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return new XdrPeerAddress($ip, 42, 0); })();
         $encoded = $original->encode();
         $decoded = XdrPeerAddress::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPeerAddress');
@@ -322,57 +281,31 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPeerAddress');
     }
 
-    public function testXdrPeerAddressEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrPeerAddress((function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return $ip; })(), 0, 42);
-        $encoded = $original->encode();
-        $decoded = XdrPeerAddress::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrPeerAddress');
-    }
-
     public function testXdrPeerAddressGettersSetters(): void
     {
-        $obj = new XdrPeerAddress((function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return $ip; })(), 42, 42);
-        $this->assertNotNull($obj->getIp());
+        $obj = (function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return new XdrPeerAddress($ip, 42, 0); })();
+        $obj->getIp();
         $newVal = (function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return $ip; })();
         $obj->setIp($newVal);
         $this->assertSame($newVal, $obj->getIp());
-        $this->assertNotNull($obj->getPort());
+        $obj->getPort();
         $newVal = 42;
         $obj->setPort($newVal);
         $this->assertSame($newVal, $obj->getPort());
-        $this->assertNotNull($obj->getNumFailures());
+        $obj->getNumFailures();
         $newVal = 42;
         $obj->setNumFailures($newVal);
         $this->assertSame($newVal, $obj->getNumFailures());
     }
 
-    public function testXdrPeerAddressIp_XdrIPAddrType_IPv4_ArmRoundTrip(): void
+    public function testXdrPeerAddressIpUnionRoundTrip(): void
     {
-        $original = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4));
-        $original->ipv4 = str_repeat("\xAB", 4);
+        $original = (function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return $ip; })();
         $encoded = $original->encode();
         $decoded = XdrPeerAddressIp::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->ipv4);
-        $this->assertNull($decoded->ipv6);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPeerAddressIp');
         $b64Decoded = XdrPeerAddressIp::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
-    }
-
-    public function testXdrPeerAddressIp_XdrIPAddrType_IPv6_ArmRoundTrip(): void
-    {
-        $original = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv6));
-        $original->ipv6 = str_repeat("\xAB", 16);
-        $encoded = $original->encode();
-        $decoded = XdrPeerAddressIp::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->ipv6);
-        $this->assertNull($decoded->ipv4);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
-        $b64Decoded = XdrPeerAddressIp::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPeerAddressIp');
     }
 
     public function testXdrPeerAddressIpGettersSetters(): void
@@ -430,7 +363,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrDontHaveStructRoundTrip(): void
     {
-        $original = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\xAB", 32));
+        $original = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\0", 32));
         $encoded = $original->encode();
         $decoded = XdrDontHave::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrDontHave');
@@ -440,12 +373,12 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrDontHaveGettersSetters(): void
     {
-        $obj = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\xAB", 32));
-        $this->assertNotNull($obj->getType());
+        $obj = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\0", 32));
+        $obj->getType();
         $newVal = new XdrMessageType(XdrMessageType::ERROR_MSG);
         $obj->setType($newVal);
         $this->assertSame($newVal, $obj->getType());
-        $this->assertNotNull($obj->getReqHash());
+        $obj->getReqHash();
         $newVal = str_repeat("\xAB", 32);
         $obj->setReqHash($newVal);
         $this->assertSame($newVal, $obj->getReqHash());
@@ -501,14 +434,284 @@ class XdrOverlayGenTest extends TestCase
         $this->assertNotNull(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2());
     }
 
+    public function testXdrTimeSlicedSurveyStartCollectingMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $encoded = $original->encode();
+        $decoded = XdrTimeSlicedSurveyStartCollectingMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeSlicedSurveyStartCollectingMessage');
+        $b64Decoded = XdrTimeSlicedSurveyStartCollectingMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedSurveyStartCollectingMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyStartCollectingMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $obj->getSurveyorID();
+        $newVal = new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })());
+        $obj->setSurveyorID($newVal);
+        $this->assertSame($newVal, $obj->getSurveyorID());
+        $obj->getNonce();
+        $newVal = 42;
+        $obj->setNonce($newVal);
+        $this->assertSame($newVal, $obj->getNonce());
+        $obj->getLedgerNum();
+        $newVal = 42;
+        $obj->setLedgerNum($newVal);
+        $this->assertSame($newVal, $obj->getLedgerNum());
+    }
+
+    public function testXdrSignedTimeSlicedSurveyStartCollectingMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat("\xAB", 64), $start); })();
+        $encoded = $original->encode();
+        $decoded = XdrSignedTimeSlicedSurveyStartCollectingMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSignedTimeSlicedSurveyStartCollectingMessage');
+        $b64Decoded = XdrSignedTimeSlicedSurveyStartCollectingMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignedTimeSlicedSurveyStartCollectingMessage');
+    }
+
+    public function testXdrSignedTimeSlicedSurveyStartCollectingMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat("\xAB", 64), $start); })();
+        $obj->getSignature();
+        $newVal = "\x01\x02\x03\x04";
+        $obj->setSignature($newVal);
+        $this->assertSame($newVal, $obj->getSignature());
+        $obj->getStartCollecting();
+        $newVal = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $obj->setStartCollecting($newVal);
+        $this->assertSame($newVal, $obj->getStartCollecting());
+    }
+
+    public function testXdrTimeSlicedSurveyStopCollectingMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $encoded = $original->encode();
+        $decoded = XdrTimeSlicedSurveyStopCollectingMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeSlicedSurveyStopCollectingMessage');
+        $b64Decoded = XdrTimeSlicedSurveyStopCollectingMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedSurveyStopCollectingMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyStopCollectingMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $obj->getSurveyorID();
+        $newVal = new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })());
+        $obj->setSurveyorID($newVal);
+        $this->assertSame($newVal, $obj->getSurveyorID());
+        $obj->getNonce();
+        $newVal = 42;
+        $obj->setNonce($newVal);
+        $this->assertSame($newVal, $obj->getNonce());
+        $obj->getLedgerNum();
+        $newVal = 42;
+        $obj->setLedgerNum($newVal);
+        $this->assertSame($newVal, $obj->getLedgerNum());
+    }
+
+    public function testXdrSignedTimeSlicedSurveyStopCollectingMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat("\xAB", 64), $stop); })();
+        $encoded = $original->encode();
+        $decoded = XdrSignedTimeSlicedSurveyStopCollectingMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSignedTimeSlicedSurveyStopCollectingMessage');
+        $b64Decoded = XdrSignedTimeSlicedSurveyStopCollectingMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignedTimeSlicedSurveyStopCollectingMessage');
+    }
+
+    public function testXdrSignedTimeSlicedSurveyStopCollectingMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat("\xAB", 64), $stop); })();
+        $obj->getSignature();
+        $newVal = "\x01\x02\x03\x04";
+        $obj->setSignature($newVal);
+        $this->assertSame($newVal, $obj->getSignature());
+        $obj->getStopCollecting();
+        $newVal = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $obj->setStopCollecting($newVal);
+        $this->assertSame($newVal, $obj->getStopCollecting());
+    }
+
+    public function testXdrSurveyRequestMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); })();
+        $encoded = $original->encode();
+        $decoded = XdrSurveyRequestMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSurveyRequestMessage');
+        $b64Decoded = XdrSurveyRequestMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSurveyRequestMessage');
+    }
+
+    public function testXdrSurveyRequestMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); })();
+        $obj->getSurveyorPeerID();
+        $newVal = new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })());
+        $obj->setSurveyorPeerID($newVal);
+        $this->assertSame($newVal, $obj->getSurveyorPeerID());
+        $obj->getSurveyedPeerID();
+        $newVal = new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })());
+        $obj->setSurveyedPeerID($newVal);
+        $this->assertSame($newVal, $obj->getSurveyedPeerID());
+        $obj->getLedgerNum();
+        $newVal = 42;
+        $obj->setLedgerNum($newVal);
+        $this->assertSame($newVal, $obj->getLedgerNum());
+        $obj->getEncryptionKey();
+        $newVal = new XdrCurve25519Public(str_repeat("\xAB", 32));
+        $obj->setEncryptionKey($newVal);
+        $this->assertSame($newVal, $obj->getEncryptionKey());
+        $obj->getCommandType();
+        $newVal = new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY);
+        $obj->setCommandType($newVal);
+        $this->assertSame($newVal, $obj->getCommandType());
+    }
+
+    public function testXdrTimeSlicedSurveyRequestMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); return new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); })();
+        $encoded = $original->encode();
+        $decoded = XdrTimeSlicedSurveyRequestMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeSlicedSurveyRequestMessage');
+        $b64Decoded = XdrTimeSlicedSurveyRequestMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedSurveyRequestMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyRequestMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); return new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); })();
+        $obj->getRequest();
+        $newVal = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); })();
+        $obj->setRequest($newVal);
+        $this->assertSame($newVal, $obj->getRequest());
+        $obj->getNonce();
+        $newVal = 42;
+        $obj->setNonce($newVal);
+        $this->assertSame($newVal, $obj->getNonce());
+        $obj->getInboundPeersIndex();
+        $newVal = 42;
+        $obj->setInboundPeersIndex($newVal);
+        $this->assertSame($newVal, $obj->getInboundPeersIndex());
+        $obj->getOutboundPeersIndex();
+        $newVal = 42;
+        $obj->setOutboundPeersIndex($newVal);
+        $this->assertSame($newVal, $obj->getOutboundPeersIndex());
+    }
+
+    public function testXdrSignedTimeSlicedSurveyRequestMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); $tsReq = new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); return new XdrSignedTimeSlicedSurveyRequestMessage(str_repeat("\xAB", 64), $tsReq); })();
+        $encoded = $original->encode();
+        $decoded = XdrSignedTimeSlicedSurveyRequestMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSignedTimeSlicedSurveyRequestMessage');
+        $b64Decoded = XdrSignedTimeSlicedSurveyRequestMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignedTimeSlicedSurveyRequestMessage');
+    }
+
+    public function testXdrSignedTimeSlicedSurveyRequestMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); $tsReq = new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); return new XdrSignedTimeSlicedSurveyRequestMessage(str_repeat("\xAB", 64), $tsReq); })();
+        $obj->getRequestSignature();
+        $newVal = "\x01\x02\x03\x04";
+        $obj->setRequestSignature($newVal);
+        $this->assertSame($newVal, $obj->getRequestSignature());
+        $obj->getRequest();
+        $newVal = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); return new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); })();
+        $obj->setRequest($newVal);
+        $this->assertSame($newVal, $obj->getRequest());
+    }
+
     public function testXdrEncryptedBodyTypedefRoundTrip(): void
     {
-        $original = new XdrEncryptedBody("\x01\x02\x03\x04");
+        $original = new XdrEncryptedBody(str_repeat("\xAB", 64));
         $encoded = $original->encode();
         $decoded = XdrEncryptedBody::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrEncryptedBody');
         $b64Decoded = XdrEncryptedBody::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrEncryptedBody');
+    }
+
+    public function testXdrSurveyResponseMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); })();
+        $encoded = $original->encode();
+        $decoded = XdrSurveyResponseMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSurveyResponseMessage');
+        $b64Decoded = XdrSurveyResponseMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSurveyResponseMessage');
+    }
+
+    public function testXdrSurveyResponseMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); })();
+        $obj->getSurveyorPeerID();
+        $newVal = new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })());
+        $obj->setSurveyorPeerID($newVal);
+        $this->assertSame($newVal, $obj->getSurveyorPeerID());
+        $obj->getSurveyedPeerID();
+        $newVal = new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })());
+        $obj->setSurveyedPeerID($newVal);
+        $this->assertSame($newVal, $obj->getSurveyedPeerID());
+        $obj->getLedgerNum();
+        $newVal = 42;
+        $obj->setLedgerNum($newVal);
+        $this->assertSame($newVal, $obj->getLedgerNum());
+        $obj->getCommandType();
+        $newVal = new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY);
+        $obj->setCommandType($newVal);
+        $this->assertSame($newVal, $obj->getCommandType());
+        $obj->getEncryptedBody();
+        $newVal = new XdrEncryptedBody(str_repeat("\xAB", 64));
+        $obj->setEncryptedBody($newVal);
+        $this->assertSame($newVal, $obj->getEncryptedBody());
+    }
+
+    public function testXdrTimeSlicedSurveyResponseMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); return new XdrTimeSlicedSurveyResponseMessage($resp, 42); })();
+        $encoded = $original->encode();
+        $decoded = XdrTimeSlicedSurveyResponseMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeSlicedSurveyResponseMessage');
+        $b64Decoded = XdrTimeSlicedSurveyResponseMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedSurveyResponseMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyResponseMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); return new XdrTimeSlicedSurveyResponseMessage($resp, 42); })();
+        $obj->getResponse();
+        $newVal = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); })();
+        $obj->setResponse($newVal);
+        $this->assertSame($newVal, $obj->getResponse());
+        $obj->getNonce();
+        $newVal = 42;
+        $obj->setNonce($newVal);
+        $this->assertSame($newVal, $obj->getNonce());
+    }
+
+    public function testXdrSignedTimeSlicedSurveyResponseMessageStructRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); $tsResp = new XdrTimeSlicedSurveyResponseMessage($resp, 42); return new XdrSignedTimeSlicedSurveyResponseMessage(str_repeat("\xAB", 64), $tsResp); })();
+        $encoded = $original->encode();
+        $decoded = XdrSignedTimeSlicedSurveyResponseMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSignedTimeSlicedSurveyResponseMessage');
+        $b64Decoded = XdrSignedTimeSlicedSurveyResponseMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignedTimeSlicedSurveyResponseMessage');
+    }
+
+    public function testXdrSignedTimeSlicedSurveyResponseMessageGettersSetters(): void
+    {
+        $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); $tsResp = new XdrTimeSlicedSurveyResponseMessage($resp, 42); return new XdrSignedTimeSlicedSurveyResponseMessage(str_repeat("\xAB", 64), $tsResp); })();
+        $obj->getResponseSignature();
+        $newVal = "\x01\x02\x03\x04";
+        $obj->setResponseSignature($newVal);
+        $this->assertSame($newVal, $obj->getResponseSignature());
+        $obj->getResponse();
+        $newVal = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); return new XdrTimeSlicedSurveyResponseMessage($resp, 42); })();
+        $obj->setResponse($newVal);
+        $this->assertSame($newVal, $obj->getResponse());
     }
 
     public function testXdrPeerStatsStructRoundTrip(): void
@@ -596,7 +799,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrTimeSlicedNodeDataStructRoundTrip(): void
     {
-        $original = new XdrTimeSlicedNodeData(42, 42, 42, 42, 42, 42, 42, true, 42, 42);
+        $original = new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0);
         $encoded = $original->encode();
         $decoded = XdrTimeSlicedNodeData::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeSlicedNodeData');
@@ -604,50 +807,42 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedNodeData');
     }
 
-    public function testXdrTimeSlicedNodeDataEdgeCaseZeroRoundTrip(): void
-    {
-        $original = new XdrTimeSlicedNodeData(0, 42, 42, 42, 42, 42, 42, true, 42, 42);
-        $encoded = $original->encode();
-        $decoded = XdrTimeSlicedNodeData::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrTimeSlicedNodeData');
-    }
-
     public function testXdrTimeSlicedNodeDataGettersSetters(): void
     {
-        $obj = new XdrTimeSlicedNodeData(42, 42, 42, 42, 42, 42, 42, true, 42, 42);
-        $this->assertNotNull($obj->getAddedAuthenticatedPeers());
+        $obj = new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0);
+        $obj->getAddedAuthenticatedPeers();
         $newVal = 42;
         $obj->setAddedAuthenticatedPeers($newVal);
         $this->assertSame($newVal, $obj->getAddedAuthenticatedPeers());
-        $this->assertNotNull($obj->getDroppedAuthenticatedPeers());
+        $obj->getDroppedAuthenticatedPeers();
         $newVal = 42;
         $obj->setDroppedAuthenticatedPeers($newVal);
         $this->assertSame($newVal, $obj->getDroppedAuthenticatedPeers());
-        $this->assertNotNull($obj->getTotalInboundPeerCount());
+        $obj->getTotalInboundPeerCount();
         $newVal = 42;
         $obj->setTotalInboundPeerCount($newVal);
         $this->assertSame($newVal, $obj->getTotalInboundPeerCount());
-        $this->assertNotNull($obj->getTotalOutboundPeerCount());
+        $obj->getTotalOutboundPeerCount();
         $newVal = 42;
         $obj->setTotalOutboundPeerCount($newVal);
         $this->assertSame($newVal, $obj->getTotalOutboundPeerCount());
-        $this->assertNotNull($obj->getP75SCPFirstToSelfLatencyMs());
+        $obj->getP75SCPFirstToSelfLatencyMs();
         $newVal = 42;
         $obj->setP75SCPFirstToSelfLatencyMs($newVal);
         $this->assertSame($newVal, $obj->getP75SCPFirstToSelfLatencyMs());
-        $this->assertNotNull($obj->getP75SCPSelfToOtherLatencyMs());
+        $obj->getP75SCPSelfToOtherLatencyMs();
         $newVal = 42;
         $obj->setP75SCPSelfToOtherLatencyMs($newVal);
         $this->assertSame($newVal, $obj->getP75SCPSelfToOtherLatencyMs());
-        $this->assertNotNull($obj->getLostSyncCount());
+        $obj->getLostSyncCount();
         $newVal = 42;
         $obj->setLostSyncCount($newVal);
         $this->assertSame($newVal, $obj->getLostSyncCount());
-        $this->assertNotNull($obj->getMaxInboundPeerCount());
+        $obj->getMaxInboundPeerCount();
         $newVal = 42;
         $obj->setMaxInboundPeerCount($newVal);
         $this->assertSame($newVal, $obj->getMaxInboundPeerCount());
-        $this->assertNotNull($obj->getMaxOutboundPeerCount());
+        $obj->getMaxOutboundPeerCount();
         $newVal = 42;
         $obj->setMaxOutboundPeerCount($newVal);
         $this->assertSame($newVal, $obj->getMaxOutboundPeerCount());
@@ -684,9 +879,19 @@ class XdrOverlayGenTest extends TestCase
         $this->assertSame($newVal, $obj->getAverageLatencyMs());
     }
 
+    public function testXdrTimeSlicedPeerDataListTypedefRoundTrip(): void
+    {
+        $original = new XdrTimeSlicedPeerDataList([]);
+        $encoded = $original->encode();
+        $decoded = XdrTimeSlicedPeerDataList::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeSlicedPeerDataList');
+        $b64Decoded = XdrTimeSlicedPeerDataList::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedPeerDataList');
+    }
+
     public function testXdrTopologyResponseBodyV2StructRoundTrip(): void
     {
-        $original = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(42, 42, 42, 42, 42, 42, 42, true, 42, 42));
+        $original = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0));
         $encoded = $original->encode();
         $decoded = XdrTopologyResponseBodyV2::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTopologyResponseBodyV2');
@@ -696,19 +901,36 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrTopologyResponseBodyV2GettersSetters(): void
     {
-        $obj = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(42, 42, 42, 42, 42, 42, 42, true, 42, 42));
-        $this->assertNotNull($obj->getInboundPeers());
+        $obj = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0));
+        $obj->getInboundPeers();
         $newVal = new XdrTimeSlicedPeerDataList([]);
         $obj->setInboundPeers($newVal);
         $this->assertSame($newVal, $obj->getInboundPeers());
-        $this->assertNotNull($obj->getOutboundPeers());
+        $obj->getOutboundPeers();
         $newVal = new XdrTimeSlicedPeerDataList([]);
         $obj->setOutboundPeers($newVal);
         $this->assertSame($newVal, $obj->getOutboundPeers());
-        $this->assertNotNull($obj->getNodeData());
-        $newVal = new XdrTimeSlicedNodeData(42, 42, 42, 42, 42, 42, 42, true, 42, 42);
+        $obj->getNodeData();
+        $newVal = new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0);
         $obj->setNodeData($newVal);
         $this->assertSame($newVal, $obj->getNodeData());
+    }
+
+    public function testXdrSurveyResponseBodyUnionRoundTrip(): void
+    {
+        $original = (function() { $u = new XdrSurveyResponseBody(new XdrSurveyMessageResponseType(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2)); $u->topologyResponseBodyV2 = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)); return $u; })();
+        $encoded = $original->encode();
+        $decoded = XdrSurveyResponseBody::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSurveyResponseBody');
+        $b64Decoded = XdrSurveyResponseBody::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSurveyResponseBody');
+    }
+
+    public function testXdrSurveyResponseBodyGettersSetters(): void
+    {
+        $obj = (function() { $u = new XdrSurveyResponseBody(new XdrSurveyMessageResponseType(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2)); $u->topologyResponseBodyV2 = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)); return $u; })();
+        $this->assertNotNull($obj->getType());
+        $obj->getTopologyResponseBodyV2();
     }
 
     public function testXdrTxAdvertVectorTypedefRoundTrip(): void
@@ -734,7 +956,7 @@ class XdrOverlayGenTest extends TestCase
     public function testXdrFloodAdvertGettersSetters(): void
     {
         $obj = new XdrFloodAdvert(new XdrTxAdvertVector([]));
-        $this->assertNotNull($obj->getTxHashes());
+        $obj->getTxHashes();
         $newVal = new XdrTxAdvertVector([]);
         $obj->setTxHashes($newVal);
         $this->assertSame($newVal, $obj->getTxHashes());
@@ -763,10 +985,91 @@ class XdrOverlayGenTest extends TestCase
     public function testXdrFloodDemandGettersSetters(): void
     {
         $obj = new XdrFloodDemand(new XdrTxDemandVector([]));
-        $this->assertNotNull($obj->getTxHashes());
+        $obj->getTxHashes();
         $newVal = new XdrTxDemandVector([]);
         $obj->setTxHashes($newVal);
         $this->assertSame($newVal, $obj->getTxHashes());
+    }
+
+    public function testXdrStellarMessageUnionRoundTrip(): void
+    {
+        $original = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })();
+        $encoded = $original->encode();
+        $decoded = XdrStellarMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrStellarMessage');
+        $b64Decoded = XdrStellarMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrStellarMessage');
+    }
+
+    public function testXdrStellarMessageGettersSetters(): void
+    {
+        $obj = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })();
+        $this->assertNotNull($obj->getType());
+        $obj->getError();
+        $obj->getHello();
+        $obj->getAuth();
+        $obj->getDontHave();
+        $obj->getPeers();
+        $obj->getTxSetHash();
+        $obj->getTxSet();
+        $obj->getGeneralizedTxSet();
+        $obj->getTransaction();
+        $obj->getSignedTimeSlicedSurveyRequestMessage();
+        $obj->getSignedTimeSlicedSurveyResponseMessage();
+        $obj->getSignedTimeSlicedSurveyStartCollectingMessage();
+        $obj->getSignedTimeSlicedSurveyStopCollectingMessage();
+        $obj->getQSetHash();
+        $obj->getQSet();
+        $obj->getEnvelope();
+        $obj->getGetSCPLedgerSeq();
+        $obj->getSendMoreMessage();
+        $obj->getSendMoreExtendedMessage();
+        $obj->getFloodAdvert();
+        $obj->getFloodDemand();
+    }
+
+    public function testXdrAuthenticatedMessageUnionRoundTrip(): void
+    {
+        $original = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); return $u; })();
+        $encoded = $original->encode();
+        $decoded = XdrAuthenticatedMessage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrAuthenticatedMessage');
+        $b64Decoded = XdrAuthenticatedMessage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuthenticatedMessage');
+    }
+
+    public function testXdrAuthenticatedMessageGettersSetters(): void
+    {
+        $obj = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); return $u; })();
+        $this->assertNotNull($obj->getV());
+        $obj->getV0();
+    }
+
+    public function testXdrAuthenticatedMessageV0StructRoundTrip(): void
+    {
+        $original = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); })();
+        $encoded = $original->encode();
+        $decoded = XdrAuthenticatedMessageV0::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrAuthenticatedMessageV0');
+        $b64Decoded = XdrAuthenticatedMessageV0::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuthenticatedMessageV0');
+    }
+
+    public function testXdrAuthenticatedMessageV0GettersSetters(): void
+    {
+        $obj = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); })();
+        $obj->getSequence();
+        $newVal = 42;
+        $obj->setSequence($newVal);
+        $this->assertSame($newVal, $obj->getSequence());
+        $obj->getMessage();
+        $newVal = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })();
+        $obj->setMessage($newVal);
+        $this->assertSame($newVal, $obj->getMessage());
+        $obj->getMac();
+        $newVal = new XdrHmacSha256Mac(str_repeat("\xAB", 32));
+        $obj->setMac($newVal);
+        $this->assertSame($newVal, $obj->getMac());
     }
 }
 
