@@ -103,6 +103,7 @@ BASE_WRAPPER_TYPES = %w[
   XdrTransactionV0
   XdrChangeTrustAsset
   XdrTrustlineAsset
+  XdrSCSpecUDTUnionCaseV0
 ].freeze
 
 # ---------------------------------------------------------------------------
