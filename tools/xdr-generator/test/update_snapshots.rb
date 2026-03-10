@@ -14,10 +14,14 @@ OUTPUT_DIR = File.join(__dir__, '..', '..', '..', 'Soneso', 'StellarSDK', 'Xdr')
 # List of snapshot files to maintain.
 # Add new entries as generator coverage expands.
 SNAPSHOT_FILES = [
-  # Phase 2.5: Initial snapshots (uncomment as types are generated)
-  # "XdrAssetType.php",       # Simple enum
-  # "XdrPrice.php",           # Simple struct
-  # "XdrAsset.php",           # Union with enum discriminant
+  "XdrAssetType.php",                    # Simple enum
+  "XdrPrice.php",                        # Simple struct (2 int fields)
+  "XdrAsset.php",                        # Union with enum discriminant
+  "XdrSCValBase.php",                    # Base wrapper union, self-referencing
+  "XdrAccountEntryV1Ext.php",            # Union with integer discriminant
+  "XdrLedgerEntryData.php",              # Large union, many struct-typed arms
+  "XdrTransactionResultResult.php",      # Union with fee bump arms (regression guard)
+  "XdrClaimableBalanceEntryExtV1.php",   # Struct with extension point field
 ].freeze
 
 FileUtils.mkdir_p(SNAPSHOT_DIR)

@@ -1,0 +1,70 @@
+name: XDR Generator
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/xdr-generator/**'
+      - 'Soneso/StellarSDK/Xdr/**'
+      - 'Makefile'
+      - '.github/workflows/xdr-generator.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tools/xdr-generator/**'
+      - 'Soneso/StellarSDK/Xdr/**'
+      - 'Makefile'
+      - '.github/workflows/xdr-generator.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xdr-generator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot-tests:
+    name: Snapshot Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run snapshot tests
+        run: make xdr-generator-test
+
+  drift-detection:
+    name: Drift Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Regenerate XDR types
+        run: make xdr-update
+
+      - name: Check for drift
+        run: |
+          if ! git diff --exit-code Soneso/StellarSDK/Xdr/; then
+            echo "::error::Generated XDR files are out of date. Run 'make xdr-update' and commit the changes."
+            exit 1
+          fi
+          if [ -n "$(git ls-files --others --exclude-standard Soneso/StellarSDK/Xdr/)" ]; then
+            echo "::error::Untracked generated XDR files found. Run 'make xdr-update' and commit the new files."
+            git ls-files --others --exclude-standard Soneso/StellarSDK/Xdr/
+            exit 1
+          fi
+
+  validation:
+    name: Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate generated types
+        run: make xdr-validate

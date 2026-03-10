@@ -31,18 +31,51 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   # ------------------------------------------------------------------
-  # Snapshot comparison tests (added incrementally per batch)
+  # Snapshot comparison tests
   # ------------------------------------------------------------------
 
-  # Example (uncomment when first snapshot is created):
-  # def test_snapshot_xdr_asset_type
-  #   assert_snapshot_match("XdrAssetType.php")
-  # end
+  def test_snapshot_xdr_asset_type
+    assert_snapshot_match("XdrAssetType.php")
+  end
+
+  def test_snapshot_xdr_price
+    assert_snapshot_match("XdrPrice.php")
+  end
+
+  def test_snapshot_xdr_asset
+    assert_snapshot_match("XdrAsset.php")
+  end
+
+  def test_snapshot_xdr_sc_val_base
+    assert_snapshot_match("XdrSCValBase.php")
+  end
+
+  def test_snapshot_xdr_account_entry_v1_ext
+    assert_snapshot_match("XdrAccountEntryV1Ext.php")
+  end
+
+  def test_snapshot_xdr_ledger_entry_data
+    assert_snapshot_match("XdrLedgerEntryData.php")
+  end
+
+  def test_snapshot_xdr_transaction_result_result
+    assert_snapshot_match("XdrTransactionResultResult.php")
+  end
+
+  def test_snapshot_xdr_claimable_balance_entry_ext_v1
+    assert_snapshot_match("XdrClaimableBalanceEntryExtV1.php")
+  end
 
   private
 
   def assert_snapshot_match(filename)
-    skip "Snapshots not yet created" unless Dir.exist?(SNAPSHOT_DIR) && !Dir.empty?(SNAPSHOT_DIR)
+    unless Dir.exist?(SNAPSHOT_DIR) && !Dir.empty?(SNAPSHOT_DIR)
+      if ENV['CI']
+        flunk "Snapshot directory is missing or empty — snapshots must be committed for CI"
+      else
+        skip "Snapshots not yet created"
+      end
+    end
 
     generated = File.join(OUTPUT_DIR, filename)
     snapshot = File.join(SNAPSHOT_DIR, filename)

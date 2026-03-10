@@ -104,7 +104,7 @@ NAME_OVERRIDES = {
   # SignerKey nested payload type
   "SignerKeyEd25519SignedPayload" => "XdrSignedPayload",
 
-  # SCP inline types (not yet in PHP SDK — these are for future new type generation)
+  # SCP inline types — nested definitions mapped to existing PHP class names
   "SCPStatementPledgesPrepare" => "XdrSCPStatementPrepare",
   "SCPStatementPledgesConfirm" => "XdrSCPStatementConfirm",
   "SCPStatementPledgesExternalize" => "XdrSCPStatementExternalize",

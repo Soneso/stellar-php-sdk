@@ -35,6 +35,7 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructFieldV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseTupleV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Base;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseVoidV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0;
@@ -635,6 +636,17 @@ class XdrContractSpecGenTest extends TestCase
         $this->assertNotNull($obj->getKind());
         $obj->getVoidCase();
         $obj->getTupleCase();
+    }
+
+    public function testXdrSCSpecUDTUnionCaseV0BaseRoundTrip(): void
+    {
+        $original = (function() { $u = new XdrSCSpecUDTUnionCaseV0Base(new XdrSCSpecUDTUnionCaseV0Kind(XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_VOID_V0)); $u->voidCase = new XdrSCSpecUDTUnionCaseVoidV0('test_string', 'test_string'); return $u; })();
+        $encoded = $original->encode();
+        $decoded = XdrSCSpecUDTUnionCaseV0Base::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+        $b64 = $original->toBase64Xdr();
+        $fromB64 = XdrSCSpecUDTUnionCaseV0Base::fromBase64Xdr($b64);
+        $this->assertEquals($encoded, $fromB64->encode());
     }
 
     public function testXdrSCSpecUDTUnionV0StructRoundTrip(): void

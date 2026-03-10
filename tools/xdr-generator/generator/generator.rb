@@ -101,8 +101,7 @@ class Generator < Xdrgen::Generators::Base
 
   def render_enum(enum_defn)
     php_name = name(enum_defn)
-    is_base = BASE_WRAPPER_TYPES.include?(php_name)
-    class_name = is_base ? "#{php_name}Base" : php_name
+    is_base, class_name, return_type, new_call = resolve_class_info(php_name)
     file = file_name(class_name)
     out = @output.open(file)
 
@@ -128,8 +127,6 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # Factory methods — one per enum constant
-    return_type = is_base ? "static" : php_name
-    new_call = is_base ? "new static" : "new #{php_name}"
     enum_defn.members.each do |m|
       member_name = resolve_member_name(php_name, m.name.to_s)
       factory_name = resolve_factory_name(php_name, member_name)
@@ -140,7 +137,7 @@ class Generator < Xdrgen::Generators::Base
     end
 
     # Extra factory aliases (backward compatibility)
-    if defined?(FACTORY_ALIASES) && FACTORY_ALIASES.key?(php_name)
+    if FACTORY_ALIASES.key?(php_name)
       FACTORY_ALIASES[php_name].each do |alias_name, const_name|
         out.puts "    public static function #{alias_name}(): #{return_type} {"
         out.puts "        return #{new_call}(#{class_name}::#{const_name});"
@@ -153,15 +150,13 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return XdrEncoder::integer32($this->value);"
     out.puts "    }"
     out.puts ""
-    decode_return = is_base ? "static" : php_name
-    decode_new = is_base ? "new static" : "new #{php_name}"
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
+    out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
     out.puts "        $value = $xdr->readInteger32();"
     out.puts "        switch ($value) {"
     enum_defn.members.each do |m|
       out.puts "            case #{m.value}:"
     end
-    out.puts "                return #{decode_new}($value);"
+    out.puts "                return #{new_call}($value);"
     out.puts "            default:"
     out.puts "                throw new \\InvalidArgumentException(\"Unknown enum value: $value\");"
     out.puts "        }"
@@ -187,8 +182,7 @@ class Generator < Xdrgen::Generators::Base
 
   def render_struct(struct)
     struct_name = name(struct)
-    is_base = BASE_WRAPPER_TYPES.include?(struct_name)
-    class_name = is_base ? "#{struct_name}Base" : struct_name
+    is_base, class_name, _, _ = resolve_class_info(struct_name)
     file = file_name(class_name)
     out = @output.open(file)
 
@@ -373,9 +367,9 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def render_struct_decode(out, struct_name, class_name, fields, is_base)
-    decode_return = is_base ? "static" : struct_name
+    _, _, return_type, _ = resolve_class_info(struct_name)
     decode_class = is_base ? "static" : struct_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
+    out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
     fields.each do |f|
       if f[:is_ext_point]
         out.puts "        $xdr->readInteger32(); // extension point"
@@ -409,8 +403,7 @@ class Generator < Xdrgen::Generators::Base
 
   def render_union(union)
     union_name = name(union)
-    is_base = BASE_WRAPPER_TYPES.include?(union_name)
-    class_name = is_base ? "#{union_name}Base" : union_name
+    is_base, class_name, _, _ = resolve_class_info(union_name)
     file = file_name(class_name)
     out = @output.open(file)
 
@@ -489,8 +482,11 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        $bytes = $this->#{disc_info[:field_name]}->encode();"
     end
 
-    out.puts "        switch ($this->#{disc_info[:field_name]}->getValue()) {" if disc_info[:kind] == :enum
-    out.puts "        switch ($this->#{disc_info[:field_name]}) {" if disc_info[:kind] == :int
+    if disc_info[:kind] == :enum
+      out.puts "        switch ($this->#{disc_info[:field_name]}->getValue()) {"
+    else
+      out.puts "        switch ($this->#{disc_info[:field_name]}) {"
+    end
 
     has_default = arms.any? { |a| a[:is_default] }
 
@@ -522,9 +518,9 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def render_union_decode(out, union_name, class_name, disc_info, arms, is_base)
-    decode_return = is_base ? "static" : union_name
+    _, _, return_type, _ = resolve_class_info(union_name)
     decode_class = is_base ? "static" : union_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
+    out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
 
     if disc_info[:kind] == :int
       out.puts "        $#{disc_info[:field_name]} = $xdr->readInteger32();"
@@ -612,12 +608,19 @@ class Generator < Xdrgen::Generators::Base
     case decl
     when AST::Declarations::Opaque
       if decl.fixed?
-        render_fixed_opaque_typedef(php_name, decl)
+        size = decl.size
+        render_scalar_typedef(php_name,
+          ->(fn) { "XdrEncoder::opaqueFixed($this->#{fn}, #{size})" },
+          "$xdr->readOpaqueFixed(#{size})")
       else
-        render_variable_opaque_typedef(php_name, decl)
+        render_scalar_typedef(php_name,
+          ->(fn) { "XdrEncoder::opaqueVariable($this->#{fn})" },
+          "$xdr->readOpaqueVariable()")
       end
     when AST::Declarations::String
-      render_string_typedef(php_name, decl)
+      render_scalar_typedef(php_name,
+        ->(fn) { "XdrEncoder::string($this->#{fn})" },
+        "$xdr->readString()")
     when AST::Declarations::Array
       render_array_typedef(php_name, decl)
     else
@@ -630,8 +633,7 @@ class Generator < Xdrgen::Generators::Base
     type_info = resolve_typedef_type(underlying)
     return unless type_info
 
-    is_base = BASE_WRAPPER_TYPES.include?(php_name)
-    class_name = is_base ? "#{php_name}Base" : php_name
+    _, class_name, return_type, new_expr = resolve_class_info(php_name)
     file = file_name(class_name)
     out = @output.open(file)
 
@@ -675,10 +677,8 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return #{encode_expr.call(field_name)};"
     out.puts "    }"
     out.puts ""
-    decode_return = is_base ? "static" : class_name
-    decode_new = is_base ? "static" : class_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
-    out.puts "        return new #{decode_new}(#{decode_expr.call});"
+    out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
+    out.puts "        return #{new_expr}(#{decode_expr.call});"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
@@ -686,10 +686,9 @@ class Generator < Xdrgen::Generators::Base
     out.close
   end
 
-  def render_fixed_opaque_typedef(php_name, decl)
-    size = decl.size
-    is_base = BASE_WRAPPER_TYPES.include?(php_name)
-    class_name = is_base ? "#{php_name}Base" : php_name
+  # Renders a single-field typedef wrapper class (opaque fixed/variable, string).
+  def render_scalar_typedef(php_name, encode_expr, decode_expr)
+    _, class_name, return_type, new_expr = resolve_class_info(php_name)
     file = file_name(class_name)
     out = @output.open(file)
 
@@ -706,79 +705,11 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     out.puts "    public function encode(): string {"
-    out.puts "        return XdrEncoder::opaqueFixed($this->#{field_name}, #{size});"
+    out.puts "        return #{encode_expr.call(field_name)};"
     out.puts "    }"
     out.puts ""
-    decode_return = is_base ? "static" : class_name
-    decode_new = is_base ? "static" : class_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
-    out.puts "        return new #{decode_new}($xdr->readOpaqueFixed(#{size}));"
-    out.puts "    }"
-    out.puts ""
-    render_base64_methods(out)
-    out.puts "}"
-    out.close
-  end
-
-  def render_variable_opaque_typedef(php_name, decl)
-    is_base = BASE_WRAPPER_TYPES.include?(php_name)
-    class_name = is_base ? "#{php_name}Base" : php_name
-    file = file_name(class_name)
-    out = @output.open(file)
-
-    field_name = underscore_field(php_name)
-
-    out.puts GENERATED_HEADER
-    out.puts ""
-    out.puts "class #{class_name} {"
-    out.puts ""
-    out.puts "    public string $#{field_name};"
-    out.puts ""
-    out.puts "    public function __construct(string $#{field_name}) {"
-    out.puts "        $this->#{field_name} = $#{field_name};"
-    out.puts "    }"
-    out.puts ""
-    out.puts "    public function encode(): string {"
-    out.puts "        return XdrEncoder::opaqueVariable($this->#{field_name});"
-    out.puts "    }"
-    out.puts ""
-    decode_return = is_base ? "static" : class_name
-    decode_new = is_base ? "static" : class_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
-    out.puts "        return new #{decode_new}($xdr->readOpaqueVariable());"
-    out.puts "    }"
-    out.puts ""
-    render_base64_methods(out)
-    out.puts "}"
-    out.close
-  end
-
-  def render_string_typedef(php_name, decl)
-    is_base = BASE_WRAPPER_TYPES.include?(php_name)
-    class_name = is_base ? "#{php_name}Base" : php_name
-    file = file_name(class_name)
-    out = @output.open(file)
-
-    field_name = underscore_field(php_name)
-
-    out.puts GENERATED_HEADER
-    out.puts ""
-    out.puts "class #{class_name} {"
-    out.puts ""
-    out.puts "    public string $#{field_name};"
-    out.puts ""
-    out.puts "    public function __construct(string $#{field_name}) {"
-    out.puts "        $this->#{field_name} = $#{field_name};"
-    out.puts "    }"
-    out.puts ""
-    out.puts "    public function encode(): string {"
-    out.puts "        return XdrEncoder::string($this->#{field_name});"
-    out.puts "    }"
-    out.puts ""
-    decode_return = is_base ? "static" : class_name
-    decode_new = is_base ? "static" : class_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
-    out.puts "        return new #{decode_new}($xdr->readString());"
+    out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
+    out.puts "        return #{new_expr}(#{decode_expr});"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
@@ -789,8 +720,7 @@ class Generator < Xdrgen::Generators::Base
   def render_array_typedef(php_name, decl)
     element_typespec = decl.type
     element_type = php_type_for_typespec(element_typespec)
-    is_base = BASE_WRAPPER_TYPES.include?(php_name)
-    class_name = is_base ? "#{php_name}Base" : php_name
+    _, class_name, return_type, new_expr = resolve_class_info(php_name)
     file = file_name(class_name)
     out = @output.open(file)
 
@@ -831,9 +761,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        return $bytes;"
     out.puts "    }"
     out.puts ""
-    decode_return = is_base ? "static" : class_name
-    decode_new = is_base ? "static" : class_name
-    out.puts "    public static function decode(XdrBuffer $xdr): #{decode_return} {"
+    out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
     out.puts "        $#{field_name} = [];"
 
     if decl.fixed?
@@ -849,7 +777,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        }"
     end
 
-    out.puts "        return new #{decode_new}($#{field_name});"
+    out.puts "        return #{new_expr}($#{field_name});"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
@@ -1169,42 +1097,14 @@ class Generator < Xdrgen::Generators::Base
     seen_fields = Set.new
 
     union.normal_arms.each do |arm|
+      labels = arm.cases.map { |c| format_case_label(c.value, disc_info) }
       if arm.void?
-        labels = arm.cases.map { |c| format_case_label(c.value, disc_info) }
-        arms << {
-          case_labels: labels,
-          void: true,
-          is_default: false,
-        }
+        arms << { case_labels: labels, void: true, is_default: false }
       else
         field_name = resolve_field_name(union_name, arm.name)
         next if seen_fields.include?(field_name)
         seen_fields.add(field_name)
-
-        labels = arm.cases.map { |c| format_case_label(c.value, disc_info) }
-        arm_info = resolve_php_arm_info(arm, union_name)
-
-        # Apply per-field type override for union arms (e.g., BigInteger)
-        if FIELD_TYPE_OVERRIDES.key?(union_name) && FIELD_TYPE_OVERRIDES[union_name].key?(field_name)
-          arm_info[:php_type] = FIELD_TYPE_OVERRIDES[union_name][field_name]
-          arm_info[:typespec] = nil  # Force fallback to php_type dispatch
-        end
-
-        arms << {
-          case_labels: labels,
-          void: false,
-          field_name: field_name,
-          php_type: arm_info[:php_type],
-          encode_style: arm_info[:encode_style],
-          decode_style: arm_info[:decode_style],
-          element_type: arm_info[:element_type],
-          element_typespec: arm_info[:element_typespec],
-          inner_type: arm_info[:inner_type],
-          inner_typespec: arm_info[:inner_typespec],
-          fixed_size: arm_info[:fixed_size],
-          typespec: arm_info[:typespec],
-          is_default: false,
-        }
+        arms << build_typed_arm(arm, union_name, field_name, labels, false)
       end
     end
 
@@ -1212,40 +1112,39 @@ class Generator < Xdrgen::Generators::Base
     if union.default_arm.present?
       da = union.default_arm
       if da.void?
-        arms << {
-          case_labels: ["default"],
-          void: true,
-          is_default: true,
-        }
+        arms << { case_labels: ["default"], void: true, is_default: true }
       else
         field_name = resolve_field_name(union_name, da.name)
-        arm_info = resolve_php_arm_info(da, union_name)
-
-        # Apply per-field type override for default arms (e.g., BigInteger)
-        if FIELD_TYPE_OVERRIDES.key?(union_name) && FIELD_TYPE_OVERRIDES[union_name].key?(field_name)
-          arm_info[:php_type] = FIELD_TYPE_OVERRIDES[union_name][field_name]
-          arm_info[:typespec] = nil
-        end
-
-        arms << {
-          case_labels: ["default"],
-          void: false,
-          field_name: field_name,
-          php_type: arm_info[:php_type],
-          encode_style: arm_info[:encode_style],
-          decode_style: arm_info[:decode_style],
-          element_type: arm_info[:element_type],
-          element_typespec: arm_info[:element_typespec],
-          inner_type: arm_info[:inner_type],
-          inner_typespec: arm_info[:inner_typespec],
-          fixed_size: arm_info[:fixed_size],
-          typespec: arm_info[:typespec],
-          is_default: true,
-        }
+        arms << build_typed_arm(da, union_name, field_name, ["default"], true)
       end
     end
 
     arms
+  end
+
+  def build_typed_arm(arm, union_name, field_name, labels, is_default)
+    arm_info = resolve_php_arm_info(arm, union_name)
+
+    if FIELD_TYPE_OVERRIDES.key?(union_name) && FIELD_TYPE_OVERRIDES[union_name].key?(field_name)
+      arm_info[:php_type] = FIELD_TYPE_OVERRIDES[union_name][field_name]
+      arm_info[:typespec] = nil
+    end
+
+    {
+      case_labels: labels,
+      void: false,
+      field_name: field_name,
+      php_type: arm_info[:php_type],
+      encode_style: arm_info[:encode_style],
+      decode_style: arm_info[:decode_style],
+      element_type: arm_info[:element_type],
+      element_typespec: arm_info[:element_typespec],
+      inner_type: arm_info[:inner_type],
+      inner_typespec: arm_info[:inner_typespec],
+      fixed_size: arm_info[:fixed_size],
+      typespec: arm_info[:typespec],
+      is_default: is_default,
+    }
   end
 
   def format_case_label(value, disc_info)
@@ -1687,6 +1586,16 @@ class Generator < Xdrgen::Generators::Base
     "#{php_class_name}.php"
   end
 
+  # Returns [is_base, class_name, return_type, new_expr] for a given php_name.
+  # Centralizes the BASE_WRAPPER_TYPES check used by all renderers.
+  def resolve_class_info(php_name)
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+    class_name = is_base ? "#{php_name}Base" : php_name
+    return_type = is_base ? "static" : class_name
+    new_expr = is_base ? "new static" : "new #{class_name}"
+    [is_base, class_name, return_type, new_expr]
+  end
+
   # ---------------------------------------------------------------------------
   # Field name resolution
   # ---------------------------------------------------------------------------
@@ -1703,7 +1612,7 @@ class Generator < Xdrgen::Generators::Base
   def resolve_member_name(type_name, xdr_member_name)
     if MEMBER_OVERRIDES.key?(type_name) && MEMBER_OVERRIDES[type_name].key?(xdr_member_name)
       MEMBER_OVERRIDES[type_name][xdr_member_name]
-    elsif defined?(MEMBER_PREFIX_STRIP) && MEMBER_PREFIX_STRIP.key?(type_name)
+    elsif MEMBER_PREFIX_STRIP.key?(type_name)
       prefix = MEMBER_PREFIX_STRIP[type_name]
       xdr_member_name.delete_prefix(prefix)
     else
@@ -1712,10 +1621,10 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def resolve_factory_name(type_name, member_name)
-    if defined?(FACTORY_NAME_OVERRIDES) && FACTORY_NAME_OVERRIDES.key?(type_name) &&
+    if FACTORY_NAME_OVERRIDES.key?(type_name) &&
        FACTORY_NAME_OVERRIDES[type_name].key?(member_name)
       FACTORY_NAME_OVERRIDES[type_name][member_name]
-    elsif defined?(FACTORY_PREFIX_STRIP) && FACTORY_PREFIX_STRIP.key?(type_name)
+    elsif FACTORY_PREFIX_STRIP.key?(type_name)
       prefix = FACTORY_PREFIX_STRIP[type_name]
       member_name.delete_prefix(prefix)
     else
@@ -1734,7 +1643,6 @@ class Generator < Xdrgen::Generators::Base
   # ---------------------------------------------------------------------------
 
   def extension_point_field?(type_name, field_name)
-    return false unless defined?(EXTENSION_POINT_FIELDS)
     return false unless EXTENSION_POINT_FIELDS.key?(type_name)
     EXTENSION_POINT_FIELDS[type_name].include?(field_name)
   end
@@ -1851,11 +1759,6 @@ class Generator < Xdrgen::Generators::Base
   def underscore_field(class_name)
     short = class_name.sub(/\AXdr/, '')
     short[0].downcase + short[1..]
-  end
-
-  def php_safe_name(identifier)
-    identifier = identifier.to_s
-    PHP_RESERVED_WORDS.include?(identifier) ? "#{identifier}_" : identifier
   end
 
 end

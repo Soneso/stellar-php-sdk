@@ -58,4 +58,11 @@ xdr-compare:
 	docker run --rm -v $(PWD):/wd -w /wd $(RUBY_IMAGE) /bin/bash -c '\
 		cd tools/xdr-generator && bash compare.sh all'
 
-.PHONY: xdr-generate xdr-clean-generated xdr-clean-all xdr-update xdr-generator-test xdr-generator-update-snapshots xdr-validate xdr-compare
+# Generate PHP XDR unit tests via Docker
+xdr-generate-tests: $(XDR_SRCS)
+	docker run --rm -v $(PWD):/wd -w /wd $(RUBY_IMAGE) /bin/bash -c '\
+		cd tools/xdr-generator && \
+		bundle install --quiet && \
+		bundle exec ruby test/generate_tests.rb'
+
+.PHONY: xdr-generate xdr-clean-generated xdr-clean-all xdr-update xdr-generator-test xdr-generator-update-snapshots xdr-validate xdr-compare xdr-generate-tests
