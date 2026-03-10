@@ -112,8 +112,7 @@ NAME_OVERRIDES = {
   # ContractEvent inner struct naming
   "ContractEventV0" => "XdrContractEventBodyV0",
 
-  # InnerTransactionResult shares inner union types with TransactionResult
-  "InnerTransactionResultResult" => "XdrTransactionResultResult",
+  # InnerTransactionResult.ext and TransactionResult.ext are identical unions
   "InnerTransactionResultExt" => "XdrTransactionResultExt",
 
   # Miscellaneous inline/nested types

@@ -95,7 +95,7 @@ class XdrLedgerEntryDataTest extends TestCase
         $ledgerData = new XdrLedgerEntryData(new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_CODE));
         $this->assertNull($ledgerData->getContractCode());
 
-        $ext = new XdrContractCodeEntryExt(0, null);
+        $ext = new XdrContractCodeEntryExt(0);
         $cHash = str_repeat("\x22", 32);
         $code = new XdrDataValueMandatory("code");
         $contractCode = new XdrContractCodeEntry($ext, $cHash, $code);

@@ -10,10 +10,10 @@ use phpseclib3\Math\BigInteger;
 class XdrInnerTransactionResult {
 
     public BigInteger $feeCharged;
-    public XdrTransactionResultResult $result;
+    public XdrInnerTransactionResultResult $result;
     public XdrTransactionResultExt $ext;
 
-    public function __construct(BigInteger $feeCharged, XdrTransactionResultResult $result, XdrTransactionResultExt $ext) {
+    public function __construct(BigInteger $feeCharged, XdrInnerTransactionResultResult $result, XdrTransactionResultExt $ext) {
         $this->feeCharged = $feeCharged;
         $this->result = $result;
         $this->ext = $ext;
@@ -28,15 +28,15 @@ class XdrInnerTransactionResult {
 
     public static function decode(XdrBuffer $xdr): XdrInnerTransactionResult {
         $feeCharged = $xdr->readBigInteger64();
-        $result = XdrTransactionResultResult::decode($xdr);
+        $result = XdrInnerTransactionResultResult::decode($xdr);
         $ext = XdrTransactionResultExt::decode($xdr);
         return new XdrInnerTransactionResult($feeCharged, $result, $ext);
     }
 
     public function getFeeCharged(): BigInteger { return $this->feeCharged; }
     public function setFeeCharged(BigInteger $feeCharged): void { $this->feeCharged = $feeCharged; }
-    public function getResult(): XdrTransactionResultResult { return $this->result; }
-    public function setResult(XdrTransactionResultResult $result): void { $this->result = $result; }
+    public function getResult(): XdrInnerTransactionResultResult { return $this->result; }
+    public function setResult(XdrInnerTransactionResultResult $result): void { $this->result = $result; }
     public function getExt(): XdrTransactionResultExt { return $this->ext; }
     public function setExt(XdrTransactionResultExt $ext): void { $this->ext = $ext; }
 

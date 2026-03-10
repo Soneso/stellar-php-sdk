@@ -49,6 +49,7 @@ use Soneso\StellarSDK\Xdr\XdrSetOptionsResult;
 use Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode;
 use Soneso\StellarSDK\Xdr\XdrInnerTransactionResult;
 use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultPair;
+use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultExt;
@@ -500,7 +501,7 @@ class XdrOperationResultTest extends TestCase
     #[Test]
     public function testInnerTransactionResultRoundTrip(): void
     {
-        $resultResult = new XdrTransactionResultResult();
+        $resultResult = new XdrInnerTransactionResultResult();
         $resultResult->resultCode = new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS);
         $resultResult->results = [];
 
@@ -526,7 +527,7 @@ class XdrOperationResultTest extends TestCase
     {
         $txHash = hash('sha256', 'test-transaction', false);
 
-        $resultResult = new XdrTransactionResultResult();
+        $resultResult = new XdrInnerTransactionResultResult();
         $resultResult->resultCode = new XdrTransactionResultCode(XdrTransactionResultCode::FAILED);
         $resultResult->results = [];
 

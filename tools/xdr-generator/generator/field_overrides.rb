@@ -147,6 +147,7 @@ FIELD_OVERRIDES = {
 
   # Batch 31: Union discriminant name overrides
   "XdrTransactionResultResult" => { "code" => "resultCode" },
+  "XdrInnerTransactionResultResult" => { "code" => "resultCode" },
   "XdrOperationResult" => { "code" => "resultCode", "tr" => "resultTr" },
   "XdrSCSpecEntry" => { "kind" => "type" },
 
