@@ -51,11 +51,6 @@ $keyPair = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 $message = "User consent granted at 2025-01-15T12:00:00Z";
 $signature = $keyPair->signMessage($message);
 
-if ($signature === null) {
-    // Signing can fail if the keypair has no private key or on crypto errors
-    throw new RuntimeException("Failed to sign message");
-}
-
 // Encode as base64 for transmission
 $base64Signature = base64_encode($signature);
 echo "Signature: " . $base64Signature . "\n";
@@ -123,10 +118,8 @@ $keyPair = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 $fileContents = file_get_contents("document.pdf");
 $signature = $keyPair->signMessage($fileContents);
 
-if ($signature !== null) {
-    $base64Signature = base64_encode($signature);
-    echo "Document signature: " . $base64Signature . "\n";
-}
+$base64Signature = base64_encode($signature);
+echo "Document signature: " . $base64Signature . "\n";
 ```
 
 ### Authentication flow example
@@ -144,10 +137,6 @@ $challenge = "authenticate:" . bin2hex(random_bytes(16)) . ":" . time();
 // === CLIENT: Sign the challenge ===
 $clientKeyPair = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 $signature = $clientKeyPair->signMessage($challenge);
-
-if ($signature === null) {
-    throw new RuntimeException("Failed to sign challenge");
-}
 
 $response = [
     'account_id' => $clientKeyPair->getAccountId(),
@@ -168,45 +157,23 @@ if ($publicKey->verifyMessage($response['challenge'], $signature)) {
 
 ## Error handling
 
-### Signing without a private key
+### Signing failures throw CryptoException
 
-Attempting to sign with a public-key-only keypair throws a `TypeError` because the SDK uses `strict_types=1`:
+Attempting to sign with a public-key-only keypair or on cryptographic errors throws `CryptoException`:
 
 ```php
 <?php declare(strict_types=1);
 
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\CryptoException;
 
-// This keypair has no private key
 $publicKeyOnly = KeyPair::fromAccountId("GABC...");
 
 try {
-    // Throws TypeError - no private key available
     $signature = $publicKeyOnly->signMessage("test");
-} catch (\TypeError $e) {
-    echo "Cannot sign: keypair has no private key\n";
+} catch (CryptoException $e) {
+    echo "Cannot sign: " . $e->getMessage() . "\n";
 }
-```
-
-### Handling null signatures
-
-The `signMessage()` method can return `null` if signing fails due to cryptographic errors. Always check for null:
-
-```php
-<?php declare(strict_types=1);
-
-use Soneso\StellarSDK\Crypto\KeyPair;
-
-$keyPair = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-$signature = $keyPair->signMessage("Important message");
-
-if ($signature === null) {
-    // Handle signing failure
-    throw new RuntimeException("Signing failed");
-}
-
-// Safe to use $signature
-$base64Signature = base64_encode($signature);
 ```
 
 ### Common verification failures
