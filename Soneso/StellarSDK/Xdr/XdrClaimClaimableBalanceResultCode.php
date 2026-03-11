@@ -14,6 +14,7 @@ class XdrClaimClaimableBalanceResultCode {
     const LINE_FULL = -3;
     const NO_TRUST = -4;
     const NOT_AUTHORIZED = -5;
+    const TRUSTLINE_FROZEN = -6;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -47,6 +48,10 @@ class XdrClaimClaimableBalanceResultCode {
         return new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED);
     }
 
+    public static function TRUSTLINE_FROZEN(): XdrClaimClaimableBalanceResultCode {
+        return new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -60,6 +65,7 @@ class XdrClaimClaimableBalanceResultCode {
             case -3:
             case -4:
             case -5:
+            case -6:
                 return new XdrClaimClaimableBalanceResultCode($value);
             default:
                 throw new \InvalidArgumentException("Unknown enum value: $value");

@@ -25,6 +25,7 @@ class XdrClaimClaimableBalanceResult {
             case XdrClaimClaimableBalanceResultCode::LINE_FULL:
             case XdrClaimClaimableBalanceResultCode::NO_TRUST:
             case XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED:
+            case XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN:
                 break;
             default:
                 break;
@@ -42,6 +43,7 @@ class XdrClaimClaimableBalanceResult {
             case XdrClaimClaimableBalanceResultCode::LINE_FULL:
             case XdrClaimClaimableBalanceResultCode::NO_TRUST:
             case XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED:
+            case XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN:
                 break;
             default:
                 break;

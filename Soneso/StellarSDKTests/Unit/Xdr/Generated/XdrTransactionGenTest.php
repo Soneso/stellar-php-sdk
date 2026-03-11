@@ -3553,7 +3553,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrClaimClaimableBalanceResultCodeEnumRoundTrip(): void
     {
-        $values = [XdrClaimClaimableBalanceResultCode::SUCCESS, XdrClaimClaimableBalanceResultCode::DOES_NOT_EXIST, XdrClaimClaimableBalanceResultCode::CANNOT_CLAIM, XdrClaimClaimableBalanceResultCode::LINE_FULL, XdrClaimClaimableBalanceResultCode::NO_TRUST, XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED];
+        $values = [XdrClaimClaimableBalanceResultCode::SUCCESS, XdrClaimClaimableBalanceResultCode::DOES_NOT_EXIST, XdrClaimClaimableBalanceResultCode::CANNOT_CLAIM, XdrClaimClaimableBalanceResultCode::LINE_FULL, XdrClaimClaimableBalanceResultCode::NO_TRUST, XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED, XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN];
         foreach ($values as $v) {
             $original = new XdrClaimClaimableBalanceResultCode($v);
             $encoded = $original->encode();
@@ -3579,6 +3579,7 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrClaimClaimableBalanceResultCode::LINE_FULL());
         $this->assertNotNull(XdrClaimClaimableBalanceResultCode::NO_TRUST());
         $this->assertNotNull(XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED());
+        $this->assertNotNull(XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN());
     }
 
     public function testXdrClaimClaimableBalanceResult_XdrClaimClaimableBalanceResultCode_SUCCESS_VoidArmRoundTrip(): void
@@ -3922,7 +3923,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrLiquidityPoolDepositResultCodeEnumRoundTrip(): void
     {
-        $values = [XdrLiquidityPoolDepositResultCode::SUCCESS, XdrLiquidityPoolDepositResultCode::MALFORMED, XdrLiquidityPoolDepositResultCode::NO_TRUST, XdrLiquidityPoolDepositResultCode::NOT_AUTHORIZED, XdrLiquidityPoolDepositResultCode::UNDERFUNDED, XdrLiquidityPoolDepositResultCode::LINE_FULL, XdrLiquidityPoolDepositResultCode::BAD_PRICE, XdrLiquidityPoolDepositResultCode::POOL_FULL];
+        $values = [XdrLiquidityPoolDepositResultCode::SUCCESS, XdrLiquidityPoolDepositResultCode::MALFORMED, XdrLiquidityPoolDepositResultCode::NO_TRUST, XdrLiquidityPoolDepositResultCode::NOT_AUTHORIZED, XdrLiquidityPoolDepositResultCode::UNDERFUNDED, XdrLiquidityPoolDepositResultCode::LINE_FULL, XdrLiquidityPoolDepositResultCode::BAD_PRICE, XdrLiquidityPoolDepositResultCode::POOL_FULL, XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN];
         foreach ($values as $v) {
             $original = new XdrLiquidityPoolDepositResultCode($v);
             $encoded = $original->encode();
@@ -3950,6 +3951,7 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrLiquidityPoolDepositResultCode::LINE_FULL());
         $this->assertNotNull(XdrLiquidityPoolDepositResultCode::BAD_PRICE());
         $this->assertNotNull(XdrLiquidityPoolDepositResultCode::POOL_FULL());
+        $this->assertNotNull(XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN());
     }
 
     public function testXdrLiquidityPoolDepositResult_XdrLiquidityPoolDepositResultCode_SUCCESS_VoidArmRoundTrip(): void
@@ -3978,7 +3980,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrLiquidityPoolWithdrawResultCodeEnumRoundTrip(): void
     {
-        $values = [XdrLiquidityPoolWithdrawResultCode::SUCCESS, XdrLiquidityPoolWithdrawResultCode::MALFORMED, XdrLiquidityPoolWithdrawResultCode::NO_TRUST, XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED, XdrLiquidityPoolWithdrawResultCode::LINE_FULL, XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM];
+        $values = [XdrLiquidityPoolWithdrawResultCode::SUCCESS, XdrLiquidityPoolWithdrawResultCode::MALFORMED, XdrLiquidityPoolWithdrawResultCode::NO_TRUST, XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED, XdrLiquidityPoolWithdrawResultCode::LINE_FULL, XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM, XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN];
         foreach ($values as $v) {
             $original = new XdrLiquidityPoolWithdrawResultCode($v);
             $encoded = $original->encode();
@@ -4004,6 +4006,7 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED());
         $this->assertNotNull(XdrLiquidityPoolWithdrawResultCode::LINE_FULL());
         $this->assertNotNull(XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM());
+        $this->assertNotNull(XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN());
     }
 
     public function testXdrLiquidityPoolWithdrawResult_XdrLiquidityPoolWithdrawResultCode_SUCCESS_VoidArmRoundTrip(): void
@@ -4226,7 +4229,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrTransactionResultCodeEnumRoundTrip(): void
     {
-        $values = [XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS, XdrTransactionResultCode::SUCCESS, XdrTransactionResultCode::FAILED, XdrTransactionResultCode::TOO_EARLY, XdrTransactionResultCode::TOO_LATE, XdrTransactionResultCode::MISSING_OPERATION, XdrTransactionResultCode::BAD_SEQ, XdrTransactionResultCode::BAD_AUTH, XdrTransactionResultCode::INSUFFICIENT_BALANCE, XdrTransactionResultCode::NO_ACCOUNT, XdrTransactionResultCode::INSUFFICIENT_FEE, XdrTransactionResultCode::BAD_AUTH_EXTRA, XdrTransactionResultCode::INTERNAL_ERROR, XdrTransactionResultCode::NOT_SUPPORTED, XdrTransactionResultCode::FEE_BUMP_INNER_FAILED, XdrTransactionResultCode::BAD_SPONSORSHIP, XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP, XdrTransactionResultCode::MALFORMED, XdrTransactionResultCode::SOROBAN_INVALID];
+        $values = [XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS, XdrTransactionResultCode::SUCCESS, XdrTransactionResultCode::FAILED, XdrTransactionResultCode::TOO_EARLY, XdrTransactionResultCode::TOO_LATE, XdrTransactionResultCode::MISSING_OPERATION, XdrTransactionResultCode::BAD_SEQ, XdrTransactionResultCode::BAD_AUTH, XdrTransactionResultCode::INSUFFICIENT_BALANCE, XdrTransactionResultCode::NO_ACCOUNT, XdrTransactionResultCode::INSUFFICIENT_FEE, XdrTransactionResultCode::BAD_AUTH_EXTRA, XdrTransactionResultCode::INTERNAL_ERROR, XdrTransactionResultCode::NOT_SUPPORTED, XdrTransactionResultCode::FEE_BUMP_INNER_FAILED, XdrTransactionResultCode::BAD_SPONSORSHIP, XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP, XdrTransactionResultCode::MALFORMED, XdrTransactionResultCode::SOROBAN_INVALID, XdrTransactionResultCode::FROZEN_KEY_ACCESSED];
         foreach ($values as $v) {
             $original = new XdrTransactionResultCode($v);
             $encoded = $original->encode();
@@ -4265,6 +4268,7 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP());
         $this->assertNotNull(XdrTransactionResultCode::MALFORMED());
         $this->assertNotNull(XdrTransactionResultCode::SOROBAN_INVALID());
+        $this->assertNotNull(XdrTransactionResultCode::FROZEN_KEY_ACCESSED());
     }
 
     public function testXdrInnerTransactionResultStructRoundTrip(): void

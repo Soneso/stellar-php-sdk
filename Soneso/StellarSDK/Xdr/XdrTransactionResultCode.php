@@ -27,6 +27,7 @@ class XdrTransactionResultCode {
     const BAD_MIN_SEQ_AGE_OR_GAP = -15;
     const MALFORMED = -16;
     const SOROBAN_INVALID = -17;
+    const FROZEN_KEY_ACCESSED = -18;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -112,6 +113,10 @@ class XdrTransactionResultCode {
         return new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID);
     }
 
+    public static function FROZEN_KEY_ACCESSED(): XdrTransactionResultCode {
+        return new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -138,6 +143,7 @@ class XdrTransactionResultCode {
             case -15:
             case -16:
             case -17:
+            case -18:
                 return new XdrTransactionResultCode($value);
             default:
                 throw new \InvalidArgumentException("Unknown enum value: $value");

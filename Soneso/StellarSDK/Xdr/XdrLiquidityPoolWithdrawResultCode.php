@@ -14,6 +14,7 @@ class XdrLiquidityPoolWithdrawResultCode {
     const UNDERFUNDED = -3;
     const LINE_FULL = -4;
     const UNDER_MINIMUM = -5;
+    const TRUSTLINE_FROZEN = -6;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -47,6 +48,10 @@ class XdrLiquidityPoolWithdrawResultCode {
         return new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM);
     }
 
+    public static function TRUSTLINE_FROZEN(): XdrLiquidityPoolWithdrawResultCode {
+        return new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -60,6 +65,7 @@ class XdrLiquidityPoolWithdrawResultCode {
             case -3:
             case -4:
             case -5:
+            case -6:
                 return new XdrLiquidityPoolWithdrawResultCode($value);
             default:
                 throw new \InvalidArgumentException("Unknown enum value: $value");

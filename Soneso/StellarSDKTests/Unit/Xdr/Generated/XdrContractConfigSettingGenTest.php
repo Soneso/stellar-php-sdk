@@ -21,13 +21,28 @@ use Soneso\StellarSDK\Xdr\XdrConfigSettingSCPTiming;
 use Soneso\StellarSDK\Xdr\XdrContractCostParamEntry;
 use Soneso\StellarSDK\Xdr\XdrContractCostParams;
 use Soneso\StellarSDK\Xdr\XdrContractCostType;
+use Soneso\StellarSDK\Xdr\XdrEncodedLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEvictionIterator;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
+use Soneso\StellarSDK\Xdr\XdrFreezeBypassTxs;
+use Soneso\StellarSDK\Xdr\XdrFreezeBypassTxsDelta;
+use Soneso\StellarSDK\Xdr\XdrFrozenLedgerKeys;
+use Soneso\StellarSDK\Xdr\XdrFrozenLedgerKeysDelta;
 use Soneso\StellarSDK\Xdr\XdrStateArchivalSettings;
 
 class XdrContractConfigSettingGenTest extends TestCase
 {
+    public function testXdrEncodedLedgerKeyTypedefRoundTrip(): void
+    {
+        $original = new XdrEncodedLedgerKey("\x01\x02\x03\x04");
+        $encoded = $original->encode();
+        $decoded = XdrEncodedLedgerKey::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrEncodedLedgerKey');
+        $b64Decoded = XdrEncodedLedgerKey::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrEncodedLedgerKey');
+    }
+
     public function testXdrConfigSettingContractExecutionLanesV0StructRoundTrip(): void
     {
         $original = new XdrConfigSettingContractExecutionLanesV0(42);
@@ -330,7 +345,7 @@ class XdrContractConfigSettingGenTest extends TestCase
 
     public function testXdrContractCostTypeEnumRoundTrip(): void
     {
-        $values = [XdrContractCostType::WasmInsnExec, XdrContractCostType::MemAlloc, XdrContractCostType::MemCpy, XdrContractCostType::MemCmp, XdrContractCostType::DispatchHostFunction, XdrContractCostType::VisitObject, XdrContractCostType::ValSer, XdrContractCostType::ValDeser, XdrContractCostType::ComputeSha256Hash, XdrContractCostType::ComputeEd25519PubKey, XdrContractCostType::VerifyEd25519Sig, XdrContractCostType::VmInstantiation, XdrContractCostType::VmCachedInstantiation, XdrContractCostType::InvokeVMFunction, XdrContractCostType::ComputeKeccak256Hash, XdrContractCostType::DecodeEcdsaCurve256Sig, XdrContractCostType::RecoverEcdsaSecp256k1Key, XdrContractCostType::Int256AddSub, XdrContractCostType::Int256Mul, XdrContractCostType::Int256Div, XdrContractCostType::Int256Pow, XdrContractCostType::Int256Shift, XdrContractCostType::ChaCha20DrawBytes, XdrContractCostType::ParseWasmInstructions, XdrContractCostType::ParseWasmFunctions, XdrContractCostType::ParseWasmGlobals, XdrContractCostType::ParseWasmTableEntries, XdrContractCostType::ParseWasmTypes, XdrContractCostType::ParseWasmDataSegments, XdrContractCostType::ParseWasmElemSegments, XdrContractCostType::ParseWasmImports, XdrContractCostType::ParseWasmExports, XdrContractCostType::ParseWasmDataSegmentBytes, XdrContractCostType::InstantiateWasmInstructions, XdrContractCostType::InstantiateWasmFunctions, XdrContractCostType::InstantiateWasmGlobals, XdrContractCostType::InstantiateWasmTableEntries, XdrContractCostType::InstantiateWasmTypes, XdrContractCostType::InstantiateWasmDataSegments, XdrContractCostType::InstantiateWasmElemSegments, XdrContractCostType::InstantiateWasmImports, XdrContractCostType::InstantiateWasmExports, XdrContractCostType::InstantiateWasmDataSegmentBytes, XdrContractCostType::Sec1DecodePointUncompressed, XdrContractCostType::VerifyEcdsaSecp256r1Sig, XdrContractCostType::Bls12381EncodeFp, XdrContractCostType::Bls12381DecodeFp, XdrContractCostType::Bls12381G1CheckPointOnCurve, XdrContractCostType::Bls12381G1CheckPointInSubgroup, XdrContractCostType::Bls12381G2CheckPointOnCurve, XdrContractCostType::Bls12381G2CheckPointInSubgroup, XdrContractCostType::Bls12381G1ProjectiveToAffine, XdrContractCostType::Bls12381G2ProjectiveToAffine, XdrContractCostType::Bls12381G1Add, XdrContractCostType::Bls12381G1Mul, XdrContractCostType::Bls12381G1Msm, XdrContractCostType::Bls12381MapFpToG1, XdrContractCostType::Bls12381HashToG1, XdrContractCostType::Bls12381G2Add, XdrContractCostType::Bls12381G2Mul, XdrContractCostType::Bls12381G2Msm, XdrContractCostType::Bls12381MapFp2ToG2, XdrContractCostType::Bls12381HashToG2, XdrContractCostType::Bls12381Pairing, XdrContractCostType::Bls12381FrFromU256, XdrContractCostType::Bls12381FrToU256, XdrContractCostType::Bls12381FrAddSub, XdrContractCostType::Bls12381FrMul, XdrContractCostType::Bls12381FrPow, XdrContractCostType::Bls12381FrInv];
+        $values = [XdrContractCostType::WasmInsnExec, XdrContractCostType::MemAlloc, XdrContractCostType::MemCpy, XdrContractCostType::MemCmp, XdrContractCostType::DispatchHostFunction, XdrContractCostType::VisitObject, XdrContractCostType::ValSer, XdrContractCostType::ValDeser, XdrContractCostType::ComputeSha256Hash, XdrContractCostType::ComputeEd25519PubKey, XdrContractCostType::VerifyEd25519Sig, XdrContractCostType::VmInstantiation, XdrContractCostType::VmCachedInstantiation, XdrContractCostType::InvokeVMFunction, XdrContractCostType::ComputeKeccak256Hash, XdrContractCostType::DecodeEcdsaCurve256Sig, XdrContractCostType::RecoverEcdsaSecp256k1Key, XdrContractCostType::Int256AddSub, XdrContractCostType::Int256Mul, XdrContractCostType::Int256Div, XdrContractCostType::Int256Pow, XdrContractCostType::Int256Shift, XdrContractCostType::ChaCha20DrawBytes, XdrContractCostType::ParseWasmInstructions, XdrContractCostType::ParseWasmFunctions, XdrContractCostType::ParseWasmGlobals, XdrContractCostType::ParseWasmTableEntries, XdrContractCostType::ParseWasmTypes, XdrContractCostType::ParseWasmDataSegments, XdrContractCostType::ParseWasmElemSegments, XdrContractCostType::ParseWasmImports, XdrContractCostType::ParseWasmExports, XdrContractCostType::ParseWasmDataSegmentBytes, XdrContractCostType::InstantiateWasmInstructions, XdrContractCostType::InstantiateWasmFunctions, XdrContractCostType::InstantiateWasmGlobals, XdrContractCostType::InstantiateWasmTableEntries, XdrContractCostType::InstantiateWasmTypes, XdrContractCostType::InstantiateWasmDataSegments, XdrContractCostType::InstantiateWasmElemSegments, XdrContractCostType::InstantiateWasmImports, XdrContractCostType::InstantiateWasmExports, XdrContractCostType::InstantiateWasmDataSegmentBytes, XdrContractCostType::Sec1DecodePointUncompressed, XdrContractCostType::VerifyEcdsaSecp256r1Sig, XdrContractCostType::Bls12381EncodeFp, XdrContractCostType::Bls12381DecodeFp, XdrContractCostType::Bls12381G1CheckPointOnCurve, XdrContractCostType::Bls12381G1CheckPointInSubgroup, XdrContractCostType::Bls12381G2CheckPointOnCurve, XdrContractCostType::Bls12381G2CheckPointInSubgroup, XdrContractCostType::Bls12381G1ProjectiveToAffine, XdrContractCostType::Bls12381G2ProjectiveToAffine, XdrContractCostType::Bls12381G1Add, XdrContractCostType::Bls12381G1Mul, XdrContractCostType::Bls12381G1Msm, XdrContractCostType::Bls12381MapFpToG1, XdrContractCostType::Bls12381HashToG1, XdrContractCostType::Bls12381G2Add, XdrContractCostType::Bls12381G2Mul, XdrContractCostType::Bls12381G2Msm, XdrContractCostType::Bls12381MapFp2ToG2, XdrContractCostType::Bls12381HashToG2, XdrContractCostType::Bls12381Pairing, XdrContractCostType::Bls12381FrFromU256, XdrContractCostType::Bls12381FrToU256, XdrContractCostType::Bls12381FrAddSub, XdrContractCostType::Bls12381FrMul, XdrContractCostType::Bls12381FrPow, XdrContractCostType::Bls12381FrInv, XdrContractCostType::Bn254EncodeFp, XdrContractCostType::Bn254DecodeFp, XdrContractCostType::Bn254G1CheckPointOnCurve, XdrContractCostType::Bn254G2CheckPointOnCurve, XdrContractCostType::Bn254G2CheckPointInSubgroup, XdrContractCostType::Bn254G1ProjectiveToAffine, XdrContractCostType::Bn254G1Add, XdrContractCostType::Bn254G1Mul, XdrContractCostType::Bn254Pairing, XdrContractCostType::Bn254FrFromU256, XdrContractCostType::Bn254FrToU256, XdrContractCostType::Bn254FrAddSub, XdrContractCostType::Bn254FrMul, XdrContractCostType::Bn254FrPow, XdrContractCostType::Bn254FrInv, XdrContractCostType::Bn254G1Msm];
         foreach ($values as $v) {
             $original = new XdrContractCostType($v);
             $encoded = $original->encode();
@@ -420,6 +435,22 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNotNull(XdrContractCostType::Bls12381FrMul());
         $this->assertNotNull(XdrContractCostType::Bls12381FrPow());
         $this->assertNotNull(XdrContractCostType::Bls12381FrInv());
+        $this->assertNotNull(XdrContractCostType::Bn254EncodeFp());
+        $this->assertNotNull(XdrContractCostType::Bn254DecodeFp());
+        $this->assertNotNull(XdrContractCostType::Bn254G1CheckPointOnCurve());
+        $this->assertNotNull(XdrContractCostType::Bn254G2CheckPointOnCurve());
+        $this->assertNotNull(XdrContractCostType::Bn254G2CheckPointInSubgroup());
+        $this->assertNotNull(XdrContractCostType::Bn254G1ProjectiveToAffine());
+        $this->assertNotNull(XdrContractCostType::Bn254G1Add());
+        $this->assertNotNull(XdrContractCostType::Bn254G1Mul());
+        $this->assertNotNull(XdrContractCostType::Bn254Pairing());
+        $this->assertNotNull(XdrContractCostType::Bn254FrFromU256());
+        $this->assertNotNull(XdrContractCostType::Bn254FrToU256());
+        $this->assertNotNull(XdrContractCostType::Bn254FrAddSub());
+        $this->assertNotNull(XdrContractCostType::Bn254FrMul());
+        $this->assertNotNull(XdrContractCostType::Bn254FrPow());
+        $this->assertNotNull(XdrContractCostType::Bn254FrInv());
+        $this->assertNotNull(XdrContractCostType::Bn254G1Msm());
     }
 
     public function testXdrContractCostParamEntryStructRoundTrip(): void
@@ -594,6 +625,112 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertSame($newVal, $obj->getBallotTimeoutIncrementMilliseconds());
     }
 
+    public function testXdrFrozenLedgerKeysStructRoundTrip(): void
+    {
+        $original = new XdrFrozenLedgerKeys([]);
+        $encoded = $original->encode();
+        $decoded = XdrFrozenLedgerKeys::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFrozenLedgerKeys');
+        $b64Decoded = XdrFrozenLedgerKeys::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFrozenLedgerKeys');
+    }
+
+    public function testXdrFrozenLedgerKeysStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrFrozenLedgerKeys([new XdrEncodedLedgerKey("\x01\x02\x03\x04")]);
+        $encoded = $original->encode();
+        $decoded = XdrFrozenLedgerKeys::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrFrozenLedgerKeys');
+        $b64Decoded = XdrFrozenLedgerKeys::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrFrozenLedgerKeys');
+    }
+
+    public function testXdrFrozenLedgerKeysGettersSetters(): void
+    {
+        $obj = new XdrFrozenLedgerKeys([]);
+        $this->assertIsArray($obj->getKeys());
+    }
+
+    public function testXdrFrozenLedgerKeysDeltaStructRoundTrip(): void
+    {
+        $original = new XdrFrozenLedgerKeysDelta([], []);
+        $encoded = $original->encode();
+        $decoded = XdrFrozenLedgerKeysDelta::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFrozenLedgerKeysDelta');
+        $b64Decoded = XdrFrozenLedgerKeysDelta::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFrozenLedgerKeysDelta');
+    }
+
+    public function testXdrFrozenLedgerKeysDeltaStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrFrozenLedgerKeysDelta([new XdrEncodedLedgerKey("\x01\x02\x03\x04")], [new XdrEncodedLedgerKey("\x01\x02\x03\x04")]);
+        $encoded = $original->encode();
+        $decoded = XdrFrozenLedgerKeysDelta::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrFrozenLedgerKeysDelta');
+        $b64Decoded = XdrFrozenLedgerKeysDelta::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrFrozenLedgerKeysDelta');
+    }
+
+    public function testXdrFrozenLedgerKeysDeltaGettersSetters(): void
+    {
+        $obj = new XdrFrozenLedgerKeysDelta([], []);
+        $this->assertIsArray($obj->getKeysToFreeze());
+        $this->assertIsArray($obj->getKeysToUnfreeze());
+    }
+
+    public function testXdrFreezeBypassTxsStructRoundTrip(): void
+    {
+        $original = new XdrFreezeBypassTxs([]);
+        $encoded = $original->encode();
+        $decoded = XdrFreezeBypassTxs::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFreezeBypassTxs');
+        $b64Decoded = XdrFreezeBypassTxs::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFreezeBypassTxs');
+    }
+
+    public function testXdrFreezeBypassTxsStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrFreezeBypassTxs([str_repeat("\xAB", 32)]);
+        $encoded = $original->encode();
+        $decoded = XdrFreezeBypassTxs::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrFreezeBypassTxs');
+        $b64Decoded = XdrFreezeBypassTxs::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrFreezeBypassTxs');
+    }
+
+    public function testXdrFreezeBypassTxsGettersSetters(): void
+    {
+        $obj = new XdrFreezeBypassTxs([]);
+        $this->assertIsArray($obj->getTxHashes());
+    }
+
+    public function testXdrFreezeBypassTxsDeltaStructRoundTrip(): void
+    {
+        $original = new XdrFreezeBypassTxsDelta([], []);
+        $encoded = $original->encode();
+        $decoded = XdrFreezeBypassTxsDelta::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFreezeBypassTxsDelta');
+        $b64Decoded = XdrFreezeBypassTxsDelta::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFreezeBypassTxsDelta');
+    }
+
+    public function testXdrFreezeBypassTxsDeltaStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrFreezeBypassTxsDelta([str_repeat("\xAB", 32)], [str_repeat("\xAB", 32)]);
+        $encoded = $original->encode();
+        $decoded = XdrFreezeBypassTxsDelta::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrFreezeBypassTxsDelta');
+        $b64Decoded = XdrFreezeBypassTxsDelta::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrFreezeBypassTxsDelta');
+    }
+
+    public function testXdrFreezeBypassTxsDeltaGettersSetters(): void
+    {
+        $obj = new XdrFreezeBypassTxsDelta([], []);
+        $this->assertIsArray($obj->getAddTxs());
+        $this->assertIsArray($obj->getRemoveTxs());
+    }
+
     public function testXdrContractCostParamsTypedefRoundTrip(): void
     {
         $original = new XdrContractCostParams([]);
@@ -606,7 +743,7 @@ class XdrContractConfigSettingGenTest extends TestCase
 
     public function testXdrConfigSettingIDEnumRoundTrip(): void
     {
-        $values = [XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES, XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW, XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0, XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING];
+        $values = [XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES, XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW, XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0, XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING, XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS, XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA, XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS, XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA];
         foreach ($values as $v) {
             $original = new XdrConfigSettingID($v);
             $encoded = $original->encode();
@@ -643,6 +780,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0());
         $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0());
         $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING());
+        $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS());
+        $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA());
+        $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS());
+        $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA());
     }
 
     public function testXdrConfigSettingEntry_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES_ArmRoundTrip(): void
@@ -669,6 +810,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -698,6 +843,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -727,6 +876,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -756,6 +909,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -785,6 +942,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -814,6 +975,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -843,6 +1008,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -872,6 +1041,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -901,6 +1074,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -930,6 +1107,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -959,6 +1140,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -988,6 +1173,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1017,6 +1206,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1046,6 +1239,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1075,6 +1272,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->evictionIterator);
         $this->assertNull($decoded->contractLedgerCostExt);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1104,6 +1305,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->evictionIterator);
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1133,6 +1338,142 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNull($decoded->evictionIterator);
         $this->assertNull($decoded->contractParallelCompute);
         $this->assertNull($decoded->contractLedgerCostExt);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrConfigSettingEntry_XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS_ArmRoundTrip(): void
+    {
+        $original = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS));
+        $original->frozenLedgerKeys = new XdrFrozenLedgerKeys([]);
+        $encoded = $original->encode();
+        $decoded = XdrConfigSettingEntry::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->configSettingID->getValue(), $decoded->configSettingID->getValue());
+        $this->assertNotNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->contractMaxSizeBytes);
+        $this->assertNull($decoded->contractCompute);
+        $this->assertNull($decoded->contractLedgerCost);
+        $this->assertNull($decoded->contractHistoricalData);
+        $this->assertNull($decoded->contractEvents);
+        $this->assertNull($decoded->contractBandwidth);
+        $this->assertNull($decoded->contractCostParamsCpuInsns);
+        $this->assertNull($decoded->contractCostParamsMemBytes);
+        $this->assertNull($decoded->contractDataKeySizeBytes);
+        $this->assertNull($decoded->contractDataEntrySizeBytes);
+        $this->assertNull($decoded->stateArchivalSettings);
+        $this->assertNull($decoded->contractExecutionLanes);
+        $this->assertNull($decoded->liveSorobanStateSizeWindow);
+        $this->assertNull($decoded->evictionIterator);
+        $this->assertNull($decoded->contractParallelCompute);
+        $this->assertNull($decoded->contractLedgerCostExt);
+        $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrConfigSettingEntry_XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA_ArmRoundTrip(): void
+    {
+        $original = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA));
+        $original->frozenLedgerKeysDelta = new XdrFrozenLedgerKeysDelta([], []);
+        $encoded = $original->encode();
+        $decoded = XdrConfigSettingEntry::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->configSettingID->getValue(), $decoded->configSettingID->getValue());
+        $this->assertNotNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->contractMaxSizeBytes);
+        $this->assertNull($decoded->contractCompute);
+        $this->assertNull($decoded->contractLedgerCost);
+        $this->assertNull($decoded->contractHistoricalData);
+        $this->assertNull($decoded->contractEvents);
+        $this->assertNull($decoded->contractBandwidth);
+        $this->assertNull($decoded->contractCostParamsCpuInsns);
+        $this->assertNull($decoded->contractCostParamsMemBytes);
+        $this->assertNull($decoded->contractDataKeySizeBytes);
+        $this->assertNull($decoded->contractDataEntrySizeBytes);
+        $this->assertNull($decoded->stateArchivalSettings);
+        $this->assertNull($decoded->contractExecutionLanes);
+        $this->assertNull($decoded->liveSorobanStateSizeWindow);
+        $this->assertNull($decoded->evictionIterator);
+        $this->assertNull($decoded->contractParallelCompute);
+        $this->assertNull($decoded->contractLedgerCostExt);
+        $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrConfigSettingEntry_XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS_ArmRoundTrip(): void
+    {
+        $original = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS));
+        $original->freezeBypassTxs = new XdrFreezeBypassTxs([]);
+        $encoded = $original->encode();
+        $decoded = XdrConfigSettingEntry::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->configSettingID->getValue(), $decoded->configSettingID->getValue());
+        $this->assertNotNull($decoded->freezeBypassTxs);
+        $this->assertNull($decoded->contractMaxSizeBytes);
+        $this->assertNull($decoded->contractCompute);
+        $this->assertNull($decoded->contractLedgerCost);
+        $this->assertNull($decoded->contractHistoricalData);
+        $this->assertNull($decoded->contractEvents);
+        $this->assertNull($decoded->contractBandwidth);
+        $this->assertNull($decoded->contractCostParamsCpuInsns);
+        $this->assertNull($decoded->contractCostParamsMemBytes);
+        $this->assertNull($decoded->contractDataKeySizeBytes);
+        $this->assertNull($decoded->contractDataEntrySizeBytes);
+        $this->assertNull($decoded->stateArchivalSettings);
+        $this->assertNull($decoded->contractExecutionLanes);
+        $this->assertNull($decoded->liveSorobanStateSizeWindow);
+        $this->assertNull($decoded->evictionIterator);
+        $this->assertNull($decoded->contractParallelCompute);
+        $this->assertNull($decoded->contractLedgerCostExt);
+        $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxsDelta);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrConfigSettingEntry_XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA_ArmRoundTrip(): void
+    {
+        $original = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA));
+        $original->freezeBypassTxsDelta = new XdrFreezeBypassTxsDelta([], []);
+        $encoded = $original->encode();
+        $decoded = XdrConfigSettingEntry::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->configSettingID->getValue(), $decoded->configSettingID->getValue());
+        $this->assertNotNull($decoded->freezeBypassTxsDelta);
+        $this->assertNull($decoded->contractMaxSizeBytes);
+        $this->assertNull($decoded->contractCompute);
+        $this->assertNull($decoded->contractLedgerCost);
+        $this->assertNull($decoded->contractHistoricalData);
+        $this->assertNull($decoded->contractEvents);
+        $this->assertNull($decoded->contractBandwidth);
+        $this->assertNull($decoded->contractCostParamsCpuInsns);
+        $this->assertNull($decoded->contractCostParamsMemBytes);
+        $this->assertNull($decoded->contractDataKeySizeBytes);
+        $this->assertNull($decoded->contractDataEntrySizeBytes);
+        $this->assertNull($decoded->stateArchivalSettings);
+        $this->assertNull($decoded->contractExecutionLanes);
+        $this->assertNull($decoded->liveSorobanStateSizeWindow);
+        $this->assertNull($decoded->evictionIterator);
+        $this->assertNull($decoded->contractParallelCompute);
+        $this->assertNull($decoded->contractLedgerCostExt);
+        $this->assertNull($decoded->contractSCPTiming);
+        $this->assertNull($decoded->frozenLedgerKeys);
+        $this->assertNull($decoded->frozenLedgerKeysDelta);
+        $this->assertNull($decoded->freezeBypassTxs);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1159,6 +1500,10 @@ class XdrContractConfigSettingGenTest extends TestCase
         $obj->getContractParallelCompute();
         $obj->getContractLedgerCostExt();
         $obj->getContractSCPTiming();
+        $obj->getFrozenLedgerKeys();
+        $obj->getFrozenLedgerKeysDelta();
+        $obj->getFreezeBypassTxs();
+        $obj->getFreezeBypassTxsDelta();
     }
 }
 

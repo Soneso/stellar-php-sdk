@@ -27,6 +27,7 @@ class XdrLiquidityPoolDepositResult {
             case XdrLiquidityPoolDepositResultCode::LINE_FULL:
             case XdrLiquidityPoolDepositResultCode::BAD_PRICE:
             case XdrLiquidityPoolDepositResultCode::POOL_FULL:
+            case XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN:
                 break;
             default:
                 break;
@@ -46,6 +47,7 @@ class XdrLiquidityPoolDepositResult {
             case XdrLiquidityPoolDepositResultCode::LINE_FULL:
             case XdrLiquidityPoolDepositResultCode::BAD_PRICE:
             case XdrLiquidityPoolDepositResultCode::POOL_FULL:
+            case XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN:
                 break;
             default:
                 break;

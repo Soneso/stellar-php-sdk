@@ -25,6 +25,7 @@ class XdrLiquidityPoolWithdrawResult {
             case XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED:
             case XdrLiquidityPoolWithdrawResultCode::LINE_FULL:
             case XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM:
+            case XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN:
                 break;
             default:
                 break;
@@ -42,6 +43,7 @@ class XdrLiquidityPoolWithdrawResult {
             case XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED:
             case XdrLiquidityPoolWithdrawResultCode::LINE_FULL:
             case XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM:
+            case XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN:
                 break;
             default:
                 break;

@@ -25,6 +25,10 @@ class XdrConfigSettingID {
     const CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 = 14;
     const CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 = 15;
     const CONFIG_SETTING_SCP_TIMING = 16;
+    const CONFIG_SETTING_FROZEN_LEDGER_KEYS = 17;
+    const CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA = 18;
+    const CONFIG_SETTING_FREEZE_BYPASS_TXS = 19;
+    const CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA = 20;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -102,6 +106,22 @@ class XdrConfigSettingID {
         return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING);
     }
 
+    public static function CONFIG_SETTING_FROZEN_LEDGER_KEYS(): XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS);
+    }
+
+    public static function CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA(): XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA);
+    }
+
+    public static function CONFIG_SETTING_FREEZE_BYPASS_TXS(): XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS);
+    }
+
+    public static function CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA(): XdrConfigSettingID {
+        return new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -126,6 +146,10 @@ class XdrConfigSettingID {
             case 14:
             case 15:
             case 16:
+            case 17:
+            case 18:
+            case 19:
+            case 20:
                 return new XdrConfigSettingID($value);
             default:
                 throw new \InvalidArgumentException("Unknown enum value: $value");

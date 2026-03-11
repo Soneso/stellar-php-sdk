@@ -47,6 +47,7 @@ class XdrTransactionResultResult {
             case XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP:
             case XdrTransactionResultCode::MALFORMED:
             case XdrTransactionResultCode::SOROBAN_INVALID:
+            case XdrTransactionResultCode::FROZEN_KEY_ACCESSED:
                 break;
             default:
                 break;
@@ -84,6 +85,7 @@ class XdrTransactionResultResult {
             case XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP:
             case XdrTransactionResultCode::MALFORMED:
             case XdrTransactionResultCode::SOROBAN_INVALID:
+            case XdrTransactionResultCode::FROZEN_KEY_ACCESSED:
                 break;
             default:
                 break;

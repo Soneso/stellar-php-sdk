@@ -16,6 +16,7 @@ class XdrLiquidityPoolDepositResultCode {
     const LINE_FULL = -5;
     const BAD_PRICE = -6;
     const POOL_FULL = -7;
+    const TRUSTLINE_FROZEN = -8;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -57,6 +58,10 @@ class XdrLiquidityPoolDepositResultCode {
         return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::POOL_FULL);
     }
 
+    public static function TRUSTLINE_FROZEN(): XdrLiquidityPoolDepositResultCode {
+        return new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -72,6 +77,7 @@ class XdrLiquidityPoolDepositResultCode {
             case -5:
             case -6:
             case -7:
+            case -8:
                 return new XdrLiquidityPoolDepositResultCode($value);
             default:
                 throw new \InvalidArgumentException("Unknown enum value: $value");

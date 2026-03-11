@@ -1199,7 +1199,15 @@ class TxRep
             return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0();
         } else if ("CONFIG_SETTING_SCP_TIMING" === $type) {
             return XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING();
-        }else {
+        } else if ("CONFIG_SETTING_FROZEN_LEDGER_KEYS" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS();
+        } else if ("CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA();
+        } else if ("CONFIG_SETTING_FREEZE_BYPASS_TXS" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS();
+        } else if ("CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA();
+        } else {
             throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
         }
     }

@@ -78,6 +78,22 @@ class XdrContractCostType {
     const Bls12381FrMul = 67;
     const Bls12381FrPow = 68;
     const Bls12381FrInv = 69;
+    const Bn254EncodeFp = 70;
+    const Bn254DecodeFp = 71;
+    const Bn254G1CheckPointOnCurve = 72;
+    const Bn254G2CheckPointOnCurve = 73;
+    const Bn254G2CheckPointInSubgroup = 74;
+    const Bn254G1ProjectiveToAffine = 75;
+    const Bn254G1Add = 76;
+    const Bn254G1Mul = 77;
+    const Bn254Pairing = 78;
+    const Bn254FrFromU256 = 79;
+    const Bn254FrToU256 = 80;
+    const Bn254FrAddSub = 81;
+    const Bn254FrMul = 82;
+    const Bn254FrPow = 83;
+    const Bn254FrInv = 84;
+    const Bn254G1Msm = 85;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -367,6 +383,70 @@ class XdrContractCostType {
         return new XdrContractCostType(XdrContractCostType::Bls12381FrInv);
     }
 
+    public static function Bn254EncodeFp(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254EncodeFp);
+    }
+
+    public static function Bn254DecodeFp(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254DecodeFp);
+    }
+
+    public static function Bn254G1CheckPointOnCurve(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254G1CheckPointOnCurve);
+    }
+
+    public static function Bn254G2CheckPointOnCurve(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254G2CheckPointOnCurve);
+    }
+
+    public static function Bn254G2CheckPointInSubgroup(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254G2CheckPointInSubgroup);
+    }
+
+    public static function Bn254G1ProjectiveToAffine(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254G1ProjectiveToAffine);
+    }
+
+    public static function Bn254G1Add(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254G1Add);
+    }
+
+    public static function Bn254G1Mul(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254G1Mul);
+    }
+
+    public static function Bn254Pairing(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254Pairing);
+    }
+
+    public static function Bn254FrFromU256(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254FrFromU256);
+    }
+
+    public static function Bn254FrToU256(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254FrToU256);
+    }
+
+    public static function Bn254FrAddSub(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254FrAddSub);
+    }
+
+    public static function Bn254FrMul(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254FrMul);
+    }
+
+    public static function Bn254FrPow(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254FrPow);
+    }
+
+    public static function Bn254FrInv(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254FrInv);
+    }
+
+    public static function Bn254G1Msm(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::Bn254G1Msm);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -444,6 +524,22 @@ class XdrContractCostType {
             case 67:
             case 68:
             case 69:
+            case 70:
+            case 71:
+            case 72:
+            case 73:
+            case 74:
+            case 75:
+            case 76:
+            case 77:
+            case 78:
+            case 79:
+            case 80:
+            case 81:
+            case 82:
+            case 83:
+            case 84:
+            case 85:
                 return new XdrContractCostType($value);
             default:
                 throw new \InvalidArgumentException("Unknown enum value: $value");

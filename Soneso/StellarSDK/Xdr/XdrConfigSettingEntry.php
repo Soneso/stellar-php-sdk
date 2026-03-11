@@ -25,6 +25,10 @@ class XdrConfigSettingEntry {
     public ?XdrConfigSettingContractParallelComputeV0 $contractParallelCompute = null;
     public ?XdrConfigSettingContractLedgerCostExtV0 $contractLedgerCostExt = null;
     public ?XdrConfigSettingSCPTiming $contractSCPTiming = null;
+    public ?XdrFrozenLedgerKeys $frozenLedgerKeys = null;
+    public ?XdrFrozenLedgerKeysDelta $frozenLedgerKeysDelta = null;
+    public ?XdrFreezeBypassTxs $freezeBypassTxs = null;
+    public ?XdrFreezeBypassTxsDelta $freezeBypassTxsDelta = null;
 
     public function __construct(?XdrConfigSettingID $configSettingID = null) {
         if ($configSettingID !== null) {
@@ -90,6 +94,18 @@ class XdrConfigSettingEntry {
             case XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING:
                 $bytes .= $this->contractSCPTiming->encode();
                 break;
+            case XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS:
+                $bytes .= $this->frozenLedgerKeys->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA:
+                $bytes .= $this->frozenLedgerKeysDelta->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS:
+                $bytes .= $this->freezeBypassTxs->encode();
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
+                $bytes .= $this->freezeBypassTxsDelta->encode();
+                break;
             default:
                 break;
         }
@@ -154,6 +170,18 @@ class XdrConfigSettingEntry {
             case XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING:
                 $result->contractSCPTiming = XdrConfigSettingSCPTiming::decode($xdr);
                 break;
+            case XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS:
+                $result->frozenLedgerKeys = XdrFrozenLedgerKeys::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA:
+                $result->frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS:
+                $result->freezeBypassTxs = XdrFreezeBypassTxs::decode($xdr);
+                break;
+            case XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
+                $result->freezeBypassTxsDelta = XdrFreezeBypassTxsDelta::decode($xdr);
+                break;
             default:
                 break;
         }
@@ -196,6 +224,14 @@ class XdrConfigSettingEntry {
     public function setContractLedgerCostExt(?XdrConfigSettingContractLedgerCostExtV0 $contractLedgerCostExt): void { $this->contractLedgerCostExt = $contractLedgerCostExt; }
     public function getContractSCPTiming(): ?XdrConfigSettingSCPTiming { return $this->contractSCPTiming; }
     public function setContractSCPTiming(?XdrConfigSettingSCPTiming $contractSCPTiming): void { $this->contractSCPTiming = $contractSCPTiming; }
+    public function getFrozenLedgerKeys(): ?XdrFrozenLedgerKeys { return $this->frozenLedgerKeys; }
+    public function setFrozenLedgerKeys(?XdrFrozenLedgerKeys $frozenLedgerKeys): void { $this->frozenLedgerKeys = $frozenLedgerKeys; }
+    public function getFrozenLedgerKeysDelta(): ?XdrFrozenLedgerKeysDelta { return $this->frozenLedgerKeysDelta; }
+    public function setFrozenLedgerKeysDelta(?XdrFrozenLedgerKeysDelta $frozenLedgerKeysDelta): void { $this->frozenLedgerKeysDelta = $frozenLedgerKeysDelta; }
+    public function getFreezeBypassTxs(): ?XdrFreezeBypassTxs { return $this->freezeBypassTxs; }
+    public function setFreezeBypassTxs(?XdrFreezeBypassTxs $freezeBypassTxs): void { $this->freezeBypassTxs = $freezeBypassTxs; }
+    public function getFreezeBypassTxsDelta(): ?XdrFreezeBypassTxsDelta { return $this->freezeBypassTxsDelta; }
+    public function setFreezeBypassTxsDelta(?XdrFreezeBypassTxsDelta $freezeBypassTxsDelta): void { $this->freezeBypassTxsDelta = $freezeBypassTxsDelta; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
