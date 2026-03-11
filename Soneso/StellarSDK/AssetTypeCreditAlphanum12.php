@@ -12,7 +12,6 @@ use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12;
 use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
-use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
 
 /**
  * Represents an issued asset with a 5-12 character alphanumeric code

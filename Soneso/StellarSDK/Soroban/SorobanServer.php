@@ -497,7 +497,7 @@ class SorobanServer
             $accountEntry = $ledgerEntries->entries[0]->getLedgerEntryDataXdr()->account;
             if ($accountEntry !== null) {
                 $accountId = $accountEntry->getAccountID()->getAccountId();
-                $seqNr = $accountEntry->seqNum->getValue();
+                $seqNr = $accountEntry->seqNum->sequenceNumber;
                 return new Account($accountId, $seqNr);
             }
         }

@@ -1199,7 +1199,15 @@ class TxRep
             return XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0();
         } else if ("CONFIG_SETTING_SCP_TIMING" === $type) {
             return XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING();
-        }else {
+        } else if ("CONFIG_SETTING_FROZEN_LEDGER_KEYS" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS();
+        } else if ("CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA();
+        } else if ("CONFIG_SETTING_FREEZE_BYPASS_TXS" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS();
+        } else if ("CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA" === $type) {
+            return XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA();
+        } else {
             throw new InvalidArgumentException('unknown ' . $prefix . 'type ' . $type);
         }
     }
@@ -1256,8 +1264,8 @@ class TxRep
                 $next = self::getInt($prefix . 'sorobanData.ext.archivedSorobanEntries[' . $i . '].', $map);
                 $archivedEntries[] = $next;
             }
-            $ext = new XdrSorobanTransactionDataExt(discriminant: 1,
-                resourceExt: new XdrSorobanResourcesExtV0($archivedEntries));
+            $ext = new XdrSorobanTransactionDataExt(1);
+            $ext->resourceExt = new XdrSorobanResourcesExtV0($archivedEntries);
         }
         $resources = self::getSorobanResources($prefix . 'sorobanData.resources.', $map);
         $resourcesFee = self::getInt($prefix . 'sorobanData.resourceFee', $map);
@@ -2820,7 +2828,7 @@ class TxRep
                 else if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::TRUSTLINE) {
                     $lines += [$prefix.'ledgerKey.type' => 'TRUSTLINE'];
                     $lines += [$prefix.'ledgerKey.trustLine.accountID' => $ledgerKey->getTrustline()->getAccountID()->getAccountId()];
-                    $lines += [$prefix.'ledgerKey.trustLine.asset' => self::encodeAsset(Asset::fromXdr($ledgerKey->getTrustline()->getAsset()))];
+                    $lines += [$prefix.'ledgerKey.trustLine.asset' => self::encodeAsset(Asset::fromXdrTrustlineAsset($ledgerKey->getTrustline()->getAsset()))];
                 }
                 else if ($ledgerKey->getType()->getValue() == XdrLedgerEntryType::OFFER) {
                     $lines += [$prefix.'ledgerKey.type' => 'OFFER'];
@@ -2929,7 +2937,7 @@ class TxRep
             case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
                 $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE'];
                 $lines += [$prefix . 'claimableBalanceId.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0'];
-                $lines += [$prefix . 'claimableBalanceId.balanceID.v0' => $address->getClaimableBalanceId()];
+                $lines += [$prefix . 'claimableBalanceId.balanceID.v0' => $address->getClaimableBalanceId()?->getHash()];
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                 $lines += [$prefix . 'type' => 'SC_ADDRESS_TYPE_LIQUIDITY_POOL'];
@@ -3280,7 +3288,7 @@ class TxRep
         else if ($type === XdrLedgerEntryType::TRUSTLINE) {
             $lines += [$prefix.'type' => 'TRUSTLINE'];
             $lines += [$prefix.'trustLine.accountID' => $ledgerKey->getTrustline()->getAccountID()->getAccountId()];
-            $lines += [$prefix.'trustLine.asset' => self::encodeAsset(Asset::fromXdr($ledgerKey->getTrustline()->getAsset()))];
+            $lines += [$prefix.'trustLine.asset' => self::encodeAsset(Asset::fromXdrTrustlineAsset($ledgerKey->getTrustline()->getAsset()))];
         }
         else if ($type === XdrLedgerEntryType::OFFER) {
             $lines += [$prefix.'type' => 'OFFER'];

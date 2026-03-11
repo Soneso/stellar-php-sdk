@@ -1,0 +1,141 @@
+# frozen_string_literal: true
+
+# Maps enum member names and union arm names where the PHP SDK uses a different
+# constant name than the XDR specification defines.
+#
+# Structure:
+#   MEMBER_OVERRIDES = {
+#     "<PhpClassName>" => {
+#       "<xdr_member_name>" => "<php_member_name>",
+#     },
+#   }
+#
+# Populated incrementally during batch processing.
+
+MEMBER_OVERRIDES = {
+  # Batch 1: Simple enums — SDK strips the type prefix from constant names
+  "XdrClaimantType" => {
+    "CLAIMANT_TYPE_V0" => "V0",
+  },
+  "XdrClaimPredicateType" => {
+    "CLAIM_PREDICATE_UNCONDITIONAL" => "UNCONDITIONAL",
+    "CLAIM_PREDICATE_AND" => "AND",
+    "CLAIM_PREDICATE_OR" => "OR",
+    "CLAIM_PREDICATE_NOT" => "NOT",
+    "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME" => "BEFORE_ABSOLUTE_TIME",
+    "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME" => "BEFORE_RELATIVE_TIME",
+  },
+  "XdrPreconditionType" => {
+    "PRECOND_NONE" => "NONE",
+    "PRECOND_TIME" => "TIME",
+    "PRECOND_V2" => "V2",
+  },
+  "XdrRevokeSponsorshipType" => {
+    "REVOKE_SPONSORSHIP_LEDGER_ENTRY" => "LEDGER_ENTRY",
+    "REVOKE_SPONSORSHIP_SIGNER" => "SIGNER",
+  },
+
+  # Batch 4: XdrContractEventType — XDR spec uses short names, SDK prefixed them
+  "XdrContractEventType" => {
+    "SYSTEM" => "CONTRACT_EVENT_TYPE_SYSTEM",
+    "CONTRACT" => "CONTRACT_EVENT_TYPE_CONTRACT",
+    "DIAGNOSTIC" => "CONTRACT_EVENT_TYPE_DIAGNOSTIC",
+  },
+
+  # Batch 2: Individual overrides for constants that don't follow prefix-strip
+  "XdrClawbackResultCode" => {
+    "CLAWBACK_NOT_CLAWBACK_ENABLED" => "NOT_ENABLED",
+  },
+  "XdrCreateAccountResultCode" => {
+    "CREATE_ACCOUNT_ALREADY_EXIST" => "ACCOUNT_ALREADY_EXIST",
+  },
+
+  # Batch 8: XdrContractCostType capitalization mismatch
+  "XdrContractCostType" => {
+    "InvokeVmFunction" => "InvokeVMFunction",
+  },
+}.freeze
+
+# ---------------------------------------------------------------------------
+# MEMBER_PREFIX_STRIP
+# Maps PHP class names to the XDR constant prefix that the SDK strips.
+# Applied in resolve_member_name() when no individual MEMBER_OVERRIDE exists.
+# ---------------------------------------------------------------------------
+MEMBER_PREFIX_STRIP = {
+  # Batch 2: Result codes and simple type enums
+  "XdrAccountMergeResultCode" => "ACCOUNT_MERGE_",
+  "XdrAllowTrustResultCode" => "ALLOW_TRUST_",
+  "XdrBeginSponsoringFutureReservesResultCode" => "BEGIN_SPONSORING_FUTURE_RESERVES_",
+  "XdrBumpSequenceResultCode" => "BUMP_SEQUENCE_",
+  "XdrChangeTrustResultCode" => "CHANGE_TRUST_",
+  "XdrClaimAtomType" => "CLAIM_ATOM_TYPE_",
+  "XdrClaimClaimableBalanceResultCode" => "CLAIM_CLAIMABLE_BALANCE_",
+  "XdrClawbackClaimableBalanceResultCode" => "CLAWBACK_CLAIMABLE_BALANCE_",
+  "XdrClawbackResultCode" => "CLAWBACK_",
+  "XdrCreateAccountResultCode" => "CREATE_ACCOUNT_",
+  "XdrCreateClaimableBalanceResultCode" => "CREATE_CLAIMABLE_BALANCE_",
+  "XdrEndSponsoringFutureReservesResultCode" => "END_SPONSORING_FUTURE_RESERVES_",
+  "XdrInflationResultCode" => "INFLATION_",
+  "XdrLiquidityPoolDepositResultCode" => "LIQUIDITY_POOL_DEPOSIT_",
+  "XdrLiquidityPoolWithdrawResultCode" => "LIQUIDITY_POOL_WITHDRAW_",
+  "XdrManageDataResultCode" => "MANAGE_DATA_",
+  "XdrManageOfferResultCode" => "MANAGE_SELL_OFFER_",
+  "XdrOperationResultCode" => "op",
+  "XdrPathPaymentStrictReceiveResultCode" => "PATH_PAYMENT_STRICT_RECEIVE_",
+  "XdrPathPaymentStrictSendResultCode" => "PATH_PAYMENT_STRICT_SEND_",
+  "XdrPaymentResultCode" => "PAYMENT_",
+  "XdrRevokeSponsorshipResultCode" => "REVOKE_SPONSORSHIP_",
+  "XdrSetOptionsResultCode" => "SET_OPTIONS_",
+  "XdrSetTrustLineFlagsResultCode" => "SET_TRUST_LINE_FLAGS_",
+  "XdrTransactionResultCode" => "tx",
+}.freeze
+
+# ---------------------------------------------------------------------------
+# FACTORY_PREFIX_STRIP
+# Maps PHP class names to the prefix stripped from constant names when
+# generating factory method names. Only affects factory method names, NOT
+# the constant definitions themselves.
+# ---------------------------------------------------------------------------
+FACTORY_PREFIX_STRIP = {
+  # Batch 4: Enums where factory methods use stripped names
+  "XdrLedgerEntryChangeType" => "LEDGER_ENTRY_",
+  "XdrSCSpecType" => "SC_SPEC_TYPE_",
+  "XdrSCValType" => "SCV_",
+  "XdrContractEventType" => "CONTRACT_EVENT_TYPE_",
+  "XdrHostFunctionType" => "HOST_FUNCTION_TYPE_",
+
+  # Batch 8: Enums where factory methods use stripped names
+  "XdrSCEnvMetaKind" => "SC_ENV_META_KIND_",
+  "XdrSCSpecEntryKind" => "SC_SPEC_ENTRY_",
+}.freeze
+
+# ---------------------------------------------------------------------------
+# FACTORY_NAME_OVERRIDES
+# Individual factory method name overrides. Checked before FACTORY_PREFIX_STRIP.
+# Maps (class, constant_name) → factory_method_name.
+# ---------------------------------------------------------------------------
+FACTORY_NAME_OVERRIDES = {
+  # XdrSCValType: two constants inconsistently keep the SCV_ prefix
+  "XdrSCValType" => {
+    "SCV_CONTRACT_INSTANCE" => "SCV_CONTRACT_INSTANCE",
+    "SCV_LEDGER_KEY_CONTRACT_INSTANCE" => "SCV_LEDGER_KEY_CONTRACT_INSTANCE",
+  },
+
+  # Batch 8: XdrSCSpecUDTUnionCaseV0Kind uses custom factory names
+  "XdrSCSpecUDTUnionCaseV0Kind" => {
+    "SC_SPEC_UDT_UNION_CASE_VOID_V0" => "forVoid",
+    "SC_SPEC_UDT_UNION_CASE_TUPLE_V0" => "forTuple",
+  },
+}.freeze
+
+# ---------------------------------------------------------------------------
+# FACTORY_ALIASES
+# Extra factory methods as backward-compatibility aliases.
+# Maps (class, alias_name) → constant_name to reference.
+# ---------------------------------------------------------------------------
+FACTORY_ALIASES = {
+  # LedgerEntryType: EXPIRATION was renamed to TTL in the Stellar spec
+  "XdrLedgerEntryType" => {
+    "EXPIRATION" => "TTL",
+  },
+}.freeze

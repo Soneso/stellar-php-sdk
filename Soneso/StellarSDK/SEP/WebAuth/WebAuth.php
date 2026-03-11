@@ -375,7 +375,7 @@ class WebAuth
         }
 
         $transaction = $envelopeXdr->getV1()->getTx();
-        if ($transaction->getSequenceNumber()->getValue()->toString() != "0") {
+        if ($transaction->getSequenceNumber()->sequenceNumber->toString() != "0") {
             throw new ChallengeValidationErrorInvalidSeqNr("Invalid transaction, sequence number not 0");
         }
 

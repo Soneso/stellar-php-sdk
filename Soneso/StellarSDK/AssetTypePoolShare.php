@@ -128,11 +128,18 @@ class AssetTypePoolShare extends Asset
      * can be used in operations that work with liquidity pools.
      *
      * @return XdrAsset The XDR representation of this pool share asset
+     * @throws \RuntimeException Always — pool shares cannot be represented as XdrAsset. Use toXdrChangeTrustAsset() instead.
      */
     public function toXdr(): XdrAsset
     {
-        $lp = new XdrLiquidityPoolConstantProductParameters($this->assetA->toXdr(), $this->assetB->toXdr());
-        $poolParameters = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT), $lp);
+        throw new \RuntimeException('Pool share assets cannot be represented as XdrAsset. Use toXdrChangeTrustAsset() instead.');
+    }
+
+    public function toXdrChangeTrustAsset(): XdrChangeTrustAsset
+    {
+        $lp = new XdrLiquidityPoolConstantProductParameters($this->assetA->toXdr(), $this->assetB->toXdr(), 30);
+        $poolParameters = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT));
+        $poolParameters->constantProduct = $lp;
         $xdrAsset = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
         $xdrAsset->setLiquidityPool($poolParameters);
         return $xdrAsset;

@@ -36,10 +36,6 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
-use Soneso\StellarSDK\Xdr\XdrSorobanTransactionMeta;
-use Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExt;
-use Soneso\StellarSDK\Xdr\XdrContractEvent;
-use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
 
 /**
@@ -52,47 +48,6 @@ class XdrSorobanTest extends TestCase
     private const TEST_ACCOUNT_ED25519 = 'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210';
     private const TEST_WASM_ID = 'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789';
     private const TEST_SALT = 'ef00000000000000000000000000000000000000000000000000000000000000';
-
-    /**
-     * Test XdrSorobanCredentialsType encode/decode round-trip.
-     */
-    public function testSorobanCredentialsTypeRoundTrip(): void
-    {
-        $testCases = [
-            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
-            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
-        ];
-
-        foreach ($testCases as $value) {
-            $credentialsType = new XdrSorobanCredentialsType($value);
-            $encoded = $credentialsType->encode();
-            $xdrBuffer = new XdrBuffer($encoded);
-            $decoded = XdrSorobanCredentialsType::decode($xdrBuffer);
-
-            $this->assertEquals(
-                $value,
-                $decoded->getValue(),
-                "Soroban credentials type roundtrip failed for: " . $value
-            );
-        }
-    }
-
-    /**
-     * Test XdrSorobanCredentials with source account type.
-     */
-    public function testSorobanCredentialsSourceAccountRoundTrip(): void
-    {
-        $credentials = XdrSorobanCredentials::forSourceAccount();
-        $encoded = $credentials->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrSorobanCredentials::decode($xdrBuffer);
-
-        $this->assertEquals(
-            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
-            $decoded->getType()->getValue()
-        );
-        $this->assertNull($decoded->getAddress());
-    }
 
     /**
      * Test XdrSorobanCredentials with address credentials.
@@ -126,54 +81,6 @@ class XdrSorobanTest extends TestCase
     }
 
     /**
-     * Test XdrSorobanAddressCredentials encode/decode round-trip.
-     */
-    public function testSorobanAddressCredentialsRoundTrip(): void
-    {
-        $address = $this->createTestSCAddress();
-        $nonce = 999888777;
-        $signatureExpirationLedger = 5000000;
-        $signature = $this->createTestSCValU32(12345);
-
-        $credentials = new XdrSorobanAddressCredentials(
-            $address,
-            $nonce,
-            $signatureExpirationLedger,
-            $signature
-        );
-
-        $encoded = $credentials->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrSorobanAddressCredentials::decode($xdrBuffer);
-
-        $this->assertEquals($nonce, $decoded->getNonce());
-        $this->assertEquals($signatureExpirationLedger, $decoded->getSignatureExpirationLedger());
-        $this->assertNotNull($decoded->getAddress());
-        $this->assertNotNull($decoded->getSignature());
-    }
-
-    /**
-     * Test XdrSorobanResources encode/decode round-trip.
-     */
-    public function testSorobanResourcesRoundTrip(): void
-    {
-        $footprint = $this->createTestLedgerFootprint();
-        $instructions = 1000000;
-        $diskReadBytes = 50000;
-        $writeBytes = 30000;
-
-        $resources = new XdrSorobanResources($footprint, $instructions, $diskReadBytes, $writeBytes);
-        $encoded = $resources->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrSorobanResources::decode($xdrBuffer);
-
-        $this->assertEquals($instructions, $decoded->getInstructions());
-        $this->assertEquals($diskReadBytes, $decoded->getDiskReadBytes());
-        $this->assertEquals($writeBytes, $decoded->getWriteBytes());
-        $this->assertNotNull($decoded->getFootprint());
-    }
-
-    /**
      * Test XdrSorobanResources with zero values.
      */
     public function testSorobanResourcesZeroValues(): void
@@ -187,27 +94,6 @@ class XdrSorobanTest extends TestCase
         $this->assertEquals(0, $decoded->getInstructions());
         $this->assertEquals(0, $decoded->getDiskReadBytes());
         $this->assertEquals(0, $decoded->getWriteBytes());
-    }
-
-    /**
-     * Test XdrSorobanTransactionData encode/decode round-trip.
-     */
-    public function testSorobanTransactionDataRoundTrip(): void
-    {
-        $ext = new XdrSorobanTransactionDataExt(0);
-        $footprint = $this->createTestLedgerFootprint();
-        $resources = new XdrSorobanResources($footprint, 5000000, 100000, 50000);
-        $resourceFee = 50000;
-
-        $sorobanData = new XdrSorobanTransactionData($ext, $resources, $resourceFee);
-        $encoded = $sorobanData->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrSorobanTransactionData::decode($xdrBuffer);
-
-        $this->assertEquals($resourceFee, $decoded->getResourceFee());
-        $this->assertEquals(5000000, $decoded->getResources()->getInstructions());
-        $this->assertEquals(100000, $decoded->getResources()->getDiskReadBytes());
-        $this->assertEquals(50000, $decoded->getResources()->getWriteBytes());
     }
 
     /**
@@ -230,27 +116,6 @@ class XdrSorobanTest extends TestCase
     }
 
     /**
-     * Test XdrSorobanTransactionMeta encode/decode round-trip.
-     */
-    public function testSorobanTransactionMetaRoundTrip(): void
-    {
-        $ext = new XdrSorobanTransactionMetaExt(0, null);
-        $events = [];
-        $returnValue = $this->createTestSCValU32(42);
-        $diagnosticEvents = [];
-
-        $meta = new XdrSorobanTransactionMeta($ext, $events, $returnValue, $diagnosticEvents);
-        $encoded = $meta->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrSorobanTransactionMeta::decode($xdrBuffer);
-
-        $this->assertNotNull($decoded->getReturnValue());
-        $this->assertIsArray($decoded->getEvents());
-        $this->assertIsArray($decoded->getDiagnosticEvents());
-        $this->assertNotNull($decoded->getExt());
-    }
-
-    /**
      * Test XdrSorobanAuthorizedFunctionType values.
      */
     public function testSorobanAuthorizedFunctionTypeValues(): void
@@ -258,26 +123,6 @@ class XdrSorobanTest extends TestCase
         $this->assertEquals(0, XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN);
         $this->assertEquals(1, XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN);
         $this->assertEquals(2, XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN);
-    }
-
-    /**
-     * Test XdrSorobanAuthorizedFunction with contract function.
-     */
-    public function testSorobanAuthorizedFunctionContractFnRoundTrip(): void
-    {
-        $invokeArgs = $this->createTestInvokeContractArgs();
-        $authorizedFunction = XdrSorobanAuthorizedFunction::forInvokeContractArgs($invokeArgs);
-
-        $encoded = $authorizedFunction->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrSorobanAuthorizedFunction::decode($xdrBuffer);
-
-        $this->assertEquals(
-            XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
-            $decoded->getType()->getValue()
-        );
-        $this->assertNotNull($decoded->getContractFn());
-        $this->assertEquals('test_function', $decoded->getContractFn()->getFunctionName());
     }
 
     /**
@@ -297,25 +142,6 @@ class XdrSorobanTest extends TestCase
             $decoded->getType()->getValue()
         );
         $this->assertNotNull($decoded->getCreateContractHostFn());
-    }
-
-    /**
-     * Test XdrSorobanAuthorizedInvocation encode/decode round-trip.
-     */
-    public function testSorobanAuthorizedInvocationRoundTrip(): void
-    {
-        $invokeArgs = $this->createTestInvokeContractArgs();
-        $authorizedFunction = XdrSorobanAuthorizedFunction::forInvokeContractArgs($invokeArgs);
-        $subInvocations = [];
-
-        $invocation = new XdrSorobanAuthorizedInvocation($authorizedFunction, $subInvocations);
-        $encoded = $invocation->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrSorobanAuthorizedInvocation::decode($xdrBuffer);
-
-        $this->assertNotNull($decoded->getFunction());
-        $this->assertIsArray($decoded->getSubInvocations());
-        $this->assertCount(0, $decoded->getSubInvocations());
     }
 
     /**
@@ -348,53 +174,6 @@ class XdrSorobanTest extends TestCase
     {
         $this->assertEquals(0, XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
         $this->assertEquals(1, XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET);
-    }
-
-    /**
-     * Test XdrContractIDPreimage from address round-trip.
-     */
-    public function testContractIDPreimageFromAddressRoundTrip(): void
-    {
-        $address = $this->createTestSCAddress();
-        $salt = hex2bin(self::TEST_SALT);
-
-        $preimage = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
-        $preimage->setAddress($address);
-        $preimage->setSalt($salt);
-
-        $encoded = $preimage->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrContractIDPreimage::decode($xdrBuffer);
-
-        $this->assertEquals(
-            XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
-            $decoded->getType()->getValue()
-        );
-        $this->assertNotNull($decoded->getAddress());
-        $this->assertNotNull($decoded->getSalt());
-        $this->assertEquals($salt, $decoded->getSalt());
-    }
-
-    /**
-     * Test XdrContractIDPreimage from asset round-trip.
-     */
-    public function testContractIDPreimageFromAssetRoundTrip(): void
-    {
-        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-
-        $preimage = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET());
-        $preimage->setAsset($asset);
-
-        $encoded = $preimage->encode();
-        $xdrBuffer = new XdrBuffer($encoded);
-        $decoded = XdrContractIDPreimage::decode($xdrBuffer);
-
-        $this->assertEquals(
-            XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET,
-            $decoded->getType()->getValue()
-        );
-        $this->assertNotNull($decoded->getAsset());
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getAsset()->getType()->getValue());
     }
 
     /**

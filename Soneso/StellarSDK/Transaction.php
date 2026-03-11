@@ -287,7 +287,8 @@ class Transaction extends AbstractTransaction
         $xdrCond = $this->preconditions?->toXdr();
         $xdrExt = null;
         if ($this->sorobanTransactionData !== null) {
-            $xdrExt = new XdrTransactionExt(1, $this->sorobanTransactionData);
+            $xdrExt = new XdrTransactionExt(1);
+            $xdrExt->sorobanTransactionData = $this->sorobanTransactionData;
         }
         return new XdrTransaction($xdrMuxedSourceAccount, $xdrSequenceNr, $xdrOperations, $this->fee, $xdrMemo, $xdrCond, $xdrExt);
     }
@@ -329,7 +330,7 @@ class Transaction extends AbstractTransaction
         $tx = $envelope->getTx();
         $sourceAccount = MuxedAccount::fromXdr($tx->getSourceAccount());
         $fee = $tx->getFee();
-        $seqNr = $tx->getSequenceNumber()->getValue();
+        $seqNr = $tx->getSequenceNumber()->sequenceNumber;
         $memo = Memo::fromXdr($tx->getMemo());
         $operations = array();
         $cond = null;
@@ -361,7 +362,7 @@ class Transaction extends AbstractTransaction
         $accId = KeyPair::fromPublicKey($tx->getSourceAccountEd25519())->getAccountId();
         $sourceAccount = MuxedAccount::fromAccountId($accId);
         $fee = $tx->getFee();
-        $seqNr = $tx->getSequenceNumber()->getValue();
+        $seqNr = $tx->getSequenceNumber()->sequenceNumber;
         $memo = Memo::fromXdr($tx->getMemo());
         $operations = array();
         $cond = null;

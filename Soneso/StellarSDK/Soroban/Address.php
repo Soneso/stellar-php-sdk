@@ -162,7 +162,7 @@ class Address
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT) {
             return new Address(Address::TYPE_MUXED_ACCOUNT, muxedAccountId: $xdrAddress->muxedAccount->getAccountId());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE) {
-            return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $xdrAddress->getClaimableBalanceId());
+            return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $xdrAddress->getClaimableBalanceId()?->getHash());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
             return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $xdrAddress->getLiquidityPoolId());
         }else {

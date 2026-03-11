@@ -144,8 +144,8 @@ class Memo
         if ($this->type == static::MEMO_TYPE_NONE) return;
         if ($this->type == static::MEMO_TYPE_TEXT) {
             // Verify length does not exceed max
-            if (strlen($this->value) > XdrMemo::VALUE_TEXT_MAX_SIZE) {
-                throw new InvalidArgumentException(sprintf('memo text is greater than the maximum of %s bytes', XdrMemo::VALUE_TEXT_MAX_SIZE));
+            if (strlen($this->value) > StellarConstants::MEMO_TEXT_MAX_LENGTH) {
+                throw new InvalidArgumentException(sprintf('memo text is greater than the maximum of %s bytes', StellarConstants::MEMO_TEXT_MAX_LENGTH));
             }
         }
         if ($this->type == static::MEMO_TYPE_ID) {

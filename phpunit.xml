@@ -15,6 +15,9 @@
         <testsuite name="unit">
             <directory>Soneso/StellarSDKTests/Unit</directory>
         </testsuite>
+        <testsuite name="generated">
+            <directory>Soneso/StellarSDKTests/Unit/Xdr/Generated</directory>
+        </testsuite>
         <testsuite name="integration">
             <directory>Soneso/StellarSDKTests/Integration</directory>
         </testsuite>

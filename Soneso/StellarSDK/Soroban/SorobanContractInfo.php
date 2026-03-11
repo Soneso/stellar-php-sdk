@@ -23,9 +23,14 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecEventV0;
 class SorobanContractInfo
 {
     /**
-     * @var int Environment interface number from Environment Meta.
+     * @var int Soroban environment protocol version from Environment Meta.
      */
-    public int $envInterfaceVersion;
+    public int $envMetaProtocol;
+
+    /**
+     * @var int Soroban environment pre-release version from Environment Meta.
+     */
+    public int $envMetaPreRelease;
 
     /**
      * @var array<XdrSCSpecEntry> $specEntries Contract Spec Entries.
@@ -84,17 +89,20 @@ class SorobanContractInfo
     public array $events;
 
     /**
-     * @param int $envInterfaceVersion Environment interface number from Environment Meta.
+     * @param int $envMetaProtocol Soroban environment protocol version from Environment Meta.
+     * @param int $envMetaPreRelease Soroban environment pre-release version from Environment Meta.
      * @param array<XdrSCSpecEntry> $specEntries Contract Spec Entries.
      * @param array<string,string> $metaEntries Contract Meta Entries. Key => Value pairs.
      */
     public function __construct(
-        int $envInterfaceVersion,
+        int $envMetaProtocol,
+        int $envMetaPreRelease,
         array $specEntries,
         array $metaEntries,
     )
     {
-        $this->envInterfaceVersion = $envInterfaceVersion;
+        $this->envMetaProtocol = $envMetaProtocol;
+        $this->envMetaPreRelease = $envMetaPreRelease;
         $this->specEntries = $specEntries;
         $this->metaEntries = $metaEntries;
 

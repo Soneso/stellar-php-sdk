@@ -9,48 +9,12 @@ namespace Soneso\StellarSDK\Xdr;
 use Soneso\StellarSDK\Crypto\CryptoKeyType;
 use Soneso\StellarSDK\Crypto\StrKey;
 
-class XdrMuxedAccountMed25519
+class XdrMuxedAccountMed25519 extends XdrMuxedAccountMed25519Base
 {
-    private int $id; //uint64
-    private string $ed25519; //uint256
-
-    public function __construct(int $id, string $ed25519) {
-        $this->id = $id;
-        $this->ed25519 = $ed25519;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getEd25519(): string
-    {
-        return $this->ed25519;
-    }
-
-    public function encode(): string {
-        $bytes = XdrEncoder::unsignedInteger64($this->id);
-        $bytes .= XdrEncoder::unsignedInteger256($this->ed25519);
-        return $bytes;
-    }
-
     public function encodeInverted(): string {
-        $bytes = XdrEncoder::unsignedInteger256($this->ed25519);
-        $bytes .= XdrEncoder::unsignedInteger64($this->id);
+        $bytes = XdrEncoder::unsignedInteger256($this->getEd25519());
+        $bytes .= XdrEncoder::unsignedInteger64($this->getId());
         return $bytes;
-    }
-
-    public static function decode(XdrBuffer $xdr) : XdrMuxedAccountMed25519 {
-        $id = $xdr->readUnsignedInteger64();
-        $ed25519 = $xdr->readUnsignedInteger256();
-        return new XdrMuxedAccountMed25519($id, $ed25519);
     }
 
     public static function decodeInverted(XdrBuffer $xdr) : XdrMuxedAccountMed25519 {

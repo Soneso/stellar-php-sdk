@@ -7,7 +7,6 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
 use PHPUnit\Framework\TestCase;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEventV0;
@@ -22,6 +21,7 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecUDTErrorEnumV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructFieldV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseVoidV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat;
@@ -94,86 +94,6 @@ class XdrSCSpecEntryTest extends TestCase
         $this->assertEquals(XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0, $entry->getType()->value);
         $this->assertNotNull($entry->getEventV0());
         $this->assertEquals("TestEvent", $entry->getEventV0()->name);
-    }
-
-    // Encode/Decode Round Trip Tests
-
-    public function testFunctionV0EncodeDecodeRoundTrip(): void
-    {
-        $function = $this->createFunction();
-        $original = XdrSCSpecEntry::forFunctionV0($function);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecEntry::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCSpecEntryKind::SC_SPEC_ENTRY_FUNCTION_V0, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getFunctionV0());
-        $this->assertEquals("test_function", $decoded->getFunctionV0()->getName());
-    }
-
-    public function testUDTStructV0EncodeDecodeRoundTrip(): void
-    {
-        $struct = $this->createStruct();
-        $original = XdrSCSpecEntry::forUDTStructV0($struct);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecEntry::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getUdtStructV0());
-        $this->assertEquals("TestStruct", $decoded->getUdtStructV0()->name);
-    }
-
-    public function testUDTUnionV0EncodeDecodeRoundTrip(): void
-    {
-        $union = $this->createUnion();
-        $original = XdrSCSpecEntry::forUDTUnionV0($union);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecEntry::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getUdtUnionV0());
-        $this->assertEquals("TestUnion", $decoded->getUdtUnionV0()->name);
-    }
-
-    public function testUDTEnumV0EncodeDecodeRoundTrip(): void
-    {
-        $enum = $this->createEnum();
-        $original = XdrSCSpecEntry::forUDTEnumV0($enum);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecEntry::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getUdtEnumV0());
-        $this->assertEquals("TestEnum", $decoded->getUdtEnumV0()->name);
-    }
-
-    public function testUDTErrorEnumV0EncodeDecodeRoundTrip(): void
-    {
-        $errorEnum = $this->createErrorEnum();
-        $original = XdrSCSpecEntry::forUDTErrorEnumV0($errorEnum);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecEntry::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getUdtErrorEnumV0());
-        $this->assertEquals("TestErrorEnum", $decoded->getUdtErrorEnumV0()->name);
-    }
-
-    public function testEventV0EncodeDecodeRoundTrip(): void
-    {
-        $event = $this->createEvent();
-        $original = XdrSCSpecEntry::forEventV0($event);
-
-        $encoded = $original->encode();
-        $decoded = XdrSCSpecEntry::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getEventV0());
-        $this->assertEquals("TestEvent", $decoded->getEventV0()->name);
     }
 
     // Base64 Round Trip Tests
@@ -283,7 +203,8 @@ class XdrSCSpecEntryTest extends TestCase
     private function createUnion(): XdrSCSpecUDTUnionV0
     {
         $voidCase = new XdrSCSpecUDTUnionCaseVoidV0("case doc", "Case1");
-        $case = XdrSCSpecUDTUnionCaseV0::forVoidCase($voidCase);
+        $case = new XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind::forVoid());
+        $case->voidCase = $voidCase;
 
         return new XdrSCSpecUDTUnionV0("Union doc", "test_lib", "TestUnion", [$case]);
     }

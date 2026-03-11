@@ -33,82 +33,6 @@ class XdrSCValTest extends TestCase
     private const TEST_CONTRACT_ID = "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA";
 
     /**
-     * Test XdrSCValType encode/decode round-trip
-     */
-    public function testXdrSCValTypeRoundTrip(): void
-    {
-        $types = [
-            XdrSCValType::SCV_BOOL,
-            XdrSCValType::SCV_VOID,
-            XdrSCValType::SCV_ERROR,
-            XdrSCValType::SCV_U32,
-            XdrSCValType::SCV_I32,
-            XdrSCValType::SCV_U64,
-            XdrSCValType::SCV_I64,
-            XdrSCValType::SCV_TIMEPOINT,
-            XdrSCValType::SCV_DURATION,
-            XdrSCValType::SCV_U128,
-            XdrSCValType::SCV_I128,
-            XdrSCValType::SCV_U256,
-            XdrSCValType::SCV_I256,
-            XdrSCValType::SCV_BYTES,
-            XdrSCValType::SCV_STRING,
-            XdrSCValType::SCV_SYMBOL,
-            XdrSCValType::SCV_VEC,
-            XdrSCValType::SCV_MAP,
-            XdrSCValType::SCV_ADDRESS,
-            XdrSCValType::SCV_CONTRACT_INSTANCE,
-            XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE,
-            XdrSCValType::SCV_LEDGER_KEY_NONCE,
-        ];
-
-        foreach ($types as $typeValue) {
-            $original = new XdrSCValType($typeValue);
-            $encoded = $original->encode();
-            $decoded = XdrSCValType::decode(new XdrBuffer($encoded));
-
-            $this->assertEquals($original->getValue(), $decoded->getValue());
-            $this->assertEquals($encoded, $decoded->encode());
-        }
-    }
-
-    /**
-     * Test XdrSCVal for boolean true
-     */
-    public function testXdrSCValBoolTrue(): void
-    {
-        $original = XdrSCVal::forTrue();
-
-        $this->assertEquals(XdrSCValType::SCV_BOOL, $original->getType()->getValue());
-        $this->assertTrue($original->getB());
-
-        $encoded = $original->encode();
-        $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCValType::SCV_BOOL, $decoded->getType()->getValue());
-        $this->assertTrue($decoded->getB());
-        $this->assertEquals($encoded, $decoded->encode());
-    }
-
-    /**
-     * Test XdrSCVal for boolean false
-     */
-    public function testXdrSCValBoolFalse(): void
-    {
-        $original = XdrSCVal::forFalse();
-
-        $this->assertEquals(XdrSCValType::SCV_BOOL, $original->getType()->getValue());
-        $this->assertFalse($original->getB());
-
-        $encoded = $original->encode();
-        $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCValType::SCV_BOOL, $decoded->getType()->getValue());
-        $this->assertFalse($decoded->getB());
-        $this->assertEquals($encoded, $decoded->encode());
-    }
-
-    /**
      * Test XdrSCVal for boolean with forBool
      */
     public function testXdrSCValForBool(): void
@@ -126,22 +50,6 @@ class XdrSCValTest extends TestCase
         $encodedFalse = $falseVal->encode();
         $decodedFalse = XdrSCVal::decode(new XdrBuffer($encodedFalse));
         $this->assertFalse($decodedFalse->getB());
-    }
-
-    /**
-     * Test XdrSCVal for void
-     */
-    public function testXdrSCValVoid(): void
-    {
-        $original = XdrSCVal::forVoid();
-
-        $this->assertEquals(XdrSCValType::SCV_VOID, $original->getType()->getValue());
-
-        $encoded = $original->encode();
-        $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCValType::SCV_VOID, $decoded->getType()->getValue());
-        $this->assertEquals($encoded, $decoded->encode());
     }
 
     /**
@@ -188,7 +96,7 @@ class XdrSCValTest extends TestCase
     }
 
     /**
-     * Test XdrSCVal for error types without additional data
+     * Test XdrSCVal for error types with SCErrorCode (per XDR spec, all non-CONTRACT types have a code)
      */
     public function testXdrSCValErrorSimpleTypes(): void
     {
@@ -203,102 +111,18 @@ class XdrSCValTest extends TestCase
             XdrSCErrorType::SCE_VALUE(),
         ];
 
+        $defaultCode = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INTERNAL_ERROR);
+
         foreach ($errorTypes as $errorType) {
             $error = new XdrSCError($errorType);
+            $error->code = $defaultCode;
             $original = XdrSCVal::forError($error);
 
             $encoded = $original->encode();
             $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
 
             $this->assertEquals($errorType->getValue(), $decoded->getError()->getType()->getValue());
-            $this->assertEquals($encoded, $decoded->encode());
-        }
-    }
-
-    /**
-     * Test XdrSCVal for u32
-     */
-    public function testXdrSCValU32(): void
-    {
-        $testValues = [0, 1, 100, 4294967295];
-
-        foreach ($testValues as $value) {
-            $original = XdrSCVal::forU32($value);
-
-            $this->assertEquals(XdrSCValType::SCV_U32, $original->getType()->getValue());
-            $this->assertEquals($value, $original->getU32());
-
-            $encoded = $original->encode();
-            $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-            $this->assertEquals(XdrSCValType::SCV_U32, $decoded->getType()->getValue());
-            $this->assertEquals($value, $decoded->getU32());
-            $this->assertEquals($encoded, $decoded->encode());
-        }
-    }
-
-    /**
-     * Test XdrSCVal for i32
-     */
-    public function testXdrSCValI32(): void
-    {
-        $testValues = [-2147483648, -1, 0, 1, 2147483647];
-
-        foreach ($testValues as $value) {
-            $original = XdrSCVal::forI32($value);
-
-            $this->assertEquals(XdrSCValType::SCV_I32, $original->getType()->getValue());
-            $this->assertEquals($value, $original->getI32());
-
-            $encoded = $original->encode();
-            $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-            $this->assertEquals(XdrSCValType::SCV_I32, $decoded->getType()->getValue());
-            $this->assertEquals($value, $decoded->getI32());
-            $this->assertEquals($encoded, $decoded->encode());
-        }
-    }
-
-    /**
-     * Test XdrSCVal for u64
-     */
-    public function testXdrSCValU64(): void
-    {
-        $testValues = [0, 1, 1000, 9223372036854775807];
-
-        foreach ($testValues as $value) {
-            $original = XdrSCVal::forU64($value);
-
-            $this->assertEquals(XdrSCValType::SCV_U64, $original->getType()->getValue());
-            $this->assertEquals($value, $original->getU64());
-
-            $encoded = $original->encode();
-            $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-            $this->assertEquals(XdrSCValType::SCV_U64, $decoded->getType()->getValue());
-            $this->assertEquals($value, $decoded->getU64());
-            $this->assertEquals($encoded, $decoded->encode());
-        }
-    }
-
-    /**
-     * Test XdrSCVal for i64
-     */
-    public function testXdrSCValI64(): void
-    {
-        $testValues = [PHP_INT_MIN, -1000, 0, 1000, PHP_INT_MAX];
-
-        foreach ($testValues as $value) {
-            $original = XdrSCVal::forI64($value);
-
-            $this->assertEquals(XdrSCValType::SCV_I64, $original->getType()->getValue());
-            $this->assertEquals($value, $original->getI64());
-
-            $encoded = $original->encode();
-            $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-            $this->assertEquals(XdrSCValType::SCV_I64, $decoded->getType()->getValue());
-            $this->assertEquals($value, $decoded->getI64());
+            $this->assertEquals($defaultCode->getValue(), $decoded->getError()->getCode()->getValue());
             $this->assertEquals($encoded, $decoded->encode());
         }
     }
@@ -348,27 +172,6 @@ class XdrSCValTest extends TestCase
     }
 
     /**
-     * Test XdrSCVal for u128
-     */
-    public function testXdrSCValU128(): void
-    {
-        $parts = new XdrUInt128Parts(123456789, 987654321);
-        $original = XdrSCVal::forU128($parts);
-
-        $this->assertEquals(XdrSCValType::SCV_U128, $original->getType()->getValue());
-        $this->assertEquals(123456789, $original->getU128()->getHi());
-        $this->assertEquals(987654321, $original->getU128()->getLo());
-
-        $encoded = $original->encode();
-        $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCValType::SCV_U128, $decoded->getType()->getValue());
-        $this->assertEquals(123456789, $decoded->getU128()->getHi());
-        $this->assertEquals(987654321, $decoded->getU128()->getLo());
-        $this->assertEquals($encoded, $decoded->encode());
-    }
-
-    /**
      * Test XdrSCVal for u128 with forU128Parts
      */
     public function testXdrSCValU128Parts(): void
@@ -389,27 +192,6 @@ class XdrSCValTest extends TestCase
     }
 
     /**
-     * Test XdrSCVal for i128
-     */
-    public function testXdrSCValI128(): void
-    {
-        $parts = new XdrInt128Parts(-123456789, 987654321);
-        $original = XdrSCVal::forI128($parts);
-
-        $this->assertEquals(XdrSCValType::SCV_I128, $original->getType()->getValue());
-        $this->assertEquals(-123456789, $original->getI128()->getHi());
-        $this->assertEquals(987654321, $original->getI128()->getLo());
-
-        $encoded = $original->encode();
-        $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCValType::SCV_I128, $decoded->getType()->getValue());
-        $this->assertEquals(-123456789, $decoded->getI128()->getHi());
-        $this->assertEquals(987654321, $decoded->getI128()->getLo());
-        $this->assertEquals($encoded, $decoded->encode());
-    }
-
-    /**
      * Test XdrSCVal for i128 with forI128Parts
      */
     public function testXdrSCValI128Parts(): void
@@ -426,56 +208,6 @@ class XdrSCValTest extends TestCase
         $this->assertEquals(XdrSCValType::SCV_I128, $decoded->getType()->getValue());
         $this->assertEquals(-999999, $decoded->getI128()->getHi());
         $this->assertEquals(111111, $decoded->getI128()->getLo());
-        $this->assertEquals($encoded, $decoded->encode());
-    }
-
-    /**
-     * Test XdrSCVal for u256
-     */
-    public function testXdrSCValU256(): void
-    {
-        $parts = new XdrUInt256Parts(11111, 22222, 33333, 44444);
-        $original = XdrSCVal::forU256($parts);
-
-        $this->assertEquals(XdrSCValType::SCV_U256, $original->getType()->getValue());
-        $this->assertEquals(11111, $original->getU256()->getHiHi());
-        $this->assertEquals(22222, $original->getU256()->getHiLo());
-        $this->assertEquals(33333, $original->getU256()->getLoHi());
-        $this->assertEquals(44444, $original->getU256()->getLoLo());
-
-        $encoded = $original->encode();
-        $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCValType::SCV_U256, $decoded->getType()->getValue());
-        $this->assertEquals(11111, $decoded->getU256()->getHiHi());
-        $this->assertEquals(22222, $decoded->getU256()->getHiLo());
-        $this->assertEquals(33333, $decoded->getU256()->getLoHi());
-        $this->assertEquals(44444, $decoded->getU256()->getLoLo());
-        $this->assertEquals($encoded, $decoded->encode());
-    }
-
-    /**
-     * Test XdrSCVal for i256
-     */
-    public function testXdrSCValI256(): void
-    {
-        $parts = new XdrInt256Parts(-11111, 22222, 33333, 44444);
-        $original = XdrSCVal::forI256($parts);
-
-        $this->assertEquals(XdrSCValType::SCV_I256, $original->getType()->getValue());
-        $this->assertEquals(-11111, $original->getI256()->getHiHi());
-        $this->assertEquals(22222, $original->getI256()->getHiLo());
-        $this->assertEquals(33333, $original->getI256()->getLoHi());
-        $this->assertEquals(44444, $original->getI256()->getLoLo());
-
-        $encoded = $original->encode();
-        $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrSCValType::SCV_I256, $decoded->getType()->getValue());
-        $this->assertEquals(-11111, $decoded->getI256()->getHiHi());
-        $this->assertEquals(22222, $decoded->getI256()->getHiLo());
-        $this->assertEquals(33333, $decoded->getI256()->getLoHi());
-        $this->assertEquals(44444, $decoded->getI256()->getLoLo());
         $this->assertEquals($encoded, $decoded->encode());
     }
 

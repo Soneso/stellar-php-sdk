@@ -11,7 +11,6 @@ use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAccountMergeOperation;
 use Soneso\StellarSDK\Xdr\XdrAsset;
-use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrBumpSequenceOperation;
@@ -27,8 +26,6 @@ use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
-use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation;
-use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation;
 use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
 use Soneso\StellarSDK\Xdr\XdrPrice;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
@@ -43,226 +40,6 @@ class XdrOperationTest extends TestCase
     private const ACCOUNT_ID_2 = "GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF";
     private const ED25519_1 = "3132333435363738393031323334353637383930313233343536373839303132";
     private const ED25519_2 = "3233343536373839303132333435363738393031323334353637383930313233";
-
-    /**
-     * Test XdrOperationType encode/decode roundtrip
-     */
-    public function testOperationTypeRoundtrip(): void
-    {
-        $operationTypes = [
-            XdrOperationType::CREATE_ACCOUNT,
-            XdrOperationType::PAYMENT,
-            XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE,
-            XdrOperationType::MANAGE_SELL_OFFER,
-            XdrOperationType::CREATE_PASSIVE_SELL_OFFER,
-            XdrOperationType::SET_OPTIONS,
-            XdrOperationType::CHANGE_TRUST,
-            XdrOperationType::ALLOW_TRUST,
-            XdrOperationType::ACCOUNT_MERGE,
-            XdrOperationType::INFLATION,
-            XdrOperationType::MANAGE_DATA,
-            XdrOperationType::BUMP_SEQUENCE,
-            XdrOperationType::MANAGE_BUY_OFFER,
-            XdrOperationType::PATH_PAYMENT_STRICT_SEND,
-            XdrOperationType::CREATE_CLAIMABLE_BALANCE,
-            XdrOperationType::CLAIM_CLAIMABLE_BALANCE,
-            XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES,
-            XdrOperationType::END_SPONSORING_FUTURE_RESERVES,
-            XdrOperationType::REVOKE_SPONSORSHIP,
-            XdrOperationType::CLAWBACK,
-            XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE,
-            XdrOperationType::SET_TRUST_LINE_FLAGS,
-            XdrOperationType::LIQUIDITY_POOL_DEPOSIT,
-            XdrOperationType::LIQUIDITY_POOL_WITHDRAW,
-            XdrOperationType::INVOKE_HOST_FUNCTION,
-            XdrOperationType::EXTEND_FOOTPRINT_TTL,
-            XdrOperationType::RESTORE_FOOTPRINT,
-        ];
-
-        foreach ($operationTypes as $typeValue) {
-            $type = new XdrOperationType($typeValue);
-            $encoded = $type->encode();
-            $decoded = XdrOperationType::decode(new XdrBuffer($encoded));
-
-            $this->assertEquals($typeValue, $decoded->getValue(), "Failed for operation type: $typeValue");
-        }
-    }
-
-    /**
-     * Test CreateAccountOperation encode/decode roundtrip
-     */
-    public function testCreateAccountOperationRoundtrip(): void
-    {
-        $destination = XdrAccountID::fromAccountId(self::ACCOUNT_ID_1);
-        $startingBalance = new BigInteger("10000000000");
-
-        $operation = new XdrCreateAccountOperation($destination, $startingBalance);
-        $encoded = $operation->encode();
-        $decoded = XdrCreateAccountOperation::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(self::ACCOUNT_ID_1, $decoded->getDestination()->getAccountId());
-        $this->assertEquals($startingBalance->toString(), $decoded->getStartingBalance()->toString());
-    }
-
-    /**
-     * Test PaymentOperation encode/decode roundtrip with native asset
-     */
-    public function testPaymentOperationNativeAssetRoundtrip(): void
-    {
-        $destination = new XdrMuxedAccount(hex2bin(self::ED25519_1));
-        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $amount = new BigInteger("5000000000");
-
-        $operation = new XdrPaymentOperation($destination, $asset, $amount);
-        $encoded = $operation->encode();
-        $decoded = XdrPaymentOperation::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(self::ED25519_1, bin2hex($decoded->getDestination()->getEd25519()));
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getAsset()->getType()->getValue());
-        $this->assertEquals($amount->toString(), $decoded->getAmount()->toString());
-    }
-
-    /**
-     * Test PaymentOperation encode/decode roundtrip with credit asset
-     */
-    public function testPaymentOperationCreditAssetRoundtrip(): void
-    {
-        $destination = new XdrMuxedAccount(hex2bin(self::ED25519_1));
-        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
-        $issuer = XdrAccountID::fromAccountId(self::ACCOUNT_ID_2);
-        $alphaNum4 = new XdrAssetAlphaNum4("USD", $issuer);
-        $asset->setAlphaNum4($alphaNum4);
-        $amount = new BigInteger("2500000000");
-
-        $operation = new XdrPaymentOperation($destination, $asset, $amount);
-        $encoded = $operation->encode();
-        $decoded = XdrPaymentOperation::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(self::ED25519_1, bin2hex($decoded->getDestination()->getEd25519()));
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4, $decoded->getAsset()->getType()->getValue());
-        $this->assertEquals("USD", $decoded->getAsset()->getAlphaNum4()->getAssetCode());
-        $this->assertEquals(self::ACCOUNT_ID_2, $decoded->getAsset()->getAlphaNum4()->getIssuer()->getAccountId());
-        $this->assertEquals($amount->toString(), $decoded->getAmount()->toString());
-    }
-
-    /**
-     * Test PathPaymentStrictReceiveOperation encode/decode roundtrip
-     */
-    public function testPathPaymentStrictReceiveOperationRoundtrip(): void
-    {
-        $sendAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $sendMax = new BigInteger("10000000000");
-        $destination = new XdrMuxedAccount(hex2bin(self::ED25519_2));
-        $destAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $destAmount = new BigInteger("9500000000");
-        $path = [];
-
-        $operation = new XdrPathPaymentStrictReceiveOperation(
-            $sendAsset, $sendMax, $destination, $destAsset, $destAmount, $path
-        );
-        $encoded = $operation->encode();
-        $decoded = XdrPathPaymentStrictReceiveOperation::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getSendAsset()->getType()->getValue());
-        $this->assertEquals($sendMax->toString(), $decoded->getSendMax()->toString());
-        $this->assertEquals(self::ED25519_2, bin2hex($decoded->getDestination()->getEd25519()));
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getDestAsset()->getType()->getValue());
-        $this->assertEquals($destAmount->toString(), $decoded->getDestAmount()->toString());
-        $this->assertCount(0, $decoded->getPath());
-    }
-
-    /**
-     * Test PathPaymentStrictSendOperation encode/decode roundtrip
-     */
-    public function testPathPaymentStrictSendOperationRoundtrip(): void
-    {
-        $sendAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $sendAmount = new BigInteger("10000000000");
-        $destination = new XdrMuxedAccount(hex2bin(self::ED25519_2));
-        $destAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $destMin = new BigInteger("9000000000");
-        $path = [];
-
-        $operation = new XdrPathPaymentStrictSendOperation(
-            $sendAsset, $sendAmount, $destination, $destAsset, $destMin, $path
-        );
-        $encoded = $operation->encode();
-        $decoded = XdrPathPaymentStrictSendOperation::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getSendAsset()->getType()->getValue());
-        $this->assertEquals($sendAmount->toString(), $decoded->getSendAmount()->toString());
-        $this->assertEquals(self::ED25519_2, bin2hex($decoded->getDestination()->getEd25519()));
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getDestAsset()->getType()->getValue());
-        $this->assertEquals($destMin->toString(), $decoded->getDestMin()->toString());
-        $this->assertCount(0, $decoded->getPath());
-    }
-
-    /**
-     * Test ManageSellOfferOperation encode/decode roundtrip
-     */
-    public function testManageSellOfferOperationRoundtrip(): void
-    {
-        $selling = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $buying = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $amount = new BigInteger("100000000");
-        $price = new XdrPrice(100, 99);
-        $offerId = 12345;
-
-        $operation = new XdrManageSellOfferOperation($selling, $buying, $amount, $price, $offerId);
-        $encoded = $operation->encode();
-        $decoded = XdrManageSellOfferOperation::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getSelling()->getType()->getValue());
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getBuying()->getType()->getValue());
-        $this->assertEquals($amount->toString(), $decoded->getAmount()->toString());
-        $this->assertEquals(100, $decoded->getPrice()->getN());
-        $this->assertEquals(99, $decoded->getPrice()->getD());
-        $this->assertEquals($offerId, $decoded->getOfferId());
-    }
-
-    /**
-     * Test ManageBuyOfferOperation encode/decode roundtrip
-     */
-    public function testManageBuyOfferOperationRoundtrip(): void
-    {
-        $selling = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $buying = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $amount = new BigInteger("200000000");
-        $price = new XdrPrice(99, 100);
-        $offerId = 54321;
-
-        $operation = new XdrManageBuyOfferOperation($selling, $buying, $amount, $price, $offerId);
-        $encoded = $operation->encode();
-        $decoded = XdrManageBuyOfferOperation::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getSelling()->getType()->getValue());
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getBuying()->getType()->getValue());
-        $this->assertEquals($amount->toString(), $decoded->getAmount()->toString());
-        $this->assertEquals(99, $decoded->getPrice()->getN());
-        $this->assertEquals(100, $decoded->getPrice()->getD());
-        $this->assertEquals($offerId, $decoded->getOfferId());
-    }
-
-    /**
-     * Test CreatePassiveSellOfferOperation encode/decode roundtrip
-     */
-    public function testCreatePassiveSellOfferOperationRoundtrip(): void
-    {
-        $selling = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $buying = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $amount = new BigInteger("150000000");
-        $price = new XdrPrice(50, 49);
-
-        $operation = new XdrCreatePassiveSellOfferOperation($selling, $buying, $amount, $price);
-        $encoded = $operation->encode();
-        $decoded = XdrCreatePassiveSellOfferOperation::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getSelling()->getType()->getValue());
-        $this->assertEquals(XdrAssetType::ASSET_TYPE_NATIVE, $decoded->getBuying()->getType()->getValue());
-        $this->assertEquals($amount->toString(), $decoded->getAmount()->toString());
-        $this->assertEquals(50, $decoded->getPrice()->getN());
-        $this->assertEquals(49, $decoded->getPrice()->getD());
-    }
 
     /**
      * Test SetOptionsOperation encode/decode roundtrip with minimal fields
@@ -393,7 +170,7 @@ class XdrOperationTest extends TestCase
         $encoded = $operation->encode();
         $decoded = XdrBumpSequenceOperation::decode(new XdrBuffer($encoded));
 
-        $this->assertEquals("9999999999", $decoded->getBumpTo()->getValue()->toString());
+        $this->assertEquals("9999999999", $decoded->getBumpTo()->sequenceNumber->toString());
     }
 
     /**
@@ -415,28 +192,6 @@ class XdrOperationTest extends TestCase
         $this->assertEquals(XdrOperationType::CREATE_ACCOUNT, $decoded->getType()->getValue());
         $this->assertEquals(self::ACCOUNT_ID_1, $decoded->getCreateAccountOp()->getDestination()->getAccountId());
         $this->assertEquals($startingBalance->toString(), $decoded->getCreateAccountOp()->getStartingBalance()->toString());
-    }
-
-    /**
-     * Test XdrOperationBody encode/decode roundtrip with Payment
-     */
-    public function testOperationBodyPaymentRoundtrip(): void
-    {
-        $type = new XdrOperationType(XdrOperationType::PAYMENT);
-        $body = new XdrOperationBody($type);
-
-        $destination = new XdrMuxedAccount(hex2bin(self::ED25519_1));
-        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        $amount = new BigInteger("5000000000");
-        $paymentOp = new XdrPaymentOperation($destination, $asset, $amount);
-        $body->setPaymentOp($paymentOp);
-
-        $encoded = $body->encode();
-        $decoded = XdrOperationBody::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrOperationType::PAYMENT, $decoded->getType()->getValue());
-        $this->assertEquals(self::ED25519_1, bin2hex($decoded->getPaymentOp()->getDestination()->getEd25519()));
-        $this->assertEquals($amount->toString(), $decoded->getPaymentOp()->getAmount()->toString());
     }
 
     /**

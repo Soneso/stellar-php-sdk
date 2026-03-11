@@ -6,21 +6,10 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Constants\StellarConstants;
 
-class XdrTransaction
+class XdrTransaction extends XdrTransactionBase
 {
-    public XdrMuxedAccount $sourceAccount;
-    public int $fee; //uint32
-    public XdrSequenceNumber $sequenceNumber;
-    public ?XdrPreconditions $preconditions = null;
-    public XdrMemo $memo;
-    /**
-     * @var array<XdrOperation> $operations
-     */
-    public array $operations;
-    public XdrTransactionExt $ext;
 
     /**
      * Constructor.
@@ -42,26 +31,34 @@ class XdrTransaction
         ?XdrTransactionExt $ext = null,
     )
     {
-        $this->sourceAccount = $sourceAccount;
-        $this->sequenceNumber = $sequenceNumber;
-        $this->operations = $operations;
         if ($fee === null) {
-            $this->fee = StellarConstants::MIN_BASE_FEE_STROOPS;
-        } else {
-            $this->fee = $fee;
+            $fee = StellarConstants::MIN_BASE_FEE_STROOPS;
         }
         if ($memo === null) {
+            $memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
+        }
+        if ($ext === null) {
+            $ext = new XdrTransactionExt(0);
+        }
+        if ($preconditions === null) {
+            $preconditions = new XdrPreconditions(XdrPreconditionType::NONE());
+        }
+        parent::__construct($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
+    }
 
-            $this->memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
-        } else {
-            $this->memo = $memo;
+    public static function decode(XdrBuffer $xdr): static {
+        $sourceAccount = XdrMuxedAccount::decode($xdr);
+        $fee = $xdr->readUnsignedInteger32();
+        $sequenceNumber = XdrSequenceNumber::decode($xdr);
+        $preconditions = XdrPreconditions::decode($xdr);
+        $memo = XdrMemo::decode($xdr);
+        $operations = [];
+        $operationsSize = $xdr->readInteger32();
+        for ($i = 0; $i < $operationsSize; $i++) {
+            $operations[] = XdrOperation::decode($xdr);
         }
-        $this->preconditions = $preconditions;
-        if ($ext !== null) {
-            $this->ext = $ext;
-        } else {
-            $this->ext = new XdrTransactionExt(0);
-        }
+        $ext = XdrTransactionExt::decode($xdr);
+        return new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext);
     }
 
     /**
@@ -89,9 +86,9 @@ class XdrTransaction
     }
 
     /**
-     * @return XdrPreconditions|null
+     * @return XdrPreconditions
      */
-    public function getPreconditions(): ?XdrPreconditions
+    public function getPreconditions(): XdrPreconditions
     {
         return $this->preconditions;
     }
@@ -133,42 +130,5 @@ class XdrTransaction
     public function getExt(): XdrTransactionExt
     {
         return $this->ext;
-    }
-
-    public function encode() : string {
-        $bytes = $this->sourceAccount->encode();
-
-        $bytes .= XdrEncoder::unsignedInteger32($this->fee);
-        $bytes .= $this->sequenceNumber->encode();
-        if ($this->preconditions !== null && $this->preconditions->getType()->getValue() != XdrPreconditionType::NONE) {
-            $bytes .= $this->preconditions->encode();
-        } else {
-            $bytes .= XdrEncoder::integer32(0);
-        }
-
-        $bytes .= $this->memo->encode();
-        $bytes .= XdrEncoder::integer32(count($this->operations));
-        foreach($this->operations as $operation) {
-            if ($operation instanceof XdrOperation) {
-                $bytes .= $operation->encode();
-            }
-        }
-        $bytes .= $this->ext->encode();
-        return $bytes;
-    }
-
-    public static function decode (XdrBuffer $xdr) : XdrTransaction {
-        $sourceAccount = XdrMuxedAccount::decode($xdr);
-        $fee = $xdr->readUnsignedInteger32();
-        $seqNr = XdrSequenceNumber::decode($xdr);
-        $pcond = XdrPreconditions::decode($xdr);
-        $memo = XdrMemo::decode($xdr);
-        $opCount = $xdr->readInteger32();
-        $operations = array();
-        for ($i = 0; $i < $opCount; $i++) {
-            array_push($operations, XdrOperation::decode($xdr));
-        }
-        $ext = XdrTransactionExt::decode($xdr);
-        return new XdrTransaction($sourceAccount, $seqNr, $operations, $fee, $memo, $pcond, $ext);
     }
 }

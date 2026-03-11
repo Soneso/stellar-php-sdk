@@ -1,0 +1,322 @@
+# frozen_string_literal: true
+
+# Field name and field type overrides for generated PHP XDR classes.
+#
+# FIELD_OVERRIDES remaps a field's property name when the PHP SDK uses a
+# different name than the XDR specification.
+#
+# FIELD_TYPE_OVERRIDES substitutes the PHP type used for a specific field when
+# the generated default type differs from the existing SDK implementation (e.g.
+# when phpseclib3 BigInteger is used instead of a plain int for int64 fields).
+#
+# Structure for both maps:
+#   "<PhpClassName>" => {
+#     "<fieldName>" => "<overrideValue>",
+#   }
+#
+# Phase 2 note: These are skeletons. A full field-by-field audit will be
+# performed in Phase 2 to populate both maps completely.
+
+# ---------------------------------------------------------------------------
+# Field name overrides
+# ---------------------------------------------------------------------------
+FIELD_OVERRIDES = {
+  # Batch 3: Field name differences between XDR spec and PHP SDK
+  "XdrClaimOfferAtom" => {
+    "sellerID" => "accountId",
+    "offerID" => "offerId",
+  },
+  # Batch 20: Field name differences
+  "XdrClaimOfferAtomV0" => {
+    "offerID" => "offerId",
+  },
+  "XdrRevokeSponsorshipSigner" => {
+    "accountID" => "accountId",
+  },
+  "XdrConfigSettingContractLedgerCostV0" => {
+    "ledgerMaxDiskReadEntries" => "ledgerMaxDiskReadLedgerEntries",
+  },
+  "XdrInt256Parts" => {
+    "hi_hi" => "hiHi",
+    "hi_lo" => "hiLo",
+    "lo_hi" => "loHi",
+    "lo_lo" => "loLo",
+  },
+  "XdrUInt256Parts" => {
+    "hi_hi" => "hiHi",
+    "hi_lo" => "hiLo",
+    "lo_hi" => "loHi",
+    "lo_lo" => "loLo",
+  },
+
+  # Batch 5: Reserved-word field name preserved (PHP allows property names like $function)
+  "XdrSorobanAuthorizedInvocation" => {
+    "function" => "function",
+  },
+
+  # Batch 6: Field name differences between XDR spec and PHP SDK
+  "XdrAllowTrustOperation" => {
+    "authorize" => "authorized",
+  },
+  "XdrSetTrustLineFlagsOperation" => {
+    "trustor" => "accountID",
+  },
+  "XdrSCMetaV0" => {
+    "val" => "value",
+  },
+
+  # Batch 9: Field name differences for typedef array fields
+  "XdrOperationMeta" => {
+    "changes" => "ledgerEntryChanges",
+  },
+  "XdrTransactionMetaV1" => {
+    "txChanges" => "ledgerEntryChanges",
+  },
+
+  # Batch 10+11: Union discriminant name overrides (XDR spec: "code", PHP SDK: "resultCode")
+  "XdrClawbackResult" => { "code" => "resultCode" },
+  "XdrClawbackClaimableBalanceResult" => { "code" => "resultCode" },
+  "XdrRevokeSponsorshipResult" => { "code" => "resultCode" },
+  "XdrAllowTrustResult" => { "code" => "resultCode" },
+  "XdrBeginSponsoringFutureReservesResult" => { "code" => "resultCode" },
+  "XdrBumpSequenceResult" => { "code" => "resultCode" },
+  "XdrChangeTrustResult" => { "code" => "resultCode" },
+  "XdrClaimClaimableBalanceResult" => { "code" => "resultCode" },
+  "XdrCreateAccountResult" => { "code" => "resultCode" },
+  "XdrEndSponsoringFutureReservesResult" => { "code" => "resultCode" },
+  "XdrLiquidityPoolDepositResult" => { "code" => "resultCode" },
+  "XdrLiquidityPoolWithdrawResult" => { "code" => "resultCode" },
+  "XdrPaymentResult" => { "code" => "resultCode" },
+  "XdrSetOptionsResult" => { "code" => "resultCode" },
+  "XdrSetTrustLineFlagsResult" => { "code" => "resultCode" },
+
+  # Batch 12: Union discriminant name overrides
+  "XdrExtensionPoint" => { "v" => "discriminant" },
+  "XdrAccountMergeResult" => { "code" => "resultCode" },
+  "XdrInvokeHostFunctionResult" => { "code" => "type" },
+
+  # Batch 13: Field name overrides for operations
+  "XdrManageBuyOfferOperation" => {
+    "buyAmount" => "amount",
+    "offerID" => "offerId",
+  },
+  "XdrManageSellOfferOperation" => {
+    "offerID" => "offerId",
+  },
+
+  # Batch 13: Union discriminant name overrides
+  "XdrFeeBumpTransactionExt" => { "v" => "discriminant" },
+  "XdrTransactionV0Ext" => { "v" => "discriminant" },
+
+  # Batch 14: Union discriminant name overrides + field renames
+  "XdrDataEntryExt" => { "v" => "discriminant" },
+  "XdrOfferEntryExt" => { "v" => "discriminant" },
+  "XdrLedgerEntryV1Ext" => { "v" => "discriminant" },
+  "XdrTransactionExt" => { "v" => "discriminant", "sorobanData" => "sorobanTransactionData" },
+  "XdrSorobanTransactionDataExt" => { "v" => "discriminant" },
+
+  # Batch 15: Ext union discriminant name overrides
+  "XdrAccountEntryExt" => { "v" => "discriminant" },
+  "XdrAccountEntryV1Ext" => { "v" => "discriminant" },
+  "XdrAccountEntryV2Ext" => { "v" => "discriminant" },
+  "XdrClaimableBalanceEntryExt" => { "v" => "discriminant" },
+  "XdrLedgerEntryExt" => { "v" => "discriminant" },
+  "XdrTrustLineEntryExt" => { "v" => "discriminant" },
+  "XdrTrustLineEntryV1Ext" => { "v" => "discriminant" },
+  "XdrSorobanTransactionMetaExt" => { "v" => "discriminant" },
+  "XdrTransactionResultExt" => { "v" => "discriminant" },
+
+  # Batch 16: Extension point field renames + field name overrides
+  "XdrClaimableBalanceEntryExtV1" => { "ext" => "discriminant" },
+  "XdrTrustLineEntryExtensionV2" => { "ext" => "discriminant" },
+
+  # Batch 17: Field name overrides
+  "XdrContractCodeEntry" => { "hash" => "cHash" },
+  "XdrContractEvent" => { "contractID" => "hash" },
+
+  # Batch 18: Union discriminant name overrides
+  "XdrSCMetaEntry" => { "kind" => "type" },
+  "XdrSCEnvMetaEntry" => { "kind" => "type" },
+
+  # Batch 19: Field name overrides
+  "XdrMemo" => { "retHash" => "returnHash" },
+
+  # Batch 23: Field name overrides
+  "XdrLedgerEntryData" => { "ttl" => "ttlEntry" },
+  "XdrContractCostParams" => { "contractCostParams" => "entries" },
+
+  # Batch 31: Union discriminant name overrides
+  "XdrTransactionResultResult" => { "code" => "resultCode" },
+  "XdrInnerTransactionResultResult" => { "code" => "resultCode" },
+  "XdrOperationResult" => { "code" => "resultCode", "tr" => "resultTr" },
+  "XdrSCSpecEntry" => { "kind" => "type" },
+
+  # Batch 35: Field name overrides
+  "XdrSignerKey" => { "ed25519SignedPayload" => "signedPayload" },
+
+  # Field name overrides for ClaimableBalanceEntry
+  "XdrClaimableBalanceEntry" => { "balanceID" => "accountID" },
+
+  # XdrOfferEntry: field name case difference
+  "XdrOfferEntry" => { "offerID" => "offerId" },
+
+  # XdrTransaction: field name differences between XDR spec and PHP SDK
+  "XdrTransaction" => {
+    "seqNum" => "sequenceNumber",
+    "cond" => "preconditions",
+  },
+
+  # XdrLedgerKey: arm name differs from hand-written SDK field name
+  "XdrLedgerKey" => { "claimableBalance" => "balanceID" },
+
+  # XdrClaimableBalanceID: arm name differs from PHP SDK field name
+  "XdrClaimableBalanceID" => { "v0" => "hash" },
+
+  # XdrContractExecutable: XDR arm wasm_hash → PHP wasmIdHex
+  "XdrContractExecutable" => { "wasm_hash" => "wasmIdHex" },
+
+  # XdrOperationResultTr: XDR arm name → PHP property name overrides
+  "XdrOperationResultTr" => {
+    "manageSellOfferResult" => "manageOfferResult",
+    "bumpSeqResult" => "bumpSequenceResult",
+  },
+
+  # XdrOperationBody: XDR arm name → PHP property name overrides
+  "XdrOperationBody" => {
+    "destination" => "accountMergeOp",
+    "allowTrustOp" => "allowTrustOperation",
+    "manageDataOp" => "manageDataOperation",
+    "createClaimableBalanceOp" => "createClaimableBalanceOperation",
+    "claimClaimableBalanceOp" => "claimClaimableBalanceOperation",
+    "beginSponsoringFutureReservesOp" => "beginSponsoringFutureReservesOperation",
+    "revokeSponsorshipOp" => "revokeSponsorshipOperation",
+    "clawbackOp" => "clawbackOperation",
+    "clawbackClaimableBalanceOp" => "clawbackClaimableBalanceOperation",
+    "setTrustLineFlagsOp" => "setTrustLineFlagsOperation",
+    "liquidityPoolDepositOp" => "liquidityPoolDepositOperation",
+    "liquidityPoolWithdrawOp" => "liquidityPoolWithdrawOperation",
+    "invokeHostFunctionOp" => "invokeHostFunctionOperation",
+  },
+
+  # XdrSCVal: snake_case → camelCase field name
+  "XdrSCVal" => { "nonce_key" => "nonceKey" },
+
+  # XdrTimeBounds: rename to avoid return type conflict with wrapper's getMinTime(): DateTime
+  "XdrTimeBounds" => {
+    "minTime" => "minTimestamp",
+    "maxTime" => "maxTimestamp",
+  },
+}.freeze
+
+# ---------------------------------------------------------------------------
+# Field type overrides
+# ---------------------------------------------------------------------------
+FIELD_TYPE_OVERRIDES = {
+  # Batch 3: BigInteger fields — the PHP SDK uses phpseclib3 BigInteger
+  # instead of plain int for certain int64 fields (amounts, balances, etc.)
+  "XdrOfferEntry" => { "amount" => "BigInteger" },
+  "XdrInflationPayout" => { "amount" => "BigInteger" },
+  "XdrCreateAccountOperation" => { "startingBalance" => "BigInteger" },
+  "XdrPaymentOperation" => { "amount" => "BigInteger" },
+  "XdrCreatePassiveSellOfferOperation" => { "amount" => "BigInteger" },
+  "XdrClaimOfferAtom" => {
+    "amountSold" => "BigInteger",
+    "amountBought" => "BigInteger",
+  },
+  "XdrClaimOfferAtomV0" => {
+    "amountSold" => "BigInteger",
+    "amountBought" => "BigInteger",
+  },
+  "XdrClaimLiquidityAtom" => {
+    "amountSold" => "BigInteger",
+    "amountBought" => "BigInteger",
+  },
+  "XdrSimplePaymentResult" => { "amount" => "BigInteger" },
+  "XdrSequenceNumber" => { "sequenceNumber" => "BigInteger" },
+
+  # Batch 5: BigInteger fields
+  "XdrLiabilities" => {
+    "buying" => "BigInteger",
+    "selling" => "BigInteger",
+  },
+
+  # Batch 7: BigInteger fields
+  "XdrClawbackOperation" => { "amount" => "BigInteger" },
+  "XdrPathPaymentStrictReceiveOperation" => {
+    "sendMax" => "BigInteger",
+    "destAmount" => "BigInteger",
+  },
+  "XdrPathPaymentStrictSendOperation" => {
+    "sendAmount" => "BigInteger",
+    "destMin" => "BigInteger",
+  },
+
+  # Batch 9: BigInteger fields
+  "XdrCreateClaimableBalanceOperation" => { "amount" => "BigInteger" },
+
+  # Batch 12: BigInteger fields for union arms
+  "XdrAccountMergeResult" => { "sourceAccountBalance" => "BigInteger" },
+
+  # Batch 13: BigInteger fields for operations (keys are XDR field names, before rename)
+  "XdrManageBuyOfferOperation" => { "buyAmount" => "BigInteger" },
+  "XdrManageSellOfferOperation" => { "amount" => "BigInteger" },
+
+  # Batch 16: DataEntry uses XdrDataValueMandatory instead of XdrDataValue
+  "XdrDataEntry" => { "dataValue" => "XdrDataValueMandatory" },
+
+  # Batch 17: Type overrides
+  "XdrContractCodeEntry" => { "code" => "XdrDataValueMandatory" },
+
+  # Liquidity pool operations: BigInteger for int64 amount fields
+  "XdrLiquidityPoolDepositOperation" => {
+    "maxAmountA" => "BigInteger",
+    "maxAmountB" => "BigInteger",
+  },
+  "XdrLiquidityPoolWithdrawOperation" => {
+    "amount" => "BigInteger",
+    "minAmountA" => "BigInteger",
+    "minAmountB" => "BigInteger",
+  },
+
+  # BigInteger fields for constant product and claimable balance
+  "XdrConstantProduct" => {
+    "reserveA" => "BigInteger",
+    "reserveB" => "BigInteger",
+    "totalPoolShares" => "BigInteger",
+  },
+  "XdrClaimableBalanceEntry" => {
+    "amount" => "BigInteger",
+  },
+  "XdrChangeTrustOperation" => {
+    "limit" => "BigInteger",
+  },
+
+  # XdrHostFunction: wasm arm uses XdrDataValueMandatory instead of string
+  "XdrHostFunction" => { "wasm" => "XdrDataValueMandatory" },
+
+  # XdrOperationBody: ACCOUNT_MERGE arm wraps MuxedAccount in XdrAccountMergeOperation
+  # Key uses resolved name (after FIELD_OVERRIDES rename destination → accountMergeOp)
+  "XdrOperationBody" => { "accountMergeOp" => "XdrAccountMergeOperation" },
+
+  # XdrLedgerKey: unwrap single-field nested structs to match hand-written SDK types
+  # Keys use resolved field names (after FIELD_OVERRIDES rename)
+  "XdrLedgerKey" => {
+    "balanceID" => "XdrClaimableBalanceID",
+    "configSetting" => "XdrConfigSettingID",
+  },
+
+  # BigInteger for feeCharged (int64) in transaction results
+  "XdrInnerTransactionResult" => {
+    "feeCharged" => "BigInteger",
+  },
+  "XdrTransactionResult" => {
+    "feeCharged" => "BigInteger",
+  },
+
+  # XdrSCVal: bytes arm uses XdrDataValueMandatory instead of raw opaque string
+  "XdrSCVal" => { "bytes" => "XdrDataValueMandatory" },
+
+  # XdrAccountEntry: balance is BigInteger (int64 amount field)
+  "XdrAccountEntry" => { "balance" => "BigInteger" },
+
+}.freeze

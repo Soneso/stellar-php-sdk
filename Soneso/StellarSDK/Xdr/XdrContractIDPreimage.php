@@ -6,53 +6,44 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-use InvalidArgumentException;
-
-class XdrContractIDPreimage
+class XdrContractIDPreimage extends XdrContractIDPreimageBase
 {
-
-    public XdrContractIDPreimageType $type;
-    public ?XdrSCAddress $address= null;
+    // Backward-compatible flattened fields (base uses nested fromAddress/fromAsset)
+    public ?XdrSCAddress $address = null;
     public ?string $salt = null; // uint256
     public ?XdrAsset $asset = null;
 
-    /**
-     * @param XdrContractIDPreimageType $type
-     */
-    public function __construct(XdrContractIDPreimageType $type)
-    {
-        $this->type = $type;
-    }
-
-
     public function encode(): string {
-        $bytes = $this->type->encode();
-
-        switch ($this->type->value) {
-            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
-                $bytes .= $this->address->encode();
-                $bytes .= XdrEncoder::unsignedInteger256($this->salt);
-                break;
-            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET:
-                $bytes .= $this->asset->encode();
-                break;
+        // Sync flattened fields to base nested struct before encoding
+        if ($this->address !== null && $this->salt !== null) {
+            $this->fromAddress = new XdrContractIDPreimageFromAddress($this->address, $this->salt);
         }
-        return $bytes;
+        if ($this->asset !== null) {
+            $this->fromAsset = $this->asset;
+        }
+        return parent::encode();
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrContractIDPreimage {
-        $result = new XdrContractIDPreimage(XdrContractIDPreimageType::decode($xdr));
-        switch ($result->type->value) {
-            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
-                $result->address = XdrSCAddress::decode($xdr);
-                $result->salt = $xdr->readUnsignedInteger256();
-                break;
-            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET:
-                $result->asset = XdrAsset::decode($xdr);
-                break;
+    public static function decode(XdrBuffer $xdr): static {
+        $result = parent::decode($xdr);
+        // Sync base nested struct to flattened fields after decoding
+        if ($result->fromAddress !== null) {
+            $result->address = $result->fromAddress->address;
+            $result->salt = $result->fromAddress->salt;
+        }
+        if ($result->fromAsset !== null) {
+            $result->asset = $result->fromAsset;
         }
         return $result;
     }
+
+    // Backward-compatible getters/setters
+    public function getAddress(): ?XdrSCAddress { return $this->address; }
+    public function setAddress(?XdrSCAddress $address): void { $this->address = $address; }
+    public function getSalt(): ?string { return $this->salt; }
+    public function setSalt(?string $salt): void { $this->salt = $salt; }
+    public function getAsset(): ?XdrAsset { return $this->asset; }
+    public function setAsset(?XdrAsset $asset): void { $this->asset = $asset; }
 
     public static function forAddress(XdrSCAddress $address, String $saltHex): XdrContractIDPreimage {
         $result = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
@@ -66,82 +57,4 @@ class XdrContractIDPreimage
         $result->asset = $asset;
         return $result;
     }
-
-    public static function fromBase64Xdr(String $base64Xdr) : XdrContractIDPreimage {
-        $xdr = base64_decode($base64Xdr, true);
-        if ($xdr === false) {
-            throw new InvalidArgumentException('Invalid base64-encoded XDR');
-        }
-        $xdrBuffer = new XdrBuffer($xdr);
-        return XdrContractIDPreimage::decode($xdrBuffer);
-    }
-
-    public function toBase64Xdr() : String {
-        return base64_encode($this->encode());
-    }
-
-    /**
-     * @return XdrContractIDPreimageType
-     */
-    public function getType(): XdrContractIDPreimageType
-    {
-        return $this->type;
-    }
-
-    /**
-     * @param XdrContractIDPreimageType $type
-     */
-    public function setType(XdrContractIDPreimageType $type): void
-    {
-        $this->type = $type;
-    }
-
-    /**
-     * @return XdrSCAddress|null
-     */
-    public function getAddress(): ?XdrSCAddress
-    {
-        return $this->address;
-    }
-
-    /**
-     * @param XdrSCAddress|null $address
-     */
-    public function setAddress(?XdrSCAddress $address): void
-    {
-        $this->address = $address;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getSalt(): ?string
-    {
-        return $this->salt;
-    }
-
-    /**
-     * @param string|null $salt
-     */
-    public function setSalt(?string $salt): void
-    {
-        $this->salt = $salt;
-    }
-
-    /**
-     * @return XdrAsset|null
-     */
-    public function getAsset(): ?XdrAsset
-    {
-        return $this->asset;
-    }
-
-    /**
-     * @param XdrAsset|null $asset
-     */
-    public function setAsset(?XdrAsset $asset): void
-    {
-        $this->asset = $asset;
-    }
-
 }

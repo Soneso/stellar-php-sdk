@@ -12,6 +12,7 @@ use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionExt;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
@@ -131,8 +132,9 @@ class FeeBumpTransaction extends AbstractTransaction
      */
     public function toXdr() : XdrFeeBumpTransaction {
         $xdrInnerTxV1 = $this->innerTx->toEnvelopeXdr()->getV1();
-        $xdrInnerTx = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX), $xdrInnerTxV1);
-        return new XdrFeeBumpTransaction($this->feeAccount->toXdr(), $this->fee, $xdrInnerTx);
+        $xdrInnerTx = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $xdrInnerTx->v1 = $xdrInnerTxV1;
+        return new XdrFeeBumpTransaction($this->feeAccount->toXdr(), $this->fee, $xdrInnerTx, new XdrFeeBumpTransactionExt(0));
     }
 
 

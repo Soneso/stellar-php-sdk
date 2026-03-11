@@ -6,34 +6,11 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
-class XdrContractExecutable
+class XdrContractExecutable extends XdrContractExecutableBase
 {
-
-    public XdrContractExecutableType $type;
-    public ?string $wasmIdHex = null;
-
-    /**
-     * @param XdrContractExecutableType $type
-     */
-    public function __construct(XdrContractExecutableType $type)
-    {
-        $this->type = $type;
-    }
-
-    public static function forWasmId(string $wasmIdHex) : XdrContractExecutable {
-        $result = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM());
-        $result->wasmIdHex = $wasmIdHex;
-        return $result;
-    }
-
-    public static function forToken() : XdrContractExecutable {
-        return new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
-    }
-
     public function encode(): string {
         $bytes = $this->type->encode();
-
-        switch ($this->type->value) {
+        switch ($this->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
                 $wasmIdBytes = pack("H*", $this->wasmIdHex);
                 if (strlen($wasmIdBytes) > 32) {
@@ -47,9 +24,9 @@ class XdrContractExecutable
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrContractExecutable {
-        $result = new XdrContractExecutable(XdrContractExecutableType::decode($xdr));
-        switch ($result->getType()->getValue()) {
+    public static function decode(XdrBuffer $xdr): static {
+        $result = new static(XdrContractExecutableType::decode($xdr));
+        switch ($result->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
                 $result->wasmIdHex = bin2hex($xdr->readOpaqueFixed(32));
                 break;
@@ -59,36 +36,13 @@ class XdrContractExecutable
         return $result;
     }
 
-    /**
-     * @return XdrContractExecutable|XdrContractExecutableType
-     */
-    public function getType(): XdrContractExecutable|XdrContractExecutableType
-    {
-        return $this->type;
+    public static function forWasmId(string $wasmIdHex) : XdrContractExecutable {
+        $result = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM());
+        $result->wasmIdHex = $wasmIdHex;
+        return $result;
     }
 
-    /**
-     * @param XdrContractExecutable|XdrContractExecutableType $type
-     */
-    public function setType(XdrContractExecutable|XdrContractExecutableType $type): void
-    {
-        $this->type = $type;
+    public static function forToken() : XdrContractExecutable {
+        return new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
     }
-
-    /**
-     * @return string|null
-     */
-    public function getWasmIdHex(): ?string
-    {
-        return $this->wasmIdHex;
-    }
-
-    /**
-     * @param string|null $wasmIdHex
-     */
-    public function setWasmIdHex(?string $wasmIdHex): void
-    {
-        $this->wasmIdHex = $wasmIdHex;
-    }
-
 }

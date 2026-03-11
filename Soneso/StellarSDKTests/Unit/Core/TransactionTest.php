@@ -209,7 +209,7 @@ class TransactionTest extends TestCase
         $xdr = $transaction->toXdr();
         assertNotNull($xdr);
         assertEquals($this->sourceAccountId, MuxedAccount::fromXdr($xdr->getSourceAccount())->getAccountId());
-        assertEquals("101", $xdr->getSequenceNumber()->getValue()->toString());
+        assertEquals("101", $xdr->getSequenceNumber()->sequenceNumber->toString());
         assertEquals(1, count($xdr->getOperations()));
     }
 

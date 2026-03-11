@@ -7,224 +7,10 @@
 namespace Soneso\StellarSDK\Xdr;
 
 use GMP;
-use InvalidArgumentException;
 
 
-class XdrSCVal
+class XdrSCVal extends XdrSCValBase
 {
-
-    public XdrSCValType $type;
-    public ?bool $b = null;
-    public ?XdrSCError $error = null;
-    public ?int $u32 = null;
-    public ?int $i32 = null;
-    public ?int $u64 = null;
-    public ?int $i64 = null;
-    public ?int $timepoint= null;
-    public ?int $duration = null;
-    public ?XdrUInt128Parts $u128 = null;
-    public ?XdrInt128Parts $i128 = null;
-    public ?XdrUInt256Parts $u256 = null;
-    public ?XdrInt256Parts $i256 = null;
-    public ?XdrDataValueMandatory $bytes = null;
-    public ?String $str = null;
-    public ?String $sym = null;
-    /**
-     * @var array<XdrSCVal>|null
-     */
-    public ?array $vec = null;
-    /**
-     * @var array<XdrSCMapEntry>|null
-     */
-    public ?array $map = null;
-    public ?XdrSCContractInstance $instance = null;
-    public ?XdrSCAddress $address = null;
-    public ?XdrSCNonceKey $nonceKey = null;
-
-
-    /**
-     * @param XdrSCValType $type
-     */
-    public function __construct(XdrSCValType $type)
-    {
-        $this->type = $type;
-    }
-
-    public function encode(): string {
-        $bytes = $this->type->encode();
-
-        switch ($this->type->value) {
-            case XdrSCValType::SCV_BOOL:
-                $bytes .= XdrEncoder::boolean($this->b);
-                break;
-            case XdrSCValType::SCV_VOID:
-            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
-                break;
-            case XdrSCValType::SCV_ERROR:
-                $bytes .= $this->error->encode();
-                break;
-            case XdrSCValType::SCV_U32:
-                $bytes .= XdrEncoder::unsignedInteger32($this->u32);
-                break;
-            case XdrSCValType::SCV_I32:
-                $bytes .= XdrEncoder::integer32($this->i32);
-                break;
-            case XdrSCValType::SCV_U64:
-                $bytes .= XdrEncoder::unsignedInteger64($this->u64);
-                break;
-            case XdrSCValType::SCV_I64:
-                $bytes .= XdrEncoder::integer64($this->i64);
-                break;
-            case XdrSCValType::SCV_TIMEPOINT:
-                $bytes .= XdrEncoder::unsignedInteger64($this->timepoint);
-                break;
-            case XdrSCValType::SCV_DURATION:
-                $bytes .= XdrEncoder::unsignedInteger64($this->duration);
-                break;
-            case XdrSCValType::SCV_U128:
-                $bytes .= $this->u128->encode();
-                break;
-            case XdrSCValType::SCV_I128:
-                $bytes .= $this->i128->encode();
-                break;
-            case XdrSCValType::SCV_U256:
-                $bytes .= $this->u256->encode();
-                break;
-            case XdrSCValType::SCV_I256:
-                $bytes .= $this->i256->encode();
-                break;
-            case XdrSCValType::SCV_BYTES:
-                $bytes .= $this->bytes->encode();
-                break;
-            case XdrSCValType::SCV_STRING:
-                $bytes .= XdrEncoder::string($this->str);
-                break;
-            case XdrSCValType::SCV_SYMBOL:
-                $bytes .= XdrEncoder::string($this->sym);
-                break;
-            case XdrSCValType::SCV_VEC:
-                if ($this->vec !== null) {
-                    $bytes .= XdrEncoder::integer32(1);
-                    $bytes .= XdrEncoder::integer32(count($this->vec));
-                    foreach($this->vec as $val) {
-                        if ($val instanceof XdrSCVal) {
-                            $bytes .= $val->encode();
-                        }
-                    }
-                } else {
-                    $bytes .= XdrEncoder::integer32(0);
-                }
-                break;
-            case XdrSCValType::SCV_MAP:
-                if ($this->map !== null) {
-                    $bytes .= XdrEncoder::integer32(1);
-                    $bytes .= XdrEncoder::integer32(count($this->map));
-                    foreach($this->map as $val) {
-                        if ($val instanceof XdrSCMapEntry) {
-                            $bytes .= $val->encode();
-                        }
-                    }
-                } else {
-                    $bytes .= XdrEncoder::integer32(0);
-                }
-                break;
-            case XdrSCValType::SCV_CONTRACT_INSTANCE:
-                $bytes .= $this->instance->encode();
-                break;
-            case XdrSCValType::SCV_ADDRESS:
-                $bytes .= $this->address->encode();
-                break;
-            case XdrSCValType::SCV_LEDGER_KEY_NONCE:
-                $bytes .= $this->nonceKey->encode();
-                break;
-        }
-        return $bytes;
-    }
-
-    public static function decode(XdrBuffer $xdr):  XdrSCVal {
-        $result = new XdrSCVal(XdrSCValType::decode($xdr));
-        switch ($result->type->value) {
-            case XdrSCValType::SCV_BOOL:
-                $result->b = $xdr->readBoolean();
-                break;
-            case XdrSCValType::SCV_VOID:
-            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
-                break;
-            case XdrSCValType::SCV_ERROR:
-                $result->error = XdrSCError::decode($xdr);
-                break;
-            case XdrSCValType::SCV_U32:
-                $result->u32 = $xdr->readUnsignedInteger32();
-                break;
-            case XdrSCValType::SCV_I32:
-                $result->i32 = $xdr->readInteger32();
-                break;
-            case XdrSCValType::SCV_U64:
-                $result->u64 = $xdr->readUnsignedInteger64();
-                break;
-            case XdrSCValType::SCV_I64:
-                $result->i64 = $xdr->readInteger64();
-                break;
-            case XdrSCValType::SCV_TIMEPOINT:
-                $result->timepoint = $xdr->readUnsignedInteger64();
-                break;
-            case XdrSCValType::SCV_DURATION:
-                $result->duration= $xdr->readUnsignedInteger64();
-                break;
-            case XdrSCValType::SCV_U128:
-                $result->u128 = XdrUInt128Parts::decode($xdr);
-                break;
-            case XdrSCValType::SCV_I128:
-                $result->i128 = XdrInt128Parts::decode($xdr);
-                break;
-            case XdrSCValType::SCV_U256:
-                $result->u256 = XdrUInt256Parts::decode($xdr);
-                break;
-            case XdrSCValType::SCV_I256:
-                $result->i256 = XdrInt256Parts::decode($xdr);
-                break;
-            case XdrSCValType::SCV_BYTES:
-                $result->bytes = XdrDataValueMandatory::decode($xdr);
-                break;
-            case XdrSCValType::SCV_STRING:
-                $result->str = $xdr->readString();
-                break;
-            case XdrSCValType::SCV_SYMBOL:
-                $result->sym = $xdr->readString();
-                break;
-            case XdrSCValType::SCV_VEC:
-                if ($xdr->readInteger32() == 1) {
-                    $valCount = $xdr->readInteger32();
-                    $arr = array();
-                    for ($i = 0; $i < $valCount; $i++) {
-                        array_push($arr, XdrSCVal::decode($xdr));
-                    }
-                    $result->vec = $arr;
-                }
-                break;
-            case XdrSCValType::SCV_MAP:
-                if ($xdr->readInteger32() == 1) {
-                    $valCount = $xdr->readInteger32();
-                    $arr = array();
-                    for ($i = 0; $i < $valCount; $i++) {
-                        array_push($arr, XdrSCMapEntry::decode($xdr));
-                    }
-                    $result->map = $arr;
-                }
-                break;
-            case XdrSCValType::SCV_CONTRACT_INSTANCE:
-                $result->instance = XdrSCContractInstance::decode($xdr);
-                break;
-            case XdrSCValType::SCV_ADDRESS:
-                $result->address = XdrSCAddress::decode($xdr);
-                break;
-            case XdrSCValType::SCV_LEDGER_KEY_NONCE:
-                $result->nonceKey = XdrSCNonceKey::decode($xdr);
-                break;
-        }
-        return $result;
-    }
-
 
     public static function forTrue() : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::BOOL());
@@ -386,7 +172,7 @@ class XdrSCVal
      */
     public static function forU128BigInt($value) : XdrSCVal {
         $bigInt = self::normalizeToBigInt($value);
-        
+
         // Check if value is in valid range for U128 (0 to 2^128-1)
         if (gmp_cmp($bigInt, 0) < 0) {
             throw new \InvalidArgumentException("U128 value cannot be negative");
@@ -395,7 +181,7 @@ class XdrSCVal
         if (gmp_cmp($bigInt, $maxU128) > 0) {
             throw new \InvalidArgumentException("Value exceeds U128 maximum");
         }
-        
+
         list($hi, $lo) = self::bigInt128Parts($bigInt);
         return self::forU128Parts($hi, $lo);
     }
@@ -408,14 +194,14 @@ class XdrSCVal
      */
     public static function forI128BigInt($value) : XdrSCVal {
         $bigInt = self::normalizeToBigInt($value);
-        
+
         // Check if value is in valid range for I128 (-2^127 to 2^127-1)
         $minI128 = gmp_neg(gmp_pow(2, 127));
         $maxI128 = gmp_sub(gmp_pow(2, 127), 1);
         if (gmp_cmp($bigInt, $minI128) < 0 || gmp_cmp($bigInt, $maxI128) > 0) {
             throw new \InvalidArgumentException("Value out of I128 range");
         }
-        
+
         list($hi, $lo) = self::bigInt128Parts($bigInt);
         return self::forI128Parts($hi, $lo);
     }
@@ -428,7 +214,7 @@ class XdrSCVal
      */
     public static function forU256BigInt($value) : XdrSCVal {
         $bigInt = self::normalizeToBigInt($value);
-        
+
         // Check if value is in valid range for U256 (0 to 2^256-1)
         if (gmp_cmp($bigInt, 0) < 0) {
             throw new \InvalidArgumentException("U256 value cannot be negative");
@@ -437,7 +223,7 @@ class XdrSCVal
         if (gmp_cmp($bigInt, $maxU256) > 0) {
             throw new \InvalidArgumentException("Value exceeds U256 maximum");
         }
-        
+
         list($hihi, $hilo, $lohi, $lolo) = self::bigInt256Parts($bigInt);
         $result = new XdrSCVal(XdrSCValType::U256());
         $result->u256 = new XdrUInt256Parts($hihi, $hilo, $lohi, $lolo);
@@ -452,14 +238,14 @@ class XdrSCVal
      */
     public static function forI256BigInt($value) : XdrSCVal {
         $bigInt = self::normalizeToBigInt($value);
-        
+
         // Check if value is in valid range for I256 (-2^255 to 2^255-1)
         $minI256 = gmp_neg(gmp_pow(2, 255));
         $maxI256 = gmp_sub(gmp_pow(2, 255), 1);
         if (gmp_cmp($bigInt, $minI256) < 0 || gmp_cmp($bigInt, $maxI256) > 0) {
             throw new \InvalidArgumentException("Value out of I256 range");
         }
-        
+
         list($hihi, $hilo, $lohi, $lolo) = self::bigInt256Parts($bigInt);
         $result = new XdrSCVal(XdrSCValType::I256());
         $result->i256 = new XdrInt256Parts($hihi, $hilo, $lohi, $lolo);
@@ -523,38 +309,38 @@ class XdrSCVal
      */
     private static function bigInt128Parts(GMP $value) : array {
         $isNegative = gmp_cmp($value, 0) < 0;
-        
+
         // For negative numbers, work with two's complement
         if ($isNegative) {
             $value = gmp_add($value, gmp_pow(2, 128));
         }
-        
+
         // Split into two 64-bit parts
         $mask64 = gmp_sub(gmp_pow(2, 64), 1);
         $lo = gmp_and($value, $mask64);
         $hi = gmp_div_q($value, gmp_pow(2, 64));
-        
+
         // Convert to signed PHP integers
         $loStr = gmp_strval($lo);
         $hiStr = gmp_strval($hi);
-        
+
         // Handle overflow for PHP's signed 64-bit integers
         $maxInt63 = gmp_pow(2, 63);
-        
+
         // Lo is always treated as unsigned, but PHP int is signed
         if (gmp_cmp($lo, gmp_sub($maxInt63, 1)) > 0) {
             $loInt = intval(gmp_strval(gmp_sub($lo, gmp_pow(2, 64))));
         } else {
             $loInt = intval($loStr);
         }
-        
+
         // Hi might need to be treated as signed
         if (gmp_cmp($hi, gmp_sub($maxInt63, 1)) > 0) {
             $hiInt = intval(gmp_strval(gmp_sub($hi, gmp_pow(2, 64))));
         } else {
             $hiInt = intval($hiStr);
         }
-        
+
         return [$hiInt, $loInt];
     }
 
@@ -565,51 +351,51 @@ class XdrSCVal
      */
     private static function bigInt256Parts(GMP $value) : array {
         $isNegative = gmp_cmp($value, 0) < 0;
-        
+
         // For negative numbers, work with two's complement
         if ($isNegative) {
             $value = gmp_add($value, gmp_pow(2, 256));
         }
-        
+
         // Split into four 64-bit parts
         $mask64 = gmp_sub(gmp_pow(2, 64), 1);
         $shift64 = gmp_pow(2, 64);
         $shift128 = gmp_pow(2, 128);
         $shift192 = gmp_pow(2, 192);
-        
+
         $lolo = gmp_and($value, $mask64);
         $lohi = gmp_and(gmp_div_q($value, $shift64), $mask64);
         $hilo = gmp_and(gmp_div_q($value, $shift128), $mask64);
         $hihi = gmp_div_q($value, $shift192);
-        
+
         // Handle overflow for PHP's signed 64-bit integers
         $maxInt63 = gmp_pow(2, 63);
-        
+
         // Convert each part, handling unsigned to signed conversion
         if (gmp_cmp($lolo, gmp_sub($maxInt63, 1)) > 0) {
             $loloInt = intval(gmp_strval(gmp_sub($lolo, gmp_pow(2, 64))));
         } else {
             $loloInt = intval(gmp_strval($lolo));
         }
-        
+
         if (gmp_cmp($lohi, gmp_sub($maxInt63, 1)) > 0) {
             $lohiInt = intval(gmp_strval(gmp_sub($lohi, gmp_pow(2, 64))));
         } else {
             $lohiInt = intval(gmp_strval($lohi));
         }
-        
+
         if (gmp_cmp($hilo, gmp_sub($maxInt63, 1)) > 0) {
             $hiloInt = intval(gmp_strval(gmp_sub($hilo, gmp_pow(2, 64))));
         } else {
             $hiloInt = intval(gmp_strval($hilo));
         }
-        
+
         if (gmp_cmp($hihi, gmp_sub($maxInt63, 1)) > 0) {
             $hihiInt = intval(gmp_strval(gmp_sub($hihi, gmp_pow(2, 64))));
         } else {
             $hihiInt = intval(gmp_strval($hihi));
         }
-        
+
         return [$hihiInt, $hiloInt, $lohiInt, $loloInt];
     }
 
@@ -625,21 +411,21 @@ class XdrSCVal
         // Convert parts to unsigned GMP values
         $hiGmp = gmp_init(sprintf('%u', $hi));
         $loGmp = gmp_init(sprintf('%u', $lo));
-        
+
         // Combine parts: result = hi * 2^64 + lo
         $result = gmp_add(gmp_mul($hiGmp, gmp_pow(2, 64)), $loGmp);
-        
+
         // For signed types, check if the value should be negative
         if ($signed) {
             $max128 = gmp_pow(2, 128);
             $half128 = gmp_pow(2, 127);
-            
+
             // If the value is >= 2^127, it's negative in two's complement
             if (gmp_cmp($result, $half128) >= 0) {
                 $result = gmp_sub($result, $max128);
             }
         }
-        
+
         return $result;
     }
 
@@ -658,7 +444,7 @@ class XdrSCVal
         $hiloGmp = gmp_init(sprintf('%u', $hilo));
         $lohiGmp = gmp_init(sprintf('%u', $lohi));
         $loloGmp = gmp_init(sprintf('%u', $lolo));
-        
+
         // Combine parts: result = hihi * 2^192 + hilo * 2^128 + lohi * 2^64 + lolo
         $result = gmp_add(
             gmp_add(
@@ -670,18 +456,18 @@ class XdrSCVal
                 $loloGmp
             )
         );
-        
+
         // For signed types, check if the value should be negative
         if ($signed) {
             $max256 = gmp_pow(2, 256);
             $half256 = gmp_pow(2, 255);
-            
+
             // If the value is >= 2^255, it's negative in two's complement
             if (gmp_cmp($result, $half256) >= 0) {
                 $result = gmp_sub($result, $max256);
             }
         }
-        
+
         return $result;
     }
 
@@ -701,19 +487,6 @@ class XdrSCVal
         }
         $result->bytes = new XdrDataValueMandatory($bytes);
         return $result;
-    }
-
-    public static function fromBase64Xdr(String $base64Xdr) : XdrSCVal {
-        $xdr = base64_decode($base64Xdr, true);
-        if ($xdr === false) {
-            throw new InvalidArgumentException('Invalid base64-encoded XDR');
-        }
-        $xdrBuffer = new XdrBuffer($xdr);
-        return XdrSCVal::decode($xdrBuffer);
-    }
-
-    public function toBase64Xdr() : String {
-        return base64_encode($this->encode());
     }
 
     /**

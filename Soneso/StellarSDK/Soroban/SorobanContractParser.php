@@ -19,7 +19,7 @@ use Throwable;
  *
  * This utility class parses compiled Soroban contract WASM bytecode to extract embedded metadata
  * following the custom sections format defined in SEP-47 and SEP-48. The parser extracts:
- * - Environment Meta: Soroban interface version requirements
+ * - Environment Meta: Soroban environment protocol and pre-release version
  * - Contract Spec: Function signatures, types, and events (SEP-48)
  * - Contract Meta: Custom metadata key-value pairs (SEP-47)
  *
@@ -59,8 +59,10 @@ class SorobanContractParser
          */
         $metaEntries = self::parseMeta($byteCode);
 
+        $iv = $xdrEnvMeta->interfaceVersion;
         return new SorobanContractInfo(
-            envInterfaceVersion: $xdrEnvMeta->interfaceVersion,
+            envMetaProtocol: $iv->protocol,
+            envMetaPreRelease: $iv->preRelease,
             specEntries: $specEntries,
             metaEntries: $metaEntries,
         );

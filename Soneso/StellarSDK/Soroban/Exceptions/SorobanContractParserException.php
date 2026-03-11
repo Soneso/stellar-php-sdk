@@ -19,7 +19,7 @@ use ErrorException;
  *
  * 1. Missing Environment Meta Entry:
  *    The contractenvmetav0 custom section is missing or cannot be decoded from the WASM bytecode.
- *    This section contains the Soroban interface version that the contract requires.
+ *    This section contains the Soroban environment protocol and pre-release version.
  *
  * 2. Missing Contract Spec Entries:
  *    The contractspecv0 custom section is missing or contains no valid spec entries.

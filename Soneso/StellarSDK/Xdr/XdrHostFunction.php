@@ -7,28 +7,11 @@
 namespace Soneso\StellarSDK\Xdr;
 
 
-class XdrHostFunction
+class XdrHostFunction extends XdrHostFunctionBase
 {
-
-    public XdrHostFunctionType $type;
-    public ?XdrInvokeContractArgs $invokeContract = null;
-    public ?XdrCreateContractArgs $createContract = null;
-    public ?XdrCreateContractArgsV2 $createContractV2 = null;
-    public ?XdrDataValueMandatory $wasm = null;
-
-    /**
-     * @param XdrHostFunctionType $type
-     */
-    public function __construct(XdrHostFunctionType $type)
-    {
-        $this->type = $type;
-    }
-
-
     public function encode(): string {
         $bytes = $this->type->encode();
-
-        switch ($this->type->value) {
+        switch ($this->type->getValue()) {
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
                 $bytes .= $this->invokeContract->encode();
                 break;
@@ -45,9 +28,9 @@ class XdrHostFunction
         return $bytes;
     }
 
-    public static function decode(XdrBuffer $xdr):  XdrHostFunction {
-        $result = new XdrHostFunction(XdrHostFunctionType::decode($xdr));
-        switch ($result->type->value) {
+    public static function decode(XdrBuffer $xdr): static {
+        $result = new static(XdrHostFunctionType::decode($xdr));
+        switch ($result->type->getValue()) {
             case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
                 $result->invokeContract = XdrInvokeContractArgs::decode($xdr);
                 break;

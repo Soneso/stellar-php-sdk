@@ -7,9 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
 use PHPUnit\Framework\TestCase;
-use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrContractCodeEntry;
 use Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt;
 use Soneso\StellarSDK\Xdr\XdrDataEntry;
@@ -58,74 +56,6 @@ class XdrLedgerEntryDataTest extends TestCase
         $this->assertEquals(XdrLedgerEntryType::DATA, $data->getType()->value);
     }
 
-    public function testDataEntryEncodeDecodeRoundTrip(): void
-    {
-        $accountId = XdrAccountID::fromAccountId(self::TEST_ACCOUNT_ID);
-        $dataValue = new XdrDataValueMandatory("test-value");
-        $ext = new XdrDataEntryExt(0);
-        $dataEntry = new XdrDataEntry($accountId, "test-name", $dataValue, $ext);
-
-        $ledgerData = new XdrLedgerEntryData(new XdrLedgerEntryType(XdrLedgerEntryType::DATA));
-        $ledgerData->data = $dataEntry;
-
-        $encoded = $ledgerData->encode();
-        $decoded = XdrLedgerEntryData::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::DATA, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getData());
-        $this->assertEquals("test-name", $decoded->getData()->dataName);
-    }
-
-    public function testTTLEntryEncodeDecodeRoundTrip(): void
-    {
-        $keyHash = str_repeat("\xab", 32);
-        $ttlEntry = new XdrTTLEntry($keyHash, 12345);
-
-        $ledgerData = new XdrLedgerEntryData(new XdrLedgerEntryType(XdrLedgerEntryType::TTL));
-        $ledgerData->ttlEntry = $ttlEntry;
-
-        $encoded = $ledgerData->encode();
-        $decoded = XdrLedgerEntryData::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::TTL, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getTtlEntry());
-        $this->assertEquals(12345, $decoded->getTtlEntry()->liveUntilLedgerSeq);
-        $this->assertEquals($keyHash, $decoded->getTtlEntry()->keyHash);
-    }
-
-    public function testContractCodeEntryEncodeDecodeRoundTrip(): void
-    {
-        $ext = new XdrContractCodeEntryExt(0, null);
-        $cHash = str_repeat("\xcd", 32);
-        $code = new XdrDataValueMandatory("test-wasm-code");
-        $contractCodeEntry = new XdrContractCodeEntry($ext, $cHash, $code);
-
-        $ledgerData = new XdrLedgerEntryData(new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_CODE));
-        $ledgerData->contractCode = $contractCodeEntry;
-
-        $encoded = $ledgerData->encode();
-        $decoded = XdrLedgerEntryData::decode(new XdrBuffer($encoded));
-
-        $this->assertEquals(XdrLedgerEntryType::CONTRACT_CODE, $decoded->getType()->value);
-        $this->assertNotNull($decoded->getContractCode());
-        $this->assertEquals($cHash, $decoded->getContractCode()->cHash);
-    }
-
-    public function testFromBase64Xdr(): void
-    {
-        $keyHash = str_repeat("\xef", 32);
-        $ttlEntry = new XdrTTLEntry($keyHash, 99999);
-
-        $ledgerData = new XdrLedgerEntryData(new XdrLedgerEntryType(XdrLedgerEntryType::TTL));
-        $ledgerData->ttlEntry = $ttlEntry;
-
-        $base64 = $ledgerData->toBase64Xdr();
-        $decoded = XdrLedgerEntryData::fromBase64Xdr($base64);
-
-        $this->assertEquals(XdrLedgerEntryType::TTL, $decoded->getType()->value);
-        $this->assertEquals(99999, $decoded->getTtlEntry()->liveUntilLedgerSeq);
-    }
-
     public function testSetData(): void
     {
         $ledgerData = new XdrLedgerEntryData(new XdrLedgerEntryType(XdrLedgerEntryType::DATA));
@@ -165,7 +95,7 @@ class XdrLedgerEntryDataTest extends TestCase
         $ledgerData = new XdrLedgerEntryData(new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_CODE));
         $this->assertNull($ledgerData->getContractCode());
 
-        $ext = new XdrContractCodeEntryExt(0, null);
+        $ext = new XdrContractCodeEntryExt(0);
         $cHash = str_repeat("\x22", 32);
         $code = new XdrDataValueMandatory("code");
         $contractCode = new XdrContractCodeEntry($ext, $cHash, $code);
