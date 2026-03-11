@@ -12,5 +12,8 @@ __pycache__/
 tools/xdr-generator/vendor/
 tools/xdr-generator/.bundle/
 
+# Matrix generator intermediate data
+tools/matrix-generator/rpc/rpc_methods.json
+
 # Test coverage
 /coverage/

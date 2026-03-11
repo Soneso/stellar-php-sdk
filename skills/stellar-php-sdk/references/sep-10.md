@@ -69,6 +69,11 @@ Signature:
 WebAuth::fromDomain(string $domain, Network $network, ?Client $httpClient = null): WebAuth
 ```
 
+Optional: adjust time bounds validation grace period (default: 300 seconds):
+```php
+$webAuth->setGracePeriod(600); // 10 minutes
+```
+
 ### Manual construction
 
 Use when you already have the endpoint and signing key (e.g., you loaded stellar.toml separately or are writing tests).

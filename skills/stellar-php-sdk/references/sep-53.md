@@ -42,7 +42,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 
 $keyPair = KeyPair::random();
 
-// Sign a message — returns 64 raw bytes or null on failure
+// Sign a message — returns 64 raw bytes, throws CryptoException on failure
 $signature = $keyPair->signMessage("I agree to the terms of service");
 
 // Verify using the same keypair (or a public-key-only keypair)
@@ -56,9 +56,9 @@ Both methods are on `KeyPair` in `Soneso\StellarSDK\Crypto\KeyPair`:
 
 ```php
 // Sign a message according to SEP-53.
-// Returns 64 raw signature bytes, or null if signing fails.
-// Throws \TypeError if the keypair has no private key (strict_types=1).
-public function signMessage(string $message): ?string
+// Returns 64 raw signature bytes.
+// Throws CryptoException if signing fails (no private key or cryptographic error).
+public function signMessage(string $message): string
 
 // Verify a SEP-53 message signature.
 // $signature must be raw bytes (not base64 or hex string).
@@ -81,11 +81,6 @@ $message = "User consent granted at 2025-01-15T12:00:00Z";
 
 // signMessage() returns raw bytes (binary string, 64 bytes)
 $signature = $keyPair->signMessage($message);
-
-if ($signature === null) {
-    // null only on internal crypto failure — extremely rare with a valid keypair
-    throw new \RuntimeException("Failed to sign message");
-}
 
 // Encode for storage or transmission
 $base64Signature = base64_encode($signature);
@@ -201,10 +196,6 @@ $challenge = "authenticate:" . bin2hex(random_bytes(16)) . ":" . time();
 // === CLIENT: sign the challenge ===
 $clientKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
 $signature     = $clientKeyPair->signMessage($challenge);
-
-if ($signature === null) {
-    throw new \RuntimeException("Signing failed");
-}
 
 $response = [
     'account_id' => $clientKeyPair->getAccountId(),
@@ -325,42 +316,26 @@ echo "All verification test vectors passed\n";
 
 ## Error Handling
 
-### Signing without a private key throws TypeError
+### Signing failures throw CryptoException
 
-Calling `signMessage()` on a public-key-only keypair (created with `KeyPair::fromAccountId()`) throws `\TypeError` under `strict_types=1` because `getEd25519SecretKey()` returns `null` and the libsodium call rejects a null argument:
+`signMessage()` throws `CryptoException` (extends `RuntimeException`) if signing fails — typically because the keypair has no private key:
 
 ```php
 <?php declare(strict_types=1);
 
+use Soneso\StellarSDK\Crypto\CryptoException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 
 $publicOnly = KeyPair::fromAccountId('GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L');
 
 try {
     $signature = $publicOnly->signMessage("test");
-} catch (\TypeError $e) {
-    echo "Cannot sign: keypair has no private key\n";
+} catch (CryptoException $e) {
+    echo "Cannot sign: " . $e->getMessage() . "\n";
 }
 ```
 
-### signMessage() can return null
-
-`signMessage()` returns `null` if the internal `sign()` call fails (e.g., a libsodium exception). This is extremely rare with a valid keypair but should be checked in production:
-
-```php
-<?php declare(strict_types=1);
-
-use Soneso\StellarSDK\Crypto\KeyPair;
-
-$keyPair   = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
-$signature = $keyPair->signMessage("Important message");
-
-if ($signature === null) {
-    throw new \RuntimeException("Signing failed");
-}
-
-$base64 = base64_encode($signature);
-```
+With a valid `KeyPair::fromSeed()` keypair, `signMessage()` will not throw — no defensive try/catch needed around normal signing calls.
 
 ### verifyMessage() always returns bool — never throws
 

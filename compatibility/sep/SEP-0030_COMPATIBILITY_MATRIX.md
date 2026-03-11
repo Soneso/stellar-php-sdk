@@ -1,157 +1,110 @@
-# SEP-0030 (Account Recovery: multi-party recovery of Stellar accounts) Compatibility Matrix
+# SEP-30: Account Recovery: multi-party recovery of Stellar accounts
 
-**Generated:** 2026-02-21 18:22:02
-
-**SEP Version:** 0.8.1
-
-**SEP Status:** Draft
-
-**SDK Version:** 1.9.4
-
-**SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md
-
-## SEP Summary
-
-This protocol defines an API that enables an individual (e.g., a user or
-wallet) to regain access to a Stellar account that it owns after the individual
-has lost its private key without providing any third party control of the
-account. Using this protocol, the user or wallet will preregister the account
-and a phone number, email, or other form of authentication with one or more
-servers implementing the protocol and add those servers as signers of the
-account. If two or more servers are used with appropriate signer configuration
-no individual server will have control of the account, but collectively, they
-may help the individual recover access to the account. The protocol also
-enables individuals to pass control of a Stellar account to another individual.
+**Status:** ✅ Supported  
+**SDK Version:** 1.9.5  
+**Generated:** 2026-03-11 21:41 UTC  
+**Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)
 
 ## Overall Coverage
 
-**Total Coverage:** 100% (32/32 fields)
+**Total Coverage:** 100.0% (20/20 fields)
 
-- ✅ **Implemented:** 32/32
-- ❌ **Not Implemented:** 0/32
-
-**Required Fields:** 100% (24/24)
-
-**Optional Fields:** 100% (8/8)
-
-## Implementation Status
-
-✅ **Implemented**
-
-### Implementation Files
-
-- `Soneso/StellarSDK/SEP/Recovery/SEP30ResponseSigner.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30UnknownResponseException.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30Request.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30ConflictResponseException.php`
-- `Soneso/StellarSDK/SEP/Recovery/RecoveryService.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30RequestIdentity.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30AccountsResponse.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30AccountResponse.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30NotFoundResponseException.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30AuthMethod.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30ResponseIdentity.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30UnauthorizedResponseException.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30SignatureResponse.php`
-- `Soneso/StellarSDK/SEP/Recovery/SEP30BadRequestResponseException.php`
-
-### Key Classes
-
-- **`SEP30ResponseSigner`**
-- **`SEP30UnknownResponseException`**
-- **`SEP30Request`**
-- **`SEP30ConflictResponseException`**
-- **`RecoveryService`**
-- **`SEP30RequestIdentity`**
-- **`SEP30AccountsResponse`**
-- **`SEP30AccountResponse`**
-- **`SEP30NotFoundResponseException`**
-- **`SEP30AuthMethod`**
-- **`SEP30ResponseIdentity`**
-- **`SEP30UnauthorizedResponseException`**
-- **`SEP30SignatureResponse`**
-- **`SEP30BadRequestResponseException`**
+- ✅ **Implemented:** 20/20
+- ❌ **Not Implemented:** 0/20
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| API Endpoints | 100% | 100% | 6 | 6 |
-| Request Fields | 100% | 100% | 7 | 7 |
-| Response Fields | 100% | 100% | 9 | 9 |
-| Error Codes | 100% | 0% | 4 | 4 |
-| Recovery Features | 100% | 100% | 6 | 6 |
+| Section | Coverage | Implemented | Total |
+|---------|----------|-------------|-------|
+| Service Endpoints | 100.0% | 6 | 6 |
+| Request Fields | 100.0% | 1 | 1 |
+| Request Identity Fields | 100.0% | 2 | 2 |
+| Auth Method Fields | 100.0% | 2 | 2 |
+| Account Response Fields | 100.0% | 3 | 3 |
+| Response Identity Fields | 100.0% | 2 | 2 |
+| Response Signer Fields | 100.0% | 1 | 1 |
+| Signature Response Fields | 100.0% | 2 | 2 |
+| Accounts List Response Fields | 100.0% | 1 | 1 |
 
-## Detailed Field Comparison
+## Service Endpoints
 
-### API Endpoints
+RecoveryService API methods
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `register_account` | ✓ | ✅ | `registerAccount` | POST /accounts/{address} - Register an account for recovery |
-| `update_account` | ✓ | ✅ | `updateIdentitiesForAccount` | PUT /accounts/{address} - Update identities for an account |
-| `get_account` | ✓ | ✅ | `accountDetails` | GET /accounts/{address} - Retrieve account details |
-| `delete_account` | ✓ | ✅ | `deleteAccount` | DELETE /accounts/{address} - Delete account record |
-| `list_accounts` | ✓ | ✅ | `accounts` | GET /accounts - List accessible accounts |
-| `sign_transaction` | ✓ | ✅ | `signTransaction` | POST /accounts/{address}/sign/{signing-address} - Sign a transaction |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `POST /accounts/:address` | ✅ Supported | `RecoveryService.registerAccount()` |
+| `PUT /accounts/:address` | ✅ Supported | `RecoveryService.updateIdentitiesForAccount()` |
+| `POST /accounts/:address/sign/:signing_address` | ✅ Supported | `RecoveryService.signTransaction()` |
+| `GET /accounts/:address` | ✅ Supported | `RecoveryService.accountDetails()` |
+| `DELETE /accounts/:address` | ✅ Supported | `RecoveryService.deleteAccount()` |
+| `GET /accounts` | ✅ Supported | `RecoveryService.accounts()` |
 
-### Request Fields
+## Request Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `identities` | ✓ | ✅ | `identities` | Array of identity objects for account recovery |
-| `role` | ✓ | ✅ | `role` | Role of the identity (owner or other) |
-| `auth_methods` | ✓ | ✅ | `authMethods` | Array of authentication methods for the identity |
-| `type` | ✓ | ✅ | `type` | Type of authentication method |
-| `value` | ✓ | ✅ | `value` | Value of the authentication method (address, phone, email, etc.) |
-| `transaction` | ✓ | ✅ | `signTransaction` | Base64-encoded XDR transaction envelope to sign |
-| `after` |  | ✅ | `accounts` | Cursor for pagination in list accounts endpoint |
+SEP30Request properties
 
-### Response Fields
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `identities` | ✅ Supported | `Required. SEP30Request.$identities` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `address` | ✓ | ✅ | `address` | Stellar address of the registered account |
-| `identities` | ✓ | ✅ | `identities` | Array of registered identity objects |
-| `signers` | ✓ | ✅ | `signers` | Array of signer objects for the account |
-| `role` | ✓ | ✅ | `role` | Role of the identity in response |
-| `authenticated` |  | ✅ | `authenticated` | Whether the identity has been authenticated |
-| `key` | ✓ | ✅ | `key` | Public key of the signer |
-| `signature` | ✓ | ✅ | `signature` | Base64-encoded signature of the transaction |
-| `network_passphrase` | ✓ | ✅ | `networkPassphrase` | Network passphrase used for signing |
-| `accounts` | ✓ | ✅ | `accounts` | Array of account objects in list response |
+## Request Identity Fields
 
-### Error Codes
+SEP30RequestIdentity properties
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `Bad Request` |  | ✅ | `SEP30BadRequestResponseException` | Invalid request parameters or malformed data |
-| `Unauthorized` |  | ✅ | `SEP30UnauthorizedResponseException` | Missing or invalid JWT token |
-| `Not Found` |  | ✅ | `SEP30NotFoundResponseException` | Account or resource not found |
-| `Conflict` |  | ✅ | `SEP30ConflictResponseException` | Account already exists or conflicting operation |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `role` | ✅ Supported | `Required. SEP30RequestIdentity.$role` |
+| `auth_methods` | ✅ Supported | `Required. SEP30RequestIdentity.$authMethods` |
 
-### Recovery Features
+## Auth Method Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `multi_party_recovery` | ✓ | ✅ | `signers` | Support for multi-server account recovery |
-| `flexible_auth_methods` | ✓ | ✅ | `SEP30AuthMethod` | Support for multiple authentication method types |
-| `transaction_signing` | ✓ | ✅ | `signTransaction` | Server-side transaction signing for recovery |
-| `account_sharing` |  | ✅ | `role` | Support for shared account access |
-| `identity_roles` | ✓ | ✅ | `role` | Support for owner and other identity roles |
-| `pagination` |  | ✅ | `accounts` | Pagination support in list accounts endpoint |
+SEP30AuthMethod properties
 
-## Implementation Gaps
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `type` | ✅ Supported | `Required. SEP30AuthMethod.$type` |
+| `value` | ✅ Supported | `Required. SEP30AuthMethod.$value` |
 
-🎉 **No gaps found!** All fields are implemented.
+## Account Response Fields
 
-## Recommendations
+SEP30AccountResponse properties
 
-✅ The SDK has full compatibility with SEP-0030!
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `address` | ✅ Supported | `Required. SEP30AccountResponse.$address` |
+| `identities` | ✅ Supported | `Required. SEP30AccountResponse.$identities` |
+| `signers` | ✅ Supported | `Required. SEP30AccountResponse.$signers` |
 
-## Legend
+## Response Identity Fields
 
-- ✅ **Implemented**: Field is implemented in SDK
-- ❌ **Not Implemented**: Field is missing from SDK
-- ✓ **Required**: Field is required by SEP specification
-- (blank) **Optional**: Field is optional
+SEP30ResponseIdentity properties
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `role` | ✅ Supported | `SEP30ResponseIdentity.$role` |
+| `authenticated` | ✅ Supported | `SEP30ResponseIdentity.$authenticated` |
+
+## Response Signer Fields
+
+SEP30ResponseSigner properties
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `key` | ✅ Supported | `Required. SEP30ResponseSigner.$key` |
+
+## Signature Response Fields
+
+SEP30SignatureResponse properties
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `signature` | ✅ Supported | `Required. SEP30SignatureResponse.$signature` |
+| `network_passphrase` | ✅ Supported | `Required. SEP30SignatureResponse.$networkPassphrase` |
+
+## Accounts List Response Fields
+
+SEP30AccountsResponse properties
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `accounts` | ✅ Supported | `Required. SEP30AccountsResponse.$accounts` |

@@ -1,227 +1,191 @@
-# Stellar PHP SDK - Horizon API Compatibility Matrix
+# Horizon API vs PHP SDK Compatibility Matrix
 
-## Document Metadata
+**Horizon Version:** v25.0.1 (released 2026-02-06)  
+**Horizon Source:** [v25.0.1](https://github.com/stellar/stellar-horizon/releases/tag/v25.0.1)  
+**SDK Version:** 1.9.5  
+**Generated:** 2026-03-11 21:41:29 UTC
 
-| Property | Value |
-|----------|-------|
-| **SDK Version** | 1.9.4 |
-| **Compatible Horizon Version** | v25.0.1 (7d2249f2) |
-| **Last Updated** | February 21, 2026 |
-| **Overall Coverage** | 100.0% (Fully Supported) |
-| **Total Endpoints Analyzed** | 50 |
+**Horizon Endpoints Discovered:** 52  
+**Public API Endpoints (in matrix):** 50
 
-## Matrix Legend
+> **Note:** 2 endpoints intentionally excluded from the matrix:
+> - `GET /paths` - Deprecated - use /paths/strict-receive and /paths/strict-send
+> - `POST /friendbot` - Redundant - GET method is used instead
 
-| Symbol | Status | Description |
-|--------|--------|-------------|
-| ✅ | **Fully Supported** | Complete implementation with all parameters and features |
-| ⚠️ | **Partially Supported** | Basic functionality works but some parameters or features are missing |
-| ❌ | **Not Supported** | Endpoint not implemented in SDK |
-| 🔄 | **Deprecated** | Endpoint is deprecated in Horizon API |
+## Overall Coverage
 
-### Status Details
+**Coverage:** 100.0% (50/50 public API endpoints)
 
-- **✅ Fully Supported**: All endpoint parameters are implemented, streaming is supported where applicable, and the implementation matches Horizon specification completely.
-- **⚠️ Partially Supported**: Core functionality is available but missing optional parameters, streaming support, or advanced features.
-- **❌ Not Supported**: The endpoint is not implemented in the SDK. Developers must use direct HTTP calls.
-- **🔄 Deprecated**: The Horizon API has deprecated this endpoint. Use the recommended alternative instead.
+- **Fully Supported:** 50/50
+- **Partially Supported:** 0/50
+- **Not Supported:** 0/50
 
----
+## Coverage by Category
 
-## Executive Summary
+| Category | Coverage | Supported | Not Supported | Total |
+|----------|----------|-----------|---------------|-------|
+| accounts | 100.0% | 9 | 0 | 9 |
+| assets | 100.0% | 1 | 0 | 1 |
+| claimable balances | 100.0% | 4 | 0 | 4 |
+| effects | 100.0% | 1 | 0 | 1 |
+| friendbot | 100.0% | 1 | 0 | 1 |
+| ledgers | 100.0% | 6 | 0 | 6 |
+| liquidity pools | 100.0% | 6 | 0 | 6 |
+| network | 100.0% | 1 | 0 | 1 |
+| offers | 100.0% | 3 | 0 | 3 |
+| operations | 100.0% | 3 | 0 | 3 |
+| order book | 100.0% | 1 | 0 | 1 |
+| paths | 100.0% | 2 | 0 | 2 |
+| payments | 100.0% | 1 | 0 | 1 |
+| root | 100.0% | 2 | 0 | 2 |
+| trades | 100.0% | 2 | 0 | 2 |
+| transactions | 100.0% | 7 | 0 | 7 |
 
-### Key Statistics
+## Streaming Support
 
-| Metric | Count | Percentage |
-|--------|-------|------------|
-| **Total Horizon Endpoints** | 50 | 100% |
-| **Fully Supported** | 50 | 100.0% |
-| **Partially Supported** | 0 | 0.0% |
-| **Not Supported** | 0 | 0.0% |
-| **Deprecated** | 0 | 0.0% |
-| **Streaming Endpoints** | 30 | 100% |
-| **Streaming Support** | 30 | 100.0% |
+**Coverage:** 100.0%
 
-### Coverage Highlights
+- Streaming endpoints: 31
+- Supported: 31
 
-**Strong Areas:**
-- ✅ **Accounts**: 100% category coverage (9/9 endpoints supported)
-- ✅ **Transactions**: 100% category coverage (7/7 endpoints supported)
-- ✅ **Ledgers**: 100% category coverage (6/6 endpoints supported)
-- ✅ **Liquidity_Pools**: 100% category coverage (6/6 endpoints supported)
-- ✅ **Claimable_Balances**: 100% category coverage (4/4 endpoints supported)
+## Detailed Endpoint Comparison
 
-**Areas Needing Attention:**
+### Accounts
 
----
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/accounts` | GET | Full | `AccountsRequestBuilder::execute()` |  | - |
+| `/accounts/{account_id}` | GET | Full | `AccountsRequestBuilder::account()` | Yes | AccountsRequestBuilder::streamAccount() |
+| `/accounts/{account_id}/data/{key}` | GET | Full | `AccountsRequestBuilder::accountData()` | Yes | AccountsRequestBuilder::streamAccountData() |
+| `/accounts/{account_id}/offers` | GET | Full | `OffersRequestBuilder::forAccount()::execute()` | Yes | OffersRequestBuilder::forAccount()::stream() |
+| `/accounts/{account_id}/effects` | GET | Full | `EffectsRequestBuilder::forAccount()::execute()` | Yes | EffectsRequestBuilder::forAccount()::stream() |
+| `/accounts/{account_id}/operations` | GET | Full | `OperationsRequestBuilder::forAccount()::execute()` | Yes | OperationsRequestBuilder::forAccount()::stream() |
+| `/accounts/{account_id}/payments` | GET | Full | `PaymentsRequestBuilder::forAccount()::execute()` | Yes | PaymentsRequestBuilder::forAccount()::stream() |
+| `/accounts/{account_id}/trades` | GET | Full | `TradesRequestBuilder::forAccount()::execute()` | Yes | TradesRequestBuilder::forAccount()::stream() |
+| `/accounts/{account_id}/transactions` | GET | Full | `TransactionsRequestBuilder::forAccount()::execute()` | Yes | TransactionsRequestBuilder::forAccount()::stream() |
 
-## Detailed Compatibility Matrix
+### Assets
 
-### Accounts (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/assets` | GET | Full | `AssetsRequestBuilder::execute()` |  | - |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/accounts` | GET | ✅ | `accounts()->execute()`<br/>`AccountsRequestBuilder` | Full implementation with all features supported |
-| `/accounts/{account_id}` | GET | ✅ | `accounts()->streamAccount($accountId, $callback)`<br/>`AccountsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/accounts/{account_id}/data/{key}` | GET | ✅ | `accounts()->streamAccountData($accountId, $key, $callback)`<br/>`AccountsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/accounts/{account_id}/effects` | GET | ✅ | `effects()->forAccount($accountId)->execute()`<br/>`EffectsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/accounts/{account_id}/offers` | GET | ✅ | `offers()->forAccount($accountId)->execute()`<br/>`OffersRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/accounts/{account_id}/operations` | GET | ✅ | `operations()->forAccount($accountId)->execute()`<br/>`OperationsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/accounts/{account_id}/payments` | GET | ✅ | `payments()->forAccount($accountId)->execute()`<br/>`PaymentsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/accounts/{account_id}/trades` | GET | ✅ | `trades()->forAccount($accountId)->execute()`<br/>`TradesRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/accounts/{account_id}/transactions` | GET | ✅ | `transactions()->forAccount($accountId)->execute()`<br/>`TransactionsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
+### Claimable Balances
 
-### Assets (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/claimable_balances` | GET | Full | `ClaimableBalancesRequestBuilder::execute()` |  | - |
+| `/claimable_balances/{id}` | GET | Full | `ClaimableBalancesRequestBuilder::claimableBalance()` |  | No streaming |
+| `/claimable_balances/{claimable_balance_id}/operations` | GET | Full | `OperationsRequestBuilder::forClaimableBalance()::execute()` | Yes | OperationsRequestBuilder::forClaimableBalance()::stream() |
+| `/claimable_balances/{claimable_balance_id}/transactions` | GET | Full | `TransactionsRequestBuilder::forClaimableBalance()::execute()` | Yes | TransactionsRequestBuilder::forClaimableBalance()::stream() |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/assets` | GET | ✅ | `assets()->execute()`<br/>`AssetsRequestBuilder` | Full implementation with all features supported |
+### Effects
 
-### Claimable Balances (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/effects` | GET | Full | `EffectsRequestBuilder::execute()` | Yes | EffectsRequestBuilder::stream() |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/claimable_balances` | GET | ✅ | `claimableBalances()->execute()`<br/>`ClaimableBalancesRequestBuilder` | Full implementation with all features supported |
-| `/claimable_balances/{claimable_balance_id}/operations` | GET | ✅ | `operations()->forClaimableBalance($claimableBalanceId)->execute()`<br/>`OperationsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/claimable_balances/{claimable_balance_id}/transactions` | GET | ✅ | `transactions()->forClaimableBalance($claimableBalanceId)->execute()`<br/>`TransactionsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/claimable_balances/{id}` | GET | ✅ | `claimableBalances()->claimableBalance($claimableBalanceId)`<br/>`ClaimableBalancesRequestBuilder` | Full implementation with all features supported |
+### Friendbot
 
-### Effects (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/friendbot` | GET | Full | `StellarSDK::friendBot()` |  | External friendbot URL |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/effects` | GET | ✅ | `effects()->execute()`<br/>`EffectsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
+### Ledgers
 
-### Fee Stats (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/ledgers` | GET | Full | `LedgersRequestBuilder::execute()` | Yes | LedgersRequestBuilder::stream() |
+| `/ledgers/{ledger_id}` | GET | Full | `LedgersRequestBuilder::ledger()` |  | No streaming |
+| `/ledgers/{ledger_id}/transactions` | GET | Full | `TransactionsRequestBuilder::forLedger()::execute()` | Yes | TransactionsRequestBuilder::forLedger()::stream() |
+| `/ledgers/{ledger_id}/effects` | GET | Full | `EffectsRequestBuilder::forLedger()::execute()` | Yes | EffectsRequestBuilder::forLedger()::stream() |
+| `/ledgers/{ledger_id}/operations` | GET | Full | `OperationsRequestBuilder::forLedger()::execute()` | Yes | OperationsRequestBuilder::forLedger()::stream() |
+| `/ledgers/{ledger_id}/payments` | GET | Full | `PaymentsRequestBuilder::forLedger()::execute()` | Yes | PaymentsRequestBuilder::forLedger()::stream() |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/fee_stats` | GET | ✅ | `feeStats()->getFeeStats()`<br/>`FeeStatsRequestBuilder` | Full implementation with all features supported |
+### Liquidity Pools
 
-### Friendbot (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/liquidity_pools` | GET | Full | `LiquidityPoolsRequestBuilder::execute()` |  | - |
+| `/liquidity_pools/{liquidity_pool_id}` | GET | Full | `LiquidityPoolsRequestBuilder::forPoolId()` |  | No streaming |
+| `/liquidity_pools/{liquidity_pool_id}/operations` | GET | Full | `OperationsRequestBuilder::forLiquidityPool()::execute()` | Yes | OperationsRequestBuilder::forLiquidityPool()::stream() |
+| `/liquidity_pools/{liquidity_pool_id}/transactions` | GET | Full | `TransactionsRequestBuilder::forLiquidityPool()::execute()` | Yes | TransactionsRequestBuilder::forLiquidityPool()::stream() |
+| `/liquidity_pools/{liquidity_pool_id}/effects` | GET | Full | `EffectsRequestBuilder::forLiquidityPool()::execute()` | Yes | EffectsRequestBuilder::forLiquidityPool()::stream() |
+| `/liquidity_pools/{liquidity_pool_id}/trades` | GET | Full | `TradesRequestBuilder::forLiquidityPool()::execute()` | Yes | TradesRequestBuilder::forLiquidityPool()::stream() |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/friendbot` | GET | ✅ | `FriendBot::fundTestAccount($accountId)`<br/>`FriendBot` | Full implementation with all features supported. Utility class for funding test accounts. Also available: FuturenetFriendBot, CustomFriendBot |
+### Network
 
-### Health (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/fee_stats` | GET | Full | `FeeStatsRequestBuilder::getFeeStats()` |  | - |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/health` | GET | ✅ | `health()->getHealth()`<br/>`HealthRequestBuilder` | Full implementation with all features supported |
+### Offers
 
-### Ledgers (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/offers` | GET | Full | `OffersRequestBuilder::execute()` | Yes | OffersRequestBuilder::stream() |
+| `/offers/{offer_id}` | GET | Full | `OffersRequestBuilder::offer()` |  | No streaming |
+| `/offers/{offer_id}/trades` | GET | Full | `TradesRequestBuilder::forOffer()::execute()` | Yes | TradesRequestBuilder::forOffer()::stream() |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/ledgers` | GET | ✅ | `ledgers()->execute()`<br/>`LedgersRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/ledgers/{ledger_id}` | GET | ✅ | `ledgers()->ledger($ledgerSequence)`<br/>`LedgersRequestBuilder` | Full implementation with all features supported |
-| `/ledgers/{ledger_id}/effects` | GET | ✅ | `effects()->forLedger($ledgerSeq)->execute()`<br/>`EffectsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/ledgers/{ledger_id}/operations` | GET | ✅ | `operations()->forLedger($ledgerSeq)->execute()`<br/>`OperationsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/ledgers/{ledger_id}/payments` | GET | ✅ | `payments()->forLedger($ledgerSeq)->execute()`<br/>`PaymentsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/ledgers/{ledger_id}/transactions` | GET | ✅ | `transactions()->forLedger($ledgerSeq)->execute()`<br/>`TransactionsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
+### Operations
 
-### Liquidity Pools (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/operations` | GET | Full | `OperationsRequestBuilder::execute()` | Yes | OperationsRequestBuilder::stream() |
+| `/operations/{id}` | GET | Full | `OperationsRequestBuilder::operation()` |  | No streaming |
+| `/operations/{op_id}/effects` | GET | Full | `EffectsRequestBuilder::forOperation()::execute()` | Yes | EffectsRequestBuilder::forOperation()::stream() |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/liquidity_pools` | GET | ✅ | `liquidityPools()->execute()`<br/>`LiquidityPoolsRequestBuilder` | Full implementation with all features supported |
-| `/liquidity_pools/{liquidity_pool_id}` | GET | ✅ | `liquidityPools()->forPoolId($liquidityPoolID)->execute()`<br/>`LiquidityPoolsRequestBuilder` | Full implementation with all features supported |
-| `/liquidity_pools/{liquidity_pool_id}/effects` | GET | ✅ | `effects()->forLiquidityPool($liquidityPoolId)->execute()`<br/>`EffectsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/liquidity_pools/{liquidity_pool_id}/operations` | GET | ✅ | `operations()->forLiquidityPool($liquidityPoolId)->execute()`<br/>`OperationsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/liquidity_pools/{liquidity_pool_id}/trades` | GET | ✅ | `trades()->forLiquidityPool($liquidityPoolId)->execute()`<br/>`TradesRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/liquidity_pools/{liquidity_pool_id}/transactions` | GET | ✅ | `transactions()->forLiquidityPool($liquidityPoolId)->execute()`<br/>`TransactionsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
+### Order Book
 
-### Offers (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/order_book` | GET | Full | `OrderBookRequestBuilder::execute()` | Yes | OrderBookRequestBuilder::stream() |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/offers` | GET | ✅ | `offers()->execute()`<br/>`OffersRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/offers/{offer_id}` | GET | ✅ | `offers()->offer($offerId)`<br/>`OffersRequestBuilder` | Full implementation with all features supported |
+### Paths
 
-### Operations (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/paths/strict-receive` | GET | Full | `StrictReceivePathsRequestBuilder::execute()` |  | - |
+| `/paths/strict-send` | GET | Full | `StrictSendPathsRequestBuilder::execute()` |  | - |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/operations` | GET | ✅ | `operations()->execute()`<br/>`OperationsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/operations/{id}` | GET | ✅ | `operations()->operation($operationId)`<br/>`OperationsRequestBuilder` | Full implementation with all features supported |
-| `/operations/{op_id}/effects` | GET | ✅ | `effects()->forOperation($operationId)->execute()`<br/>`EffectsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
+### Payments
 
-### Order Book (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/payments` | GET | Full | `PaymentsRequestBuilder::execute()` | Yes | PaymentsRequestBuilder::stream() |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/order_book` | GET | ✅ | `orderBook()->execute()`<br/>`OrderBookRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
+### Root
 
-### Paths (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/health` | GET | Full | `HealthRequestBuilder::getHealth()` |  | - |
+| `/` | GET | Full | `StellarSDK (configuration)` |  | Via SDK initialization |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/paths` | GET | ✅ | `findPaths()->execute()`<br/>`FindPathsRequestBuilder` | Full implementation with all features supported |
-| `/paths/strict-receive` | GET | ✅ | `strictReceivePaths()->execute()`<br/>`StrictReceivePathsRequestBuilder` | Full implementation with all features supported |
-| `/paths/strict-send` | GET | ✅ | `strictSendPaths()->execute()`<br/>`StrictSendPathsRequestBuilder` | Full implementation with all features supported |
+### Trades
 
-### Payments (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/trades` | GET | Full | `TradesRequestBuilder::execute()` | Yes | TradesRequestBuilder::stream() |
+| `/trade_aggregations` | GET | Full | `TradeAggregationsRequestBuilder::execute()` |  | - |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/payments` | GET | ✅ | `payments()->execute()`<br/>`PaymentsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
+### Transactions
 
-### Root (100.0% coverage)
+| Endpoint | Method | Status | SDK Method | Streaming | Notes |
+|----------|--------|--------|------------|-----------|-------|
+| `/transactions` | GET | Full | `TransactionsRequestBuilder::execute()` | Yes | TransactionsRequestBuilder::stream() |
+| `/transactions/{tx_id}` | GET | Full | `TransactionsRequestBuilder::transaction()` |  | No streaming |
+| `/transactions/{tx_id}/effects` | GET | Full | `EffectsRequestBuilder::forTransaction()::execute()` | Yes | EffectsRequestBuilder::forTransaction()::stream() |
+| `/transactions/{tx_id}/operations` | GET | Full | `OperationsRequestBuilder::forTransaction()::execute()` | Yes | OperationsRequestBuilder::forTransaction()::stream() |
+| `/transactions/{tx_id}/payments` | GET | Full | `PaymentsRequestBuilder::forTransaction()::execute()` | Yes | PaymentsRequestBuilder::forTransaction()::stream() |
+| `/transactions` | POST | Full | `SubmitTransactionRequestBuilder::execute()` |  | - |
+| `/transactions_async` | POST | Full | `SubmitAsyncTransactionRequestBuilder::execute()` |  | - |
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/` | GET | ✅ | `root()->execute()`<br/>`RootRequestBuilder` | Full implementation with all features supported |
+## Query Parameter Support
 
-### Trades (100.0% coverage)
+**Filter Parameters Coverage:** 39/39 (100.0%)
 
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/trade_aggregations` | GET | ✅ | `tradeAggregations()->execute()`<br/>`TradeAggregationsRequestBuilder` | Full implementation with all features supported |
-| `/trades` | GET | ✅ | `trades()->forOffer($offerId)->execute()`<br/>`TradesRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
+## Legend
 
-### Transactions (100.0% coverage)
-
-| Endpoint | Method | Status | SDK Implementation | Missing Features/Notes |
-|----------|--------|--------|-------------------|------------------------|
-| `/transactions` | GET | ✅ | `transactions()->execute()`<br/>`TransactionsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/transactions` | POST | ✅ | `submitTransaction($transaction)`<br/>`SubmitTransactionRequestBuilder` | Full implementation with all features supported |
-| `/transactions/{tx_id}` | GET | ✅ | `transactions()->transaction($transactionId)`<br/>`TransactionsRequestBuilder` | Full implementation with all features supported |
-| `/transactions/{tx_id}/effects` | GET | ✅ | `effects()->forTransaction($transactionId)->execute()`<br/>`EffectsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/transactions/{tx_id}/operations` | GET | ✅ | `operations()->forTransaction($transactionId)->execute()`<br/>`OperationsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/transactions/{tx_id}/payments` | GET | ✅ | `payments()->forTransaction($transactionId)->execute()`<br/>`PaymentsRequestBuilder`<br/>✅ Streaming | Full implementation with all features supported |
-| `/transactions_async` | POST | ✅ | `submitAsyncTransaction($transaction)`<br/>`SubmitAsyncTransactionRequestBuilder` | Full implementation with all features supported |
-
----
-
-## Implementation Gaps by Priority
-
-## Streaming Support Analysis
-
-**Overall Streaming Coverage**: 100.0% (30/30 endpoints)
-
-✅ All implemented endpoints that support streaming in Horizon have streaming support in the SDK!
-
----
-
-## Document Information
-
-### Generation Details
-- **Generated On**: 2026-02-21 19:22:05 UTC
-- **Data Sources**: 
-  - Horizon API: Official Stellar Horizon documentation
-  - PHP SDK: Source code analysis of Stellar PHP SDK v1.9.4
-
-### How to Use This Matrix
-
-1. **Check Endpoint Support**: Look up the endpoint you need in the detailed matrix to see its implementation status.
-2. **Review Missing Features**: If an endpoint is partially supported, check the "Missing Features/Notes" column for details.
-3. **Plan Workarounds**: For unsupported endpoints, you'll need to make direct HTTP calls to Horizon.
-4. **Consider Alternatives**: For deprecated endpoints, use the recommended alternatives listed in the notes.
-
-### Contributing
-
-Help improve SDK coverage! If you need an unsupported endpoint:
-1. Check the [GitHub Issues](https://github.com/Soneso/stellar-php-sdk/issues) for existing requests
-2. Submit a feature request with your use case
-3. Consider contributing an implementation via pull request
+- **Full** - Complete implementation with all features
+- **Partial** - Basic functionality with some limitations
+- **Missing** - Endpoint not implemented

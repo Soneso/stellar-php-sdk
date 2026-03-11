@@ -692,7 +692,7 @@ const MAX_OPERATIONS_PER_TRANSACTION = 100
 const DEFAULT_LEDGER_EXPIRATION_OFFSET = 100
 
 ## StellarSDK
-const VERSION_NR = '1.9.4'
+const VERSION_NR = '1.9.5'
 static string $PUBLIC_NET_HORIZON_URL
 static string $TEST_NET_HORIZON_URL
 static string $FUTURE_NET_HORIZON_URL
@@ -831,12 +831,12 @@ static fromPrivateKey(string $privateKey): KeyPair
 static fromPublicKey(string $publicKey): KeyPair
 static fromMnemonic(Mnemonic $mnemonic, int $index, ?string $passphrase = ''): KeyPair
 static fromBip39SeedHex(string $bip39SeedHex, int $index): KeyPair
-signDecorated(string $value): ?XdrDecoratedSignature
-signPayloadDecorated(string $signerPayload): ?XdrDecoratedSignature
+signDecorated(string $value): XdrDecoratedSignature
+signPayloadDecorated(string $signerPayload): XdrDecoratedSignature
 str_to_stream(string $string)
-sign(string $value): ?string
+sign(string $value): string
 verifySignature(string $signature, string $message): bool
-signMessage(string $message): ?string
+signMessage(string $message): string
 verifyMessage(string $message, string $signature): bool
 getHint(): string
 getPublicKeyChecksum(): string
@@ -3237,16 +3237,16 @@ ClientOptions $clientOptions
 MethodOptions $methodOptions
 string $method
 ?array $arguments
-bool $enableServerLogging
-__construct(ClientOptions $clientOptions, MethodOptions $methodOptions, string $method, ?array $arguments = null, bool $enableServerLogging = false)
+?LoggerInterface $logger
+__construct(ClientOptions $clientOptions, MethodOptions $methodOptions, string $method, ?array $arguments = null, ?LoggerInterface $logger = null)
 
 ## ClientOptions
 KeyPair $sourceAccountKeyPair
 string $contractId
 Network $network
 string $rpcUrl
-bool $enableServerLogging
-__construct(KeyPair $sourceAccountKeyPair, string $contractId, Network $network, string $rpcUrl, bool $enableServerLogging = false)
+?LoggerInterface $logger
+__construct(KeyPair $sourceAccountKeyPair, string $contractId, Network $network, string $rpcUrl, ?LoggerInterface $logger = null)
 
 ## ContractSpec
 array $entries
@@ -3270,8 +3270,8 @@ string $wasmHash
 ?array $constructorArgs
 ?string $salt
 MethodOptions $methodOptions
-bool $enableServerLogging
-__construct(string $rpcUrl, Network $network, KeyPair $sourceAccountKeyPair, string $wasmHash, ?array $constructorArgs = null, ?string $salt = null, ?MethodOptions $methodOptions = null, bool $enableServerLogging = false)
+?LoggerInterface $logger
+__construct(string $rpcUrl, Network $network, KeyPair $sourceAccountKeyPair, string $wasmHash, ?array $constructorArgs = null, ?string $salt = null, ?MethodOptions $methodOptions = null, ?LoggerInterface $logger = null)
 
 ## Footprint
 XdrLedgerFootprint $xdrFootprint
@@ -3289,8 +3289,8 @@ string $wasmBytes
 string $rpcUrl
 Network $network
 KeyPair $sourceAccountKeyPair
-bool $enableServerLogging
-__construct(string $wasmBytes, string $rpcUrl, Network $network, KeyPair $sourceAccountKeyPair, bool $enableServerLogging = false)
+?LoggerInterface $logger
+__construct(string $wasmBytes, string $rpcUrl, Network $network, KeyPair $sourceAccountKeyPair, ?LoggerInterface $logger = null)
 
 ## MethodOptions
 int $fee
@@ -3411,8 +3411,8 @@ getAddressCredentials(): ?SorobanAddressCredentials
 setAddressCredentials(?SorobanAddressCredentials $addressCredentials): void
 
 ## SorobanServer
-bool $enableLogging
 __construct(string $endpoint)
+setLogger(LoggerInterface $logger): void
 getHealth(): GetHealthResponse
 getNetwork(): GetNetworkResponse
 getFeeStats(): GetFeeStatsResponse
@@ -5240,6 +5240,7 @@ toArray(): array
 ## WebAuth
 __construct(string $authEndpoint, string $serverSigningKey, string $serverHomeDomain, Network $network, ?Client $httpClient = null)
 static fromDomain(string $domain, Network $network, ?Client $httpClient = null): WebAuth
+setGracePeriod(int $seconds): void
 jwtToken(string $clientAccountId, array $signers, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null, ?KeyPair $clientDomainKeyPair = null, ?callable $clientDomainSigningCallback = null): string
 setMockHandler(MockHandler $handler): void
 

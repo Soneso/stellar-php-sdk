@@ -4,9 +4,9 @@ description: Build Stellar blockchain applications in PHP using soneso/stellar-p
 license: Apache 2.0
 compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, and Composer
 metadata:
-  version: "1.0.0"
-  sdk_version: "1.9.4"
-  last_updated: "2026-02-22"
+  version: "1.0.1"
+  sdk_version: "1.9.5"
+  last_updated: "2026-03-11"
 ---
 
 # Stellar SDK for PHP
@@ -102,7 +102,7 @@ use Soneso\StellarSDK\StellarSDK;
 $network = Network::testnet();
 $sdk     = StellarSDK::getTestNetInstance();
 
-// Custom Horizon
+// Custom Horizon (HTTPS required — HTTP URLs throw InvalidArgumentException)
 $network = new Network('My Custom Network ; Passphrase');
 $sdk     = new StellarSDK('https://my-horizon.example.com');
 ```
@@ -280,7 +280,7 @@ RPC endpoint patterns for Soroban smart contract queries.
 use Soneso\StellarSDK\Soroban\SorobanServer;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
-$server->enableLogging = true; // optional: debug request/response
+// $server->setLogger($psr3Logger); // optional: PSR-3 debug logging
 $health = $server->getHealth(); // ->status
 ```
 

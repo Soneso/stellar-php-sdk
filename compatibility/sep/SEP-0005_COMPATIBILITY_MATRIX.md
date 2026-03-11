@@ -1,121 +1,61 @@
-# SEP-0005 (Key Derivation Methods for Stellar Keys) Compatibility Matrix
+# SEP-05: Key Derivation Methods for Stellar Keys
 
-**Generated:** 2026-02-21 18:21:59
-
-**SEP Version:** N/A
-
-**SEP Status:** Final
-
-**SDK Version:** 1.9.4
-
-**SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
-
-## SEP Summary
-
-This Stellar Ecosystem Proposal describes methods for key derivation for
-Stellar. This should improve key storage and moving keys between wallets and
-apps.
+**Status:** ✅ Supported  
+**SDK Version:** 1.9.5  
+**Generated:** 2026-03-11 21:41 UTC  
+**Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
 
 ## Overall Coverage
 
-**Total Coverage:** 100% (23/23 fields)
+**Total Coverage:** 100.0% (19/19 fields)
 
-- ✅ **Implemented:** 23/23
-- ❌ **Not Implemented:** 0/23
-
-**Required Fields:** 100% (15/15)
-
-**Optional Fields:** 100% (8/8)
-
-## Implementation Status
-
-✅ **Implemented**
-
-### Implementation Files
-
-- `Soneso/StellarSDK/SEP/Derivation/BIP39.php`
-- `Soneso/StellarSDK/SEP/Derivation/Mnemonic.php`
-- `Soneso/StellarSDK/SEP/Derivation/HDNode.php`
-- `Soneso/StellarSDK/SEP/Derivation/WordList.php`
-
-### Key Classes
-
-- **`BIP39`**
-- **`Mnemonic`**
-- **`HDNode`**
-- **`WordList`**
+- ✅ **Implemented:** 19/19
+- ❌ **Not Implemented:** 0/19
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| BIP-32 Key Derivation | 100% | 100% | 4 | 4 |
-| BIP-39 Mnemonic Features | 100% | 100% | 5 | 5 |
-| BIP-44 Multi-Account Support | 100% | 100% | 3 | 3 |
-| Key Derivation Methods | 100% | 100% | 3 | 3 |
-| Language Support | 100% | 100% | 8 | 8 |
+| Section | Coverage | Implemented | Total |
+|---------|----------|-------------|-------|
+| BIP-39 Mnemonic Features | 100.0% | 6 | 6 |
+| BIP-32 Key Derivation | 100.0% | 4 | 4 |
+| Language Support | 100.0% | 9 | 9 |
 
-## Detailed Field Comparison
+## BIP-39 Mnemonic Features
 
-### BIP-32 Key Derivation
+Mnemonic phrase generation, validation, and seed derivation
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `hd_key_derivation` | ✓ | ✅ | `derivePath` | BIP-32 hierarchical deterministic key derivation |
-| `ed25519_curve` | ✓ | ✅ | `newMasterNode` | Support Ed25519 curve for Stellar keys |
-| `master_key_generation` | ✓ | ✅ | `newMasterNode` | Generate master key from seed |
-| `child_key_derivation` | ✓ | ✅ | `derive` | Derive child keys from parent keys |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `generate12WordsMnemonic` | ✅ Supported | `Mnemonic.generate12WordsMnemonic()` |
+| `generate15WordsMnemonic` | ✅ Supported | `Mnemonic.generate15WordsMnemonic()` |
+| `generate24WordsMnemonic` | ✅ Supported | `Mnemonic.generate24WordsMnemonic()` |
+| `mnemonicFromWords` | ✅ Supported | `Mnemonic.mnemonicFromWords()` |
+| `generateSeed` | ✅ Supported | `Mnemonic.generateSeed()` |
+| `passphrase_support` | ✅ Supported | `Mnemonic.generateSeed($passphrase)` |
 
-### BIP-39 Mnemonic Features
+## BIP-32 Key Derivation
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `mnemonic_generation_12_words` | ✓ | ✅ | `generate12WordsMnemonic` | Generate 12-word BIP-39 mnemonic phrase |
-| `mnemonic_generation_24_words` | ✓ | ✅ | `generate24WordsMnemonic` | Generate 24-word BIP-39 mnemonic phrase |
-| `mnemonic_validation` | ✓ | ✅ | `reverse` | Validate BIP-39 mnemonic phrase (word list and checksum) |
-| `mnemonic_to_seed` | ✓ | ✅ | `generateSeed` | Convert BIP-39 mnemonic to seed using PBKDF2 |
-| `passphrase_support` |  | ✅ | `generateSeed` | Support optional BIP-39 passphrase (25th word) |
+Hierarchical Deterministic key derivation using Ed25519
 
-### BIP-44 Multi-Account Support
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `master_key_generation` | ✅ Supported | `HDNode.newMasterNode()` |
+| `child_key_derivation` | ✅ Supported | `HDNode.derive()` |
+| `path_derivation` | ✅ Supported | `HDNode.derivePath()` |
+| `stellar_derivation_path` | ✅ Supported | `Mnemonic.m44148keyHex()` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `stellar_derivation_path` | ✓ | ✅ | `m44148keyHex` | Support Stellar's BIP-44 derivation path: m/44'/148'/account' |
-| `multiple_accounts` | ✓ | ✅ | `derive` | Derive multiple Stellar accounts from single seed |
-| `account_index_support` | ✓ | ✅ | `derive` | Support account index parameter in derivation |
+## Language Support
 
-### Key Derivation Methods
+BIP-39 word list languages
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `keypair_from_mnemonic` | ✓ | ✅ | `generateSeed` | Generate Stellar KeyPair from mnemonic |
-| `account_id_from_mnemonic` | ✓ | ✅ | `m44148keyHex` | Get Stellar account ID from mnemonic |
-| `seed_from_mnemonic` | ✓ | ✅ | `generateSeed` | Convert mnemonic to raw seed bytes |
-
-### Language Support
-
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `english` | ✓ | ✅ | `english.txt` | English BIP-39 word list (2048 words) |
-| `chinese_simplified` |  | ✅ | `chinese_simplified.txt` | Chinese Simplified BIP-39 word list |
-| `chinese_traditional` |  | ✅ | `chinese_traditional.txt` | Chinese Traditional BIP-39 word list |
-| `french` |  | ✅ | `french.txt` | French BIP-39 word list |
-| `italian` |  | ✅ | `italian.txt` | Italian BIP-39 word list |
-| `japanese` |  | ✅ | `japanese.txt` | Japanese BIP-39 word list |
-| `korean` |  | ✅ | `korean.txt` | Korean BIP-39 word list |
-| `spanish` |  | ✅ | `spanish.txt` | Spanish BIP-39 word list |
-
-## Implementation Gaps
-
-🎉 **No gaps found!** All fields are implemented.
-
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-0005!
-
-## Legend
-
-- ✅ **Implemented**: Field is implemented in SDK
-- ❌ **Not Implemented**: Field is missing from SDK
-- ✓ **Required**: Field is required by SEP specification
-- (blank) **Optional**: Field is optional
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `english` | ✅ Supported | `english.txt` |
+| `chinese_simplified` | ✅ Supported | `chinese_simplified.txt` |
+| `chinese_traditional` | ✅ Supported | `chinese_traditional.txt` |
+| `french` | ✅ Supported | `french.txt` |
+| `italian` | ✅ Supported | `italian.txt` |
+| `japanese` | ✅ Supported | `japanese.txt` |
+| `korean` | ✅ Supported | `korean.txt` |
+| `spanish` | ✅ Supported | `spanish.txt` |
+| `malay` | ✅ Supported | `malay.txt` |

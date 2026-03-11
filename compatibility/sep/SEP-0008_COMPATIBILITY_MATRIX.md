@@ -1,175 +1,110 @@
-# SEP-0008 (Regulated Assets) Compatibility Matrix
+# SEP-08: Regulated Assets
 
-**Generated:** 2026-02-21 18:22:00
-
-**SEP Version:** 1.7.4
-
-**SEP Status:** Active
-
-**SDK Version:** 1.9.4
-
-**SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md
-
-## SEP Summary
-
-Regulated Assets are assets that require an issuer’s approval (or a delegated
-third party’s approval, such as a licensed securities exchange) on a
-per-transaction basis. It standardizes the identification of such assets as
-well as defines the protocol for performing compliance checks and requesting
-issuer approval.
+**Status:** ✅ Supported  
+**SDK Version:** 1.9.5  
+**Generated:** 2026-03-11 21:41 UTC  
+**Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
 
 ## Overall Coverage
 
-**Total Coverage:** 100% (31/31 features)
+**Total Coverage:** 100.0% (20/20 fields)
 
-- ✅ **Implemented:** 31/31
-- ❌ **Not Implemented:** 0/31
-
-**Required Fields:** 100% (26/26)
-
-**Optional Fields:** 100% (5/5)
-
-## Implementation Status
-
-✅ **Implemented**
-
-### Implementation Files
-
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostActionDone.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostTransactionRevised.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08IncompleteInitData.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostTransactionActionRequired.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostTransactionRejected.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostActionNextUrl.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/RegulatedAssetsService.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostTransactionResponse.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/RegulatedAsset.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostActionResponse.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostTransactionSuccess.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08InvalidPostActionResponse.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08InvalidPostTransactionResponse.php`
-- `Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostTransactionPending.php`
-
-### Key Classes
-
-- **`SEP08PostActionDone`**
-- **`SEP08PostTransactionRevised`**
-- **`SEP08IncompleteInitData`**
-- **`SEP08PostTransactionActionRequired`**
-- **`SEP08PostTransactionRejected`**
-- **`SEP08PostActionNextUrl`**
-- **`RegulatedAssetsService`**
-- **`SEP08PostTransactionResponse`**
-- **`RegulatedAsset`**
-- **`SEP08PostActionResponse`**
-- **`SEP08PostTransactionSuccess`**
-- **`SEP08InvalidPostActionResponse`**
-- **`SEP08InvalidPostTransactionResponse`**
-- **`SEP08PostTransactionPending`**
+- ✅ **Implemented:** 20/20
+- ❌ **Not Implemented:** 0/20
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Approval Endpoint | 100% | 100% | 7 | 7 |
-| Stellar TOML Fields | 100% | 100% | 2 | 2 |
-| Success Response Fields | 100% | 100% | 3 | 3 |
-| Revised Response Fields | 100% | 100% | 3 | 3 |
-| Pending Response Fields | 100% | 100% | 3 | 3 |
-| Action Required Response Fields | 100% | 100% | 5 | 5 |
-| Rejected Response Fields | 100% | 100% | 2 | 2 |
-| Action URL Handling | 100% | 100% | 4 | 4 |
-| Authorization Flags | 100% | 100% | 2 | 2 |
+| Section | Coverage | Implemented | Total |
+|---------|----------|-------------|-------|
+| Service Methods | 100.0% | 4 | 4 |
+| Regulated Asset Fields | 100.0% | 2 | 2 |
+| Success Response Fields | 100.0% | 2 | 2 |
+| Revised Response Fields | 100.0% | 2 | 2 |
+| Pending Response Fields | 100.0% | 2 | 2 |
+| Action Required Response Fields | 100.0% | 4 | 4 |
+| Rejected Response Fields | 100.0% | 1 | 1 |
+| Action Done Response | 100.0% | 1 | 1 |
+| Action Next URL Response Fields | 100.0% | 2 | 2 |
 
-## Detailed Field Comparison
+## Service Methods
 
-### Approval Endpoint
+RegulatedAssetsService core methods
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `POST /tx_approve endpoint` | ✓ | ✅ | `RegulatedAssetsService::postTransaction()` | Accepts signed transaction for compliance checking and signing |
-| `tx parameter` | ✓ | ✅ | `postTransaction($tx)` | Base64 encoded transaction envelope XDR signed by the user |
-| `success status` | ✓ | ✅ | `SEP08PostTransactionSuccess` | Transaction is compliant and signed without revision |
-| `revised status` | ✓ | ✅ | `SEP08PostTransactionRevised` | Transaction was revised to be made compliant |
-| `pending status` | ✓ | ✅ | `SEP08PostTransactionPending` | Issuer could not determine approval status at this time |
-| `action_required status` | ✓ | ✅ | `SEP08PostTransactionActionRequired` | User must complete an action before transaction can be approved |
-| `rejected status` | ✓ | ✅ | `SEP08PostTransactionRejected` | Transaction is not compliant and could not be revised |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `postTransaction` | ✅ Supported | `RegulatedAssetsService.postTransaction()` |
+| `postAction` | ✅ Supported | `RegulatedAssetsService.postAction()` |
+| `authorizationRequired` | ✅ Supported | `RegulatedAssetsService.authorizationRequired()` |
+| `fromDomain` | ✅ Supported | `RegulatedAssetsService::fromDomain()` |
 
-### Stellar TOML Fields
+## Regulated Asset Fields
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `approval_server` | ✓ | ✅ | `RegulatedAsset::$approvalServer` | URL of the approval service that signs validated transactions |
-| `approval_criteria` |  | ✅ | `RegulatedAsset::$approvalCriteria` | Human readable string explaining issuer requirements for approving transactions |
+RegulatedAsset class properties
 
-### Success Response Fields
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `approval_server` | ✅ Supported | `Required. RegulatedAsset.$approvalServer` |
+| `approval_criteria` | ✅ Supported | `RegulatedAsset.$approvalCriteria` |
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `status` | ✓ | ✅ | - | Must be "success" |
-| `tx` | ✓ | ✅ | - | Transaction envelope XDR with issuer signature(s) added |
-| `message` |  | ✅ | - | Human readable information to pass to user |
+## Success Response Fields
 
-### Revised Response Fields
+POST /tx_approve → status=success
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `status` | ✓ | ✅ | - | Must be "revised" |
-| `tx` | ✓ | ✅ | - | Revised compliant transaction envelope XDR signed by issuer |
-| `message` | ✓ | ✅ | - | Explanation of modifications made to transaction |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `tx` | ✅ Supported | `Required. SEP08PostTransactionSuccess.$tx` |
+| `message` | ✅ Supported | `SEP08PostTransactionSuccess.$message` |
 
-### Pending Response Fields
+## Revised Response Fields
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `status` | ✓ | ✅ | - | Must be "pending" |
-| `timeout` | ✓ | ✅ | - | Milliseconds to wait before resubmitting (0 if unknown) |
-| `message` |  | ✅ | - | Human readable information to pass to user |
+POST /tx_approve → status=revised
 
-### Action Required Response Fields
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `tx` | ✅ Supported | `Required. SEP08PostTransactionRevised.$tx` |
+| `message` | ✅ Supported | `Required. SEP08PostTransactionRevised.$message` |
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `status` | ✓ | ✅ | - | Must be "action_required" |
-| `message` | ✓ | ✅ | - | Information about the required action |
-| `action_url` | ✓ | ✅ | - | URL where user can complete required actions |
-| `action_method` |  | ✅ | - | GET or POST indicating request type (defaults to GET) |
-| `action_fields` |  | ✅ | - | Array of SEP-9 fields client may provide to action_url |
+## Pending Response Fields
 
-### Rejected Response Fields
+POST /tx_approve → status=pending
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `status` | ✓ | ✅ | - | Must be "rejected" |
-| `error` | ✓ | ✅ | - | Explanation why transaction is not compliant |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `timeout` | ✅ Supported | `Required. SEP08PostTransactionPending.$timeout` |
+| `message` | ✅ Supported | `SEP08PostTransactionPending.$message` |
 
-### Action URL Handling
+## Action Required Response Fields
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `GET method support` | ✓ | ✅ | - | Support for GET requests to action URL |
-| `POST method support` | ✓ | ✅ | - | Support for POST requests to action URL with action fields |
-| `no_further_action response` | ✓ | ✅ | - | Action completed, transaction can be resubmitted |
-| `follow_next_url response` | ✓ | ✅ | - | Additional action required at provided next URL |
+POST /tx_approve → status=action_required
 
-### Authorization Flags
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `message` | ✅ Supported | `Required. SEP08PostTransactionActionRequired.$message` |
+| `action_url` | ✅ Supported | `Required. SEP08PostTransactionActionRequired.$actionUrl` |
+| `action_method` | ✅ Supported | `SEP08PostTransactionActionRequired.$actionMethod` |
+| `action_fields` | ✅ Supported | `SEP08PostTransactionActionRequired.$actionFields` |
 
-| Field | Required | Status | SDK Implementation | Description |
-|-------|----------|--------|--------------------|-------------|
-| `authorization_required` | ✓ | ✅ | `RegulatedAssetsService::authorizationRequired()` | Flag indicating issuer must authorize each trustline |
-| `authorization_revocable` | ✓ | ✅ | `RegulatedAssetsService::authorizationRequired()` | Flag indicating issuer can revoke trustline authorization |
+## Rejected Response Fields
 
-## Implementation Gaps
+POST /tx_approve → status=rejected
 
-None - Full implementation achieved!
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `error` | ✅ Supported | `Required. SEP08PostTransactionRejected.$error` |
 
-## Recommendations
+## Action Done Response
 
-✅ The SDK has full compatibility with SEP-0008!
+POST action_url → result=no_further_action_required
 
-## Legend
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `SEP08PostActionDone` | ✅ Supported | `SEP08PostActionDone` |
 
-- ✅ **Implemented**: Field is implemented in SDK
-- ❌ **Not Implemented**: Field is missing from SDK
-- ✓ **Required**: Field is required by SEP specification
-- (blank) **Optional**: Field is optional
+## Action Next URL Response Fields
+
+POST action_url → result=follow_next_url
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `next_url` | ✅ Supported | `Required. SEP08PostActionNextUrl.$nextUrl` |
+| `message` | ✅ Supported | `SEP08PostActionNextUrl.$message` |

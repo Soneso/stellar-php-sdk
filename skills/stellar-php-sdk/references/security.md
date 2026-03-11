@@ -701,7 +701,7 @@ if (!verifyWebhookSignature($body, $signature, $signerAccountId)) {
 - [ ] Stack traces logged to files only, not displayed to users
 - [ ] JWT tokens stored in encrypted sessions, not plain cookies
 - [ ] CSRF protection on all payment forms
-- [ ] HTTPS enforced for all Stellar API communication
+- [ ] HTTPS enforced for all Stellar API communication (SDK enforces this automatically)
 - [ ] Rate limiting applied to payment submission endpoints
 - [ ] Webhook signatures verified before processing callbacks
 - [ ] `display_errors` disabled in production PHP configuration

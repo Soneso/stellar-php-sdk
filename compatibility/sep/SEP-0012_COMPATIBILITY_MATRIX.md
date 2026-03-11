@@ -1,183 +1,158 @@
-# SEP-0012 (KYC API) Compatibility Matrix
+# SEP-12: KYC API
 
-**Generated:** 2026-02-21 18:22:01
-
-**SEP Version:** 1.15.0
-
-**SEP Status:** Active
-
-**SDK Version:** 1.9.4
-
-**SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md
-
-## SEP Summary
-
-This SEP defines a standard way for stellar clients to upload KYC (or other)
-information to anchors and other services. [SEP-6](sep-0006.md) and
-[SEP-31](sep-0031.md) use this protocol, but it can serve as a stand-alone
-service as well.
-
-This SEP was made with these goals in mind:
-
-- interoperability
-- Allow a customer to enter their KYC information to their wallet once and use
-  it across many services without re-entering information manually
-- handle the most common 80% of use cases
-- handle image and binary data
-- support the set of fields defined in [SEP-9](sep-0009.md)
-- support authentication via [SEP-10](sep-0010.md)
-- support the provision of data for [SEP-6](sep-0006.md),
-  [SEP-24](sep-0024.md), [SEP-31](sep-0031.md), and others
-- give customers control over their data by supporting complete data erasure
-
-To support this protocol an anchor acts as a server and implements the
-specified REST API endpoints, while a wallet implements a client that consumes
-the API. The goal is interoperability, so a wallet implements a single client
-according to the protocol, and will be able to interact with any compliant
-anchor. Similarly, an anchor that implements the API endpoints according to the
-protocol will work with any compliant wallet.
+**Status:** ✅ Supported  
+**SDK Version:** 1.9.5  
+**Generated:** 2026-03-11 21:41 UTC  
+**Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
 
 ## Overall Coverage
 
-**Total Coverage:** 100% (28/28 fields)
+**Total Coverage:** 100.0% (52/52 fields)
 
-- ✅ **Implemented:** 28/28
-- ❌ **Not Implemented:** 0/28
-
-**Required Fields:** 100% (13/13)
-
-**Optional Fields:** 100% (15/15)
-
-## Implementation Status
-
-✅ **Implemented**
-
-### Implementation Files
-
-- `Soneso/StellarSDK/SEP/KYCService/PutCustomerInfoResponse.php`
-- `Soneso/StellarSDK/SEP/KYCService/PutCustomerVerificationRequest.php`
-- `Soneso/StellarSDK/SEP/KYCService/PutCustomerVerificationRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/KYCService/GetCustomerFilesResponse.php`
-- `Soneso/StellarSDK/SEP/KYCService/GetCustomerInfoRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/KYCService/GetCustomerFilesRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/KYCService/KYCService.php`
-- `Soneso/StellarSDK/SEP/KYCService/GetCustomerInfoRequest.php`
-- `Soneso/StellarSDK/SEP/KYCService/PostCustomerFileRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/KYCService/PutCustomerInfoRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/KYCService/PutCustomerCallbackRequest.php`
-- `Soneso/StellarSDK/SEP/KYCService/GetCustomerInfoResponse.php`
-- `Soneso/StellarSDK/SEP/KYCService/PutCustomerInfoRequest.php`
-- `Soneso/StellarSDK/SEP/KYCService/GetCustomerInfoProvidedField.php`
-- `Soneso/StellarSDK/SEP/KYCService/CustomerFileResponse.php`
-- `Soneso/StellarSDK/SEP/KYCService/GetCustomerInfoField.php`
-
-### Key Classes
-
-- **`PutCustomerInfoResponse`**
-- **`PutCustomerVerificationRequest`**
-- **`PutCustomerVerificationRequestBuilder`**
-- **`GetCustomerFilesResponse`**
-- **`GetCustomerInfoRequestBuilder`**
-- **`GetCustomerFilesRequestBuilder`**
-- **`KYCService`**
-- **`GetCustomerInfoRequest`**
-- **`PostCustomerFileRequestBuilder`**
-- **`PutCustomerInfoRequestBuilder`**
-- **`PutCustomerCallbackRequest`**
-- **`GetCustomerInfoResponse`**
-- **`PutCustomerInfoRequest`**
-- **`GetCustomerInfoProvidedField`**
-- **`CustomerFileResponse`**
-- **`GetCustomerInfoField`**
+- ✅ **Implemented:** 52/52
+- ❌ **Not Implemented:** 0/52
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| API Endpoints | 100% | 100% | 7 | 7 |
-| Request Parameters | 100% | 0% | 7 | 7 |
-| Response Fields | 100% | 100% | 5 | 5 |
-| Field Type Specifications | 100% | 100% | 6 | 6 |
-| Authentication | 100% | 100% | 1 | 1 |
-| File Upload | 100% | 100% | 1 | 1 |
-| SEP-9 Integration | 100% | 100% | 1 | 1 |
+| Section | Coverage | Implemented | Total |
+|---------|----------|-------------|-------|
+| Service Endpoints | 100.0% | 7 | 7 |
+| GET /customer Request Parameters | 100.0% | 7 | 7 |
+| GET /customer Response Fields | 100.0% | 5 | 5 |
+| Field Object Fields | 100.0% | 4 | 4 |
+| Provided Field Object Fields | 100.0% | 6 | 6 |
+| PUT /customer Request Parameters | 100.0% | 9 | 9 |
+| PUT /customer Response Fields | 100.0% | 1 | 1 |
+| PUT /customer/callback Request Parameters | 100.0% | 5 | 5 |
+| PUT /customer/verification Request Parameters | 100.0% | 2 | 2 |
+| POST /customer/files Response Fields | 100.0% | 5 | 5 |
+| GET /customer/files Response Fields | 100.0% | 1 | 1 |
 
-## Detailed Field Comparison
+## Service Endpoints
 
-### API Endpoints
+KYCService API methods
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `get_customer` | ✓ | ✅ | `getCustomerInfo` | GET /customer - Check the status of a customers info |
-| `put_customer` | ✓ | ✅ | `putCustomerInfo` | PUT /customer - Upload customer information to an anchor |
-| `put_customer_verification` | ✓ | ✅ | `putCustomerVerification` | PUT /customer/verification - Verify customer fields with confirmation codes |
-| `delete_customer` | ✓ | ✅ | `deleteCustomer` | DELETE /customer/{account} - Delete all personal information about a customer |
-| `put_customer_callback` | ✓ | ✅ | `putCustomerCallback` | PUT /customer/callback - Register a callback URL for customer status updates |
-| `post_customer_files` | ✓ | ✅ | `postCustomerFile` | POST /customer/files - Upload binary files for customer KYC |
-| `get_customer_files` | ✓ | ✅ | `getCustomerFiles` | GET /customer/files - Get metadata about uploaded files |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `GET /customer` | ✅ Supported | `KYCService.getCustomerInfo()` |
+| `PUT /customer` | ✅ Supported | `KYCService.putCustomerInfo()` |
+| `PUT /customer/callback` | ✅ Supported | `KYCService.putCustomerCallback()` |
+| `PUT /customer/verification` | ✅ Supported | `KYCService.putCustomerVerification()` |
+| `DELETE /customer/:account` | ✅ Supported | `KYCService.deleteCustomer()` |
+| `POST /customer/files` | ✅ Supported | `KYCService.postCustomerFile()` |
+| `GET /customer/files` | ✅ Supported | `KYCService.getCustomerFiles()` |
 
-### Request Parameters
+## GET /customer Request Parameters
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `id` |  | ✅ | - | ID of the customer as returned in previous PUT request |
-| `account` |  | ✅ | - | Stellar account ID (G...) of the customer |
-| `memo` |  | ✅ | - | Memo that uniquely identifies a customer in shared accounts |
-| `memo_type` |  | ✅ | - | Type of memo: text, id, or hash |
-| `type` |  | ✅ | - | Type of action the customer is being KYCd for |
-| `transaction_id` |  | ✅ | - | Transaction ID with which customer info is associated |
-| `lang` |  | ✅ | - | Language code (ISO 639-1) for human-readable responses |
+Parameters for GET /customer
 
-### Response Fields
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `GetCustomerInfoRequest.$id` |
+| `account` | ✅ Supported | `GetCustomerInfoRequest.$account` |
+| `memo` | ✅ Supported | `GetCustomerInfoRequest.$memo` |
+| `memo_type` | ✅ Supported | `GetCustomerInfoRequest.$memoType` |
+| `type` | ✅ Supported | `GetCustomerInfoRequest.$type` |
+| `transaction_id` | ✅ Supported | `GetCustomerInfoRequest.$transactionId` |
+| `lang` | ✅ Supported | `GetCustomerInfoRequest.$lang` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `id` |  | ✅ | - | ID of the customer |
-| `status` | ✓ | ✅ | - | Status of customer KYC process |
-| `fields` |  | ✅ | - | Fields the anchor has not yet received |
-| `provided_fields` |  | ✅ | - | Fields the anchor has received |
-| `message` |  | ✅ | - | Human readable message describing KYC status |
+## GET /customer Response Fields
 
-### Field Type Specifications
+Fields returned by GET /customer
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `type` | ✓ | ✅ | - | Data type of field value |
-| `description` |  | ✅ | - | Human-readable description of the field |
-| `choices` |  | ✅ | - | Array of valid values for this field |
-| `optional` |  | ✅ | - | Whether this field is required to proceed |
-| `status` | ✓ | ✅ | - | Status of provided field |
-| `error` |  | ✅ | - | Description of why field was rejected |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `GetCustomerInfoResponse.$id` |
+| `status` | ✅ Supported | `Required. GetCustomerInfoResponse.$status` |
+| `fields` | ✅ Supported | `GetCustomerInfoResponse.$fields` |
+| `provided_fields` | ✅ Supported | `GetCustomerInfoResponse.$providedFields` |
+| `message` | ✅ Supported | `GetCustomerInfoResponse.$message` |
 
-### Authentication
+## Field Object Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `jwt_authentication` | ✓ | ✅ | `JWT Token` | All endpoints require SEP-10 JWT authentication via Authorization header |
+Properties of each required field entry
 
-### File Upload
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `type` | ✅ Supported | `Required. GetCustomerInfoField.$type` |
+| `description` | ✅ Supported | `GetCustomerInfoField.$description` |
+| `choices` | ✅ Supported | `GetCustomerInfoField.$choices` |
+| `optional` | ✅ Supported | `GetCustomerInfoField.$optional` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `multipart_file_upload` | ✓ | ✅ | `multipart/form-data` | Binary files uploaded using multipart/form-data for photo_id, proof_of_address, etc. |
+## Provided Field Object Fields
 
-### SEP-9 Integration
+Properties of each provided field entry
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `standard_kyc_fields` | ✓ | ✅ | `StandardKYCFields` | Supports all SEP-9 standard KYC fields for natural persons and organizations |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `type` | ✅ Supported | `Required. GetCustomerInfoProvidedField.$type` |
+| `description` | ✅ Supported | `GetCustomerInfoProvidedField.$description` |
+| `choices` | ✅ Supported | `GetCustomerInfoProvidedField.$choices` |
+| `optional` | ✅ Supported | `GetCustomerInfoProvidedField.$optional` |
+| `status` | ✅ Supported | `GetCustomerInfoProvidedField.$status` |
+| `error` | ✅ Supported | `GetCustomerInfoProvidedField.$error` |
 
-## Implementation Gaps
+## PUT /customer Request Parameters
 
-🎉 **No gaps found!** All fields are implemented.
+Parameters for PUT /customer
 
-## Recommendations
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `PutCustomerInfoRequest.$id` |
+| `account` | ✅ Supported | `PutCustomerInfoRequest.$account` |
+| `memo` | ✅ Supported | `PutCustomerInfoRequest.$memo` |
+| `memo_type` | ✅ Supported | `PutCustomerInfoRequest.$memoType` |
+| `type` | ✅ Supported | `PutCustomerInfoRequest.$type` |
+| `transaction_id` | ✅ Supported | `PutCustomerInfoRequest.$transactionId` |
+| `kyc_fields` | ✅ Supported | `PutCustomerInfoRequest.$KYCFields` |
+| `custom_fields` | ✅ Supported | `PutCustomerInfoRequest.$customFields` |
+| `custom_files` | ✅ Supported | `PutCustomerInfoRequest.$customFiles` |
 
-✅ The SDK has full compatibility with SEP-0012!
+## PUT /customer Response Fields
 
-## Legend
+Fields returned by PUT /customer
 
-- ✅ **Implemented**: Field is implemented in SDK
-- ❌ **Not Implemented**: Field is missing from SDK
-- ✓ **Required**: Field is required by SEP specification
-- (blank) **Optional**: Field is optional
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `PutCustomerInfoResponse.getId()` |
+
+## PUT /customer/callback Request Parameters
+
+Parameters for PUT /customer/callback
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `url` | ✅ Supported | `PutCustomerCallbackRequest.$url` |
+| `id` | ✅ Supported | `PutCustomerCallbackRequest.$id` |
+| `account` | ✅ Supported | `PutCustomerCallbackRequest.$account` |
+| `memo` | ✅ Supported | `PutCustomerCallbackRequest.$memo` |
+| `memo_type` | ✅ Supported | `PutCustomerCallbackRequest.$memoType` |
+
+## PUT /customer/verification Request Parameters
+
+Parameters for PUT /customer/verification
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `PutCustomerVerificationRequest.$id` |
+| `verification_fields` | ✅ Supported | `PutCustomerVerificationRequest.$verificationFields` |
+
+## POST /customer/files Response Fields
+
+Fields returned by POST /customer/files
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `file_id` | ✅ Supported | `Required. CustomerFileResponse.$fileId` |
+| `content_type` | ✅ Supported | `Required. CustomerFileResponse.$contentType` |
+| `size` | ✅ Supported | `Required. CustomerFileResponse.$size` |
+| `expires_at` | ✅ Supported | `CustomerFileResponse.$expiresAt` |
+| `customer_id` | ✅ Supported | `CustomerFileResponse.$customerId` |
+
+## GET /customer/files Response Fields
+
+Fields returned by GET /customer/files
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `files` | ✅ Supported | `Required. GetCustomerFilesResponse.$files` |

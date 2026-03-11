@@ -1,322 +1,206 @@
-# SEP-0006 (Deposit and Withdrawal API) Compatibility Matrix
+# SEP-06: Deposit and Withdrawal API
 
-**Generated:** 2026-02-21 18:21:59
-
-**SEP Version:** 4.3.0
-
-**SEP Status:** Active (Interactive components are deprecated in favor of SEP-24)
-
-**SDK Version:** 1.9.4
-
-**SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md
-
-## SEP Summary
-
-This SEP defines the standard way for anchors and wallets to interact on behalf
-of users. This improves user experience by allowing wallets and other clients
-to interact with anchors directly without the user needing to leave the wallet
-to go to the anchor's site.
-
-Please note that this SEP provides a normalized interface specification that
-allows wallets and other services to interact with anchors _programmatically_.
-[SEP-24](sep-0024.md) was created to support use cases where the anchor may
-want to interact with users _interactively_ using a popup opened within the
-wallet application.
+**Status:** ✅ Supported  
+**SDK Version:** 1.9.5  
+**Generated:** 2026-03-11 21:41 UTC  
+**Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 
 ## Overall Coverage
 
-**Total Coverage:** 100% (95/95 fields)
+**Total Coverage:** 100.0% (100/100 fields)
 
-- ✅ **Implemented:** 95/95
-- ❌ **Not Implemented:** 0/95
-
-**Required Fields:** 100% (23/23)
-
-**Optional Fields:** 100% (72/72)
-
-## Implementation Status
-
-✅ **Implemented**
-
-### Implementation Files
-
-- `Soneso/StellarSDK/SEP/TransferServerService/CustomerInformationStatusResponse.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/CustomerInformationNeededException.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/ExtraInfo.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorFeatureFlags.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/DepositAsset.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/FeeDetailsDetails.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransactionsInfo.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransactionsRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransaction.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/WithdrawRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AuthenticationRequiredException.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/DepositInstruction.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/InfoRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/FeeRequest.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/FeeRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/DepositExchangeRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/CustomerInformationStatusException.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/TransferServerService.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransactionRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/WithdrawResponse.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/WithdrawExchangeRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransactionInfo.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/TransactionRefundPayment.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/DepositRequestBuilder.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/InfoResponse.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransactionsResponse.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/WithdrawExchangeAsset.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/CustomerInformationNeededResponse.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransactionsRequest.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/TransactionRefunds.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransactionResponse.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/WithdrawRequest.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorFeeInfo.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/WithdrawExchangeRequest.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorTransactionRequest.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/DepositExchangeRequest.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/DepositExchangeAsset.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/FeeResponse.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/AnchorField.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/FeeDetails.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/WithdrawAsset.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/DepositRequest.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/PatchTransactionRequest.php`
-- `Soneso/StellarSDK/SEP/TransferServerService/DepositResponse.php`
-
-### Key Classes
-
-- **`CustomerInformationStatusResponse`**
-- **`CustomerInformationNeededException`**
-- **`ExtraInfo`**
-- **`AnchorFeatureFlags`**
-- **`DepositAsset`**
-- **`FeeDetailsDetails`**
-- **`AnchorTransactionsInfo`**
-- **`AnchorTransactionsRequestBuilder`**
-- **`AnchorTransaction`**
-- **`WithdrawRequestBuilder`**
-- **`AuthenticationRequiredException`**
-- **`DepositInstruction`**
-- **`InfoRequestBuilder`**
-- **`FeeRequest`**
-- **`FeeRequestBuilder`**
-- **`DepositExchangeRequestBuilder`**
-- **`CustomerInformationStatusException`**
-- **`TransferServerService`**
-- **`AnchorTransactionRequestBuilder`**
-- **`WithdrawResponse`**
-- **`WithdrawExchangeRequestBuilder`**
-- **`AnchorTransactionInfo`**
-- **`TransactionRefundPayment`**
-- **`DepositRequestBuilder`**
-- **`InfoResponse`**
-- **`AnchorTransactionsResponse`**
-- **`WithdrawExchangeAsset`**
-- **`CustomerInformationNeededResponse`**
-- **`AnchorTransactionsRequest`**
-- **`TransactionRefunds`**
-- **`AnchorTransactionResponse`**
-- **`WithdrawRequest`**
-- **`AnchorFeeInfo`**
-- **`WithdrawExchangeRequest`**
-- **`AnchorTransactionRequest`**
-- **`DepositExchangeRequest`**
-- **`DepositExchangeAsset`**
-- **`FeeResponse`**
-- **`AnchorField`**
-- **`FeeDetails`**
-- **`WithdrawAsset`**
-- **`DepositRequest`**
-- **`PatchTransactionRequest`**
-- **`DepositResponse`**
+- ✅ **Implemented:** 100/100
+- ❌ **Not Implemented:** 0/100
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Deposit Endpoints | 100% | 100% | 2 | 2 |
-| Deposit Request Parameters | 100% | 100% | 15 | 15 |
-| Deposit Response Fields | 100% | 100% | 8 | 8 |
-| Withdraw Endpoints | 100% | 100% | 2 | 2 |
-| Withdraw Request Parameters | 100% | 100% | 17 | 17 |
-| Withdraw Response Fields | 100% | 100% | 10 | 10 |
-| Info Endpoint | 100% | 100% | 1 | 1 |
-| Info Response Fields | 100% | 100% | 8 | 8 |
-| Transaction Endpoints | 100% | 100% | 3 | 3 |
-| Transaction Fields | 100% | 100% | 16 | 16 |
-| Transaction Status Values | 100% | 100% | 12 | 12 |
-| Fee Endpoint | 100% | 0% | 1 | 1 |
+| Section | Coverage | Implemented | Total |
+|---------|----------|-------------|-------|
+| Deposit Endpoints | 100.0% | 2 | 2 |
+| Deposit Request Parameters | 100.0% | 15 | 15 |
+| Deposit Response Fields | 100.0% | 8 | 8 |
+| Withdraw Endpoints | 100.0% | 2 | 2 |
+| Withdraw Request Parameters | 100.0% | 17 | 17 |
+| Withdraw Response Fields | 100.0% | 10 | 10 |
+| Info Endpoint | 100.0% | 1 | 1 |
+| Info Response Fields | 100.0% | 8 | 8 |
+| Fee Endpoint | 100.0% | 1 | 1 |
+| Transaction Endpoints | 100.0% | 3 | 3 |
+| Transaction Fields | 100.0% | 33 | 33 |
 
-## Detailed Field Comparison
+## Deposit Endpoints
 
-### Deposit Endpoints
+Deposit API endpoints
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `deposit` | ✓ | ✅ | `deposit` | Initiates a deposit transaction for on-chain assets |
-| `deposit_exchange` |  | ✅ | `depositExchange` | Initiates a deposit with asset exchange (SEP-38 integration) |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `deposit` | ✅ Supported | `TransferServerService.deposit()` |
+| `deposit_exchange` | ✅ Supported | `TransferServerService.depositExchange()` |
 
-### Deposit Request Parameters
+## Deposit Request Parameters
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `asset_code` | ✓ | ✅ | - | Code of the on-chain asset the user wants to receive |
-| `account` | ✓ | ✅ | - | Stellar account ID of the user |
-| `memo` |  | ✅ | - | Value of memo to attach to transaction |
-| `memo_type` |  | ✅ | - | Type of memo to attach to transaction (text, id, or hash) |
-| `email_address` |  | ✅ | - | Email address of the user (for notifications) |
-| `type` |  | ✅ | - | Type of deposit method (e.g., bank_account, cash, mobile_money) |
-| `wallet_name` |  | ✅ | - | Name of the wallet the user is using |
-| `wallet_url` |  | ✅ | - | URL of the wallet the user is using |
-| `lang` |  | ✅ | - | Language code for response messages (ISO 639-1) |
-| `on_change_callback` |  | ✅ | - | URL for anchor to send callback when transaction status changes |
-| `amount` |  | ✅ | - | Amount of on-chain asset the user wants to receive |
-| `country_code` |  | ✅ | - | Country code of the user (ISO 3166-1 alpha-3) |
-| `claimable_balance_supported` |  | ✅ | - | Whether the client supports receiving claimable balances |
-| `customer_id` |  | ✅ | - | ID of the customer from SEP-12 KYC process |
-| `location_id` |  | ✅ | - | ID of the physical location for cash pickup |
+Parameters for GET /deposit
 
-### Deposit Response Fields
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `asset_code` | ✅ Supported | `Required. DepositRequest.$assetCode` |
+| `account` | ✅ Supported | `Required. DepositRequest.$account` |
+| `memo_type` | ✅ Supported | `DepositRequest.$memoType` |
+| `memo` | ✅ Supported | `DepositRequest.$memo` |
+| `email_address` | ✅ Supported | `DepositRequest.$emailAddress` |
+| `type` | ✅ Supported | `DepositRequest.$type` |
+| `wallet_name` | ✅ Supported | `DepositRequest.$walletName` |
+| `wallet_url` | ✅ Supported | `DepositRequest.$walletUrl` |
+| `lang` | ✅ Supported | `DepositRequest.$lang` |
+| `on_change_callback` | ✅ Supported | `DepositRequest.$onChangeCallback` |
+| `amount` | ✅ Supported | `DepositRequest.$amount` |
+| `country_code` | ✅ Supported | `DepositRequest.$countryCode` |
+| `claimable_balance_supported` | ✅ Supported | `DepositRequest.$claimableBalanceSupported` |
+| `customer_id` | ✅ Supported | `DepositRequest.$customerId` |
+| `location_id` | ✅ Supported | `DepositRequest.$locationId` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `how` | ✓ | ✅ | - | Instructions for how to deposit the asset |
-| `id` |  | ✅ | - | Persistent transaction identifier |
-| `eta` |  | ✅ | - | Estimated seconds until deposit completes |
-| `min_amount` |  | ✅ | - | Minimum deposit amount |
-| `max_amount` |  | ✅ | - | Maximum deposit amount |
-| `fee_fixed` |  | ✅ | - | Fixed fee for deposit |
-| `fee_percent` |  | ✅ | - | Percentage fee for deposit |
-| `extra_info` |  | ✅ | - | Additional information about the deposit |
+## Deposit Response Fields
 
-### Withdraw Endpoints
+Fields returned by GET /deposit
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `withdraw` | ✓ | ✅ | `withdraw` | Initiates a withdrawal transaction for off-chain assets |
-| `withdraw_exchange` |  | ✅ | `withdrawExchange` | Initiates a withdrawal with asset exchange (SEP-38 integration) |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `how` | ✅ Supported | `Required. DepositResponse.$how` |
+| `id` | ✅ Supported | `DepositResponse.$id` |
+| `eta` | ✅ Supported | `DepositResponse.$eta` |
+| `min_amount` | ✅ Supported | `DepositResponse.$minAmount` |
+| `max_amount` | ✅ Supported | `DepositResponse.$maxAmount` |
+| `fee_fixed` | ✅ Supported | `DepositResponse.$feeFixed` |
+| `fee_percent` | ✅ Supported | `DepositResponse.$feePercent` |
+| `extra_info` | ✅ Supported | `DepositResponse.$extraInfo` |
 
-### Withdraw Request Parameters
+## Withdraw Endpoints
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `asset_code` | ✓ | ✅ | - | Code of the on-chain asset the user wants to send |
-| `type` | ✓ | ✅ | - | Type of withdrawal method (e.g., bank_account, cash, mobile_money) |
-| `dest` |  | ✅ | - | Destination for withdrawal (bank account number, etc.) |
-| `dest_extra` |  | ✅ | - | Extra information for destination (routing number, etc.) |
-| `account` |  | ✅ | - | Stellar account ID of the user |
-| `memo` |  | ✅ | - | Memo to identify the user if account is shared |
-| `memo_type` |  | ✅ | - | Type of memo (text, id, or hash) |
-| `wallet_name` |  | ✅ | - | Name of the wallet the user is using |
-| `wallet_url` |  | ✅ | - | URL of the wallet the user is using |
-| `lang` |  | ✅ | - | Language code for response messages (ISO 639-1) |
-| `on_change_callback` |  | ✅ | - | URL for anchor to send callback when transaction status changes |
-| `amount` |  | ✅ | - | Amount of on-chain asset the user wants to send |
-| `country_code` |  | ✅ | - | Country code of the user (ISO 3166-1 alpha-3) |
-| `refund_memo` |  | ✅ | - | Memo to use for refund transaction if withdrawal fails |
-| `refund_memo_type` |  | ✅ | - | Type of refund memo (text, id, or hash) |
-| `customer_id` |  | ✅ | - | ID of the customer from SEP-12 KYC process |
-| `location_id` |  | ✅ | - | ID of the physical location for cash pickup |
+Withdrawal API endpoints
 
-### Withdraw Response Fields
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `withdraw` | ✅ Supported | `TransferServerService.withdraw()` |
+| `withdraw_exchange` | ✅ Supported | `TransferServerService.withdrawExchange()` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `account_id` | ✓ | ✅ | - | Stellar account to send withdrawn assets to |
-| `memo_type` | ✓ | ✅ | - | Type of memo to attach to transaction |
-| `memo` |  | ✅ | - | Value of memo to attach to transaction |
-| `id` | ✓ | ✅ | - | Persistent transaction identifier |
-| `eta` |  | ✅ | - | Estimated seconds until withdrawal completes |
-| `min_amount` |  | ✅ | - | Minimum withdrawal amount |
-| `max_amount` |  | ✅ | - | Maximum withdrawal amount |
-| `fee_fixed` |  | ✅ | - | Fixed fee for withdrawal |
-| `fee_percent` |  | ✅ | - | Percentage fee for withdrawal |
-| `extra_info` |  | ✅ | - | Additional information about the withdrawal |
+## Withdraw Request Parameters
 
-### Info Endpoint
+Parameters for GET /withdraw
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `info_endpoint` | ✓ | ✅ | `info` | Provides anchor capabilities and asset information |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `asset_code` | ✅ Supported | `Required. WithdrawRequest.$assetCode` |
+| `type` | ✅ Supported | `Required. WithdrawRequest.$type` |
+| `dest` | ✅ Supported | `WithdrawRequest.$dest` |
+| `dest_extra` | ✅ Supported | `WithdrawRequest.$destExtra` |
+| `account` | ✅ Supported | `WithdrawRequest.$account` |
+| `memo` | ✅ Supported | `WithdrawRequest.$memo` |
+| `memo_type` | ✅ Supported | `WithdrawRequest.$memoType` |
+| `wallet_name` | ✅ Supported | `WithdrawRequest.$walletName` |
+| `wallet_url` | ✅ Supported | `WithdrawRequest.$walletUrl` |
+| `lang` | ✅ Supported | `WithdrawRequest.$lang` |
+| `on_change_callback` | ✅ Supported | `WithdrawRequest.$onChangeCallback` |
+| `amount` | ✅ Supported | `WithdrawRequest.$amount` |
+| `country_code` | ✅ Supported | `WithdrawRequest.$countryCode` |
+| `refund_memo` | ✅ Supported | `WithdrawRequest.$refundMemo` |
+| `refund_memo_type` | ✅ Supported | `WithdrawRequest.$refundMemoType` |
+| `customer_id` | ✅ Supported | `WithdrawRequest.$customerId` |
+| `location_id` | ✅ Supported | `WithdrawRequest.$locationId` |
 
-### Info Response Fields
+## Withdraw Response Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `deposit` | ✓ | ✅ | - | Map of asset codes to deposit asset information |
-| `withdraw` | ✓ | ✅ | - | Map of asset codes to withdraw asset information |
-| `fee` |  | ✅ | - | Fee endpoint information |
-| `transactions` |  | ✅ | - | Transaction history endpoint information |
-| `transaction` |  | ✅ | - | Single transaction endpoint information |
-| `features` |  | ✅ | - | Feature flags supported by the anchor |
-| `deposit-exchange` |  | ✅ | - | Map of asset codes to deposit-exchange asset information |
-| `withdraw-exchange` |  | ✅ | - | Map of asset codes to withdraw-exchange asset information |
+Fields returned by GET /withdraw
 
-### Transaction Endpoints
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `account_id` | ✅ Supported | `Required. WithdrawResponse.$accountId` |
+| `memo_type` | ✅ Supported | `WithdrawResponse.$memoType` |
+| `memo` | ✅ Supported | `WithdrawResponse.$memo` |
+| `id` | ✅ Supported | `Required. WithdrawResponse.$id` |
+| `eta` | ✅ Supported | `WithdrawResponse.$eta` |
+| `min_amount` | ✅ Supported | `WithdrawResponse.$minAmount` |
+| `max_amount` | ✅ Supported | `WithdrawResponse.$maxAmount` |
+| `fee_fixed` | ✅ Supported | `WithdrawResponse.$feeFixed` |
+| `fee_percent` | ✅ Supported | `WithdrawResponse.$feePercent` |
+| `extra_info` | ✅ Supported | `WithdrawResponse.$extraInfo` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `transactions` | ✓ | ✅ | `transactions` | Retrieves transaction history for an account |
-| `transaction` | ✓ | ✅ | `transaction` | Retrieves details for a single transaction |
-| `patch_transaction` |  | ✅ | `patchTransaction` | Updates transaction fields (for debugging/testing) |
+## Info Endpoint
 
-### Transaction Fields
+Anchor capabilities and asset information
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `id` | ✓ | ✅ | - | Unique transaction identifier |
-| `kind` | ✓ | ✅ | - | Kind of transaction (deposit, withdrawal, deposit-exchange, withdrawal-exchange) |
-| `status` | ✓ | ✅ | - | Current status of the transaction |
-| `started_at` | ✓ | ✅ | - | When transaction was created (ISO 8601) |
-| `status_eta` |  | ✅ | - | Estimated seconds until status changes |
-| `amount_in` |  | ✅ | - | Amount received by anchor |
-| `amount_out` |  | ✅ | - | Amount sent by anchor to user |
-| `amount_fee` |  | ✅ | - | Total fee charged for transaction |
-| `from` |  | ✅ | - | Stellar account that initiated the transaction |
-| `to` |  | ✅ | - | Stellar account receiving the transaction |
-| `external_transaction_id` |  | ✅ | - | Identifier from external system |
-| `stellar_transaction_id` |  | ✅ | - | Hash of the Stellar transaction |
-| `message` |  | ✅ | - | Human-readable message about transaction |
-| `refunded` |  | ✅ | - | Whether transaction was refunded |
-| `refunds` |  | ✅ | - | Refund information if applicable |
-| `completed_at` |  | ✅ | - | When transaction completed (ISO 8601) |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `info_endpoint` | ✅ Supported | `TransferServerService.info()` |
 
-### Transaction Status Values
+## Info Response Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `incomplete` | ✓ | ✅ | - | Deposit/withdrawal has not yet been submitted |
-| `pending_user_transfer_start` | ✓ | ✅ | - | Waiting for user to initiate off-chain transfer |
-| `pending_anchor` | ✓ | ✅ | - | Anchor is processing the transaction |
-| `completed` | ✓ | ✅ | - | Transaction completed successfully |
-| `pending_user_transfer_complete` |  | ✅ | - | Off-chain transfer has been initiated |
-| `pending_external` |  | ✅ | - | Waiting for external action (banking system, etc.) |
-| `pending_stellar` |  | ✅ | - | Stellar transaction has been submitted |
-| `pending_trust` |  | ✅ | - | User needs to add trustline for asset |
-| `pending_user` |  | ✅ | - | Waiting for user action (accepting claimable balance) |
-| `error` |  | ✅ | - | Transaction failed with error |
-| `refunded` |  | ✅ | - | Transaction refunded |
-| `expired` |  | ✅ | - | Transaction expired without completion |
+Fields returned by GET /info
 
-### Fee Endpoint
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `deposit` | ✅ Supported | `Required. InfoResponse.$depositAssets` |
+| `withdraw` | ✅ Supported | `Required. InfoResponse.$withdrawAssets` |
+| `deposit-exchange` | ✅ Supported | `InfoResponse.$depositExchangeAssets` |
+| `withdraw-exchange` | ✅ Supported | `InfoResponse.$withdrawExchangeAssets` |
+| `fee` | ✅ Supported | `InfoResponse.$feeInfo` |
+| `transactions` | ✅ Supported | `InfoResponse.$transactionsInfo` |
+| `transaction` | ✅ Supported | `InfoResponse.$transactionInfo` |
+| `features` | ✅ Supported | `InfoResponse.$featureFlags` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `fee_endpoint` |  | ✅ | `fee` | Calculates fees for a deposit or withdrawal operation |
+## Fee Endpoint
 
-## Implementation Gaps
+Fee calculation (deprecated)
 
-🎉 **No gaps found!** All fields are implemented.
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `fee_endpoint` | ✅ Supported | `TransferServerService.fee()` |
 
-## Recommendations
+## Transaction Endpoints
 
-✅ The SDK has full compatibility with SEP-0006!
+Transaction query and update endpoints
 
-## Legend
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `transactions` | ✅ Supported | `TransferServerService.transactions()` |
+| `transaction` | ✅ Supported | `TransferServerService.transaction()` |
+| `patch_transaction` | ✅ Supported | `TransferServerService.patchTransaction()` |
 
-- ✅ **Implemented**: Field is implemented in SDK
-- ❌ **Not Implemented**: Field is missing from SDK
-- ✓ **Required**: Field is required by SEP specification
-- (blank) **Optional**: Field is optional
+## Transaction Fields
+
+Fields in the transaction object
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `Required. AnchorTransaction.$id` |
+| `kind` | ✅ Supported | `Required. AnchorTransaction.$kind` |
+| `status` | ✅ Supported | `Required. AnchorTransaction.$status` |
+| `started_at` | ✅ Supported | `Required. AnchorTransaction.$startedAt` |
+| `status_eta` | ✅ Supported | `AnchorTransaction.$statusEta` |
+| `more_info_url` | ✅ Supported | `AnchorTransaction.$moreInfoUrl` |
+| `amount_in` | ✅ Supported | `AnchorTransaction.$amountIn` |
+| `amount_in_asset` | ✅ Supported | `AnchorTransaction.$amountInAsset` |
+| `amount_out` | ✅ Supported | `AnchorTransaction.$amountOut` |
+| `amount_out_asset` | ✅ Supported | `AnchorTransaction.$amountOutAsset` |
+| `amount_fee` | ✅ Supported | `AnchorTransaction.$amountFee` |
+| `amount_fee_asset` | ✅ Supported | `AnchorTransaction.$amountFeeAsset` |
+| `fee_details` | ✅ Supported | `AnchorTransaction.$feeDetails` |
+| `quote_id` | ✅ Supported | `AnchorTransaction.$quoteId` |
+| `from` | ✅ Supported | `AnchorTransaction.$from` |
+| `to` | ✅ Supported | `AnchorTransaction.$to` |
+| `deposit_memo` | ✅ Supported | `AnchorTransaction.$depositMemo` |
+| `deposit_memo_type` | ✅ Supported | `AnchorTransaction.$depositMemoType` |
+| `withdraw_anchor_account` | ✅ Supported | `AnchorTransaction.$withdrawAnchorAccount` |
+| `withdraw_memo` | ✅ Supported | `AnchorTransaction.$withdrawMemo` |
+| `withdraw_memo_type` | ✅ Supported | `AnchorTransaction.$withdrawMemoType` |
+| `updated_at` | ✅ Supported | `AnchorTransaction.$updatedAt` |
+| `completed_at` | ✅ Supported | `AnchorTransaction.$completedAt` |
+| `user_action_required_by` | ✅ Supported | `AnchorTransaction.$userActionRequiredBy` |
+| `stellar_transaction_id` | ✅ Supported | `AnchorTransaction.$stellarTransactionId` |
+| `external_transaction_id` | ✅ Supported | `AnchorTransaction.$externalTransactionId` |
+| `message` | ✅ Supported | `AnchorTransaction.$message` |
+| `refunded` | ✅ Supported | `AnchorTransaction.$refunded` |
+| `refunds` | ✅ Supported | `AnchorTransaction.$refunds` |
+| `required_info_message` | ✅ Supported | `AnchorTransaction.$requiredInfoMessage` |
+| `required_info_updates` | ✅ Supported | `AnchorTransaction.$requiredInfoUpdates` |
+| `instructions` | ✅ Supported | `AnchorTransaction.$instructions` |
+| `claimable_balance_id` | ✅ Supported | `AnchorTransaction.$claimableBalanceId` |

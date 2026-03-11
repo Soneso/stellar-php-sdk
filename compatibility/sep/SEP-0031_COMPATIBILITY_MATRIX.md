@@ -1,227 +1,177 @@
-# SEP-0031 (Cross-Border Payments API) Compatibility Matrix
+# SEP-31: Cross-Border Payments API
 
-**Generated:** 2026-02-21 18:22:02
-
-**SEP Version:** 3.1.0
-
-**SEP Status:** Active
-
-**SDK Version:** 1.9.4
-
-**SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md
-
-## SEP Summary
-
-This SEP defines a protocol for enabling payments between two financial
-accounts that exist outside the Stellar network.
+**Status:** ✅ Supported  
+**SDK Version:** 1.9.5  
+**Generated:** 2026-03-11 21:41 UTC  
+**Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md)
 
 ## Overall Coverage
 
-**Total Coverage:** 100% (68/68 fields)
+**Total Coverage:** 100.0% (71/71 fields)
 
-- ✅ **Implemented:** 68/68
-- ❌ **Not Implemented:** 0/68
-
-**Required Fields:** 100% (16/16)
-
-**Optional Fields:** 100% (52/52)
-
-## Implementation Status
-
-✅ **Implemented**
-
-### Implementation Files
-
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31FeeDetailsDetails.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31TransactionResponse.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP12TypesInfo.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31BadRequestException.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/CrossBorderPaymentsService.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31UnknownResponseException.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31ReceiveAssetInfo.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31TransactionCallbackNotSupportedException.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31CustomerInfoNeededException.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31FeeDetails.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31PostTransactionsRequest.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31InfoResponse.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31TransactionInfoNeededException.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31Refunds.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31RefundPayment.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31TransactionNotFoundException.php`
-- `Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31PostTransactionsResponse.php`
-
-### Key Classes
-
-- **`SEP31FeeDetailsDetails`**
-- **`SEP31TransactionResponse`**
-- **`SEP12TypesInfo`**
-- **`SEP31BadRequestException`**
-- **`CrossBorderPaymentsService`**
-- **`SEP31UnknownResponseException`**
-- **`SEP31ReceiveAssetInfo`**
-- **`SEP31TransactionCallbackNotSupportedException`**
-- **`SEP31CustomerInfoNeededException`**
-- **`SEP31FeeDetails`**
-- **`SEP31PostTransactionsRequest`**
-- **`SEP31InfoResponse`**
-- **`SEP31TransactionInfoNeededException`**
-- **`SEP31Refunds`**
-- **`SEP31RefundPayment`**
-- **`SEP31TransactionNotFoundException`**
-- **`SEP31PostTransactionsResponse`**
+- ✅ **Implemented:** 71/71
+- ❌ **Not Implemented:** 0/71
 
 ## Coverage by Section
 
-| Section | Coverage | Required Coverage | Implemented | Total |
-|---------|----------|-------------------|-------------|-------|
-| Info Endpoint | 100% | 100% | 1 | 1 |
-| Info Request Parameters | 100% | 0% | 1 | 1 |
-| Info Response Fields | 100% | 100% | 12 | 12 |
-| Post Transactions Endpoint | 100% | 100% | 1 | 1 |
-| Post Transactions Request Parameters | 100% | 100% | 12 | 12 |
-| Post Transactions Response Fields | 100% | 100% | 4 | 4 |
-| Get Transaction Endpoint | 100% | 100% | 1 | 1 |
-| Transaction Fields | 100% | 100% | 24 | 24 |
-| Transaction Status Values | 100% | 100% | 10 | 10 |
-| Callback Endpoint | 100% | 0% | 1 | 1 |
-| Patch Transaction Endpoint | 100% | 0% | 1 | 1 |
+| Section | Coverage | Implemented | Total |
+|---------|----------|-------------|-------|
+| Service Endpoints | 100.0% | 5 | 5 |
+| Info Response Fields | 100.0% | 1 | 1 |
+| Receive Asset Info Fields | 100.0% | 11 | 11 |
+| SEP-12 Types Info Fields | 100.0% | 2 | 2 |
+| POST /transactions Request Fields | 100.0% | 12 | 12 |
+| POST /transactions Response Fields | 100.0% | 4 | 4 |
+| Transaction Response Fields | 100.0% | 24 | 24 |
+| Refunds Fields | 100.0% | 3 | 3 |
+| Refund Payment Fields | 100.0% | 3 | 3 |
+| Fee Details Fields | 100.0% | 3 | 3 |
+| Fee Details Breakdown Fields | 100.0% | 3 | 3 |
 
-## Detailed Field Comparison
+## Service Endpoints
 
-### Info Endpoint
+CrossBorderPaymentsService API methods
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `info_endpoint` | ✓ | ✅ | `info` | GET /info - Provides information about supported receiving assets, fees, and KYC requirements |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `GET /info` | ✅ Supported | `CrossBorderPaymentsService.info()` |
+| `POST /transactions` | ✅ Supported | `CrossBorderPaymentsService.postTransactions()` |
+| `GET /transactions/:id` | ✅ Supported | `CrossBorderPaymentsService.getTransaction()` |
+| `PATCH /transactions/:id` | ✅ Supported | `CrossBorderPaymentsService.patchTransaction()` |
+| `PUT /transactions/:id/callback` | ✅ Supported | `CrossBorderPaymentsService.putTransactionCallback()` |
 
-### Info Request Parameters
+## Info Response Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `lang` |  | ✅ | - | Language code (ISO 639-1) for human-readable error codes and field descriptions. Defaults to en. |
+SEP31InfoResponse properties
 
-### Info Response Fields
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `receive` | ✅ Supported | `Required. SEP31InfoResponse.$receiveAssets` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `receive` | ✓ | ✅ | - | Object containing entries for each supported Stellar asset |
-| `sep12` | ✓ | ✅ | - | Object containing sender and receiver SEP-12 type definitions |
-| `min_amount` |  | ✅ | - | Minimum amount (no limit if not specified) |
-| `max_amount` |  | ✅ | - | Maximum amount (no limit if not specified) |
-| `fee_fixed` |  | ✅ | - | Fixed fee in units of the Stellar asset |
-| `fee_percent` |  | ✅ | - | Percentage fee in percentage points |
-| `sender_sep12_type` |  | ✅ | - | (deprecated) Value of type parameter for sender SEP-12 GET /customer request |
-| `receiver_sep12_type` |  | ✅ | - | (deprecated) Value of type parameter for receiver SEP-12 GET /customer request |
-| `fields` |  | ✅ | - | (deprecated) Per-transaction parameters required in POST /transactions requests |
-| `quotes_supported` |  | ✅ | - | Whether the anchor can deliver off-chain assets via SEP-38 quote exchange |
-| `quotes_required` |  | ✅ | - | Whether the anchor requires a SEP-38 quote for receiving this asset |
-| `funding_methods` |  | ✅ | - | Array of methods the anchor supports for receiving funds |
+## Receive Asset Info Fields
 
-### Post Transactions Endpoint
+SEP31ReceiveAssetInfo properties
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `post_transactions` | ✓ | ✅ | `postTransactions` | POST /transactions - Initiates a cross-border payment transaction |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `sep12` | ✅ Supported | `SEP31ReceiveAssetInfo.$sep12Info` |
+| `min_amount` | ✅ Supported | `SEP31ReceiveAssetInfo.$minAmount` |
+| `max_amount` | ✅ Supported | `SEP31ReceiveAssetInfo.$maxAmount` |
+| `fee_fixed` | ✅ Supported | `SEP31ReceiveAssetInfo.$feeFixed` |
+| `fee_percent` | ✅ Supported | `SEP31ReceiveAssetInfo.$feePercent` |
+| `sender_sep12_type` | ✅ Supported | `SEP31ReceiveAssetInfo.$senderSep12Type` |
+| `receiver_sep12_type` | ✅ Supported | `SEP31ReceiveAssetInfo.$receiverSep12Type` |
+| `fields` | ✅ Supported | `SEP31ReceiveAssetInfo.$fields` |
+| `quotes_supported` | ✅ Supported | `SEP31ReceiveAssetInfo.$quotesSupported` |
+| `quotes_required` | ✅ Supported | `SEP31ReceiveAssetInfo.$quotesRequired` |
+| `funding_methods` | ✅ Supported | `SEP31ReceiveAssetInfo.$fundingMethods` |
 
-### Post Transactions Request Parameters
+## SEP-12 Types Info Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `amount` | ✓ | ✅ | - | Amount of the Stellar asset to send to the Receiving Anchor |
-| `asset_code` | ✓ | ✅ | - | Code of the asset the Sending Anchor intends to send |
-| `asset_issuer` |  | ✅ | - | Issuer of the Stellar asset the Sending Anchor intends to send |
-| `destination_asset` |  | ✅ | - | Off-chain asset the Receiving Anchor will deliver (SEP-38 format) |
-| `quote_id` |  | ✅ | - | ID returned from a SEP-38 POST /quote response |
-| `sender_id` |  | ✅ | - | SEP-12 customer ID for the Sending Client |
-| `receiver_id` |  | ✅ | - | SEP-12 customer ID for the Receiving Client |
-| `fields` |  | ✅ | - | (deprecated) Object containing values requested by the Receiving Anchor in GET /info |
-| `lang` |  | ✅ | - | Language code (ISO 639-1) for human-readable error codes and field descriptions |
-| `refund_memo` |  | ✅ | - | Memo the Receiving Anchor must use when sending refund payments back |
-| `refund_memo_type` |  | ✅ | - | Type of the refund memo (id, text, or hash) |
-| `funding_method` |  | ✅ | - | Method for transferring/settling assets, must match /info response |
+SEP12TypesInfo properties
 
-### Post Transactions Response Fields
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `sender` | ✅ Supported | `Required. SEP12TypesInfo.$senderTypes` |
+| `receiver` | ✅ Supported | `Required. SEP12TypesInfo.$receiverTypes` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `id` | ✓ | ✅ | - | Persistent identifier to check the status of this payment transaction |
-| `stellar_account_id` |  | ✅ | - | Stellar account to send payment to |
-| `stellar_memo_type` |  | ✅ | - | Type of memo to attach to the Stellar payment (text, hash, or id) |
-| `stellar_memo` |  | ✅ | - | Memo to attach to the Stellar payment |
+## POST /transactions Request Fields
 
-### Get Transaction Endpoint
+SEP31PostTransactionsRequest properties
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `get_transaction` | ✓ | ✅ | `getTransaction` | GET /transactions/:id - Retrieves information on a specific transaction |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `amount` | ✅ Supported | `Required. SEP31PostTransactionsRequest.$amount` |
+| `asset_code` | ✅ Supported | `Required. SEP31PostTransactionsRequest.$assetCode` |
+| `asset_issuer` | ✅ Supported | `SEP31PostTransactionsRequest.$assetIssuer` |
+| `destination_asset` | ✅ Supported | `SEP31PostTransactionsRequest.$destinationAsset` |
+| `quote_id` | ✅ Supported | `SEP31PostTransactionsRequest.$quoteId` |
+| `sender_id` | ✅ Supported | `SEP31PostTransactionsRequest.$senderId` |
+| `receiver_id` | ✅ Supported | `SEP31PostTransactionsRequest.$receiverId` |
+| `fields` | ✅ Supported | `SEP31PostTransactionsRequest.$fields` |
+| `lang` | ✅ Supported | `SEP31PostTransactionsRequest.$lang` |
+| `refund_memo` | ✅ Supported | `SEP31PostTransactionsRequest.$refundMemo` |
+| `refund_memo_type` | ✅ Supported | `SEP31PostTransactionsRequest.$refundMemoType` |
+| `funding_method` | ✅ Supported | `SEP31PostTransactionsRequest.$fundingMethod` |
 
-### Transaction Fields
+## POST /transactions Response Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `id` | ✓ | ✅ | - | The ID returned from the POST /transactions request |
-| `status` | ✓ | ✅ | - | The status of the transaction |
-| `status_eta` |  | ✅ | - | Estimated number of seconds until a status change is expected |
-| `status_message` |  | ✅ | - | Human-readable message describing the status of the transaction |
-| `amount_in` |  | ✅ | - | Amount of the Stellar asset received or to be received by the Receiving Anchor |
-| `amount_in_asset` |  | ✅ | - | Asset received or to be received (SEP-38 Asset Identification Format) |
-| `amount_out` |  | ✅ | - | Amount sent or to be sent by the Receiving Anchor to the Receiving Client |
-| `amount_out_asset` |  | ✅ | - | Asset delivered to the Receiving Client (SEP-38 Asset Identification Format) |
-| `amount_fee` |  | ✅ | - | (deprecated) Amount of fee charged by the Receiving Anchor |
-| `amount_fee_asset` |  | ✅ | - | (deprecated) Asset in which fees are calculated (SEP-38 format) |
-| `fee_details` |  | ✅ | - | Detailed fee breakdown object with total, asset, and optional details array |
-| `quote_id` |  | ✅ | - | ID of the quote used to create this transaction |
-| `stellar_account_id` |  | ✅ | - | Receiving Anchor Stellar account for payment |
-| `stellar_memo_type` |  | ✅ | - | Type of memo to attach to the Stellar payment |
-| `stellar_memo` |  | ✅ | - | Memo to attach to the Stellar payment |
-| `started_at` |  | ✅ | - | Start date and time of transaction (UTC ISO 8601) |
-| `updated_at` |  | ✅ | - | Date and time of transaction reaching the current status (UTC ISO 8601) |
-| `completed_at` |  | ✅ | - | Completion date and time of transaction (UTC ISO 8601) |
-| `stellar_transaction_id` |  | ✅ | - | Stellar network transaction hash of the transfer that initiated the payment |
-| `external_transaction_id` |  | ✅ | - | ID of the transaction on external network that completes the payment |
-| `refunded` |  | ✅ | - | (deprecated) Whether the transaction was refunded in full |
-| `refunds` |  | ✅ | - | Object describing on-chain refund details (amount_refunded, amount_fee, payments) |
-| `required_info_message` |  | ✅ | - | Human-readable message indicating errors that require updated information |
-| `required_info_updates` |  | ✅ | - | Fields that require update values from the Sending Anchor |
+SEP31PostTransactionsResponse properties
 
-### Transaction Status Values
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `Required. SEP31PostTransactionsResponse.$id` |
+| `stellar_account_id` | ✅ Supported | `SEP31PostTransactionsResponse.$stellarAccountId` |
+| `stellar_memo_type` | ✅ Supported | `SEP31PostTransactionsResponse.$stellarMemoType` |
+| `stellar_memo` | ✅ Supported | `SEP31PostTransactionsResponse.$stellarMemo` |
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `pending_sender` | ✓ | ✅ | - | Awaiting payment from Sending Anchor via Stellar network |
-| `pending_stellar` | ✓ | ✅ | - | Transaction submitted to Stellar network but not yet confirmed |
-| `pending_customer_info_update` | ✓ | ✅ | - | KYC information needs updating via SEP-12 |
-| `pending_transaction_info_update` |  | ✅ | - | Transaction fields need updating (deprecated, use SEP-12) |
-| `pending_receiver` | ✓ | ✅ | - | Payment being processed by Receiving Anchor |
-| `pending_external` | ✓ | ✅ | - | Payment submitted to external network but not yet confirmed |
-| `completed` | ✓ | ✅ | - | Funds successfully delivered to the Receiving Client |
-| `refunded` |  | ✅ | - | Funds refunded to Sending Anchor (see refunds object) |
-| `expired` |  | ✅ | - | Transaction abandoned by Sending Anchor or quote expired |
-| `error` |  | ✅ | - | Catch-all for unspecified errors (check status_message for details) |
+## Transaction Response Fields
 
-### Callback Endpoint
+SEP31TransactionResponse properties
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `put_callback` |  | ✅ | `putTransactionCallback` | PUT /transactions/:id/callback - Registers callback URL for status change notifications |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `Required. SEP31TransactionResponse.$id` |
+| `status` | ✅ Supported | `Required. SEP31TransactionResponse.$status` |
+| `status_eta` | ✅ Supported | `SEP31TransactionResponse.$statusEta` |
+| `status_message` | ✅ Supported | `SEP31TransactionResponse.$statusMessage` |
+| `amount_in` | ✅ Supported | `SEP31TransactionResponse.$amountIn` |
+| `amount_in_asset` | ✅ Supported | `SEP31TransactionResponse.$amountInAsset` |
+| `amount_out` | ✅ Supported | `SEP31TransactionResponse.$amountOut` |
+| `amount_out_asset` | ✅ Supported | `SEP31TransactionResponse.$amountOutAsset` |
+| `amount_fee` | ✅ Supported | `SEP31TransactionResponse.$amountFee` |
+| `amount_fee_asset` | ✅ Supported | `SEP31TransactionResponse.$amountFeeAsset` |
+| `fee_details` | ✅ Supported | `SEP31TransactionResponse.$feeDetails` |
+| `quote_id` | ✅ Supported | `SEP31TransactionResponse.$quoteId` |
+| `stellar_account_id` | ✅ Supported | `SEP31TransactionResponse.$stellarAccountId` |
+| `stellar_memo_type` | ✅ Supported | `SEP31TransactionResponse.$stellarMemoType` |
+| `stellar_memo` | ✅ Supported | `SEP31TransactionResponse.$stellarMemo` |
+| `started_at` | ✅ Supported | `SEP31TransactionResponse.$startedAt` |
+| `updated_at` | ✅ Supported | `SEP31TransactionResponse.$updatedAt` |
+| `completed_at` | ✅ Supported | `SEP31TransactionResponse.$completedAt` |
+| `stellar_transaction_id` | ✅ Supported | `SEP31TransactionResponse.$stellarTransactionId` |
+| `external_transaction_id` | ✅ Supported | `SEP31TransactionResponse.$externalTransactionId` |
+| `refunded` | ✅ Supported | `SEP31TransactionResponse.$refunded` |
+| `refunds` | ✅ Supported | `SEP31TransactionResponse.$refunds` |
+| `required_info_message` | ✅ Supported | `SEP31TransactionResponse.$requiredInfoMessage` |
+| `required_info_updates` | ✅ Supported | `SEP31TransactionResponse.$requiredInfoUpdates` |
 
-### Patch Transaction Endpoint
+## Refunds Fields
 
-| Field | Required | Status | SDK Property | Description |
-|-------|----------|--------|--------------|-------------|
-| `patch_transaction` |  | ✅ | `patchTransaction` | PATCH /transactions/:id - (deprecated) Updates transaction fields for pending_transaction_info_updat... |
+SEP31Refunds properties
 
-## Implementation Gaps
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `amount_refunded` | ✅ Supported | `Required. SEP31Refunds.$amountRefunded` |
+| `amount_fee` | ✅ Supported | `Required. SEP31Refunds.$amountFee` |
+| `payments` | ✅ Supported | `Required. SEP31Refunds.$payments` |
 
-🎉 **No gaps found!** All fields are implemented.
+## Refund Payment Fields
 
-## Recommendations
+SEP31RefundPayment properties
 
-✅ The SDK has full compatibility with SEP-0031!
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `id` | ✅ Supported | `Required. SEP31RefundPayment.$id` |
+| `amount` | ✅ Supported | `Required. SEP31RefundPayment.$amount` |
+| `fee` | ✅ Supported | `Required. SEP31RefundPayment.$fee` |
 
-## Legend
+## Fee Details Fields
 
-- ✅ **Implemented**: Field is implemented in SDK
-- ❌ **Not Implemented**: Field is missing from SDK
-- ✓ **Required**: Field is required by SEP specification
-- (blank) **Optional**: Field is optional
+SEP31FeeDetails properties
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `total` | ✅ Supported | `Required. SEP31FeeDetails.$total` |
+| `asset` | ✅ Supported | `Required. SEP31FeeDetails.$asset` |
+| `details` | ✅ Supported | `SEP31FeeDetails.$details` |
+
+## Fee Details Breakdown Fields
+
+SEP31FeeDetailsDetails properties
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `name` | ✅ Supported | `Required. SEP31FeeDetailsDetails.$name` |
+| `amount` | ✅ Supported | `Required. SEP31FeeDetailsDetails.$amount` |
+| `description` | ✅ Supported | `SEP31FeeDetailsDetails.$description` |
