@@ -1,4 +1,4 @@
-XDR_COMMIT = cff714a5ebaaaf2dac343b3546c2df73f0b7a36e
+XDR_COMMIT = 61657d9fa39755d8a30f3ba8e9b9117e7f92df9d
 XDRS = Stellar-SCP.x Stellar-ledger-entries.x Stellar-ledger.x \
        Stellar-overlay.x Stellar-transaction.x Stellar-types.x \
        Stellar-contract.x Stellar-contract-spec.x \
@@ -30,7 +30,7 @@ xdr-clean-all: xdr-clean-generated
 	rm -rf xdr/
 
 # Full regeneration cycle
-xdr-update: xdr-clean-generated xdr-generate
+xdr-update: xdr-clean-all xdr-generate
 
 # Run snapshot tests
 xdr-generator-test: $(XDR_SRCS)

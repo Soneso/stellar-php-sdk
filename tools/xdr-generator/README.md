@@ -15,7 +15,7 @@ From the repo root using the Makefile:
 
 ```bash
 make xdr-generate         # fetch .x files and generate PHP types
-make xdr-update           # clean generated files, then regenerate
+make xdr-update           # re-download .x files and regenerate
 make xdr-clean-generated  # remove only generated PHP files
 make xdr-clean-all        # remove generated PHP files and .x definitions
 ```
