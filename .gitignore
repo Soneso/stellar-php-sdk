@@ -17,3 +17,6 @@ tools/matrix-generator/rpc/rpc_methods.json
 
 # Test coverage
 /coverage/
+
+# Internal plans
+plans/
