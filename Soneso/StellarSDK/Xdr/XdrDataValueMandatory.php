@@ -30,4 +30,26 @@ class XdrDataValueMandatory
     public static function decode(XdrBuffer $xdr) :  XdrDataValueMandatory {
         return new XdrDataValueMandatory($xdr->readOpaqueVariable());
     }
+
+    /**
+     * Serialize as a hex string for TxRep (SEP-0011).
+     *
+     * @param string               $prefix
+     * @param array<string,string> $lines
+     */
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = \Soneso\StellarSDK\Xdr\TxRepHelper::bytesToHex($this->value);
+    }
+
+    /**
+     * Deserialize from a hex string in TxRep (SEP-0011).
+     *
+     * @param array<string,string> $map
+     * @param string               $prefix
+     * @return static
+     */
+    public static function fromTxRep(array $map, string $prefix): static {
+        $hex = \Soneso\StellarSDK\Xdr\TxRepHelper::getValue($map, $prefix) ?? '';
+        return new static(\Soneso\StellarSDK\Xdr\TxRepHelper::hexToBytes($hex));
+    }
 }

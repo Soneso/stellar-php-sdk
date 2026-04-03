@@ -71,4 +71,55 @@ class XdrCryptoKeyType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::KEY_TYPE_ED25519:
+                return 'KEY_TYPE_ED25519';
+            case self::KEY_TYPE_PRE_AUTH_TX:
+                return 'KEY_TYPE_PRE_AUTH_TX';
+            case self::KEY_TYPE_HASH_X:
+                return 'KEY_TYPE_HASH_X';
+            case self::KEY_TYPE_ED25519_SIGNED_PAYLOAD:
+                return 'KEY_TYPE_ED25519_SIGNED_PAYLOAD';
+            case self::KEY_TYPE_MUXED_ED25519:
+                return 'KEY_TYPE_MUXED_ED25519';
+            default:
+                return 'XdrCryptoKeyType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'KEY_TYPE_ED25519':
+                return new static(self::KEY_TYPE_ED25519);
+            case 'KEY_TYPE_PRE_AUTH_TX':
+                return new static(self::KEY_TYPE_PRE_AUTH_TX);
+            case 'KEY_TYPE_HASH_X':
+                return new static(self::KEY_TYPE_HASH_X);
+            case 'KEY_TYPE_ED25519_SIGNED_PAYLOAD':
+                return new static(self::KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+            case 'KEY_TYPE_MUXED_ED25519':
+                return new static(self::KEY_TYPE_MUXED_ED25519);
+            default:
+                $prefix = 'XdrCryptoKeyType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

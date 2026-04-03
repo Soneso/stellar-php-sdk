@@ -59,4 +59,24 @@ class XdrCreateClaimableBalanceOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.asset'] = TxRepHelper::formatAsset($this->asset);
+        $lines[$prefix . '.amount'] = $this->amount->toString();
+        $lines[$prefix . '.claimants.len'] = (string)count($this->claimants);
+        for ($i = 0; $i < count($this->claimants); $i++) {
+            $this->claimants[$i]->toTxRep($prefix . '.claimants[' . $i . ']', $lines);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrCreateClaimableBalanceOperation {
+        $asset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
+        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        $claimantsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.claimants.len') ?? '0');
+        $claimants = [];
+        for ($i = 0; $i < $claimantsLen; $i++) {
+            $claimants[] = XdrClaimant::fromTxRep($map, $prefix . '.claimants[' . $i . ']');
+        }
+        return new XdrCreateClaimableBalanceOperation($asset, $amount, $claimants);
+    }
 }

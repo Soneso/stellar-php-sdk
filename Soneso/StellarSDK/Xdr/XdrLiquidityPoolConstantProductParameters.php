@@ -49,4 +49,17 @@ class XdrLiquidityPoolConstantProductParameters {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.assetA'] = TxRepHelper::formatAsset($this->assetA);
+        $lines[$prefix . '.assetB'] = TxRepHelper::formatAsset($this->assetB);
+        $lines[$prefix . '.fee'] = (string)$this->fee;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLiquidityPoolConstantProductParameters {
+        $assetA = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.assetA') ?? '');
+        $assetB = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.assetB') ?? '');
+        $fee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0');
+        return new XdrLiquidityPoolConstantProductParameters($assetA, $assetB, $fee);
+    }
 }

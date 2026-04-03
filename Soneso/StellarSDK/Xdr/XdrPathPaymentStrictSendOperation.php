@@ -77,4 +77,30 @@ class XdrPathPaymentStrictSendOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.sendAsset'] = TxRepHelper::formatAsset($this->sendAsset);
+        $lines[$prefix . '.sendAmount'] = $this->sendAmount->toString();
+        $lines[$prefix . '.destination'] = TxRepHelper::formatMuxedAccount($this->destination);
+        $lines[$prefix . '.destAsset'] = TxRepHelper::formatAsset($this->destAsset);
+        $lines[$prefix . '.destMin'] = $this->destMin->toString();
+        $lines[$prefix . '.path.len'] = (string)count($this->path);
+        for ($i = 0; $i < count($this->path); $i++) {
+            $lines[$prefix . '.path[' . $i . ']'] = TxRepHelper::formatAsset($this->path[$i]);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrPathPaymentStrictSendOperation {
+        $sendAsset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.sendAsset') ?? '');
+        $sendAmount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.sendAmount') ?? '0');
+        $destination = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.destination') ?? '');
+        $destAsset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.destAsset') ?? '');
+        $destMin = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.destMin') ?? '0');
+        $pathLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.path.len') ?? '0');
+        $path = [];
+        for ($i = 0; $i < $pathLen; $i++) {
+            $path[] = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.path[' . $i . ']') ?? '');
+        }
+        return new XdrPathPaymentStrictSendOperation($sendAsset, $sendAmount, $destination, $destAsset, $destMin, $path);
+    }
 }

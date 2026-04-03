@@ -37,4 +37,13 @@ class XdrClawbackClaimableBalanceOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->balanceID->toTxRep($prefix . '.balanceID', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrClawbackClaimableBalanceOperation {
+        $balanceID = XdrClaimableBalanceID::fromTxRep($map, $prefix . '.balanceID');
+        return new XdrClawbackClaimableBalanceOperation($balanceID);
+    }
 }

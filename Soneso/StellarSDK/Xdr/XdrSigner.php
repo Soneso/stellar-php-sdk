@@ -43,4 +43,15 @@ class XdrSigner {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.key'] = TxRepHelper::formatSignerKey($this->key);
+        $lines[$prefix . '.weight'] = (string)$this->weight;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSigner {
+        $key = TxRepHelper::parseSignerKey(TxRepHelper::getValue($map, $prefix . '.key') ?? '');
+        $weight = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.weight') ?? '0');
+        return new XdrSigner($key, $weight);
+    }
 }

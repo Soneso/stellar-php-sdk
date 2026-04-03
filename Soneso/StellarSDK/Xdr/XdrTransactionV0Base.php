@@ -89,4 +89,41 @@ class XdrTransactionV0Base {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.sourceAccountEd25519'] = TxRepHelper::bytesToHex($this->sourceAccountEd25519);
+        $lines[$prefix . '.fee'] = (string)$this->fee;
+        $this->seqNum->toTxRep($prefix . '.seqNum', $lines);
+        if ($this->timeBounds !== null) {
+            $lines[$prefix . '.timeBounds._present'] = 'true';
+            $this->timeBounds->toTxRep($prefix . '.timeBounds', $lines);
+        } else {
+            $lines[$prefix . '.timeBounds._present'] = 'false';
+        }
+        $this->memo->toTxRep($prefix . '.memo', $lines);
+        $lines[$prefix . '.operations.len'] = (string)count($this->operations);
+        for ($i = 0; $i < count($this->operations); $i++) {
+            $this->operations[$i]->toTxRep($prefix . '.operations[' . $i . ']', $lines);
+        }
+        $this->ext->toTxRep($prefix . '.ext', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $sourceAccountEd25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.sourceAccountEd25519') ?? '');
+        $fee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0');
+        $seqNum = XdrSequenceNumber::fromTxRep($map, $prefix . '.seqNum');
+        $timeBounds = null;
+        $timeBoundsPresent = TxRepHelper::getValue($map, $prefix . '.timeBounds._present');
+        if ($timeBoundsPresent !== null && $timeBoundsPresent === 'true') {
+            $timeBounds = XdrTimeBounds::fromTxRep($map, $prefix . '.timeBounds');
+        }
+        $memo = XdrMemo::fromTxRep($map, $prefix . '.memo');
+        $operationsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.operations.len') ?? '0');
+        $operations = [];
+        for ($i = 0; $i < $operationsLen; $i++) {
+            $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');
+        }
+        $ext = XdrTransactionV0Ext::fromTxRep($map, $prefix . '.ext');
+        return new static($sourceAccountEd25519, $fee, $seqNum, $memo, $operations, $ext, $timeBounds);
+    }
 }

@@ -37,4 +37,13 @@ class XdrLedgerKeyAccountBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.accountID'] = TxRepHelper::formatAccountId($this->accountID);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $accountID = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.accountID') ?? '');
+        return new static($accountID);
+    }
 }

@@ -65,4 +65,51 @@ class XdrHostFunctionType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+                return 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT';
+            case self::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+                return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT';
+            case self::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+                return 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM';
+            case self::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2';
+            default:
+                return 'XdrHostFunctionType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT':
+                return new static(self::HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
+            case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT':
+                return new static(self::HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+            case 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM':
+                return new static(self::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM);
+            case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2':
+                return new static(self::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
+            default:
+                $prefix = 'XdrHostFunctionType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

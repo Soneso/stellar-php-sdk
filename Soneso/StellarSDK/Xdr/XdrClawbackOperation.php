@@ -51,4 +51,17 @@ class XdrClawbackOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.asset'] = TxRepHelper::formatAsset($this->asset);
+        $lines[$prefix . '.from'] = TxRepHelper::formatMuxedAccount($this->from);
+        $lines[$prefix . '.amount'] = $this->amount->toString();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrClawbackOperation {
+        $asset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
+        $from = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.from') ?? '');
+        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        return new XdrClawbackOperation($asset, $from, $amount);
+    }
 }

@@ -55,4 +55,19 @@ class XdrSetTrustLineFlagsOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.trustor'] = TxRepHelper::formatAccountId($this->accountID);
+        $lines[$prefix . '.asset'] = TxRepHelper::formatAsset($this->asset);
+        $lines[$prefix . '.clearFlags'] = (string)$this->clearFlags;
+        $lines[$prefix . '.setFlags'] = (string)$this->setFlags;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSetTrustLineFlagsOperation {
+        $accountID = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.trustor') ?? '');
+        $asset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
+        $clearFlags = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.clearFlags') ?? '0');
+        $setFlags = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.setFlags') ?? '0');
+        return new XdrSetTrustLineFlagsOperation($accountID, $asset, $clearFlags, $setFlags);
+    }
 }

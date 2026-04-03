@@ -92,4 +92,52 @@ class XdrSCAddressBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
+                $lines[$prefix . '.accountId'] = TxRepHelper::formatAccountId($this->accountId);
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                $lines[$prefix . '.contractId'] = TxRepHelper::bytesToHex($this->contractId);
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+                $this->muxedAccount->toTxRep($prefix . '.muxedAccount', $lines);
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+                $this->claimableBalanceId->toTxRep($prefix . '.claimableBalanceId', $lines);
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                $lines[$prefix . '.liquidityPoolId'] = TxRepHelper::bytesToHex($this->liquidityPoolId);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrSCAddressType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
+                $result->accountId = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.accountId') ?? '');
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                $result->contractId = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.contractId') ?? '');
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+                $result->muxedAccount = XdrMuxedAccountMed25519::fromTxRep($map, $prefix . '.muxedAccount');
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+                $result->claimableBalanceId = XdrClaimableBalanceID::fromTxRep($map, $prefix . '.claimableBalanceId');
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                $result->liquidityPoolId = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolId') ?? '');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

@@ -65,4 +65,34 @@ class XdrRevokeSponsorshipOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrRevokeSponsorshipType::LEDGER_ENTRY:
+                $this->ledgerKey->toTxRep($prefix . '.ledgerKey', $lines);
+                break;
+            case XdrRevokeSponsorshipType::SIGNER:
+                $this->signer->toTxRep($prefix . '.signer', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrRevokeSponsorshipOperation {
+        $disc = XdrRevokeSponsorshipType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrRevokeSponsorshipOperation($disc);
+        switch ($result->type->getValue()) {
+            case XdrRevokeSponsorshipType::LEDGER_ENTRY:
+                $result->ledgerKey = XdrLedgerKey::fromTxRep($map, $prefix . '.ledgerKey');
+                break;
+            case XdrRevokeSponsorshipType::SIGNER:
+                $result->signer = XdrRevokeSponsorshipSigner::fromTxRep($map, $prefix . '.signer');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

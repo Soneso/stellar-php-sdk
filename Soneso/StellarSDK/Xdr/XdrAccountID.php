@@ -10,6 +10,40 @@ use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrAccountID extends XdrAccountIDBase
 {
+    /**
+     * Serialize as a compact StrKey account ID string (G...).
+     *
+     * Overrides the generated base method, which would expand the inner
+     * XdrPublicKey sub-fields. SEP-0011 requires a single G... value.
+     *
+     * @param string                $prefix Key prefix for the TxRep map.
+     * @param array<string, string> $lines  Output map (modified in place).
+     */
+    public function toTxRep(string $prefix, array &$lines): void
+    {
+        $lines[$prefix] = TxRepHelper::formatAccountId($this);
+    }
+
+    /**
+     * Deserialize from a compact StrKey account ID string (G...).
+     *
+     * @param array<string, string> $map    Parsed TxRep map.
+     * @param string                $prefix Key prefix.
+     * @return static
+     * @throws \InvalidArgumentException If the value is missing or invalid.
+     */
+    public static function fromTxRep(array $map, string $prefix): static
+    {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        if (!StrKey::isValidAccountId($raw)) {
+            throw new \InvalidArgumentException('Invalid account ID in TxRep for key "' . $prefix . '": ' . $raw);
+        }
+        return new static($raw);
+    }
+
     private string $accountId; // G...
 
     /**

@@ -137,4 +137,82 @@ class XdrLedgerKeyBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrLedgerEntryType::ACCOUNT:
+                $this->account->toTxRep($prefix . '.account', $lines);
+                break;
+            case XdrLedgerEntryType::TRUSTLINE:
+                $this->trustLine->toTxRep($prefix . '.trustLine', $lines);
+                break;
+            case XdrLedgerEntryType::OFFER:
+                $this->offer->toTxRep($prefix . '.offer', $lines);
+                break;
+            case XdrLedgerEntryType::DATA:
+                $this->data->toTxRep($prefix . '.data', $lines);
+                break;
+            case XdrLedgerEntryType::CLAIMABLE_BALANCE:
+                $this->balanceID->toTxRep($prefix . '.claimableBalance', $lines);
+                break;
+            case XdrLedgerEntryType::LIQUIDITY_POOL:
+                $this->liquidityPool->toTxRep($prefix . '.liquidityPool', $lines);
+                break;
+            case XdrLedgerEntryType::CONTRACT_DATA:
+                $this->contractData->toTxRep($prefix . '.contractData', $lines);
+                break;
+            case XdrLedgerEntryType::CONTRACT_CODE:
+                $this->contractCode->toTxRep($prefix . '.contractCode', $lines);
+                break;
+            case XdrLedgerEntryType::CONFIG_SETTING:
+                $this->configSetting->toTxRep($prefix . '.configSetting', $lines);
+                break;
+            case XdrLedgerEntryType::TTL:
+                $this->ttl->toTxRep($prefix . '.ttl', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrLedgerEntryType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrLedgerEntryType::ACCOUNT:
+                $result->account = XdrLedgerKeyAccount::fromTxRep($map, $prefix . '.account');
+                break;
+            case XdrLedgerEntryType::TRUSTLINE:
+                $result->trustLine = XdrLedgerKeyTrustLine::fromTxRep($map, $prefix . '.trustLine');
+                break;
+            case XdrLedgerEntryType::OFFER:
+                $result->offer = XdrLedgerKeyOffer::fromTxRep($map, $prefix . '.offer');
+                break;
+            case XdrLedgerEntryType::DATA:
+                $result->data = XdrLedgerKeyData::fromTxRep($map, $prefix . '.data');
+                break;
+            case XdrLedgerEntryType::CLAIMABLE_BALANCE:
+                $result->balanceID = XdrClaimableBalanceID::fromTxRep($map, $prefix . '.claimableBalance');
+                break;
+            case XdrLedgerEntryType::LIQUIDITY_POOL:
+                $result->liquidityPool = XdrLedgerKeyLiquidityPool::fromTxRep($map, $prefix . '.liquidityPool');
+                break;
+            case XdrLedgerEntryType::CONTRACT_DATA:
+                $result->contractData = XdrLedgerKeyContractData::fromTxRep($map, $prefix . '.contractData');
+                break;
+            case XdrLedgerEntryType::CONTRACT_CODE:
+                $result->contractCode = XdrLedgerKeyContractCode::fromTxRep($map, $prefix . '.contractCode');
+                break;
+            case XdrLedgerEntryType::CONFIG_SETTING:
+                $result->configSetting = XdrConfigSettingID::fromTxRep($map, $prefix . '.configSetting');
+                break;
+            case XdrLedgerEntryType::TTL:
+                $result->ttl = XdrLedgerKeyTTL::fromTxRep($map, $prefix . '.ttl');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

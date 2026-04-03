@@ -83,4 +83,46 @@ class XdrSignerKey {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519:
+                $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
+                break;
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX:
+                $lines[$prefix . '.preAuthTx'] = TxRepHelper::bytesToHex($this->preAuthTx);
+                break;
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X:
+                $lines[$prefix . '.hashX'] = TxRepHelper::bytesToHex($this->hashX);
+                break;
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
+                $this->signedPayload->toTxRep($prefix . '.ed25519SignedPayload', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSignerKey {
+        $disc = XdrSignerKeyType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrSignerKey($disc);
+        switch ($result->type->getValue()) {
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519:
+                $result->ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
+                break;
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX:
+                $result->preAuthTx = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.preAuthTx') ?? '');
+                break;
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X:
+                $result->hashX = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hashX') ?? '');
+                break;
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
+                $result->signedPayload = XdrSignedPayload::fromTxRep($map, $prefix . '.ed25519SignedPayload');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

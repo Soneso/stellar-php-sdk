@@ -203,4 +203,143 @@ class XdrOperationType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::CREATE_ACCOUNT:
+                return 'CREATE_ACCOUNT';
+            case self::PAYMENT:
+                return 'PAYMENT';
+            case self::PATH_PAYMENT_STRICT_RECEIVE:
+                return 'PATH_PAYMENT_STRICT_RECEIVE';
+            case self::MANAGE_SELL_OFFER:
+                return 'MANAGE_SELL_OFFER';
+            case self::CREATE_PASSIVE_SELL_OFFER:
+                return 'CREATE_PASSIVE_SELL_OFFER';
+            case self::SET_OPTIONS:
+                return 'SET_OPTIONS';
+            case self::CHANGE_TRUST:
+                return 'CHANGE_TRUST';
+            case self::ALLOW_TRUST:
+                return 'ALLOW_TRUST';
+            case self::ACCOUNT_MERGE:
+                return 'ACCOUNT_MERGE';
+            case self::INFLATION:
+                return 'INFLATION';
+            case self::MANAGE_DATA:
+                return 'MANAGE_DATA';
+            case self::BUMP_SEQUENCE:
+                return 'BUMP_SEQUENCE';
+            case self::MANAGE_BUY_OFFER:
+                return 'MANAGE_BUY_OFFER';
+            case self::PATH_PAYMENT_STRICT_SEND:
+                return 'PATH_PAYMENT_STRICT_SEND';
+            case self::CREATE_CLAIMABLE_BALANCE:
+                return 'CREATE_CLAIMABLE_BALANCE';
+            case self::CLAIM_CLAIMABLE_BALANCE:
+                return 'CLAIM_CLAIMABLE_BALANCE';
+            case self::BEGIN_SPONSORING_FUTURE_RESERVES:
+                return 'BEGIN_SPONSORING_FUTURE_RESERVES';
+            case self::END_SPONSORING_FUTURE_RESERVES:
+                return 'END_SPONSORING_FUTURE_RESERVES';
+            case self::REVOKE_SPONSORSHIP:
+                return 'REVOKE_SPONSORSHIP';
+            case self::CLAWBACK:
+                return 'CLAWBACK';
+            case self::CLAWBACK_CLAIMABLE_BALANCE:
+                return 'CLAWBACK_CLAIMABLE_BALANCE';
+            case self::SET_TRUST_LINE_FLAGS:
+                return 'SET_TRUST_LINE_FLAGS';
+            case self::LIQUIDITY_POOL_DEPOSIT:
+                return 'LIQUIDITY_POOL_DEPOSIT';
+            case self::LIQUIDITY_POOL_WITHDRAW:
+                return 'LIQUIDITY_POOL_WITHDRAW';
+            case self::INVOKE_HOST_FUNCTION:
+                return 'INVOKE_HOST_FUNCTION';
+            case self::EXTEND_FOOTPRINT_TTL:
+                return 'EXTEND_FOOTPRINT_TTL';
+            case self::RESTORE_FOOTPRINT:
+                return 'RESTORE_FOOTPRINT';
+            default:
+                return 'XdrOperationType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'CREATE_ACCOUNT':
+                return new static(self::CREATE_ACCOUNT);
+            case 'PAYMENT':
+                return new static(self::PAYMENT);
+            case 'PATH_PAYMENT_STRICT_RECEIVE':
+                return new static(self::PATH_PAYMENT_STRICT_RECEIVE);
+            case 'MANAGE_SELL_OFFER':
+                return new static(self::MANAGE_SELL_OFFER);
+            case 'CREATE_PASSIVE_SELL_OFFER':
+                return new static(self::CREATE_PASSIVE_SELL_OFFER);
+            case 'SET_OPTIONS':
+                return new static(self::SET_OPTIONS);
+            case 'CHANGE_TRUST':
+                return new static(self::CHANGE_TRUST);
+            case 'ALLOW_TRUST':
+                return new static(self::ALLOW_TRUST);
+            case 'ACCOUNT_MERGE':
+                return new static(self::ACCOUNT_MERGE);
+            case 'INFLATION':
+                return new static(self::INFLATION);
+            case 'MANAGE_DATA':
+                return new static(self::MANAGE_DATA);
+            case 'BUMP_SEQUENCE':
+                return new static(self::BUMP_SEQUENCE);
+            case 'MANAGE_BUY_OFFER':
+                return new static(self::MANAGE_BUY_OFFER);
+            case 'PATH_PAYMENT_STRICT_SEND':
+                return new static(self::PATH_PAYMENT_STRICT_SEND);
+            case 'CREATE_CLAIMABLE_BALANCE':
+                return new static(self::CREATE_CLAIMABLE_BALANCE);
+            case 'CLAIM_CLAIMABLE_BALANCE':
+                return new static(self::CLAIM_CLAIMABLE_BALANCE);
+            case 'BEGIN_SPONSORING_FUTURE_RESERVES':
+                return new static(self::BEGIN_SPONSORING_FUTURE_RESERVES);
+            case 'END_SPONSORING_FUTURE_RESERVES':
+                return new static(self::END_SPONSORING_FUTURE_RESERVES);
+            case 'REVOKE_SPONSORSHIP':
+                return new static(self::REVOKE_SPONSORSHIP);
+            case 'CLAWBACK':
+                return new static(self::CLAWBACK);
+            case 'CLAWBACK_CLAIMABLE_BALANCE':
+                return new static(self::CLAWBACK_CLAIMABLE_BALANCE);
+            case 'SET_TRUST_LINE_FLAGS':
+                return new static(self::SET_TRUST_LINE_FLAGS);
+            case 'LIQUIDITY_POOL_DEPOSIT':
+                return new static(self::LIQUIDITY_POOL_DEPOSIT);
+            case 'LIQUIDITY_POOL_WITHDRAW':
+                return new static(self::LIQUIDITY_POOL_WITHDRAW);
+            case 'INVOKE_HOST_FUNCTION':
+                return new static(self::INVOKE_HOST_FUNCTION);
+            case 'EXTEND_FOOTPRINT_TTL':
+                return new static(self::EXTEND_FOOTPRINT_TTL);
+            case 'RESTORE_FOOTPRINT':
+                return new static(self::RESTORE_FOOTPRINT);
+            default:
+                $prefix = 'XdrOperationType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

@@ -101,4 +101,75 @@ class XdrSCErrorCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::SCEC_ARITH_DOMAIN:
+                return 'SCEC_ARITH_DOMAIN';
+            case self::SCEC_INDEX_BOUNDS:
+                return 'SCEC_INDEX_BOUNDS';
+            case self::SCEC_INVALID_INPUT:
+                return 'SCEC_INVALID_INPUT';
+            case self::SCEC_MISSING_VALUE:
+                return 'SCEC_MISSING_VALUE';
+            case self::SCEC_EXISTING_VALUE:
+                return 'SCEC_EXISTING_VALUE';
+            case self::SCEC_EXCEEDED_LIMIT:
+                return 'SCEC_EXCEEDED_LIMIT';
+            case self::SCEC_INVALID_ACTION:
+                return 'SCEC_INVALID_ACTION';
+            case self::SCEC_INTERNAL_ERROR:
+                return 'SCEC_INTERNAL_ERROR';
+            case self::SCEC_UNEXPECTED_TYPE:
+                return 'SCEC_UNEXPECTED_TYPE';
+            case self::SCEC_UNEXPECTED_SIZE:
+                return 'SCEC_UNEXPECTED_SIZE';
+            default:
+                return 'XdrSCErrorCode#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'SCEC_ARITH_DOMAIN':
+                return new static(self::SCEC_ARITH_DOMAIN);
+            case 'SCEC_INDEX_BOUNDS':
+                return new static(self::SCEC_INDEX_BOUNDS);
+            case 'SCEC_INVALID_INPUT':
+                return new static(self::SCEC_INVALID_INPUT);
+            case 'SCEC_MISSING_VALUE':
+                return new static(self::SCEC_MISSING_VALUE);
+            case 'SCEC_EXISTING_VALUE':
+                return new static(self::SCEC_EXISTING_VALUE);
+            case 'SCEC_EXCEEDED_LIMIT':
+                return new static(self::SCEC_EXCEEDED_LIMIT);
+            case 'SCEC_INVALID_ACTION':
+                return new static(self::SCEC_INVALID_ACTION);
+            case 'SCEC_INTERNAL_ERROR':
+                return new static(self::SCEC_INTERNAL_ERROR);
+            case 'SCEC_UNEXPECTED_TYPE':
+                return new static(self::SCEC_UNEXPECTED_TYPE);
+            case 'SCEC_UNEXPECTED_SIZE':
+                return new static(self::SCEC_UNEXPECTED_SIZE);
+            default:
+                $prefix = 'XdrSCErrorCode#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

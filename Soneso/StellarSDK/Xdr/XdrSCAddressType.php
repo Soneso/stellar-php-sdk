@@ -71,4 +71,55 @@ class XdrSCAddressType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::SC_ADDRESS_TYPE_ACCOUNT:
+                return 'SC_ADDRESS_TYPE_ACCOUNT';
+            case self::SC_ADDRESS_TYPE_CONTRACT:
+                return 'SC_ADDRESS_TYPE_CONTRACT';
+            case self::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+                return 'SC_ADDRESS_TYPE_MUXED_ACCOUNT';
+            case self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+                return 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE';
+            case self::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                return 'SC_ADDRESS_TYPE_LIQUIDITY_POOL';
+            default:
+                return 'XdrSCAddressType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'SC_ADDRESS_TYPE_ACCOUNT':
+                return new static(self::SC_ADDRESS_TYPE_ACCOUNT);
+            case 'SC_ADDRESS_TYPE_CONTRACT':
+                return new static(self::SC_ADDRESS_TYPE_CONTRACT);
+            case 'SC_ADDRESS_TYPE_MUXED_ACCOUNT':
+                return new static(self::SC_ADDRESS_TYPE_MUXED_ACCOUNT);
+            case 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE':
+                return new static(self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+            case 'SC_ADDRESS_TYPE_LIQUIDITY_POOL':
+                return new static(self::SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+            default:
+                $prefix = 'XdrSCAddressType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

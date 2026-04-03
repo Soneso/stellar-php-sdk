@@ -51,4 +51,17 @@ class XdrPaymentOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.destination'] = TxRepHelper::formatMuxedAccount($this->destination);
+        $lines[$prefix . '.asset'] = TxRepHelper::formatAsset($this->asset);
+        $lines[$prefix . '.amount'] = $this->amount->toString();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrPaymentOperation {
+        $destination = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.destination') ?? '');
+        $asset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
+        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        return new XdrPaymentOperation($destination, $asset, $amount);
+    }
 }

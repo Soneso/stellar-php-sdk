@@ -65,4 +65,51 @@ class XdrSignerKeyTypeBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::SIGNER_KEY_TYPE_ED25519:
+                return 'SIGNER_KEY_TYPE_ED25519';
+            case self::SIGNER_KEY_TYPE_PRE_AUTH_TX:
+                return 'SIGNER_KEY_TYPE_PRE_AUTH_TX';
+            case self::SIGNER_KEY_TYPE_HASH_X:
+                return 'SIGNER_KEY_TYPE_HASH_X';
+            case self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
+                return 'SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD';
+            default:
+                return 'XdrSignerKeyTypeBase#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'SIGNER_KEY_TYPE_ED25519':
+                return new static(self::SIGNER_KEY_TYPE_ED25519);
+            case 'SIGNER_KEY_TYPE_PRE_AUTH_TX':
+                return new static(self::SIGNER_KEY_TYPE_PRE_AUTH_TX);
+            case 'SIGNER_KEY_TYPE_HASH_X':
+                return new static(self::SIGNER_KEY_TYPE_HASH_X);
+            case 'SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD':
+                return new static(self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+            default:
+                $prefix = 'XdrSignerKeyTypeBase#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

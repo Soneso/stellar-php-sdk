@@ -101,4 +101,75 @@ class XdrEnvelopeType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::ENVELOPE_TYPE_TX_V0:
+                return 'ENVELOPE_TYPE_TX_V0';
+            case self::ENVELOPE_TYPE_SCP:
+                return 'ENVELOPE_TYPE_SCP';
+            case self::ENVELOPE_TYPE_TX:
+                return 'ENVELOPE_TYPE_TX';
+            case self::ENVELOPE_TYPE_AUTH:
+                return 'ENVELOPE_TYPE_AUTH';
+            case self::ENVELOPE_TYPE_SCPVALUE:
+                return 'ENVELOPE_TYPE_SCPVALUE';
+            case self::ENVELOPE_TYPE_TX_FEE_BUMP:
+                return 'ENVELOPE_TYPE_TX_FEE_BUMP';
+            case self::ENVELOPE_TYPE_OP_ID:
+                return 'ENVELOPE_TYPE_OP_ID';
+            case self::ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
+                return 'ENVELOPE_TYPE_POOL_REVOKE_OP_ID';
+            case self::ENVELOPE_TYPE_CONTRACT_ID:
+                return 'ENVELOPE_TYPE_CONTRACT_ID';
+            case self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
+                return 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION';
+            default:
+                return 'XdrEnvelopeType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'ENVELOPE_TYPE_TX_V0':
+                return new static(self::ENVELOPE_TYPE_TX_V0);
+            case 'ENVELOPE_TYPE_SCP':
+                return new static(self::ENVELOPE_TYPE_SCP);
+            case 'ENVELOPE_TYPE_TX':
+                return new static(self::ENVELOPE_TYPE_TX);
+            case 'ENVELOPE_TYPE_AUTH':
+                return new static(self::ENVELOPE_TYPE_AUTH);
+            case 'ENVELOPE_TYPE_SCPVALUE':
+                return new static(self::ENVELOPE_TYPE_SCPVALUE);
+            case 'ENVELOPE_TYPE_TX_FEE_BUMP':
+                return new static(self::ENVELOPE_TYPE_TX_FEE_BUMP);
+            case 'ENVELOPE_TYPE_OP_ID':
+                return new static(self::ENVELOPE_TYPE_OP_ID);
+            case 'ENVELOPE_TYPE_POOL_REVOKE_OP_ID':
+                return new static(self::ENVELOPE_TYPE_POOL_REVOKE_OP_ID);
+            case 'ENVELOPE_TYPE_CONTRACT_ID':
+                return new static(self::ENVELOPE_TYPE_CONTRACT_ID);
+            case 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION':
+                return new static(self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+            default:
+                $prefix = 'XdrEnvelopeType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

@@ -65,4 +65,51 @@ class XdrAssetType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::ASSET_TYPE_NATIVE:
+                return 'ASSET_TYPE_NATIVE';
+            case self::ASSET_TYPE_CREDIT_ALPHANUM4:
+                return 'ASSET_TYPE_CREDIT_ALPHANUM4';
+            case self::ASSET_TYPE_CREDIT_ALPHANUM12:
+                return 'ASSET_TYPE_CREDIT_ALPHANUM12';
+            case self::ASSET_TYPE_POOL_SHARE:
+                return 'ASSET_TYPE_POOL_SHARE';
+            default:
+                return 'XdrAssetType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'ASSET_TYPE_NATIVE':
+                return new static(self::ASSET_TYPE_NATIVE);
+            case 'ASSET_TYPE_CREDIT_ALPHANUM4':
+                return new static(self::ASSET_TYPE_CREDIT_ALPHANUM4);
+            case 'ASSET_TYPE_CREDIT_ALPHANUM12':
+                return new static(self::ASSET_TYPE_CREDIT_ALPHANUM12);
+            case 'ASSET_TYPE_POOL_SHARE':
+                return new static(self::ASSET_TYPE_POOL_SHARE);
+            default:
+                $prefix = 'XdrAssetType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

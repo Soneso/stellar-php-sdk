@@ -43,4 +43,15 @@ class XdrSCMapEntry {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->key->toTxRep($prefix . '.key', $lines);
+        $this->val->toTxRep($prefix . '.val', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSCMapEntry {
+        $key = XdrSCVal::fromTxRep($map, $prefix . '.key');
+        $val = XdrSCVal::fromTxRep($map, $prefix . '.val');
+        return new XdrSCMapEntry($key, $val);
+    }
 }

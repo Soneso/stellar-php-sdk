@@ -57,4 +57,19 @@ class XdrLiquidityPoolWithdrawOperationBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex($this->liquidityPoolID);
+        $lines[$prefix . '.amount'] = $this->amount->toString();
+        $lines[$prefix . '.minAmountA'] = $this->minAmountA->toString();
+        $lines[$prefix . '.minAmountB'] = $this->minAmountB->toString();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $liquidityPoolID = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '');
+        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        $minAmountA = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.minAmountA') ?? '0');
+        $minAmountB = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.minAmountB') ?? '0');
+        return new static($liquidityPoolID, $amount, $minAmountA, $minAmountB);
+    }
 }

@@ -37,4 +37,13 @@ class XdrSCNonceKey {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.nonce'] = (string)$this->nonce;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSCNonceKey {
+        $nonce = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.nonce') ?? '0');
+        return new XdrSCNonceKey($nonce);
+    }
 }

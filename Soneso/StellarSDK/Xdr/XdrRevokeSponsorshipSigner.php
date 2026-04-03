@@ -43,4 +43,15 @@ class XdrRevokeSponsorshipSigner {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.accountID'] = TxRepHelper::formatAccountId($this->accountId);
+        $lines[$prefix . '.signerKey'] = TxRepHelper::formatSignerKey($this->signerKey);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrRevokeSponsorshipSigner {
+        $accountId = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.accountID') ?? '');
+        $signerKey = TxRepHelper::parseSignerKey(TxRepHelper::getValue($map, $prefix . '.signerKey') ?? '');
+        return new XdrRevokeSponsorshipSigner($accountId, $signerKey);
+    }
 }

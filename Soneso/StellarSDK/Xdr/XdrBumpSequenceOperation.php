@@ -37,4 +37,13 @@ class XdrBumpSequenceOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->bumpTo->toTxRep($prefix . '.bumpTo', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrBumpSequenceOperation {
+        $bumpTo = XdrSequenceNumber::fromTxRep($map, $prefix . '.bumpTo');
+        return new XdrBumpSequenceOperation($bumpTo);
+    }
 }

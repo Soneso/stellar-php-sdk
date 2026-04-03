@@ -87,4 +87,56 @@ class XdrMemo {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrMemoType::MEMO_NONE:
+                break;
+            case XdrMemoType::MEMO_TEXT:
+                $lines[$prefix . '.text'] = TxRepHelper::escapeString($this->text);
+                break;
+            case XdrMemoType::MEMO_ID:
+                $lines[$prefix . '.id'] = (string)$this->id;
+                break;
+            case XdrMemoType::MEMO_HASH:
+                $lines[$prefix . '.hash'] = TxRepHelper::bytesToHex($this->hash);
+                break;
+            case XdrMemoType::MEMO_RETURN:
+                $lines[$prefix . '.retHash'] = TxRepHelper::bytesToHex($this->returnHash);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrMemo {
+        $disc = XdrMemoType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrMemo($disc);
+        switch ($result->type->getValue()) {
+            case XdrMemoType::MEMO_NONE:
+                break;
+            case XdrMemoType::MEMO_TEXT:
+                $raw = TxRepHelper::getValue($map, $prefix . '.text') ?? '';
+                if (str_starts_with($raw, '"') && str_ends_with($raw, '"')) {
+                    $decoded = json_decode($raw, false);
+                    $result->text = ($decoded !== null) ? (string)$decoded : TxRepHelper::unescapeString($raw);
+                } else {
+                    $result->text = $raw;
+                }
+                break;
+            case XdrMemoType::MEMO_ID:
+                $result->id = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.id') ?? '0');
+                break;
+            case XdrMemoType::MEMO_HASH:
+                $result->hash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hash') ?? '');
+                break;
+            case XdrMemoType::MEMO_RETURN:
+                $result->returnHash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.retHash') ?? '');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

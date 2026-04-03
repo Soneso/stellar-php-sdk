@@ -34,4 +34,12 @@ class XdrSequenceNumber {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->sequenceNumber->toString();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSequenceNumber {
+        return new XdrSequenceNumber(TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix) ?? '0'));
+    }
 }

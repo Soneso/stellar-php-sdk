@@ -49,4 +49,17 @@ class XdrLedgerKeyContractData {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->contract->toTxRep($prefix . '.contract', $lines);
+        $this->key->toTxRep($prefix . '.key', $lines);
+        $this->durability->toTxRep($prefix . '.durability', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyContractData {
+        $contract = XdrSCAddress::fromTxRep($map, $prefix . '.contract');
+        $key = XdrSCVal::fromTxRep($map, $prefix . '.key');
+        $durability = XdrContractDataDurability::fromTxRep($map, $prefix . '.durability');
+        return new XdrLedgerKeyContractData($contract, $key, $durability);
+    }
 }

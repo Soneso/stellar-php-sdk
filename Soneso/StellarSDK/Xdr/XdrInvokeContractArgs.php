@@ -57,4 +57,24 @@ class XdrInvokeContractArgs {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->contractAddress->toTxRep($prefix . '.contractAddress', $lines);
+        $lines[$prefix . '.functionName'] = TxRepHelper::escapeString($this->functionName);
+        $lines[$prefix . '.args.len'] = (string)count($this->args);
+        for ($i = 0; $i < count($this->args); $i++) {
+            $this->args[$i]->toTxRep($prefix . '.args[' . $i . ']', $lines);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrInvokeContractArgs {
+        $contractAddress = XdrSCAddress::fromTxRep($map, $prefix . '.contractAddress');
+        $functionName = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.functionName') ?? '');
+        $argsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.args.len') ?? '0');
+        $args = [];
+        for ($i = 0; $i < $argsLen; $i++) {
+            $args[] = XdrSCVal::fromTxRep($map, $prefix . '.args[' . $i . ']');
+        }
+        return new XdrInvokeContractArgs($contractAddress, $functionName, $args);
+    }
 }

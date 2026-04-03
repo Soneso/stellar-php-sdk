@@ -43,4 +43,15 @@ class XdrLedgerKeyData {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.accountID'] = TxRepHelper::formatAccountId($this->accountID);
+        $lines[$prefix . '.dataName'] = TxRepHelper::escapeString($this->dataName);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyData {
+        $accountID = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.accountID') ?? '');
+        $dataName = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.dataName') ?? '');
+        return new XdrLedgerKeyData($accountID, $dataName);
+    }
 }

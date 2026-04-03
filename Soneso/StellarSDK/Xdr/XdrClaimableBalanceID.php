@@ -64,4 +64,43 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase
             $claimableBalanceId,
         );
     }
+
+    /**
+     * Override toTxRep to emit the hash as a hex string directly (this class
+     * stores $hash as a hex string, not binary bytes).
+     *
+     * @param string               $prefix
+     * @param array<string,string> $lines
+     */
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
+                $lines[$prefix . '.v0'] = $this->hash ?? '';
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Override fromTxRep to store the hash as a hex string (as the constructor
+     * and encode() expect) rather than converting to/from binary bytes.
+     *
+     * @param array<string,string> $map
+     * @param string               $prefix
+     * @return static
+     */
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrClaimableBalanceIDType::fromTxRep($map, $prefix . '.type');
+        $hash = '';
+        switch ($disc->getValue()) {
+            case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
+                $hash = TxRepHelper::getValue($map, $prefix . '.v0') ?? '';
+                break;
+            default:
+                break;
+        }
+        return new static($disc, $hash);
+    }
 }

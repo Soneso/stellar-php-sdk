@@ -57,4 +57,19 @@ class XdrCreatePassiveSellOfferOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.selling'] = TxRepHelper::formatAsset($this->selling);
+        $lines[$prefix . '.buying'] = TxRepHelper::formatAsset($this->buying);
+        $lines[$prefix . '.amount'] = $this->amount->toString();
+        $this->price->toTxRep($prefix . '.price', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrCreatePassiveSellOfferOperation {
+        $selling = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.selling') ?? '');
+        $buying = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.buying') ?? '');
+        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        $price = XdrPrice::fromTxRep($map, $prefix . '.price');
+        return new XdrCreatePassiveSellOfferOperation($selling, $buying, $amount, $price);
+    }
 }

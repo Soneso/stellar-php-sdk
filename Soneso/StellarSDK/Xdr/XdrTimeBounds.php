@@ -47,4 +47,20 @@ class XdrTimeBounds extends XdrTimeBoundsBase
             DateTime::createFromFormat('U', strval($xdr->readUnsignedInteger64()))
         );
     }
+
+    /**
+     * Override fromTxRep to supply DateTime objects as required by this constructor.
+     *
+     * @param array<string,string> $map
+     * @param string               $prefix
+     * @return static
+     */
+    public static function fromTxRep(array $map, string $prefix): static
+    {
+        $minTimestamp = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minTime') ?? '0');
+        $maxTimestamp = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.maxTime') ?? '0');
+        $minDt = (new DateTime())->setTimestamp($minTimestamp);
+        $maxDt = (new DateTime())->setTimestamp($maxTimestamp);
+        return new static($minDt, $maxDt);
+    }
 }

@@ -56,4 +56,28 @@ class XdrPublicKey {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519:
+                $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrPublicKey {
+        $disc = XdrPublicKeyType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrPublicKey($disc);
+        switch ($result->type->getValue()) {
+            case XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519:
+                $result->ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

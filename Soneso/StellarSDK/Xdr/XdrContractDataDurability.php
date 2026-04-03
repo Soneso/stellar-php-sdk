@@ -53,4 +53,43 @@ class XdrContractDataDurability {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::TEMPORARY:
+                return 'TEMPORARY';
+            case self::PERSISTENT:
+                return 'PERSISTENT';
+            default:
+                return 'XdrContractDataDurability#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'TEMPORARY':
+                return new static(self::TEMPORARY);
+            case 'PERSISTENT':
+                return new static(self::PERSISTENT);
+            default:
+                $prefix = 'XdrContractDataDurability#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

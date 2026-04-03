@@ -45,4 +45,15 @@ class XdrCreateAccountOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.destination'] = TxRepHelper::formatAccountId($this->destination);
+        $lines[$prefix . '.startingBalance'] = $this->startingBalance->toString();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrCreateAccountOperation {
+        $destination = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.destination') ?? '');
+        $startingBalance = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.startingBalance') ?? '0');
+        return new XdrCreateAccountOperation($destination, $startingBalance);
+    }
 }

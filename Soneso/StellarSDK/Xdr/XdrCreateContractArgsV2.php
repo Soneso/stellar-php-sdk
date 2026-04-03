@@ -57,4 +57,24 @@ class XdrCreateContractArgsV2 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->contractIDPreimage->toTxRep($prefix . '.contractIDPreimage', $lines);
+        $this->executable->toTxRep($prefix . '.executable', $lines);
+        $lines[$prefix . '.constructorArgs.len'] = (string)count($this->constructorArgs);
+        for ($i = 0; $i < count($this->constructorArgs); $i++) {
+            $this->constructorArgs[$i]->toTxRep($prefix . '.constructorArgs[' . $i . ']', $lines);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrCreateContractArgsV2 {
+        $contractIDPreimage = XdrContractIDPreimage::fromTxRep($map, $prefix . '.contractIDPreimage');
+        $executable = XdrContractExecutable::fromTxRep($map, $prefix . '.executable');
+        $constructorArgsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.constructorArgs.len') ?? '0');
+        $constructorArgs = [];
+        for ($i = 0; $i < $constructorArgsLen; $i++) {
+            $constructorArgs[] = XdrSCVal::fromTxRep($map, $prefix . '.constructorArgs[' . $i . ']');
+        }
+        return new XdrCreateContractArgsV2($contractIDPreimage, $executable, $constructorArgs);
+    }
 }

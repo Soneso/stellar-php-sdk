@@ -43,4 +43,15 @@ class XdrDecoratedSignatureBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.hint'] = TxRepHelper::bytesToHex($this->hint);
+        $lines[$prefix . '.signature'] = TxRepHelper::bytesToHex($this->signature);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $hint = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hint') ?? '');
+        $signature = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.signature') ?? '');
+        return new static($hint, $signature);
+    }
 }

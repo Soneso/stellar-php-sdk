@@ -59,4 +59,47 @@ class XdrPreconditionType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::NONE:
+                return 'PRECOND_NONE';
+            case self::TIME:
+                return 'PRECOND_TIME';
+            case self::V2:
+                return 'PRECOND_V2';
+            default:
+                return 'XdrPreconditionType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'PRECOND_NONE':
+                return new static(self::NONE);
+            case 'PRECOND_TIME':
+                return new static(self::TIME);
+            case 'PRECOND_V2':
+                return new static(self::V2);
+            default:
+                $prefix = 'XdrPreconditionType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

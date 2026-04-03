@@ -43,4 +43,15 @@ class XdrLedgerKeyOffer {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.sellerID'] = TxRepHelper::formatAccountId($this->sellerID);
+        $lines[$prefix . '.offerID'] = (string)$this->offerID;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyOffer {
+        $sellerID = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.sellerID') ?? '');
+        $offerID = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.offerID') ?? '0');
+        return new XdrLedgerKeyOffer($sellerID, $offerID);
+    }
 }

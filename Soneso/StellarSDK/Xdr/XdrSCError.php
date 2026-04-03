@@ -81,4 +81,50 @@ class XdrSCError {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrSCErrorType::SCE_CONTRACT:
+                $lines[$prefix . '.contractCode'] = (string)$this->contractCode;
+                break;
+            case XdrSCErrorType::SCE_WASM_VM:
+            case XdrSCErrorType::SCE_CONTEXT:
+            case XdrSCErrorType::SCE_STORAGE:
+            case XdrSCErrorType::SCE_OBJECT:
+            case XdrSCErrorType::SCE_CRYPTO:
+            case XdrSCErrorType::SCE_EVENTS:
+            case XdrSCErrorType::SCE_BUDGET:
+            case XdrSCErrorType::SCE_VALUE:
+            case XdrSCErrorType::SCE_AUTH:
+                $this->code->toTxRep($prefix . '.code', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSCError {
+        $disc = XdrSCErrorType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrSCError($disc);
+        switch ($result->type->getValue()) {
+            case XdrSCErrorType::SCE_CONTRACT:
+                $result->contractCode = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.contractCode') ?? '0');
+                break;
+            case XdrSCErrorType::SCE_WASM_VM:
+            case XdrSCErrorType::SCE_CONTEXT:
+            case XdrSCErrorType::SCE_STORAGE:
+            case XdrSCErrorType::SCE_OBJECT:
+            case XdrSCErrorType::SCE_CRYPTO:
+            case XdrSCErrorType::SCE_EVENTS:
+            case XdrSCErrorType::SCE_BUDGET:
+            case XdrSCErrorType::SCE_VALUE:
+            case XdrSCErrorType::SCE_AUTH:
+                $result->code = XdrSCErrorCode::fromTxRep($map, $prefix . '.code');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

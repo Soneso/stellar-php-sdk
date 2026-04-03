@@ -65,4 +65,34 @@ class XdrAllowTrustOperationAssetBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
+                $lines[$prefix . '.assetCode4'] = TxRepHelper::bytesToHex($this->assetCode4);
+                break;
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
+                $lines[$prefix . '.assetCode12'] = TxRepHelper::bytesToHex($this->assetCode12);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrAssetType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
+                $result->assetCode4 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode4') ?? '');
+                break;
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
+                $result->assetCode12 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode12') ?? '');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

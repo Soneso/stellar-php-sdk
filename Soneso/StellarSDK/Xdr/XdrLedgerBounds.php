@@ -43,4 +43,15 @@ class XdrLedgerBounds {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.minLedger'] = (string)$this->minLedger;
+        $lines[$prefix . '.maxLedger'] = (string)$this->maxLedger;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerBounds {
+        $minLedger = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minLedger') ?? '0');
+        $maxLedger = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.maxLedger') ?? '0');
+        return new XdrLedgerBounds($minLedger, $maxLedger);
+    }
 }

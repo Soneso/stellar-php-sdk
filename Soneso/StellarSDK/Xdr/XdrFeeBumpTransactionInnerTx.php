@@ -56,4 +56,28 @@ class XdrFeeBumpTransactionInnerTx {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX:
+                $this->v1->toTxRep($prefix . '.v1', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrFeeBumpTransactionInnerTx {
+        $disc = XdrEnvelopeType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrFeeBumpTransactionInnerTx($disc);
+        switch ($result->type->getValue()) {
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX:
+                $result->v1 = XdrTransactionV1Envelope::fromTxRep($map, $prefix . '.v1');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

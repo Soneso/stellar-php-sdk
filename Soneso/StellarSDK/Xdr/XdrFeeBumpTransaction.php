@@ -55,4 +55,19 @@ class XdrFeeBumpTransaction {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.feeSource'] = TxRepHelper::formatMuxedAccount($this->feeSource);
+        $lines[$prefix . '.fee'] = (string)$this->fee;
+        $this->innerTx->toTxRep($prefix . '.innerTx', $lines);
+        $this->ext->toTxRep($prefix . '.ext', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrFeeBumpTransaction {
+        $feeSource = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.feeSource') ?? '');
+        $fee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0');
+        $innerTx = XdrFeeBumpTransactionInnerTx::fromTxRep($map, $prefix . '.innerTx');
+        $ext = XdrFeeBumpTransactionExt::fromTxRep($map, $prefix . '.ext');
+        return new XdrFeeBumpTransaction($feeSource, $fee, $innerTx, $ext);
+    }
 }

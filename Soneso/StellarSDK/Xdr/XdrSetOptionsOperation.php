@@ -157,4 +157,110 @@ class XdrSetOptionsOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        if ($this->inflationDest !== null) {
+            $lines[$prefix . '.inflationDest._present'] = 'true';
+            $lines[$prefix . '.inflationDest'] = TxRepHelper::formatAccountId($this->inflationDest);
+        } else {
+            $lines[$prefix . '.inflationDest._present'] = 'false';
+        }
+        if ($this->clearFlags !== null) {
+            $lines[$prefix . '.clearFlags._present'] = 'true';
+            $lines[$prefix . '.clearFlags'] = (string)$this->clearFlags;
+        } else {
+            $lines[$prefix . '.clearFlags._present'] = 'false';
+        }
+        if ($this->setFlags !== null) {
+            $lines[$prefix . '.setFlags._present'] = 'true';
+            $lines[$prefix . '.setFlags'] = (string)$this->setFlags;
+        } else {
+            $lines[$prefix . '.setFlags._present'] = 'false';
+        }
+        if ($this->masterWeight !== null) {
+            $lines[$prefix . '.masterWeight._present'] = 'true';
+            $lines[$prefix . '.masterWeight'] = (string)$this->masterWeight;
+        } else {
+            $lines[$prefix . '.masterWeight._present'] = 'false';
+        }
+        if ($this->lowThreshold !== null) {
+            $lines[$prefix . '.lowThreshold._present'] = 'true';
+            $lines[$prefix . '.lowThreshold'] = (string)$this->lowThreshold;
+        } else {
+            $lines[$prefix . '.lowThreshold._present'] = 'false';
+        }
+        if ($this->medThreshold !== null) {
+            $lines[$prefix . '.medThreshold._present'] = 'true';
+            $lines[$prefix . '.medThreshold'] = (string)$this->medThreshold;
+        } else {
+            $lines[$prefix . '.medThreshold._present'] = 'false';
+        }
+        if ($this->highThreshold !== null) {
+            $lines[$prefix . '.highThreshold._present'] = 'true';
+            $lines[$prefix . '.highThreshold'] = (string)$this->highThreshold;
+        } else {
+            $lines[$prefix . '.highThreshold._present'] = 'false';
+        }
+        if ($this->homeDomain !== null) {
+            $lines[$prefix . '.homeDomain._present'] = 'true';
+            $lines[$prefix . '.homeDomain'] = TxRepHelper::escapeString($this->homeDomain);
+        } else {
+            $lines[$prefix . '.homeDomain._present'] = 'false';
+        }
+        if ($this->signer !== null) {
+            $lines[$prefix . '.signer._present'] = 'true';
+            $this->signer->toTxRep($prefix . '.signer', $lines);
+        } else {
+            $lines[$prefix . '.signer._present'] = 'false';
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSetOptionsOperation {
+        $inflationDest = null;
+        $inflationDestPresent = TxRepHelper::getValue($map, $prefix . '.inflationDest._present');
+        if ($inflationDestPresent !== null && $inflationDestPresent === 'true') {
+            $inflationDest = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.inflationDest') ?? '');
+        }
+        $clearFlags = null;
+        $clearFlagsPresent = TxRepHelper::getValue($map, $prefix . '.clearFlags._present');
+        if ($clearFlagsPresent !== null && $clearFlagsPresent === 'true') {
+            $clearFlags = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.clearFlags') ?? '0');
+        }
+        $setFlags = null;
+        $setFlagsPresent = TxRepHelper::getValue($map, $prefix . '.setFlags._present');
+        if ($setFlagsPresent !== null && $setFlagsPresent === 'true') {
+            $setFlags = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.setFlags') ?? '0');
+        }
+        $masterWeight = null;
+        $masterWeightPresent = TxRepHelper::getValue($map, $prefix . '.masterWeight._present');
+        if ($masterWeightPresent !== null && $masterWeightPresent === 'true') {
+            $masterWeight = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.masterWeight') ?? '0');
+        }
+        $lowThreshold = null;
+        $lowThresholdPresent = TxRepHelper::getValue($map, $prefix . '.lowThreshold._present');
+        if ($lowThresholdPresent !== null && $lowThresholdPresent === 'true') {
+            $lowThreshold = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.lowThreshold') ?? '0');
+        }
+        $medThreshold = null;
+        $medThresholdPresent = TxRepHelper::getValue($map, $prefix . '.medThreshold._present');
+        if ($medThresholdPresent !== null && $medThresholdPresent === 'true') {
+            $medThreshold = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.medThreshold') ?? '0');
+        }
+        $highThreshold = null;
+        $highThresholdPresent = TxRepHelper::getValue($map, $prefix . '.highThreshold._present');
+        if ($highThresholdPresent !== null && $highThresholdPresent === 'true') {
+            $highThreshold = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.highThreshold') ?? '0');
+        }
+        $homeDomain = null;
+        $homeDomainPresent = TxRepHelper::getValue($map, $prefix . '.homeDomain._present');
+        if ($homeDomainPresent !== null && $homeDomainPresent === 'true') {
+            $homeDomain = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.homeDomain') ?? '');
+        }
+        $signer = null;
+        $signerPresent = TxRepHelper::getValue($map, $prefix . '.signer._present');
+        if ($signerPresent !== null && $signerPresent === 'true') {
+            $signer = XdrSigner::fromTxRep($map, $prefix . '.signer');
+        }
+        return new XdrSetOptionsOperation($inflationDest, $clearFlags, $setFlags, $masterWeight, $lowThreshold, $medThreshold, $highThreshold, $homeDomain, $signer);
+    }
 }

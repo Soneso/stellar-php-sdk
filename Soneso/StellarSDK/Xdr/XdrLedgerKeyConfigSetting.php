@@ -37,4 +37,13 @@ class XdrLedgerKeyConfigSetting {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->configSettingID->toTxRep($prefix . '.configSettingID', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyConfigSetting {
+        $configSettingID = XdrConfigSettingID::fromTxRep($map, $prefix . '.configSettingID');
+        return new XdrLedgerKeyConfigSetting($configSettingID);
+    }
 }

@@ -32,4 +32,12 @@ class XdrAccountIDBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->accountID->toTxRep($prefix, $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        return new static(XdrPublicKey::fromTxRep($map, $prefix));
+    }
 }

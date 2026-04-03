@@ -59,4 +59,31 @@ class XdrSCContractInstance {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->executable->toTxRep($prefix . '.executable', $lines);
+        if ($this->storage !== null) {
+            $lines[$prefix . '.storage._present'] = 'true';
+            $lines[$prefix . '.storage.len'] = (string)count($this->storage);
+            for ($i = 0; $i < count($this->storage); $i++) {
+                $this->storage[$i]->toTxRep($prefix . '.storage[' . $i . ']', $lines);
+            }
+        } else {
+            $lines[$prefix . '.storage._present'] = 'false';
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSCContractInstance {
+        $executable = XdrContractExecutable::fromTxRep($map, $prefix . '.executable');
+        $storage = null;
+        $storagePresent = TxRepHelper::getValue($map, $prefix . '.storage._present');
+        if ($storagePresent !== null && $storagePresent === 'true') {
+            $storageLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.storage.len') ?? '0');
+            $storage = [];
+            for ($i = 0; $i < $storageLen; $i++) {
+                $storage[] = XdrSCMapEntry::fromTxRep($map, $prefix . '.storage[' . $i . ']');
+            }
+        }
+        return new XdrSCContractInstance($executable, $storage);
+    }
 }

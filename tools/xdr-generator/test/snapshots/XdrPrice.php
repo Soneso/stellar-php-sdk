@@ -43,4 +43,15 @@ class XdrPrice {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.n'] = (string)$this->n;
+        $lines[$prefix . '.d'] = (string)$this->d;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrPrice {
+        $n = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.n') ?? '0');
+        $d = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.d') ?? '0');
+        return new XdrPrice($n, $d);
+    }
 }

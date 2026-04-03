@@ -49,4 +49,17 @@ class XdrAllowTrustOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.trustor'] = TxRepHelper::formatAccountId($this->trustor);
+        $lines[$prefix . '.asset'] = TxRepHelper::formatAllowTrustAsset($this->asset);
+        $lines[$prefix . '.authorize'] = (string)$this->authorized;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrAllowTrustOperation {
+        $trustor = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.trustor') ?? '');
+        $asset = TxRepHelper::parseAllowTrustAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
+        $authorized = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.authorize') ?? '0');
+        return new XdrAllowTrustOperation($trustor, $asset, $authorized);
+    }
 }

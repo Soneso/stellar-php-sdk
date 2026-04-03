@@ -53,4 +53,43 @@ class XdrSorobanCredentialsType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
+                return 'SOROBAN_CREDENTIALS_SOURCE_ACCOUNT';
+            case self::SOROBAN_CREDENTIALS_ADDRESS:
+                return 'SOROBAN_CREDENTIALS_ADDRESS';
+            default:
+                return 'XdrSorobanCredentialsType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'SOROBAN_CREDENTIALS_SOURCE_ACCOUNT':
+                return new static(self::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+            case 'SOROBAN_CREDENTIALS_ADDRESS':
+                return new static(self::SOROBAN_CREDENTIALS_ADDRESS);
+            default:
+                $prefix = 'XdrSorobanCredentialsType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

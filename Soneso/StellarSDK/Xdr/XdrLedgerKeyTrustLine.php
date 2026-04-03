@@ -43,4 +43,15 @@ class XdrLedgerKeyTrustLine {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.accountID'] = TxRepHelper::formatAccountId($this->accountID);
+        $this->asset->toTxRep($prefix . '.asset', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyTrustLine {
+        $accountID = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.accountID') ?? '');
+        $asset = XdrTrustlineAsset::fromTxRep($map, $prefix . '.asset');
+        return new XdrLedgerKeyTrustLine($accountID, $asset);
+    }
 }

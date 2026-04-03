@@ -56,4 +56,28 @@ class XdrClaimant {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrClaimantType::V0:
+                $this->v0->toTxRep($prefix . '.v0', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrClaimant {
+        $disc = XdrClaimantType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrClaimant($disc);
+        switch ($result->type->getValue()) {
+            case XdrClaimantType::V0:
+                $result->v0 = XdrClaimantV0::fromTxRep($map, $prefix . '.v0');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

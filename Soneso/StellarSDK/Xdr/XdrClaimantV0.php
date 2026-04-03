@@ -43,4 +43,15 @@ class XdrClaimantV0 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.destination'] = TxRepHelper::formatAccountId($this->destination);
+        $this->predicate->toTxRep($prefix . '.predicate', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrClaimantV0 {
+        $destination = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.destination') ?? '');
+        $predicate = XdrClaimPredicate::fromTxRep($map, $prefix . '.predicate');
+        return new XdrClaimantV0($destination, $predicate);
+    }
 }

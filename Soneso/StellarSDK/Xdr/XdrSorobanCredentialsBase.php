@@ -60,4 +60,32 @@ class XdrSorobanCredentialsBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
+                break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS:
+                $this->address->toTxRep($prefix . '.address', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrSorobanCredentialsType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
+                break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS:
+                $result->address = XdrSorobanAddressCredentials::fromTxRep($map, $prefix . '.address');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

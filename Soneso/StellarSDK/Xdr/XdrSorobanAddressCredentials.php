@@ -55,4 +55,19 @@ class XdrSorobanAddressCredentials {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->address->toTxRep($prefix . '.address', $lines);
+        $lines[$prefix . '.nonce'] = (string)$this->nonce;
+        $lines[$prefix . '.signatureExpirationLedger'] = (string)$this->signatureExpirationLedger;
+        $this->signature->toTxRep($prefix . '.signature', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSorobanAddressCredentials {
+        $address = XdrSCAddress::fromTxRep($map, $prefix . '.address');
+        $nonce = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.nonce') ?? '0');
+        $signatureExpirationLedger = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.signatureExpirationLedger') ?? '0');
+        $signature = XdrSCVal::fromTxRep($map, $prefix . '.signature');
+        return new XdrSorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature);
+    }
 }

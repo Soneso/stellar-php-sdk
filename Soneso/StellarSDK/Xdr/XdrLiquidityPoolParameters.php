@@ -56,4 +56,28 @@ class XdrLiquidityPoolParameters {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT:
+                $this->constantProduct->toTxRep($prefix . '.constantProduct', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLiquidityPoolParameters {
+        $disc = XdrLiquidityPoolType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrLiquidityPoolParameters($disc);
+        switch ($result->type->getValue()) {
+            case XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT:
+                $result->constantProduct = XdrLiquidityPoolConstantProductParameters::fromTxRep($map, $prefix . '.constantProduct');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

@@ -167,4 +167,119 @@ class XdrConfigSettingID {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES:
+                return 'CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES';
+            case self::CONFIG_SETTING_CONTRACT_COMPUTE_V0:
+                return 'CONFIG_SETTING_CONTRACT_COMPUTE_V0';
+            case self::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0:
+                return 'CONFIG_SETTING_CONTRACT_LEDGER_COST_V0';
+            case self::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0:
+                return 'CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0';
+            case self::CONFIG_SETTING_CONTRACT_EVENTS_V0:
+                return 'CONFIG_SETTING_CONTRACT_EVENTS_V0';
+            case self::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0:
+                return 'CONFIG_SETTING_CONTRACT_BANDWIDTH_V0';
+            case self::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS:
+                return 'CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS';
+            case self::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES:
+                return 'CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES';
+            case self::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES:
+                return 'CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES';
+            case self::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES:
+                return 'CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES';
+            case self::CONFIG_SETTING_STATE_ARCHIVAL:
+                return 'CONFIG_SETTING_STATE_ARCHIVAL';
+            case self::CONFIG_SETTING_CONTRACT_EXECUTION_LANES:
+                return 'CONFIG_SETTING_CONTRACT_EXECUTION_LANES';
+            case self::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
+                return 'CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW';
+            case self::CONFIG_SETTING_EVICTION_ITERATOR:
+                return 'CONFIG_SETTING_EVICTION_ITERATOR';
+            case self::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0:
+                return 'CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0';
+            case self::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0:
+                return 'CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0';
+            case self::CONFIG_SETTING_SCP_TIMING:
+                return 'CONFIG_SETTING_SCP_TIMING';
+            case self::CONFIG_SETTING_FROZEN_LEDGER_KEYS:
+                return 'CONFIG_SETTING_FROZEN_LEDGER_KEYS';
+            case self::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA:
+                return 'CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA';
+            case self::CONFIG_SETTING_FREEZE_BYPASS_TXS:
+                return 'CONFIG_SETTING_FREEZE_BYPASS_TXS';
+            case self::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
+                return 'CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA';
+            default:
+                return 'XdrConfigSettingID#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES':
+                return new static(self::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+            case 'CONFIG_SETTING_CONTRACT_COMPUTE_V0':
+                return new static(self::CONFIG_SETTING_CONTRACT_COMPUTE_V0);
+            case 'CONFIG_SETTING_CONTRACT_LEDGER_COST_V0':
+                return new static(self::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0);
+            case 'CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0':
+                return new static(self::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0);
+            case 'CONFIG_SETTING_CONTRACT_EVENTS_V0':
+                return new static(self::CONFIG_SETTING_CONTRACT_EVENTS_V0);
+            case 'CONFIG_SETTING_CONTRACT_BANDWIDTH_V0':
+                return new static(self::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0);
+            case 'CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS':
+                return new static(self::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS);
+            case 'CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES':
+                return new static(self::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES);
+            case 'CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES':
+                return new static(self::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES);
+            case 'CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES':
+                return new static(self::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES);
+            case 'CONFIG_SETTING_STATE_ARCHIVAL':
+                return new static(self::CONFIG_SETTING_STATE_ARCHIVAL);
+            case 'CONFIG_SETTING_CONTRACT_EXECUTION_LANES':
+                return new static(self::CONFIG_SETTING_CONTRACT_EXECUTION_LANES);
+            case 'CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW':
+                return new static(self::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW);
+            case 'CONFIG_SETTING_EVICTION_ITERATOR':
+                return new static(self::CONFIG_SETTING_EVICTION_ITERATOR);
+            case 'CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0':
+                return new static(self::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0);
+            case 'CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0':
+                return new static(self::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0);
+            case 'CONFIG_SETTING_SCP_TIMING':
+                return new static(self::CONFIG_SETTING_SCP_TIMING);
+            case 'CONFIG_SETTING_FROZEN_LEDGER_KEYS':
+                return new static(self::CONFIG_SETTING_FROZEN_LEDGER_KEYS);
+            case 'CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA':
+                return new static(self::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA);
+            case 'CONFIG_SETTING_FREEZE_BYPASS_TXS':
+                return new static(self::CONFIG_SETTING_FREEZE_BYPASS_TXS);
+            case 'CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA':
+                return new static(self::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA);
+            default:
+                $prefix = 'XdrConfigSettingID#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }
