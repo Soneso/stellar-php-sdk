@@ -1,8 +1,8 @@
 # SEP-01: Stellar Info File
 
 **Status:** ✅ Supported  
-**SDK Version:** 1.9.5  
-**Generated:** 2026-03-11 21:41 UTC  
+**SDK Version:** 1.9.6  
+**Generated:** 2026-04-03 21:56 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 
 ## Overall Coverage

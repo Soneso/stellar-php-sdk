@@ -1,7 +1,7 @@
 {
   "name": "stellar-php-sdk",
   "description": "Teaches AI coding agents how to build Stellar blockchain applications using soneso/stellar-php-sdk.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "Soneso"
   },
