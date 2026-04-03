@@ -43,4 +43,15 @@ class XdrExtendFootprintTTLOp {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->ext->toTxRep($prefix . '.ext', $lines);
+        $lines[$prefix . '.extendTo'] = (string)$this->extendTo;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrExtendFootprintTTLOp {
+        $ext = XdrExtensionPoint::fromTxRep($map, $prefix . '.ext');
+        $extendTo = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.extendTo') ?? '0');
+        return new XdrExtendFootprintTTLOp($ext, $extendTo);
+    }
 }

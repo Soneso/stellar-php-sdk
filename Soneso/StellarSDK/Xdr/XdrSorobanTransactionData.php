@@ -49,4 +49,17 @@ class XdrSorobanTransactionData {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->ext->toTxRep($prefix . '.ext', $lines);
+        $this->resources->toTxRep($prefix . '.resources', $lines);
+        $lines[$prefix . '.resourceFee'] = (string)$this->resourceFee;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSorobanTransactionData {
+        $ext = XdrSorobanTransactionDataExt::fromTxRep($map, $prefix . '.ext');
+        $resources = XdrSorobanResources::fromTxRep($map, $prefix . '.resources');
+        $resourceFee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.resourceFee') ?? '0');
+        return new XdrSorobanTransactionData($ext, $resources, $resourceFee);
+    }
 }

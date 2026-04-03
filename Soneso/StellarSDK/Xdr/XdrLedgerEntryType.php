@@ -105,4 +105,75 @@ class XdrLedgerEntryType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::ACCOUNT:
+                return 'ACCOUNT';
+            case self::TRUSTLINE:
+                return 'TRUSTLINE';
+            case self::OFFER:
+                return 'OFFER';
+            case self::DATA:
+                return 'DATA';
+            case self::CLAIMABLE_BALANCE:
+                return 'CLAIMABLE_BALANCE';
+            case self::LIQUIDITY_POOL:
+                return 'LIQUIDITY_POOL';
+            case self::CONTRACT_DATA:
+                return 'CONTRACT_DATA';
+            case self::CONTRACT_CODE:
+                return 'CONTRACT_CODE';
+            case self::CONFIG_SETTING:
+                return 'CONFIG_SETTING';
+            case self::TTL:
+                return 'TTL';
+            default:
+                return 'XdrLedgerEntryType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'ACCOUNT':
+                return new static(self::ACCOUNT);
+            case 'TRUSTLINE':
+                return new static(self::TRUSTLINE);
+            case 'OFFER':
+                return new static(self::OFFER);
+            case 'DATA':
+                return new static(self::DATA);
+            case 'CLAIMABLE_BALANCE':
+                return new static(self::CLAIMABLE_BALANCE);
+            case 'LIQUIDITY_POOL':
+                return new static(self::LIQUIDITY_POOL);
+            case 'CONTRACT_DATA':
+                return new static(self::CONTRACT_DATA);
+            case 'CONTRACT_CODE':
+                return new static(self::CONTRACT_CODE);
+            case 'CONFIG_SETTING':
+                return new static(self::CONFIG_SETTING);
+            case 'TTL':
+                return new static(self::TTL);
+            default:
+                $prefix = 'XdrLedgerEntryType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

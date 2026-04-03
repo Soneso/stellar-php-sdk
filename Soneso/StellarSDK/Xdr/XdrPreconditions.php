@@ -69,4 +69,38 @@ class XdrPreconditions {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrPreconditionType::NONE:
+                break;
+            case XdrPreconditionType::TIME:
+                $this->timeBounds->toTxRep($prefix . '.timeBounds', $lines);
+                break;
+            case XdrPreconditionType::V2:
+                $this->v2->toTxRep($prefix . '.v2', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrPreconditions {
+        $disc = XdrPreconditionType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrPreconditions($disc);
+        switch ($result->type->getValue()) {
+            case XdrPreconditionType::NONE:
+                break;
+            case XdrPreconditionType::TIME:
+                $result->timeBounds = XdrTimeBounds::fromTxRep($map, $prefix . '.timeBounds');
+                break;
+            case XdrPreconditionType::V2:
+                $result->v2 = XdrPreconditionsV2::fromTxRep($map, $prefix . '.v2');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

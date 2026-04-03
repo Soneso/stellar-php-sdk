@@ -45,4 +45,15 @@ class XdrChangeTrustOperationBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->line->toTxRep($prefix . '.line', $lines);
+        $lines[$prefix . '.limit'] = $this->limit->toString();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $line = XdrChangeTrustAsset::fromTxRep($map, $prefix . '.line');
+        $limit = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.limit') ?? '0');
+        return new static($line, $limit);
+    }
 }

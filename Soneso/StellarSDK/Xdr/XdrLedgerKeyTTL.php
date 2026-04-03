@@ -37,4 +37,13 @@ class XdrLedgerKeyTTL {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.keyHash'] = TxRepHelper::bytesToHex($this->keyHash);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyTTL {
+        $keyHash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.keyHash') ?? '');
+        return new XdrLedgerKeyTTL($keyHash);
+    }
 }

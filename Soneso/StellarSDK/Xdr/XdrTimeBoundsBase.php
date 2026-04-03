@@ -43,4 +43,15 @@ class XdrTimeBoundsBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.minTime'] = (string)$this->minTimestamp;
+        $lines[$prefix . '.maxTime'] = (string)$this->maxTimestamp;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $minTimestamp = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minTime') ?? '0');
+        $maxTimestamp = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.maxTime') ?? '0');
+        return new static($minTimestamp, $maxTimestamp);
+    }
 }

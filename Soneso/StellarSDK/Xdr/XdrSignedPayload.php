@@ -43,4 +43,15 @@ class XdrSignedPayload {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
+        $lines[$prefix . '.payload'] = TxRepHelper::bytesToHex($this->payload);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSignedPayload {
+        $ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
+        $payload = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.payload') ?? '');
+        return new XdrSignedPayload($ed25519, $payload);
+    }
 }

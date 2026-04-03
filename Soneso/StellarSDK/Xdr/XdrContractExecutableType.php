@@ -53,4 +53,43 @@ class XdrContractExecutableType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::CONTRACT_EXECUTABLE_WASM:
+                return 'CONTRACT_EXECUTABLE_WASM';
+            case self::CONTRACT_EXECUTABLE_STELLAR_ASSET:
+                return 'CONTRACT_EXECUTABLE_STELLAR_ASSET';
+            default:
+                return 'XdrContractExecutableType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'CONTRACT_EXECUTABLE_WASM':
+                return new static(self::CONTRACT_EXECUTABLE_WASM);
+            case 'CONTRACT_EXECUTABLE_STELLAR_ASSET':
+                return new static(self::CONTRACT_EXECUTABLE_STELLAR_ASSET);
+            default:
+                $prefix = 'XdrContractExecutableType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

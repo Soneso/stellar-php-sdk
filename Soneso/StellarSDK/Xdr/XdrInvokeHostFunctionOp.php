@@ -51,4 +51,22 @@ class XdrInvokeHostFunctionOp {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->hostFunction->toTxRep($prefix . '.hostFunction', $lines);
+        $lines[$prefix . '.auth.len'] = (string)count($this->auth);
+        for ($i = 0; $i < count($this->auth); $i++) {
+            $this->auth[$i]->toTxRep($prefix . '.auth[' . $i . ']', $lines);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrInvokeHostFunctionOp {
+        $hostFunction = XdrHostFunction::fromTxRep($map, $prefix . '.hostFunction');
+        $authLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.auth.len') ?? '0');
+        $auth = [];
+        for ($i = 0; $i < $authLen; $i++) {
+            $auth[] = XdrSorobanAuthorizationEntry::fromTxRep($map, $prefix . '.auth[' . $i . ']');
+        }
+        return new XdrInvokeHostFunctionOp($hostFunction, $auth);
+    }
 }

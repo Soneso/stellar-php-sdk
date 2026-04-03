@@ -59,4 +59,29 @@ class XdrLedgerFootprint {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.readOnly.len'] = (string)count($this->readOnly);
+        for ($i = 0; $i < count($this->readOnly); $i++) {
+            $this->readOnly[$i]->toTxRep($prefix . '.readOnly[' . $i . ']', $lines);
+        }
+        $lines[$prefix . '.readWrite.len'] = (string)count($this->readWrite);
+        for ($i = 0; $i < count($this->readWrite); $i++) {
+            $this->readWrite[$i]->toTxRep($prefix . '.readWrite[' . $i . ']', $lines);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerFootprint {
+        $readOnlyLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.readOnly.len') ?? '0');
+        $readOnly = [];
+        for ($i = 0; $i < $readOnlyLen; $i++) {
+            $readOnly[] = XdrLedgerKey::fromTxRep($map, $prefix . '.readOnly[' . $i . ']');
+        }
+        $readWriteLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.readWrite.len') ?? '0');
+        $readWrite = [];
+        for ($i = 0; $i < $readWriteLen; $i++) {
+            $readWrite[] = XdrLedgerKey::fromTxRep($map, $prefix . '.readWrite[' . $i . ']');
+        }
+        return new XdrLedgerFootprint($readOnly, $readWrite);
+    }
 }

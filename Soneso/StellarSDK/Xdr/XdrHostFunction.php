@@ -97,6 +97,65 @@ class XdrHostFunction extends XdrHostFunctionBase
         return $result;
     }
 
+    /**
+     * Override toTxRep so the wasm field is serialized as a hex string from the
+     * XdrDataValueMandatory wrapper (the base passes the object directly to bytesToHex).
+     *
+     * @param string               $prefix
+     * @param array<string,string> $lines
+     */
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+                $this->invokeContract->toTxRep($prefix . '.invokeContract', $lines);
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+                $this->createContract->toTxRep($prefix . '.createContract', $lines);
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+                if ($this->wasm !== null) {
+                    $this->wasm->toTxRep($prefix . '.wasm', $lines);
+                }
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                $this->createContractV2->toTxRep($prefix . '.createContractV2', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Override fromTxRep so the wasm field is parsed from a hex string into an
+     * XdrDataValueMandatory wrapper (the base assigns a raw string to the typed field).
+     *
+     * @param array<string,string> $map
+     * @param string               $prefix
+     * @return static
+     */
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrHostFunctionType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+                $result->invokeContract = XdrInvokeContractArgs::fromTxRep($map, $prefix . '.invokeContract');
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+                $result->createContract = XdrCreateContractArgs::fromTxRep($map, $prefix . '.createContract');
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+                $result->wasm = XdrDataValueMandatory::fromTxRep($map, $prefix . '.wasm');
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                $result->createContractV2 = XdrCreateContractArgsV2::fromTxRep($map, $prefix . '.createContractV2');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
+
     public static function forCreatingContractWithArgs(XdrCreateContractArgs $args) :  XdrHostFunction {
         $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
         $result->createContract = $args;

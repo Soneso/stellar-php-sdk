@@ -43,4 +43,15 @@ class XdrMuxedAccountMed25519Base {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.id'] = (string)$this->id;
+        $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $id = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.id') ?? '0');
+        $ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
+        return new static($id, $ed25519);
+    }
 }

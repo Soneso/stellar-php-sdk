@@ -280,4 +280,180 @@ class XdrOperationBody {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrOperationType::CREATE_ACCOUNT:
+                $this->createAccountOp->toTxRep($prefix . '.createAccountOp', $lines);
+                break;
+            case XdrOperationType::PAYMENT:
+                $this->paymentOp->toTxRep($prefix . '.paymentOp', $lines);
+                break;
+            case XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE:
+                $this->pathPaymentStrictReceiveOp->toTxRep($prefix . '.pathPaymentStrictReceiveOp', $lines);
+                break;
+            case XdrOperationType::MANAGE_SELL_OFFER:
+                $this->manageSellOfferOp->toTxRep($prefix . '.manageSellOfferOp', $lines);
+                break;
+            case XdrOperationType::CREATE_PASSIVE_SELL_OFFER:
+                $this->createPassiveSellOfferOp->toTxRep($prefix . '.createPassiveSellOfferOp', $lines);
+                break;
+            case XdrOperationType::SET_OPTIONS:
+                $this->setOptionsOp->toTxRep($prefix . '.setOptionsOp', $lines);
+                break;
+            case XdrOperationType::CHANGE_TRUST:
+                $this->changeTrustOp->toTxRep($prefix . '.changeTrustOp', $lines);
+                break;
+            case XdrOperationType::ALLOW_TRUST:
+                $this->allowTrustOperation->toTxRep($prefix . '.allowTrustOp', $lines);
+                break;
+            case XdrOperationType::ACCOUNT_MERGE:
+                $this->accountMergeOp->toTxRep($prefix . '.destination', $lines);
+                break;
+            case XdrOperationType::INFLATION:
+                break;
+            case XdrOperationType::MANAGE_DATA:
+                $this->manageDataOperation->toTxRep($prefix . '.manageDataOp', $lines);
+                break;
+            case XdrOperationType::BUMP_SEQUENCE:
+                $this->bumpSequenceOp->toTxRep($prefix . '.bumpSequenceOp', $lines);
+                break;
+            case XdrOperationType::MANAGE_BUY_OFFER:
+                $this->manageBuyOfferOp->toTxRep($prefix . '.manageBuyOfferOp', $lines);
+                break;
+            case XdrOperationType::PATH_PAYMENT_STRICT_SEND:
+                $this->pathPaymentStrictSendOp->toTxRep($prefix . '.pathPaymentStrictSendOp', $lines);
+                break;
+            case XdrOperationType::CREATE_CLAIMABLE_BALANCE:
+                $this->createClaimableBalanceOperation->toTxRep($prefix . '.createClaimableBalanceOp', $lines);
+                break;
+            case XdrOperationType::CLAIM_CLAIMABLE_BALANCE:
+                $this->claimClaimableBalanceOperation->toTxRep($prefix . '.claimClaimableBalanceOp', $lines);
+                break;
+            case XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES:
+                $this->beginSponsoringFutureReservesOperation->toTxRep($prefix . '.beginSponsoringFutureReservesOp', $lines);
+                break;
+            case XdrOperationType::END_SPONSORING_FUTURE_RESERVES:
+                break;
+            case XdrOperationType::REVOKE_SPONSORSHIP:
+                $this->revokeSponsorshipOperation->toTxRep($prefix . '.revokeSponsorshipOp', $lines);
+                break;
+            case XdrOperationType::CLAWBACK:
+                $this->clawbackOperation->toTxRep($prefix . '.clawbackOp', $lines);
+                break;
+            case XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE:
+                $this->clawbackClaimableBalanceOperation->toTxRep($prefix . '.clawbackClaimableBalanceOp', $lines);
+                break;
+            case XdrOperationType::SET_TRUST_LINE_FLAGS:
+                $this->setTrustLineFlagsOperation->toTxRep($prefix . '.setTrustLineFlagsOp', $lines);
+                break;
+            case XdrOperationType::LIQUIDITY_POOL_DEPOSIT:
+                $this->liquidityPoolDepositOperation->toTxRep($prefix . '.liquidityPoolDepositOp', $lines);
+                break;
+            case XdrOperationType::LIQUIDITY_POOL_WITHDRAW:
+                $this->liquidityPoolWithdrawOperation->toTxRep($prefix . '.liquidityPoolWithdrawOp', $lines);
+                break;
+            case XdrOperationType::INVOKE_HOST_FUNCTION:
+                $this->invokeHostFunctionOperation->toTxRep($prefix . '.invokeHostFunctionOp', $lines);
+                break;
+            case XdrOperationType::EXTEND_FOOTPRINT_TTL:
+                $this->extendFootprintTTLOp->toTxRep($prefix . '.extendFootprintTTLOp', $lines);
+                break;
+            case XdrOperationType::RESTORE_FOOTPRINT:
+                $this->restoreFootprintOp->toTxRep($prefix . '.restoreFootprintOp', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrOperationBody {
+        $disc = XdrOperationType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrOperationBody($disc);
+        switch ($result->type->getValue()) {
+            case XdrOperationType::CREATE_ACCOUNT:
+                $result->createAccountOp = XdrCreateAccountOperation::fromTxRep($map, $prefix . '.createAccountOp');
+                break;
+            case XdrOperationType::PAYMENT:
+                $result->paymentOp = XdrPaymentOperation::fromTxRep($map, $prefix . '.paymentOp');
+                break;
+            case XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE:
+                $result->pathPaymentStrictReceiveOp = XdrPathPaymentStrictReceiveOperation::fromTxRep($map, $prefix . '.pathPaymentStrictReceiveOp');
+                break;
+            case XdrOperationType::MANAGE_SELL_OFFER:
+                $result->manageSellOfferOp = XdrManageSellOfferOperation::fromTxRep($map, $prefix . '.manageSellOfferOp');
+                break;
+            case XdrOperationType::CREATE_PASSIVE_SELL_OFFER:
+                $result->createPassiveSellOfferOp = XdrCreatePassiveSellOfferOperation::fromTxRep($map, $prefix . '.createPassiveSellOfferOp');
+                break;
+            case XdrOperationType::SET_OPTIONS:
+                $result->setOptionsOp = XdrSetOptionsOperation::fromTxRep($map, $prefix . '.setOptionsOp');
+                break;
+            case XdrOperationType::CHANGE_TRUST:
+                $result->changeTrustOp = XdrChangeTrustOperation::fromTxRep($map, $prefix . '.changeTrustOp');
+                break;
+            case XdrOperationType::ALLOW_TRUST:
+                $result->allowTrustOperation = XdrAllowTrustOperation::fromTxRep($map, $prefix . '.allowTrustOp');
+                break;
+            case XdrOperationType::ACCOUNT_MERGE:
+                $result->accountMergeOp = XdrAccountMergeOperation::fromTxRep($map, $prefix . '.destination');
+                break;
+            case XdrOperationType::INFLATION:
+                break;
+            case XdrOperationType::MANAGE_DATA:
+                $result->manageDataOperation = XdrManageDataOperation::fromTxRep($map, $prefix . '.manageDataOp');
+                break;
+            case XdrOperationType::BUMP_SEQUENCE:
+                $result->bumpSequenceOp = XdrBumpSequenceOperation::fromTxRep($map, $prefix . '.bumpSequenceOp');
+                break;
+            case XdrOperationType::MANAGE_BUY_OFFER:
+                $result->manageBuyOfferOp = XdrManageBuyOfferOperation::fromTxRep($map, $prefix . '.manageBuyOfferOp');
+                break;
+            case XdrOperationType::PATH_PAYMENT_STRICT_SEND:
+                $result->pathPaymentStrictSendOp = XdrPathPaymentStrictSendOperation::fromTxRep($map, $prefix . '.pathPaymentStrictSendOp');
+                break;
+            case XdrOperationType::CREATE_CLAIMABLE_BALANCE:
+                $result->createClaimableBalanceOperation = XdrCreateClaimableBalanceOperation::fromTxRep($map, $prefix . '.createClaimableBalanceOp');
+                break;
+            case XdrOperationType::CLAIM_CLAIMABLE_BALANCE:
+                $result->claimClaimableBalanceOperation = XdrClaimClaimableBalanceOperation::fromTxRep($map, $prefix . '.claimClaimableBalanceOp');
+                break;
+            case XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES:
+                $result->beginSponsoringFutureReservesOperation = XdrBeginSponsoringFutureReservesOperation::fromTxRep($map, $prefix . '.beginSponsoringFutureReservesOp');
+                break;
+            case XdrOperationType::END_SPONSORING_FUTURE_RESERVES:
+                break;
+            case XdrOperationType::REVOKE_SPONSORSHIP:
+                $result->revokeSponsorshipOperation = XdrRevokeSponsorshipOperation::fromTxRep($map, $prefix . '.revokeSponsorshipOp');
+                break;
+            case XdrOperationType::CLAWBACK:
+                $result->clawbackOperation = XdrClawbackOperation::fromTxRep($map, $prefix . '.clawbackOp');
+                break;
+            case XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE:
+                $result->clawbackClaimableBalanceOperation = XdrClawbackClaimableBalanceOperation::fromTxRep($map, $prefix . '.clawbackClaimableBalanceOp');
+                break;
+            case XdrOperationType::SET_TRUST_LINE_FLAGS:
+                $result->setTrustLineFlagsOperation = XdrSetTrustLineFlagsOperation::fromTxRep($map, $prefix . '.setTrustLineFlagsOp');
+                break;
+            case XdrOperationType::LIQUIDITY_POOL_DEPOSIT:
+                $result->liquidityPoolDepositOperation = XdrLiquidityPoolDepositOperation::fromTxRep($map, $prefix . '.liquidityPoolDepositOp');
+                break;
+            case XdrOperationType::LIQUIDITY_POOL_WITHDRAW:
+                $result->liquidityPoolWithdrawOperation = XdrLiquidityPoolWithdrawOperation::fromTxRep($map, $prefix . '.liquidityPoolWithdrawOp');
+                break;
+            case XdrOperationType::INVOKE_HOST_FUNCTION:
+                $result->invokeHostFunctionOperation = XdrInvokeHostFunctionOp::fromTxRep($map, $prefix . '.invokeHostFunctionOp');
+                break;
+            case XdrOperationType::EXTEND_FOOTPRINT_TTL:
+                $result->extendFootprintTTLOp = XdrExtendFootprintTTLOp::fromTxRep($map, $prefix . '.extendFootprintTTLOp');
+                break;
+            case XdrOperationType::RESTORE_FOOTPRINT:
+                $result->restoreFootprintOp = XdrRestoreFootprintOp::fromTxRep($map, $prefix . '.restoreFootprintOp');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

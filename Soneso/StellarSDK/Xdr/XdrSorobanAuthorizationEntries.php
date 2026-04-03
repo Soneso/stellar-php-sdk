@@ -43,4 +43,20 @@ class XdrSorobanAuthorizationEntries {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.len'] = (string)count($this->sorobanAuthorizationEntries);
+        for ($i = 0; $i < count($this->sorobanAuthorizationEntries); $i++) {
+            $this->sorobanAuthorizationEntries[$i]->toTxRep($prefix . '[' . $i . ']', $lines);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSorobanAuthorizationEntries {
+        $sorobanAuthorizationEntries = [];
+        $len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.len') ?? '0');
+        for ($i = 0; $i < $len; $i++) {
+            $sorobanAuthorizationEntries[] = XdrSorobanAuthorizationEntry::fromTxRep($map, $prefix . '[' . $i . ']');
+        }
+        return new XdrSorobanAuthorizationEntries($sorobanAuthorizationEntries);
+    }
 }

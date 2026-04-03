@@ -99,4 +99,57 @@ class XdrPreconditionsV2 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        if ($this->timeBounds !== null) {
+            $lines[$prefix . '.timeBounds._present'] = 'true';
+            $this->timeBounds->toTxRep($prefix . '.timeBounds', $lines);
+        } else {
+            $lines[$prefix . '.timeBounds._present'] = 'false';
+        }
+        if ($this->ledgerBounds !== null) {
+            $lines[$prefix . '.ledgerBounds._present'] = 'true';
+            $this->ledgerBounds->toTxRep($prefix . '.ledgerBounds', $lines);
+        } else {
+            $lines[$prefix . '.ledgerBounds._present'] = 'false';
+        }
+        if ($this->minSeqNum !== null) {
+            $lines[$prefix . '.minSeqNum._present'] = 'true';
+            $this->minSeqNum->toTxRep($prefix . '.minSeqNum', $lines);
+        } else {
+            $lines[$prefix . '.minSeqNum._present'] = 'false';
+        }
+        $lines[$prefix . '.minSeqAge'] = (string)$this->minSeqAge;
+        $lines[$prefix . '.minSeqLedgerGap'] = (string)$this->minSeqLedgerGap;
+        $lines[$prefix . '.extraSigners.len'] = (string)count($this->extraSigners);
+        for ($i = 0; $i < count($this->extraSigners); $i++) {
+            $lines[$prefix . '.extraSigners[' . $i . ']'] = TxRepHelper::formatSignerKey($this->extraSigners[$i]);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrPreconditionsV2 {
+        $timeBounds = null;
+        $timeBoundsPresent = TxRepHelper::getValue($map, $prefix . '.timeBounds._present');
+        if ($timeBoundsPresent !== null && $timeBoundsPresent === 'true') {
+            $timeBounds = XdrTimeBounds::fromTxRep($map, $prefix . '.timeBounds');
+        }
+        $ledgerBounds = null;
+        $ledgerBoundsPresent = TxRepHelper::getValue($map, $prefix . '.ledgerBounds._present');
+        if ($ledgerBoundsPresent !== null && $ledgerBoundsPresent === 'true') {
+            $ledgerBounds = XdrLedgerBounds::fromTxRep($map, $prefix . '.ledgerBounds');
+        }
+        $minSeqNum = null;
+        $minSeqNumPresent = TxRepHelper::getValue($map, $prefix . '.minSeqNum._present');
+        if ($minSeqNumPresent !== null && $minSeqNumPresent === 'true') {
+            $minSeqNum = XdrSequenceNumber::fromTxRep($map, $prefix . '.minSeqNum');
+        }
+        $minSeqAge = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minSeqAge') ?? '0');
+        $minSeqLedgerGap = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minSeqLedgerGap') ?? '0');
+        $extraSignersLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.extraSigners.len') ?? '0');
+        $extraSigners = [];
+        for ($i = 0; $i < $extraSignersLen; $i++) {
+            $extraSigners[] = TxRepHelper::parseSignerKey(TxRepHelper::getValue($map, $prefix . '.extraSigners[' . $i . ']') ?? '');
+        }
+        return new XdrPreconditionsV2($minSeqAge, $minSeqLedgerGap, $extraSigners, $timeBounds, $ledgerBounds, $minSeqNum);
+    }
 }

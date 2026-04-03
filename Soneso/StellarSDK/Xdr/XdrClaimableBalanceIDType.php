@@ -47,4 +47,39 @@ class XdrClaimableBalanceIDType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::CLAIMABLE_BALANCE_ID_TYPE_V0:
+                return 'CLAIMABLE_BALANCE_ID_TYPE_V0';
+            default:
+                return 'XdrClaimableBalanceIDType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'CLAIMABLE_BALANCE_ID_TYPE_V0':
+                return new static(self::CLAIMABLE_BALANCE_ID_TYPE_V0);
+            default:
+                $prefix = 'XdrClaimableBalanceIDType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

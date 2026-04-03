@@ -265,4 +265,180 @@ class XdrSCValBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrSCValType::SCV_BOOL:
+                $lines[$prefix . '.b'] = $this->b ? 'true' : 'false';
+                break;
+            case XdrSCValType::SCV_VOID:
+                break;
+            case XdrSCValType::SCV_ERROR:
+                $this->error->toTxRep($prefix . '.error', $lines);
+                break;
+            case XdrSCValType::SCV_U32:
+                $lines[$prefix . '.u32'] = (string)$this->u32;
+                break;
+            case XdrSCValType::SCV_I32:
+                $lines[$prefix . '.i32'] = (string)$this->i32;
+                break;
+            case XdrSCValType::SCV_U64:
+                $lines[$prefix . '.u64'] = (string)$this->u64;
+                break;
+            case XdrSCValType::SCV_I64:
+                $lines[$prefix . '.i64'] = (string)$this->i64;
+                break;
+            case XdrSCValType::SCV_TIMEPOINT:
+                $lines[$prefix . '.timepoint'] = (string)$this->timepoint;
+                break;
+            case XdrSCValType::SCV_DURATION:
+                $lines[$prefix . '.duration'] = (string)$this->duration;
+                break;
+            case XdrSCValType::SCV_U128:
+                $this->u128->toTxRep($prefix . '.u128', $lines);
+                break;
+            case XdrSCValType::SCV_I128:
+                $this->i128->toTxRep($prefix . '.i128', $lines);
+                break;
+            case XdrSCValType::SCV_U256:
+                $this->u256->toTxRep($prefix . '.u256', $lines);
+                break;
+            case XdrSCValType::SCV_I256:
+                $this->i256->toTxRep($prefix . '.i256', $lines);
+                break;
+            case XdrSCValType::SCV_BYTES:
+                $this->bytes->toTxRep($prefix . '.bytes', $lines);
+                break;
+            case XdrSCValType::SCV_STRING:
+                $lines[$prefix . '.str'] = TxRepHelper::escapeString($this->str);
+                break;
+            case XdrSCValType::SCV_SYMBOL:
+                $lines[$prefix . '.sym'] = TxRepHelper::escapeString($this->sym);
+                break;
+            case XdrSCValType::SCV_VEC:
+                if ($this->vec !== null) {
+                    $lines[$prefix . '.vec._present'] = 'true';
+                    $lines[$prefix . '.vec.len'] = (string)count($this->vec);
+                    for ($i = 0; $i < count($this->vec); $i++) {
+                        $this->vec[$i]->toTxRep($prefix . '.vec[' . $i . ']', $lines);
+                    }
+                } else {
+                    $lines[$prefix . '.vec._present'] = 'false';
+                }
+                break;
+            case XdrSCValType::SCV_MAP:
+                if ($this->map !== null) {
+                    $lines[$prefix . '.map._present'] = 'true';
+                    $lines[$prefix . '.map.len'] = (string)count($this->map);
+                    for ($i = 0; $i < count($this->map); $i++) {
+                        $this->map[$i]->toTxRep($prefix . '.map[' . $i . ']', $lines);
+                    }
+                } else {
+                    $lines[$prefix . '.map._present'] = 'false';
+                }
+                break;
+            case XdrSCValType::SCV_ADDRESS:
+                $this->address->toTxRep($prefix . '.address', $lines);
+                break;
+            case XdrSCValType::SCV_CONTRACT_INSTANCE:
+                $this->instance->toTxRep($prefix . '.instance', $lines);
+                break;
+            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+                break;
+            case XdrSCValType::SCV_LEDGER_KEY_NONCE:
+                $this->nonceKey->toTxRep($prefix . '.nonce_key', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrSCValType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrSCValType::SCV_BOOL:
+                $result->b = (TxRepHelper::getValue($map, $prefix . '.b') ?? 'false') === 'true';
+                break;
+            case XdrSCValType::SCV_VOID:
+                break;
+            case XdrSCValType::SCV_ERROR:
+                $result->error = XdrSCError::fromTxRep($map, $prefix . '.error');
+                break;
+            case XdrSCValType::SCV_U32:
+                $result->u32 = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.u32') ?? '0');
+                break;
+            case XdrSCValType::SCV_I32:
+                $result->i32 = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.i32') ?? '0');
+                break;
+            case XdrSCValType::SCV_U64:
+                $result->u64 = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.u64') ?? '0');
+                break;
+            case XdrSCValType::SCV_I64:
+                $result->i64 = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.i64') ?? '0');
+                break;
+            case XdrSCValType::SCV_TIMEPOINT:
+                $result->timepoint = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.timepoint') ?? '0');
+                break;
+            case XdrSCValType::SCV_DURATION:
+                $result->duration = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.duration') ?? '0');
+                break;
+            case XdrSCValType::SCV_U128:
+                $result->u128 = XdrUInt128Parts::fromTxRep($map, $prefix . '.u128');
+                break;
+            case XdrSCValType::SCV_I128:
+                $result->i128 = XdrInt128Parts::fromTxRep($map, $prefix . '.i128');
+                break;
+            case XdrSCValType::SCV_U256:
+                $result->u256 = XdrUInt256Parts::fromTxRep($map, $prefix . '.u256');
+                break;
+            case XdrSCValType::SCV_I256:
+                $result->i256 = XdrInt256Parts::fromTxRep($map, $prefix . '.i256');
+                break;
+            case XdrSCValType::SCV_BYTES:
+                $result->bytes = XdrDataValueMandatory::fromTxRep($map, $prefix . '.bytes');
+                break;
+            case XdrSCValType::SCV_STRING:
+                $result->str = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.str') ?? '');
+                break;
+            case XdrSCValType::SCV_SYMBOL:
+                $result->sym = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.sym') ?? '');
+                break;
+            case XdrSCValType::SCV_VEC:
+                $vecPresent = TxRepHelper::getValue($map, $prefix . '.vec._present');
+                if ($vecPresent !== null && $vecPresent === 'true') {
+                    $vecLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.vec.len') ?? '0');
+                    $result->vec = [];
+                    for ($i = 0; $i < $vecLen; $i++) {
+                        $result->vec[] = XdrSCVal::fromTxRep($map, $prefix . '.vec[' . $i . ']');
+                    }
+                }
+                break;
+            case XdrSCValType::SCV_MAP:
+                $mapPresent = TxRepHelper::getValue($map, $prefix . '.map._present');
+                if ($mapPresent !== null && $mapPresent === 'true') {
+                    $mapLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.map.len') ?? '0');
+                    $result->map = [];
+                    for ($i = 0; $i < $mapLen; $i++) {
+                        $result->map[] = XdrSCMapEntry::fromTxRep($map, $prefix . '.map[' . $i . ']');
+                    }
+                }
+                break;
+            case XdrSCValType::SCV_ADDRESS:
+                $result->address = XdrSCAddress::fromTxRep($map, $prefix . '.address');
+                break;
+            case XdrSCValType::SCV_CONTRACT_INSTANCE:
+                $result->instance = XdrSCContractInstance::fromTxRep($map, $prefix . '.instance');
+                break;
+            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+                break;
+            case XdrSCValType::SCV_LEDGER_KEY_NONCE:
+                $result->nonceKey = XdrSCNonceKey::fromTxRep($map, $prefix . '.nonce_key');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

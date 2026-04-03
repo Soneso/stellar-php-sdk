@@ -43,4 +43,15 @@ class XdrCreateContractArgs {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->contractIDPreimage->toTxRep($prefix . '.contractIDPreimage', $lines);
+        $this->executable->toTxRep($prefix . '.executable', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrCreateContractArgs {
+        $contractIDPreimage = XdrContractIDPreimage::fromTxRep($map, $prefix . '.contractIDPreimage');
+        $executable = XdrContractExecutable::fromTxRep($map, $prefix . '.executable');
+        return new XdrCreateContractArgs($contractIDPreimage, $executable);
+    }
 }

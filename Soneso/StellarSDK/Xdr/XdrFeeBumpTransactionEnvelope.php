@@ -51,4 +51,22 @@ class XdrFeeBumpTransactionEnvelope {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->tx->toTxRep($prefix . '.tx', $lines);
+        $lines[$prefix . '.signatures.len'] = (string)count($this->signatures);
+        for ($i = 0; $i < count($this->signatures); $i++) {
+            $this->signatures[$i]->toTxRep($prefix . '.signatures[' . $i . ']', $lines);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrFeeBumpTransactionEnvelope {
+        $tx = XdrFeeBumpTransaction::fromTxRep($map, $prefix . '.tx');
+        $signaturesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.signatures.len') ?? '0');
+        $signatures = [];
+        for ($i = 0; $i < $signaturesLen; $i++) {
+            $signatures[] = XdrDecoratedSignature::fromTxRep($map, $prefix . '.signatures[' . $i . ']');
+        }
+        return new XdrFeeBumpTransactionEnvelope($tx, $signatures);
+    }
 }

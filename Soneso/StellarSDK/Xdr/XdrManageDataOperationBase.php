@@ -51,4 +51,24 @@ class XdrManageDataOperationBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.dataName'] = TxRepHelper::escapeString($this->dataName);
+        if ($this->dataValue !== null) {
+            $lines[$prefix . '.dataValue._present'] = 'true';
+            $lines[$prefix . '.dataValue'] = TxRepHelper::bytesToHex($this->dataValue);
+        } else {
+            $lines[$prefix . '.dataValue._present'] = 'false';
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $dataName = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.dataName') ?? '');
+        $dataValue = null;
+        $dataValuePresent = TxRepHelper::getValue($map, $prefix . '.dataValue._present');
+        if ($dataValuePresent !== null && $dataValuePresent === 'true') {
+            $dataValue = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.dataValue') ?? '');
+        }
+        return new static($dataName, $dataValue);
+    }
 }

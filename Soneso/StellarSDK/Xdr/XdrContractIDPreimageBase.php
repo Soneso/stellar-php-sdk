@@ -65,4 +65,34 @@ class XdrContractIDPreimageBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
+                $this->fromAddress->toTxRep($prefix . '.fromAddress', $lines);
+                break;
+            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET:
+                $lines[$prefix . '.fromAsset'] = TxRepHelper::formatAsset($this->fromAsset);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrContractIDPreimageType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
+                $result->fromAddress = XdrContractIDPreimageFromAddress::fromTxRep($map, $prefix . '.fromAddress');
+                break;
+            case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET:
+                $result->fromAsset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.fromAsset') ?? '');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

@@ -37,4 +37,13 @@ class XdrRestoreFootprintOp {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->ext->toTxRep($prefix . '.ext', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrRestoreFootprintOp {
+        $ext = XdrExtensionPoint::fromTxRep($map, $prefix . '.ext');
+        return new XdrRestoreFootprintOp($ext);
+    }
 }

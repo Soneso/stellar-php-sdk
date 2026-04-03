@@ -55,4 +55,19 @@ class XdrUInt256Parts {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.hi_hi'] = (string)$this->hiHi;
+        $lines[$prefix . '.hi_lo'] = (string)$this->hiLo;
+        $lines[$prefix . '.lo_hi'] = (string)$this->loHi;
+        $lines[$prefix . '.lo_lo'] = (string)$this->loLo;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrUInt256Parts {
+        $hiHi = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.hi_hi') ?? '0');
+        $hiLo = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.hi_lo') ?? '0');
+        $loHi = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.lo_hi') ?? '0');
+        $loLo = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.lo_lo') ?? '0');
+        return new XdrUInt256Parts($hiHi, $hiLo, $loHi, $loLo);
+    }
 }

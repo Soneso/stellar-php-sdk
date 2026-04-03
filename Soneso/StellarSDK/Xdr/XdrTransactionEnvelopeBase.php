@@ -74,4 +74,40 @@ class XdrTransactionEnvelopeBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX_V0:
+                $this->v0->toTxRep($prefix . '.v0', $lines);
+                break;
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX:
+                $this->v1->toTxRep($prefix . '.v1', $lines);
+                break;
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP:
+                $this->feeBump->toTxRep($prefix . '.feeBump', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrEnvelopeType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX_V0:
+                $result->v0 = XdrTransactionV0Envelope::fromTxRep($map, $prefix . '.v0');
+                break;
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX:
+                $result->v1 = XdrTransactionV1Envelope::fromTxRep($map, $prefix . '.v1');
+                break;
+            case XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP:
+                $result->feeBump = XdrFeeBumpTransactionEnvelope::fromTxRep($map, $prefix . '.feeBump');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

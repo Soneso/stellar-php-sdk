@@ -37,4 +37,13 @@ class XdrBeginSponsoringFutureReservesOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.sponsoredID'] = TxRepHelper::formatAccountId($this->sponsoredID);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrBeginSponsoringFutureReservesOperation {
+        $sponsoredID = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.sponsoredID') ?? '');
+        return new XdrBeginSponsoringFutureReservesOperation($sponsoredID);
+    }
 }

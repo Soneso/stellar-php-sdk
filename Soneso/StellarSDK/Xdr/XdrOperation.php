@@ -51,4 +51,24 @@ class XdrOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        if ($this->sourceAccount !== null) {
+            $lines[$prefix . '.sourceAccount._present'] = 'true';
+            $lines[$prefix . '.sourceAccount'] = TxRepHelper::formatMuxedAccount($this->sourceAccount);
+        } else {
+            $lines[$prefix . '.sourceAccount._present'] = 'false';
+        }
+        $this->body->toTxRep($prefix . '.body', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrOperation {
+        $sourceAccount = null;
+        $sourceAccountPresent = TxRepHelper::getValue($map, $prefix . '.sourceAccount._present');
+        if ($sourceAccountPresent !== null && $sourceAccountPresent === 'true') {
+            $sourceAccount = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.sourceAccount') ?? '');
+        }
+        $body = XdrOperationBody::fromTxRep($map, $prefix . '.body');
+        return new XdrOperation($body, $sourceAccount);
+    }
 }

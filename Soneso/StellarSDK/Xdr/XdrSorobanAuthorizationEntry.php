@@ -43,4 +43,15 @@ class XdrSorobanAuthorizationEntry {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->credentials->toTxRep($prefix . '.credentials', $lines);
+        $this->rootInvocation->toTxRep($prefix . '.rootInvocation', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSorobanAuthorizationEntry {
+        $credentials = XdrSorobanCredentials::fromTxRep($map, $prefix . '.credentials');
+        $rootInvocation = XdrSorobanAuthorizedInvocation::fromTxRep($map, $prefix . '.rootInvocation');
+        return new XdrSorobanAuthorizationEntry($credentials, $rootInvocation);
+    }
 }

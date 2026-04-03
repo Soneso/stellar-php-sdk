@@ -6,6 +6,7 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr\Generated;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Xdr\TxRepHelper;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
@@ -627,6 +628,829 @@ class XdrContractGenTest extends TestCase
         $newVal = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID));
         $obj->setVal($newVal);
         $this->assertSame($newVal, $obj->getVal());
+    }
+
+    public function testXdrSCValTypeTxRepEnumNames(): void
+    {
+        $val = new XdrSCValType(XdrSCValType::SCV_BOOL);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_BOOL', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_VOID);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_VOID', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_ERROR);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_ERROR', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_U32);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_U32', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_I32);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_I32', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_U64);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_U64', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_I64);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_I64', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_TIMEPOINT);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_TIMEPOINT', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_DURATION);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_DURATION', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_U128);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_U128', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_I128);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_I128', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_U256);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_U256', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_I256);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_I256', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_BYTES);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_BYTES', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_STRING);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_STRING', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_SYMBOL);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_SYMBOL', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_VEC);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_VEC', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_MAP);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_MAP', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_ADDRESS);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_ADDRESS', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_CONTRACT_INSTANCE);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_CONTRACT_INSTANCE', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_LEDGER_KEY_CONTRACT_INSTANCE', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_NONCE);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_LEDGER_KEY_NONCE', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_BOOL(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_BOOL);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_BOOL');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_VOID(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_VOID);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_VOID');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_ERROR(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_ERROR);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_ERROR');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_U32(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_U32);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_U32');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_I32(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_I32);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_I32');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_U64(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_U64);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_U64');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_I64(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_I64);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_I64');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_TIMEPOINT(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_TIMEPOINT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_TIMEPOINT');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_DURATION(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_DURATION);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_DURATION');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_U128(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_U128);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_U128');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_I128(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_I128);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_I128');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_U256(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_U256);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_U256');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_I256(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_I256);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_I256');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_BYTES(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_BYTES);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_BYTES');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_STRING(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_STRING);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_STRING');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_SYMBOL(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_SYMBOL);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_SYMBOL');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_VEC(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_VEC);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_VEC');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_MAP(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_MAP);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_MAP');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_ADDRESS(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_ADDRESS);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_ADDRESS');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_CONTRACT_INSTANCE(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_CONTRACT_INSTANCE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_CONTRACT_INSTANCE');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_LEDGER_KEY_CONTRACT_INSTANCE(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_LEDGER_KEY_CONTRACT_INSTANCE');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_LEDGER_KEY_NONCE(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_NONCE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_LEDGER_KEY_NONCE');
+    }
+
+    public function testXdrSCErrorTypeTxRepEnumNames(): void
+    {
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_CONTRACT);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_CONTRACT', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_WASM_VM);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_WASM_VM', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_CONTEXT);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_CONTEXT', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_STORAGE);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_STORAGE', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_OBJECT);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_OBJECT', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_CRYPTO);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_CRYPTO', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_EVENTS);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_EVENTS', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_BUDGET);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_BUDGET', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_VALUE);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_VALUE', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorType(XdrSCErrorType::SCE_AUTH);
+        $name = $val->enumName();
+        $this->assertEquals('SCE_AUTH', $name);
+        $back = XdrSCErrorType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_CONTRACT(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_CONTRACT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_CONTRACT');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_WASM_VM(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_WASM_VM);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_WASM_VM');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_CONTEXT(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_CONTEXT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_CONTEXT');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_STORAGE(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_STORAGE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_STORAGE');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_OBJECT(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_OBJECT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_OBJECT');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_CRYPTO(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_CRYPTO);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_CRYPTO');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_EVENTS(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_EVENTS);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_EVENTS');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_BUDGET(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_BUDGET);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_BUDGET');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_VALUE(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_VALUE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_VALUE');
+    }
+
+    public function testXdrSCErrorTypeTxRepRoundTrip_SCE_AUTH(): void
+    {
+        $original = new XdrSCErrorType(XdrSCErrorType::SCE_AUTH);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorType_SCE_AUTH');
+    }
+
+    public function testXdrSCErrorCodeTxRepEnumNames(): void
+    {
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_ARITH_DOMAIN);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_ARITH_DOMAIN', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INDEX_BOUNDS);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_INDEX_BOUNDS', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INVALID_INPUT);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_INVALID_INPUT', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_MISSING_VALUE);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_MISSING_VALUE', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_EXISTING_VALUE);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_EXISTING_VALUE', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_EXCEEDED_LIMIT);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_EXCEEDED_LIMIT', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INVALID_ACTION);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_INVALID_ACTION', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INTERNAL_ERROR);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_INTERNAL_ERROR', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_UNEXPECTED_TYPE);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_UNEXPECTED_TYPE', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCErrorCode(XdrSCErrorCode::SCEC_UNEXPECTED_SIZE);
+        $name = $val->enumName();
+        $this->assertEquals('SCEC_UNEXPECTED_SIZE', $name);
+        $back = XdrSCErrorCode::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_ARITH_DOMAIN(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_ARITH_DOMAIN);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_ARITH_DOMAIN');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_INDEX_BOUNDS(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INDEX_BOUNDS);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_INDEX_BOUNDS');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_INVALID_INPUT(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INVALID_INPUT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_INVALID_INPUT');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_MISSING_VALUE(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_MISSING_VALUE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_MISSING_VALUE');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_EXISTING_VALUE(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_EXISTING_VALUE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_EXISTING_VALUE');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_EXCEEDED_LIMIT(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_EXCEEDED_LIMIT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_EXCEEDED_LIMIT');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_INVALID_ACTION(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INVALID_ACTION);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_INVALID_ACTION');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_INTERNAL_ERROR(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_INTERNAL_ERROR);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_INTERNAL_ERROR');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_UNEXPECTED_TYPE(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_UNEXPECTED_TYPE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_UNEXPECTED_TYPE');
+    }
+
+    public function testXdrSCErrorCodeTxRepRoundTrip_SCEC_UNEXPECTED_SIZE(): void
+    {
+        $original = new XdrSCErrorCode(XdrSCErrorCode::SCEC_UNEXPECTED_SIZE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCErrorCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCErrorCode_SCEC_UNEXPECTED_SIZE');
+    }
+
+    public function testXdrSCErrorTxRepRoundTrip_XdrSCErrorType_SCE_CONTRACT(): void
+    {
+        $original = (function() { $u = new XdrSCError(new XdrSCErrorType(XdrSCErrorType::SCE_CONTRACT)); $u->contractCode = 42; return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCError::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCError_XdrSCErrorType_SCE_CONTRACT');
+    }
+
+    public function testXdrSCErrorTxRepRoundTrip_XdrSCErrorType_SCE_WASM_VM(): void
+    {
+        $original = (function() { $u = new XdrSCError(new XdrSCErrorType(XdrSCErrorType::SCE_WASM_VM)); $u->code = new XdrSCErrorCode(XdrSCErrorCode::SCEC_ARITH_DOMAIN); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCError::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCError_XdrSCErrorType_SCE_WASM_VM');
+    }
+
+    public function testXdrUInt128PartsTxRepRoundTrip(): void
+    {
+        $original = new XdrUInt128Parts(42, 42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrUInt128Parts::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrUInt128Parts');
+    }
+
+    public function testXdrInt128PartsTxRepRoundTrip(): void
+    {
+        $original = new XdrInt128Parts(42, 42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrInt128Parts::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrInt128Parts');
+    }
+
+    public function testXdrUInt256PartsTxRepRoundTrip(): void
+    {
+        $original = new XdrUInt256Parts(42, 42, 42, 42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrUInt256Parts::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrUInt256Parts');
+    }
+
+    public function testXdrInt256PartsTxRepRoundTrip(): void
+    {
+        $original = new XdrInt256Parts(42, 42, 42, 42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrInt256Parts::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrInt256Parts');
+    }
+
+    public function testXdrContractExecutableTypeTxRepEnumNames(): void
+    {
+        $val = new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM);
+        $name = $val->enumName();
+        $this->assertEquals('CONTRACT_EXECUTABLE_WASM', $name);
+        $back = XdrContractExecutableType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET);
+        $name = $val->enumName();
+        $this->assertEquals('CONTRACT_EXECUTABLE_STELLAR_ASSET', $name);
+        $back = XdrContractExecutableType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrContractExecutableTypeTxRepRoundTrip_CONTRACT_EXECUTABLE_WASM(): void
+    {
+        $original = new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrContractExecutableType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutableType_CONTRACT_EXECUTABLE_WASM');
+    }
+
+    public function testXdrContractExecutableTypeTxRepRoundTrip_CONTRACT_EXECUTABLE_STELLAR_ASSET(): void
+    {
+        $original = new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrContractExecutableType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET');
+    }
+
+    public function testXdrContractExecutableTxRepRoundTrip(): void
+    {
+        $original = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrContractExecutableBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutable');
+    }
+
+    public function testXdrSCAddressTypeTxRepEnumNames(): void
+    {
+        $val = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT);
+        $name = $val->enumName();
+        $this->assertEquals('SC_ADDRESS_TYPE_ACCOUNT', $name);
+        $back = XdrSCAddressType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT);
+        $name = $val->enumName();
+        $this->assertEquals('SC_ADDRESS_TYPE_CONTRACT', $name);
+        $back = XdrSCAddressType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT);
+        $name = $val->enumName();
+        $this->assertEquals('SC_ADDRESS_TYPE_MUXED_ACCOUNT', $name);
+        $back = XdrSCAddressType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+        $name = $val->enumName();
+        $this->assertEquals('SC_ADDRESS_TYPE_CLAIMABLE_BALANCE', $name);
+        $back = XdrSCAddressType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+        $name = $val->enumName();
+        $this->assertEquals('SC_ADDRESS_TYPE_LIQUIDITY_POOL', $name);
+        $back = XdrSCAddressType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrSCAddressTypeTxRepRoundTrip_SC_ADDRESS_TYPE_ACCOUNT(): void
+    {
+        $original = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCAddressType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddressType_SC_ADDRESS_TYPE_ACCOUNT');
+    }
+
+    public function testXdrSCAddressTypeTxRepRoundTrip_SC_ADDRESS_TYPE_CONTRACT(): void
+    {
+        $original = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCAddressType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddressType_SC_ADDRESS_TYPE_CONTRACT');
+    }
+
+    public function testXdrSCAddressTypeTxRepRoundTrip_SC_ADDRESS_TYPE_MUXED_ACCOUNT(): void
+    {
+        $original = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCAddressType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddressType_SC_ADDRESS_TYPE_MUXED_ACCOUNT');
+    }
+
+    public function testXdrSCAddressTypeTxRepRoundTrip_SC_ADDRESS_TYPE_CLAIMABLE_BALANCE(): void
+    {
+        $original = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCAddressType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddressType_SC_ADDRESS_TYPE_CLAIMABLE_BALANCE');
+    }
+
+    public function testXdrSCAddressTypeTxRepRoundTrip_SC_ADDRESS_TYPE_LIQUIDITY_POOL(): void
+    {
+        $original = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCAddressType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddressType_SC_ADDRESS_TYPE_LIQUIDITY_POOL');
+    }
+
+    public function testXdrMuxedAccountMed25519TxRepRoundTrip(): void
+    {
+        $original = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrMuxedAccountMed25519Base::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrMuxedAccountMed25519');
+    }
+
+    public function testXdrSCAddressTxRepRoundTrip(): void
+    {
+        $original = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCAddressBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddress');
+    }
+
+    public function testXdrSCNonceKeyTxRepRoundTrip(): void
+    {
+        $original = new XdrSCNonceKey(42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCNonceKey::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCNonceKey');
+    }
+
+    public function testXdrSCContractInstanceTxRepRoundTrip(): void
+    {
+        $original = new XdrSCContractInstance(new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), null);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCContractInstance::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCContractInstance');
+    }
+
+    public function testXdrSCValTxRepRoundTrip(): void
+    {
+        $original = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCVal');
+    }
+
+    public function testXdrSCMapEntryTxRepRoundTrip(): void
+    {
+        $original = new XdrSCMapEntry(new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCMapEntry::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCMapEntry');
     }
 }
 

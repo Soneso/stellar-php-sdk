@@ -37,4 +37,22 @@ class XdrManageDataOperation extends XdrManageDataOperationBase
         $instance = new static($dataName, new XdrDataValue($dataValue));
         return $instance;
     }
+
+    /**
+     * Override fromTxRep to wrap the raw bytes into XdrDataValue as required
+     * by this constructor.
+     *
+     * @param array<string,string> $map
+     * @param string               $prefix
+     * @return static
+     */
+    public static function fromTxRep(array $map, string $prefix): static {
+        $dataName = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.dataName') ?? '');
+        $rawBytes = null;
+        $dataValuePresent = TxRepHelper::getValue($map, $prefix . '.dataValue._present');
+        if ($dataValuePresent !== null && $dataValuePresent === 'true') {
+            $rawBytes = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.dataValue') ?? '');
+        }
+        return new static($dataName, new XdrDataValue($rawBytes));
+    }
 }

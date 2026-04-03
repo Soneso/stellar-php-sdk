@@ -74,4 +74,40 @@ class XdrSorobanAuthorizedFunctionBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+                $this->contractFn->toTxRep($prefix . '.contractFn', $lines);
+                break;
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+                $this->createContractHostFn->toTxRep($prefix . '.createContractHostFn', $lines);
+                break;
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+                $this->createContractV2HostFn->toTxRep($prefix . '.createContractV2HostFn', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrSorobanAuthorizedFunctionType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+                $result->contractFn = XdrInvokeContractArgs::fromTxRep($map, $prefix . '.contractFn');
+                break;
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+                $result->createContractHostFn = XdrCreateContractArgs::fromTxRep($map, $prefix . '.createContractHostFn');
+                break;
+            case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+                $result->createContractV2HostFn = XdrCreateContractArgsV2::fromTxRep($map, $prefix . '.createContractV2HostFn');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

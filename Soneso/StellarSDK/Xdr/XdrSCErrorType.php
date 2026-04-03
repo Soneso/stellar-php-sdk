@@ -101,4 +101,75 @@ class XdrSCErrorType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::SCE_CONTRACT:
+                return 'SCE_CONTRACT';
+            case self::SCE_WASM_VM:
+                return 'SCE_WASM_VM';
+            case self::SCE_CONTEXT:
+                return 'SCE_CONTEXT';
+            case self::SCE_STORAGE:
+                return 'SCE_STORAGE';
+            case self::SCE_OBJECT:
+                return 'SCE_OBJECT';
+            case self::SCE_CRYPTO:
+                return 'SCE_CRYPTO';
+            case self::SCE_EVENTS:
+                return 'SCE_EVENTS';
+            case self::SCE_BUDGET:
+                return 'SCE_BUDGET';
+            case self::SCE_VALUE:
+                return 'SCE_VALUE';
+            case self::SCE_AUTH:
+                return 'SCE_AUTH';
+            default:
+                return 'XdrSCErrorType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'SCE_CONTRACT':
+                return new static(self::SCE_CONTRACT);
+            case 'SCE_WASM_VM':
+                return new static(self::SCE_WASM_VM);
+            case 'SCE_CONTEXT':
+                return new static(self::SCE_CONTEXT);
+            case 'SCE_STORAGE':
+                return new static(self::SCE_STORAGE);
+            case 'SCE_OBJECT':
+                return new static(self::SCE_OBJECT);
+            case 'SCE_CRYPTO':
+                return new static(self::SCE_CRYPTO);
+            case 'SCE_EVENTS':
+                return new static(self::SCE_EVENTS);
+            case 'SCE_BUDGET':
+                return new static(self::SCE_BUDGET);
+            case 'SCE_VALUE':
+                return new static(self::SCE_VALUE);
+            case 'SCE_AUTH':
+                return new static(self::SCE_AUTH);
+            default:
+                $prefix = 'XdrSCErrorType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

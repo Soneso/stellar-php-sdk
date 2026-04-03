@@ -12,6 +12,7 @@ require_relative 'name_overrides'
 require_relative 'member_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
+require_relative 'txrep_types'
 
 AST = Xdrgen::AST
 
@@ -163,6 +164,9 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if should_generate_txrep?(php_name)
+      render_enum_txrep_methods(out, php_name, class_name, enum_defn)
+    end
     out.puts "}"
     out.close
   end
@@ -250,6 +254,9 @@ class Generator < Xdrgen::Generators::Base
     render_struct_accessors(out, fields)
 
     render_base64_methods(out)
+    if should_generate_txrep?(struct_name)
+      render_struct_txrep_methods(out, struct_name, class_name, fields)
+    end
     out.puts "}"
     out.close
   end
@@ -470,6 +477,9 @@ class Generator < Xdrgen::Generators::Base
     render_union_accessors(out, disc_info, arms)
 
     render_base64_methods(out)
+    if should_generate_txrep?(union_name)
+      render_union_txrep_methods(out, union_name, class_name, union, disc_info, arms)
+    end
     out.puts "}"
     out.close
   end
@@ -611,16 +621,19 @@ class Generator < Xdrgen::Generators::Base
         size = decl.size
         render_scalar_typedef(php_name,
           ->(fn) { "XdrEncoder::opaqueFixed($this->#{fn}, #{size})" },
-          "$xdr->readOpaqueFixed(#{size})")
+          "$xdr->readOpaqueFixed(#{size})",
+          :opaque)
       else
         render_scalar_typedef(php_name,
           ->(fn) { "XdrEncoder::opaqueVariable($this->#{fn})" },
-          "$xdr->readOpaqueVariable()")
+          "$xdr->readOpaqueVariable()",
+          :opaque)
       end
     when AST::Declarations::String
       render_scalar_typedef(php_name,
         ->(fn) { "XdrEncoder::string($this->#{fn})" },
-        "$xdr->readString()")
+        "$xdr->readString()",
+        :string)
     when AST::Declarations::Array
       render_array_typedef(php_name, decl)
     else
@@ -682,12 +695,15 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if should_generate_txrep?(php_name)
+      render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name)
+    end
     out.puts "}"
     out.close
   end
 
   # Renders a single-field typedef wrapper class (opaque fixed/variable, string).
-  def render_scalar_typedef(php_name, encode_expr, decode_expr)
+  def render_scalar_typedef(php_name, encode_expr, decode_expr, scalar_kind = :opaque)
     _, class_name, return_type, new_expr = resolve_class_info(php_name)
     file = file_name(class_name)
     out = @output.open(file)
@@ -713,6 +729,9 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if should_generate_txrep?(php_name)
+      render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind)
+    end
     out.puts "}"
     out.close
   end
@@ -781,6 +800,9 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if should_generate_txrep?(php_name)
+      render_array_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, element_type, decl)
+    end
     out.puts "}"
     out.close
   end
@@ -1075,17 +1097,18 @@ class Generator < Xdrgen::Generators::Base
   def resolve_discriminant_info(union)
     union_name = name(union)
     dtype = union.discriminant.type
-    disc_field_name = resolve_field_name(union_name, union.discriminant.name.to_s)
+    xdr_disc_name = union.discriminant.name.to_s
+    disc_field_name = resolve_field_name(union_name, xdr_disc_name)
 
     if dtype.respond_to?(:resolved_type)
       resolved = dtype.resolved_type
       if resolved.is_a?(AST::Definitions::Enum)
         php_name = name(resolved)
-        return { kind: :enum, php_name: php_name, enum_defn: resolved, field_name: disc_field_name }
+        return { kind: :enum, php_name: php_name, enum_defn: resolved, field_name: disc_field_name, xdr_name: xdr_disc_name }
       end
     end
 
-    { kind: :int, php_name: nil, enum_defn: nil, field_name: disc_field_name }
+    { kind: :int, php_name: nil, enum_defn: nil, field_name: disc_field_name, xdr_name: xdr_disc_name }
   end
 
   # ---------------------------------------------------------------------------
@@ -1101,10 +1124,11 @@ class Generator < Xdrgen::Generators::Base
       if arm.void?
         arms << { case_labels: labels, void: true, is_default: false }
       else
-        field_name = resolve_field_name(union_name, arm.name)
+        xdr_arm_name = arm.name.to_s
+        field_name = resolve_field_name(union_name, xdr_arm_name)
         next if seen_fields.include?(field_name)
         seen_fields.add(field_name)
-        arms << build_typed_arm(arm, union_name, field_name, labels, false)
+        arms << build_typed_arm(arm, union_name, field_name, xdr_arm_name, labels, false)
       end
     end
 
@@ -1114,15 +1138,16 @@ class Generator < Xdrgen::Generators::Base
       if da.void?
         arms << { case_labels: ["default"], void: true, is_default: true }
       else
-        field_name = resolve_field_name(union_name, da.name)
-        arms << build_typed_arm(da, union_name, field_name, ["default"], true)
+        xdr_arm_name = da.name.to_s
+        field_name = resolve_field_name(union_name, xdr_arm_name)
+        arms << build_typed_arm(da, union_name, field_name, xdr_arm_name, ["default"], true)
       end
     end
 
     arms
   end
 
-  def build_typed_arm(arm, union_name, field_name, labels, is_default)
+  def build_typed_arm(arm, union_name, field_name, xdr_name, labels, is_default)
     arm_info = resolve_php_arm_info(arm, union_name)
 
     if FIELD_TYPE_OVERRIDES.key?(union_name) && FIELD_TYPE_OVERRIDES[union_name].key?(field_name)
@@ -1134,6 +1159,7 @@ class Generator < Xdrgen::Generators::Base
       case_labels: labels,
       void: false,
       field_name: field_name,
+      xdr_name: xdr_name,
       php_type: arm_info[:php_type],
       encode_style: arm_info[:encode_style],
       decode_style: arm_info[:decode_style],
@@ -1523,6 +1549,891 @@ class Generator < Xdrgen::Generators::Base
         nil
       end
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Enum TxRep methods: enumName, fromTxRepName, toTxRep, fromTxRep
+  # ---------------------------------------------------------------------------
+
+  def render_enum_txrep_methods(out, php_name, class_name, enum_defn)
+    out.puts ""
+    out.puts "    public function enumName(): string {"
+    out.puts "        switch ($this->value) {"
+    enum_defn.members.each do |m|
+      xdr_name    = m.name.to_s
+      member_name = resolve_member_name(php_name, xdr_name)
+      out.puts "            case self::#{member_name}:"
+      out.puts "                return '#{xdr_name}';"
+    end
+    out.puts "            default:"
+    out.puts "                return '#{class_name}#' . $this->value;"
+    out.puts "        }"
+    out.puts "    }"
+    out.puts ""
+    out.puts "    public static function fromTxRepName(string $name): static {"
+    out.puts "        switch ($name) {"
+    enum_defn.members.each do |m|
+      xdr_name    = m.name.to_s
+      member_name = resolve_member_name(php_name, xdr_name)
+      out.puts "            case '#{xdr_name}':"
+      out.puts "                return new static(self::#{member_name});"
+    end
+    out.puts "            default:"
+    out.puts "                $prefix = '#{class_name}#';"
+    out.puts "                if (str_starts_with($name, $prefix)) {"
+    out.puts "                    $val = (int) substr($name, strlen($prefix));"
+    out.puts "                    return new static($val);"
+    out.puts "                }"
+    out.puts "                throw new \\InvalidArgumentException('Unknown enum value: ' . $name);"
+    out.puts "        }"
+    out.puts "    }"
+    out.puts ""
+    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    out.puts "        $lines[$prefix] = $this->enumName();"
+    out.puts "    }"
+    out.puts ""
+    out.puts "    public static function fromTxRep(array $map, string $prefix): static {"
+    out.puts "        $raw = TxRepHelper::getValue($map, $prefix);"
+    out.puts "        if ($raw === null) {"
+    out.puts "            throw new \\InvalidArgumentException('Missing TxRep value for: ' . $prefix);"
+    out.puts "        }"
+    out.puts "        return self::fromTxRepName($raw);"
+    out.puts "    }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Struct TxRep methods: toTxRep / fromTxRep
+  # ---------------------------------------------------------------------------
+
+  # Set of TYPE_OVERRIDES keys whose underlying XDR type is opaque (binary).
+  # These use bytesToHex/hexToBytes in TxRep. All others that map to "string"
+  # are text types that use escapeString/unescapeString.
+  OPAQUE_STRING_TYPES = Set[
+    "XdrHash", "XdrUint256", "XdrPoolID",
+    "XdrAssetCode4", "XdrAssetCode12",
+    "XdrSignatureHint", "XdrSignature", "XdrThresholds",
+    "XdrContractID",
+    "XdrSCBytes", "XdrDataValue",
+  ].freeze
+
+  # Determines whether a field whose php_type is "string" (via TYPE_OVERRIDES)
+  # represents binary opaque data. Checks the typespec's resolved typedef name
+  # against OPAQUE_STRING_TYPES. Returns true for opaque, false for text strings.
+  def is_opaque_string_field?(field)
+    decl = field[:decl]
+    return true if decl.is_a?(AST::Declarations::Opaque)
+
+    typespec = decl.respond_to?(:type) ? decl.type : nil
+    return false unless typespec.is_a?(AST::Typespecs::Simple)
+
+    resolved = typespec.resolved_type
+    return false unless resolved.is_a?(AST::Definitions::Typedef)
+
+    resolved_name = name(resolved)
+    return true if OPAQUE_STRING_TYPES.include?(resolved_name)
+
+    # Follow typedef chain (e.g., PoolID -> Hash -> opaque[32])
+    inner_decl = resolved.declaration
+    return true if inner_decl.is_a?(AST::Declarations::Opaque)
+
+    if inner_decl.respond_to?(:type) && inner_decl.type.is_a?(AST::Typespecs::Simple)
+      inner_resolved = inner_decl.type.resolved_type
+      if inner_resolved.is_a?(AST::Definitions::Typedef)
+        return OPAQUE_STRING_TYPES.include?(name(inner_resolved)) ||
+               inner_resolved.declaration.is_a?(AST::Declarations::Opaque)
+      end
+    end
+
+    false
+  end
+
+  def render_struct_txrep_methods(out, struct_name, class_name, fields)
+    _, _, return_type, _ = resolve_class_info(struct_name)
+    is_base = BASE_WRAPPER_TYPES.include?(struct_name)
+    decode_class = is_base ? "static" : struct_name
+
+    out.puts ""
+    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    fields.each do |f|
+      txrep_field_to_line(out, struct_name, f, "        ")
+    end
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromTxRep(array $map, string $prefix): #{return_type} {"
+
+    # Parse all fields into local variables first
+    fields.each do |f|
+      txrep_parse_field_to_local(out, struct_name, f, "        ")
+    end
+
+    # Build constructor call with parsed local variables
+    constructor_fields = fields.reject { |f| f[:is_ext_point] }
+    required_fields = constructor_fields.reject { |f| f[:is_optional] }
+    optional_fields = constructor_fields.select { |f| f[:is_optional] }
+    ordered = required_fields + optional_fields
+    args = ordered.map { |f| "$#{f[:name]}" }.join(", ")
+    out.puts "        return new #{decode_class}(#{args});"
+
+    out.puts "    }"
+  end
+
+  # Emit PHP code to serialize one struct field to TxRep lines.
+  def txrep_field_to_line(out, struct_name, field, indent)
+    fname = field[:name]
+    xdr_name = field[:xdr_name]
+    accessor = "$this->#{fname}"
+
+    if field[:is_ext_point]
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = (string)$this->#{fname};"
+      return
+    end
+
+    php_type = field[:php_type]
+    is_optional = field[:is_optional]
+
+    if is_optional
+      out.puts "#{indent}if (#{accessor} !== null) {"
+      out.puts "#{indent}    $lines[$prefix . '.#{xdr_name}._present'] = 'true';"
+      txrep_emit_to_line(out, struct_name, field, "#{accessor}", "#{indent}    ")
+      out.puts "#{indent}} else {"
+      out.puts "#{indent}    $lines[$prefix . '.#{xdr_name}._present'] = 'false';"
+      out.puts "#{indent}}"
+      return
+    end
+
+    txrep_emit_to_line(out, struct_name, field, accessor, indent)
+  end
+
+  # Core dispatch for emitting a single value to TxRep.
+  # Handles compact types, amount fields, primitives, arrays, opaque, and named types.
+  def txrep_emit_to_line(out, struct_name, field, accessor, indent)
+    fname = field[:name]
+    xdr_name = field[:xdr_name]
+    php_type = field[:php_type]
+    decl = field[:decl]
+
+    # Compact types — emit as single formatted value
+    if TXREP_COMPACT_TYPES.key?(php_type)
+      fmt = TXREP_COMPACT_TYPES[php_type][:format]
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = #{fmt}(#{accessor});"
+      return
+    end
+
+    # Extension point fields (simplified int)
+    if field[:is_ext_point]
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = (string)#{accessor};"
+      return
+    end
+
+    # Type-overridden fields dispatch by the overridden php_type
+    if field[:type_overridden]
+      txrep_emit_primitive_to_line(out, field, accessor, indent, xdr_name)
+      return
+    end
+
+    # Array declarations
+    if field[:is_array]
+      element_type = resolve_array_element_type(decl)
+      if decl.is_a?(AST::Declarations::Array) && decl.fixed?
+        size = resolve_size(decl)
+        out.puts "#{indent}for ($i = 0; $i < #{size}; $i++) {"
+        txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_name, "#{indent}    ", true)
+        out.puts "#{indent}}"
+      else
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_name}.len'] = (string)count(#{accessor});"
+        out.puts "#{indent}for ($i = 0; $i < count(#{accessor}); $i++) {"
+        txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_name, "#{indent}    ", true)
+        out.puts "#{indent}}"
+      end
+      return
+    end
+
+    # Opaque declarations (string in PHP, binary data)
+    if decl.is_a?(AST::Declarations::Opaque)
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::bytesToHex(#{accessor});"
+      return
+    end
+
+    # String declarations (text)
+    if decl.is_a?(AST::Declarations::String)
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::escapeString(#{accessor});"
+      return
+    end
+
+    # Primitive and named types
+    txrep_emit_primitive_to_line(out, field, accessor, indent, xdr_name)
+  end
+
+  # Emit toTxRep for a primitive or named type value.
+  def txrep_emit_primitive_to_line(out, field, accessor, indent, xdr_name)
+    php_type = field[:php_type]
+
+    case php_type
+    when "int"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = (string)#{accessor};"
+    when "bool"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = #{accessor} ? 'true' : 'false';"
+    when "BigInteger"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = #{accessor}->toString();"
+    when "string"
+      if is_opaque_string_field?(field)
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::bytesToHex(#{accessor});"
+      else
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::escapeString(#{accessor});"
+      end
+    else
+      # Named XDR type — delegate to its toTxRep method
+      out.puts "#{indent}#{accessor}->toTxRep($prefix . '.#{xdr_name}', $lines);"
+    end
+  end
+
+  # Emit toTxRep for a single array element.
+  def txrep_emit_element_to_line(out, accessor, element_type, xdr_name, indent, indexed)
+    if TXREP_COMPACT_TYPES.key?(element_type)
+      fmt = TXREP_COMPACT_TYPES[element_type][:format]
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = #{fmt}(#{accessor});"
+      return
+    end
+
+    case element_type
+    when "int"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = (string)#{accessor};"
+    when "bool"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = #{accessor} ? 'true' : 'false';"
+    when "BigInteger"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = #{accessor}->toString();"
+    when "string"
+      # For array elements we default to hex (opaque) — text arrays are rare in XDR
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = TxRepHelper::bytesToHex(#{accessor});"
+    else
+      # Named XDR type — delegate
+      out.puts "#{indent}#{accessor}->toTxRep($prefix . '.#{xdr_name}[' . $i . ']', $lines);"
+    end
+  end
+
+  # Resolve the element type name for an array declaration.
+  def resolve_array_element_type(decl)
+    return "string" unless decl.is_a?(AST::Declarations::Array)
+    php_type_for_typespec(decl.type)
+  end
+
+  # Parse a struct field from TxRep map into a local variable $fieldName.
+  # Extension point fields are skipped (they use default 0 from the class).
+  def txrep_parse_field_to_local(out, struct_name, field, indent)
+    fname = field[:name]
+    xdr_name = field[:xdr_name]
+    target = "$#{fname}"
+
+    # Extension point fields are not in the constructor; skip.
+    return if field[:is_ext_point]
+
+    php_type = field[:php_type]
+    is_optional = field[:is_optional]
+
+    if is_optional
+      out.puts "#{indent}#{target} = null;"
+      out.puts "#{indent}$#{fname}Present = TxRepHelper::getValue($map, $prefix . '.#{xdr_name}._present');"
+      out.puts "#{indent}if ($#{fname}Present !== null && $#{fname}Present === 'true') {"
+      txrep_emit_from_assign(out, struct_name, field, target, "#{indent}    ")
+      out.puts "#{indent}}"
+      return
+    end
+
+    txrep_emit_from_assign(out, struct_name, field, target, indent)
+  end
+
+  # Core dispatch for parsing a single value from TxRep and assigning it.
+  def txrep_emit_from_assign(out, struct_name, field, target, indent)
+    fname = field[:name]
+    xdr_name = field[:xdr_name]
+    php_type = field[:php_type]
+    decl = field[:decl]
+
+    # Compact types
+    if TXREP_COMPACT_TYPES.key?(php_type)
+      parse = TXREP_COMPACT_TYPES[php_type][:parse]
+      out.puts "#{indent}#{target} = #{parse}(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
+      return
+    end
+
+    # Type-overridden fields
+    if field[:type_overridden]
+      txrep_emit_primitive_from_assign(out, field, target, indent, xdr_name)
+      return
+    end
+
+    # Array declarations
+    if field[:is_array]
+      element_type = resolve_array_element_type(decl)
+      if decl.is_a?(AST::Declarations::Array) && decl.fixed?
+        size = resolve_size(decl)
+        out.puts "#{indent}#{target} = [];"
+        out.puts "#{indent}for ($i = 0; $i < #{size}; $i++) {"
+        txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_name, "#{indent}    ")
+        out.puts "#{indent}}"
+      else
+        out.puts "#{indent}$#{fname}Len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}.len') ?? '0');"
+        out.puts "#{indent}#{target} = [];"
+        out.puts "#{indent}for ($i = 0; $i < $#{fname}Len; $i++) {"
+        txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_name, "#{indent}    ")
+        out.puts "#{indent}}"
+      end
+      return
+    end
+
+    # Opaque declarations
+    if decl.is_a?(AST::Declarations::Opaque)
+      out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
+      return
+    end
+
+    # String declarations (text)
+    if decl.is_a?(AST::Declarations::String)
+      out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
+      return
+    end
+
+    # Primitive and named types
+    txrep_emit_primitive_from_assign(out, field, target, indent, xdr_name)
+  end
+
+  # Emit fromTxRep for a primitive or named type value.
+  def txrep_emit_primitive_from_assign(out, field, target, indent, xdr_name)
+    php_type = field[:php_type]
+
+    case php_type
+    when "int"
+      out.puts "#{indent}#{target} = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '0');"
+    when "bool"
+      out.puts "#{indent}#{target} = (TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? 'false') === 'true';"
+    when "BigInteger"
+      out.puts "#{indent}#{target} = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '0');"
+    when "string"
+      if is_opaque_string_field?(field)
+        out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
+      else
+        out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
+      end
+    else
+      # Named XDR type — delegate to its fromTxRep method
+      out.puts "#{indent}#{target} = #{php_type}::fromTxRep($map, $prefix . '.#{xdr_name}');"
+    end
+  end
+
+  # Emit fromTxRep for a single array element.
+  def txrep_emit_element_from_assign(out, target, element_type, xdr_name, indent)
+    if TXREP_COMPACT_TYPES.key?(element_type)
+      parse = TXREP_COMPACT_TYPES[element_type][:parse]
+      out.puts "#{indent}#{target} = #{parse}(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '');"
+      return
+    end
+
+    case element_type
+    when "int"
+      out.puts "#{indent}#{target} = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '0');"
+    when "bool"
+      out.puts "#{indent}#{target} = (TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? 'false') === 'true';"
+    when "BigInteger"
+      out.puts "#{indent}#{target} = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '0');"
+    when "string"
+      # Array elements default to hex (opaque)
+      out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '');"
+    else
+      # Named XDR type
+      out.puts "#{indent}#{target} = #{element_type}::fromTxRep($map, $prefix . '.#{xdr_name}[' . $i . ']');"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Union TxRep methods: toTxRep / fromTxRep
+  # ---------------------------------------------------------------------------
+
+  def render_union_txrep_methods(out, union_name, class_name, union, disc_info, arms)
+    _, _, return_type, _ = resolve_class_info(union_name)
+    is_base = BASE_WRAPPER_TYPES.include?(union_name)
+    decode_class = is_base ? "static" : union_name
+
+    df = disc_info[:field_name]
+    xdr_disc = disc_info[:xdr_name]
+
+    # --- toTxRep ---
+    out.puts ""
+    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+
+    # Emit discriminant
+    if disc_info[:kind] == :enum
+      out.puts "        $this->#{df}->toTxRep($prefix . '.#{xdr_disc}', $lines);"
+    else
+      out.puts "        $lines[$prefix . '.#{xdr_disc}'] = (string)$this->#{df};"
+    end
+
+    # Switch on discriminant
+    if disc_info[:kind] == :enum
+      out.puts "        switch ($this->#{df}->getValue()) {"
+    else
+      out.puts "        switch ($this->#{df}) {"
+    end
+
+    has_default = arms.any? { |a| a[:is_default] }
+
+    arms.each do |arm|
+      arm[:case_labels].each do |label|
+        if label == "default"
+          out.puts "            default:"
+        else
+          out.puts "            case #{label}:"
+        end
+      end
+
+      if arm[:void]
+        out.puts "                break;"
+      else
+        render_txrep_arm_to(out, arm, union_name)
+        out.puts "                break;"
+      end
+    end
+
+    unless has_default
+      out.puts "            default:"
+      out.puts "                break;"
+    end
+
+    out.puts "        }"
+    out.puts "    }"
+
+    # --- fromTxRep ---
+    out.puts ""
+    out.puts "    public static function fromTxRep(array $map, string $prefix): #{return_type} {"
+
+    # Parse discriminant
+    if disc_info[:kind] == :enum
+      disc_type = disc_info[:php_name]
+      out.puts "        $disc = #{disc_type}::fromTxRep($map, $prefix . '.#{xdr_disc}');"
+      out.puts "        $result = new #{decode_class}($disc);"
+    else
+      out.puts "        $disc = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_disc}') ?? '0');"
+      out.puts "        $result = new #{decode_class}($disc);"
+    end
+
+    # Switch on discriminant
+    if disc_info[:kind] == :enum
+      out.puts "        switch ($result->#{df}->getValue()) {"
+    else
+      out.puts "        switch ($result->#{df}) {"
+    end
+
+    arms.each do |arm|
+      arm[:case_labels].each do |label|
+        if label == "default"
+          out.puts "            default:"
+        else
+          out.puts "            case #{label}:"
+        end
+      end
+
+      if arm[:void]
+        out.puts "                break;"
+      else
+        render_txrep_arm_from(out, arm, union_name)
+        out.puts "                break;"
+      end
+    end
+
+    unless has_default
+      out.puts "            default:"
+      out.puts "                break;"
+    end
+
+    out.puts "        }"
+    out.puts "        return $result;"
+    out.puts "    }"
+  end
+
+  # Emit toTxRep lines for one non-void union arm.
+  def render_txrep_arm_to(out, arm, union_name)
+    field = arm[:field_name]
+    xdr_field = arm[:xdr_name]
+    php_type = arm[:php_type]
+    style = arm[:encode_style]
+    accessor = "$this->#{field}"
+    indent = "                "
+
+    case style
+    when :string
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::escapeString(#{accessor});"
+    when :opaque_fixed
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{accessor});"
+    when :opaque_var
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{accessor});"
+    when :array
+      element_type = arm[:element_type]
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}.len'] = (string)count(#{accessor});"
+      out.puts "#{indent}for ($i = 0; $i < count(#{accessor}); $i++) {"
+      txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_field, "#{indent}    ", true)
+      out.puts "#{indent}}"
+    when :optional
+      inner_type = arm[:inner_type]
+      out.puts "#{indent}if (#{accessor} !== null) {"
+      out.puts "#{indent}    $lines[$prefix . '.#{xdr_field}._present'] = 'true';"
+      render_txrep_arm_inner_to(out, accessor, inner_type, xdr_field, "#{indent}    ", arm)
+      out.puts "#{indent}} else {"
+      out.puts "#{indent}    $lines[$prefix . '.#{xdr_field}._present'] = 'false';"
+      out.puts "#{indent}}"
+    when :optional_array
+      element_type = arm[:element_type]
+      out.puts "#{indent}if (#{accessor} !== null) {"
+      out.puts "#{indent}    $lines[$prefix . '.#{xdr_field}._present'] = 'true';"
+      out.puts "#{indent}    $lines[$prefix . '.#{xdr_field}.len'] = (string)count(#{accessor});"
+      out.puts "#{indent}    for ($i = 0; $i < count(#{accessor}); $i++) {"
+      txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_field, "#{indent}        ", true)
+      out.puts "#{indent}    }"
+      out.puts "#{indent}} else {"
+      out.puts "#{indent}    $lines[$prefix . '.#{xdr_field}._present'] = 'false';"
+      out.puts "#{indent}}"
+    when :simple
+      if TXREP_COMPACT_TYPES.key?(php_type)
+        fmt = TXREP_COMPACT_TYPES[php_type][:format]
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{fmt}(#{accessor});"
+      elsif php_type == "array"
+        elem_type = resolve_arm_array_element_type(arm)
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}.len'] = (string)count(#{accessor});"
+        out.puts "#{indent}for ($i = 0; $i < count(#{accessor}); $i++) {"
+        txrep_emit_element_to_line(out, "#{accessor}[$i]", elem_type, xdr_field, "#{indent}    ", true)
+        out.puts "#{indent}}"
+      else
+        render_txrep_simple_arm_to(out, accessor, php_type, xdr_field, indent, arm)
+      end
+    end
+  end
+
+  # Emit toTxRep for a simple (non-array, non-optional, non-opaque) union arm value.
+  def render_txrep_simple_arm_to(out, accessor, php_type, xdr_field, indent, arm)
+    case php_type
+    when "int"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = (string)#{accessor};"
+    when "bool"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{accessor} ? 'true' : 'false';"
+    when "BigInteger"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{accessor}->toString();"
+    when "string"
+      if is_opaque_arm?(arm)
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{accessor});"
+      else
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::escapeString(#{accessor});"
+      end
+    else
+      out.puts "#{indent}#{accessor}->toTxRep($prefix . '.#{xdr_field}', $lines);"
+    end
+  end
+
+  # Emit toTxRep for the inner value of an optional union arm.
+  def render_txrep_arm_inner_to(out, accessor, inner_type, xdr_field, indent, arm)
+    if TXREP_COMPACT_TYPES.key?(inner_type)
+      fmt = TXREP_COMPACT_TYPES[inner_type][:format]
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{fmt}(#{accessor});"
+    else
+      case inner_type
+      when "int"
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = (string)#{accessor};"
+      when "bool"
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{accessor} ? 'true' : 'false';"
+      when "BigInteger"
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{accessor}->toString();"
+      when "string"
+        if is_opaque_arm?(arm)
+          out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{accessor});"
+        else
+          out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::escapeString(#{accessor});"
+        end
+      else
+        out.puts "#{indent}#{accessor}->toTxRep($prefix . '.#{xdr_field}', $lines);"
+      end
+    end
+  end
+
+  # Emit fromTxRep assignment for one non-void union arm.
+  def render_txrep_arm_from(out, arm, union_name)
+    field = arm[:field_name]
+    xdr_field = arm[:xdr_name]
+    php_type = arm[:php_type]
+    style = arm[:decode_style]
+    target = "$result->#{field}"
+    indent = "                "
+
+    case style
+    when :string
+      out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+    when :opaque_fixed
+      out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+    when :opaque_var
+      out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+    when :array
+      element_type = arm[:element_type]
+      out.puts "#{indent}$#{field}Len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0');"
+      out.puts "#{indent}#{target} = [];"
+      out.puts "#{indent}for ($i = 0; $i < $#{field}Len; $i++) {"
+      txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_field, "#{indent}    ")
+      out.puts "#{indent}}"
+    when :optional
+      inner_type = arm[:inner_type]
+      out.puts "#{indent}$#{field}Present = TxRepHelper::getValue($map, $prefix . '.#{xdr_field}._present');"
+      out.puts "#{indent}if ($#{field}Present !== null && $#{field}Present === 'true') {"
+      render_txrep_arm_inner_from(out, target, inner_type, xdr_field, "#{indent}    ", arm)
+      out.puts "#{indent}}"
+    when :optional_array
+      element_type = arm[:element_type]
+      out.puts "#{indent}$#{field}Present = TxRepHelper::getValue($map, $prefix . '.#{xdr_field}._present');"
+      out.puts "#{indent}if ($#{field}Present !== null && $#{field}Present === 'true') {"
+      out.puts "#{indent}    $#{field}Len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0');"
+      out.puts "#{indent}    #{target} = [];"
+      out.puts "#{indent}    for ($i = 0; $i < $#{field}Len; $i++) {"
+      txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_field, "#{indent}        ")
+      out.puts "#{indent}    }"
+      out.puts "#{indent}}"
+    when :simple
+      if TXREP_COMPACT_TYPES.key?(php_type)
+        parse = TXREP_COMPACT_TYPES[php_type][:parse]
+        out.puts "#{indent}#{target} = #{parse}(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+      elsif php_type == "array"
+        elem_type = resolve_arm_array_element_type(arm)
+        out.puts "#{indent}$#{field}Len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0');"
+        out.puts "#{indent}#{target} = [];"
+        out.puts "#{indent}for ($i = 0; $i < $#{field}Len; $i++) {"
+        txrep_emit_element_from_assign(out, "#{target}[]", elem_type, xdr_field, "#{indent}    ")
+        out.puts "#{indent}}"
+      else
+        render_txrep_simple_arm_from(out, target, php_type, xdr_field, indent, arm)
+      end
+    end
+  end
+
+  # Emit fromTxRep for a simple (non-array, non-optional, non-opaque) union arm value.
+  def render_txrep_simple_arm_from(out, target, php_type, xdr_field, indent, arm)
+    case php_type
+    when "int"
+      out.puts "#{indent}#{target} = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '0');"
+    when "bool"
+      out.puts "#{indent}#{target} = (TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? 'false') === 'true';"
+    when "BigInteger"
+      out.puts "#{indent}#{target} = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '0');"
+    when "string"
+      if is_opaque_arm?(arm)
+        out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+      else
+        out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+      end
+    else
+      out.puts "#{indent}#{target} = #{php_type}::fromTxRep($map, $prefix . '.#{xdr_field}');"
+    end
+  end
+
+  # Emit fromTxRep for the inner value of an optional union arm.
+  def render_txrep_arm_inner_from(out, target, inner_type, xdr_field, indent, arm)
+    if TXREP_COMPACT_TYPES.key?(inner_type)
+      parse = TXREP_COMPACT_TYPES[inner_type][:parse]
+      out.puts "#{indent}#{target} = #{parse}(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+    else
+      case inner_type
+      when "int"
+        out.puts "#{indent}#{target} = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '0');"
+      when "bool"
+        out.puts "#{indent}#{target} = (TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? 'false') === 'true';"
+      when "BigInteger"
+        out.puts "#{indent}#{target} = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '0');"
+      when "string"
+        if is_opaque_arm?(arm)
+          out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+        else
+          out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+        end
+      else
+        out.puts "#{indent}#{target} = #{inner_type}::fromTxRep($map, $prefix . '.#{xdr_field}');"
+      end
+    end
+  end
+
+  # Determine if a union arm's string type represents binary opaque data.
+  # Uses the arm's typespec to check against OPAQUE_STRING_TYPES and the
+  # typedef chain, similar to is_opaque_string_field? for struct fields.
+  def is_opaque_arm?(arm)
+    typespec = arm[:typespec]
+    return false unless typespec.is_a?(AST::Typespecs::Simple)
+
+    resolved = typespec.resolved_type
+    return false unless resolved.is_a?(AST::Definitions::Typedef)
+
+    resolved_name = name(resolved)
+    return true if OPAQUE_STRING_TYPES.include?(resolved_name)
+
+    inner_decl = resolved.declaration
+    return true if inner_decl.is_a?(AST::Declarations::Opaque)
+
+    if inner_decl.respond_to?(:type) && inner_decl.type.is_a?(AST::Typespecs::Simple)
+      inner_resolved = inner_decl.type.resolved_type
+      if inner_resolved.is_a?(AST::Definitions::Typedef)
+        return OPAQUE_STRING_TYPES.include?(name(inner_resolved)) ||
+               inner_resolved.declaration.is_a?(AST::Declarations::Opaque)
+      end
+    end
+
+    false
+  end
+
+  # Resolve the element type for an arm whose php_type is "array" via TYPE_OVERRIDES.
+  # Follows the typedef chain to find the underlying array element type.
+  def resolve_arm_array_element_type(arm)
+    typespec = arm[:typespec]
+    if typespec.is_a?(AST::Typespecs::Simple)
+      resolved = typespec.resolved_type
+      if resolved.is_a?(AST::Definitions::Typedef) &&
+         resolved.declaration.is_a?(AST::Declarations::Array)
+        return php_type_for_typespec(resolved.declaration.type)
+      end
+    end
+    # Fallback: use element_type from arm info if available
+    arm[:element_type] || "string"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Typedef TxRep methods
+  # ---------------------------------------------------------------------------
+
+  # Simple typedef TxRep: wraps int, bool, BigInteger, or a named type.
+  def render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name)
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+    decode_class = is_base ? "static" : class_name
+
+    out.puts ""
+    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    case php_type
+    when "int"
+      out.puts "        $lines[$prefix] = (string)$this->#{field_name};"
+    when "bool"
+      out.puts "        $lines[$prefix] = $this->#{field_name} ? 'true' : 'false';"
+    when "BigInteger"
+      out.puts "        $lines[$prefix] = $this->#{field_name}->toString();"
+    when "string"
+      # Simple typedef wrapping string — treat as text (escapeString)
+      out.puts "        $lines[$prefix] = TxRepHelper::escapeString($this->#{field_name});"
+    else
+      # Named XDR type — delegate to inner type's toTxRep
+      out.puts "        $this->#{field_name}->toTxRep($prefix, $lines);"
+    end
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromTxRep(array $map, string $prefix): #{return_type} {"
+    case php_type
+    when "int"
+      out.puts "        return new #{decode_class}(TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix) ?? '0'));"
+    when "bool"
+      out.puts "        return new #{decode_class}((TxRepHelper::getValue($map, $prefix) ?? 'false') === 'true');"
+    when "BigInteger"
+      out.puts "        return new #{decode_class}(TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix) ?? '0'));"
+    when "string"
+      out.puts "        return new #{decode_class}(TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? ''));"
+    else
+      # Named XDR type — delegate to inner type's fromTxRep
+      out.puts "        return new #{decode_class}(#{php_type}::fromTxRep($map, $prefix));"
+    end
+    out.puts "    }"
+  end
+
+  # Scalar typedef TxRep: opaque (hex) or string (escape) wrapper.
+  def render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind)
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+    decode_class = is_base ? "static" : class_name
+
+    out.puts ""
+    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    case scalar_kind
+    when :opaque
+      out.puts "        $lines[$prefix] = TxRepHelper::bytesToHex($this->#{field_name});"
+    when :string
+      out.puts "        $lines[$prefix] = TxRepHelper::escapeString($this->#{field_name});"
+    end
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromTxRep(array $map, string $prefix): #{return_type} {"
+    case scalar_kind
+    when :opaque
+      out.puts "        return new #{decode_class}(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix) ?? ''));"
+    when :string
+      out.puts "        return new #{decode_class}(TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? ''));"
+    end
+    out.puts "    }"
+  end
+
+  # Array typedef TxRep: wraps a list of elements.
+  def render_array_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, element_type, decl)
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+    decode_class = is_base ? "static" : class_name
+    is_fixed = decl.is_a?(AST::Declarations::Array) && decl.fixed?
+
+    out.puts ""
+    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    if is_fixed
+      size = resolve_size(decl)
+      out.puts "        for ($i = 0; $i < #{size}; $i++) {"
+    else
+      out.puts "        $lines[$prefix . '.len'] = (string)count($this->#{field_name});"
+      out.puts "        for ($i = 0; $i < count($this->#{field_name}); $i++) {"
+    end
+    # Emit element serialization
+    accessor = "$this->#{field_name}[$i]"
+    case element_type
+    when "int"
+      out.puts "            $lines[$prefix . '[' . $i . ']'] = (string)#{accessor};"
+    when "bool"
+      out.puts "            $lines[$prefix . '[' . $i . ']'] = #{accessor} ? 'true' : 'false';"
+    when "BigInteger"
+      out.puts "            $lines[$prefix . '[' . $i . ']'] = #{accessor}->toString();"
+    when "string"
+      out.puts "            $lines[$prefix . '[' . $i . ']'] = TxRepHelper::bytesToHex(#{accessor});"
+    else
+      if TXREP_COMPACT_TYPES.key?(element_type)
+        fmt = TXREP_COMPACT_TYPES[element_type][:format]
+        out.puts "            $lines[$prefix . '[' . $i . ']'] = #{fmt}(#{accessor});"
+      else
+        out.puts "            #{accessor}->toTxRep($prefix . '[' . $i . ']', $lines);"
+      end
+    end
+    out.puts "        }"
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromTxRep(array $map, string $prefix): #{return_type} {"
+    out.puts "        $#{field_name} = [];"
+    if is_fixed
+      size = resolve_size(decl)
+      out.puts "        for ($i = 0; $i < #{size}; $i++) {"
+    else
+      out.puts "        $len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.len') ?? '0');"
+      out.puts "        for ($i = 0; $i < $len; $i++) {"
+    end
+    # Emit element deserialization
+    case element_type
+    when "int"
+      out.puts "            $#{field_name}[] = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '0');"
+    when "bool"
+      out.puts "            $#{field_name}[] = (TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? 'false') === 'true';"
+    when "BigInteger"
+      out.puts "            $#{field_name}[] = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '0');"
+    when "string"
+      out.puts "            $#{field_name}[] = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '');"
+    else
+      if TXREP_COMPACT_TYPES.key?(element_type)
+        parse = TXREP_COMPACT_TYPES[element_type][:parse]
+        out.puts "            $#{field_name}[] = #{parse}(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '');"
+      else
+        out.puts "            $#{field_name}[] = #{element_type}::fromTxRep($map, $prefix . '[' . $i . ']');"
+      end
+    end
+    out.puts "        }"
+    out.puts "        return new #{decode_class}($#{field_name});"
+    out.puts "    }"
   end
 
   # ---------------------------------------------------------------------------

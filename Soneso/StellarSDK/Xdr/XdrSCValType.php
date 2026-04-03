@@ -173,4 +173,123 @@ class XdrSCValType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::SCV_BOOL:
+                return 'SCV_BOOL';
+            case self::SCV_VOID:
+                return 'SCV_VOID';
+            case self::SCV_ERROR:
+                return 'SCV_ERROR';
+            case self::SCV_U32:
+                return 'SCV_U32';
+            case self::SCV_I32:
+                return 'SCV_I32';
+            case self::SCV_U64:
+                return 'SCV_U64';
+            case self::SCV_I64:
+                return 'SCV_I64';
+            case self::SCV_TIMEPOINT:
+                return 'SCV_TIMEPOINT';
+            case self::SCV_DURATION:
+                return 'SCV_DURATION';
+            case self::SCV_U128:
+                return 'SCV_U128';
+            case self::SCV_I128:
+                return 'SCV_I128';
+            case self::SCV_U256:
+                return 'SCV_U256';
+            case self::SCV_I256:
+                return 'SCV_I256';
+            case self::SCV_BYTES:
+                return 'SCV_BYTES';
+            case self::SCV_STRING:
+                return 'SCV_STRING';
+            case self::SCV_SYMBOL:
+                return 'SCV_SYMBOL';
+            case self::SCV_VEC:
+                return 'SCV_VEC';
+            case self::SCV_MAP:
+                return 'SCV_MAP';
+            case self::SCV_ADDRESS:
+                return 'SCV_ADDRESS';
+            case self::SCV_CONTRACT_INSTANCE:
+                return 'SCV_CONTRACT_INSTANCE';
+            case self::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+                return 'SCV_LEDGER_KEY_CONTRACT_INSTANCE';
+            case self::SCV_LEDGER_KEY_NONCE:
+                return 'SCV_LEDGER_KEY_NONCE';
+            default:
+                return 'XdrSCValType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'SCV_BOOL':
+                return new static(self::SCV_BOOL);
+            case 'SCV_VOID':
+                return new static(self::SCV_VOID);
+            case 'SCV_ERROR':
+                return new static(self::SCV_ERROR);
+            case 'SCV_U32':
+                return new static(self::SCV_U32);
+            case 'SCV_I32':
+                return new static(self::SCV_I32);
+            case 'SCV_U64':
+                return new static(self::SCV_U64);
+            case 'SCV_I64':
+                return new static(self::SCV_I64);
+            case 'SCV_TIMEPOINT':
+                return new static(self::SCV_TIMEPOINT);
+            case 'SCV_DURATION':
+                return new static(self::SCV_DURATION);
+            case 'SCV_U128':
+                return new static(self::SCV_U128);
+            case 'SCV_I128':
+                return new static(self::SCV_I128);
+            case 'SCV_U256':
+                return new static(self::SCV_U256);
+            case 'SCV_I256':
+                return new static(self::SCV_I256);
+            case 'SCV_BYTES':
+                return new static(self::SCV_BYTES);
+            case 'SCV_STRING':
+                return new static(self::SCV_STRING);
+            case 'SCV_SYMBOL':
+                return new static(self::SCV_SYMBOL);
+            case 'SCV_VEC':
+                return new static(self::SCV_VEC);
+            case 'SCV_MAP':
+                return new static(self::SCV_MAP);
+            case 'SCV_ADDRESS':
+                return new static(self::SCV_ADDRESS);
+            case 'SCV_CONTRACT_INSTANCE':
+                return new static(self::SCV_CONTRACT_INSTANCE);
+            case 'SCV_LEDGER_KEY_CONTRACT_INSTANCE':
+                return new static(self::SCV_LEDGER_KEY_CONTRACT_INSTANCE);
+            case 'SCV_LEDGER_KEY_NONCE':
+                return new static(self::SCV_LEDGER_KEY_NONCE);
+            default:
+                $prefix = 'XdrSCValType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

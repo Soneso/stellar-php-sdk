@@ -52,4 +52,26 @@ class XdrFeeBumpTransactionExt {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.v'] = (string)$this->discriminant;
+        switch ($this->discriminant) {
+            case 0:
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrFeeBumpTransactionExt {
+        $disc = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.v') ?? '0');
+        $result = new XdrFeeBumpTransactionExt($disc);
+        switch ($result->discriminant) {
+            case 0:
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

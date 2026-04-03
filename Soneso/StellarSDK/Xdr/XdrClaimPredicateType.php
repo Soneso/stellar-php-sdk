@@ -77,4 +77,59 @@ class XdrClaimPredicateType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::UNCONDITIONAL:
+                return 'CLAIM_PREDICATE_UNCONDITIONAL';
+            case self::AND:
+                return 'CLAIM_PREDICATE_AND';
+            case self::OR:
+                return 'CLAIM_PREDICATE_OR';
+            case self::NOT:
+                return 'CLAIM_PREDICATE_NOT';
+            case self::BEFORE_ABSOLUTE_TIME:
+                return 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME';
+            case self::BEFORE_RELATIVE_TIME:
+                return 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME';
+            default:
+                return 'XdrClaimPredicateType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'CLAIM_PREDICATE_UNCONDITIONAL':
+                return new static(self::UNCONDITIONAL);
+            case 'CLAIM_PREDICATE_AND':
+                return new static(self::AND);
+            case 'CLAIM_PREDICATE_OR':
+                return new static(self::OR);
+            case 'CLAIM_PREDICATE_NOT':
+                return new static(self::NOT);
+            case 'CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME':
+                return new static(self::BEFORE_ABSOLUTE_TIME);
+            case 'CLAIM_PREDICATE_BEFORE_RELATIVE_TIME':
+                return new static(self::BEFORE_RELATIVE_TIME);
+            default:
+                $prefix = 'XdrClaimPredicateType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

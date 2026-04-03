@@ -55,4 +55,19 @@ class XdrSorobanResources {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->footprint->toTxRep($prefix . '.footprint', $lines);
+        $lines[$prefix . '.instructions'] = (string)$this->instructions;
+        $lines[$prefix . '.diskReadBytes'] = (string)$this->diskReadBytes;
+        $lines[$prefix . '.writeBytes'] = (string)$this->writeBytes;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSorobanResources {
+        $footprint = XdrLedgerFootprint::fromTxRep($map, $prefix . '.footprint');
+        $instructions = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.instructions') ?? '0');
+        $diskReadBytes = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.diskReadBytes') ?? '0');
+        $writeBytes = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.writeBytes') ?? '0');
+        return new XdrSorobanResources($footprint, $instructions, $diskReadBytes, $writeBytes);
+    }
 }

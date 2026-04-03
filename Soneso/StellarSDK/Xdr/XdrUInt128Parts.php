@@ -43,4 +43,15 @@ class XdrUInt128Parts {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.hi'] = (string)$this->hi;
+        $lines[$prefix . '.lo'] = (string)$this->lo;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrUInt128Parts {
+        $hi = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.hi') ?? '0');
+        $lo = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.lo') ?? '0');
+        return new XdrUInt128Parts($hi, $lo);
+    }
 }

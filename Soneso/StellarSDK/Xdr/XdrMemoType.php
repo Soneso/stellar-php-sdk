@@ -71,4 +71,55 @@ class XdrMemoType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::MEMO_NONE:
+                return 'MEMO_NONE';
+            case self::MEMO_TEXT:
+                return 'MEMO_TEXT';
+            case self::MEMO_ID:
+                return 'MEMO_ID';
+            case self::MEMO_HASH:
+                return 'MEMO_HASH';
+            case self::MEMO_RETURN:
+                return 'MEMO_RETURN';
+            default:
+                return 'XdrMemoType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'MEMO_NONE':
+                return new static(self::MEMO_NONE);
+            case 'MEMO_TEXT':
+                return new static(self::MEMO_TEXT);
+            case 'MEMO_ID':
+                return new static(self::MEMO_ID);
+            case 'MEMO_HASH':
+                return new static(self::MEMO_HASH);
+            case 'MEMO_RETURN':
+                return new static(self::MEMO_RETURN);
+            default:
+                $prefix = 'XdrMemoType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

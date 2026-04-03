@@ -37,4 +37,13 @@ class XdrLedgerKeyContractCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.hash'] = TxRepHelper::bytesToHex($this->hash);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyContractCode {
+        $hash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hash') ?? '');
+        return new XdrLedgerKeyContractCode($hash);
+    }
 }

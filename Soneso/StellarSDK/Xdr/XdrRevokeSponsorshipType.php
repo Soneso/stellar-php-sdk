@@ -53,4 +53,43 @@ class XdrRevokeSponsorshipType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::LEDGER_ENTRY:
+                return 'REVOKE_SPONSORSHIP_LEDGER_ENTRY';
+            case self::SIGNER:
+                return 'REVOKE_SPONSORSHIP_SIGNER';
+            default:
+                return 'XdrRevokeSponsorshipType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'REVOKE_SPONSORSHIP_LEDGER_ENTRY':
+                return new static(self::LEDGER_ENTRY);
+            case 'REVOKE_SPONSORSHIP_SIGNER':
+                return new static(self::SIGNER);
+            default:
+                $prefix = 'XdrRevokeSponsorshipType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

@@ -81,4 +81,32 @@ class XdrTransactionBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.sourceAccount'] = TxRepHelper::formatMuxedAccount($this->sourceAccount);
+        $lines[$prefix . '.fee'] = (string)$this->fee;
+        $this->sequenceNumber->toTxRep($prefix . '.seqNum', $lines);
+        $this->preconditions->toTxRep($prefix . '.cond', $lines);
+        $this->memo->toTxRep($prefix . '.memo', $lines);
+        $lines[$prefix . '.operations.len'] = (string)count($this->operations);
+        for ($i = 0; $i < count($this->operations); $i++) {
+            $this->operations[$i]->toTxRep($prefix . '.operations[' . $i . ']', $lines);
+        }
+        $this->ext->toTxRep($prefix . '.ext', $lines);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $sourceAccount = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.sourceAccount') ?? '');
+        $fee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0');
+        $sequenceNumber = XdrSequenceNumber::fromTxRep($map, $prefix . '.seqNum');
+        $preconditions = XdrPreconditions::fromTxRep($map, $prefix . '.cond');
+        $memo = XdrMemo::fromTxRep($map, $prefix . '.memo');
+        $operationsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.operations.len') ?? '0');
+        $operations = [];
+        for ($i = 0; $i < $operationsLen; $i++) {
+            $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');
+        }
+        $ext = XdrTransactionExt::fromTxRep($map, $prefix . '.ext');
+        return new static($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
+    }
 }

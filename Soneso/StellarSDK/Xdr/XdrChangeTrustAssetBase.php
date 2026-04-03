@@ -78,4 +78,44 @@ class XdrChangeTrustAssetBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrAssetType::ASSET_TYPE_NATIVE:
+                break;
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
+                $this->alphaNum4->toTxRep($prefix . '.alphaNum4', $lines);
+                break;
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
+                $this->alphaNum12->toTxRep($prefix . '.alphaNum12', $lines);
+                break;
+            case XdrAssetType::ASSET_TYPE_POOL_SHARE:
+                $this->liquidityPool->toTxRep($prefix . '.liquidityPool', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrAssetType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrAssetType::ASSET_TYPE_NATIVE:
+                break;
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
+                $result->alphaNum4 = XdrAssetAlphaNum4::fromTxRep($map, $prefix . '.alphaNum4');
+                break;
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
+                $result->alphaNum12 = XdrAssetAlphaNum12::fromTxRep($map, $prefix . '.alphaNum12');
+                break;
+            case XdrAssetType::ASSET_TYPE_POOL_SHARE:
+                $result->liquidityPool = XdrLiquidityPoolParameters::fromTxRep($map, $prefix . '.liquidityPool');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

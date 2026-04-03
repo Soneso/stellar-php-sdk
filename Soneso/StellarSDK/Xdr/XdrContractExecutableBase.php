@@ -60,4 +60,32 @@ class XdrContractExecutableBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
+                $lines[$prefix . '.wasm_hash'] = TxRepHelper::bytesToHex($this->wasmIdHex);
+                break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrContractExecutableType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
+                $result->wasmIdHex = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.wasm_hash') ?? '');
+                break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

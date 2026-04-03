@@ -7,6 +7,7 @@ namespace Soneso\StellarSDKTests\Unit\Xdr\Generated;
 
 use PHPUnit\Framework\TestCase;
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Xdr\TxRepHelper;
 use Soneso\StellarSDK\Xdr\XdrAccountEntry;
 use Soneso\StellarSDK\Xdr\XdrAccountEntryExt;
 use Soneso\StellarSDK\Xdr\XdrAccountEntryV1;
@@ -56,6 +57,7 @@ use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry;
 use Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryExt;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryV1;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryV1Ext;
@@ -1734,6 +1736,35 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertNotNull($obj->getDiscriminant());
     }
 
+    public function testXdrLedgerEntryExt_1_ArmRoundTrip(): void
+    {
+        $original = new XdrLedgerEntryExt(1);
+        $original->v1 = new XdrLedgerEntryV1(new XdrLedgerEntryV1Ext(0), null);
+        $encoded = $original->encode();
+        $decoded = XdrLedgerEntryExt::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->discriminant, $decoded->discriminant);
+        $this->assertNotNull($decoded->v1);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrLedgerEntryExt::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrLedgerEntryExt_0_VoidArmRoundTrip(): void
+    {
+        $original = new XdrLedgerEntryExt(0);
+        $encoded = $original->encode();
+        $decoded = XdrLedgerEntryExt::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->discriminant, $decoded->discriminant);
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrLedgerEntryExtGettersSetters(): void
+    {
+        $obj = new XdrLedgerEntryExt(0);
+        $this->assertNotNull($obj->getDiscriminant());
+        $obj->getV1();
+    }
+
     public function testXdrLedgerKeyUnionRoundTrip(): void
     {
         $original = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
@@ -2214,6 +2245,807 @@ class XdrLedgerEntriesGenTest extends TestCase
         $obj->getArchivedEntry();
         $obj->getKey();
         $obj->getMetaEntry();
+    }
+
+    public function testXdrSequenceNumberTxRepRoundTrip(): void
+    {
+        $original = new XdrSequenceNumber(new BigInteger('123456789'));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSequenceNumber::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSequenceNumber');
+    }
+
+    public function testXdrAssetTypeTxRepEnumNames(): void
+    {
+        $val = new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE);
+        $name = $val->enumName();
+        $this->assertEquals('ASSET_TYPE_NATIVE', $name);
+        $back = XdrAssetType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4);
+        $name = $val->enumName();
+        $this->assertEquals('ASSET_TYPE_CREDIT_ALPHANUM4', $name);
+        $back = XdrAssetType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12);
+        $name = $val->enumName();
+        $this->assertEquals('ASSET_TYPE_CREDIT_ALPHANUM12', $name);
+        $back = XdrAssetType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE);
+        $name = $val->enumName();
+        $this->assertEquals('ASSET_TYPE_POOL_SHARE', $name);
+        $back = XdrAssetType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrAssetTypeTxRepRoundTrip_ASSET_TYPE_NATIVE(): void
+    {
+        $original = new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAssetType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAssetType_ASSET_TYPE_NATIVE');
+    }
+
+    public function testXdrAssetTypeTxRepRoundTrip_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+    {
+        $original = new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAssetType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4');
+    }
+
+    public function testXdrAssetTypeTxRepRoundTrip_ASSET_TYPE_CREDIT_ALPHANUM12(): void
+    {
+        $original = new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAssetType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12');
+    }
+
+    public function testXdrAssetTypeTxRepRoundTrip_ASSET_TYPE_POOL_SHARE(): void
+    {
+        $original = new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAssetType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAssetType_ASSET_TYPE_POOL_SHARE');
+    }
+
+    public function testXdrAllowTrustOperationAssetTxRepRoundTrip(): void
+    {
+        $original = XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD');
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAllowTrustOperationAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAllowTrustOperationAsset');
+    }
+
+    public function testXdrAssetAlphaNum4TxRepRoundTrip(): void
+    {
+        $original = new XdrAssetAlphaNum4(str_repeat("\xAB", 4), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAssetAlphaNum4Base::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAssetAlphaNum4');
+    }
+
+    public function testXdrAssetAlphaNum12TxRepRoundTrip(): void
+    {
+        $original = new XdrAssetAlphaNum12(str_repeat("\xAB", 12), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAssetAlphaNum12Base::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAssetAlphaNum12');
+    }
+
+    public function testXdrAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+    {
+        $original = (function() { $u = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4)); $u->alphaNum4 = new XdrAssetAlphaNum4(str_repeat("\xAB", 4), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAsset_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4');
+    }
+
+    public function testXdrAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12(): void
+    {
+        $original = (function() { $u = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12)); $u->alphaNum12 = new XdrAssetAlphaNum12(str_repeat("\xAB", 12), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAsset_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12');
+    }
+
+    public function testXdrAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_NATIVE(): void
+    {
+        $original = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAsset_XdrAssetType_ASSET_TYPE_NATIVE');
+    }
+
+    public function testXdrPriceTxRepRoundTrip(): void
+    {
+        $original = new XdrPrice(42, 42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrPrice::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrPrice');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepEnumNames(): void
+    {
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT);
+        $name = $val->enumName();
+        $this->assertEquals('ACCOUNT', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::TRUSTLINE);
+        $name = $val->enumName();
+        $this->assertEquals('TRUSTLINE', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::OFFER);
+        $name = $val->enumName();
+        $this->assertEquals('OFFER', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::DATA);
+        $name = $val->enumName();
+        $this->assertEquals('DATA', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::CLAIMABLE_BALANCE);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIMABLE_BALANCE', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::LIQUIDITY_POOL);
+        $name = $val->enumName();
+        $this->assertEquals('LIQUIDITY_POOL', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_DATA);
+        $name = $val->enumName();
+        $this->assertEquals('CONTRACT_DATA', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_CODE);
+        $name = $val->enumName();
+        $this->assertEquals('CONTRACT_CODE', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::CONFIG_SETTING);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrLedgerEntryType(XdrLedgerEntryType::TTL);
+        $name = $val->enumName();
+        $this->assertEquals('TTL', $name);
+        $back = XdrLedgerEntryType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_ACCOUNT(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_ACCOUNT');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_TRUSTLINE(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::TRUSTLINE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_TRUSTLINE');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_OFFER(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::OFFER);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_OFFER');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_DATA(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::DATA);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_DATA');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_CLAIMABLE_BALANCE(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::CLAIMABLE_BALANCE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_CLAIMABLE_BALANCE');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_LIQUIDITY_POOL(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::LIQUIDITY_POOL);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_LIQUIDITY_POOL');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_CONTRACT_DATA(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_DATA);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_CONTRACT_DATA');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_CONTRACT_CODE(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_CODE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_CONTRACT_CODE');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_CONFIG_SETTING(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::CONFIG_SETTING);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_CONFIG_SETTING');
+    }
+
+    public function testXdrLedgerEntryTypeTxRepRoundTrip_TTL(): void
+    {
+        $original = new XdrLedgerEntryType(XdrLedgerEntryType::TTL);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerEntryType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerEntryType_TTL');
+    }
+
+    public function testXdrSignerTxRepRoundTrip(): void
+    {
+        $original = new XdrSigner((function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })(), 42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSigner::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSigner');
+    }
+
+    public function testXdrLiquidityPoolTypeTxRepEnumNames(): void
+    {
+        $val = new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT);
+        $name = $val->enumName();
+        $this->assertEquals('LIQUIDITY_POOL_CONSTANT_PRODUCT', $name);
+        $back = XdrLiquidityPoolType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrLiquidityPoolTypeTxRepRoundTrip_LIQUIDITY_POOL_CONSTANT_PRODUCT(): void
+    {
+        $original = new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLiquidityPoolType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLiquidityPoolType_LIQUIDITY_POOL_CONSTANT_PRODUCT');
+    }
+
+    public function testXdrTrustlineAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+    {
+        $original = (function() { $u = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4)); $u->alphaNum4 = new XdrAssetAlphaNum4(str_repeat("\xAB", 4), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrTrustlineAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrTrustlineAsset_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4');
+    }
+
+    public function testXdrTrustlineAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12(): void
+    {
+        $original = (function() { $u = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12)); $u->alphaNum12 = new XdrAssetAlphaNum12(str_repeat("\xAB", 12), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrTrustlineAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrTrustlineAsset_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12');
+    }
+
+    public function testXdrTrustlineAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_POOL_SHARE(): void
+    {
+        $original = (function() { $u = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE)); $u->liquidityPoolID = str_repeat("\xAB", 32); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrTrustlineAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrTrustlineAsset_XdrAssetType_ASSET_TYPE_POOL_SHARE');
+    }
+
+    public function testXdrTrustlineAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_NATIVE(): void
+    {
+        $original = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrTrustlineAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrTrustlineAsset_XdrAssetType_ASSET_TYPE_NATIVE');
+    }
+
+    public function testXdrClaimPredicateTypeTxRepEnumNames(): void
+    {
+        $val = new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIM_PREDICATE_UNCONDITIONAL', $name);
+        $back = XdrClaimPredicateType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrClaimPredicateType(XdrClaimPredicateType::AND);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIM_PREDICATE_AND', $name);
+        $back = XdrClaimPredicateType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrClaimPredicateType(XdrClaimPredicateType::OR);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIM_PREDICATE_OR', $name);
+        $back = XdrClaimPredicateType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrClaimPredicateType(XdrClaimPredicateType::NOT);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIM_PREDICATE_NOT', $name);
+        $back = XdrClaimPredicateType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME', $name);
+        $back = XdrClaimPredicateType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIM_PREDICATE_BEFORE_RELATIVE_TIME', $name);
+        $back = XdrClaimPredicateType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrClaimPredicateTypeTxRepRoundTrip_UNCONDITIONAL(): void
+    {
+        $original = new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicateType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicateType_UNCONDITIONAL');
+    }
+
+    public function testXdrClaimPredicateTypeTxRepRoundTrip_AND(): void
+    {
+        $original = new XdrClaimPredicateType(XdrClaimPredicateType::AND);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicateType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicateType_AND');
+    }
+
+    public function testXdrClaimPredicateTypeTxRepRoundTrip_OR(): void
+    {
+        $original = new XdrClaimPredicateType(XdrClaimPredicateType::OR);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicateType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicateType_OR');
+    }
+
+    public function testXdrClaimPredicateTypeTxRepRoundTrip_NOT(): void
+    {
+        $original = new XdrClaimPredicateType(XdrClaimPredicateType::NOT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicateType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicateType_NOT');
+    }
+
+    public function testXdrClaimPredicateTypeTxRepRoundTrip_BEFORE_ABSOLUTE_TIME(): void
+    {
+        $original = new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicateType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicateType_BEFORE_ABSOLUTE_TIME');
+    }
+
+    public function testXdrClaimPredicateTypeTxRepRoundTrip_BEFORE_RELATIVE_TIME(): void
+    {
+        $original = new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicateType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicateType_BEFORE_RELATIVE_TIME');
+    }
+
+    public function testXdrClaimPredicateTxRepRoundTrip_XdrClaimPredicateType_AND(): void
+    {
+        $original = (function() { $u = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::AND)); $u->andPredicates = []; return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicate::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicate_XdrClaimPredicateType_AND');
+    }
+
+    public function testXdrClaimPredicateTxRepRoundTrip_XdrClaimPredicateType_OR(): void
+    {
+        $original = (function() { $u = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::OR)); $u->orPredicates = []; return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicate::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicate_XdrClaimPredicateType_OR');
+    }
+
+    public function testXdrClaimPredicateTxRepRoundTrip_XdrClaimPredicateType_NOT(): void
+    {
+        $original = (function() { $u = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::NOT)); $u->notPredicate = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL)); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicate::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicate_XdrClaimPredicateType_NOT');
+    }
+
+    public function testXdrClaimPredicateTxRepRoundTrip_XdrClaimPredicateType_BEFORE_ABSOLUTE_TIME(): void
+    {
+        $original = (function() { $u = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME)); $u->absBefore = 42; return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicate::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicate_XdrClaimPredicateType_BEFORE_ABSOLUTE_TIME');
+    }
+
+    public function testXdrClaimPredicateTxRepRoundTrip_XdrClaimPredicateType_BEFORE_RELATIVE_TIME(): void
+    {
+        $original = (function() { $u = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME)); $u->relBefore = 42; return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicate::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicate_XdrClaimPredicateType_BEFORE_RELATIVE_TIME');
+    }
+
+    public function testXdrClaimPredicateTxRepRoundTrip_XdrClaimPredicateType_UNCONDITIONAL(): void
+    {
+        $original = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimPredicate::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimPredicate_XdrClaimPredicateType_UNCONDITIONAL');
+    }
+
+    public function testXdrClaimantTypeTxRepEnumNames(): void
+    {
+        $val = new XdrClaimantType(XdrClaimantType::V0);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIMANT_TYPE_V0', $name);
+        $back = XdrClaimantType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrClaimantTypeTxRepRoundTrip_V0(): void
+    {
+        $original = new XdrClaimantType(XdrClaimantType::V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimantType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimantType_V0');
+    }
+
+    public function testXdrClaimantTxRepRoundTrip_XdrClaimantType_V0(): void
+    {
+        $original = (function() { $u = new XdrClaimant(new XdrClaimantType(XdrClaimantType::V0)); $u->v0 = new XdrClaimantV0(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL))); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimant::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimant_XdrClaimantType_V0');
+    }
+
+    public function testXdrClaimantV0TxRepRoundTrip(): void
+    {
+        $original = new XdrClaimantV0(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL)));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimantV0::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimantV0');
+    }
+
+    public function testXdrLiquidityPoolConstantProductParametersTxRepRoundTrip(): void
+    {
+        $original = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLiquidityPoolConstantProductParameters::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLiquidityPoolConstantProductParameters');
+    }
+
+    public function testXdrContractDataDurabilityTxRepEnumNames(): void
+    {
+        $val = new XdrContractDataDurability(XdrContractDataDurability::TEMPORARY);
+        $name = $val->enumName();
+        $this->assertEquals('TEMPORARY', $name);
+        $back = XdrContractDataDurability::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrContractDataDurability(XdrContractDataDurability::PERSISTENT);
+        $name = $val->enumName();
+        $this->assertEquals('PERSISTENT', $name);
+        $back = XdrContractDataDurability::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrContractDataDurabilityTxRepRoundTrip_TEMPORARY(): void
+    {
+        $original = new XdrContractDataDurability(XdrContractDataDurability::TEMPORARY);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrContractDataDurability::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractDataDurability_TEMPORARY');
+    }
+
+    public function testXdrContractDataDurabilityTxRepRoundTrip_PERSISTENT(): void
+    {
+        $original = new XdrContractDataDurability(XdrContractDataDurability::PERSISTENT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrContractDataDurability::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractDataDurability_PERSISTENT');
+    }
+
+    public function testXdrLedgerKeyTxRepRoundTrip(): void
+    {
+        $original = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKey::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKey');
+    }
+
+    public function testXdrLedgerKeyAccountTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyAccountBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyAccount');
+    }
+
+    public function testXdrLedgerKeyTrustLineTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyTrustLine(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyTrustLine::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyTrustLine');
+    }
+
+    public function testXdrLedgerKeyOfferTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyOffer(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyOffer::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyOffer');
+    }
+
+    public function testXdrLedgerKeyDataTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyData(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string');
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyData::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyData');
+    }
+
+    public function testXdrLedgerKeyClaimableBalanceTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyClaimableBalance(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyClaimableBalance::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyClaimableBalance');
+    }
+
+    public function testXdrLedgerKeyLiquidityPoolTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyLiquidityPool(str_repeat("\xAB", 32));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyLiquidityPool::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyLiquidityPool');
+    }
+
+    public function testXdrLedgerKeyContractDataTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyContractData(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), new XdrContractDataDurability(XdrContractDataDurability::TEMPORARY));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyContractData::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyContractData');
+    }
+
+    public function testXdrLedgerKeyContractCodeTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyContractCode(str_repeat("\xAB", 32));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyContractCode::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyContractCode');
+    }
+
+    public function testXdrLedgerKeyConfigSettingTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyConfigSetting(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyConfigSetting::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyConfigSetting');
+    }
+
+    public function testXdrLedgerKeyTTLTxRepRoundTrip(): void
+    {
+        $original = new XdrLedgerKeyTTL(str_repeat("\xAB", 32));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrLedgerKeyTTL::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyTTL');
+    }
+
+    public function testXdrEnvelopeTypeTxRepEnumNames(): void
+    {
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_TX_V0', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SCP);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_SCP', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_TX', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_AUTH);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_AUTH', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SCPVALUE);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_SCPVALUE', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_TX_FEE_BUMP', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_OP_ID);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_OP_ID', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_POOL_REVOKE_OP_ID', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_CONTRACT_ID', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_SOROBAN_AUTHORIZATION', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_TX_V0(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_TX_V0');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_SCP(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SCP);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_SCP');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_TX(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_TX');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_AUTH(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_AUTH);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_AUTH');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_SCPVALUE(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SCPVALUE);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_SCPVALUE');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_TX_FEE_BUMP(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_TX_FEE_BUMP');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_OP_ID(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_OP_ID);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_OP_ID');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_POOL_REVOKE_OP_ID(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_POOL_REVOKE_OP_ID');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_CONTRACT_ID(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_CONTRACT_ID');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION');
     }
 }
 

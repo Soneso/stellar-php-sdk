@@ -30,4 +30,34 @@ class XdrLiquidityPoolWithdrawOperation extends XdrLiquidityPoolWithdrawOperatio
         $minAmountB = $xdr->readBigInteger64();
         return new static($liquidityPoolID, $amount, $minAmountA, $minAmountB);
     }
+
+    /**
+     * Override toTxRep because this class stores $liquidityPoolID as a hex string,
+     * not as raw binary bytes (which the base class assumes via bytesToHex).
+     *
+     * @param string               $prefix
+     * @param array<string,string> $lines
+     */
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.liquidityPoolID'] = $this->liquidityPoolID;
+        $lines[$prefix . '.amount'] = $this->amount->toString();
+        $lines[$prefix . '.minAmountA'] = $this->minAmountA->toString();
+        $lines[$prefix . '.minAmountB'] = $this->minAmountB->toString();
+    }
+
+    /**
+     * Override fromTxRep to read the pool ID as a hex string directly (the
+     * base class converts hex→binary bytes via hexToBytes, which breaks encode()).
+     *
+     * @param array<string,string> $map
+     * @param string               $prefix
+     * @return static
+     */
+    public static function fromTxRep(array $map, string $prefix): static {
+        $liquidityPoolID = TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '';
+        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        $minAmountA = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.minAmountA') ?? '0');
+        $minAmountB = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.minAmountB') ?? '0');
+        return new static($liquidityPoolID, $amount, $minAmountA, $minAmountB);
+    }
 }

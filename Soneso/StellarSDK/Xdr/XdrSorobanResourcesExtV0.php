@@ -45,4 +45,20 @@ class XdrSorobanResourcesExtV0 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.archivedSorobanEntries.len'] = (string)count($this->archivedSorobanEntries);
+        for ($i = 0; $i < count($this->archivedSorobanEntries); $i++) {
+            $lines[$prefix . '.archivedSorobanEntries[' . $i . ']'] = (string)$this->archivedSorobanEntries[$i];
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSorobanResourcesExtV0 {
+        $archivedSorobanEntriesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.archivedSorobanEntries.len') ?? '0');
+        $archivedSorobanEntries = [];
+        for ($i = 0; $i < $archivedSorobanEntriesLen; $i++) {
+            $archivedSorobanEntries[] = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.archivedSorobanEntries[' . $i . ']') ?? '0');
+        }
+        return new XdrSorobanResourcesExtV0($archivedSorobanEntries);
+    }
 }

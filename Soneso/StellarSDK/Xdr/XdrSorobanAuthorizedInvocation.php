@@ -51,4 +51,22 @@ class XdrSorobanAuthorizedInvocation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->function->toTxRep($prefix . '.function', $lines);
+        $lines[$prefix . '.subInvocations.len'] = (string)count($this->subInvocations);
+        for ($i = 0; $i < count($this->subInvocations); $i++) {
+            $this->subInvocations[$i]->toTxRep($prefix . '.subInvocations[' . $i . ']', $lines);
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrSorobanAuthorizedInvocation {
+        $function = XdrSorobanAuthorizedFunction::fromTxRep($map, $prefix . '.function');
+        $subInvocationsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.subInvocations.len') ?? '0');
+        $subInvocations = [];
+        for ($i = 0; $i < $subInvocationsLen; $i++) {
+            $subInvocations[] = XdrSorobanAuthorizedInvocation::fromTxRep($map, $prefix . '.subInvocations[' . $i . ']');
+        }
+        return new XdrSorobanAuthorizedInvocation($function, $subInvocations);
+    }
 }

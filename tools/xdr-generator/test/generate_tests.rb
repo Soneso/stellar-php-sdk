@@ -13,6 +13,7 @@ require_relative '../generator/name_overrides'
 require_relative '../generator/member_overrides'
 require_relative '../generator/field_overrides'
 require_relative '../generator/type_overrides'
+require_relative '../generator/txrep_types'
 
 AST = Xdrgen::AST
 
@@ -689,19 +690,24 @@ def collect_namespace_definitions(ns, groups, source)
   ns.definitions.each do |defn|
     next if defn.is_a?(AST::Definitions::Const)
     php_name = name(defn)
-    next if SKIP_TYPES.include?(php_name)
-    next if TYPE_OVERRIDES.key?(php_name)
-    next if SKIP_TEST_TYPES.include?(php_name)
 
-    groups[source] ||= []
-    groups[source] << defn
+    is_skipped = SKIP_TYPES.include?(php_name) || TYPE_OVERRIDES.key?(php_name) || SKIP_TEST_TYPES.include?(php_name)
 
+    unless is_skipped
+      groups[source] ||= []
+      groups[source] << defn
+    end
+
+    # Always collect nested definitions (even from skipped parents) so TxRep
+    # tests can be generated for types like XdrTransactionExt that are nested
+    # under skipped types like XdrTransaction.
     if defn.respond_to?(:nested_definitions)
       defn.nested_definitions.each do |nested|
         nested_name = name(nested)
         next if SKIP_TYPES.include?(nested_name)
         next if TYPE_OVERRIDES.key?(nested_name)
         next if SKIP_TEST_TYPES.include?(nested_name)
+        groups[source] ||= []
         groups[source] << nested
       end
     end
@@ -776,6 +782,29 @@ def generate_test_file(source, definitions, output_dir)
     if BASE_WRAPPER_TYPES.include?(php_name)
       factory_tests = generate_factory_method_tests(php_name)
       tests.concat(factory_tests) if factory_tests
+    end
+  end
+
+  # TxRep roundtrip tests — second pass over all definitions
+  seen_txrep = Set.new
+  definitions.each do |defn|
+    php_name = name(defn)
+    next if seen_txrep.include?(php_name)
+    seen_txrep.add(php_name)
+
+    txrep_tests = generate_txrep_tests(php_name, defn)
+    tests.concat(txrep_tests) if txrep_tests
+
+    # Also generate TxRep tests for nested definitions
+    if defn.respond_to?(:nested_definitions)
+      defn.nested_definitions.each do |nested|
+        nested_name = name(nested)
+        next if seen_txrep.include?(nested_name)
+        seen_txrep.add(nested_name)
+
+        nested_txrep = generate_txrep_tests(nested_name, nested)
+        tests.concat(nested_txrep) if nested_txrep
+      end
     end
   end
 
@@ -1680,6 +1709,271 @@ def collect_imports_from_expr(expr)
   # XdrDataValueMandatory
   imports.add("XdrDataValueMandatory") if expr.include?("XdrDataValueMandatory")
   imports
+end
+
+# ---------------------------------------------------------------------------
+# TxRep roundtrip test generation
+#
+# Generates tests that exercise toTxRep/fromTxRep on every TXREP_TYPES type.
+# For enums, tests every member's enumName/fromTxRepName.
+# For unions, tests every arm.
+# ---------------------------------------------------------------------------
+
+# Types to skip TxRep test generation for (same as SKIP_TEST_TYPES but
+# additionally skipping types whose TxRep construction is too complex).
+SKIP_TXREP_TEST_TYPES = (SKIP_TEST_TYPES + %w[
+  XdrTransactionV0Envelope
+]).freeze
+
+# Check if a PHP file (or its Base file) contains a fromTxRep method.
+def has_from_txrep?(php_name)
+  is_base = BASE_WRAPPER_TYPES.include?(php_name)
+  if is_base
+    # Check wrapper file first
+    wrapper_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}.php")
+    if File.exist?(wrapper_file)
+      return true if File.read(wrapper_file).include?("function fromTxRep(")
+    end
+    # Check base file
+    base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}Base.php")
+    if File.exist?(base_file)
+      return true if File.read(base_file).include?("function fromTxRep(")
+    end
+  else
+    file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}.php")
+    if File.exist?(file)
+      return true if File.read(file).include?("function fromTxRep(")
+    end
+  end
+  false
+end
+
+# Determine which class to use for fromTxRep calls.
+# For BASE_WRAPPER_TYPES, the wrapper may override fromTxRep.
+def from_txrep_class(php_name)
+  if BASE_WRAPPER_TYPES.include?(php_name)
+    wrapper_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}.php")
+    if File.exist?(wrapper_file) && File.read(wrapper_file).include?("function fromTxRep(")
+      return php_name
+    end
+    base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}Base.php")
+    if File.exist?(base_file) && File.read(base_file).include?("function fromTxRep(")
+      return "#{php_name}Base"
+    end
+  end
+  php_name
+end
+
+# Determine which class to use for toTxRep calls (construction class).
+# For BASE_WRAPPER_TYPES, we use the wrapper for construction since it may
+# have custom toTxRep.
+def to_txrep_class(php_name)
+  php_name
+end
+
+# Check if a PHP class has enumName/fromTxRepName methods (enum-specific TxRep).
+def has_enum_txrep_names?(php_name)
+  is_base = BASE_WRAPPER_TYPES.include?(php_name)
+  target_class = is_base ? "#{php_name}Base" : php_name
+  file = File.join("Soneso", "StellarSDK", "Xdr", "#{target_class}.php")
+  return false unless File.exist?(file)
+  content = File.read(file)
+  content.include?("function enumName(") && content.include?("function fromTxRepName(")
+end
+
+# Generate TxRep roundtrip tests for a given type.
+# Returns an array of test hashes or nil.
+def generate_txrep_tests(php_name, defn)
+  return nil unless TXREP_TYPES.include?(php_name)
+  return nil if SKIP_TXREP_TEST_TYPES.include?(php_name)
+  return nil unless has_from_txrep?(php_name)
+
+  case defn
+  when AST::Definitions::Enum
+    generate_enum_txrep_tests(php_name, defn)
+  when AST::Definitions::Struct
+    generate_struct_txrep_test(php_name, defn)
+  when AST::Definitions::Union
+    generate_union_txrep_tests(php_name, defn)
+  when AST::Definitions::Typedef
+    generate_typedef_txrep_test(php_name, defn)
+  else
+    nil
+  end
+rescue => e
+  $stderr.puts "WARNING: Failed to generate TxRep test for #{php_name}: #{e.message}"
+  $stderr.puts e.backtrace.first(3).join("\n")
+  nil
+end
+
+# Generate a single TxRep roundtrip test.
+# value_expr: PHP expression that constructs the test value.
+# construct_class: class used for toTxRep (the value's class).
+# decode_class: class used for fromTxRep.
+def txrep_roundtrip_test_php(php_name, value_expr, suffix = "")
+  construct_class = to_txrep_class(php_name)
+  decode_class = from_txrep_class(php_name)
+
+  imports = collect_imports_from_expr(value_expr)
+  imports.add(construct_class)
+  imports.add(decode_class) if decode_class != construct_class
+  imports.add("TxRepHelper")
+
+  safe_suffix = suffix.gsub(/[^a-zA-Z0-9_]/, "")
+  method_name = "test#{php_name}TxRepRoundTrip#{safe_suffix}"
+
+  lines = []
+  lines << "    public function #{method_name}(): void"
+  lines << "    {"
+  lines << "        $original = #{value_expr};"
+  lines << "        $lines = [];"
+  lines << "        $original->toTxRep('test', $lines);"
+  lines << "        $reconstructed = #{decode_class}::fromTxRep($lines, 'test');"
+  lines << "        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for #{php_name}#{suffix}');"
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+# Generate TxRep tests for all enum members.
+# Tests enumName/fromTxRepName for each member, and toTxRep/fromTxRep roundtrip.
+def generate_enum_txrep_tests(php_name, enum_defn)
+  tests = []
+
+  # Test enumName/fromTxRepName for every member
+  if has_enum_txrep_names?(php_name)
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+    const_class = is_base ? "#{php_name}Base" : php_name
+    class_name = php_name
+
+    imports = Set.new([class_name, "TxRepHelper"])
+    imports.add(const_class) if const_class != class_name
+
+    lines = []
+    lines << "    public function test#{php_name}TxRepEnumNames(): void"
+    lines << "    {"
+
+    enum_defn.members.each do |m|
+      member_name = resolve_member_name(php_name, m.name.to_s)
+      xdr_member_name = m.name.to_s  # Original XDR name used by enumName()
+      lines << "        $val = new #{class_name}(#{const_class}::#{member_name});"
+      lines << "        $name = $val->enumName();"
+      lines << "        $this->assertEquals('#{xdr_member_name}', $name);"
+      lines << "        $back = #{class_name}::fromTxRepName($name);"
+      lines << "        $this->assertEquals($val->getValue(), $back->getValue());"
+    end
+
+    lines << "    }"
+    tests << { lines: lines, imports: imports }
+  end
+
+  # TxRep roundtrip for each enum member
+  is_base = BASE_WRAPPER_TYPES.include?(php_name)
+  const_class = is_base ? "#{php_name}Base" : php_name
+
+  enum_defn.members.each do |m|
+    member_name = resolve_member_name(php_name, m.name.to_s)
+    value_expr = "new #{php_name}(#{const_class}::#{member_name})"
+    test = txrep_roundtrip_test_php(php_name, value_expr, "_#{member_name}")
+    tests << test if test
+  end
+
+  tests.empty? ? nil : tests
+end
+
+# Generate TxRep roundtrip test for a struct type.
+def generate_struct_txrep_test(php_name, struct_defn)
+  value_expr = generate_struct_value(php_name, struct_defn, 0)
+  return nil unless value_expr
+
+  test = txrep_roundtrip_test_php(php_name, value_expr)
+  test ? [test] : nil
+end
+
+# Generate TxRep roundtrip tests for a union type — one test per arm.
+def generate_union_txrep_tests(php_name, union_defn)
+  # If a FALLBACK_VALUES entry exists, generate a single roundtrip test
+  if FALLBACK_VALUES.key?(php_name)
+    test = txrep_roundtrip_test_php(php_name, FALLBACK_VALUES[php_name])
+    return test ? [test] : nil
+  end
+
+  class_name = php_name
+  disc_info = resolve_discriminant_info_test(union_defn, php_name)
+
+  tests = []
+
+  # Non-void arms
+  union_defn.normal_arms.each do |arm|
+    next if arm.void?
+
+    case_value = arm.cases.first.value
+    disc_expr = arm_discriminant_expr(case_value, disc_info)
+    case_label = arm_case_label(case_value, disc_info)
+
+    field_name = resolve_field_name(php_name, arm.name)
+    decl = arm.declaration
+
+    arm_php_type = nil
+    if FIELD_TYPE_OVERRIDES.key?(php_name) && FIELD_TYPE_OVERRIDES[php_name].key?(field_name)
+      arm_php_type = FIELD_TYPE_OVERRIDES[php_name][field_name]
+    else
+      arm_php_type = php_type_string(decl)
+    end
+
+    override_key = [php_name, field_name]
+    arm_value = if ARM_VALUE_OVERRIDES.key?(override_key)
+                  ARM_VALUE_OVERRIDES[override_key]
+                else
+                  typespec = decl.respond_to?(:type) ? decl.type : nil
+                  test_value_for_type(arm_php_type, typespec, decl, 1)
+                end
+    next unless arm_value
+
+    safe_label = case_label.gsub("::", "_").gsub(/[^a-zA-Z0-9_]/, "")
+    value_expr = "(function() { $u = new #{class_name}(#{disc_expr}); $u->#{field_name} = #{arm_value}; return $u; })()"
+    test = txrep_roundtrip_test_php(php_name, value_expr, "_#{safe_label}")
+    tests << test if test
+  end
+
+  # Void arms
+  union_defn.normal_arms.each do |arm|
+    next unless arm.void?
+
+    case_value = arm.cases.first.value
+    disc_expr = arm_discriminant_expr(case_value, disc_info)
+    case_label = arm_case_label(case_value, disc_info)
+
+    safe_label = case_label.gsub("::", "_").gsub(/[^a-zA-Z0-9_]/, "")
+    value_expr = "new #{class_name}(#{disc_expr})"
+    test = txrep_roundtrip_test_php(php_name, value_expr, "_#{safe_label}")
+    tests << test if test
+  end
+
+  # If no arm tests generated, try single fallback
+  if tests.empty?
+    value_expr = generate_union_value(php_name, union_defn, 0)
+    return nil unless value_expr
+    test = txrep_roundtrip_test_php(php_name, value_expr)
+    return test ? [test] : nil
+  end
+
+  tests
+end
+
+# Generate TxRep roundtrip test for a typedef type.
+def generate_typedef_txrep_test(php_name, typedef_defn)
+  return nil if TYPE_OVERRIDES.key?(php_name)
+
+  php_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}.php")
+  base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}Base.php")
+  return nil unless File.exist?(php_file) || File.exist?(base_file)
+
+  value_expr = generate_typedef_value(php_name, typedef_defn, 0)
+  return nil unless value_expr
+
+  test = txrep_roundtrip_test_php(php_name, value_expr)
+  test ? [test] : nil
 end
 
 # ---------------------------------------------------------------------------

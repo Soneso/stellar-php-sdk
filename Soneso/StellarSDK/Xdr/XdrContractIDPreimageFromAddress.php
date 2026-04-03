@@ -43,4 +43,15 @@ class XdrContractIDPreimageFromAddress {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->address->toTxRep($prefix . '.address', $lines);
+        $lines[$prefix . '.salt'] = TxRepHelper::bytesToHex($this->salt);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrContractIDPreimageFromAddress {
+        $address = XdrSCAddress::fromTxRep($map, $prefix . '.address');
+        $salt = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.salt') ?? '');
+        return new XdrContractIDPreimageFromAddress($address, $salt);
+    }
 }

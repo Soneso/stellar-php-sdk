@@ -6,6 +6,10 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrMuxedAccount extends XdrMuxedAccountBase
 {
     /**
@@ -46,5 +50,62 @@ class XdrMuxedAccount extends XdrMuxedAccountBase
     public function getDiscriminant(): int
     {
         return $this->type->getValue();
+    }
+
+    /**
+     * Serialize as a compact StrKey address string.
+     *
+     * Returns a G... address for plain Ed25519 accounts, or an M... address
+     * for muxed (med25519) accounts. Overrides the generated base method,
+     * which would expand discriminant and sub-field lines.
+     *
+     * @param string                $prefix Key prefix for the TxRep map.
+     * @param array<string, string> $lines  Output map (modified in place).
+     */
+    public function toTxRep(string $prefix, array &$lines): void
+    {
+        $lines[$prefix] = TxRepHelper::formatMuxedAccount($this);
+    }
+
+    /**
+     * Deserialize from a compact StrKey address string (G... or M...).
+     *
+     * Constructs a plain Ed25519 muxed account from a G... address, or a
+     * muxed ed25519 account from an M... address.
+     *
+     * @param array<string, string> $map    Parsed TxRep map.
+     * @param string                $prefix Key prefix.
+     * @return static
+     * @throws InvalidArgumentException If the value is missing or invalid.
+     */
+    public static function fromTxRep(array $map, string $prefix): static
+    {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+
+        if ($raw === '') {
+            throw new InvalidArgumentException('Empty muxed account address for: ' . $prefix);
+        }
+
+        $firstChar = $raw[0];
+
+        if ($firstChar === 'G') {
+            if (!StrKey::isValidAccountId($raw)) {
+                throw new InvalidArgumentException('Invalid account ID: ' . $raw);
+            }
+            return new static(KeyPair::fromAccountId($raw)->getPublicKey());
+        }
+
+        if ($firstChar === 'M') {
+            // M... address encodes: ed25519 (32 bytes) + id (8 bytes) in inverted order.
+            $bytes = StrKey::decodeMuxedAccountId($raw);
+            $xdrBuffer = new XdrBuffer($bytes);
+            $med25519 = XdrMuxedAccountMed25519::decodeInverted($xdrBuffer);
+            return new static(null, $med25519);
+        }
+
+        throw new InvalidArgumentException('Unrecognized muxed account address prefix "' . $firstChar . '": ' . $raw);
     }
 }

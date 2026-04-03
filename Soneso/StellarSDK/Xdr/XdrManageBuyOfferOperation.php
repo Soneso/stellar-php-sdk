@@ -63,4 +63,21 @@ class XdrManageBuyOfferOperation {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.selling'] = TxRepHelper::formatAsset($this->selling);
+        $lines[$prefix . '.buying'] = TxRepHelper::formatAsset($this->buying);
+        $lines[$prefix . '.buyAmount'] = $this->amount->toString();
+        $this->price->toTxRep($prefix . '.price', $lines);
+        $lines[$prefix . '.offerID'] = (string)$this->offerId;
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrManageBuyOfferOperation {
+        $selling = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.selling') ?? '');
+        $buying = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.buying') ?? '');
+        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.buyAmount') ?? '0');
+        $price = XdrPrice::fromTxRep($map, $prefix . '.price');
+        $offerId = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.offerID') ?? '0');
+        return new XdrManageBuyOfferOperation($selling, $buying, $amount, $price, $offerId);
+    }
 }

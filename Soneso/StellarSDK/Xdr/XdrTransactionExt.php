@@ -61,4 +61,32 @@ class XdrTransactionExt {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.v'] = (string)$this->discriminant;
+        switch ($this->discriminant) {
+            case 0:
+                break;
+            case 1:
+                $this->sorobanTransactionData->toTxRep($prefix . '.sorobanData', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrTransactionExt {
+        $disc = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.v') ?? '0');
+        $result = new XdrTransactionExt($disc);
+        switch ($result->discriminant) {
+            case 0:
+                break;
+            case 1:
+                $result->sorobanTransactionData = XdrSorobanTransactionData::fromTxRep($map, $prefix . '.sorobanData');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

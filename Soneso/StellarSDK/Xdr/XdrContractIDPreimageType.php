@@ -53,4 +53,43 @@ class XdrContractIDPreimageType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function enumName(): string {
+        switch ($this->value) {
+            case self::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
+                return 'CONTRACT_ID_PREIMAGE_FROM_ADDRESS';
+            case self::CONTRACT_ID_PREIMAGE_FROM_ASSET:
+                return 'CONTRACT_ID_PREIMAGE_FROM_ASSET';
+            default:
+                return 'XdrContractIDPreimageType#' . $this->value;
+        }
+    }
+
+    public static function fromTxRepName(string $name): static {
+        switch ($name) {
+            case 'CONTRACT_ID_PREIMAGE_FROM_ADDRESS':
+                return new static(self::CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+            case 'CONTRACT_ID_PREIMAGE_FROM_ASSET':
+                return new static(self::CONTRACT_ID_PREIMAGE_FROM_ASSET);
+            default:
+                $prefix = 'XdrContractIDPreimageType#';
+                if (str_starts_with($name, $prefix)) {
+                    $val = (int) substr($name, strlen($prefix));
+                    return new static($val);
+                }
+                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+        }
+    }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix] = $this->enumName();
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $raw = TxRepHelper::getValue($map, $prefix);
+        if ($raw === null) {
+            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        return self::fromTxRepName($raw);
+    }
 }

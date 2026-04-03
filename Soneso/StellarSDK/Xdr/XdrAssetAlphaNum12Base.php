@@ -43,4 +43,15 @@ class XdrAssetAlphaNum12Base {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.assetCode'] = TxRepHelper::bytesToHex($this->assetCode);
+        $lines[$prefix . '.issuer'] = TxRepHelper::formatAccountId($this->issuer);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $assetCode = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode') ?? '');
+        $issuer = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.issuer') ?? '');
+        return new static($assetCode, $issuer);
+    }
 }

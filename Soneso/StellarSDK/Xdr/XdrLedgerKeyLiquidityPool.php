@@ -37,4 +37,13 @@ class XdrLedgerKeyLiquidityPool {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex($this->liquidityPoolID);
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyLiquidityPool {
+        $liquidityPoolID = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '');
+        return new XdrLedgerKeyLiquidityPool($liquidityPoolID);
+    }
 }

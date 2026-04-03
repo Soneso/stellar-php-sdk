@@ -83,4 +83,46 @@ class XdrHostFunctionBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+                $this->invokeContract->toTxRep($prefix . '.invokeContract', $lines);
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+                $this->createContract->toTxRep($prefix . '.createContract', $lines);
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+                $lines[$prefix . '.wasm'] = TxRepHelper::bytesToHex($this->wasm);
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                $this->createContractV2->toTxRep($prefix . '.createContractV2', $lines);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrHostFunctionType::fromTxRep($map, $prefix . '.type');
+        $result = new static($disc);
+        switch ($result->type->getValue()) {
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+                $result->invokeContract = XdrInvokeContractArgs::fromTxRep($map, $prefix . '.invokeContract');
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+                $result->createContract = XdrCreateContractArgs::fromTxRep($map, $prefix . '.createContract');
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+                $result->wasm = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.wasm') ?? '');
+                break;
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                $result->createContractV2 = XdrCreateContractArgsV2::fromTxRep($map, $prefix . '.createContractV2');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }

@@ -119,4 +119,78 @@ class XdrClaimPredicate {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toTxRep(string $prefix, array &$lines): void {
+        $this->type->toTxRep($prefix . '.type', $lines);
+        switch ($this->type->getValue()) {
+            case XdrClaimPredicateType::UNCONDITIONAL:
+                break;
+            case XdrClaimPredicateType::AND:
+                $lines[$prefix . '.andPredicates.len'] = (string)count($this->andPredicates);
+                for ($i = 0; $i < count($this->andPredicates); $i++) {
+                    $this->andPredicates[$i]->toTxRep($prefix . '.andPredicates[' . $i . ']', $lines);
+                }
+                break;
+            case XdrClaimPredicateType::OR:
+                $lines[$prefix . '.orPredicates.len'] = (string)count($this->orPredicates);
+                for ($i = 0; $i < count($this->orPredicates); $i++) {
+                    $this->orPredicates[$i]->toTxRep($prefix . '.orPredicates[' . $i . ']', $lines);
+                }
+                break;
+            case XdrClaimPredicateType::NOT:
+                if ($this->notPredicate !== null) {
+                    $lines[$prefix . '.notPredicate._present'] = 'true';
+                    $this->notPredicate->toTxRep($prefix . '.notPredicate', $lines);
+                } else {
+                    $lines[$prefix . '.notPredicate._present'] = 'false';
+                }
+                break;
+            case XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME:
+                $lines[$prefix . '.absBefore'] = (string)$this->absBefore;
+                break;
+            case XdrClaimPredicateType::BEFORE_RELATIVE_TIME:
+                $lines[$prefix . '.relBefore'] = (string)$this->relBefore;
+                break;
+            default:
+                break;
+        }
+    }
+
+    public static function fromTxRep(array $map, string $prefix): XdrClaimPredicate {
+        $disc = XdrClaimPredicateType::fromTxRep($map, $prefix . '.type');
+        $result = new XdrClaimPredicate($disc);
+        switch ($result->type->getValue()) {
+            case XdrClaimPredicateType::UNCONDITIONAL:
+                break;
+            case XdrClaimPredicateType::AND:
+                $andPredicatesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.andPredicates.len') ?? '0');
+                $result->andPredicates = [];
+                for ($i = 0; $i < $andPredicatesLen; $i++) {
+                    $result->andPredicates[] = XdrClaimPredicate::fromTxRep($map, $prefix . '.andPredicates[' . $i . ']');
+                }
+                break;
+            case XdrClaimPredicateType::OR:
+                $orPredicatesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.orPredicates.len') ?? '0');
+                $result->orPredicates = [];
+                for ($i = 0; $i < $orPredicatesLen; $i++) {
+                    $result->orPredicates[] = XdrClaimPredicate::fromTxRep($map, $prefix . '.orPredicates[' . $i . ']');
+                }
+                break;
+            case XdrClaimPredicateType::NOT:
+                $notPredicatePresent = TxRepHelper::getValue($map, $prefix . '.notPredicate._present');
+                if ($notPredicatePresent !== null && $notPredicatePresent === 'true') {
+                    $result->notPredicate = XdrClaimPredicate::fromTxRep($map, $prefix . '.notPredicate');
+                }
+                break;
+            case XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME:
+                $result->absBefore = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.absBefore') ?? '0');
+                break;
+            case XdrClaimPredicateType::BEFORE_RELATIVE_TIME:
+                $result->relBefore = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.relBefore') ?? '0');
+                break;
+            default:
+                break;
+        }
+        return $result;
+    }
 }
