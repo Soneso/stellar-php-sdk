@@ -51,11 +51,6 @@
 			<attribute name="composer" value="vendor"/>
 		</attributes>
 	</buildpathentry>
-	<buildpathentry kind="src" path="vendor/paragonie/sodium_compat">
-		<attributes>
-			<attribute name="composer" value="vendor"/>
-		</attributes>
-	</buildpathentry>
 	<buildpathentry kind="src" path="vendor/phar-io/manifest/src">
 		<attributes>
 			<attribute name="composer" value="vendor"/>

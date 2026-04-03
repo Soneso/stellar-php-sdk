@@ -7,7 +7,6 @@
 namespace Soneso\StellarSDK\Crypto;
 
 use Exception;
-use ParagonIE\Sodium\Core\Ed25519;
 use SodiumException;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\SEP\Derivation\HDNode;
@@ -290,7 +289,7 @@ class KeyPair
     public function sign(string $value): string
     {
         try {
-            return Ed25519::sign_detached($value, $this->getEd25519SecretKey());
+            return sodium_crypto_sign_detached($value, $this->getEd25519SecretKey());
         } catch (SodiumException $e) {
             throw new CryptoException("Ed25519 signing failed", 0, $e);
         }
@@ -306,7 +305,7 @@ class KeyPair
     public function verifySignature(string $signature, string $message): bool
     {
         try {
-            return Ed25519::verify_detached($signature, $message, $this->publicKey);
+            return sodium_crypto_sign_verify_detached($signature, $message, $this->publicKey);
         } catch (SodiumException $e) {
             return false;
         }
@@ -462,9 +461,9 @@ class KeyPair
         }
 
         try {
-            $sk = '';
-            $pk = '';
-            Ed25519::seed_keypair($pk, $sk, $this->privateKey);
+            $keypair = sodium_crypto_sign_seed_keypair($this->privateKey);
+            $sk = substr($keypair, 0, SODIUM_CRYPTO_SIGN_SECRETKEYBYTES);
+            sodium_memzero($keypair);
         } catch (SodiumException $e) {
             throw new CryptoException("Ed25519 key derivation failed", 0, $e);
         }

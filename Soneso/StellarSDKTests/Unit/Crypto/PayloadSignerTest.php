@@ -3,7 +3,6 @@
 namespace Soneso\StellarSDKTests\Unit\Crypto;
 
 use DateTime;
-use ParagonIE\ConstantTime\Encoding;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -61,7 +60,7 @@ class PayloadSignerTest extends TestCase
         // Valid signed payload with an ed25519 public key and a 32-byte payload.
         $accountStrKey = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
         $p16 = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
-        $payload = Encoding::hexDecode($p16);
+        $payload = hex2bin($p16);
         $xdrAccountID = new XdrAccountID($accountStrKey);
         $signedPayloadSigner = new SignedPayloadSigner($xdrAccountID, $payload);
         $encodedSignedPayload = StrKey::encodeSignedPayload($signedPayloadSigner);
@@ -69,7 +68,7 @@ class PayloadSignerTest extends TestCase
 
         // Valid signed payload with an ed25519 public key and a 29-byte payload.
         $p16 = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d";
-        $payload = Encoding::hexDecode($p16);
+        $payload = hex2bin($p16);
         $xdrAccountID = new XdrAccountID($accountStrKey);
         $signedPayloadSigner = new SignedPayloadSigner($xdrAccountID, $payload);
         $encodedSignedPayload = StrKey::encodeSignedPayload($signedPayloadSigner);
@@ -87,7 +86,7 @@ class PayloadSignerTest extends TestCase
         $cond->setTimeBounds($tb);
         $accountStrKey = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
         $payloadStr = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
-        $payload = Encoding::hexDecode($payloadStr);
+        $payload = hex2bin($payloadStr);
         $signedPayloadSigner = new SignedPayloadSigner(new XdrAccountID($accountStrKey), $payload);
         $signedKey = Signer::signedPayload($signedPayloadSigner);
         $cond->setExtraSigners([$signedKey]);

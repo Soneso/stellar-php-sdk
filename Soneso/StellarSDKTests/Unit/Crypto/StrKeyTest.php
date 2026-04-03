@@ -8,6 +8,7 @@ namespace Soneso\StellarSDKTests\Unit\Crypto;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Crypto\CryptoException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\InvokeContractHostFunction;
@@ -431,6 +432,11 @@ class StrKeyTest extends TestCase
         $signature = $keyPair->sign($message);
         $verifyKeyPair = KeyPair::fromPublicKey($publicKey);
         assertTrue($verifyKeyPair->verifySignature($signature, $message));
+    }
+
+    public function testPublicKeyFromPrivateKeyInvalidInput() {
+        $this->expectException(CryptoException::class);
+        StrKey::publicKeyFromPrivateKey('invalid');
     }
 
     public function testXdrSignedPayloadEncodeDecode() {
