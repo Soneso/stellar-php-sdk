@@ -10,7 +10,7 @@ namespace Soneso\StellarSDK\Crypto;
 use Base32\Base32;
 use Exception;
 use InvalidArgumentException;
-use ParagonIE\Sodium\Core\Ed25519;
+use SodiumException;
 use Soneso\StellarSDK\Constants\CryptoConstants;
 use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\SignedPayloadSigner;
@@ -358,7 +358,14 @@ class StrKey
      * @throws \Exception If the private key is invalid or key derivation fails
      */
     public static function publicKeyFromPrivateKey($privateKey) {
-        return Ed25519::publickey_from_secretkey($privateKey);
+        try {
+            $keypair = sodium_crypto_sign_seed_keypair($privateKey);
+            $pk = substr($keypair, SODIUM_CRYPTO_SIGN_SECRETKEYBYTES, SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES);
+            sodium_memzero($keypair);
+            return $pk;
+        } catch (SodiumException $e) {
+            throw new CryptoException("Ed25519 public key derivation failed", 0, $e);
+        }
     }
 
     /**
