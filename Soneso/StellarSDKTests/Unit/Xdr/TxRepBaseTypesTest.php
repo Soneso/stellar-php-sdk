@@ -61,8 +61,36 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelopeBase;
 use Soneso\StellarSDK\Xdr\XdrTransactionExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
+use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAssetBase;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDBase;
+use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageFromAddress;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
+use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
+use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
+use Soneso\StellarSDK\Xdr\XdrDecoratedSignatureBase;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionExt;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx;
+use Soneso\StellarSDK\Xdr\XdrInt128Parts;
+use Soneso\StellarSDK\Xdr\XdrInt256Parts;
+use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperationBase;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperationBase;
+use Soneso\StellarSDK\Xdr\XdrPrice;
+use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
+use Soneso\StellarSDK\Xdr\XdrSCError;
+use Soneso\StellarSDK\Xdr\XdrSCErrorCode;
+use Soneso\StellarSDK\Xdr\XdrSCErrorType;
+use Soneso\StellarSDK\Xdr\XdrSignedPayload;
+use Soneso\StellarSDK\Xdr\XdrSignerKey;
+use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 use Soneso\StellarSDK\Xdr\XdrTrustlineAsset;
 use Soneso\StellarSDK\Xdr\XdrTrustlineAssetBase;
+use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
+use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
 
 /**
  * Hand-crafted unit tests for XDR Base type toTxRep/fromTxRep methods.
@@ -1217,5 +1245,868 @@ class TxRepBaseTypesTest extends TestCase
 
         $obj->setTtl(null);
         $this->assertNull($obj->getTtl());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrSCValBase — missing arms: U128, I128, U256, I256, ERROR,
+    //                CONTRACT_INSTANCE
+    // ------------------------------------------------------------------
+
+    public function testSCValBaseU128Roundtrip(): void
+    {
+        $original = new XdrSCValBase(XdrSCValType::U128());
+        $original->u128 = new XdrUInt128Parts(0xDEADBEEF, 0xCAFEBABE);
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertArrayHasKey('val.u128.hi', $lines);
+        $this->assertArrayHasKey('val.u128.lo', $lines);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertNotNull($restored->getU128());
+        $this->assertEquals(0xDEADBEEF, $restored->getU128()->getHi());
+        $this->assertEquals(0xCAFEBABE, $restored->getU128()->getLo());
+    }
+
+    public function testSCValBaseI128Roundtrip(): void
+    {
+        $original = new XdrSCValBase(XdrSCValType::I128());
+        $original->i128 = new XdrInt128Parts(-1, 0xFFFFFFFF);
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertArrayHasKey('val.i128.hi', $lines);
+        $this->assertArrayHasKey('val.i128.lo', $lines);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertNotNull($restored->getI128());
+        $this->assertEquals(-1, $restored->getI128()->getHi());
+    }
+
+    public function testSCValBaseU256Roundtrip(): void
+    {
+        $original = new XdrSCValBase(XdrSCValType::U256());
+        $original->u256 = new XdrUInt256Parts(1, 2, 3, 4);
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertArrayHasKey('val.u256.hi_hi', $lines);
+        $this->assertArrayHasKey('val.u256.hi_lo', $lines);
+        $this->assertArrayHasKey('val.u256.lo_hi', $lines);
+        $this->assertArrayHasKey('val.u256.lo_lo', $lines);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertNotNull($restored->getU256());
+        $this->assertEquals(1, $restored->getU256()->getHiHi());
+        $this->assertEquals(4, $restored->getU256()->getLoLo());
+    }
+
+    public function testSCValBaseI256Roundtrip(): void
+    {
+        $original = new XdrSCValBase(XdrSCValType::I256());
+        $original->i256 = new XdrInt256Parts(-100, 200, 300, 400);
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertArrayHasKey('val.i256.hi_hi', $lines);
+        $this->assertArrayHasKey('val.i256.lo_lo', $lines);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertNotNull($restored->getI256());
+        $this->assertEquals(-100, $restored->getI256()->getHiHi());
+        $this->assertEquals(400, $restored->getI256()->getLoLo());
+    }
+
+    public function testSCValBaseErrorContractCodeRoundtrip(): void
+    {
+        $error = new XdrSCError(XdrSCErrorType::SCE_CONTRACT());
+        $error->contractCode = 42;
+
+        $original = new XdrSCValBase(XdrSCValType::ERROR());
+        $original->error = $error;
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertArrayHasKey('val.error.type', $lines);
+        $this->assertArrayHasKey('val.error.contractCode', $lines);
+        $this->assertEquals('42', $lines['val.error.contractCode']);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertNotNull($restored->getError());
+        $this->assertEquals(XdrSCErrorType::SCE_CONTRACT, $restored->getError()->getType()->getValue());
+        $this->assertEquals(42, $restored->getError()->getContractCode());
+    }
+
+    public function testSCValBaseErrorWasmVmWithCodeRoundtrip(): void
+    {
+        $error = new XdrSCError(XdrSCErrorType::SCE_WASM_VM());
+        $error->code = XdrSCErrorCode::SCEC_INVALID_INPUT();
+
+        $original = new XdrSCValBase(XdrSCValType::ERROR());
+        $original->error = $error;
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertArrayHasKey('val.error.type', $lines);
+        $this->assertArrayHasKey('val.error.code', $lines);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertNotNull($restored->getError());
+        $this->assertEquals(XdrSCErrorType::SCE_WASM_VM, $restored->getError()->getType()->getValue());
+        $this->assertNotNull($restored->getError()->getCode());
+        $this->assertEquals(XdrSCErrorCode::SCEC_INVALID_INPUT, $restored->getError()->getCode()->getValue());
+    }
+
+    public function testSCValBaseContractInstanceWithStorageRoundtrip(): void
+    {
+        $executable = XdrContractExecutable::forToken();
+
+        $key = XdrSCVal::forSymbol('balance');
+        $value = XdrSCVal::forU64(1000);
+        $entry = new XdrSCMapEntry($key, $value);
+
+        $instance = new XdrSCContractInstance($executable, [$entry]);
+
+        $original = new XdrSCValBase(XdrSCValType::SCV_CONTRACT_INSTANCE());
+        $original->instance = $instance;
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertArrayHasKey('val.instance.executable.type', $lines);
+        $this->assertArrayHasKey('val.instance.storage._present', $lines);
+        $this->assertEquals('true', $lines['val.instance.storage._present']);
+        $this->assertEquals('1', $lines['val.instance.storage.len']);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertNotNull($restored->getInstance());
+        $this->assertNotNull($restored->getInstance()->getStorage());
+        $this->assertCount(1, $restored->getInstance()->getStorage());
+    }
+
+    public function testSCValBaseContractInstanceNoStorageRoundtrip(): void
+    {
+        $executable = XdrContractExecutable::forToken();
+        $instance = new XdrSCContractInstance($executable, null);
+
+        $original = new XdrSCValBase(XdrSCValType::SCV_CONTRACT_INSTANCE());
+        $original->instance = $instance;
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertArrayHasKey('val.instance.storage._present', $lines);
+        $this->assertEquals('false', $lines['val.instance.storage._present']);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertNotNull($restored->getInstance());
+        $this->assertNull($restored->getInstance()->getStorage());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrHostFunctionBase — UPLOAD_WASM and CREATE_CONTRACT_V2 arms
+    // ------------------------------------------------------------------
+
+    public function testHostFunctionBaseGettersSetters(): void
+    {
+        // The UPLOAD_CONTRACT_WASM arm in XdrHostFunctionBase has a known type
+        // inconsistency: the wasm property is typed as ?XdrDataValueMandatory but
+        // both encode() and toTxRep() treat it as a raw string. This prevents any
+        // functional roundtrip test. We verify the getter/setter work at type-level.
+        $original = new XdrHostFunctionBase(XdrHostFunctionType::INVOKE_CONTRACT());
+        $this->assertEquals(
+            XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT,
+            $original->getType()->getValue()
+        );
+
+        $original->setType(XdrHostFunctionType::UPLOAD_CONTRACT_WASM());
+        $this->assertEquals(
+            XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM,
+            $original->getType()->getValue()
+        );
+
+        $wasm = new XdrDataValueMandatory(random_bytes(16));
+        $original->setWasm($wasm);
+        $this->assertSame($wasm, $original->getWasm());
+
+        $original->setWasm(null);
+        $this->assertNull($original->getWasm());
+    }
+
+    private function buildContractIDPreimage(): XdrContractIDPreimage
+    {
+        $contractIdBytes = $this->randomBytes(32);
+        $contractAddr = XdrSCAddress::forContractId(bin2hex($contractIdBytes));
+        $saltBytes = $this->randomBytes(32);
+        // Construct via the base so fromAddress is set directly (the wrapper
+        // forAddress() factory only sets flattened fields that are synced during
+        // encode(), not during toTxRep() which reads fromAddress directly).
+        $preimage = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+        $preimage->fromAddress = new XdrContractIDPreimageFromAddress($contractAddr, $saltBytes);
+        return $preimage;
+    }
+
+    public function testHostFunctionBaseCreateContractV2Roundtrip(): void
+    {
+        $preimage = $this->buildContractIDPreimage();
+        $executable = XdrContractExecutable::forToken();
+        $arg = XdrSCVal::forU32(99);
+        $args = new XdrCreateContractArgsV2($preimage, $executable, [$arg]);
+
+        $original = new XdrHostFunctionBase(XdrHostFunctionType::CREATE_CONTRACT_V2());
+        $original->createContractV2 = $args;
+
+        $lines = [];
+        $original->toTxRep('fn', $lines);
+
+        $this->assertArrayHasKey('fn.type', $lines);
+        $this->assertArrayHasKey('fn.createContractV2.executable.type', $lines);
+        $this->assertArrayHasKey('fn.createContractV2.constructorArgs.len', $lines);
+        $this->assertEquals('1', $lines['fn.createContractV2.constructorArgs.len']);
+
+        $restored = XdrHostFunctionBase::fromTxRep($lines, 'fn');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(
+            XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2,
+            $restored->getType()->getValue()
+        );
+        $this->assertNotNull($restored->getCreateContractV2());
+        $this->assertCount(1, $restored->getCreateContractV2()->getConstructorArgs());
+    }
+
+    public function testHostFunctionBaseCreateContractFromAddressRoundtrip(): void
+    {
+        $preimage = $this->buildContractIDPreimage();
+        $executable = XdrContractExecutable::forToken();
+        $args = new XdrCreateContractArgs($preimage, $executable);
+
+        $original = new XdrHostFunctionBase(XdrHostFunctionType::CREATE_CONTRACT());
+        $original->createContract = $args;
+
+        $lines = [];
+        $original->toTxRep('fn', $lines);
+
+        $this->assertArrayHasKey('fn.type', $lines);
+        $this->assertArrayHasKey('fn.createContract.executable.type', $lines);
+
+        $restored = XdrHostFunctionBase::fromTxRep($lines, 'fn');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(
+            XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+            $restored->getType()->getValue()
+        );
+        $this->assertNotNull($restored->getCreateContract());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrSignerKey — all four arms via toTxRep/fromTxRep
+    // ------------------------------------------------------------------
+
+    public function testSignerKeyEd25519TxRepRoundtrip(): void
+    {
+        $keyBytes = $this->randomBytes(32);
+
+        $original = new XdrSignerKey(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519());
+        $original->ed25519 = $keyBytes;
+
+        $lines = [];
+        $original->toTxRep('signer', $lines);
+
+        $this->assertArrayHasKey('signer.type', $lines);
+        $this->assertArrayHasKey('signer.ed25519', $lines);
+
+        $restored = XdrSignerKey::fromTxRep($lines, 'signer');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519, $restored->getType()->getValue());
+        $this->assertEquals($keyBytes, $restored->getEd25519());
+    }
+
+    public function testSignerKeyPreAuthTxTxRepRoundtrip(): void
+    {
+        $hashBytes = $this->randomBytes(32);
+
+        $original = new XdrSignerKey(XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX());
+        $original->preAuthTx = $hashBytes;
+
+        $lines = [];
+        $original->toTxRep('signer', $lines);
+
+        $this->assertArrayHasKey('signer.preAuthTx', $lines);
+
+        $restored = XdrSignerKey::fromTxRep($lines, 'signer');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX, $restored->getType()->getValue());
+        $this->assertEquals($hashBytes, $restored->getPreAuthTx());
+    }
+
+    public function testSignerKeyHashXTxRepRoundtrip(): void
+    {
+        $hashBytes = $this->randomBytes(32);
+
+        $original = new XdrSignerKey(XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X());
+        $original->hashX = $hashBytes;
+
+        $lines = [];
+        $original->toTxRep('signer', $lines);
+
+        $this->assertArrayHasKey('signer.hashX', $lines);
+
+        $restored = XdrSignerKey::fromTxRep($lines, 'signer');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X, $restored->getType()->getValue());
+        $this->assertEquals($hashBytes, $restored->getHashX());
+    }
+
+    public function testSignerKeyEd25519SignedPayloadTxRepRoundtrip(): void
+    {
+        $ed25519Bytes = $this->randomBytes(32);
+        $payloadBytes = $this->randomBytes(16);
+        $signedPayload = new XdrSignedPayload($ed25519Bytes, $payloadBytes);
+
+        $original = new XdrSignerKey(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD());
+        $original->signedPayload = $signedPayload;
+
+        $lines = [];
+        $original->toTxRep('signer', $lines);
+
+        $this->assertArrayHasKey('signer.ed25519SignedPayload.ed25519', $lines);
+        $this->assertArrayHasKey('signer.ed25519SignedPayload.payload', $lines);
+
+        $restored = XdrSignerKey::fromTxRep($lines, 'signer');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(
+            XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD,
+            $restored->getType()->getValue()
+        );
+        $this->assertNotNull($restored->getSignedPayload());
+        $this->assertEquals($ed25519Bytes, $restored->getSignedPayload()->getEd25519());
+        $this->assertEquals($payloadBytes, $restored->getSignedPayload()->getPayload());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrAllowTrustOperationAssetBase — both arms
+    // ------------------------------------------------------------------
+
+    public function testAllowTrustOperationAssetBaseAlphaNum4Roundtrip(): void
+    {
+        $original = new XdrAllowTrustOperationAssetBase(
+            new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4)
+        );
+        $original->assetCode4 = 'USD' . "\x00"; // raw padded XDR code
+
+        $lines = [];
+        $original->toTxRep('asset', $lines);
+
+        $this->assertArrayHasKey('asset.type', $lines);
+        $this->assertArrayHasKey('asset.assetCode4', $lines);
+
+        $restored = XdrAllowTrustOperationAssetBase::fromTxRep($lines, 'asset');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4, $restored->getType()->getValue());
+        $this->assertNotNull($restored->getAssetCode4());
+    }
+
+    public function testAllowTrustOperationAssetBaseAlphaNum12Roundtrip(): void
+    {
+        $original = new XdrAllowTrustOperationAssetBase(
+            new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12)
+        );
+        $original->assetCode12 = 'STELLARTOKEN';
+
+        $lines = [];
+        $original->toTxRep('asset', $lines);
+
+        $this->assertArrayHasKey('asset.type', $lines);
+        $this->assertArrayHasKey('asset.assetCode12', $lines);
+
+        $restored = XdrAllowTrustOperationAssetBase::fromTxRep($lines, 'asset');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12, $restored->getType()->getValue());
+        $this->assertNotNull($restored->getAssetCode12());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrClaimableBalanceIDBase — V0 arm
+    // ------------------------------------------------------------------
+
+    public function testClaimableBalanceIDBaseV0Roundtrip(): void
+    {
+        $hashBytes = $this->randomBytes(32);
+
+        $original = new XdrClaimableBalanceIDBase(
+            XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0()
+        );
+        $original->hash = $hashBytes;
+
+        $lines = [];
+        $original->toTxRep('bal', $lines);
+
+        $this->assertArrayHasKey('bal.type', $lines);
+        $this->assertArrayHasKey('bal.v0', $lines);
+
+        $restored = XdrClaimableBalanceIDBase::fromTxRep($lines, 'bal');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(
+            XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0,
+            $restored->getType()->getValue()
+        );
+        $this->assertEquals($hashBytes, $restored->getHash());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrFeeBumpTransactionInnerTx — ENVELOPE_TYPE_TX arm
+    // ------------------------------------------------------------------
+
+    public function testTxRepRoundtrip_XdrFeeBumpTransactionInnerTx(): void
+    {
+        $keyBytes = KeyPair::random()->getPublicKey();
+        $sourceAccount = new XdrMuxedAccount($keyBytes);
+        $tx = new XdrTransaction($sourceAccount, new XdrSequenceNumber(new BigInteger(7777)), []);
+        $envelope = new XdrTransactionV1Envelope($tx, []);
+
+        $original = new XdrFeeBumpTransactionInnerTx(XdrEnvelopeType::ENVELOPE_TYPE_TX());
+        $original->v1 = $envelope;
+
+        $lines = [];
+        $original->toTxRep('inner', $lines);
+
+        $this->assertArrayHasKey('inner.type', $lines);
+        $this->assertArrayHasKey('inner.v1.tx.fee', $lines);
+        $this->assertArrayHasKey('inner.v1.signatures.len', $lines);
+        $this->assertEquals('0', $lines['inner.v1.signatures.len']);
+
+        // Verify XDR encoding is stable
+        $this->assertNotEmpty($original->toBase64Xdr());
+        $decoded = XdrFeeBumpTransactionInnerTx::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals(XdrEnvelopeType::ENVELOPE_TYPE_TX, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getV1());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrLiquidityPoolDepositOperationBase
+    // ------------------------------------------------------------------
+
+    public function testTxRepRoundtrip_XdrLiquidityPoolDepositOperationBase(): void
+    {
+        $poolIdBytes = $this->randomBytes(32);
+        $maxAmountA = new BigInteger(1000000000);
+        $maxAmountB = new BigInteger(2000000000);
+        $minPrice = new XdrPrice(1, 2);
+        $maxPrice = new XdrPrice(3, 1);
+
+        $original = new XdrLiquidityPoolDepositOperationBase(
+            $poolIdBytes,
+            $maxAmountA,
+            $maxAmountB,
+            $minPrice,
+            $maxPrice
+        );
+
+        $lines = [];
+        $original->toTxRep('op', $lines);
+
+        $this->assertArrayHasKey('op.liquidityPoolID', $lines);
+        $this->assertArrayHasKey('op.maxAmountA', $lines);
+        $this->assertArrayHasKey('op.maxAmountB', $lines);
+        $this->assertArrayHasKey('op.minPrice.n', $lines);
+        $this->assertArrayHasKey('op.maxPrice.d', $lines);
+        $this->assertEquals($maxAmountA->toString(), $lines['op.maxAmountA']);
+        $this->assertEquals($maxAmountB->toString(), $lines['op.maxAmountB']);
+
+        $restored = XdrLiquidityPoolDepositOperationBase::fromTxRep($lines, 'op');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals($poolIdBytes, $restored->getLiquidityPoolID());
+        $this->assertEquals($maxAmountA->toString(), $restored->getMaxAmountA()->toString());
+        $this->assertEquals($maxAmountB->toString(), $restored->getMaxAmountB()->toString());
+        $this->assertEquals(1, $restored->getMinPrice()->getN());
+        $this->assertEquals(2, $restored->getMinPrice()->getD());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrLiquidityPoolWithdrawOperationBase
+    // ------------------------------------------------------------------
+
+    public function testTxRepRoundtrip_XdrLiquidityPoolWithdrawOperationBase(): void
+    {
+        $poolIdBytes = $this->randomBytes(32);
+        $amount = new BigInteger(500000000);
+        $minAmountA = new BigInteger(100000000);
+        $minAmountB = new BigInteger(200000000);
+
+        $original = new XdrLiquidityPoolWithdrawOperationBase(
+            $poolIdBytes,
+            $amount,
+            $minAmountA,
+            $minAmountB
+        );
+
+        $lines = [];
+        $original->toTxRep('op', $lines);
+
+        $this->assertArrayHasKey('op.liquidityPoolID', $lines);
+        $this->assertArrayHasKey('op.amount', $lines);
+        $this->assertArrayHasKey('op.minAmountA', $lines);
+        $this->assertArrayHasKey('op.minAmountB', $lines);
+        $this->assertEquals($amount->toString(), $lines['op.amount']);
+        $this->assertEquals($minAmountA->toString(), $lines['op.minAmountA']);
+
+        $restored = XdrLiquidityPoolWithdrawOperationBase::fromTxRep($lines, 'op');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals($poolIdBytes, $restored->getLiquidityPoolID());
+        $this->assertEquals($amount->toString(), $restored->getAmount()->toString());
+        $this->assertEquals($minAmountA->toString(), $restored->getMinAmountA()->toString());
+        $this->assertEquals($minAmountB->toString(), $restored->getMinAmountB()->toString());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrDecoratedSignatureBase
+    // ------------------------------------------------------------------
+
+    public function testTxRepRoundtrip_XdrDecoratedSignatureBase(): void
+    {
+        $hint = $this->randomBytes(4);
+        $signature = $this->randomBytes(64);
+
+        $original = new XdrDecoratedSignatureBase($hint, $signature);
+
+        $lines = [];
+        $original->toTxRep('sig', $lines);
+
+        $this->assertArrayHasKey('sig.hint', $lines);
+        $this->assertArrayHasKey('sig.signature', $lines);
+
+        $restored = XdrDecoratedSignatureBase::fromTxRep($lines, 'sig');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals($hint, $restored->getHint());
+        $this->assertEquals($signature, $restored->getSignature());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrFeeBumpTransactionExt
+    // ------------------------------------------------------------------
+
+    public function testTxRepRoundtrip_XdrFeeBumpTransactionExt(): void
+    {
+        $original = new XdrFeeBumpTransactionExt(0);
+
+        $lines = [];
+        $original->toTxRep('ext', $lines);
+
+        $this->assertArrayHasKey('ext.v', $lines);
+        $this->assertEquals('0', $lines['ext.v']);
+
+        $restored = XdrFeeBumpTransactionExt::fromTxRep($lines, 'ext');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(0, $restored->getDiscriminant());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrFeeBumpTransaction
+    // ------------------------------------------------------------------
+
+    public function testTxRepRoundtrip_XdrFeeBumpTransaction(): void
+    {
+        $keyBytes = KeyPair::random()->getPublicKey();
+        $feeSource = new XdrMuxedAccount($keyBytes);
+
+        $innerKeyBytes = KeyPair::random()->getPublicKey();
+        $innerSourceAccount = new XdrMuxedAccount($innerKeyBytes);
+        $innerTx = new XdrTransaction(
+            $innerSourceAccount,
+            new XdrSequenceNumber(new BigInteger(1234)),
+            []
+        );
+        $innerEnvelope = new XdrTransactionV1Envelope($innerTx, []);
+        $innerTxUnion = new XdrFeeBumpTransactionInnerTx(XdrEnvelopeType::ENVELOPE_TYPE_TX());
+        $innerTxUnion->v1 = $innerEnvelope;
+
+        $ext = new XdrFeeBumpTransactionExt(0);
+
+        $original = new XdrFeeBumpTransaction($feeSource, 1000000, $innerTxUnion, $ext);
+
+        $lines = [];
+        $original->toTxRep('feeBump', $lines);
+
+        $this->assertArrayHasKey('feeBump.feeSource', $lines);
+        $this->assertArrayHasKey('feeBump.fee', $lines);
+        $this->assertEquals('1000000', $lines['feeBump.fee']);
+        $this->assertArrayHasKey('feeBump.innerTx.type', $lines);
+        $this->assertArrayHasKey('feeBump.ext.v', $lines);
+        $this->assertEquals('0', $lines['feeBump.ext.v']);
+
+        // Verify XDR is decodable
+        $xdrBase64 = $original->toBase64Xdr();
+        $this->assertNotEmpty($xdrBase64);
+        $decoded = XdrFeeBumpTransaction::fromBase64Xdr($xdrBase64);
+        $this->assertEquals(1000000, $decoded->getFee());
+        $this->assertEquals(XdrEnvelopeType::ENVELOPE_TYPE_TX, $decoded->getInnerTx()->getType()->getValue());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrFeeBumpTransactionEnvelope
+    // ------------------------------------------------------------------
+
+    public function testTxRepRoundtrip_XdrFeeBumpTransactionEnvelope(): void
+    {
+        $keyBytes = KeyPair::random()->getPublicKey();
+        $feeSource = new XdrMuxedAccount($keyBytes);
+
+        $innerKeyBytes = KeyPair::random()->getPublicKey();
+        $innerSourceAccount = new XdrMuxedAccount($innerKeyBytes);
+        $innerTx = new XdrTransaction(
+            $innerSourceAccount,
+            new XdrSequenceNumber(new BigInteger(9999)),
+            []
+        );
+        $innerEnvelope = new XdrTransactionV1Envelope($innerTx, []);
+        $innerTxUnion = new XdrFeeBumpTransactionInnerTx(XdrEnvelopeType::ENVELOPE_TYPE_TX());
+        $innerTxUnion->v1 = $innerEnvelope;
+
+        $ext = new XdrFeeBumpTransactionExt(0);
+        $feeBumpTx = new XdrFeeBumpTransaction($feeSource, 500000, $innerTxUnion, $ext);
+
+        $original = new XdrFeeBumpTransactionEnvelope($feeBumpTx, []);
+
+        $lines = [];
+        $original->toTxRep('env', $lines);
+
+        $this->assertArrayHasKey('env.tx.feeSource', $lines);
+        $this->assertArrayHasKey('env.tx.fee', $lines);
+        $this->assertEquals('500000', $lines['env.tx.fee']);
+        $this->assertArrayHasKey('env.signatures.len', $lines);
+        $this->assertEquals('0', $lines['env.signatures.len']);
+
+        // Verify XDR round-trip via decode
+        $xdrBase64 = $original->toBase64Xdr();
+        $this->assertNotEmpty($xdrBase64);
+        $decoded = XdrFeeBumpTransactionEnvelope::fromBase64Xdr($xdrBase64);
+        $this->assertEquals(500000, $decoded->getTx()->getFee());
+        $this->assertCount(0, $decoded->getSignatures());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrTransactionEnvelopeBase — FEE_BUMP arm
+    // ------------------------------------------------------------------
+
+    public function testTransactionEnvelopeBaseFeeBumpToTxRep(): void
+    {
+        $keyBytes = KeyPair::random()->getPublicKey();
+        $feeSource = new XdrMuxedAccount($keyBytes);
+
+        $innerKeyBytes = KeyPair::random()->getPublicKey();
+        $innerSourceAccount = new XdrMuxedAccount($innerKeyBytes);
+        $innerTx = new XdrTransaction(
+            $innerSourceAccount,
+            new XdrSequenceNumber(new BigInteger(5555)),
+            []
+        );
+        $innerEnvelope = new XdrTransactionV1Envelope($innerTx, []);
+        $innerTxUnion = new XdrFeeBumpTransactionInnerTx(XdrEnvelopeType::ENVELOPE_TYPE_TX());
+        $innerTxUnion->v1 = $innerEnvelope;
+
+        $ext = new XdrFeeBumpTransactionExt(0);
+        $feeBumpTx = new XdrFeeBumpTransaction($feeSource, 2000000, $innerTxUnion, $ext);
+        $feeBumpEnvelope = new XdrFeeBumpTransactionEnvelope($feeBumpTx, []);
+
+        $original = new XdrTransactionEnvelopeBase(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP());
+        $original->feeBump = $feeBumpEnvelope;
+
+        $lines = [];
+        $original->toTxRep('env', $lines);
+
+        $this->assertArrayHasKey('env.type', $lines);
+        $this->assertArrayHasKey('env.feeBump.tx.fee', $lines);
+        $this->assertEquals('2000000', $lines['env.feeBump.tx.fee']);
+        $this->assertArrayHasKey('env.feeBump.signatures.len', $lines);
+
+        // Verify XDR decodes correctly
+        $xdrBase64 = $original->toBase64Xdr();
+        $this->assertNotEmpty($xdrBase64);
+        $decoded = XdrTransactionEnvelopeBase::fromBase64Xdr($xdrBase64);
+        $this->assertEquals(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP, $decoded->getType()->getValue());
+        $this->assertNotNull($decoded->getFeeBump());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrLedgerKey wrapper — liquidity pool hex sync
+    // ------------------------------------------------------------------
+
+    public function testLedgerKeyWrapperLiquidityPoolHexFieldSync(): void
+    {
+        $poolIdHex = bin2hex($this->randomBytes(32));
+
+        $ledgerKey = XdrLedgerKey::forLiquidityPoolId($poolIdHex);
+
+        $this->assertEquals($poolIdHex, $ledgerKey->getLiquidityPoolID());
+
+        // Encode forces the hex → binary sync
+        $xdrBase64 = $ledgerKey->toBase64Xdr();
+        $this->assertNotEmpty($xdrBase64);
+
+        // Decode syncs binary → hex
+        $decoded = XdrLedgerKey::fromBase64Xdr($xdrBase64);
+        $this->assertEquals(XdrLedgerEntryType::LIQUIDITY_POOL, $decoded->getType()->getValue());
+        $this->assertEquals($poolIdHex, $decoded->getLiquidityPoolID());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrUInt128Parts / XdrInt128Parts / XdrUInt256Parts / XdrInt256Parts
+    // standalone TxRep roundtrips
+    // ------------------------------------------------------------------
+
+    public function testUInt128PartsTxRepRoundtrip(): void
+    {
+        $original = new XdrUInt128Parts(0xABCDEF01, 0x12345678);
+
+        $lines = [];
+        $original->toTxRep('u128', $lines);
+
+        $this->assertArrayHasKey('u128.hi', $lines);
+        $this->assertArrayHasKey('u128.lo', $lines);
+
+        $restored = XdrUInt128Parts::fromTxRep($lines, 'u128');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(0xABCDEF01, $restored->getHi());
+        $this->assertEquals(0x12345678, $restored->getLo());
+    }
+
+    public function testInt128PartsTxRepRoundtrip(): void
+    {
+        $original = new XdrInt128Parts(-9999999, 1234567890);
+
+        $lines = [];
+        $original->toTxRep('i128', $lines);
+
+        $restored = XdrInt128Parts::fromTxRep($lines, 'i128');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(-9999999, $restored->getHi());
+        $this->assertEquals(1234567890, $restored->getLo());
+    }
+
+    public function testUInt256PartsTxRepRoundtrip(): void
+    {
+        $original = new XdrUInt256Parts(100, 200, 300, 400);
+
+        $lines = [];
+        $original->toTxRep('u256', $lines);
+
+        $restored = XdrUInt256Parts::fromTxRep($lines, 'u256');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(100, $restored->getHiHi());
+        $this->assertEquals(200, $restored->getHiLo());
+        $this->assertEquals(300, $restored->getLoHi());
+        $this->assertEquals(400, $restored->getLoLo());
+    }
+
+    public function testInt256PartsTxRepRoundtrip(): void
+    {
+        $original = new XdrInt256Parts(-500, 600, 700, 800);
+
+        $lines = [];
+        $original->toTxRep('i256', $lines);
+
+        $restored = XdrInt256Parts::fromTxRep($lines, 'i256');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(-500, $restored->getHiHi());
+        $this->assertEquals(800, $restored->getLoLo());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrSignedPayload standalone TxRep roundtrip
+    // ------------------------------------------------------------------
+
+    public function testSignedPayloadTxRepRoundtrip(): void
+    {
+        $ed25519Bytes = $this->randomBytes(32);
+        $payloadBytes = $this->randomBytes(32);
+
+        $original = new XdrSignedPayload($ed25519Bytes, $payloadBytes);
+
+        $lines = [];
+        $original->toTxRep('sp', $lines);
+
+        $this->assertArrayHasKey('sp.ed25519', $lines);
+        $this->assertArrayHasKey('sp.payload', $lines);
+
+        $restored = XdrSignedPayload::fromTxRep($lines, 'sp');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals($ed25519Bytes, $restored->getEd25519());
+        $this->assertEquals($payloadBytes, $restored->getPayload());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrSCError — additional error types (SCE_CONTEXT, SCE_STORAGE, etc.)
+    // ------------------------------------------------------------------
+
+    public function testSCErrorContextWithCodeRoundtrip(): void
+    {
+        $error = new XdrSCError(XdrSCErrorType::SCE_CONTEXT());
+        $error->code = XdrSCErrorCode::SCEC_INTERNAL_ERROR();
+
+        $lines = [];
+        $error->toTxRep('err', $lines);
+
+        $this->assertArrayHasKey('err.type', $lines);
+        $this->assertEquals('SCE_CONTEXT', $lines['err.type']);
+
+        $restored = XdrSCError::fromTxRep($lines, 'err');
+
+        $this->assertEquals($error->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(XdrSCErrorType::SCE_CONTEXT, $restored->getType()->getValue());
+    }
+
+    public function testSCErrorAuthWithCodeRoundtrip(): void
+    {
+        $error = new XdrSCError(XdrSCErrorType::SCE_AUTH());
+        $error->code = XdrSCErrorCode::SCEC_ARITH_DOMAIN();
+
+        $lines = [];
+        $error->toTxRep('err', $lines);
+
+        $restored = XdrSCError::fromTxRep($lines, 'err');
+
+        $this->assertEquals($error->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(XdrSCErrorType::SCE_AUTH, $restored->getType()->getValue());
+        $this->assertEquals(XdrSCErrorCode::SCEC_ARITH_DOMAIN, $restored->getCode()->getValue());
     }
 }

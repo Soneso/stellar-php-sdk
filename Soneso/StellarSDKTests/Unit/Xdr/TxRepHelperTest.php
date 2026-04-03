@@ -1127,4 +1127,274 @@ class TxRepHelperTest extends TestCase
         $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12, $parsed->getType()->getValue());
         $this->assertSame('LONGCODE', $parsed->getAssetCode12());
     }
+
+    // ---------------------------------------------------------------------------
+    // formatAsset() — error branches
+    // ---------------------------------------------------------------------------
+
+    public function testFormatAssetThrowsForUnsupportedType(): void
+    {
+        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatAsset($asset);
+    }
+
+    public function testFormatAssetThrowsForAlphaNum4WhenMissingAlphaNum4(): void
+    {
+        // AlphaNum4 type but no alphaNum4 payload set
+        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        // alphaNum4 is null by default — should throw
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatAsset($asset);
+    }
+
+    public function testFormatAssetThrowsForAlphaNum12WhenMissingAlphaNum12(): void
+    {
+        $asset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatAsset($asset);
+    }
+
+    // ---------------------------------------------------------------------------
+    // parseAsset() — invalid issuer
+    // ---------------------------------------------------------------------------
+
+    public function testParseAssetThrowsForInvalidIssuer(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseAsset('USD:NOTAVALIDISSUER');
+    }
+
+    public function testParseAssetThrowsForEmptyCode(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseAsset(':' . self::ISSUER_A);
+    }
+
+    // ---------------------------------------------------------------------------
+    // formatChangeTrustAsset() — missing payload throws
+    // ---------------------------------------------------------------------------
+
+    public function testFormatChangeTrustAssetThrowsForAlphaNum4WhenMissing(): void
+    {
+        $asset = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatChangeTrustAsset($asset);
+    }
+
+    public function testFormatChangeTrustAssetThrowsForAlphaNum12WhenMissing(): void
+    {
+        $asset = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatChangeTrustAsset($asset);
+    }
+
+    // ---------------------------------------------------------------------------
+    // parseChangeTrustAsset() — invalid issuer and empty code
+    // ---------------------------------------------------------------------------
+
+    public function testParseChangeTrustAssetThrowsForInvalidIssuer(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseChangeTrustAsset('USD:NOTVALID');
+    }
+
+    public function testParseChangeTrustAssetThrowsForEmptyCode(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseChangeTrustAsset(':' . self::ISSUER_A);
+    }
+
+    // ---------------------------------------------------------------------------
+    // formatTrustlineAsset() — missing fields throws
+    // ---------------------------------------------------------------------------
+
+    public function testFormatTrustlineAssetThrowsForAlphaNum4WhenMissing(): void
+    {
+        $asset = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatTrustlineAsset($asset);
+    }
+
+    public function testFormatTrustlineAssetThrowsForAlphaNum12WhenMissing(): void
+    {
+        $asset = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatTrustlineAsset($asset);
+    }
+
+    public function testFormatTrustlineAssetThrowsForPoolShareWhenMissingId(): void
+    {
+        $asset = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
+        // liquidityPoolID is null by default — should throw
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatTrustlineAsset($asset);
+    }
+
+    // ---------------------------------------------------------------------------
+    // parseTrustlineAsset() — invalid issuer, empty code
+    // ---------------------------------------------------------------------------
+
+    public function testParseTrustlineAssetThrowsForInvalidIssuer(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseTrustlineAsset('USD:NOTVALID');
+    }
+
+    public function testParseTrustlineAssetThrowsForEmptyCode(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseTrustlineAsset(':' . self::ISSUER_A);
+    }
+
+    public function testParseTrustlineAssetSinglePartThrowsWhenNotNativeOrHex(): void
+    {
+        // A value with no colon and not exactly 64 chars and not native/XLM
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseTrustlineAsset('UNKNOWN');
+    }
+
+    // ---------------------------------------------------------------------------
+    // formatSignerKey() — error branches
+    // ---------------------------------------------------------------------------
+
+    public function testFormatSignerKeyThrowsForMissingEd25519Bytes(): void
+    {
+        $key = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519));
+        // ed25519 is null by default
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatSignerKey($key);
+    }
+
+    public function testFormatSignerKeyThrowsForMissingPreAuthTxBytes(): void
+    {
+        $key = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatSignerKey($key);
+    }
+
+    public function testFormatSignerKeyThrowsForMissingHashXBytes(): void
+    {
+        $key = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatSignerKey($key);
+    }
+
+    public function testFormatSignerKeyThrowsForMissingSignedPayload(): void
+    {
+        $key = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatSignerKey($key);
+    }
+
+    // ---------------------------------------------------------------------------
+    // parseSignerKey() — invalid G, T, X prefixes
+    // ---------------------------------------------------------------------------
+
+    public function testParseSignerKeyThrowsForInvalidGAddress(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseSignerKey('GINVALID');
+    }
+
+    public function testParseSignerKeyThrowsForInvalidTAddress(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseSignerKey('TINVALID');
+    }
+
+    public function testParseSignerKeyThrowsForInvalidXAddress(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::parseSignerKey('XINVALID');
+    }
+
+    // ---------------------------------------------------------------------------
+    // formatAllowTrustAsset() — missing asset code throws
+    // ---------------------------------------------------------------------------
+
+    public function testFormatAllowTrustAssetThrowsForMissingAlphaNum4Code(): void
+    {
+        $asset = new XdrAllowTrustOperationAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        // assetCode4 is null — should throw
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatAllowTrustAsset($asset);
+    }
+
+    public function testFormatAllowTrustAssetThrowsForMissingAlphaNum12Code(): void
+    {
+        $asset = new XdrAllowTrustOperationAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatAllowTrustAsset($asset);
+    }
+
+    public function testFormatAllowTrustAssetThrowsForUnsupportedType(): void
+    {
+        $asset = new XdrAllowTrustOperationAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $this->expectException(InvalidArgumentException::class);
+        TxRepHelper::formatAllowTrustAsset($asset);
+    }
+
+    // ---------------------------------------------------------------------------
+    // parseBigInt() — edge cases
+    // ---------------------------------------------------------------------------
+
+    public function testParseBigIntNegativeHexValue(): void
+    {
+        $result = TxRepHelper::parseBigInt('-0xff');
+        $this->assertSame('-255', $result->toString());
+    }
+
+    public function testParseBigIntLargeUnsignedHex(): void
+    {
+        $result = TxRepHelper::parseBigInt('0xFFFFFFFFFFFFFFFF');
+        $this->assertGreaterThan(new BigInteger(0), $result);
+    }
+
+    // ---------------------------------------------------------------------------
+    // removeComment() — additional edge cases
+    // ---------------------------------------------------------------------------
+
+    public function testRemoveCommentPreservesValueWithNoParenOrQuote(): void
+    {
+        $this->assertSame('ENVELOPE_TYPE_TX', TxRepHelper::removeComment('ENVELOPE_TYPE_TX'));
+    }
+
+    public function testRemoveCommentStripsCommentAfterEnumValue(): void
+    {
+        $this->assertSame('ENVELOPE_TYPE_TX', TxRepHelper::removeComment('ENVELOPE_TYPE_TX (fee bump)'));
+    }
+
+    public function testRemoveCommentHandlesMultipleSpacesBeforeComment(): void
+    {
+        $this->assertSame('100', TxRepHelper::removeComment('100   (fee)'));
+    }
+
+    // ---------------------------------------------------------------------------
+    // parse() — additional edge cases
+    // ---------------------------------------------------------------------------
+
+    public function testParseHandlesValueWithTabInsideAsPartOfValue(): void
+    {
+        // Tab-separated data in the value is trimmed along with surrounding spaces.
+        // The entire line "tx.fee: 100\ttx.memo: hash" is one line (no newline).
+        // The key is "tx.fee", the value is "100\ttx.memo: hash" — trimmed to
+        // "100\ttx.memo: hash" (tab survives trim but is interior, so value is
+        // "100	tx.memo: hash"). The test simply verifies the entry is parsed.
+        $map = TxRepHelper::parse("tx.fee: 100\ttx.memo: hash");
+        $this->assertCount(1, $map);
+        $this->assertArrayHasKey('tx.fee', $map);
+    }
+
+    public function testParseHandlesValueWithLeadingWhitespace(): void
+    {
+        $map = TxRepHelper::parse("tx.fee:   500");
+        $this->assertSame('500', $map['tx.fee']);
+    }
+
+    public function testParseHandlesMultipleColonsInValue(): void
+    {
+        $map = TxRepHelper::parse('tx.asset: USD:' . self::ISSUER_A);
+        $this->assertSame('USD:' . self::ISSUER_A, $map['tx.asset']);
+    }
 }
