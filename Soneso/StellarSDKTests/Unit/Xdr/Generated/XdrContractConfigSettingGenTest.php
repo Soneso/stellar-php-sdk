@@ -6,6 +6,7 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr\Generated;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Xdr\TxRepHelper;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractBandwidthV0;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractComputeV0;
@@ -1504,6 +1505,304 @@ class XdrContractConfigSettingGenTest extends TestCase
         $obj->getFrozenLedgerKeysDelta();
         $obj->getFreezeBypassTxs();
         $obj->getFreezeBypassTxsDelta();
+    }
+
+    public function testXdrConfigSettingIDTxRepEnumNames(): void
+    {
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_COMPUTE_V0', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_LEDGER_COST_V0', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_EVENTS_V0', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_BANDWIDTH_V0', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_STATE_ARCHIVAL', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_EXECUTION_LANES', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_EVICTION_ITERATOR', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_SCP_TIMING', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_FROZEN_LEDGER_KEYS', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_FREEZE_BYPASS_TXS', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA);
+        $name = $val->enumName();
+        $this->assertEquals('CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA', $name);
+        $back = XdrConfigSettingID::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_COMPUTE_V0(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COMPUTE_V0');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_LEDGER_COST_V0(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_V0');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_EVENTS_V0(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EVENTS_V0');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_BANDWIDTH_V0(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_BANDWIDTH_V0');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_STATE_ARCHIVAL(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_STATE_ARCHIVAL');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_EXECUTION_LANES(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EXECUTION_LANES');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_EVICTION_ITERATOR(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_EVICTION_ITERATOR');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_SCP_TIMING(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_SCP_TIMING');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_FROZEN_LEDGER_KEYS(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_FREEZE_BYPASS_TXS(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS');
+    }
+
+    public function testXdrConfigSettingIDTxRepRoundTrip_CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA(): void
+    {
+        $original = new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrConfigSettingID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA');
     }
 }
 

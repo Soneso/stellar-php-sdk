@@ -117,13 +117,7 @@ class XdrMemo {
             case XdrMemoType::MEMO_NONE:
                 break;
             case XdrMemoType::MEMO_TEXT:
-                $raw = TxRepHelper::getValue($map, $prefix . '.text') ?? '';
-                if (str_starts_with($raw, '"') && str_ends_with($raw, '"')) {
-                    $decoded = json_decode($raw, false);
-                    $result->text = ($decoded !== null) ? (string)$decoded : TxRepHelper::unescapeString($raw);
-                } else {
-                    $result->text = $raw;
-                }
+                $result->text = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.text') ?? '');
                 break;
             case XdrMemoType::MEMO_ID:
                 $result->id = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.id') ?? '0');

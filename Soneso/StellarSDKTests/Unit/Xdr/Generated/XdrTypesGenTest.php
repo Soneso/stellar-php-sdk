@@ -6,6 +6,7 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr\Generated;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Xdr\TxRepHelper;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
@@ -462,6 +463,230 @@ class XdrTypesGenTest extends TestCase
         $b64 = $original->toBase64Xdr();
         $fromB64 = XdrClaimableBalanceIDBase::fromBase64Xdr($b64);
         $this->assertEquals($encoded, $fromB64->encode());
+    }
+
+    public function testXdrExtensionPointTxRepRoundTrip(): void
+    {
+        $original = new XdrExtensionPoint(0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrExtensionPoint::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrExtensionPoint');
+    }
+
+    public function testXdrCryptoKeyTypeTxRepEnumNames(): void
+    {
+        $val = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_ED25519);
+        $name = $val->enumName();
+        $this->assertEquals('KEY_TYPE_ED25519', $name);
+        $back = XdrCryptoKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_PRE_AUTH_TX);
+        $name = $val->enumName();
+        $this->assertEquals('KEY_TYPE_PRE_AUTH_TX', $name);
+        $back = XdrCryptoKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_HASH_X);
+        $name = $val->enumName();
+        $this->assertEquals('KEY_TYPE_HASH_X', $name);
+        $back = XdrCryptoKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        $name = $val->enumName();
+        $this->assertEquals('KEY_TYPE_ED25519_SIGNED_PAYLOAD', $name);
+        $back = XdrCryptoKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519);
+        $name = $val->enumName();
+        $this->assertEquals('KEY_TYPE_MUXED_ED25519', $name);
+        $back = XdrCryptoKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrCryptoKeyTypeTxRepRoundTrip_KEY_TYPE_ED25519(): void
+    {
+        $original = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_ED25519);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrCryptoKeyType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrCryptoKeyType_KEY_TYPE_ED25519');
+    }
+
+    public function testXdrCryptoKeyTypeTxRepRoundTrip_KEY_TYPE_PRE_AUTH_TX(): void
+    {
+        $original = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_PRE_AUTH_TX);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrCryptoKeyType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrCryptoKeyType_KEY_TYPE_PRE_AUTH_TX');
+    }
+
+    public function testXdrCryptoKeyTypeTxRepRoundTrip_KEY_TYPE_HASH_X(): void
+    {
+        $original = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_HASH_X);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrCryptoKeyType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrCryptoKeyType_KEY_TYPE_HASH_X');
+    }
+
+    public function testXdrCryptoKeyTypeTxRepRoundTrip_KEY_TYPE_ED25519_SIGNED_PAYLOAD(): void
+    {
+        $original = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrCryptoKeyType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrCryptoKeyType_KEY_TYPE_ED25519_SIGNED_PAYLOAD');
+    }
+
+    public function testXdrCryptoKeyTypeTxRepRoundTrip_KEY_TYPE_MUXED_ED25519(): void
+    {
+        $original = new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrCryptoKeyType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrCryptoKeyType_KEY_TYPE_MUXED_ED25519');
+    }
+
+    public function testXdrPublicKeyTypeTxRepEnumNames(): void
+    {
+        $val = new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519);
+        $name = $val->enumName();
+        $this->assertEquals('PUBLIC_KEY_TYPE_ED25519', $name);
+        $back = XdrPublicKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrPublicKeyTypeTxRepRoundTrip_PUBLIC_KEY_TYPE_ED25519(): void
+    {
+        $original = new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrPublicKeyType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrPublicKeyType_PUBLIC_KEY_TYPE_ED25519');
+    }
+
+    public function testXdrSignerKeyTypeTxRepEnumNames(): void
+    {
+        $val = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519);
+        $name = $val->enumName();
+        $this->assertEquals('SIGNER_KEY_TYPE_ED25519', $name);
+        $back = XdrSignerKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_PRE_AUTH_TX);
+        $name = $val->enumName();
+        $this->assertEquals('SIGNER_KEY_TYPE_PRE_AUTH_TX', $name);
+        $back = XdrSignerKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_HASH_X);
+        $name = $val->enumName();
+        $this->assertEquals('SIGNER_KEY_TYPE_HASH_X', $name);
+        $back = XdrSignerKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        $name = $val->enumName();
+        $this->assertEquals('SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD', $name);
+        $back = XdrSignerKeyType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrSignerKeyTypeTxRepRoundTrip_SIGNER_KEY_TYPE_ED25519(): void
+    {
+        $original = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSignerKeyTypeBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKeyType_SIGNER_KEY_TYPE_ED25519');
+    }
+
+    public function testXdrSignerKeyTypeTxRepRoundTrip_SIGNER_KEY_TYPE_PRE_AUTH_TX(): void
+    {
+        $original = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_PRE_AUTH_TX);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSignerKeyTypeBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKeyType_SIGNER_KEY_TYPE_PRE_AUTH_TX');
+    }
+
+    public function testXdrSignerKeyTypeTxRepRoundTrip_SIGNER_KEY_TYPE_HASH_X(): void
+    {
+        $original = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_HASH_X);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSignerKeyTypeBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKeyType_SIGNER_KEY_TYPE_HASH_X');
+    }
+
+    public function testXdrSignerKeyTypeTxRepRoundTrip_SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD(): void
+    {
+        $original = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSignerKeyTypeBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKeyType_SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD');
+    }
+
+    public function testXdrPublicKeyTxRepRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrPublicKey::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrPublicKey');
+    }
+
+    public function testXdrSignerKeyTxRepRoundTrip(): void
+    {
+        $original = (function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSignerKey::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKey');
+    }
+
+    public function testXdrSignedPayloadTxRepRoundTrip(): void
+    {
+        $original = new XdrSignedPayload(str_repeat("\xAB", 32), "\x01\x02\x03\x04");
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSignedPayload::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignedPayload');
+    }
+
+    public function testXdrAccountIDTxRepRoundTrip(): void
+    {
+        $original = XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrAccountID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAccountID');
+    }
+
+    public function testXdrClaimableBalanceIDTypeTxRepEnumNames(): void
+    {
+        $val = new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0);
+        $name = $val->enumName();
+        $this->assertEquals('CLAIMABLE_BALANCE_ID_TYPE_V0', $name);
+        $back = XdrClaimableBalanceIDType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+    }
+
+    public function testXdrClaimableBalanceIDTypeTxRepRoundTrip_CLAIMABLE_BALANCE_ID_TYPE_V0(): void
+    {
+        $original = new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimableBalanceIDType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimableBalanceIDType_CLAIMABLE_BALANCE_ID_TYPE_V0');
+    }
+
+    public function testXdrClaimableBalanceIDTxRepRoundTrip(): void
+    {
+        $original = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrClaimableBalanceID::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrClaimableBalanceID');
     }
 }
 
