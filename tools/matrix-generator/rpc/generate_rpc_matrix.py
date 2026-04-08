@@ -695,8 +695,8 @@ def main() -> int:
     parser.add_argument(
         "--rpc-data",
         type=Path,
-        default=script_dir / "rpc_methods.json",
-        help="Path to rpc_methods.json (default: same directory as this script)",
+        default=script_dir / "data" / "rpc_methods.json",
+        help="Path to rpc_methods.json (default: data/rpc_methods.json)",
     )
     parser.add_argument(
         "--sdk-root",
