@@ -1,0 +1,28 @@
+# Hard floor for G-Roundtrip count.
+#
+# Rationale: there are 481 hand-written XDR PHP files under Soneso/StellarSDK/Xdr/
+# (excluding TxRepHelper.php which is not an XDR type). 34 of them are *Base.php
+# wrappers under BASE_WRAPPER_TYPES; the wrapper/base pairs collapse to one
+# JSON-supporting class each. That leaves roughly 481 - 34 = 447 distinct types
+# that will receive a toJson method.
+#
+# The generator round-trip emitter (Phase 5a) emits per-arm methods for unions,
+# per-member methods for enums, and per-optional-permutation methods for structs
+# with optional fields, so the actual test method count grows above the per-class
+# count. SCVal alone has ~22 arms; LedgerKey, LedgerEntry, Operation, SCSpecEntry,
+# SCSpecTypeDef, HostFunction, SorobanAuthorizedFunction, etc. each contribute
+# multiple methods. Empirically a conservative floor below the expected emit
+# count is appropriate.
+#
+# 300 is set as a lower bound that:
+#   - is well below the bare per-class count (447) so per-class coverage alone
+#     would meet it;
+#   - is well below the per-arm/per-member/per-permutation count Phase 5a will
+#     emit (estimated 600-900 once unions explode);
+#   - avoids brittleness against minor type-list changes during the implementation.
+#
+# The G-Roundtrip gate uses this number as a hard floor: count(testRoundTrip_*)
+# >= 300. The per-class coverage check (count_json_types.php) is a separate
+# subgate enforcing that every class with a toJson method is referenced by at
+# least one round-trip test method.
+300

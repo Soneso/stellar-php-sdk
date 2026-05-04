@@ -21,3 +21,9 @@ tools/matrix-generator/rpc/rpc_methods.json
 
 # Internal plans
 plans/
+
+# SEP-51 working files
+tools/sep-51-fixtures/orchestration-state.json
+tools/sep-51-fixtures/halt-report.md
+tools/sep-51-fixtures/deferred-nits.md
+tools/.venv-corpus-refresh/

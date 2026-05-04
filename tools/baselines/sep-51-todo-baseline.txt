@@ -1,0 +1,9 @@
+Soneso/StellarSDK/Constants/NetworkConstants.php:130:     * typically a temporary condition, such as:
+Soneso/StellarSDK/Requests/PaymentsRequestBuilder.php:117:        // TODO improve this to allow multiple, different joins as soon as needed.
+Soneso/StellarSDK/Responses/Effects/LiquidityPoolEffectResponse.php:27:    private int $fee; // TODO: Bigint
+Soneso/StellarSDK/Responses/LiquidityPools/LiquidityPoolResponse.php:45:    private int $fee; // TODO: Bigint
+Soneso/StellarSDK/SEP/RegulatedAssets/SEP08PostTransactionPending.php:19: * - Rate limiting or temporary service overload
+Soneso/StellarSDK/SEP/WebAuthForContracts/ContractChallengeResponse.php:23: * - credentials: Address-based credentials with signature placeholder
+Soneso/StellarSDK/Soroban/Contract/AssembledTransaction.php:122: * Since we've skipped simulation, we can now edit the `raw` transaction builder and
+Soneso/StellarSDKTests/Integration/ExamplesTest.php:1490:     * This test demonstrates streaming payments but is skipped in automated testing
+Soneso/StellarSDKTests/Integration/SorobanClientTest.php:646:     * Demonstrates the simplified approach using ContractSpec for automatic type conversion

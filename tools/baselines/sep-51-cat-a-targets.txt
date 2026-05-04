@@ -1,0 +1,15 @@
+XdrAsset
+XdrInt128Parts
+XdrInt256Parts
+XdrLedgerBounds
+XdrLiquidityPoolEntry
+XdrMemo
+XdrNodeID
+XdrPreconditions
+XdrPreconditionsV2
+XdrPublicKey
+XdrSignedPayload
+XdrSignerKey
+XdrSorobanResources
+XdrUInt128Parts
+XdrUInt256Parts

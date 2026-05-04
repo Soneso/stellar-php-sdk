@@ -1,0 +1,7 @@
+^docs/sep/sep-51\.md$
+^skills/stellar-php-sdk/references/sep-51\.md$
+^docs/README\.md$
+^skills/stellar-php-sdk/SKILL\.md$
+^Soneso/StellarSDKTests/Unit/Xdr/Sep51/DocExamplesTest\.php$
+^Soneso/StellarSDKTests/Unit/Xdr/Sep51/DocExamplesTestSelfTest\.php$
+^tools/sep-51-fixtures/doc_block_blocklist\.regex$

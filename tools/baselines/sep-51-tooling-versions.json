@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "xdr_commit": "0a56f5be107098efe67edf766c41955c2b277663",
+  "py_stellar_base_version": "14.0.0",
+  "ruby_version": "3.4.6",
+  "bundler_version": "2.7.2",
+  "gemfile_lock_sha": "2b511d609e441e519080a1c6ecc847718c99edbbe3a23e1b47dc3f79498453cb",
+  "composer_version": "2.9.2",
+  "php_ci_matrix": ["8.1", "8.2", "8.3", "8.4"],
+  "ext_gmp_version": "8.4.15",
+  "ext_bcmath_version": "8.4.15",
+  "coverage_driver": "xdebug",
+  "coverage_driver_notes": "Local environment loads xdebug 3.4.5; CI canonical lane (.github/workflows/tests.yml) currently uses pcov on PHP 8.4 for codecov upload. The dedicated SEP-51 coverage workflow (.github/workflows/sep-51-coverage.yml) requires xdebug to satisfy subgate (a) branch-coverage requirements. Re-baseline this field on the CI lane during the first CI run.",
+  "generated_at": "2026-05-04T12:35:18Z",
+  "generator_output_sha": "920214b1841906e255aa72a74623c6ace7f88805a4caab9ec9c32ca87b7087d8",
+  "generator_output_sha_method": "sha256 of (cd Soneso/StellarSDK/Xdr && tar cf - $(find . -type f -name '*.php' | sort))"
+}
