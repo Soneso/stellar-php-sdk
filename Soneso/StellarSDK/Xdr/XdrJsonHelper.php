@@ -674,10 +674,6 @@ final class XdrJsonHelper
         return $value;
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
-
     /**
      * Return a safe, bounded preview of user-supplied input for use in exception messages.
      *
@@ -690,13 +686,17 @@ final class XdrJsonHelper
      * @param int    $max Maximum characters before truncation (must be > 3).
      * @return string A safe, bounded preview.
      */
-    private static function safePreview(string $s, int $max = 80): string
+    public static function safePreview(string $s, int $max = 80): string
     {
         if (strlen($s) <= $max) {
             return $s;
         }
         return substr($s, 0, $max - 3) . '...';
     }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
 
     /**
      * Validate that a string represents a valid signed int64 in base-10.

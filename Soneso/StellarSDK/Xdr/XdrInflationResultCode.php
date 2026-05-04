@@ -53,4 +53,42 @@ class XdrInflationResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::NOT_TIME => 'not_time',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrInflationResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrInflationResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'not_time' => new static(self::NOT_TIME),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrInflationResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

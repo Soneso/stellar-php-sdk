@@ -53,4 +53,42 @@ class XdrBucketListType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::LIVE => 'live',
+            self::HOT_ARCHIVE => 'hot_archive',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrBucketListType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrBucketListType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'live' => new static(self::LIVE),
+            'hot_archive' => new static(self::HOT_ARCHIVE),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrBucketListType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -65,4 +65,46 @@ class XdrSCPStatementType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SCP_ST_PREPARE => 'prepare',
+            self::SCP_ST_CONFIRM => 'confirm',
+            self::SCP_ST_EXTERNALIZE => 'externalize',
+            self::SCP_ST_NOMINATE => 'nominate',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCPStatementType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCPStatementType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'prepare' => new static(self::SCP_ST_PREPARE),
+            'confirm' => new static(self::SCP_ST_CONFIRM),
+            'externalize' => new static(self::SCP_ST_EXTERNALIZE),
+            'nominate' => new static(self::SCP_ST_NOMINATE),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCPStatementType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

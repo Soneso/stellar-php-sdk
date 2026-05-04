@@ -44,7 +44,7 @@ PHASE3_OUT = REPO_ROOT / "tools" / "sep-51-fixtures" / "phase-3-owned.txt"
 PHASE4_OUT = REPO_ROOT / "tools" / "sep-51-fixtures" / "phase-4-owned.txt"
 
 ENUM_VALUE_RE = re.compile(r"public\s+int\s+\$value\b")
-ENUM_CONST_RE = re.compile(r"^\s*const\s+[A-Z][A-Z0-9_]*\s*=\s*-?\d", re.MULTILINE)
+ENUM_CONST_RE = re.compile(r"^\s*const\s+[A-Za-z][A-Za-z0-9_]*\s*=\s*-?\d", re.MULTILINE)
 UNION_SWITCH_RE = re.compile(
     r"switch\s*\(\s*\$\w+->(?:type|discriminant)->getValue\(\)\s*\)"
 )
@@ -138,7 +138,7 @@ def main() -> int:
     for php in list_xdr_classes():
         # Skip non-XDR PHP files that happen to share the prefix.
         stem = php.stem
-        if stem == "TxRepHelper":
+        if stem in ("TxRepHelper", "XdrJsonHelper"):
             continue
 
         tname = type_name(php)

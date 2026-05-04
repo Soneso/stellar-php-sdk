@@ -77,4 +77,50 @@ class XdrRevokeSponsorshipResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::DOES_NOT_EXIST => 'does_not_exist',
+            self::NOT_SPONSOR => 'not_sponsor',
+            self::LOW_RESERVE => 'low_reserve',
+            self::ONLY_TRANSFERABLE => 'only_transferable',
+            self::MALFORMED => 'malformed',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrRevokeSponsorshipResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrRevokeSponsorshipResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'does_not_exist' => new static(self::DOES_NOT_EXIST),
+            'not_sponsor' => new static(self::NOT_SPONSOR),
+            'low_reserve' => new static(self::LOW_RESERVE),
+            'only_transferable' => new static(self::ONLY_TRANSFERABLE),
+            'malformed' => new static(self::MALFORMED),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrRevokeSponsorshipResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

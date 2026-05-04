@@ -72,6 +72,50 @@ class XdrMemoType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::MEMO_NONE => 'none',
+            self::MEMO_TEXT => 'text',
+            self::MEMO_ID => 'id',
+            self::MEMO_HASH => 'hash',
+            self::MEMO_RETURN => 'return',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrMemoType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrMemoType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'none' => new static(self::MEMO_NONE),
+            'text' => new static(self::MEMO_TEXT),
+            'id' => new static(self::MEMO_ID),
+            'hash' => new static(self::MEMO_HASH),
+            'return' => new static(self::MEMO_RETURN),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrMemoType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::MEMO_NONE:

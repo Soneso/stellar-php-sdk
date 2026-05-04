@@ -83,4 +83,52 @@ class XdrLedgerUpgradeType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::LEDGER_UPGRADE_VERSION => 'version',
+            self::LEDGER_UPGRADE_BASE_FEE => 'base_fee',
+            self::LEDGER_UPGRADE_MAX_TX_SET_SIZE => 'max_tx_set_size',
+            self::LEDGER_UPGRADE_BASE_RESERVE => 'base_reserve',
+            self::LEDGER_UPGRADE_FLAGS => 'flags',
+            self::LEDGER_UPGRADE_CONFIG => 'config',
+            self::LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE => 'max_soroban_tx_set_size',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrLedgerUpgradeType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrLedgerUpgradeType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'version' => new static(self::LEDGER_UPGRADE_VERSION),
+            'base_fee' => new static(self::LEDGER_UPGRADE_BASE_FEE),
+            'max_tx_set_size' => new static(self::LEDGER_UPGRADE_MAX_TX_SET_SIZE),
+            'base_reserve' => new static(self::LEDGER_UPGRADE_BASE_RESERVE),
+            'flags' => new static(self::LEDGER_UPGRADE_FLAGS),
+            'config' => new static(self::LEDGER_UPGRADE_CONFIG),
+            'max_soroban_tx_set_size' => new static(self::LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrLedgerUpgradeType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

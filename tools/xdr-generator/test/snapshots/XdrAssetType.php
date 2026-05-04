@@ -66,6 +66,48 @@ class XdrAssetType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::ASSET_TYPE_NATIVE => 'native',
+            self::ASSET_TYPE_CREDIT_ALPHANUM4 => 'credit_alphanum4',
+            self::ASSET_TYPE_CREDIT_ALPHANUM12 => 'credit_alphanum12',
+            self::ASSET_TYPE_POOL_SHARE => 'pool_share',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrAssetType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrAssetType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'native' => new static(self::ASSET_TYPE_NATIVE),
+            'credit_alphanum4' => new static(self::ASSET_TYPE_CREDIT_ALPHANUM4),
+            'credit_alphanum12' => new static(self::ASSET_TYPE_CREDIT_ALPHANUM12),
+            'pool_share' => new static(self::ASSET_TYPE_POOL_SHARE),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrAssetType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::ASSET_TYPE_NATIVE:

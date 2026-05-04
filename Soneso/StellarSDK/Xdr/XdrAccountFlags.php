@@ -65,4 +65,46 @@ class XdrAccountFlags {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::AUTH_REQUIRED_FLAG => 'required_flag',
+            self::AUTH_REVOCABLE_FLAG => 'revocable_flag',
+            self::AUTH_IMMUTABLE_FLAG => 'immutable_flag',
+            self::AUTH_CLAWBACK_ENABLED_FLAG => 'clawback_enabled_flag',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrAccountFlags enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrAccountFlags JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'required_flag' => new static(self::AUTH_REQUIRED_FLAG),
+            'revocable_flag' => new static(self::AUTH_REVOCABLE_FLAG),
+            'immutable_flag' => new static(self::AUTH_IMMUTABLE_FLAG),
+            'clawback_enabled_flag' => new static(self::AUTH_CLAWBACK_ENABLED_FLAG),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrAccountFlags JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

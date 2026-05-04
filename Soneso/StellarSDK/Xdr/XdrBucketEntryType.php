@@ -65,4 +65,46 @@ class XdrBucketEntryType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::METAENTRY => 'metaentry',
+            self::LIVEENTRY => 'liveentry',
+            self::DEADENTRY => 'deadentry',
+            self::INITENTRY => 'initentry',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrBucketEntryType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrBucketEntryType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'metaentry' => new static(self::METAENTRY),
+            'liveentry' => new static(self::LIVEENTRY),
+            'deadentry' => new static(self::DEADENTRY),
+            'initentry' => new static(self::INITENTRY),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrBucketEntryType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

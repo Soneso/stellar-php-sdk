@@ -1345,6 +1345,27 @@ class XdrJsonHelperTest extends TestCase
     }
 
     /**
+     * Public-API contract: safePreview must be callable from outside the class.
+     *
+     * Generator-emitted enum classes route their fromJsonValue default arm
+     * through XdrJsonHelper::safePreview rather than carrying a per-class
+     * preview helper. The visibility on safePreview must therefore be public.
+     * One short-input round-trip and one long-input truncation assertion are
+     * sufficient to lock in the public contract; broader behavioural coverage
+     * lives in the dedicated truncation test above.
+     */
+    public function testSafePreview_isPubliclyCallableForGeneratorEmittedCode(): void
+    {
+        // Short input: returned verbatim.
+        $this->assertSame('hello', XdrJsonHelper::safePreview('hello'));
+        // Long input: truncated to 80 chars total, with the documented "..." suffix.
+        $long = str_repeat('a', 200);
+        $preview = XdrJsonHelper::safePreview($long);
+        $this->assertSame(80, strlen($preview));
+        $this->assertStringEndsWith('...', $preview);
+    }
+
+    /**
      * ksortRecursive must throw when the depth bound is exceeded.
      *
      * Public callers constructing deeply-nested arrays by hand and passing them

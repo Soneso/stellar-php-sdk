@@ -89,4 +89,54 @@ class XdrAccountMergeResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::MALFORMED => 'malformed',
+            self::NO_ACCOUNT => 'no_account',
+            self::IMMUTABLE_SET => 'immutable_set',
+            self::HAS_SUB_ENTRIES => 'has_sub_entries',
+            self::SEQNUM_TOO_FAR => 'seqnum_too_far',
+            self::DEST_FULL => 'dest_full',
+            self::IS_SPONSOR => 'is_sponsor',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrAccountMergeResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrAccountMergeResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'malformed' => new static(self::MALFORMED),
+            'no_account' => new static(self::NO_ACCOUNT),
+            'immutable_set' => new static(self::IMMUTABLE_SET),
+            'has_sub_entries' => new static(self::HAS_SUB_ENTRIES),
+            'seqnum_too_far' => new static(self::SEQNUM_TOO_FAR),
+            'dest_full' => new static(self::DEST_FULL),
+            'is_sponsor' => new static(self::IS_SPONSOR),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrAccountMergeResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

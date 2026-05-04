@@ -47,4 +47,40 @@ class XdrSurveyMessageResponseType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SURVEY_TOPOLOGY_RESPONSE_V2 => 'survey_topology_response_v2',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSurveyMessageResponseType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSurveyMessageResponseType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'survey_topology_response_v2' => new static(self::SURVEY_TOPOLOGY_RESPONSE_V2),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSurveyMessageResponseType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

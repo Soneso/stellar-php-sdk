@@ -60,6 +60,46 @@ class XdrPreconditionType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::NONE => 'none',
+            self::TIME => 'time',
+            self::V2 => 'v2',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrPreconditionType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrPreconditionType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'none' => new static(self::NONE),
+            'time' => new static(self::TIME),
+            'v2' => new static(self::V2),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrPreconditionType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::NONE:

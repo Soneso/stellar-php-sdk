@@ -102,6 +102,60 @@ class XdrSCErrorType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SCE_CONTRACT => 'contract',
+            self::SCE_WASM_VM => 'wasm_vm',
+            self::SCE_CONTEXT => 'context',
+            self::SCE_STORAGE => 'storage',
+            self::SCE_OBJECT => 'object',
+            self::SCE_CRYPTO => 'crypto',
+            self::SCE_EVENTS => 'events',
+            self::SCE_BUDGET => 'budget',
+            self::SCE_VALUE => 'value',
+            self::SCE_AUTH => 'auth',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCErrorType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCErrorType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'contract' => new static(self::SCE_CONTRACT),
+            'wasm_vm' => new static(self::SCE_WASM_VM),
+            'context' => new static(self::SCE_CONTEXT),
+            'storage' => new static(self::SCE_STORAGE),
+            'object' => new static(self::SCE_OBJECT),
+            'crypto' => new static(self::SCE_CRYPTO),
+            'events' => new static(self::SCE_EVENTS),
+            'budget' => new static(self::SCE_BUDGET),
+            'value' => new static(self::SCE_VALUE),
+            'auth' => new static(self::SCE_AUTH),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCErrorType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::SCE_CONTRACT:

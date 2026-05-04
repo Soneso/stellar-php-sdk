@@ -197,4 +197,90 @@ class XdrSCSpecType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SC_SPEC_TYPE_VAL => 'val',
+            self::SC_SPEC_TYPE_BOOL => 'bool',
+            self::SC_SPEC_TYPE_VOID => 'void',
+            self::SC_SPEC_TYPE_ERROR => 'error',
+            self::SC_SPEC_TYPE_U32 => 'u32',
+            self::SC_SPEC_TYPE_I32 => 'i32',
+            self::SC_SPEC_TYPE_U64 => 'u64',
+            self::SC_SPEC_TYPE_I64 => 'i64',
+            self::SC_SPEC_TYPE_TIMEPOINT => 'timepoint',
+            self::SC_SPEC_TYPE_DURATION => 'duration',
+            self::SC_SPEC_TYPE_U128 => 'u128',
+            self::SC_SPEC_TYPE_I128 => 'i128',
+            self::SC_SPEC_TYPE_U256 => 'u256',
+            self::SC_SPEC_TYPE_I256 => 'i256',
+            self::SC_SPEC_TYPE_BYTES => 'bytes',
+            self::SC_SPEC_TYPE_STRING => 'string',
+            self::SC_SPEC_TYPE_SYMBOL => 'symbol',
+            self::SC_SPEC_TYPE_ADDRESS => 'address',
+            self::SC_SPEC_TYPE_MUXED_ADDRESS => 'muxed_address',
+            self::SC_SPEC_TYPE_OPTION => 'option',
+            self::SC_SPEC_TYPE_RESULT => 'result',
+            self::SC_SPEC_TYPE_VEC => 'vec',
+            self::SC_SPEC_TYPE_MAP => 'map',
+            self::SC_SPEC_TYPE_TUPLE => 'tuple',
+            self::SC_SPEC_TYPE_BYTES_N => 'bytes_n',
+            self::SC_SPEC_TYPE_UDT => 'udt',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCSpecType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCSpecType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'val' => new static(self::SC_SPEC_TYPE_VAL),
+            'bool' => new static(self::SC_SPEC_TYPE_BOOL),
+            'void' => new static(self::SC_SPEC_TYPE_VOID),
+            'error' => new static(self::SC_SPEC_TYPE_ERROR),
+            'u32' => new static(self::SC_SPEC_TYPE_U32),
+            'i32' => new static(self::SC_SPEC_TYPE_I32),
+            'u64' => new static(self::SC_SPEC_TYPE_U64),
+            'i64' => new static(self::SC_SPEC_TYPE_I64),
+            'timepoint' => new static(self::SC_SPEC_TYPE_TIMEPOINT),
+            'duration' => new static(self::SC_SPEC_TYPE_DURATION),
+            'u128' => new static(self::SC_SPEC_TYPE_U128),
+            'i128' => new static(self::SC_SPEC_TYPE_I128),
+            'u256' => new static(self::SC_SPEC_TYPE_U256),
+            'i256' => new static(self::SC_SPEC_TYPE_I256),
+            'bytes' => new static(self::SC_SPEC_TYPE_BYTES),
+            'string' => new static(self::SC_SPEC_TYPE_STRING),
+            'symbol' => new static(self::SC_SPEC_TYPE_SYMBOL),
+            'address' => new static(self::SC_SPEC_TYPE_ADDRESS),
+            'muxed_address' => new static(self::SC_SPEC_TYPE_MUXED_ADDRESS),
+            'option' => new static(self::SC_SPEC_TYPE_OPTION),
+            'result' => new static(self::SC_SPEC_TYPE_RESULT),
+            'vec' => new static(self::SC_SPEC_TYPE_VEC),
+            'map' => new static(self::SC_SPEC_TYPE_MAP),
+            'tuple' => new static(self::SC_SPEC_TYPE_TUPLE),
+            'bytes_n' => new static(self::SC_SPEC_TYPE_BYTES_N),
+            'udt' => new static(self::SC_SPEC_TYPE_UDT),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCSpecType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

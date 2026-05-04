@@ -65,4 +65,46 @@ class XdrThresholdIndexes {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::THRESHOLD_MASTER_WEIGHT => 'master_weight',
+            self::THRESHOLD_LOW => 'low',
+            self::THRESHOLD_MED => 'med',
+            self::THRESHOLD_HIGH => 'high',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrThresholdIndexes enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrThresholdIndexes JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'master_weight' => new static(self::THRESHOLD_MASTER_WEIGHT),
+            'low' => new static(self::THRESHOLD_LOW),
+            'med' => new static(self::THRESHOLD_MED),
+            'high' => new static(self::THRESHOLD_HIGH),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrThresholdIndexes JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

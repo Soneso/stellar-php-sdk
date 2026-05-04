@@ -17,6 +17,7 @@
 ^Soneso/StellarSDK/Xdr/XdrClawbackClaimableBalanceResultCode\.php$
 ^Soneso/StellarSDK/Xdr/XdrClawbackResultCode\.php$
 ^Soneso/StellarSDK/Xdr/XdrConfigSettingID\.php$
+^Soneso/StellarSDK/Xdr/XdrContractCostType\.php$
 ^Soneso/StellarSDK/Xdr/XdrContractDataDurability\.php$
 ^Soneso/StellarSDK/Xdr/XdrContractEventType\.php$
 ^Soneso/StellarSDK/Xdr/XdrContractExecutableType\.php$
@@ -30,6 +31,7 @@
 ^Soneso/StellarSDK/Xdr/XdrExtendFootprintTTLResultCode\.php$
 ^Soneso/StellarSDK/Xdr/XdrHostFunctionType\.php$
 ^Soneso/StellarSDK/Xdr/XdrHotArchiveBucketEntryType\.php$
+^Soneso/StellarSDK/Xdr/XdrIPAddrType\.php$
 ^Soneso/StellarSDK/Xdr/XdrInflationResultCode\.php$
 ^Soneso/StellarSDK/Xdr/XdrInvokeHostFunctionResultCode\.php$
 ^Soneso/StellarSDK/Xdr/XdrLedgerEntryChangeType\.php$

@@ -58,7 +58,6 @@
 ^Soneso/StellarSDK/Xdr/XdrContractCodeEntry\.php$
 ^Soneso/StellarSDK/Xdr/XdrContractCostParamEntry\.php$
 ^Soneso/StellarSDK/Xdr/XdrContractCostParams\.php$
-^Soneso/StellarSDK/Xdr/XdrContractCostType\.php$
 ^Soneso/StellarSDK/Xdr/XdrContractDataEntry\.php$
 ^Soneso/StellarSDK/Xdr/XdrContractEventBodyV0\.php$
 ^Soneso/StellarSDK/Xdr/XdrContractEventBody\.php$
@@ -109,7 +108,6 @@
 ^Soneso/StellarSDK/Xdr/XdrHmacSha256Key\.php$
 ^Soneso/StellarSDK/Xdr/XdrHmacSha256Mac\.php$
 ^Soneso/StellarSDK/Xdr/XdrHotArchiveBucketEntry\.php$
-^Soneso/StellarSDK/Xdr/XdrIPAddrType\.php$
 ^Soneso/StellarSDK/Xdr/XdrInflationPayout\.php$
 ^Soneso/StellarSDK/Xdr/XdrInflationResult\.php$
 ^Soneso/StellarSDK/Xdr/XdrInnerTransactionResultResult\.php$

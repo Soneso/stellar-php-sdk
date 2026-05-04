@@ -59,4 +59,44 @@ class XdrContractEventType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::CONTRACT_EVENT_TYPE_SYSTEM => 'system',
+            self::CONTRACT_EVENT_TYPE_CONTRACT => 'contract',
+            self::CONTRACT_EVENT_TYPE_DIAGNOSTIC => 'diagnostic',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrContractEventType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrContractEventType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'system' => new static(self::CONTRACT_EVENT_TYPE_SYSTEM),
+            'contract' => new static(self::CONTRACT_EVENT_TYPE_CONTRACT),
+            'diagnostic' => new static(self::CONTRACT_EVENT_TYPE_DIAGNOSTIC),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrContractEventType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

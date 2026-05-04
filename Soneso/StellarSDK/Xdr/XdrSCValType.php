@@ -174,6 +174,84 @@ class XdrSCValType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SCV_BOOL => 'bool',
+            self::SCV_VOID => 'void',
+            self::SCV_ERROR => 'error',
+            self::SCV_U32 => 'u32',
+            self::SCV_I32 => 'i32',
+            self::SCV_U64 => 'u64',
+            self::SCV_I64 => 'i64',
+            self::SCV_TIMEPOINT => 'timepoint',
+            self::SCV_DURATION => 'duration',
+            self::SCV_U128 => 'u128',
+            self::SCV_I128 => 'i128',
+            self::SCV_U256 => 'u256',
+            self::SCV_I256 => 'i256',
+            self::SCV_BYTES => 'bytes',
+            self::SCV_STRING => 'string',
+            self::SCV_SYMBOL => 'symbol',
+            self::SCV_VEC => 'vec',
+            self::SCV_MAP => 'map',
+            self::SCV_ADDRESS => 'address',
+            self::SCV_CONTRACT_INSTANCE => 'contract_instance',
+            self::SCV_LEDGER_KEY_CONTRACT_INSTANCE => 'ledger_key_contract_instance',
+            self::SCV_LEDGER_KEY_NONCE => 'ledger_key_nonce',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCValType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCValType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'bool' => new static(self::SCV_BOOL),
+            'void' => new static(self::SCV_VOID),
+            'error' => new static(self::SCV_ERROR),
+            'u32' => new static(self::SCV_U32),
+            'i32' => new static(self::SCV_I32),
+            'u64' => new static(self::SCV_U64),
+            'i64' => new static(self::SCV_I64),
+            'timepoint' => new static(self::SCV_TIMEPOINT),
+            'duration' => new static(self::SCV_DURATION),
+            'u128' => new static(self::SCV_U128),
+            'i128' => new static(self::SCV_I128),
+            'u256' => new static(self::SCV_U256),
+            'i256' => new static(self::SCV_I256),
+            'bytes' => new static(self::SCV_BYTES),
+            'string' => new static(self::SCV_STRING),
+            'symbol' => new static(self::SCV_SYMBOL),
+            'vec' => new static(self::SCV_VEC),
+            'map' => new static(self::SCV_MAP),
+            'address' => new static(self::SCV_ADDRESS),
+            'contract_instance' => new static(self::SCV_CONTRACT_INSTANCE),
+            'ledger_key_contract_instance' => new static(self::SCV_LEDGER_KEY_CONTRACT_INSTANCE),
+            'ledger_key_nonce' => new static(self::SCV_LEDGER_KEY_NONCE),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCValType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::SCV_BOOL:

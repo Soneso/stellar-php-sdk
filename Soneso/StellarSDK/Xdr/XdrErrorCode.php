@@ -71,4 +71,48 @@ class XdrErrorCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::ERR_MISC => 'misc',
+            self::ERR_DATA => 'data',
+            self::ERR_CONF => 'conf',
+            self::ERR_AUTH => 'auth',
+            self::ERR_LOAD => 'load',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrErrorCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrErrorCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'misc' => new static(self::ERR_MISC),
+            'data' => new static(self::ERR_DATA),
+            'conf' => new static(self::ERR_CONF),
+            'auth' => new static(self::ERR_AUTH),
+            'load' => new static(self::ERR_LOAD),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrErrorCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

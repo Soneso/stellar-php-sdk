@@ -106,6 +106,60 @@ class XdrLedgerEntryType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::ACCOUNT => 'account',
+            self::TRUSTLINE => 'trustline',
+            self::OFFER => 'offer',
+            self::DATA => 'data',
+            self::CLAIMABLE_BALANCE => 'claimable_balance',
+            self::LIQUIDITY_POOL => 'liquidity_pool',
+            self::CONTRACT_DATA => 'contract_data',
+            self::CONTRACT_CODE => 'contract_code',
+            self::CONFIG_SETTING => 'config_setting',
+            self::TTL => 'ttl',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrLedgerEntryType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrLedgerEntryType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'account' => new static(self::ACCOUNT),
+            'trustline' => new static(self::TRUSTLINE),
+            'offer' => new static(self::OFFER),
+            'data' => new static(self::DATA),
+            'claimable_balance' => new static(self::CLAIMABLE_BALANCE),
+            'liquidity_pool' => new static(self::LIQUIDITY_POOL),
+            'contract_data' => new static(self::CONTRACT_DATA),
+            'contract_code' => new static(self::CONTRACT_CODE),
+            'config_setting' => new static(self::CONFIG_SETTING),
+            'ttl' => new static(self::TTL),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrLedgerEntryType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::ACCOUNT:

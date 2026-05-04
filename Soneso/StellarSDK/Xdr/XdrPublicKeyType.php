@@ -48,6 +48,42 @@ class XdrPublicKeyType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::PUBLIC_KEY_TYPE_ED25519 => 'public_key_type_ed25519',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrPublicKeyType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrPublicKeyType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'public_key_type_ed25519' => new static(self::PUBLIC_KEY_TYPE_ED25519),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrPublicKeyType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::PUBLIC_KEY_TYPE_ED25519:

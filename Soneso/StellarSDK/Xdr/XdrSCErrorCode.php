@@ -102,6 +102,60 @@ class XdrSCErrorCode {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SCEC_ARITH_DOMAIN => 'arith_domain',
+            self::SCEC_INDEX_BOUNDS => 'index_bounds',
+            self::SCEC_INVALID_INPUT => 'invalid_input',
+            self::SCEC_MISSING_VALUE => 'missing_value',
+            self::SCEC_EXISTING_VALUE => 'existing_value',
+            self::SCEC_EXCEEDED_LIMIT => 'exceeded_limit',
+            self::SCEC_INVALID_ACTION => 'invalid_action',
+            self::SCEC_INTERNAL_ERROR => 'internal_error',
+            self::SCEC_UNEXPECTED_TYPE => 'unexpected_type',
+            self::SCEC_UNEXPECTED_SIZE => 'unexpected_size',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCErrorCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCErrorCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'arith_domain' => new static(self::SCEC_ARITH_DOMAIN),
+            'index_bounds' => new static(self::SCEC_INDEX_BOUNDS),
+            'invalid_input' => new static(self::SCEC_INVALID_INPUT),
+            'missing_value' => new static(self::SCEC_MISSING_VALUE),
+            'existing_value' => new static(self::SCEC_EXISTING_VALUE),
+            'exceeded_limit' => new static(self::SCEC_EXCEEDED_LIMIT),
+            'invalid_action' => new static(self::SCEC_INVALID_ACTION),
+            'internal_error' => new static(self::SCEC_INTERNAL_ERROR),
+            'unexpected_type' => new static(self::SCEC_UNEXPECTED_TYPE),
+            'unexpected_size' => new static(self::SCEC_UNEXPECTED_SIZE),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCErrorCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::SCEC_ARITH_DOMAIN:

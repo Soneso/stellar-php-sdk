@@ -53,4 +53,42 @@ class XdrSCSpecEventParamLocationV0 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SC_SPEC_EVENT_PARAM_LOCATION_DATA => 'data',
+            self::SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST => 'topic_list',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCSpecEventParamLocationV0 enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCSpecEventParamLocationV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'data' => new static(self::SC_SPEC_EVENT_PARAM_LOCATION_DATA),
+            'topic_list' => new static(self::SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCSpecEventParamLocationV0 JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

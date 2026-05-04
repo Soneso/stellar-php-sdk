@@ -59,4 +59,44 @@ class XdrTransactionEventStage {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS => 'before_all_txs',
+            self::TRANSACTION_EVENT_STAGE_AFTER_TX => 'after_tx',
+            self::TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS => 'after_all_txs',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrTransactionEventStage enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrTransactionEventStage JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'before_all_txs' => new static(self::TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS),
+            'after_tx' => new static(self::TRANSACTION_EVENT_STAGE_AFTER_TX),
+            'after_all_txs' => new static(self::TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrTransactionEventStage JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -53,4 +53,42 @@ class XdrStellarValueType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::STELLAR_VALUE_BASIC => 'basic',
+            self::STELLAR_VALUE_SIGNED => 'signed',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrStellarValueType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrStellarValueType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'basic' => new static(self::STELLAR_VALUE_BASIC),
+            'signed' => new static(self::STELLAR_VALUE_SIGNED),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrStellarValueType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

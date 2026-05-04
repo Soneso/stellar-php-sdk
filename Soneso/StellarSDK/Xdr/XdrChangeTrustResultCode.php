@@ -95,4 +95,56 @@ class XdrChangeTrustResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::MALFORMED => 'malformed',
+            self::NO_ISSUER => 'no_issuer',
+            self::INVALID_LIMIT => 'invalid_limit',
+            self::LOW_RESERVE => 'low_reserve',
+            self::SELF_NOT_ALLOWED => 'self_not_allowed',
+            self::TRUST_LINE_MISSING => 'trust_line_missing',
+            self::CANNOT_DELETE => 'cannot_delete',
+            self::NOT_AUTH_MAINTAIN_LIABILITIES => 'not_auth_maintain_liabilities',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrChangeTrustResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrChangeTrustResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'malformed' => new static(self::MALFORMED),
+            'no_issuer' => new static(self::NO_ISSUER),
+            'invalid_limit' => new static(self::INVALID_LIMIT),
+            'low_reserve' => new static(self::LOW_RESERVE),
+            'self_not_allowed' => new static(self::SELF_NOT_ALLOWED),
+            'trust_line_missing' => new static(self::TRUST_LINE_MISSING),
+            'cannot_delete' => new static(self::CANNOT_DELETE),
+            'not_auth_maintain_liabilities' => new static(self::NOT_AUTH_MAINTAIN_LIABILITIES),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrChangeTrustResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

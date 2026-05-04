@@ -48,6 +48,42 @@ class XdrClaimableBalanceIDType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::CLAIMABLE_BALANCE_ID_TYPE_V0 => 'claimable_balance_id_type_v0',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrClaimableBalanceIDType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrClaimableBalanceIDType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'claimable_balance_id_type_v0' => new static(self::CLAIMABLE_BALANCE_ID_TYPE_V0),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrClaimableBalanceIDType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::CLAIMABLE_BALANCE_ID_TYPE_V0:

@@ -119,4 +119,64 @@ class XdrPathPaymentStrictReceiveResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::MALFORMED => 'malformed',
+            self::UNDERFUNDED => 'underfunded',
+            self::SRC_NO_TRUST => 'src_no_trust',
+            self::SRC_NOT_AUTHORIZED => 'src_not_authorized',
+            self::NO_DESTINATION => 'no_destination',
+            self::NO_TRUST => 'no_trust',
+            self::NOT_AUTHORIZED => 'not_authorized',
+            self::LINE_FULL => 'line_full',
+            self::NO_ISSUER => 'no_issuer',
+            self::TOO_FEW_OFFERS => 'too_few_offers',
+            self::OFFER_CROSS_SELF => 'offer_cross_self',
+            self::OVER_SENDMAX => 'over_sendmax',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrPathPaymentStrictReceiveResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrPathPaymentStrictReceiveResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'malformed' => new static(self::MALFORMED),
+            'underfunded' => new static(self::UNDERFUNDED),
+            'src_no_trust' => new static(self::SRC_NO_TRUST),
+            'src_not_authorized' => new static(self::SRC_NOT_AUTHORIZED),
+            'no_destination' => new static(self::NO_DESTINATION),
+            'no_trust' => new static(self::NO_TRUST),
+            'not_authorized' => new static(self::NOT_AUTHORIZED),
+            'line_full' => new static(self::LINE_FULL),
+            'no_issuer' => new static(self::NO_ISSUER),
+            'too_few_offers' => new static(self::TOO_FEW_OFFERS),
+            'offer_cross_self' => new static(self::OFFER_CROSS_SELF),
+            'over_sendmax' => new static(self::OVER_SENDMAX),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrPathPaymentStrictReceiveResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

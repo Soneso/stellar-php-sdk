@@ -78,6 +78,52 @@ class XdrClaimPredicateType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::UNCONDITIONAL => 'unconditional',
+            self::AND => 'and',
+            self::OR => 'or',
+            self::NOT => 'not',
+            self::BEFORE_ABSOLUTE_TIME => 'before_absolute_time',
+            self::BEFORE_RELATIVE_TIME => 'before_relative_time',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrClaimPredicateType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrClaimPredicateType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'unconditional' => new static(self::UNCONDITIONAL),
+            'and' => new static(self::AND),
+            'or' => new static(self::OR),
+            'not' => new static(self::NOT),
+            'before_absolute_time' => new static(self::BEFORE_ABSOLUTE_TIME),
+            'before_relative_time' => new static(self::BEFORE_RELATIVE_TIME),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrClaimPredicateType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::UNCONDITIONAL:

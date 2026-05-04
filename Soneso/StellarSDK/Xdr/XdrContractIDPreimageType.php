@@ -54,6 +54,44 @@ class XdrContractIDPreimageType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::CONTRACT_ID_PREIMAGE_FROM_ADDRESS => 'address',
+            self::CONTRACT_ID_PREIMAGE_FROM_ASSET => 'asset',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrContractIDPreimageType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrContractIDPreimageType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'address' => new static(self::CONTRACT_ID_PREIMAGE_FROM_ADDRESS),
+            'asset' => new static(self::CONTRACT_ID_PREIMAGE_FROM_ASSET),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrContractIDPreimageType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:

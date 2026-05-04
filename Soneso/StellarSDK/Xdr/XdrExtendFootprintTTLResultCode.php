@@ -65,4 +65,46 @@ class XdrExtendFootprintTTLResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::EXTEND_FOOTPRINT_TTL_SUCCESS => 'success',
+            self::EXTEND_FOOTPRINT_TTL_MALFORMED => 'malformed',
+            self::EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED => 'resource_limit_exceeded',
+            self::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE => 'insufficient_refundable_fee',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrExtendFootprintTTLResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrExtendFootprintTTLResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::EXTEND_FOOTPRINT_TTL_SUCCESS),
+            'malformed' => new static(self::EXTEND_FOOTPRINT_TTL_MALFORMED),
+            'resource_limit_exceeded' => new static(self::EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED),
+            'insufficient_refundable_fee' => new static(self::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrExtendFootprintTTLResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

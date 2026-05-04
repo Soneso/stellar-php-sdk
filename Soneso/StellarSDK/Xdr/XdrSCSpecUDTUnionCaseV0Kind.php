@@ -53,4 +53,42 @@ class XdrSCSpecUDTUnionCaseV0Kind {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SC_SPEC_UDT_UNION_CASE_VOID_V0 => 'void_v0',
+            self::SC_SPEC_UDT_UNION_CASE_TUPLE_V0 => 'tuple_v0',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCSpecUDTUnionCaseV0Kind enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCSpecUDTUnionCaseV0Kind JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'void_v0' => new static(self::SC_SPEC_UDT_UNION_CASE_VOID_V0),
+            'tuple_v0' => new static(self::SC_SPEC_UDT_UNION_CASE_TUPLE_V0),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCSpecUDTUnionCaseV0Kind JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

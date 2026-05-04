@@ -59,4 +59,44 @@ class XdrBinaryFuseFilterType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::BINARY_FUSE_FILTER_8_BIT => '8_bit',
+            self::BINARY_FUSE_FILTER_16_BIT => '16_bit',
+            self::BINARY_FUSE_FILTER_32_BIT => '32_bit',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrBinaryFuseFilterType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrBinaryFuseFilterType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            '8_bit' => new static(self::BINARY_FUSE_FILTER_8_BIT),
+            '16_bit' => new static(self::BINARY_FUSE_FILTER_16_BIT),
+            '32_bit' => new static(self::BINARY_FUSE_FILTER_32_BIT),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrBinaryFuseFilterType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

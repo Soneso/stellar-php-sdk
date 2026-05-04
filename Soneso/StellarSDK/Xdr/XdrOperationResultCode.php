@@ -83,4 +83,52 @@ class XdrOperationResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::INNER => 'inner',
+            self::BAD_AUTH => 'bad_auth',
+            self::NO_ACCOUNT => 'no_account',
+            self::NOT_SUPPORTED => 'not_supported',
+            self::TOO_MANY_SUBENTRIES => 'too_many_subentries',
+            self::EXCEEDED_WORK_LIMIT => 'exceeded_work_limit',
+            self::TOO_MANY_SPONSORING => 'too_many_sponsoring',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrOperationResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrOperationResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'inner' => new static(self::INNER),
+            'bad_auth' => new static(self::BAD_AUTH),
+            'no_account' => new static(self::NO_ACCOUNT),
+            'not_supported' => new static(self::NOT_SUPPORTED),
+            'too_many_subentries' => new static(self::TOO_MANY_SUBENTRIES),
+            'exceeded_work_limit' => new static(self::EXCEEDED_WORK_LIMIT),
+            'too_many_sponsoring' => new static(self::TOO_MANY_SPONSORING),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrOperationResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

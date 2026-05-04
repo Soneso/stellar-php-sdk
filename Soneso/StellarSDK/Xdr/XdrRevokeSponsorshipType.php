@@ -54,6 +54,44 @@ class XdrRevokeSponsorshipType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::LEDGER_ENTRY => 'ledger_entry',
+            self::SIGNER => 'signer',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrRevokeSponsorshipType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrRevokeSponsorshipType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'ledger_entry' => new static(self::LEDGER_ENTRY),
+            'signer' => new static(self::SIGNER),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrRevokeSponsorshipType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::LEDGER_ENTRY:

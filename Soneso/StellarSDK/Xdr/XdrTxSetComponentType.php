@@ -47,4 +47,40 @@ class XdrTxSetComponentType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE => 'txset_comp_txs_maybe_discounted_fee',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrTxSetComponentType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrTxSetComponentType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'txset_comp_txs_maybe_discounted_fee' => new static(self::TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrTxSetComponentType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

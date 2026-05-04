@@ -83,4 +83,52 @@ class XdrClaimClaimableBalanceResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::DOES_NOT_EXIST => 'does_not_exist',
+            self::CANNOT_CLAIM => 'cannot_claim',
+            self::LINE_FULL => 'line_full',
+            self::NO_TRUST => 'no_trust',
+            self::NOT_AUTHORIZED => 'not_authorized',
+            self::TRUSTLINE_FROZEN => 'trustline_frozen',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrClaimClaimableBalanceResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrClaimClaimableBalanceResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'does_not_exist' => new static(self::DOES_NOT_EXIST),
+            'cannot_claim' => new static(self::CANNOT_CLAIM),
+            'line_full' => new static(self::LINE_FULL),
+            'no_trust' => new static(self::NO_TRUST),
+            'not_authorized' => new static(self::NOT_AUTHORIZED),
+            'trustline_frozen' => new static(self::TRUSTLINE_FROZEN),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrClaimClaimableBalanceResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

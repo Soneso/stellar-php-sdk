@@ -72,6 +72,50 @@ class XdrSCAddressType {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SC_ADDRESS_TYPE_ACCOUNT => 'account',
+            self::SC_ADDRESS_TYPE_CONTRACT => 'contract',
+            self::SC_ADDRESS_TYPE_MUXED_ACCOUNT => 'muxed_account',
+            self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE => 'claimable_balance',
+            self::SC_ADDRESS_TYPE_LIQUIDITY_POOL => 'liquidity_pool',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCAddressType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCAddressType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'account' => new static(self::SC_ADDRESS_TYPE_ACCOUNT),
+            'contract' => new static(self::SC_ADDRESS_TYPE_CONTRACT),
+            'muxed_account' => new static(self::SC_ADDRESS_TYPE_MUXED_ACCOUNT),
+            'claimable_balance' => new static(self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE),
+            'liquidity_pool' => new static(self::SC_ADDRESS_TYPE_LIQUIDITY_POOL),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSCAddressType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::SC_ADDRESS_TYPE_ACCOUNT:

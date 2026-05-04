@@ -95,4 +95,56 @@ class XdrLiquidityPoolDepositResultCode {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::MALFORMED => 'malformed',
+            self::NO_TRUST => 'no_trust',
+            self::NOT_AUTHORIZED => 'not_authorized',
+            self::UNDERFUNDED => 'underfunded',
+            self::LINE_FULL => 'line_full',
+            self::BAD_PRICE => 'bad_price',
+            self::POOL_FULL => 'pool_full',
+            self::TRUSTLINE_FROZEN => 'trustline_frozen',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrLiquidityPoolDepositResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrLiquidityPoolDepositResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'malformed' => new static(self::MALFORMED),
+            'no_trust' => new static(self::NO_TRUST),
+            'not_authorized' => new static(self::NOT_AUTHORIZED),
+            'underfunded' => new static(self::UNDERFUNDED),
+            'line_full' => new static(self::LINE_FULL),
+            'bad_price' => new static(self::BAD_PRICE),
+            'pool_full' => new static(self::POOL_FULL),
+            'trustline_frozen' => new static(self::TRUSTLINE_FROZEN),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrLiquidityPoolDepositResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -13,6 +13,8 @@ require_relative 'member_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
 require_relative 'txrep_types'
+require_relative 'cat_a_inline_targets'
+require_relative 'json_helpers'
 
 AST = Xdrgen::AST
 
@@ -164,6 +166,9 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if !is_base && emits_sep51?(php_name) && enum_uses_simple_identifier_members?(php_name, enum_defn)
+      render_enum_sep51_methods(out, php_name, class_name, enum_defn)
+    end
     if should_generate_txrep?(php_name)
       render_enum_txrep_methods(out, php_name, class_name, enum_defn)
     end
@@ -2452,6 +2457,127 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        }"
     out.puts "        return static::decode(new XdrBuffer($decoded));"
     out.puts "    }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # SEP-0051 (XDR-JSON) emission
+  # ---------------------------------------------------------------------------
+
+  # True when the generator should emit SEP-51 methods on this type. Types
+  # listed in BASE_WRAPPER_TYPES and in CAT_A_INLINE_TARGETS carry bespoke
+  # JSON shape (StrKey output, GMP integer reassembly, length-dispatched
+  # bare-string emission, etc.) that the generic enum/struct/union templates
+  # here cannot produce; emission for those types is registered through the
+  # Stellar-specific override registry instead.
+  def emits_sep51?(php_name)
+    return false if BASE_WRAPPER_TYPES.include?(php_name)
+    return false if CAT_A_INLINE_TARGETS.include?(php_name)
+    true
+  end
+
+  # True when every member identifier is a simple ASCII identifier (a leading
+  # letter followed by letters, digits, or underscores). Both
+  # ALL_CAPS_WITH_UNDERSCORES (e.g. "ASSET_TYPE_NATIVE") and CamelCase
+  # (e.g. "WasmInsnExec", "IPv4") shapes are accepted: tokenize_identifier in
+  # XdrJsonHelpers splits on underscores only and lowercases the result, which
+  # produces the canonical wire form for both shapes — verified against
+  # py-stellar-base v14.0.0 (e.g. IPAddrType -> ["ipv4","ipv6"];
+  # ContractCostType -> ["wasminsnexec","memalloc",...]).
+  def enum_uses_simple_identifier_members?(php_name, enum_defn)
+    enum_defn.members.all? do |m|
+      member_name = resolve_member_name(php_name, m.name.to_s)
+      member_name =~ /\A[A-Za-z][A-Za-z0-9_]*\z/
+    end
+  end
+
+  # Render the four SEP-51 methods on a generated enum class:
+  #   public function toJsonValue(): string
+  #   public static function fromJsonValue(mixed $value): static
+  #   public function toJson(): string
+  #   public static function fromJson(string $json): static
+  #
+  # The wire-form value for each enum member is computed from the PHP-side
+  # member identifiers via the prefix-stripping algorithm in json_helpers.rb.
+  # Values are baked in at codegen time and never recomputed at runtime.
+  def render_enum_sep51_methods(out, php_name, class_name, enum_defn)
+    member_names = enum_defn.members.map { |m| resolve_member_name(php_name, m.name.to_s) }
+    json_map = XdrJsonHelpers.strip_shared_prefix(member_names)
+
+    # toJsonValue — match on the integer value to the wire-form string.
+    out.puts ""
+    out.puts "    public function toJsonValue(): string {"
+    out.puts "        return match ($this->value) {"
+    member_names.each do |member_name|
+      json_value = json_map[member_name]
+      out.puts "            self::#{member_name} => '#{php_string_escape(json_value)}',"
+    end
+    # The default arm is unreachable under normal control flow because every
+    # constant defined on the class is listed above. It is retained as a
+    # belt-and-braces guard against reflection-corrupted instances and is
+    # marked @codeCoverageIgnore so the coverage gate does not require an
+    # exercise path that could only be triggered by manipulating private
+    # state out-of-band.
+    out.puts "            // @codeCoverageIgnoreStart"
+    out.puts "            default => throw new \\InvalidArgumentException("
+    out.puts "                'Unknown #{class_name} enum value: ' . $this->value"
+    out.puts "            ),"
+    out.puts "            // @codeCoverageIgnoreEnd"
+    out.puts "        };"
+    out.puts "    }"
+
+    # fromJsonValue — guard the input shape, then dispatch on the wire string.
+    out.puts ""
+    out.puts "    public static function fromJsonValue(mixed $value): static {"
+    out.puts "        if (!is_string($value)) {"
+    out.puts "            throw new \\InvalidArgumentException("
+    out.puts "                'Expected string for #{class_name} JSON value, got ' . get_debug_type($value)"
+    out.puts "            );"
+    out.puts "        }"
+    out.puts "        return match ($value) {"
+    member_names.each do |member_name|
+      json_value = json_map[member_name]
+      out.puts "            '#{php_string_escape(json_value)}' => new static(self::#{member_name}),"
+    end
+    # The default arm IS reachable via malformed input — the SEP-51 negative
+    # test battery exercises it explicitly. Caller-supplied $value is bounded
+    # by XdrJsonHelper::safePreview: the message echoes only the type and a
+    # bounded prefix to avoid log amplification on long attacker-controlled
+    # input. XdrJsonHelper lives in the same namespace as the generated class,
+    # so the unqualified reference resolves without a `use` import.
+    out.puts "            default => throw new \\InvalidArgumentException("
+    out.puts "                'Unknown #{class_name} JSON value: ' . XdrJsonHelper::safePreview($value)"
+    out.puts "            ),"
+    out.puts "        };"
+    out.puts "    }"
+
+    # toJson / fromJson — JSON-string facade over the value methods.
+    out.puts ""
+    out.puts "    public function toJson(): string {"
+    out.puts "        return json_encode("
+    out.puts "            $this->toJsonValue(),"
+    out.puts "            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE"
+    out.puts "        );"
+    out.puts "    }"
+    out.puts ""
+    out.puts "    public static function fromJson(string $json): static {"
+    out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
+    out.puts "    }"
+  end
+
+  # Escape a string for safe inclusion inside a single-quoted PHP literal.
+  # SEP-51 wire-form strings emitted today are restricted to ASCII identifier
+  # characters ([a-z0-9_]), so callers never feed adversarial bytes through
+  # here in practice. The helper is nevertheless implemented defensively so
+  # any future widening of the wire-form alphabet remains correct.
+  #
+  # The block form of gsub is used because Ruby's two-argument gsub re-parses
+  # the replacement string for back-references (\1, \\, etc.); passing a
+  # literal backslash via the replacement-string form requires four
+  # backslashes for one and produces incorrect output for inputs containing
+  # combinations of backslash and single-quote. The block form bypasses that
+  # parser and yields the replacement verbatim.
+  def php_string_escape(s)
+    s.gsub('\\') { '\\\\' }.gsub("'") { "\\'" }
   end
 
   # ---------------------------------------------------------------------------

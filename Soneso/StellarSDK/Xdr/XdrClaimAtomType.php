@@ -59,4 +59,44 @@ class XdrClaimAtomType {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::V0 => 'v0',
+            self::ORDER_BOOK => 'order_book',
+            self::LIQUIDITY_POOL => 'liquidity_pool',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrClaimAtomType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrClaimAtomType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'v0' => new static(self::V0),
+            'order_book' => new static(self::ORDER_BOOK),
+            'liquidity_pool' => new static(self::LIQUIDITY_POOL),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrClaimAtomType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

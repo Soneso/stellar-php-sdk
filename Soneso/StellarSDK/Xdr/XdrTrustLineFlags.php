@@ -59,4 +59,44 @@ class XdrTrustLineFlags {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::AUTHORIZED_FLAG => 'authorized_flag',
+            self::AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG => 'authorized_to_maintain_liabilities_flag',
+            self::TRUSTLINE_CLAWBACK_ENABLED_FLAG => 'trustline_clawback_enabled_flag',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrTrustLineFlags enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrTrustLineFlags JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'authorized_flag' => new static(self::AUTHORIZED_FLAG),
+            'authorized_to_maintain_liabilities_flag' => new static(self::AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG),
+            'trustline_clawback_enabled_flag' => new static(self::TRUSTLINE_CLAWBACK_ENABLED_FLAG),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrTrustLineFlags JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }
