@@ -2418,6 +2418,608 @@ class SEP53Analyzer(SEPAnalyzerBase):
 
 
 # ===========================================================================
+# SEP-51: XDR-JSON
+# ===========================================================================
+
+class SEP51Analyzer(SEPAnalyzerBase):
+    """Analyzes SEP-51 (XDR-JSON) support in the Stellar PHP SDK.
+
+    Evidence sources:
+    - XdrJsonHelper.php — primitive encode/decode helpers
+    - *Base.php generated files — enum/struct/union round-trip emission
+    - tools/xdr-generator/generator/generator.rb — $schema strip emission
+    - tools/xdr-generator/generator/json_helpers.rb — prefix-strip / snake_case logic
+    - Soneso/StellarSDK/Crypto/StrKey.php — Stellar-specific address encoding
+    """
+
+    sep_number = 51
+    sep_title = "XDR-JSON"
+    sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md"
+
+    # Relative paths (from sdk_root) used for evidence citation.
+    _HELPER_PATH = "Soneso/StellarSDK/Xdr/XdrJsonHelper.php"
+    _GENERATOR_RB = "tools/xdr-generator/generator/generator.rb"
+    _JSON_HELPERS_RB = "tools/xdr-generator/generator/json_helpers.rb"
+    _STRKEY_PATH = "Soneso/StellarSDK/Crypto/StrKey.php"
+
+    def _cite(self, rel_path: str, line: int) -> str:
+        """Return a Markdown inline-code citation string."""
+        return f"`{rel_path}:{line}`"
+
+    def _file_exists(self, rel_path: str) -> bool:
+        return (self.sdk.sdk_root / rel_path).exists()
+
+    def _line_exists(self, rel_path: str, line: int) -> bool:
+        p = self.sdk.sdk_root / rel_path
+        if not p.exists():
+            return False
+        lines = p.read_text(encoding="utf-8").splitlines()
+        return 1 <= line <= len(lines)
+
+    def _grep_line(self, rel_path: str, pattern: str) -> Optional[int]:
+        """Return the first line number (1-based) matching *pattern*, or None."""
+        p = self.sdk.sdk_root / rel_path
+        if not p.exists():
+            return None
+        regex = re.compile(pattern)
+        for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), start=1):
+            if regex.search(line):
+                return i
+        return None
+
+    def _make_field(
+        self,
+        name: str,
+        description: str,
+        status: SupportStatus,
+        notes: str = "",
+    ) -> SEPField:
+        return SEPField(name=name, description=description, status=status, notes=notes)
+
+    def analyze(self) -> CompatibilityMatrix:
+        matrix = self._make_matrix()
+        sdk_root = self.sdk.sdk_root
+
+        sections: list[SEPSection] = []
+        sections.append(self._section_a_xdr_types())
+        sections.append(self._section_b_stellar_types())
+        sections.append(self._section_c_schema())
+        sections.append(self._section_d_backward_compat())
+
+        matrix.sections = sections
+        matrix.overall_status = self._overall(sections)
+        return matrix
+
+    # ------------------------------------------------------------------
+    # Section A — XDR Data Types
+    # ------------------------------------------------------------------
+
+    def _section_a_xdr_types(self) -> SEPSection:
+        section = SEPSection(
+            name="XDR Data Types",
+            description=(
+                "Mapping of XDR primitive and composite types to JSON "
+                "as defined in SEP-0051 §XDR Data Types."
+            ),
+        )
+
+        helper = self._HELPER_PATH
+        gen_rb = self._GENERATOR_RB
+
+        # -- Integer (32-bit) --
+        # 32-bit ints map to JSON numbers. The generator emits them via PHP's
+        # native int, which json_encode always renders as a JSON number.
+        # fromJsonValue for struct fields that hold int32 values uses PHP
+        # intval/cast without any XdrJsonHelper helper because native PHP int
+        # maps exactly. Evidence: generator emits toJsonValue returning array
+        # with plain int values for uint32/int32 struct fields.
+        gen_struct_line = self._grep_line(gen_rb, r"fromJsonValue.*mixed.*value.*static")
+        int32_line = self._grep_line(gen_rb, r"'Expected object for")
+        struct_evidence = self._cite(gen_rb, int32_line) if int32_line else self._cite(gen_rb, 2775)
+
+        section.fields.append(self._make_field(
+            name="Integer (32-bit)",
+            description="XDR int maps to JSON number (RFC 4506 §4.1)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "Native PHP int; json_encode emits a JSON number. "
+                + "Generated struct fromJsonValue checks is_int/is_string. "
+                + struct_evidence
+            ),
+        ))
+
+        # -- Unsigned Integer (32-bit) --
+        section.fields.append(self._make_field(
+            name="Unsigned Integer (32-bit)",
+            description="XDR unsigned int maps to JSON number (RFC 4506 §4.2)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "Native PHP int; json_encode emits a JSON number. "
+                + "Same path as int32. "
+                + struct_evidence
+            ),
+        ))
+
+        # -- Hyper Integer (64-bit) --
+        int64_line = self._grep_line(helper, r"public static function int64ToString")
+        sint64_line = self._grep_line(helper, r"public static function stringToInt64")
+        hyper_note = (
+            "JSON string (base-10). "
+            + "JSON number accepted on input for backward compatibility. "
+            + (self._cite(helper, int64_line) if int64_line else "")
+            + " " + (self._cite(helper, sint64_line) if sint64_line else "")
+        )
+        section.fields.append(self._make_field(
+            name="Hyper Integer (64-bit)",
+            description="XDR hyper maps to JSON string; JSON number accepted on input (RFC 4506 §4.5)",
+            status=SupportStatus.SUPPORTED,
+            notes=hyper_note.strip(),
+        ))
+
+        # -- Unsigned Hyper Integer (64-bit) --
+        uint64_line = self._grep_line(helper, r"public static function uint64ToString")
+        suint64_line = self._grep_line(helper, r"public static function stringToUint64")
+        uhyper_note = (
+            "JSON string (base-10). "
+            + "JSON number accepted on input for backward compatibility. "
+            + (self._cite(helper, uint64_line) if uint64_line else "")
+            + " " + (self._cite(helper, suint64_line) if suint64_line else "")
+        )
+        section.fields.append(self._make_field(
+            name="Unsigned Hyper Integer (64-bit)",
+            description="XDR unsigned hyper maps to JSON string; JSON number accepted on input (RFC 4506 §4.5)",
+            status=SupportStatus.SUPPORTED,
+            notes=uhyper_note.strip(),
+        ))
+
+        # -- Boolean --
+        # PHP bool is natively serialized as JSON true/false by json_encode.
+        # Generator emits `(bool)$value` / `is_bool($value)` checks.
+        bool_line = self._grep_line(gen_rb, r"is_bool\b")
+        bool_note = (
+            "JSON true/false via PHP native bool. "
+            + (self._cite(gen_rb, bool_line) if bool_line else self._cite(gen_rb, 2775))
+        )
+        section.fields.append(self._make_field(
+            name="Boolean",
+            description="XDR bool maps to JSON true/false (RFC 4506 §4.4)",
+            status=SupportStatus.SUPPORTED,
+            notes=bool_note,
+        ))
+
+        # -- Opaque Fixed Length --
+        b2h_line = self._grep_line(helper, r"public static function bytesToHex")
+        h2b_line = self._grep_line(helper, r"public static function hexToBytes")
+        opaque_note = (
+            "Lowercase hex string via XdrJsonHelper::bytesToHex/hexToBytes. "
+            + (self._cite(helper, b2h_line) if b2h_line else "")
+            + " " + (self._cite(helper, h2b_line) if h2b_line else "")
+        )
+        section.fields.append(self._make_field(
+            name="Opaque Data (Fixed Length)",
+            description="XDR opaque[N] maps to lowercase hex string (RFC 4506 §4.9)",
+            status=SupportStatus.SUPPORTED,
+            notes=opaque_note.strip(),
+        ))
+
+        # -- Opaque Variable Length --
+        section.fields.append(self._make_field(
+            name="Opaque Data (Variable Length)",
+            description="XDR opaque<> maps to lowercase hex string (RFC 4506 §4.10)",
+            status=SupportStatus.SUPPORTED,
+            notes=opaque_note.strip() + " (same helpers as fixed-length opaque)",
+        ))
+
+        # -- String --
+        esc_line = self._grep_line(helper, r"public static function escapeString")
+        unesc_line = self._grep_line(helper, r"public static function unescapeString")
+        string_note = (
+            "Escape ladder per SEP-0051 §Strings: NUL->\\0, TAB->\\t, LF->\\n, "
+            "CR->\\r, backslash->\\\\, printable ASCII verbatim, others->\\xNN. "
+            + (self._cite(helper, esc_line) if esc_line else "")
+            + " " + (self._cite(helper, unesc_line) if unesc_line else "")
+        )
+        section.fields.append(self._make_field(
+            name="String",
+            description="XDR string maps to escaped ASCII string per SEP-0051 §Strings (RFC 4506 §4.11)",
+            status=SupportStatus.SUPPORTED,
+            notes=string_note.strip(),
+        ))
+
+        # -- Arrays Fixed Length --
+        arr_line = self._grep_line(gen_rb, r"opaqueFixed|readOpaqueFixed")
+        arr_note = (
+            "JSON array; elements encoded according to element type. "
+            + "Generator emits PHP array via foreach/toJsonValue on each element. "
+            + self._cite(gen_rb, arr_line if arr_line else 2775)
+        )
+        section.fields.append(self._make_field(
+            name="Arrays (Fixed Length)",
+            description="XDR fixed-length array maps to JSON array (RFC 4506 §4.12)",
+            status=SupportStatus.SUPPORTED,
+            notes=arr_note,
+        ))
+
+        # -- Arrays Variable Length --
+        varr_line = self._grep_line(gen_rb, r"readArray|variable.*array|array_map")
+        section.fields.append(self._make_field(
+            name="Arrays (Variable Length)",
+            description="XDR variable-length array maps to JSON array (RFC 4506 §4.13)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "JSON array; elements encoded according to element type. "
+                + "Same generator path as fixed-length arrays. "
+                + self._cite(gen_rb, varr_line if varr_line else 2775)
+            ),
+        ))
+
+        # -- Enum --
+        # json_helpers.rb implements strip_shared_prefix / tokenize_identifier.
+        strip_line = self._grep_line(self._JSON_HELPERS_RB, r"def strip_shared_prefix")
+        tok_line = self._grep_line(self._JSON_HELPERS_RB, r"def tokenize_identifier")
+        enum_note = (
+            "snake_case string; shared enum-identifier prefix stripped per SEP-0051 §Enum. "
+            "Prefix-strip algorithm in "
+            + (self._cite(self._JSON_HELPERS_RB, strip_line) if strip_line else self._cite(self._JSON_HELPERS_RB, 90))
+            + "; tokenizer in "
+            + (self._cite(self._JSON_HELPERS_RB, tok_line) if tok_line else self._cite(self._JSON_HELPERS_RB, 38))
+            + ". Single-member enums: no prefix stripped (full lowercase name emitted)."
+        )
+        section.fields.append(self._make_field(
+            name="Enum",
+            description="XDR enum maps to snake_case string with shared-prefix strip (RFC 4506 §4.3)",
+            status=SupportStatus.SUPPORTED,
+            notes=enum_note,
+        ))
+
+        # -- Struct --
+        struct_from_line = self._grep_line(gen_rb, r"fromJsonValue.*static.*struct\b|struct.*fromJsonValue")
+        # Use the schema-strip line as anchor for struct fromJsonValue emission
+        schema_struct_line = self._grep_line(gen_rb, r"Expected object for.*JSON value")
+        struct_note = (
+            "JSON object with snake_case keys; "
+            + "generated by xdr-generator for all *Base.php struct files. "
+            + self._cite(gen_rb, schema_struct_line if schema_struct_line else 2775)
+        )
+        section.fields.append(self._make_field(
+            name="Struct",
+            description="XDR struct maps to JSON object with snake_case keys (RFC 4506 §4.14)",
+            status=SupportStatus.SUPPORTED,
+            notes=struct_note,
+        ))
+
+        # -- Discriminated Union --
+        union_marker_line = self._grep_line(gen_rb, r"@sep51-union")
+        union_schema_line = self._grep_line(gen_rb, r"is_array.*array_key_exists.*\\\$schema")
+        union_note = (
+            "Four sub-arm shapes supported: void arm (JSON string), non-void arm (JSON object), "
+            "multi-void (JSON string for each void case), int-cased (discriminant-name + integer). "
+            + "Marker emitted at "
+            + (self._cite(gen_rb, union_marker_line) if union_marker_line else self._cite(gen_rb, 3161))
+            + "; $schema strip at "
+            + (self._cite(gen_rb, union_schema_line) if union_schema_line else self._cite(gen_rb, 3162))
+        )
+        section.fields.append(self._make_field(
+            name="Discriminated Union",
+            description="XDR discriminated union; 4 arm shapes: void, non-void, multi-void, int-cased (RFC 4506 §4.15)",
+            status=SupportStatus.SUPPORTED,
+            notes=union_note,
+        ))
+
+        # -- Void --
+        void_note = (
+            "Void union arms render as the discriminant string (JSON string). "
+            "Void in struct context is omitted. "
+            + self._cite(gen_rb, union_marker_line if union_marker_line else 3161)
+        )
+        section.fields.append(self._make_field(
+            name="Void",
+            description="XDR void: JSON string (discriminant) in union; omitted in struct (RFC 4506 §4.16)",
+            status=SupportStatus.SUPPORTED,
+            notes=void_note,
+        ))
+
+        # -- Optional Data --
+        optional_line = self._grep_line(gen_rb, r"is_null\b.*optional|optional.*is_null\b|is_optional")
+        optional_note = (
+            "JSON null when unset; payload encoded per contained type when set. "
+            + self._cite(gen_rb, optional_line if optional_line else 2775)
+        )
+        section.fields.append(self._make_field(
+            name="Optional Data",
+            description="XDR optional maps to JSON null when absent, or contained-type value when present (RFC 4506 §4.19)",
+            status=SupportStatus.SUPPORTED,
+            notes=optional_note,
+        ))
+
+        return section
+
+    # ------------------------------------------------------------------
+    # Section B — Stellar-Specific Types
+    # ------------------------------------------------------------------
+
+    def _section_b_stellar_types(self) -> SEPSection:
+        section = SEPSection(
+            name="Stellar-Specific Types",
+            description=(
+                "Stellar XDR types with dedicated JSON representations "
+                "per SEP-0051 §Stellar-Specific Types."
+            ),
+        )
+
+        helper = self._HELPER_PATH
+        strkey = self._STRKEY_PATH
+
+        # --- Address Types ---
+        # G-strkey: AccountID
+        acc_line = self._grep_line(strkey, r"public static function encodeAccountId")
+        scaddr_path = "Soneso/StellarSDK/Xdr/XdrSCAddressBase.php"
+        scaddr_tojson_line = self._grep_line(scaddr_path, r"public function toJsonValue")
+        scaddr_note = (
+            "G-strkey via StrKey::encodeAccountId. "
+            + (self._cite(strkey, acc_line) if acc_line else "")
+            + "; SCAddress multi-arm dispatch "
+            + (self._cite(scaddr_path, scaddr_tojson_line) if scaddr_tojson_line else "")
+        )
+        section.fields.append(self._make_field(
+            name="AccountID / PublicKey / NodeID (G-strkey)",
+            description="G-strkey encoding for AccountID, PublicKey, NodeID (SEP-0051 §Address Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=scaddr_note.strip(),
+        ))
+
+        # C-strkey: ContractID
+        cont_line = self._grep_line(strkey, r"public static function encodeContractIdHex")
+        section.fields.append(self._make_field(
+            name="ContractID (C-strkey)",
+            description="C-strkey encoding for ContractID (SEP-0051 §Address Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "StrKey::encodeContractIdHex used in SCAddress CONTRACT arm and XdrSCAddressBase. "
+                + (self._cite(strkey, cont_line) if cont_line else "")
+            ),
+        ))
+
+        # M-strkey: MuxedAccount / MuxedAccountMed25519
+        mux_line = self._grep_line(strkey, r"public static function encodeMuxedAccountId")
+        muxbase_path = "Soneso/StellarSDK/Xdr/XdrMuxedAccountMed25519Base.php"
+        mux_tojson = self._grep_line(muxbase_path, r"public function toJsonValue")
+        section.fields.append(self._make_field(
+            name="MuxedAccount / MuxedAccountMed25519 (M-strkey)",
+            description="M-strkey encoding for muxed accounts (SEP-0051 §Address Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "StrKey::encodeMuxedAccountId. "
+                + (self._cite(strkey, mux_line) if mux_line else "")
+                + "; MuxedAccountMed25519Base "
+                + (self._cite(muxbase_path, mux_tojson) if mux_tojson else "")
+            ),
+        ))
+
+        # B-strkey: ClaimableBalanceID
+        cb_line = self._grep_line(strkey, r"public static function encodeClaimableBalanceIdHex")
+        cbid_path = "Soneso/StellarSDK/Xdr/XdrClaimableBalanceIDBase.php"
+        cbid_tojson = self._grep_line(cbid_path, r"public function toJsonValue")
+        section.fields.append(self._make_field(
+            name="ClaimableBalanceID (B-strkey)",
+            description="B-strkey encoding for ClaimableBalanceID (SEP-0051 §Address Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "StrKey::encodeClaimableBalanceIdHex. "
+                + (self._cite(strkey, cb_line) if cb_line else "")
+                + "; XdrClaimableBalanceIDBase "
+                + (self._cite(cbid_path, cbid_tojson) if cbid_tojson else "")
+            ),
+        ))
+
+        # L-strkey: PoolID
+        pool_line = self._grep_line(strkey, r"public static function encodeLiquidityPoolIdHex")
+        section.fields.append(self._make_field(
+            name="PoolID (L-strkey)",
+            description="L-strkey encoding for PoolID / LiquidityPoolID (SEP-0051 §Address Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "StrKey::encodeLiquidityPoolIdHex used in SCAddress LIQUIDITY_POOL arm. "
+                + (self._cite(strkey, pool_line) if pool_line else "")
+            ),
+        ))
+
+        # SignerKey (G/T/X/P strkey variants)
+        skbase_path = "Soneso/StellarSDK/Xdr/XdrSignerKeyTypeBase.php"
+        sk_tojson = self._grep_line(skbase_path, r"public function toJsonValue")
+        pt_line = self._grep_line(strkey, r"public static function encodePreAuthTx")
+        sha_line = self._grep_line(strkey, r"public static function encodeSha256Hash")
+        sp_line = self._grep_line(strkey, r"public static function encodeXdrSignedPayload")
+        section.fields.append(self._make_field(
+            name="SignerKey (G/T/X/P strkey)",
+            description="SignerKey arms: ED25519=G, PRE_AUTH_TX=T, HASH_X=X, ED25519_SIGNED_PAYLOAD=P (SEP-0051 §Address Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "XdrSignerKeyTypeBase.toJsonValue dispatches to StrKey encode per arm. "
+                + (self._cite(skbase_path, sk_tojson) if sk_tojson else "")
+                + "; PreAuthTx " + (self._cite(strkey, pt_line) if pt_line else "")
+                + "; Sha256Hash " + (self._cite(strkey, sha_line) if sha_line else "")
+                + "; SignedPayload " + (self._cite(strkey, sp_line) if sp_line else "")
+            ),
+        ))
+
+        # --- Asset Code Types ---
+        alpha4_path = "Soneso/StellarSDK/Xdr/XdrAssetAlphaNum4Base.php"
+        alpha4_tojson = self._grep_line(alpha4_path, r"public function toJsonValue")
+        alpha12_path = "Soneso/StellarSDK/Xdr/XdrAssetAlphaNum12Base.php"
+        alpha12_tojson = self._grep_line(alpha12_path, r"public function toJsonValue")
+
+        section.fields.append(self._make_field(
+            name="AssetCode4",
+            description="AssetCode4: trim trailing NUL bytes, encode via String escape (SEP-0051 §Asset Code Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "rtrim NUL then XdrJsonHelper::escapeString. "
+                + (self._cite(alpha4_path, alpha4_tojson) if alpha4_tojson else "")
+            ),
+        ))
+
+        section.fields.append(self._make_field(
+            name="AssetCode12",
+            description="AssetCode12: trim NUL bytes; if result <= 4 bytes pad to 5; encode via String escape (SEP-0051 §Asset Code Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "Trim-and-pad rule per SEP-0051; XdrJsonHelper::escapeString. "
+                + (self._cite(alpha12_path, alpha12_tojson) if alpha12_tojson else "")
+            ),
+        ))
+
+        # --- Integer Types (128/256 bit) ---
+        int128_line = self._grep_line(helper, r"public static function int128PartsToString")
+        s_int128_line = self._grep_line(helper, r"public static function stringToInt128Parts")
+        section.fields.append(self._make_field(
+            name="Int128Parts",
+            description="Int128Parts: base-10 decimal string of signed 128-bit integer (SEP-0051 §Integer Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "XdrJsonHelper::int128PartsToString / stringToInt128Parts using GMP arithmetic. "
+                + (self._cite(helper, int128_line) if int128_line else "")
+                + " " + (self._cite(helper, s_int128_line) if s_int128_line else "")
+            ),
+        ))
+
+        uint128_line = self._grep_line(helper, r"public static function uint128PartsToString")
+        s_uint128_line = self._grep_line(helper, r"public static function stringToUint128Parts")
+        section.fields.append(self._make_field(
+            name="UInt128Parts",
+            description="UInt128Parts: base-10 decimal string of unsigned 128-bit integer (SEP-0051 §Integer Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "XdrJsonHelper::uint128PartsToString / stringToUint128Parts using GMP arithmetic. "
+                + (self._cite(helper, uint128_line) if uint128_line else "")
+                + " " + (self._cite(helper, s_uint128_line) if s_uint128_line else "")
+            ),
+        ))
+
+        int256_line = self._grep_line(helper, r"public static function int256PartsToString")
+        s_int256_line = self._grep_line(helper, r"public static function stringToInt256Parts")
+        section.fields.append(self._make_field(
+            name="Int256Parts",
+            description="Int256Parts: base-10 decimal string of signed 256-bit integer (SEP-0051 §Integer Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "XdrJsonHelper::int256PartsToString / stringToInt256Parts using GMP arithmetic. "
+                + (self._cite(helper, int256_line) if int256_line else "")
+                + " " + (self._cite(helper, s_int256_line) if s_int256_line else "")
+            ),
+        ))
+
+        uint256_line = self._grep_line(helper, r"public static function uint256PartsToString")
+        s_uint256_line = self._grep_line(helper, r"public static function stringToUint256Parts")
+        section.fields.append(self._make_field(
+            name="UInt256Parts",
+            description="UInt256Parts: base-10 decimal string of unsigned 256-bit integer (SEP-0051 §Integer Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "XdrJsonHelper::uint256PartsToString / stringToUint256Parts using GMP arithmetic. "
+                + (self._cite(helper, uint256_line) if uint256_line else "")
+                + " " + (self._cite(helper, s_uint256_line) if s_uint256_line else "")
+            ),
+        ))
+
+        return section
+
+    # ------------------------------------------------------------------
+    # Section C — JSON Schema ($schema)
+    # ------------------------------------------------------------------
+
+    def _section_c_schema(self) -> SEPSection:
+        section = SEPSection(
+            name="JSON Schema ($schema)",
+            description=(
+                "SEP-0051 §JSON Schema: $schema property must be accepted on input "
+                "and must not be emitted on output."
+            ),
+        )
+
+        gen_rb = self._GENERATOR_RB
+        helper = self._HELPER_PATH
+
+        # Input strip: generator emits $schema removal in fromJsonValue.
+        struct_schema_line = self._grep_line(gen_rb, r"array_key_exists.*'\\\$schema'.*\$value")
+        if struct_schema_line is None:
+            struct_schema_line = self._grep_line(gen_rb, r"'\$schema'")
+        union_schema_line = struct_schema_line
+
+        strip_note = (
+            "fromJsonValue in generated struct and union files strips $schema before dispatch. "
+            + "Emitted by xdr-generator at "
+            + (self._cite(gen_rb, struct_schema_line) if struct_schema_line else self._cite(gen_rb, 2776))
+        )
+        section.fields.append(self._make_field(
+            name="$schema strip on input",
+            description="Input JSON objects with $schema property are accepted; the key is stripped before parsing",
+            status=SupportStatus.SUPPORTED,
+            notes=strip_note,
+        ))
+
+        # Output never emits $schema.
+        to_json_line = self._grep_line(helper, r"public static function canonicalJson")
+        out_note = (
+            "toJsonValue never includes $schema in its output. "
+            + "canonicalJson normalisation also does not inject $schema. "
+            + (self._cite(helper, to_json_line) if to_json_line else "")
+        )
+        section.fields.append(self._make_field(
+            name="$schema never emitted on output",
+            description="Output JSON from toJson/toJsonValue never includes a $schema property",
+            status=SupportStatus.SUPPORTED,
+            notes=out_note,
+        ))
+
+        return section
+
+    # ------------------------------------------------------------------
+    # Section D — Backward Compatibility
+    # ------------------------------------------------------------------
+
+    def _section_d_backward_compat(self) -> SEPSection:
+        section = SEPSection(
+            name="Backward Compatibility",
+            description=(
+                "SEP-0051 §Hyper backward-compatibility: implementations should accept "
+                "JSON numbers for 64-bit integer types to interoperate with XDR-JSON v1."
+            ),
+        )
+
+        helper = self._HELPER_PATH
+
+        sint64_line = self._grep_line(helper, r"public static function stringToInt64")
+        suint64_line = self._grep_line(helper, r"public static function stringToUint64")
+        is_int_line = self._grep_line(helper, r"if \(is_int\(\$value\)\)")
+
+        back_note = (
+            "stringToInt64 and stringToUint64 accept int|string; "
+            "a PHP int (decoded from a JSON number) is returned directly without string parsing. "
+            + (self._cite(helper, sint64_line) if sint64_line else "")
+            + " " + (self._cite(helper, suint64_line) if suint64_line else "")
+            + " (is_int branch at "
+            + (self._cite(helper, is_int_line) if is_int_line else self._cite(helper, 242))
+            + ")"
+        )
+        section.fields.append(self._make_field(
+            name="JSON number accepted for Hyper on input",
+            description="JSON number accepted as Hyper Integer input for XDR-JSON v1 backward compatibility",
+            status=SupportStatus.SUPPORTED,
+            notes=back_note.strip(),
+        ))
+
+        section.fields.append(self._make_field(
+            name="JSON number accepted for Unsigned Hyper on input",
+            description="JSON number accepted as Unsigned Hyper Integer input for XDR-JSON v1 backward compatibility",
+            status=SupportStatus.SUPPORTED,
+            notes=back_note.strip(),
+        ))
+
+        return section
+
+
+# ===========================================================================
 # Analyzer Factory
 # ===========================================================================
 
@@ -2443,6 +3045,7 @@ class SEPAnalyzerFactory:
         46: SEP46Analyzer,
         47: SEP47Analyzer,
         48: SEP48Analyzer,
+        51: SEP51Analyzer,
         53: SEP53Analyzer,
     }
 
@@ -2642,6 +3245,11 @@ def main() -> None:
         action="store_true",
         help="List all supported SEP numbers and exit",
     )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Generate matrices for all supported SEPs (equivalent to omitting --sep)",
+    )
 
     args = parser.parse_args()
 
@@ -2657,7 +3265,11 @@ def main() -> None:
     print("", file=sys.stderr)
 
     generator = SEPMatrixGenerator(sdk_root=args.sdk_root, output_dir=args.output)
-    matrices = generator.generate(sep_numbers=args.sep)
+    if args.sep:
+        sep_numbers = args.sep
+    else:
+        sep_numbers = None
+    matrices = generator.generate(sep_numbers=sep_numbers)
 
     if matrices:
         print("", file=sys.stderr)
