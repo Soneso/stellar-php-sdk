@@ -65,25 +65,36 @@ class XdrManageDataOperationBase {
         }
         if (!is_array($value)) {
             throw new \InvalidArgumentException(
-                'Expected object for XdrManageDataOperationBase JSON value, got ' . get_debug_type($value)
+                'Expected object for XdrManageDataOperation JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('data_name', $value)) {
             throw new \InvalidArgumentException(
-                'Missing required field data_name for XdrManageDataOperationBase'
+                'Missing required field data_name for XdrManageDataOperation'
             );
         }
-        $dataName = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['data_name']);
         if (!array_key_exists('data_value', $value)) {
             throw new \InvalidArgumentException(
-                'Missing required field data_value for XdrManageDataOperationBase'
+                'Missing required field data_value for XdrManageDataOperation'
             );
         }
-        $dataValue = null;
-        if ($value['data_value'] !== null) {
-            $dataValue = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['data_value']);
+        if (!is_string($value['data_name'])) {
+            throw new \InvalidArgumentException(
+                'Expected string for data_name, got ' . get_debug_type($value['data_name'])
+            );
         }
-        return new static($dataName, $dataValue);
+        $dataName = XdrJsonHelper::unescapeString($value['data_name']);
+        $rawBytes = null;
+        if ($value['data_value'] !== null) {
+            if (!is_string($value['data_value'])) {
+                throw new \InvalidArgumentException(
+                    'Expected hex string or null for data_value, got ' . get_debug_type($value['data_value'])
+                );
+            }
+            $rawBytes = XdrJsonHelper::hexToBytes($value['data_value']);
+        }
+        // Wrapper signature: (string $key, XdrDataValue $value).
+        return new static($dataName, new XdrDataValue($rawBytes));
     }
 
     public function toJson(): string {

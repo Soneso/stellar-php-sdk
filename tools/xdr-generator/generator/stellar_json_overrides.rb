@@ -1013,6 +1013,309 @@ module StellarJsonOverrides
       end,
     },
 
+    # XdrTimeBounds — Cat-B wrapper carve-out. The wrapper's constructor
+    # signature is `(\DateTime $minTime, \DateTime $maxTime)`, while the
+    # generator's default base emission would build `new static(int, int)`
+    # from the unpacked uint64 timestamps. At runtime `new static(...)`
+    # resolves to the wrapper, so the int args trip a TypeError. This
+    # override emits SEP-51 directly on the base file: the wire form stays
+    # the canonical py-stellar-base shape (two uint64 decimal strings keyed
+    # `min_time` / `max_time` — verified at
+    # `/Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/time_bounds.py:82-95`),
+    # and the from-side constructs the wrapper with `\DateTime` instances
+    # built from the parsed integer timestamps via the `@<unix>` parse form
+    # so timezone defaults do not leak into the wrapper's stored DateTime.
+    'XdrTimeBounds' => {
+      to_value_signature: 'public function toJsonValue(): array',
+      to_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  return [
+                      'min_time' => XdrJsonHelper::uint64ToString($this->minTimestamp),
+                      'max_time' => XdrJsonHelper::uint64ToString($this->maxTimestamp),
+                  ];
+        PHP
+      end,
+      from_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  if (is_array($value) && array_key_exists('$schema', $value)) {
+                      unset($value['$schema']);
+                  }
+                  if (!is_array($value)) {
+                      throw new \\InvalidArgumentException(
+                          'Expected object for XdrTimeBounds JSON value, got ' . get_debug_type($value)
+                      );
+                  }
+                  if (!array_key_exists('min_time', $value)) {
+                      throw new \\InvalidArgumentException(
+                          'Missing required field min_time for XdrTimeBounds'
+                      );
+                  }
+                  if (!array_key_exists('max_time', $value)) {
+                      throw new \\InvalidArgumentException(
+                          'Missing required field max_time for XdrTimeBounds'
+                      );
+                  }
+                  $minRaw = $value['min_time'];
+                  $maxRaw = $value['max_time'];
+                  if (!is_string($minRaw) && !is_int($minRaw)) {
+                      throw new \\InvalidArgumentException(
+                          'Expected uint64 JSON value (string or int) for min_time, got ' . get_debug_type($minRaw)
+                      );
+                  }
+                  if (!is_string($maxRaw) && !is_int($maxRaw)) {
+                      throw new \\InvalidArgumentException(
+                          'Expected uint64 JSON value (string or int) for max_time, got ' . get_debug_type($maxRaw)
+                      );
+                  }
+                  $minTimestamp = XdrJsonHelper::stringToUint64($minRaw);
+                  $maxTimestamp = XdrJsonHelper::stringToUint64($maxRaw);
+                  // The wrapper stores DateTime objects; build them from the
+                  // unix-timestamp parse form so the wrapper's encode() path
+                  // (which reads `format('U')`) reproduces the original ints.
+                  $minDt = new \\DateTime('@' . $minTimestamp);
+                  $maxDt = new \\DateTime('@' . $maxTimestamp);
+                  return new static($minDt, $maxDt);
+        PHP
+      end,
+    },
+
+    # XdrTransaction — Cat-B wrapper carve-out. The wrapper's constructor
+    # reorders parameters and changes types vs. the generated base (`(MuxedAccount,
+    # SequenceNumber, array, ?int, ?Memo, ?Preconditions, ?TransactionExt)` vs
+    # the base's `(MuxedAccount, int fee, SequenceNumber, ...)`). At runtime
+    # `new static(sourceAccount, fee, sequenceNumber, ...)` ends up in the
+    # wrapper constructor, where the int `fee` is bound to `XdrSequenceNumber
+    # $sequenceNumber` and trips a TypeError. The override matches the wire
+    # form emitted by py-stellar-base (verified at
+    # `/Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/transaction.py:to_json_dict`)
+    # and the from-side calls the wrapper constructor through `new static(...)`
+    # using the wrapper's parameter order so the constructed instance is
+    # well-typed.
+    'XdrTransaction' => {
+      to_value_signature: 'public function toJsonValue(): array',
+      to_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  return [
+                      'source_account' => $this->sourceAccount->toJsonValue(),
+                      'fee' => $this->fee,
+                      'seq_num' => $this->sequenceNumber->toJsonValue(),
+                      'cond' => $this->preconditions->toJsonValue(),
+                      'memo' => $this->memo->toJsonValue(),
+                      'operations' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->operations),
+                      'ext' => $this->ext->toJsonValue(),
+                  ];
+        PHP
+      end,
+      from_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  if (is_array($value) && array_key_exists('$schema', $value)) {
+                      unset($value['$schema']);
+                  }
+                  if (!is_array($value)) {
+                      throw new \\InvalidArgumentException(
+                          'Expected object for XdrTransaction JSON value, got ' . get_debug_type($value)
+                      );
+                  }
+                  foreach (['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'] as $required) {
+                      if (!array_key_exists($required, $value)) {
+                          throw new \\InvalidArgumentException(
+                              'Missing required field ' . $required . ' for XdrTransaction'
+                          );
+                      }
+                  }
+                  $sourceAccount = XdrMuxedAccount::fromJsonValue($value['source_account']);
+                  if (!is_int($value['fee'])) {
+                      throw new \\InvalidArgumentException(
+                              'Expected int for fee, got ' . get_debug_type($value['fee'])
+                      );
+                  }
+                  $fee = $value['fee'];
+                  $sequenceNumber = XdrSequenceNumber::fromJsonValue($value['seq_num']);
+                  $preconditions = XdrPreconditions::fromJsonValue($value['cond']);
+                  $memo = XdrMemo::fromJsonValue($value['memo']);
+                  if (!is_array($value['operations'])) {
+                      throw new \\InvalidArgumentException(
+                          'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
+                      );
+                  }
+                  $operations = [];
+                  foreach ($value['operations'] as $item) {
+                      $operations[] = XdrOperation::fromJsonValue($item);
+                  }
+                  $ext = XdrTransactionExt::fromJsonValue($value['ext']);
+                  // Wrapper signature: (sourceAccount, sequenceNumber, operations, ?fee, ?memo, ?preconditions, ?ext).
+                  return new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext);
+        PHP
+      end,
+    },
+
+    # XdrManageDataOperation — Cat-B wrapper carve-out. The wrapper's
+    # constructor signature is `(string $key, XdrDataValue $value)` — it
+    # always wraps the second arg in `XdrDataValue` and forwards
+    # `$value->getValue()` to the base. The default base from-side decodes
+    # the data_value hex into a raw byte string and calls
+    # `new static(string, ?string)`, which at runtime hits the wrapper and
+    # trips a TypeError on the second argument. The override decodes the
+    # hex bytes (or null), wraps them in `XdrDataValue`, then calls
+    # `new static(...)` so the wrapper constructor receives the type it
+    # declares. Wire form verified against py-stellar-base
+    # (`stellar_sdk/xdr/manage_data_op.py`): keys `data_name` (escaped
+    # string) and `data_value` (hex string or null).
+    'XdrManageDataOperation' => {
+      to_value_signature: 'public function toJsonValue(): array',
+      to_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  return [
+                      'data_name' => XdrJsonHelper::escapeString($this->dataName),
+                      'data_value' => ($this->dataValue !== null ? XdrJsonHelper::bytesToHex($this->dataValue) : null),
+                  ];
+        PHP
+      end,
+      from_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  if (is_array($value) && array_key_exists('$schema', $value)) {
+                      unset($value['$schema']);
+                  }
+                  if (!is_array($value)) {
+                      throw new \\InvalidArgumentException(
+                          'Expected object for XdrManageDataOperation JSON value, got ' . get_debug_type($value)
+                      );
+                  }
+                  if (!array_key_exists('data_name', $value)) {
+                      throw new \\InvalidArgumentException(
+                          'Missing required field data_name for XdrManageDataOperation'
+                      );
+                  }
+                  if (!array_key_exists('data_value', $value)) {
+                      throw new \\InvalidArgumentException(
+                          'Missing required field data_value for XdrManageDataOperation'
+                      );
+                  }
+                  if (!is_string($value['data_name'])) {
+                      throw new \\InvalidArgumentException(
+                          'Expected string for data_name, got ' . get_debug_type($value['data_name'])
+                      );
+                  }
+                  $dataName = XdrJsonHelper::unescapeString($value['data_name']);
+                  $rawBytes = null;
+                  if ($value['data_value'] !== null) {
+                      if (!is_string($value['data_value'])) {
+                          throw new \\InvalidArgumentException(
+                              'Expected hex string or null for data_value, got ' . get_debug_type($value['data_value'])
+                          );
+                      }
+                      $rawBytes = XdrJsonHelper::hexToBytes($value['data_value']);
+                  }
+                  // Wrapper signature: (string $key, XdrDataValue $value).
+                  return new static($dataName, new XdrDataValue($rawBytes));
+        PHP
+      end,
+    },
+
+    # XdrHostFunction — Cat-B wrapper carve-out for the `wasm` arm. The
+    # wrapper's `decode()` path stores `$result->wasm = XdrDataValueMandatory::decode(...)`
+    # — i.e. an `XdrDataValueMandatory` object — while the base's default
+    # emission feeds `$this->wasm` directly into `XdrJsonHelper::bytesToHex`,
+    # which expects raw bytes. The from-side analogously needs to wrap the
+    # decoded bytes in `XdrDataValueMandatory` before storing on the
+    # property (the property is typed `?XdrDataValueMandatory`). All other
+    # arms (invoke_contract / create_contract / create_contract_v2)
+    # delegate to inner struct toJsonValue/fromJsonValue exactly as the
+    # default emission would; we keep the same single-key object wire
+    # shape py-stellar-base produces (verified at
+    # `/Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/host_function.py:to_json_dict`).
+    'XdrHostFunction' => {
+      to_value_signature: 'public function toJsonValue(): mixed',
+      to_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  switch ($this->type->getValue()) {
+                      case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+                          if ($this->invokeContract === null) {
+                              throw new \\InvalidArgumentException(
+                                  'XdrHostFunction invokeContract field is null'
+                              );
+                          }
+                          return ['invoke_contract' => $this->invokeContract->toJsonValue()];
+                      case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+                          if ($this->createContract === null) {
+                              throw new \\InvalidArgumentException(
+                                  'XdrHostFunction createContract field is null'
+                              );
+                          }
+                          return ['create_contract' => $this->createContract->toJsonValue()];
+                      case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+                          if ($this->wasm === null) {
+                              throw new \\InvalidArgumentException(
+                                  'XdrHostFunction wasm field is null'
+                              );
+                          }
+                          // Wrapper stores `$wasm` as XdrDataValueMandatory; unwrap to bytes.
+                          return ['upload_contract_wasm' => XdrJsonHelper::bytesToHex($this->wasm->getValue())];
+                      case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                          if ($this->createContractV2 === null) {
+                              throw new \\InvalidArgumentException(
+                                  'XdrHostFunction createContractV2 field is null'
+                              );
+                          }
+                          return ['create_contract_v2' => $this->createContractV2->toJsonValue()];
+                      // @codeCoverageIgnoreStart
+                      default:
+                          throw new \\InvalidArgumentException(
+                              'Unknown discriminant for type on XdrHostFunctionType'
+                          );
+                      // @codeCoverageIgnoreEnd
+                  }
+        PHP
+      end,
+      from_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  if (is_array($value) && array_key_exists('$schema', $value)) {
+                      unset($value['$schema']);
+                  }
+                  if (!is_array($value) || count($value) !== 1) {
+                      throw new \\InvalidArgumentException(
+                          'Expected single-key object for XdrHostFunction, got ' . get_debug_type($value)
+                      );
+                  }
+                  $key = array_key_first($value);
+                  if (!is_string($key)) {
+                      throw new \\InvalidArgumentException(
+                          'Expected string arm key for XdrHostFunction, got ' . get_debug_type($key)
+                      );
+                  }
+                  $arm = $value[$key];
+                  switch ($key) {
+                      case 'invoke_contract':
+                          $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT));
+                          $r->invokeContract = XdrInvokeContractArgs::fromJsonValue($arm);
+                          return $r;
+                      case 'create_contract':
+                          $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT));
+                          $r->createContract = XdrCreateContractArgs::fromJsonValue($arm);
+                          return $r;
+                      case 'upload_contract_wasm':
+                          if (!is_string($arm)) {
+                              throw new \\InvalidArgumentException(
+                                  'Expected hex string for upload_contract_wasm arm, got ' . get_debug_type($arm)
+                              );
+                          }
+                          $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM));
+                          // Wrapper property is typed `?XdrDataValueMandatory`; wrap the decoded bytes.
+                          $r->wasm = new XdrDataValueMandatory(XdrJsonHelper::hexToBytes($arm));
+                          return $r;
+                      case 'create_contract_v2':
+                          $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2));
+                          $r->createContractV2 = XdrCreateContractArgsV2::fromJsonValue($arm);
+                          return $r;
+                      default:
+                          throw new \\InvalidArgumentException(
+                              'Unknown arm key for XdrHostFunction: ' . XdrJsonHelper::safePreview($key)
+                          );
+                  }
+        PHP
+      end,
+    },
+
     # XdrMuxedAccountMed25519 — standalone M-strkey over the 40-byte
     'XdrMuxedAccountMed25519' => {
       to_value_signature: 'public function toJsonValue(): string',

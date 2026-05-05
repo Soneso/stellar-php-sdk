@@ -57,22 +57,39 @@ class XdrTimeBoundsBase {
         }
         if (!is_array($value)) {
             throw new \InvalidArgumentException(
-                'Expected object for XdrTimeBoundsBase JSON value, got ' . get_debug_type($value)
+                'Expected object for XdrTimeBounds JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('min_time', $value)) {
             throw new \InvalidArgumentException(
-                'Missing required field min_time for XdrTimeBoundsBase'
+                'Missing required field min_time for XdrTimeBounds'
             );
         }
-        $minTimestamp = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['min_time']);
         if (!array_key_exists('max_time', $value)) {
             throw new \InvalidArgumentException(
-                'Missing required field max_time for XdrTimeBoundsBase'
+                'Missing required field max_time for XdrTimeBounds'
             );
         }
-        $maxTimestamp = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['max_time']);
-        return new static($minTimestamp, $maxTimestamp);
+        $minRaw = $value['min_time'];
+        $maxRaw = $value['max_time'];
+        if (!is_string($minRaw) && !is_int($minRaw)) {
+            throw new \InvalidArgumentException(
+                'Expected uint64 JSON value (string or int) for min_time, got ' . get_debug_type($minRaw)
+            );
+        }
+        if (!is_string($maxRaw) && !is_int($maxRaw)) {
+            throw new \InvalidArgumentException(
+                'Expected uint64 JSON value (string or int) for max_time, got ' . get_debug_type($maxRaw)
+            );
+        }
+        $minTimestamp = XdrJsonHelper::stringToUint64($minRaw);
+        $maxTimestamp = XdrJsonHelper::stringToUint64($maxRaw);
+        // The wrapper stores DateTime objects; build them from the
+        // unix-timestamp parse form so the wrapper's encode() path
+        // (which reads `format('U')`) reproduces the original ints.
+        $minDt = new \DateTime('@' . $minTimestamp);
+        $maxDt = new \DateTime('@' . $maxTimestamp);
+        return new static($minDt, $maxDt);
     }
 
     public function toJson(): string {

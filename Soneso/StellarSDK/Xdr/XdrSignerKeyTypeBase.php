@@ -48,6 +48,7 @@ class XdrSignerKeyTypeBase {
             case 1:
             case 2:
             case 3:
+            case 256:
                 return new static($value);
             default:
                 throw new \InvalidArgumentException("Unknown enum value: $value");

@@ -85,45 +85,89 @@ class XdrHostFunctionBase {
     }
 
     public function toJsonValue(): mixed {
-        return match ($this->type->getValue()) {
-            XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT => ['invoke_contract' => $this->invokeContract->toJsonValue()],
-            XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT => ['create_contract' => $this->createContract->toJsonValue()],
-            XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM => ['upload_contract_wasm' => XdrJsonHelper::bytesToHex($this->wasm)],
-            XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 => ['create_contract_v2' => $this->createContractV2->toJsonValue()],
+        switch ($this->type->getValue()) {
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+                if ($this->invokeContract === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrHostFunction invokeContract field is null'
+                    );
+                }
+                return ['invoke_contract' => $this->invokeContract->toJsonValue()];
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+                if ($this->createContract === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrHostFunction createContract field is null'
+                    );
+                }
+                return ['create_contract' => $this->createContract->toJsonValue()];
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+                if ($this->wasm === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrHostFunction wasm field is null'
+                    );
+                }
+                // Wrapper stores `$wasm` as XdrDataValueMandatory; unwrap to bytes.
+                return ['upload_contract_wasm' => XdrJsonHelper::bytesToHex($this->wasm->getValue())];
+            case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+                if ($this->createContractV2 === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrHostFunction createContractV2 field is null'
+                    );
+                }
+                return ['create_contract_v2' => $this->createContractV2->toJsonValue()];
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
-                'Unknown discriminant for type on XdrHostFunctionType'
-            ),
+            default:
+                throw new \InvalidArgumentException(
+                    'Unknown discriminant for type on XdrHostFunctionType'
+                );
             // @codeCoverageIgnoreEnd
-        };
+        }
     }
 
     public static function fromJsonValue(mixed $value): static {
-        // @sep51-union XdrHostFunctionBase shape=non_void
         if (is_array($value) && array_key_exists('$schema', $value)) {
             unset($value['$schema']);
         }
         if (!is_array($value) || count($value) !== 1) {
             throw new \InvalidArgumentException(
-                'Expected single-key object for XdrHostFunctionBase, got ' . get_debug_type($value)
+                'Expected single-key object for XdrHostFunction, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
             throw new \InvalidArgumentException(
-                'Expected string arm key for XdrHostFunctionBase, got ' . get_debug_type($key)
+                'Expected string arm key for XdrHostFunction, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
-        return match ($key) {
-            'invoke_contract' => (static function () use ($arm) { $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT)); $r->invokeContract = XdrInvokeContractArgs::fromJsonValue($arm); return $r; })(),
-            'create_contract' => (static function () use ($arm) { $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT)); $r->createContract = XdrCreateContractArgs::fromJsonValue($arm); return $r; })(),
-            'upload_contract_wasm' => (static function () use ($arm) { $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM)); $r->wasm = XdrJsonHelper::hexToBytes((string) $arm); return $r; })(),
-            'create_contract_v2' => (static function () use ($arm) { $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2)); $r->createContractV2 = XdrCreateContractArgsV2::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
-                'Unknown arm key for XdrHostFunctionBase: ' . XdrJsonHelper::safePreview($key)
-            ),
-        };
+        switch ($key) {
+            case 'invoke_contract':
+                $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT));
+                $r->invokeContract = XdrInvokeContractArgs::fromJsonValue($arm);
+                return $r;
+            case 'create_contract':
+                $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT));
+                $r->createContract = XdrCreateContractArgs::fromJsonValue($arm);
+                return $r;
+            case 'upload_contract_wasm':
+                if (!is_string($arm)) {
+                    throw new \InvalidArgumentException(
+                        'Expected hex string for upload_contract_wasm arm, got ' . get_debug_type($arm)
+                    );
+                }
+                $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM));
+                // Wrapper property is typed `?XdrDataValueMandatory`; wrap the decoded bytes.
+                $r->wasm = new XdrDataValueMandatory(XdrJsonHelper::hexToBytes($arm));
+                return $r;
+            case 'create_contract_v2':
+                $r = new static(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2));
+                $r->createContractV2 = XdrCreateContractArgsV2::fromJsonValue($arm);
+                return $r;
+            default:
+                throw new \InvalidArgumentException(
+                    'Unknown arm key for XdrHostFunction: ' . XdrJsonHelper::safePreview($key)
+                );
+        }
     }
 
     public function toJson(): string {

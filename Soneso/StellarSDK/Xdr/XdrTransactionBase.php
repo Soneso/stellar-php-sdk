@@ -100,59 +100,38 @@ class XdrTransactionBase {
         }
         if (!is_array($value)) {
             throw new \InvalidArgumentException(
-                'Expected object for XdrTransactionBase JSON value, got ' . get_debug_type($value)
+                'Expected object for XdrTransaction JSON value, got ' . get_debug_type($value)
             );
         }
-        if (!array_key_exists('source_account', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field source_account for XdrTransactionBase'
-            );
+        foreach (['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'] as $required) {
+            if (!array_key_exists($required, $value)) {
+                throw new \InvalidArgumentException(
+                    'Missing required field ' . $required . ' for XdrTransaction'
+                );
+            }
         }
         $sourceAccount = XdrMuxedAccount::fromJsonValue($value['source_account']);
-        if (!array_key_exists('fee', $value)) {
+        if (!is_int($value['fee'])) {
             throw new \InvalidArgumentException(
-                'Missing required field fee for XdrTransactionBase'
+                    'Expected int for fee, got ' . get_debug_type($value['fee'])
             );
         }
-        $fee = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fee']);
-        if (!array_key_exists('seq_num', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field seq_num for XdrTransactionBase'
-            );
-        }
+        $fee = $value['fee'];
         $sequenceNumber = XdrSequenceNumber::fromJsonValue($value['seq_num']);
-        if (!array_key_exists('cond', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field cond for XdrTransactionBase'
-            );
-        }
         $preconditions = XdrPreconditions::fromJsonValue($value['cond']);
-        if (!array_key_exists('memo', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field memo for XdrTransactionBase'
-            );
-        }
         $memo = XdrMemo::fromJsonValue($value['memo']);
-        if (!array_key_exists('operations', $value)) {
+        if (!is_array($value['operations'])) {
             throw new \InvalidArgumentException(
-                'Missing required field operations for XdrTransactionBase'
+                'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
             );
         }
-        $operations = (static function ($v) {
-            if (!is_array($v)) {
-                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
-            }
-            $out = [];
-            foreach ($v as $item) { $out[] = XdrOperation::fromJsonValue($item); }
-            return $out;
-        })($value['operations']);
-        if (!array_key_exists('ext', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field ext for XdrTransactionBase'
-            );
+        $operations = [];
+        foreach ($value['operations'] as $item) {
+            $operations[] = XdrOperation::fromJsonValue($item);
         }
         $ext = XdrTransactionExt::fromJsonValue($value['ext']);
-        return new static($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
+        // Wrapper signature: (sourceAccount, sequenceNumber, operations, ?fee, ?memo, ?preconditions, ?ext).
+        return new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext);
     }
 
     public function toJson(): string {

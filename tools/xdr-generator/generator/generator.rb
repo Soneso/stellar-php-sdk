@@ -161,6 +161,14 @@ class Generator < Xdrgen::Generators::Base
     enum_defn.members.each do |m|
       out.puts "            case #{m.value}:"
     end
+    # EXTRA_ENUM_VALUES: wrapper-introduced sentinels the base must accept
+    # at the XDR decode boundary. See member_overrides.rb for rationale.
+    extras = EXTRA_ENUM_VALUES[php_name]
+    if extras
+      extras.each do |extra_value|
+        out.puts "            case #{extra_value}:"
+      end
+    end
     out.puts "                return #{new_call}($value);"
     out.puts "            default:"
     out.puts "                throw new \\InvalidArgumentException(\"Unknown enum value: $value\");"
