@@ -60,4 +60,41 @@ class XdrAccountMergeOperation
         $destination = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix) ?? '');
         return new XdrAccountMergeOperation($destination);
     }
+
+    public function toBase64Xdr(): string {
+        return base64_encode($this->encode());
+    }
+
+    public static function fromBase64Xdr(string $xdr): static {
+        $decoded = base64_decode($xdr, true);
+        if ($decoded === false) {
+            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+        }
+        return static::decode(new XdrBuffer($decoded));
+    }
+
+    /**
+     * SEP-51 wire form delegates fully to XdrMuxedAccount with no envelope.
+     */
+    public function toJsonValue(): mixed {
+        return $this->destination->toJsonValue();
+    }
+
+    /**
+     * SEP-51 wire form delegates fully to XdrMuxedAccount with no envelope.
+     */
+    public static function fromJsonValue(mixed $value): static {
+        return new static(XdrMuxedAccount::fromJsonValue($value));
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

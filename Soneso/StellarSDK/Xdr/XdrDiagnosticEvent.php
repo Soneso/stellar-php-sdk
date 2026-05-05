@@ -43,4 +43,46 @@ class XdrDiagnosticEvent {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'in_successful_contract_call' => $this->inSuccessfulContractCall,
+            'event' => $this->event->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrDiagnosticEvent JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('in_successful_contract_call', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field in_successful_contract_call for XdrDiagnosticEvent'
+            );
+        }
+        $inSuccessfulContractCall = (static function ($v) { if (!is_bool($v)) { throw new \InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })($value['in_successful_contract_call']);
+        if (!array_key_exists('event', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field event for XdrDiagnosticEvent'
+            );
+        }
+        $event = XdrContractEvent::fromJsonValue($value['event']);
+        return new static($inSuccessfulContractCall, $event);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

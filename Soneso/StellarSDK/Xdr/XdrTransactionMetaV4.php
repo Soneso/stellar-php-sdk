@@ -121,4 +121,119 @@ class XdrTransactionMetaV4 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => $this->ext->toJsonValue(),
+            'tx_changes_before' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->txChangesBefore),
+            'operations' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->operations),
+            'tx_changes_after' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->txChangesAfter),
+            'soroban_meta' => ($this->sorobanMeta !== null ? $this->sorobanMeta->toJsonValue() : null),
+            'events' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->events),
+            'diagnostic_events' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->diagnosticEvents),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrTransactionMetaV4 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrTransactionMetaV4'
+            );
+        }
+        $ext = XdrExtensionPoint::fromJsonValue($value['ext']);
+        if (!array_key_exists('tx_changes_before', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field tx_changes_before for XdrTransactionMetaV4'
+            );
+        }
+        $txChangesBefore = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrLedgerEntryChange::fromJsonValue($item); }
+            return $out;
+        })($value['tx_changes_before']);
+        if (!array_key_exists('operations', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field operations for XdrTransactionMetaV4'
+            );
+        }
+        $operations = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrOperationMetaV2::fromJsonValue($item); }
+            return $out;
+        })($value['operations']);
+        if (!array_key_exists('tx_changes_after', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field tx_changes_after for XdrTransactionMetaV4'
+            );
+        }
+        $txChangesAfter = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrLedgerEntryChange::fromJsonValue($item); }
+            return $out;
+        })($value['tx_changes_after']);
+        if (!array_key_exists('soroban_meta', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field soroban_meta for XdrTransactionMetaV4'
+            );
+        }
+        $sorobanMeta = null;
+        if ($value['soroban_meta'] !== null) {
+            $sorobanMeta = XdrSorobanTransactionMetaV2::fromJsonValue($value['soroban_meta']);
+        }
+        if (!array_key_exists('events', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field events for XdrTransactionMetaV4'
+            );
+        }
+        $events = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrTransactionEvent::fromJsonValue($item); }
+            return $out;
+        })($value['events']);
+        if (!array_key_exists('diagnostic_events', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field diagnostic_events for XdrTransactionMetaV4'
+            );
+        }
+        $diagnosticEvents = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrDiagnosticEvent::fromJsonValue($item); }
+            return $out;
+        })($value['diagnostic_events']);
+        return new static($ext, $txChangesBefore, $operations, $txChangesAfter, $events, $diagnosticEvents, $sorobanMeta);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

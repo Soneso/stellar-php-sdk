@@ -56,6 +56,62 @@ class XdrFeeBumpTransaction {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'fee_source' => $this->feeSource->toJsonValue(),
+            'fee' => XdrJsonHelper::int64ToString($this->fee),
+            'inner_tx' => $this->innerTx->toJsonValue(),
+            'ext' => $this->ext->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrFeeBumpTransaction JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('fee_source', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field fee_source for XdrFeeBumpTransaction'
+            );
+        }
+        $feeSource = XdrMuxedAccount::fromJsonValue($value['fee_source']);
+        if (!array_key_exists('fee', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field fee for XdrFeeBumpTransaction'
+            );
+        }
+        $fee = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee']);
+        if (!array_key_exists('inner_tx', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field inner_tx for XdrFeeBumpTransaction'
+            );
+        }
+        $innerTx = XdrFeeBumpTransactionInnerTx::fromJsonValue($value['inner_tx']);
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrFeeBumpTransaction'
+            );
+        }
+        $ext = XdrFeeBumpTransactionExt::fromJsonValue($value['ext']);
+        return new static($feeSource, $fee, $innerTx, $ext);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.feeSource'] = TxRepHelper::formatMuxedAccount($this->feeSource);
         $lines[$prefix . '.fee'] = (string)$this->fee;

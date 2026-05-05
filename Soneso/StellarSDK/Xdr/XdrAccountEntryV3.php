@@ -49,4 +49,53 @@ class XdrAccountEntryV3 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => $this->ext->toJsonValue(),
+            'seq_ledger' => $this->seqLedger,
+            'seq_time' => XdrJsonHelper::uint64ToString($this->seqTime),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrAccountEntryV3 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrAccountEntryV3'
+            );
+        }
+        $ext = XdrExtensionPoint::fromJsonValue($value['ext']);
+        if (!array_key_exists('seq_ledger', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field seq_ledger for XdrAccountEntryV3'
+            );
+        }
+        $seqLedger = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['seq_ledger']);
+        if (!array_key_exists('seq_time', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field seq_time for XdrAccountEntryV3'
+            );
+        }
+        $seqTime = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['seq_time']);
+        return new static($ext, $seqLedger, $seqTime);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

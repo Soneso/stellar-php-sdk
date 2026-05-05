@@ -18,7 +18,6 @@
 ^Soneso/StellarSDK/Xdr/XdrBucketEntry\.php$
 ^Soneso/StellarSDK/Xdr/XdrBucketMetadataExt\.php$
 ^Soneso/StellarSDK/Xdr/XdrBucketMetadata\.php$
-^Soneso/StellarSDK/Xdr/XdrBuffer\.php$
 ^Soneso/StellarSDK/Xdr/XdrBumpSequenceOperation\.php$
 ^Soneso/StellarSDK/Xdr/XdrBumpSequenceResult\.php$
 ^Soneso/StellarSDK/Xdr/XdrChangeTrustResult\.php$
@@ -75,12 +74,10 @@
 ^Soneso/StellarSDK/Xdr/XdrDataEntryExt\.php$
 ^Soneso/StellarSDK/Xdr/XdrDataEntry\.php$
 ^Soneso/StellarSDK/Xdr/XdrDataValueMandatory\.php$
-^Soneso/StellarSDK/Xdr/XdrDecoder\.php$
 ^Soneso/StellarSDK/Xdr/XdrDependentTxCluster\.php$
 ^Soneso/StellarSDK/Xdr/XdrDiagnosticEvent\.php$
 ^Soneso/StellarSDK/Xdr/XdrDontHave\.php$
 ^Soneso/StellarSDK/Xdr/XdrEncodedLedgerKey\.php$
-^Soneso/StellarSDK/Xdr/XdrEncoder\.php$
 ^Soneso/StellarSDK/Xdr/XdrEncryptedBody\.php$
 ^Soneso/StellarSDK/Xdr/XdrEndSponsoringFutureReservesResult\.php$
 ^Soneso/StellarSDK/Xdr/XdrError\.php$
@@ -264,7 +261,6 @@
 ^Soneso/StellarSDK/Xdr/XdrSurveyResponseBody\.php$
 ^Soneso/StellarSDK/Xdr/XdrSurveyResponseMessage\.php$
 ^Soneso/StellarSDK/Xdr/XdrTTLEntry\.php$
-^Soneso/StellarSDK/Xdr/XdrThresholds\.php$
 ^Soneso/StellarSDK/Xdr/XdrTimeSlicedNodeData\.php$
 ^Soneso/StellarSDK/Xdr/XdrTimeSlicedPeerDataList\.php$
 ^Soneso/StellarSDK/Xdr/XdrTimeSlicedPeerData\.php$

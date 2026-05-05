@@ -43,4 +43,46 @@ class XdrTimeSlicedSurveyResponseMessage {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'response' => $this->response->toJsonValue(),
+            'nonce' => $this->nonce,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrTimeSlicedSurveyResponseMessage JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('response', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field response for XdrTimeSlicedSurveyResponseMessage'
+            );
+        }
+        $response = XdrSurveyResponseMessage::fromJsonValue($value['response']);
+        if (!array_key_exists('nonce', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field nonce for XdrTimeSlicedSurveyResponseMessage'
+            );
+        }
+        $nonce = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['nonce']);
+        return new static($response, $nonce);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

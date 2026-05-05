@@ -55,4 +55,60 @@ class XdrConfigSettingContractComputeV0 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'ledger_max_instructions' => XdrJsonHelper::int64ToString($this->ledgerMaxInstructions),
+            'tx_max_instructions' => XdrJsonHelper::int64ToString($this->txMaxInstructions),
+            'fee_rate_per_instructions_increment' => XdrJsonHelper::int64ToString($this->feeRatePerInstructionsIncrement),
+            'tx_memory_limit' => $this->txMemoryLimit,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrConfigSettingContractComputeV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ledger_max_instructions', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ledger_max_instructions for XdrConfigSettingContractComputeV0'
+            );
+        }
+        $ledgerMaxInstructions = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['ledger_max_instructions']);
+        if (!array_key_exists('tx_max_instructions', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field tx_max_instructions for XdrConfigSettingContractComputeV0'
+            );
+        }
+        $txMaxInstructions = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['tx_max_instructions']);
+        if (!array_key_exists('fee_rate_per_instructions_increment', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field fee_rate_per_instructions_increment for XdrConfigSettingContractComputeV0'
+            );
+        }
+        $feeRatePerInstructionsIncrement = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee_rate_per_instructions_increment']);
+        if (!array_key_exists('tx_memory_limit', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field tx_memory_limit for XdrConfigSettingContractComputeV0'
+            );
+        }
+        $txMemoryLimit = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['tx_memory_limit']);
+        return new static($ledgerMaxInstructions, $txMaxInstructions, $feeRatePerInstructionsIncrement, $txMemoryLimit);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

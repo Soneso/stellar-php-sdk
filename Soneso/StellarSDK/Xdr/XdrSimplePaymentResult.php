@@ -51,4 +51,53 @@ class XdrSimplePaymentResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'destination' => $this->destination->toJsonValue(),
+            'asset' => $this->asset->toJsonValue(),
+            'amount' => $this->amount->toString(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSimplePaymentResult JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('destination', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field destination for XdrSimplePaymentResult'
+            );
+        }
+        $destination = XdrAccountID::fromJsonValue($value['destination']);
+        if (!array_key_exists('asset', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset for XdrSimplePaymentResult'
+            );
+        }
+        $asset = XdrAsset::fromJsonValue($value['asset']);
+        if (!array_key_exists('amount', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field amount for XdrSimplePaymentResult'
+            );
+        }
+        $amount = new BigInteger(is_string($value['amount']) ? $value['amount'] : (string) (int) $value['amount']);
+        return new static($destination, $asset, $amount);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

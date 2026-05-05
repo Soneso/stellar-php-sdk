@@ -45,4 +45,46 @@ class XdrSCSpecTypeTuple {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'value_types' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->valueTypes),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCSpecTypeTuple JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('value_types', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field value_types for XdrSCSpecTypeTuple'
+            );
+        }
+        $valueTypes = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCSpecTypeDef::fromJsonValue($item); }
+            return $out;
+        })($value['value_types']);
+        return new static($valueTypes);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

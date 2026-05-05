@@ -61,4 +61,52 @@ class XdrManageDataResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->code->getValue()) {
+            XdrManageDataResultCode::SUCCESS => 'success',
+            XdrManageDataResultCode::NOT_SUPPORTED_YET => 'not_supported_yet',
+            XdrManageDataResultCode::NAME_NOT_FOUND => 'name_not_found',
+            XdrManageDataResultCode::LOW_RESERVE => 'low_reserve',
+            XdrManageDataResultCode::INVALID_NAME => 'invalid_name',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for code on XdrManageDataResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrManageDataResult shape=void_only
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrManageDataResultCode(XdrManageDataResultCode::SUCCESS)),
+                'not_supported_yet' => new static(new XdrManageDataResultCode(XdrManageDataResultCode::NOT_SUPPORTED_YET)),
+                'name_not_found' => new static(new XdrManageDataResultCode(XdrManageDataResultCode::NAME_NOT_FOUND)),
+                'low_reserve' => new static(new XdrManageDataResultCode(XdrManageDataResultCode::LOW_RESERVE)),
+                'invalid_name' => new static(new XdrManageDataResultCode(XdrManageDataResultCode::INVALID_NAME)),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrManageDataResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new \InvalidArgumentException(
+            'Expected void-arm string for XdrManageDataResult, got ' . get_debug_type($value)
+        );
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

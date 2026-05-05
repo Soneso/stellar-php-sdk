@@ -49,4 +49,53 @@ class XdrSCPStatement {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'node_id' => $this->nodeID->toJsonValue(),
+            'slot_index' => XdrJsonHelper::uint64ToString($this->slotIndex),
+            'pledges' => $this->pledges->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCPStatement JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('node_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field node_id for XdrSCPStatement'
+            );
+        }
+        $nodeID = XdrNodeID::fromJsonValue($value['node_id']);
+        if (!array_key_exists('slot_index', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field slot_index for XdrSCPStatement'
+            );
+        }
+        $slotIndex = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['slot_index']);
+        if (!array_key_exists('pledges', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field pledges for XdrSCPStatement'
+            );
+        }
+        $pledges = XdrSCPStatementPledges::fromJsonValue($value['pledges']);
+        return new static($nodeID, $slotIndex, $pledges);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

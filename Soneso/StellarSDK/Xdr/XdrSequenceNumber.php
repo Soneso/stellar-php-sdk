@@ -35,6 +35,25 @@ class XdrSequenceNumber {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): mixed {
+        return $this->sequenceNumber->toString();
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        return new static((static function ($v) { if (is_int($v)) { return new BigInteger((string) $v); } if (!is_string($v)) { throw new \InvalidArgumentException('Expected base-10 integer string for BigInteger JSON value, got ' . get_debug_type($v)); } XdrJsonHelper::stringToInt64($v); return new BigInteger($v); })($value));
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix] = $this->sequenceNumber->toString();
     }

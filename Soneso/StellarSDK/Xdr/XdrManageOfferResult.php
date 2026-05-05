@@ -82,4 +82,85 @@ class XdrManageOfferResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->code->getValue()) {
+            XdrManageOfferResultCode::SUCCESS => ['success' => $this->success->toJsonValue()],
+            XdrManageOfferResultCode::MALFORMED => 'malformed',
+            XdrManageOfferResultCode::SELL_NO_TRUST => 'sell_no_trust',
+            XdrManageOfferResultCode::BUY_NO_TRUST => 'buy_no_trust',
+            XdrManageOfferResultCode::SELL_NOT_AUTHORIZED => 'sell_not_authorized',
+            XdrManageOfferResultCode::BUY_NOT_AUTHORIZED => 'buy_not_authorized',
+            XdrManageOfferResultCode::LINE_FULL => 'line_full',
+            XdrManageOfferResultCode::UNDERFUNDED => 'underfunded',
+            XdrManageOfferResultCode::CROSS_SELF => 'cross_self',
+            XdrManageOfferResultCode::SELL_NO_ISSUER => 'sell_no_issuer',
+            XdrManageOfferResultCode::BUY_NO_ISSUER => 'buy_no_issuer',
+            XdrManageOfferResultCode::NOT_FOUND => 'not_found',
+            XdrManageOfferResultCode::LOW_RESERVE => 'low_reserve',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for code on XdrManageOfferResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrManageOfferResult shape=mixed
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'malformed' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)),
+                'sell_no_trust' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_TRUST)),
+                'buy_no_trust' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_TRUST)),
+                'sell_not_authorized' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NOT_AUTHORIZED)),
+                'buy_not_authorized' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NOT_AUTHORIZED)),
+                'line_full' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::LINE_FULL)),
+                'underfunded' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::UNDERFUNDED)),
+                'cross_self' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::CROSS_SELF)),
+                'sell_no_issuer' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_ISSUER)),
+                'buy_no_issuer' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_ISSUER)),
+                'not_found' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::NOT_FOUND)),
+                'low_reserve' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::LOW_RESERVE)),
+                'success' => throw new \InvalidArgumentException(
+                    "Arm 'success' on XdrManageOfferResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
+                ),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrManageOfferResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrManageOfferResult, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrManageOfferResult, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'success' => (static function () use ($arm) { $r = new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::SUCCESS)); $r->success = XdrManageOfferSuccessResult::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrManageOfferResult: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

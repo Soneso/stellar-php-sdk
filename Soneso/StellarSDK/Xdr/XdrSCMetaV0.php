@@ -43,4 +43,52 @@ class XdrSCMetaV0 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'key' => XdrJsonHelper::escapeString($this->key),
+            'val' => XdrJsonHelper::escapeString($this->value),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCMetaV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('key', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field key for XdrSCMetaV0'
+            );
+        }
+        if (!is_string($value['key'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['key']));
+        }
+        $key = XdrJsonHelper::unescapeString($value['key']);
+        if (!array_key_exists('val', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field val for XdrSCMetaV0'
+            );
+        }
+        if (!is_string($value['val'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['val']));
+        }
+        $value = XdrJsonHelper::unescapeString($value['val']);
+        return new static($key, $value);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

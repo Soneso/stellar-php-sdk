@@ -61,4 +61,52 @@ class XdrClawbackResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrClawbackResultCode::SUCCESS => 'success',
+            XdrClawbackResultCode::MALFORMED => 'malformed',
+            XdrClawbackResultCode::NOT_ENABLED => 'not_clawback_enabled',
+            XdrClawbackResultCode::NO_TRUST => 'no_trust',
+            XdrClawbackResultCode::UNDERFUNDED => 'underfunded',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrClawbackResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrClawbackResult shape=void_only
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrClawbackResultCode(XdrClawbackResultCode::SUCCESS)),
+                'malformed' => new static(new XdrClawbackResultCode(XdrClawbackResultCode::MALFORMED)),
+                'not_clawback_enabled' => new static(new XdrClawbackResultCode(XdrClawbackResultCode::NOT_ENABLED)),
+                'no_trust' => new static(new XdrClawbackResultCode(XdrClawbackResultCode::NO_TRUST)),
+                'underfunded' => new static(new XdrClawbackResultCode(XdrClawbackResultCode::UNDERFUNDED)),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrClawbackResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new \InvalidArgumentException(
+            'Expected void-arm string for XdrClawbackResult, got ' . get_debug_type($value)
+        );
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

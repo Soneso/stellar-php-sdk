@@ -44,6 +44,48 @@ class XdrPrice {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'n' => $this->n,
+            'd' => $this->d,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrPrice JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('n', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field n for XdrPrice'
+            );
+        }
+        $n = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n']);
+        if (!array_key_exists('d', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field d for XdrPrice'
+            );
+        }
+        $d = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['d']);
+        return new static($n, $d);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.n'] = (string)$this->n;
         $lines[$prefix . '.d'] = (string)$this->d;

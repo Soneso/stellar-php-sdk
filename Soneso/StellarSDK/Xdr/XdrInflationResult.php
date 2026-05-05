@@ -68,4 +68,63 @@ class XdrInflationResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->code->getValue()) {
+            XdrInflationResultCode::SUCCESS => ['success' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->payouts)],
+            XdrInflationResultCode::NOT_TIME => 'not_time',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for code on XdrInflationResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrInflationResult shape=mixed
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'not_time' => new static(new XdrInflationResultCode(XdrInflationResultCode::NOT_TIME)),
+                'success' => throw new \InvalidArgumentException(
+                    "Arm 'success' on XdrInflationResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
+                ),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrInflationResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrInflationResult, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrInflationResult, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'success' => (static function () use ($arm) { $r = new static(new XdrInflationResultCode(XdrInflationResultCode::SUCCESS)); $r->payouts = (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrInflationPayout::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrInflationResult: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -65,4 +65,67 @@ class XdrSCPNomination {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'quorum_set_hash' => XdrJsonHelper::bytesToHex($this->quorumSetHash),
+            'votes' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->votes),
+            'accepted' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->accepted),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCPNomination JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('quorum_set_hash', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field quorum_set_hash for XdrSCPNomination'
+            );
+        }
+        $quorumSetHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['quorum_set_hash']);
+        if (!array_key_exists('votes', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field votes for XdrSCPNomination'
+            );
+        }
+        $votes = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrValue::fromJsonValue($item); }
+            return $out;
+        })($value['votes']);
+        if (!array_key_exists('accepted', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field accepted for XdrSCPNomination'
+            );
+        }
+        $accepted = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrValue::fromJsonValue($item); }
+            return $out;
+        })($value['accepted']);
+        return new static($quorumSetHash, $votes, $accepted);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

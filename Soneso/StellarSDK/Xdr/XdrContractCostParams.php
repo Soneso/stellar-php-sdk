@@ -43,4 +43,30 @@ class XdrContractCostParams {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return array_map(static function ($item) { return $item->toJsonValue(); }, $this->entries);
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected JSON array for XdrContractCostParams, got ' . get_debug_type($value)
+            );
+        }
+        $out = [];
+        foreach ($value as $item) { $out[] = XdrContractCostParamEntry::fromJsonValue($item); }
+        return new static($out);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

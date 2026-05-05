@@ -70,4 +70,73 @@ class XdrOperationResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrOperationResultCode::INNER => ['opinner' => $this->resultTr->toJsonValue()],
+            XdrOperationResultCode::BAD_AUTH => 'opbad_auth',
+            XdrOperationResultCode::NO_ACCOUNT => 'opno_account',
+            XdrOperationResultCode::NOT_SUPPORTED => 'opnot_supported',
+            XdrOperationResultCode::TOO_MANY_SUBENTRIES => 'optoo_many_subentries',
+            XdrOperationResultCode::EXCEEDED_WORK_LIMIT => 'opexceeded_work_limit',
+            XdrOperationResultCode::TOO_MANY_SPONSORING => 'optoo_many_sponsoring',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrOperationResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrOperationResult shape=mixed
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'opbad_auth' => new static(new XdrOperationResultCode(XdrOperationResultCode::BAD_AUTH)),
+                'opno_account' => new static(new XdrOperationResultCode(XdrOperationResultCode::NO_ACCOUNT)),
+                'opnot_supported' => new static(new XdrOperationResultCode(XdrOperationResultCode::NOT_SUPPORTED)),
+                'optoo_many_subentries' => new static(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SUBENTRIES)),
+                'opexceeded_work_limit' => new static(new XdrOperationResultCode(XdrOperationResultCode::EXCEEDED_WORK_LIMIT)),
+                'optoo_many_sponsoring' => new static(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SPONSORING)),
+                'opinner' => throw new \InvalidArgumentException(
+                    "Arm 'opinner' on XdrOperationResult is non-void; supply a single-key object {\"opinner\": <payload>} instead of a bare string."
+                ),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrOperationResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrOperationResult, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrOperationResult, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'opinner' => (static function () use ($arm) { $r = new static(new XdrOperationResultCode(XdrOperationResultCode::INNER)); $r->resultTr = XdrOperationResultTr::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrOperationResult: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

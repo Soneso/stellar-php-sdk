@@ -38,6 +38,41 @@ class XdrLedgerKeyConfigSetting {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'config_setting_id' => $this->configSettingID->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLedgerKeyConfigSetting JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('config_setting_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field config_setting_id for XdrLedgerKeyConfigSetting'
+            );
+        }
+        $configSettingID = XdrConfigSettingID::fromJsonValue($value['config_setting_id']);
+        return new static($configSettingID);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->configSettingID->toTxRep($prefix . '.configSettingID', $lines);
     }

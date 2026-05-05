@@ -46,6 +46,48 @@ class XdrSorobanResourcesExtV0 {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'archived_soroban_entries' => array_map(static function ($item) { return $item; }, $this->archivedSorobanEntries),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSorobanResourcesExtV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('archived_soroban_entries', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field archived_soroban_entries for XdrSorobanResourcesExtV0'
+            );
+        }
+        $archivedSorobanEntries = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($item); }
+            return $out;
+        })($value['archived_soroban_entries']);
+        return new static($archivedSorobanEntries);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.archivedSorobanEntries.len'] = (string)count($this->archivedSorobanEntries);
         for ($i = 0; $i < count($this->archivedSorobanEntries); $i++) {

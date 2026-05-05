@@ -83,4 +83,57 @@ class XdrHashIDPreimage {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrEnvelopeType::ENVELOPE_TYPE_OP_ID => ['op_id' => $this->operationID->toJsonValue()],
+            XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID => ['pool_revoke_op_id' => $this->revokeID->toJsonValue()],
+            XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID => ['contract_id' => $this->contractID->toJsonValue()],
+            XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION => ['soroban_authorization' => $this->sorobanAuthorization->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for type on XdrEnvelopeType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrHashIDPreimage shape=non_void
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object for XdrHashIDPreimage, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrHashIDPreimage, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'op_id' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_OP_ID)); $r->operationID = XdrHashIDPreimageOperationID::fromJsonValue($arm); return $r; })(),
+            'pool_revoke_op_id' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID)); $r->revokeID = XdrHashIDPreimageRevokeID::fromJsonValue($arm); return $r; })(),
+            'contract_id' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID)); $r->contractID = XdrHashIDPreimageContractID::fromJsonValue($arm); return $r; })(),
+            'soroban_authorization' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION)); $r->sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrHashIDPreimage: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

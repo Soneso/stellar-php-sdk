@@ -43,4 +43,46 @@ class XdrDontHave {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'type' => $this->type->toJsonValue(),
+            'req_hash' => XdrJsonHelper::bytesToHex($this->reqHash),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrDontHave JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('type', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field type for XdrDontHave'
+            );
+        }
+        $type = XdrMessageType::fromJsonValue($value['type']);
+        if (!array_key_exists('req_hash', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field req_hash for XdrDontHave'
+            );
+        }
+        $reqHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['req_hash']);
+        return new static($type, $reqHash);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -57,4 +57,66 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'doc' => XdrJsonHelper::escapeString($this->doc),
+            'name' => XdrJsonHelper::escapeString($this->name),
+            'type' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->type),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCSpecUDTUnionCaseTupleV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('doc', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field doc for XdrSCSpecUDTUnionCaseTupleV0'
+            );
+        }
+        if (!is_string($value['doc'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
+        }
+        $doc = XdrJsonHelper::unescapeString($value['doc']);
+        if (!array_key_exists('name', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field name for XdrSCSpecUDTUnionCaseTupleV0'
+            );
+        }
+        if (!is_string($value['name'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
+        }
+        $name = XdrJsonHelper::unescapeString($value['name']);
+        if (!array_key_exists('type', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field type for XdrSCSpecUDTUnionCaseTupleV0'
+            );
+        }
+        $type = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCSpecTypeDef::fromJsonValue($item); }
+            return $out;
+        })($value['type']);
+        return new static($doc, $name, $type);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

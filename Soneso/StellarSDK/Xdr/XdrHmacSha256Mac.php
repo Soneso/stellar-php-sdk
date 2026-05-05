@@ -37,4 +37,42 @@ class XdrHmacSha256Mac {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'mac' => XdrJsonHelper::bytesToHex($this->mac),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrHmacSha256Mac JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('mac', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field mac for XdrHmacSha256Mac'
+            );
+        }
+        if (!is_string($value['mac'])) {
+            throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['mac']));
+        }
+        $mac = XdrJsonHelper::hexToBytes($value['mac']);
+        return new static($mac);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

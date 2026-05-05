@@ -72,4 +72,67 @@ class XdrAccountEntryV2 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'num_sponsored' => $this->numSponsored,
+            'num_sponsoring' => $this->numSponsoring,
+            'signer_sponsoring_i_ds' => array_map(static function ($item) { return $item === null ? null : $item->toJsonValue(); }, $this->signerSponsoringIDs),
+            'ext' => $this->ext->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrAccountEntryV2 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('num_sponsored', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field num_sponsored for XdrAccountEntryV2'
+            );
+        }
+        $numSponsored = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['num_sponsored']);
+        if (!array_key_exists('num_sponsoring', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field num_sponsoring for XdrAccountEntryV2'
+            );
+        }
+        $numSponsoring = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['num_sponsoring']);
+        if (!array_key_exists('signer_sponsoring_i_ds', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field signer_sponsoring_i_ds for XdrAccountEntryV2'
+            );
+        }
+        $signerSponsoringIDs = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = ($item === null ? null : XdrAccountID::fromJsonValue($item)); }
+            return $out;
+        })($value['signer_sponsoring_i_ds']);
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrAccountEntryV2'
+            );
+        }
+        $ext = XdrAccountEntryV2Ext::fromJsonValue($value['ext']);
+        return new static($numSponsored, $numSponsoring, $signerSponsoringIDs, $ext);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

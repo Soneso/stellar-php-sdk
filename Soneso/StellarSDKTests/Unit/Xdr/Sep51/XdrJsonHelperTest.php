@@ -1366,6 +1366,49 @@ class XdrJsonHelperTest extends TestCase
     }
 
     /**
+     * Control characters (0x00-0x1F, 0x7F) must be escaped to their hex form.
+     *
+     * Echoing attacker-controlled bytes verbatim in exception messages opens
+     * an injection vector when those messages are written to a log viewer
+     * that interprets ANSI escape sequences or other terminal control codes.
+     * safePreview is the single chokepoint for unsanitised user input flowing
+     * into exception text, so it owns this defense.
+     */
+    public function testSafePreview_escapesControlCharacters(): void
+    {
+        // ANSI escape (0x1B), tab (0x09), newline (0x0A), carriage return (0x0D),
+        // null (0x00), DEL (0x7F): all replaced with backslash-x hex escapes.
+        $input = "ok\x1B[31mERR\x09tab\x0Anl\x0Dcr\x00null\x7Fdel";
+        $preview = XdrJsonHelper::safePreview($input);
+        $this->assertStringNotContainsString("\x1B", $preview);
+        $this->assertStringNotContainsString("\x09", $preview);
+        $this->assertStringNotContainsString("\x0A", $preview);
+        $this->assertStringNotContainsString("\x0D", $preview);
+        $this->assertStringNotContainsString("\x00", $preview);
+        $this->assertStringNotContainsString("\x7F", $preview);
+        $this->assertStringContainsString('\\x1B', $preview);
+        $this->assertStringContainsString('\\x09', $preview);
+        $this->assertStringContainsString('\\x0A', $preview);
+        $this->assertStringContainsString('\\x00', $preview);
+        $this->assertStringContainsString('\\x7F', $preview);
+    }
+
+    /**
+     * Printable ASCII and high-bit bytes (UTF-8) pass through unchanged.
+     *
+     * The control-char filter must not affect text that callers are expected
+     * to render literally (struct field names, arm keys, error labels).
+     */
+    public function testSafePreview_preservesPrintableAndHighBitBytes(): void
+    {
+        $printable = ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcd';
+        $this->assertSame($printable, XdrJsonHelper::safePreview($printable));
+        // UTF-8 multi-byte sequences (high-bit bytes) must remain intact.
+        $utf8 = "caf\xC3\xA9 — 中文";
+        $this->assertSame($utf8, XdrJsonHelper::safePreview($utf8));
+    }
+
+    /**
      * ksortRecursive must throw when the depth bound is exceeded.
      *
      * Public callers constructing deeply-nested arrays by hand and passing them

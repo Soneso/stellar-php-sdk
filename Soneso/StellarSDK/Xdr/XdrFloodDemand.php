@@ -37,4 +37,39 @@ class XdrFloodDemand {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'tx_hashes' => $this->txHashes->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrFloodDemand JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('tx_hashes', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field tx_hashes for XdrFloodDemand'
+            );
+        }
+        $txHashes = XdrTxDemandVector::fromJsonValue($value['tx_hashes']);
+        return new static($txHashes);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

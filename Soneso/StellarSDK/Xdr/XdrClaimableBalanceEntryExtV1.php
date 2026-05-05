@@ -40,4 +40,51 @@ class XdrClaimableBalanceEntryExtV1 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => 'v0',
+            'flags' => $this->flags,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrClaimableBalanceEntryExtV1 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrClaimableBalanceEntryExtV1'
+            );
+        }
+        if ($value['ext'] !== 'v0') {
+            throw new \InvalidArgumentException(
+                'Expected v0 for XdrClaimableBalanceEntryExtV1 extension point field ext, got '
+                . (is_string($value['ext']) ? "'" . XdrJsonHelper::safePreview($value['ext']) . "'" : get_debug_type($value['ext']))
+            );
+        }
+        if (!array_key_exists('flags', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field flags for XdrClaimableBalanceEntryExtV1'
+            );
+        }
+        $flags = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['flags']);
+        return new static($flags);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

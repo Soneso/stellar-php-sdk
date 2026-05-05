@@ -49,4 +49,53 @@ class XdrSCPStatementExternalize {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'commit' => $this->commit->toJsonValue(),
+            'n_h' => $this->nH,
+            'commit_quorum_set_hash' => XdrJsonHelper::bytesToHex($this->commitQuorumSetHash),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCPStatementExternalize JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('commit', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field commit for XdrSCPStatementExternalize'
+            );
+        }
+        $commit = XdrSCPBallot::fromJsonValue($value['commit']);
+        if (!array_key_exists('n_h', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field n_h for XdrSCPStatementExternalize'
+            );
+        }
+        $nH = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_h']);
+        if (!array_key_exists('commit_quorum_set_hash', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field commit_quorum_set_hash for XdrSCPStatementExternalize'
+            );
+        }
+        $commitQuorumSetHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['commit_quorum_set_hash']);
+        return new static($commit, $nH, $commitQuorumSetHash);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -61,4 +61,67 @@ class XdrContractDataEntry {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => $this->ext->toJsonValue(),
+            'contract' => $this->contract->toJsonValue(),
+            'key' => $this->key->toJsonValue(),
+            'durability' => $this->durability->toJsonValue(),
+            'val' => $this->val->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrContractDataEntry JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrContractDataEntry'
+            );
+        }
+        $ext = XdrExtensionPoint::fromJsonValue($value['ext']);
+        if (!array_key_exists('contract', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field contract for XdrContractDataEntry'
+            );
+        }
+        $contract = XdrSCAddress::fromJsonValue($value['contract']);
+        if (!array_key_exists('key', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field key for XdrContractDataEntry'
+            );
+        }
+        $key = XdrSCVal::fromJsonValue($value['key']);
+        if (!array_key_exists('durability', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field durability for XdrContractDataEntry'
+            );
+        }
+        $durability = XdrContractDataDurability::fromJsonValue($value['durability']);
+        if (!array_key_exists('val', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field val for XdrContractDataEntry'
+            );
+        }
+        $val = XdrSCVal::fromJsonValue($value['val']);
+        return new static($ext, $contract, $key, $durability, $val);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

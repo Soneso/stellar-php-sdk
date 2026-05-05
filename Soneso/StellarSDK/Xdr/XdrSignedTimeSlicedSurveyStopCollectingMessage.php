@@ -43,4 +43,46 @@ class XdrSignedTimeSlicedSurveyStopCollectingMessage {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'signature' => XdrJsonHelper::bytesToHex($this->signature),
+            'stop_collecting' => $this->stopCollecting->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSignedTimeSlicedSurveyStopCollectingMessage JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('signature', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field signature for XdrSignedTimeSlicedSurveyStopCollectingMessage'
+            );
+        }
+        $signature = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['signature']);
+        if (!array_key_exists('stop_collecting', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field stop_collecting for XdrSignedTimeSlicedSurveyStopCollectingMessage'
+            );
+        }
+        $stopCollecting = XdrTimeSlicedSurveyStopCollectingMessage::fromJsonValue($value['stop_collecting']);
+        return new static($signature, $stopCollecting);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

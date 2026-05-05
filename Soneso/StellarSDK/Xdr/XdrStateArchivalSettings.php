@@ -91,4 +91,102 @@ class XdrStateArchivalSettings {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'max_entry_ttl' => $this->maxEntryTTL,
+            'min_temporary_ttl' => $this->minTemporaryTTL,
+            'min_persistent_ttl' => $this->minPersistentTTL,
+            'persistent_rent_rate_denominator' => XdrJsonHelper::int64ToString($this->persistentRentRateDenominator),
+            'temp_rent_rate_denominator' => XdrJsonHelper::int64ToString($this->tempRentRateDenominator),
+            'max_entries_to_archive' => $this->maxEntriesToArchive,
+            'live_soroban_state_size_window_sample_size' => $this->liveSorobanStateSizeWindowSampleSize,
+            'live_soroban_state_size_window_sample_period' => $this->liveSorobanStateSizeWindowSamplePeriod,
+            'eviction_scan_size' => $this->evictionScanSize,
+            'starting_eviction_scan_level' => $this->startingEvictionScanLevel,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrStateArchivalSettings JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('max_entry_ttl', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field max_entry_ttl for XdrStateArchivalSettings'
+            );
+        }
+        $maxEntryTTL = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['max_entry_ttl']);
+        if (!array_key_exists('min_temporary_ttl', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field min_temporary_ttl for XdrStateArchivalSettings'
+            );
+        }
+        $minTemporaryTTL = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['min_temporary_ttl']);
+        if (!array_key_exists('min_persistent_ttl', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field min_persistent_ttl for XdrStateArchivalSettings'
+            );
+        }
+        $minPersistentTTL = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['min_persistent_ttl']);
+        if (!array_key_exists('persistent_rent_rate_denominator', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field persistent_rent_rate_denominator for XdrStateArchivalSettings'
+            );
+        }
+        $persistentRentRateDenominator = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['persistent_rent_rate_denominator']);
+        if (!array_key_exists('temp_rent_rate_denominator', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field temp_rent_rate_denominator for XdrStateArchivalSettings'
+            );
+        }
+        $tempRentRateDenominator = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['temp_rent_rate_denominator']);
+        if (!array_key_exists('max_entries_to_archive', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field max_entries_to_archive for XdrStateArchivalSettings'
+            );
+        }
+        $maxEntriesToArchive = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['max_entries_to_archive']);
+        if (!array_key_exists('live_soroban_state_size_window_sample_size', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field live_soroban_state_size_window_sample_size for XdrStateArchivalSettings'
+            );
+        }
+        $liveSorobanStateSizeWindowSampleSize = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['live_soroban_state_size_window_sample_size']);
+        if (!array_key_exists('live_soroban_state_size_window_sample_period', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field live_soroban_state_size_window_sample_period for XdrStateArchivalSettings'
+            );
+        }
+        $liveSorobanStateSizeWindowSamplePeriod = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['live_soroban_state_size_window_sample_period']);
+        if (!array_key_exists('eviction_scan_size', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field eviction_scan_size for XdrStateArchivalSettings'
+            );
+        }
+        $evictionScanSize = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['eviction_scan_size']);
+        if (!array_key_exists('starting_eviction_scan_level', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field starting_eviction_scan_level for XdrStateArchivalSettings'
+            );
+        }
+        $startingEvictionScanLevel = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['starting_eviction_scan_level']);
+        return new static($maxEntryTTL, $minTemporaryTTL, $minPersistentTTL, $persistentRentRateDenominator, $tempRentRateDenominator, $maxEntriesToArchive, $liveSorobanStateSizeWindowSampleSize, $liveSorobanStateSizeWindowSamplePeriod, $evictionScanSize, $startingEvictionScanLevel);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

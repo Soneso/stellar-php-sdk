@@ -56,6 +56,62 @@ class XdrSorobanAddressCredentials {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'address' => $this->address->toJsonValue(),
+            'nonce' => XdrJsonHelper::int64ToString($this->nonce),
+            'signature_expiration_ledger' => $this->signatureExpirationLedger,
+            'signature' => $this->signature->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSorobanAddressCredentials JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('address', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field address for XdrSorobanAddressCredentials'
+            );
+        }
+        $address = XdrSCAddress::fromJsonValue($value['address']);
+        if (!array_key_exists('nonce', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field nonce for XdrSorobanAddressCredentials'
+            );
+        }
+        $nonce = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['nonce']);
+        if (!array_key_exists('signature_expiration_ledger', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field signature_expiration_ledger for XdrSorobanAddressCredentials'
+            );
+        }
+        $signatureExpirationLedger = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['signature_expiration_ledger']);
+        if (!array_key_exists('signature', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field signature for XdrSorobanAddressCredentials'
+            );
+        }
+        $signature = XdrSCVal::fromJsonValue($value['signature']);
+        return new static($address, $nonce, $signatureExpirationLedger, $signature);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->address->toTxRep($prefix . '.address', $lines);
         $lines[$prefix . '.nonce'] = (string)$this->nonce;

@@ -43,4 +43,30 @@ class XdrTxAdvertVector {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return array_map(static function ($item) { return XdrJsonHelper::bytesToHex($item); }, $this->txAdvertVector);
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected JSON array for XdrTxAdvertVector, got ' . get_debug_type($value)
+            );
+        }
+        $out = [];
+        foreach ($value as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
+        return new static($out);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

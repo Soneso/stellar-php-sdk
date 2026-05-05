@@ -91,4 +91,102 @@ class XdrTimeSlicedNodeData {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'added_authenticated_peers' => $this->addedAuthenticatedPeers,
+            'dropped_authenticated_peers' => $this->droppedAuthenticatedPeers,
+            'total_inbound_peer_count' => $this->totalInboundPeerCount,
+            'total_outbound_peer_count' => $this->totalOutboundPeerCount,
+            'p75_scp_first_to_self_latency_ms' => $this->p75SCPFirstToSelfLatencyMs,
+            'p75_scp_self_to_other_latency_ms' => $this->p75SCPSelfToOtherLatencyMs,
+            'lost_sync_count' => $this->lostSyncCount,
+            'is_validator' => $this->isValidator,
+            'max_inbound_peer_count' => $this->maxInboundPeerCount,
+            'max_outbound_peer_count' => $this->maxOutboundPeerCount,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrTimeSlicedNodeData JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('added_authenticated_peers', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field added_authenticated_peers for XdrTimeSlicedNodeData'
+            );
+        }
+        $addedAuthenticatedPeers = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['added_authenticated_peers']);
+        if (!array_key_exists('dropped_authenticated_peers', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field dropped_authenticated_peers for XdrTimeSlicedNodeData'
+            );
+        }
+        $droppedAuthenticatedPeers = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['dropped_authenticated_peers']);
+        if (!array_key_exists('total_inbound_peer_count', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field total_inbound_peer_count for XdrTimeSlicedNodeData'
+            );
+        }
+        $totalInboundPeerCount = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['total_inbound_peer_count']);
+        if (!array_key_exists('total_outbound_peer_count', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field total_outbound_peer_count for XdrTimeSlicedNodeData'
+            );
+        }
+        $totalOutboundPeerCount = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['total_outbound_peer_count']);
+        if (!array_key_exists('p75_scp_first_to_self_latency_ms', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field p75_scp_first_to_self_latency_ms for XdrTimeSlicedNodeData'
+            );
+        }
+        $p75SCPFirstToSelfLatencyMs = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['p75_scp_first_to_self_latency_ms']);
+        if (!array_key_exists('p75_scp_self_to_other_latency_ms', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field p75_scp_self_to_other_latency_ms for XdrTimeSlicedNodeData'
+            );
+        }
+        $p75SCPSelfToOtherLatencyMs = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['p75_scp_self_to_other_latency_ms']);
+        if (!array_key_exists('lost_sync_count', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field lost_sync_count for XdrTimeSlicedNodeData'
+            );
+        }
+        $lostSyncCount = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['lost_sync_count']);
+        if (!array_key_exists('is_validator', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field is_validator for XdrTimeSlicedNodeData'
+            );
+        }
+        $isValidator = (static function ($v) { if (!is_bool($v)) { throw new \InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })($value['is_validator']);
+        if (!array_key_exists('max_inbound_peer_count', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field max_inbound_peer_count for XdrTimeSlicedNodeData'
+            );
+        }
+        $maxInboundPeerCount = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['max_inbound_peer_count']);
+        if (!array_key_exists('max_outbound_peer_count', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field max_outbound_peer_count for XdrTimeSlicedNodeData'
+            );
+        }
+        $maxOutboundPeerCount = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['max_outbound_peer_count']);
+        return new static($addedAuthenticatedPeers, $droppedAuthenticatedPeers, $totalInboundPeerCount, $totalOutboundPeerCount, $p75SCPFirstToSelfLatencyMs, $p75SCPSelfToOtherLatencyMs, $lostSyncCount, $isValidator, $maxInboundPeerCount, $maxOutboundPeerCount);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -44,6 +44,48 @@ class XdrClaimantV0 {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'destination' => $this->destination->toJsonValue(),
+            'predicate' => $this->predicate->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrClaimantV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('destination', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field destination for XdrClaimantV0'
+            );
+        }
+        $destination = XdrAccountID::fromJsonValue($value['destination']);
+        if (!array_key_exists('predicate', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field predicate for XdrClaimantV0'
+            );
+        }
+        $predicate = XdrClaimPredicate::fromJsonValue($value['predicate']);
+        return new static($destination, $predicate);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.destination'] = TxRepHelper::formatAccountId($this->destination);
         $this->predicate->toTxRep($prefix . '.predicate', $lines);

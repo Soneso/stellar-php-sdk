@@ -43,4 +43,46 @@ class XdrSCSpecTypeMap {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'key_type' => $this->keyType->toJsonValue(),
+            'value_type' => $this->valueType->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCSpecTypeMap JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('key_type', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field key_type for XdrSCSpecTypeMap'
+            );
+        }
+        $keyType = XdrSCSpecTypeDef::fromJsonValue($value['key_type']);
+        if (!array_key_exists('value_type', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field value_type for XdrSCSpecTypeMap'
+            );
+        }
+        $valueType = XdrSCSpecTypeDef::fromJsonValue($value['value_type']);
+        return new static($keyType, $valueType);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

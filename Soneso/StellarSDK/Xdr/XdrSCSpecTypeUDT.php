@@ -37,4 +37,42 @@ class XdrSCSpecTypeUDT {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'name' => XdrJsonHelper::escapeString($this->name),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCSpecTypeUDT JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('name', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field name for XdrSCSpecTypeUDT'
+            );
+        }
+        if (!is_string($value['name'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
+        }
+        $name = XdrJsonHelper::unescapeString($value['name']);
+        return new static($name);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

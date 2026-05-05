@@ -43,4 +43,46 @@ class XdrLedgerCloseValueSignature {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'node_id' => $this->nodeID->toJsonValue(),
+            'signature' => XdrJsonHelper::bytesToHex($this->signature),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLedgerCloseValueSignature JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('node_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field node_id for XdrLedgerCloseValueSignature'
+            );
+        }
+        $nodeID = XdrNodeID::fromJsonValue($value['node_id']);
+        if (!array_key_exists('signature', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field signature for XdrLedgerCloseValueSignature'
+            );
+        }
+        $signature = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['signature']);
+        return new static($nodeID, $signature);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

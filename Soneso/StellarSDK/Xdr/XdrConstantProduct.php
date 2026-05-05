@@ -63,4 +63,67 @@ class XdrConstantProduct {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'params' => $this->params->toJsonValue(),
+            'reserve_a' => $this->reserveA->toString(),
+            'reserve_b' => $this->reserveB->toString(),
+            'total_pool_shares' => $this->totalPoolShares->toString(),
+            'pool_shares_trust_line_count' => XdrJsonHelper::int64ToString($this->poolSharesTrustLineCount),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrConstantProduct JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('params', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field params for XdrConstantProduct'
+            );
+        }
+        $params = XdrLiquidityPoolConstantProductParameters::fromJsonValue($value['params']);
+        if (!array_key_exists('reserve_a', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field reserve_a for XdrConstantProduct'
+            );
+        }
+        $reserveA = new BigInteger(is_string($value['reserve_a']) ? $value['reserve_a'] : (string) (int) $value['reserve_a']);
+        if (!array_key_exists('reserve_b', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field reserve_b for XdrConstantProduct'
+            );
+        }
+        $reserveB = new BigInteger(is_string($value['reserve_b']) ? $value['reserve_b'] : (string) (int) $value['reserve_b']);
+        if (!array_key_exists('total_pool_shares', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field total_pool_shares for XdrConstantProduct'
+            );
+        }
+        $totalPoolShares = new BigInteger(is_string($value['total_pool_shares']) ? $value['total_pool_shares'] : (string) (int) $value['total_pool_shares']);
+        if (!array_key_exists('pool_shares_trust_line_count', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field pool_shares_trust_line_count for XdrConstantProduct'
+            );
+        }
+        $poolSharesTrustLineCount = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['pool_shares_trust_line_count']);
+        return new static($params, $reserveA, $reserveB, $totalPoolShares, $poolSharesTrustLineCount);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

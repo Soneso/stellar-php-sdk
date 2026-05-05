@@ -688,10 +688,27 @@ final class XdrJsonHelper
      */
     public static function safePreview(string $s, int $max = 80): string
     {
-        if (strlen($s) <= $max) {
-            return $s;
+        // Replace ASCII control characters (0x00-0x1F, 0x7F) with their hex
+        // escape form. Without this, attacker-controlled input echoed through
+        // exception messages can inject ANSI escape sequences when those
+        // messages are rendered to a terminal (log injection / amplification).
+        $sanitised = preg_replace_callback(
+            '/[\x00-\x1F\x7F]/',
+            static function (array $m): string {
+                return '\\x' . strtoupper(bin2hex($m[0]));
+            },
+            $s
+        );
+        if ($sanitised === null) {
+            // preg_replace_callback returns null only on PCRE engine failure
+            // (out-of-memory, recursion limit). Fall back to a fixed marker
+            // rather than echoing the raw input so the safety contract holds.
+            return '<unprintable>';
         }
-        return substr($s, 0, $max - 3) . '...';
+        if (strlen($sanitised) <= $max) {
+            return $sanitised;
+        }
+        return substr($sanitised, 0, $max - 3) . '...';
     }
 
     // -------------------------------------------------------------------------

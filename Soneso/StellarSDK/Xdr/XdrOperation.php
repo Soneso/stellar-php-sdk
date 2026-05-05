@@ -52,6 +52,51 @@ class XdrOperation {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'source_account' => ($this->sourceAccount !== null ? $this->sourceAccount->toJsonValue() : null),
+            'body' => $this->body->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('source_account', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field source_account for XdrOperation'
+            );
+        }
+        $sourceAccount = null;
+        if ($value['source_account'] !== null) {
+            $sourceAccount = XdrMuxedAccount::fromJsonValue($value['source_account']);
+        }
+        if (!array_key_exists('body', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field body for XdrOperation'
+            );
+        }
+        $body = XdrOperationBody::fromJsonValue($value['body']);
+        return new static($body, $sourceAccount);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         if ($this->sourceAccount !== null) {
             $lines[$prefix . '.sourceAccount._present'] = 'true';

@@ -43,4 +43,46 @@ class XdrSCEnvMetaEntryInterfaceVersion {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'protocol' => $this->protocol,
+            'pre_release' => $this->preRelease,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCEnvMetaEntryInterfaceVersion JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('protocol', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field protocol for XdrSCEnvMetaEntryInterfaceVersion'
+            );
+        }
+        $protocol = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['protocol']);
+        if (!array_key_exists('pre_release', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field pre_release for XdrSCEnvMetaEntryInterfaceVersion'
+            );
+        }
+        $preRelease = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['pre_release']);
+        return new static($protocol, $preRelease);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

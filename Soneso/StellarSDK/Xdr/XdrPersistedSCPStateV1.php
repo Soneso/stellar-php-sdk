@@ -59,4 +59,60 @@ class XdrPersistedSCPStateV1 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'scp_envelopes' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->scpEnvelopes),
+            'quorum_sets' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->quorumSets),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrPersistedSCPStateV1 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('scp_envelopes', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field scp_envelopes for XdrPersistedSCPStateV1'
+            );
+        }
+        $scpEnvelopes = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCPEnvelope::fromJsonValue($item); }
+            return $out;
+        })($value['scp_envelopes']);
+        if (!array_key_exists('quorum_sets', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field quorum_sets for XdrPersistedSCPStateV1'
+            );
+        }
+        $quorumSets = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCPQuorumSet::fromJsonValue($item); }
+            return $out;
+        })($value['quorum_sets']);
+        return new static($scpEnvelopes, $quorumSets);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

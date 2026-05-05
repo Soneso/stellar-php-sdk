@@ -61,4 +61,67 @@ class XdrSurveyResponseMessage {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'surveyor_peer_id' => $this->surveyorPeerID->toJsonValue(),
+            'surveyed_peer_id' => $this->surveyedPeerID->toJsonValue(),
+            'ledger_num' => $this->ledgerNum,
+            'command_type' => $this->commandType->toJsonValue(),
+            'encrypted_body' => $this->encryptedBody->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSurveyResponseMessage JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('surveyor_peer_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field surveyor_peer_id for XdrSurveyResponseMessage'
+            );
+        }
+        $surveyorPeerID = XdrNodeID::fromJsonValue($value['surveyor_peer_id']);
+        if (!array_key_exists('surveyed_peer_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field surveyed_peer_id for XdrSurveyResponseMessage'
+            );
+        }
+        $surveyedPeerID = XdrNodeID::fromJsonValue($value['surveyed_peer_id']);
+        if (!array_key_exists('ledger_num', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ledger_num for XdrSurveyResponseMessage'
+            );
+        }
+        $ledgerNum = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_num']);
+        if (!array_key_exists('command_type', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field command_type for XdrSurveyResponseMessage'
+            );
+        }
+        $commandType = XdrSurveyMessageCommandType::fromJsonValue($value['command_type']);
+        if (!array_key_exists('encrypted_body', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field encrypted_body for XdrSurveyResponseMessage'
+            );
+        }
+        $encryptedBody = XdrEncryptedBody::fromJsonValue($value['encrypted_body']);
+        return new static($surveyorPeerID, $surveyedPeerID, $ledgerNum, $commandType, $encryptedBody);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

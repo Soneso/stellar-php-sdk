@@ -68,4 +68,71 @@ class XdrInvokeHostFunctionResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS => ['success' => XdrJsonHelper::bytesToHex($this->success)],
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED => 'malformed',
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED => 'trapped',
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED => 'resource_limit_exceeded',
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED => 'entry_archived',
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE => 'insufficient_refundable_fee',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for type on XdrInvokeHostFunctionResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrInvokeHostFunctionResult shape=mixed
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'malformed' => new static(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED)),
+                'trapped' => new static(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED)),
+                'resource_limit_exceeded' => new static(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED)),
+                'entry_archived' => new static(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED)),
+                'insufficient_refundable_fee' => new static(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE)),
+                'success' => throw new \InvalidArgumentException(
+                    "Arm 'success' on XdrInvokeHostFunctionResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
+                ),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrInvokeHostFunctionResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrInvokeHostFunctionResult, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrInvokeHostFunctionResult, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'success' => (static function () use ($arm) { $r = new static(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS)); $r->success = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrInvokeHostFunctionResult: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

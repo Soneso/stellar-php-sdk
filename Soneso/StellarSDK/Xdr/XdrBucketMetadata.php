@@ -43,4 +43,46 @@ class XdrBucketMetadata {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'ledger_version' => $this->ledgerVersion,
+            'ext' => $this->ext->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrBucketMetadata JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ledger_version', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ledger_version for XdrBucketMetadata'
+            );
+        }
+        $ledgerVersion = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_version']);
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrBucketMetadata'
+            );
+        }
+        $ext = XdrBucketMetadataExt::fromJsonValue($value['ext']);
+        return new static($ledgerVersion, $ext);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

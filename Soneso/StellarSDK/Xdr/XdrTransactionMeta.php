@@ -101,4 +101,59 @@ class XdrTransactionMeta {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->v) {
+            0 => ['v0' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->operations)],
+            1 => ['v1' => $this->v1->toJsonValue()],
+            2 => ['v2' => $this->v2->toJsonValue()],
+            3 => ['v3' => $this->v3->toJsonValue()],
+            4 => ['v4' => $this->v4->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for v on XdrTransactionMeta'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrTransactionMeta shape=int_cased
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object for XdrTransactionMeta, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrTransactionMeta, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'v0' => (static function () use ($arm) { $r = new static(0); $r->operations = (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationMeta::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'v1' => (static function () use ($arm) { $r = new static(1); $r->v1 = XdrTransactionMetaV1::fromJsonValue($arm); return $r; })(),
+            'v2' => (static function () use ($arm) { $r = new static(2); $r->v2 = XdrTransactionMetaV2::fromJsonValue($arm); return $r; })(),
+            'v3' => (static function () use ($arm) { $r = new static(3); $r->v3 = XdrTransactionMetaV3::fromJsonValue($arm); return $r; })(),
+            'v4' => (static function () use ($arm) { $r = new static(4); $r->v4 = XdrTransactionMetaV4::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrTransactionMeta: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

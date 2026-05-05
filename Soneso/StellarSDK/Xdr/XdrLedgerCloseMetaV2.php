@@ -111,4 +111,116 @@ class XdrLedgerCloseMetaV2 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => $this->ext->toJsonValue(),
+            'ledger_header' => $this->ledgerHeader->toJsonValue(),
+            'tx_set' => $this->txSet->toJsonValue(),
+            'tx_processing' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->txProcessing),
+            'upgrades_processing' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->upgradesProcessing),
+            'scp_info' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->scpInfo),
+            'total_byte_size_of_live_soroban_state' => XdrJsonHelper::uint64ToString($this->totalByteSizeOfLiveSorobanState),
+            'evicted_keys' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->evictedKeys),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLedgerCloseMetaV2 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrLedgerCloseMetaV2'
+            );
+        }
+        $ext = XdrLedgerCloseMetaExt::fromJsonValue($value['ext']);
+        if (!array_key_exists('ledger_header', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ledger_header for XdrLedgerCloseMetaV2'
+            );
+        }
+        $ledgerHeader = XdrLedgerHeaderHistoryEntry::fromJsonValue($value['ledger_header']);
+        if (!array_key_exists('tx_set', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field tx_set for XdrLedgerCloseMetaV2'
+            );
+        }
+        $txSet = XdrGeneralizedTransactionSet::fromJsonValue($value['tx_set']);
+        if (!array_key_exists('tx_processing', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field tx_processing for XdrLedgerCloseMetaV2'
+            );
+        }
+        $txProcessing = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrTransactionResultMetaV1::fromJsonValue($item); }
+            return $out;
+        })($value['tx_processing']);
+        if (!array_key_exists('upgrades_processing', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field upgrades_processing for XdrLedgerCloseMetaV2'
+            );
+        }
+        $upgradesProcessing = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrUpgradeEntryMeta::fromJsonValue($item); }
+            return $out;
+        })($value['upgrades_processing']);
+        if (!array_key_exists('scp_info', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field scp_info for XdrLedgerCloseMetaV2'
+            );
+        }
+        $scpInfo = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCPHistoryEntry::fromJsonValue($item); }
+            return $out;
+        })($value['scp_info']);
+        if (!array_key_exists('total_byte_size_of_live_soroban_state', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field total_byte_size_of_live_soroban_state for XdrLedgerCloseMetaV2'
+            );
+        }
+        $totalByteSizeOfLiveSorobanState = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['total_byte_size_of_live_soroban_state']);
+        if (!array_key_exists('evicted_keys', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field evicted_keys for XdrLedgerCloseMetaV2'
+            );
+        }
+        $evictedKeys = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrLedgerKey::fromJsonValue($item); }
+            return $out;
+        })($value['evicted_keys']);
+        return new static($ext, $ledgerHeader, $txSet, $txProcessing, $upgradesProcessing, $scpInfo, $totalByteSizeOfLiveSorobanState, $evictedKeys);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

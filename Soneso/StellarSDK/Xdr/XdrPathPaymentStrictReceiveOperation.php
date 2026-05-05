@@ -78,6 +78,83 @@ class XdrPathPaymentStrictReceiveOperation {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'send_asset' => $this->sendAsset->toJsonValue(),
+            'send_max' => $this->sendMax->toString(),
+            'destination' => $this->destination->toJsonValue(),
+            'dest_asset' => $this->destAsset->toJsonValue(),
+            'dest_amount' => $this->destAmount->toString(),
+            'path' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->path),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrPathPaymentStrictReceiveOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('send_asset', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field send_asset for XdrPathPaymentStrictReceiveOperation'
+            );
+        }
+        $sendAsset = XdrAsset::fromJsonValue($value['send_asset']);
+        if (!array_key_exists('send_max', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field send_max for XdrPathPaymentStrictReceiveOperation'
+            );
+        }
+        $sendMax = new BigInteger(is_string($value['send_max']) ? $value['send_max'] : (string) (int) $value['send_max']);
+        if (!array_key_exists('destination', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field destination for XdrPathPaymentStrictReceiveOperation'
+            );
+        }
+        $destination = XdrMuxedAccount::fromJsonValue($value['destination']);
+        if (!array_key_exists('dest_asset', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field dest_asset for XdrPathPaymentStrictReceiveOperation'
+            );
+        }
+        $destAsset = XdrAsset::fromJsonValue($value['dest_asset']);
+        if (!array_key_exists('dest_amount', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field dest_amount for XdrPathPaymentStrictReceiveOperation'
+            );
+        }
+        $destAmount = new BigInteger(is_string($value['dest_amount']) ? $value['dest_amount'] : (string) (int) $value['dest_amount']);
+        if (!array_key_exists('path', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field path for XdrPathPaymentStrictReceiveOperation'
+            );
+        }
+        $path = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrAsset::fromJsonValue($item); }
+            return $out;
+        })($value['path']);
+        return new static($sendAsset, $sendMax, $destination, $destAsset, $destAmount, $path);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.sendAsset'] = TxRepHelper::formatAsset($this->sendAsset);
         $lines[$prefix . '.sendMax'] = $this->sendMax->toString();

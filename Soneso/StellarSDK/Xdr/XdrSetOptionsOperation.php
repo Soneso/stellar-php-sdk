@@ -158,6 +158,124 @@ class XdrSetOptionsOperation {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'inflation_dest' => ($this->inflationDest !== null ? $this->inflationDest->toJsonValue() : null),
+            'clear_flags' => ($this->clearFlags !== null ? $this->clearFlags : null),
+            'set_flags' => ($this->setFlags !== null ? $this->setFlags : null),
+            'master_weight' => ($this->masterWeight !== null ? $this->masterWeight : null),
+            'low_threshold' => ($this->lowThreshold !== null ? $this->lowThreshold : null),
+            'med_threshold' => ($this->medThreshold !== null ? $this->medThreshold : null),
+            'high_threshold' => ($this->highThreshold !== null ? $this->highThreshold : null),
+            'home_domain' => ($this->homeDomain !== null ? XdrJsonHelper::escapeString($this->homeDomain) : null),
+            'signer' => ($this->signer !== null ? $this->signer->toJsonValue() : null),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSetOptionsOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('inflation_dest', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field inflation_dest for XdrSetOptionsOperation'
+            );
+        }
+        $inflationDest = null;
+        if ($value['inflation_dest'] !== null) {
+            $inflationDest = XdrAccountID::fromJsonValue($value['inflation_dest']);
+        }
+        if (!array_key_exists('clear_flags', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field clear_flags for XdrSetOptionsOperation'
+            );
+        }
+        $clearFlags = null;
+        if ($value['clear_flags'] !== null) {
+            $clearFlags = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['clear_flags']);
+        }
+        if (!array_key_exists('set_flags', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field set_flags for XdrSetOptionsOperation'
+            );
+        }
+        $setFlags = null;
+        if ($value['set_flags'] !== null) {
+            $setFlags = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['set_flags']);
+        }
+        if (!array_key_exists('master_weight', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field master_weight for XdrSetOptionsOperation'
+            );
+        }
+        $masterWeight = null;
+        if ($value['master_weight'] !== null) {
+            $masterWeight = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['master_weight']);
+        }
+        if (!array_key_exists('low_threshold', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field low_threshold for XdrSetOptionsOperation'
+            );
+        }
+        $lowThreshold = null;
+        if ($value['low_threshold'] !== null) {
+            $lowThreshold = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['low_threshold']);
+        }
+        if (!array_key_exists('med_threshold', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field med_threshold for XdrSetOptionsOperation'
+            );
+        }
+        $medThreshold = null;
+        if ($value['med_threshold'] !== null) {
+            $medThreshold = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['med_threshold']);
+        }
+        if (!array_key_exists('high_threshold', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field high_threshold for XdrSetOptionsOperation'
+            );
+        }
+        $highThreshold = null;
+        if ($value['high_threshold'] !== null) {
+            $highThreshold = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['high_threshold']);
+        }
+        if (!array_key_exists('home_domain', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field home_domain for XdrSetOptionsOperation'
+            );
+        }
+        $homeDomain = null;
+        if ($value['home_domain'] !== null) {
+            $homeDomain = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['home_domain']);
+        }
+        if (!array_key_exists('signer', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field signer for XdrSetOptionsOperation'
+            );
+        }
+        $signer = null;
+        if ($value['signer'] !== null) {
+            $signer = XdrSigner::fromJsonValue($value['signer']);
+        }
+        return new static($inflationDest, $clearFlags, $setFlags, $masterWeight, $lowThreshold, $medThreshold, $highThreshold, $homeDomain, $signer);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         if ($this->inflationDest !== null) {
             $lines[$prefix . '.inflationDest._present'] = 'true';

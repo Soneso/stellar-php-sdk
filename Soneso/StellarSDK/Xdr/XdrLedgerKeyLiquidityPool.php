@@ -38,6 +38,41 @@ class XdrLedgerKeyLiquidityPool {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'liquidity_pool_id' => XdrJsonHelper::bytesToHex($this->liquidityPoolID),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLedgerKeyLiquidityPool JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('liquidity_pool_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field liquidity_pool_id for XdrLedgerKeyLiquidityPool'
+            );
+        }
+        $liquidityPoolID = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['liquidity_pool_id']);
+        return new static($liquidityPoolID);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex($this->liquidityPoolID);
     }

@@ -52,4 +52,44 @@ class XdrClaimableBalanceEntryExtV1Ext {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->v) {
+            0 => 'v0',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for v on XdrClaimableBalanceEntryExtV1Ext'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrClaimableBalanceEntryExtV1Ext shape=int_cased
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'v0' => new static(0),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrClaimableBalanceEntryExtV1Ext void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new \InvalidArgumentException(
+            'Expected void-arm string for XdrClaimableBalanceEntryExtV1Ext, got ' . get_debug_type($value)
+        );
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

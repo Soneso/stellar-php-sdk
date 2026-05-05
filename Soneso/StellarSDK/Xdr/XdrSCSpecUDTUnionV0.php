@@ -63,4 +63,76 @@ class XdrSCSpecUDTUnionV0 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'doc' => XdrJsonHelper::escapeString($this->doc),
+            'lib' => XdrJsonHelper::escapeString($this->lib),
+            'name' => XdrJsonHelper::escapeString($this->name),
+            'cases' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->cases),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCSpecUDTUnionV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('doc', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field doc for XdrSCSpecUDTUnionV0'
+            );
+        }
+        if (!is_string($value['doc'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
+        }
+        $doc = XdrJsonHelper::unescapeString($value['doc']);
+        if (!array_key_exists('lib', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field lib for XdrSCSpecUDTUnionV0'
+            );
+        }
+        if (!is_string($value['lib'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['lib']));
+        }
+        $lib = XdrJsonHelper::unescapeString($value['lib']);
+        if (!array_key_exists('name', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field name for XdrSCSpecUDTUnionV0'
+            );
+        }
+        if (!is_string($value['name'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
+        }
+        $name = XdrJsonHelper::unescapeString($value['name']);
+        if (!array_key_exists('cases', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field cases for XdrSCSpecUDTUnionV0'
+            );
+        }
+        $cases = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCSpecUDTUnionCaseV0::fromJsonValue($item); }
+            return $out;
+        })($value['cases']);
+        return new static($doc, $lib, $name, $cases);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

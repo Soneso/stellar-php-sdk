@@ -64,6 +64,69 @@ class XdrManageSellOfferOperation {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'selling' => $this->selling->toJsonValue(),
+            'buying' => $this->buying->toJsonValue(),
+            'amount' => $this->amount->toString(),
+            'price' => $this->price->toJsonValue(),
+            'offer_id' => XdrJsonHelper::int64ToString($this->offerId),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrManageSellOfferOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('selling', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field selling for XdrManageSellOfferOperation'
+            );
+        }
+        $selling = XdrAsset::fromJsonValue($value['selling']);
+        if (!array_key_exists('buying', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field buying for XdrManageSellOfferOperation'
+            );
+        }
+        $buying = XdrAsset::fromJsonValue($value['buying']);
+        if (!array_key_exists('amount', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field amount for XdrManageSellOfferOperation'
+            );
+        }
+        $amount = new BigInteger(is_string($value['amount']) ? $value['amount'] : (string) (int) $value['amount']);
+        if (!array_key_exists('price', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field price for XdrManageSellOfferOperation'
+            );
+        }
+        $price = XdrPrice::fromJsonValue($value['price']);
+        if (!array_key_exists('offer_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field offer_id for XdrManageSellOfferOperation'
+            );
+        }
+        $offerId = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['offer_id']);
+        return new static($selling, $buying, $amount, $price, $offerId);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.selling'] = TxRepHelper::formatAsset($this->selling);
         $lines[$prefix . '.buying'] = TxRepHelper::formatAsset($this->buying);

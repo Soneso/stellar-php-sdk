@@ -83,4 +83,94 @@ class XdrSCSpecEventV0 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'doc' => XdrJsonHelper::escapeString($this->doc),
+            'lib' => XdrJsonHelper::escapeString($this->lib),
+            'name' => XdrJsonHelper::escapeString($this->name),
+            'prefix_topics' => array_map(static function ($item) { return XdrJsonHelper::escapeString($item); }, $this->prefixTopics),
+            'params' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->params),
+            'data_format' => $this->dataFormat->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCSpecEventV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('doc', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field doc for XdrSCSpecEventV0'
+            );
+        }
+        if (!is_string($value['doc'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
+        }
+        $doc = XdrJsonHelper::unescapeString($value['doc']);
+        if (!array_key_exists('lib', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field lib for XdrSCSpecEventV0'
+            );
+        }
+        if (!is_string($value['lib'])) {
+            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['lib']));
+        }
+        $lib = XdrJsonHelper::unescapeString($value['lib']);
+        if (!array_key_exists('name', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field name for XdrSCSpecEventV0'
+            );
+        }
+        $name = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['name']);
+        if (!array_key_exists('prefix_topics', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field prefix_topics for XdrSCSpecEventV0'
+            );
+        }
+        $prefixTopics = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($item); }
+            return $out;
+        })($value['prefix_topics']);
+        if (!array_key_exists('params', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field params for XdrSCSpecEventV0'
+            );
+        }
+        $params = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCSpecEventParamV0::fromJsonValue($item); }
+            return $out;
+        })($value['params']);
+        if (!array_key_exists('data_format', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field data_format for XdrSCSpecEventV0'
+            );
+        }
+        $dataFormat = XdrSCSpecEventDataFormat::fromJsonValue($value['data_format']);
+        return new static($doc, $lib, $name, $prefixTopics, $params, $dataFormat);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

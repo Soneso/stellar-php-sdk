@@ -49,4 +49,53 @@ class XdrAuthCert {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'pubkey' => $this->pubkey->toJsonValue(),
+            'expiration' => XdrJsonHelper::uint64ToString($this->expiration),
+            'sig' => XdrJsonHelper::bytesToHex($this->sig),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrAuthCert JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('pubkey', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field pubkey for XdrAuthCert'
+            );
+        }
+        $pubkey = XdrCurve25519Public::fromJsonValue($value['pubkey']);
+        if (!array_key_exists('expiration', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field expiration for XdrAuthCert'
+            );
+        }
+        $expiration = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['expiration']);
+        if (!array_key_exists('sig', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field sig for XdrAuthCert'
+            );
+        }
+        $sig = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['sig']);
+        return new static($pubkey, $expiration, $sig);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

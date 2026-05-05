@@ -44,6 +44,48 @@ class XdrLedgerKeyTrustLine {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'account_id' => $this->accountID->toJsonValue(),
+            'asset' => $this->asset->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLedgerKeyTrustLine JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('account_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field account_id for XdrLedgerKeyTrustLine'
+            );
+        }
+        $accountID = XdrAccountID::fromJsonValue($value['account_id']);
+        if (!array_key_exists('asset', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset for XdrLedgerKeyTrustLine'
+            );
+        }
+        $asset = XdrTrustlineAsset::fromJsonValue($value['asset']);
+        return new static($accountID, $asset);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.accountID'] = TxRepHelper::formatAccountId($this->accountID);
         $this->asset->toTxRep($prefix . '.asset', $lines);

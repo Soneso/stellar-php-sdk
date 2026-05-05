@@ -63,4 +63,67 @@ class XdrClaimLiquidityAtom {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'liquidity_pool_id' => XdrJsonHelper::bytesToHex($this->liquidityPoolID),
+            'asset_sold' => $this->assetSold->toJsonValue(),
+            'amount_sold' => $this->amountSold->toString(),
+            'asset_bought' => $this->assetBought->toJsonValue(),
+            'amount_bought' => $this->amountBought->toString(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrClaimLiquidityAtom JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('liquidity_pool_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field liquidity_pool_id for XdrClaimLiquidityAtom'
+            );
+        }
+        $liquidityPoolID = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['liquidity_pool_id']);
+        if (!array_key_exists('asset_sold', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset_sold for XdrClaimLiquidityAtom'
+            );
+        }
+        $assetSold = XdrAsset::fromJsonValue($value['asset_sold']);
+        if (!array_key_exists('amount_sold', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field amount_sold for XdrClaimLiquidityAtom'
+            );
+        }
+        $amountSold = new BigInteger(is_string($value['amount_sold']) ? $value['amount_sold'] : (string) (int) $value['amount_sold']);
+        if (!array_key_exists('asset_bought', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset_bought for XdrClaimLiquidityAtom'
+            );
+        }
+        $assetBought = XdrAsset::fromJsonValue($value['asset_bought']);
+        if (!array_key_exists('amount_bought', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field amount_bought for XdrClaimLiquidityAtom'
+            );
+        }
+        $amountBought = new BigInteger(is_string($value['amount_bought']) ? $value['amount_bought'] : (string) (int) $value['amount_bought']);
+        return new static($liquidityPoolID, $assetSold, $amountSold, $assetBought, $amountBought);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

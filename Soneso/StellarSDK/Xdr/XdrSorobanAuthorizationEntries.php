@@ -44,6 +44,32 @@ class XdrSorobanAuthorizationEntries {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return array_map(static function ($item) { return $item->toJsonValue(); }, $this->sorobanAuthorizationEntries);
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected JSON array for XdrSorobanAuthorizationEntries, got ' . get_debug_type($value)
+            );
+        }
+        $out = [];
+        foreach ($value as $item) { $out[] = XdrSorobanAuthorizationEntry::fromJsonValue($item); }
+        return new static($out);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.len'] = (string)count($this->sorobanAuthorizationEntries);
         for ($i = 0; $i < count($this->sorobanAuthorizationEntries); $i++) {

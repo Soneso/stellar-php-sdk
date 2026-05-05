@@ -59,4 +59,56 @@ class XdrParallelTxsComponent {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'base_fee' => ($this->baseFee !== null ? XdrJsonHelper::int64ToString($this->baseFee) : null),
+            'execution_stages' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->executionStages),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrParallelTxsComponent JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('base_fee', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field base_fee for XdrParallelTxsComponent'
+            );
+        }
+        $baseFee = null;
+        if ($value['base_fee'] !== null) {
+            $baseFee = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['base_fee']);
+        }
+        if (!array_key_exists('execution_stages', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field execution_stages for XdrParallelTxsComponent'
+            );
+        }
+        $executionStages = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrParallelTxExecutionStage::fromJsonValue($item); }
+            return $out;
+        })($value['execution_stages']);
+        return new static($executionStages, $baseFee);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

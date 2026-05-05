@@ -56,6 +56,62 @@ class XdrSetTrustLineFlagsOperation {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'trustor' => $this->accountID->toJsonValue(),
+            'asset' => $this->asset->toJsonValue(),
+            'clear_flags' => $this->clearFlags,
+            'set_flags' => $this->setFlags,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSetTrustLineFlagsOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('trustor', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field trustor for XdrSetTrustLineFlagsOperation'
+            );
+        }
+        $accountID = XdrAccountID::fromJsonValue($value['trustor']);
+        if (!array_key_exists('asset', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset for XdrSetTrustLineFlagsOperation'
+            );
+        }
+        $asset = XdrAsset::fromJsonValue($value['asset']);
+        if (!array_key_exists('clear_flags', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field clear_flags for XdrSetTrustLineFlagsOperation'
+            );
+        }
+        $clearFlags = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['clear_flags']);
+        if (!array_key_exists('set_flags', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field set_flags for XdrSetTrustLineFlagsOperation'
+            );
+        }
+        $setFlags = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['set_flags']);
+        return new static($accountID, $asset, $clearFlags, $setFlags);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.trustor'] = TxRepHelper::formatAccountId($this->accountID);
         $lines[$prefix . '.asset'] = TxRepHelper::formatAsset($this->asset);

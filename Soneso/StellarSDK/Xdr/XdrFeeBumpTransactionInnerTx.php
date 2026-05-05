@@ -57,6 +57,53 @@ class XdrFeeBumpTransactionInnerTx {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrEnvelopeType::ENVELOPE_TYPE_TX => ['envelope_type_tx' => $this->v1->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for type on XdrEnvelopeType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrFeeBumpTransactionInnerTx shape=non_void
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object for XdrFeeBumpTransactionInnerTx, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrFeeBumpTransactionInnerTx, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'envelope_type_tx' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $r->v1 = XdrTransactionV1Envelope::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrFeeBumpTransactionInnerTx: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {

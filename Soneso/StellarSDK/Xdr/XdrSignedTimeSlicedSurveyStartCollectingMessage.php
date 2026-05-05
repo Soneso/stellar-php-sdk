@@ -43,4 +43,46 @@ class XdrSignedTimeSlicedSurveyStartCollectingMessage {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'signature' => XdrJsonHelper::bytesToHex($this->signature),
+            'start_collecting' => $this->startCollecting->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSignedTimeSlicedSurveyStartCollectingMessage JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('signature', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field signature for XdrSignedTimeSlicedSurveyStartCollectingMessage'
+            );
+        }
+        $signature = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['signature']);
+        if (!array_key_exists('start_collecting', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field start_collecting for XdrSignedTimeSlicedSurveyStartCollectingMessage'
+            );
+        }
+        $startCollecting = XdrTimeSlicedSurveyStartCollectingMessage::fromJsonValue($value['start_collecting']);
+        return new static($signature, $startCollecting);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

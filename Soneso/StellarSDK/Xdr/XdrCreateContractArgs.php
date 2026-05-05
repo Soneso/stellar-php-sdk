@@ -44,6 +44,48 @@ class XdrCreateContractArgs {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'contract_id_preimage' => $this->contractIDPreimage->toJsonValue(),
+            'executable' => $this->executable->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrCreateContractArgs JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('contract_id_preimage', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field contract_id_preimage for XdrCreateContractArgs'
+            );
+        }
+        $contractIDPreimage = XdrContractIDPreimage::fromJsonValue($value['contract_id_preimage']);
+        if (!array_key_exists('executable', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field executable for XdrCreateContractArgs'
+            );
+        }
+        $executable = XdrContractExecutable::fromJsonValue($value['executable']);
+        return new static($contractIDPreimage, $executable);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->contractIDPreimage->toTxRep($prefix . '.contractIDPreimage', $lines);
         $this->executable->toTxRep($prefix . '.executable', $lines);

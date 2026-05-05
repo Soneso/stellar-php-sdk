@@ -74,4 +74,75 @@ class XdrAccountMergeResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrAccountMergeResultCode::SUCCESS => ['success' => $this->sourceAccountBalance->toString()],
+            XdrAccountMergeResultCode::MALFORMED => 'malformed',
+            XdrAccountMergeResultCode::NO_ACCOUNT => 'no_account',
+            XdrAccountMergeResultCode::IMMUTABLE_SET => 'immutable_set',
+            XdrAccountMergeResultCode::HAS_SUB_ENTRIES => 'has_sub_entries',
+            XdrAccountMergeResultCode::SEQNUM_TOO_FAR => 'seqnum_too_far',
+            XdrAccountMergeResultCode::DEST_FULL => 'dest_full',
+            XdrAccountMergeResultCode::IS_SPONSOR => 'is_sponsor',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrAccountMergeResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrAccountMergeResult shape=mixed
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'malformed' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::MALFORMED)),
+                'no_account' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::NO_ACCOUNT)),
+                'immutable_set' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IMMUTABLE_SET)),
+                'has_sub_entries' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::HAS_SUB_ENTRIES)),
+                'seqnum_too_far' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SEQNUM_TOO_FAR)),
+                'dest_full' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::DEST_FULL)),
+                'is_sponsor' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IS_SPONSOR)),
+                'success' => throw new \InvalidArgumentException(
+                    "Arm 'success' on XdrAccountMergeResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
+                ),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrAccountMergeResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrAccountMergeResult, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrAccountMergeResult, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'success' => (static function () use ($arm) { $r = new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SUCCESS)); $r->sourceAccountBalance = (static function ($v) { if (is_int($v)) { return new BigInteger((string) $v); } if (!is_string($v)) { throw new \InvalidArgumentException('Expected base-10 integer string for BigInteger JSON value, got ' . get_debug_type($v)); } XdrJsonHelper::stringToInt64($v); return new BigInteger($v); })($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrAccountMergeResult: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

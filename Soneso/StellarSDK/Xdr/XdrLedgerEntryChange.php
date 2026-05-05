@@ -92,4 +92,59 @@ class XdrLedgerEntryChange {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrLedgerEntryChangeType::LEDGER_ENTRY_CREATED => ['created' => $this->created->toJsonValue()],
+            XdrLedgerEntryChangeType::LEDGER_ENTRY_UPDATED => ['updated' => $this->updated->toJsonValue()],
+            XdrLedgerEntryChangeType::LEDGER_ENTRY_REMOVED => ['removed' => $this->removed->toJsonValue()],
+            XdrLedgerEntryChangeType::LEDGER_ENTRY_STATE => ['state' => $this->state->toJsonValue()],
+            XdrLedgerEntryChangeType::LEDGER_ENTRY_RESTORED => ['restored' => $this->restored->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for type on XdrLedgerEntryChangeType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrLedgerEntryChange shape=non_void
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object for XdrLedgerEntryChange, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrLedgerEntryChange, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'created' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_CREATED)); $r->created = XdrLedgerEntry::fromJsonValue($arm); return $r; })(),
+            'updated' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_UPDATED)); $r->updated = XdrLedgerEntry::fromJsonValue($arm); return $r; })(),
+            'removed' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_REMOVED)); $r->removed = XdrLedgerKey::fromJsonValue($arm); return $r; })(),
+            'state' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_STATE)); $r->state = XdrLedgerEntry::fromJsonValue($arm); return $r; })(),
+            'restored' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryChangeType(XdrLedgerEntryChangeType::LEDGER_ENTRY_RESTORED)); $r->restored = XdrLedgerEntry::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrLedgerEntryChange: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

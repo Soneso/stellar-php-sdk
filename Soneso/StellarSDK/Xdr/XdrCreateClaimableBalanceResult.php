@@ -68,4 +68,71 @@ class XdrCreateClaimableBalanceResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->code->getValue()) {
+            XdrCreateClaimableBalanceResultCode::SUCCESS => ['success' => $this->balanceID->toJsonValue()],
+            XdrCreateClaimableBalanceResultCode::MALFORMED => 'malformed',
+            XdrCreateClaimableBalanceResultCode::LOW_RESERVE => 'low_reserve',
+            XdrCreateClaimableBalanceResultCode::NO_TRUST => 'no_trust',
+            XdrCreateClaimableBalanceResultCode::NOT_AUTHORIZED => 'not_authorized',
+            XdrCreateClaimableBalanceResultCode::UNDERFUNDED => 'underfunded',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for code on XdrCreateClaimableBalanceResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrCreateClaimableBalanceResult shape=mixed
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'malformed' => new static(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::MALFORMED)),
+                'low_reserve' => new static(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::LOW_RESERVE)),
+                'no_trust' => new static(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::NO_TRUST)),
+                'not_authorized' => new static(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::NOT_AUTHORIZED)),
+                'underfunded' => new static(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::UNDERFUNDED)),
+                'success' => throw new \InvalidArgumentException(
+                    "Arm 'success' on XdrCreateClaimableBalanceResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
+                ),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrCreateClaimableBalanceResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrCreateClaimableBalanceResult, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrCreateClaimableBalanceResult, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'success' => (static function () use ($arm) { $r = new static(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::SUCCESS)); $r->balanceID = XdrClaimableBalanceID::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrCreateClaimableBalanceResult: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

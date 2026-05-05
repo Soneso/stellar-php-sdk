@@ -44,6 +44,48 @@ class XdrLedgerKeyOffer {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'seller_id' => $this->sellerID->toJsonValue(),
+            'offer_id' => XdrJsonHelper::int64ToString($this->offerID),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLedgerKeyOffer JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('seller_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field seller_id for XdrLedgerKeyOffer'
+            );
+        }
+        $sellerID = XdrAccountID::fromJsonValue($value['seller_id']);
+        if (!array_key_exists('offer_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field offer_id for XdrLedgerKeyOffer'
+            );
+        }
+        $offerID = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['offer_id']);
+        return new static($sellerID, $offerID);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.sellerID'] = TxRepHelper::formatAccountId($this->sellerID);
         $lines[$prefix . '.offerID'] = (string)$this->offerID;

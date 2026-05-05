@@ -60,6 +60,58 @@ class XdrSCContractInstance {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'executable' => $this->executable->toJsonValue(),
+            'storage' => ($this->storage !== null ? array_map(static function ($item) { return $item->toJsonValue(); }, $this->storage) : null),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCContractInstance JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('executable', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field executable for XdrSCContractInstance'
+            );
+        }
+        $executable = XdrContractExecutable::fromJsonValue($value['executable']);
+        if (!array_key_exists('storage', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field storage for XdrSCContractInstance'
+            );
+        }
+        $storage = null;
+        if ($value['storage'] !== null) {
+            $storage = (static function ($v) {
+                if (!is_array($v)) {
+                    throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+                }
+                $out = [];
+                foreach ($v as $item) { $out[] = XdrSCMapEntry::fromJsonValue($item); }
+                return $out;
+            })($value['storage']);
+        }
+        return new static($executable, $storage);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->executable->toTxRep($prefix . '.executable', $lines);
         if ($this->storage !== null) {

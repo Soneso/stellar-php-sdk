@@ -50,6 +50,55 @@ class XdrLedgerKeyContractData {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'contract' => $this->contract->toJsonValue(),
+            'key' => $this->key->toJsonValue(),
+            'durability' => $this->durability->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLedgerKeyContractData JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('contract', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field contract for XdrLedgerKeyContractData'
+            );
+        }
+        $contract = XdrSCAddress::fromJsonValue($value['contract']);
+        if (!array_key_exists('key', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field key for XdrLedgerKeyContractData'
+            );
+        }
+        $key = XdrSCVal::fromJsonValue($value['key']);
+        if (!array_key_exists('durability', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field durability for XdrLedgerKeyContractData'
+            );
+        }
+        $durability = XdrContractDataDurability::fromJsonValue($value['durability']);
+        return new static($contract, $key, $durability);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->contract->toTxRep($prefix . '.contract', $lines);
         $this->key->toTxRep($prefix . '.key', $lines);

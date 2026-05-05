@@ -58,6 +58,62 @@ class XdrCreateContractArgsV2 {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'contract_id_preimage' => $this->contractIDPreimage->toJsonValue(),
+            'executable' => $this->executable->toJsonValue(),
+            'constructor_args' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->constructorArgs),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrCreateContractArgsV2 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('contract_id_preimage', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field contract_id_preimage for XdrCreateContractArgsV2'
+            );
+        }
+        $contractIDPreimage = XdrContractIDPreimage::fromJsonValue($value['contract_id_preimage']);
+        if (!array_key_exists('executable', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field executable for XdrCreateContractArgsV2'
+            );
+        }
+        $executable = XdrContractExecutable::fromJsonValue($value['executable']);
+        if (!array_key_exists('constructor_args', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field constructor_args for XdrCreateContractArgsV2'
+            );
+        }
+        $constructorArgs = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCVal::fromJsonValue($item); }
+            return $out;
+        })($value['constructor_args']);
+        return new static($contractIDPreimage, $executable, $constructorArgs);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->contractIDPreimage->toTxRep($prefix . '.contractIDPreimage', $lines);
         $this->executable->toTxRep($prefix . '.executable', $lines);

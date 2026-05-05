@@ -65,4 +65,67 @@ class XdrSCPQuorumSet {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'threshold' => $this->threshold,
+            'validators' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->validators),
+            'inner_sets' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->innerSets),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCPQuorumSet JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('threshold', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field threshold for XdrSCPQuorumSet'
+            );
+        }
+        $threshold = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['threshold']);
+        if (!array_key_exists('validators', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field validators for XdrSCPQuorumSet'
+            );
+        }
+        $validators = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrNodeID::fromJsonValue($item); }
+            return $out;
+        })($value['validators']);
+        if (!array_key_exists('inner_sets', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field inner_sets for XdrSCPQuorumSet'
+            );
+        }
+        $innerSets = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCPQuorumSet::fromJsonValue($item); }
+            return $out;
+        })($value['inner_sets']);
+        return new static($threshold, $validators, $innerSets);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

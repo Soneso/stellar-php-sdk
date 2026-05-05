@@ -49,4 +49,53 @@ class XdrLedgerHeaderHistoryEntry {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'hash' => XdrJsonHelper::bytesToHex($this->hash),
+            'header' => $this->header->toJsonValue(),
+            'ext' => $this->ext->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLedgerHeaderHistoryEntry JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('hash', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field hash for XdrLedgerHeaderHistoryEntry'
+            );
+        }
+        $hash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['hash']);
+        if (!array_key_exists('header', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field header for XdrLedgerHeaderHistoryEntry'
+            );
+        }
+        $header = XdrLedgerHeader::fromJsonValue($value['header']);
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrLedgerHeaderHistoryEntry'
+            );
+        }
+        $ext = XdrLedgerHeaderHistoryEntryExt::fromJsonValue($value['ext']);
+        return new static($hash, $header, $ext);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

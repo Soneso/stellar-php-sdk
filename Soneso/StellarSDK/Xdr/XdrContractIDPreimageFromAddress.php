@@ -44,6 +44,48 @@ class XdrContractIDPreimageFromAddress {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'address' => $this->address->toJsonValue(),
+            'salt' => XdrJsonHelper::bytesToHex($this->salt),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrContractIDPreimageFromAddress JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('address', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field address for XdrContractIDPreimageFromAddress'
+            );
+        }
+        $address = XdrSCAddress::fromJsonValue($value['address']);
+        if (!array_key_exists('salt', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field salt for XdrContractIDPreimageFromAddress'
+            );
+        }
+        $salt = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['salt']);
+        return new static($address, $salt);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->address->toTxRep($prefix . '.address', $lines);
         $lines[$prefix . '.salt'] = TxRepHelper::bytesToHex($this->salt);

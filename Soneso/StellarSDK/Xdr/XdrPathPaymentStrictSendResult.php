@@ -91,4 +91,88 @@ class XdrPathPaymentStrictSendResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->code->getValue()) {
+            XdrPathPaymentStrictSendResultCode::SUCCESS => ['success' => $this->success->toJsonValue()],
+            XdrPathPaymentStrictSendResultCode::MALFORMED => 'malformed',
+            XdrPathPaymentStrictSendResultCode::UNDERFUNDED => 'underfunded',
+            XdrPathPaymentStrictSendResultCode::SRC_NO_TRUST => 'src_no_trust',
+            XdrPathPaymentStrictSendResultCode::SRC_NOT_AUTHORIZED => 'src_not_authorized',
+            XdrPathPaymentStrictSendResultCode::NO_DESTINATION => 'no_destination',
+            XdrPathPaymentStrictSendResultCode::NO_TRUST => 'no_trust',
+            XdrPathPaymentStrictSendResultCode::NOT_AUTHORIZED => 'not_authorized',
+            XdrPathPaymentStrictSendResultCode::LINE_FULL => 'line_full',
+            XdrPathPaymentStrictSendResultCode::NO_ISSUER => ['no_issuer' => $this->noIssuer->toJsonValue()],
+            XdrPathPaymentStrictSendResultCode::TOO_FEW_OFFERS => 'too_few_offers',
+            XdrPathPaymentStrictSendResultCode::OFFER_CROSS_SELF => 'offer_cross_self',
+            XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN => 'under_destmin',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for code on XdrPathPaymentStrictSendResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrPathPaymentStrictSendResult shape=mixed
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'malformed' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::MALFORMED)),
+                'underfunded' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::UNDERFUNDED)),
+                'src_no_trust' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SRC_NO_TRUST)),
+                'src_not_authorized' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SRC_NOT_AUTHORIZED)),
+                'no_destination' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_DESTINATION)),
+                'no_trust' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_TRUST)),
+                'not_authorized' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NOT_AUTHORIZED)),
+                'line_full' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::LINE_FULL)),
+                'too_few_offers' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::TOO_FEW_OFFERS)),
+                'offer_cross_self' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::OFFER_CROSS_SELF)),
+                'under_destmin' => new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN)),
+                'success' => throw new \InvalidArgumentException(
+                    "Arm 'success' on XdrPathPaymentStrictSendResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
+                ),
+                'no_issuer' => throw new \InvalidArgumentException(
+                    "Arm 'no_issuer' on XdrPathPaymentStrictSendResult is non-void; supply a single-key object {\"no_issuer\": <payload>} instead of a bare string."
+                ),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrPathPaymentStrictSendResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrPathPaymentStrictSendResult, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrPathPaymentStrictSendResult, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'success' => (static function () use ($arm) { $r = new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SUCCESS)); $r->success = XdrPathPaymentResultSuccess::fromJsonValue($arm); return $r; })(),
+            'no_issuer' => (static function () use ($arm) { $r = new static(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_ISSUER)); $r->noIssuer = XdrAsset::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrPathPaymentStrictSendResult: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -77,4 +77,81 @@ class XdrTransactionResultMetaV1 {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => $this->ext->toJsonValue(),
+            'result' => $this->result->toJsonValue(),
+            'fee_processing' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->feeProcessing),
+            'tx_apply_processing' => $this->txApplyProcessing->toJsonValue(),
+            'post_tx_apply_fee_processing' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->postTxApplyFeeProcessing),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrTransactionResultMetaV1 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrTransactionResultMetaV1'
+            );
+        }
+        $ext = XdrExtensionPoint::fromJsonValue($value['ext']);
+        if (!array_key_exists('result', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field result for XdrTransactionResultMetaV1'
+            );
+        }
+        $result = XdrTransactionResultPair::fromJsonValue($value['result']);
+        if (!array_key_exists('fee_processing', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field fee_processing for XdrTransactionResultMetaV1'
+            );
+        }
+        $feeProcessing = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrLedgerEntryChange::fromJsonValue($item); }
+            return $out;
+        })($value['fee_processing']);
+        if (!array_key_exists('tx_apply_processing', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field tx_apply_processing for XdrTransactionResultMetaV1'
+            );
+        }
+        $txApplyProcessing = XdrTransactionMeta::fromJsonValue($value['tx_apply_processing']);
+        if (!array_key_exists('post_tx_apply_fee_processing', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field post_tx_apply_fee_processing for XdrTransactionResultMetaV1'
+            );
+        }
+        $postTxApplyFeeProcessing = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrLedgerEntryChange::fromJsonValue($item); }
+            return $out;
+        })($value['post_tx_apply_fee_processing']);
+        return new static($ext, $result, $feeProcessing, $txApplyProcessing, $postTxApplyFeeProcessing);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

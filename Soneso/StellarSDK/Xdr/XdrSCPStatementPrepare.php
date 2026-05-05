@@ -83,4 +83,80 @@ class XdrSCPStatementPrepare {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'quorum_set_hash' => XdrJsonHelper::bytesToHex($this->quorumSetHash),
+            'ballot' => $this->ballot->toJsonValue(),
+            'prepared' => ($this->prepared !== null ? $this->prepared->toJsonValue() : null),
+            'prepared_prime' => ($this->preparedPrime !== null ? $this->preparedPrime->toJsonValue() : null),
+            'n_c' => $this->nC,
+            'n_h' => $this->nH,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSCPStatementPrepare JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('quorum_set_hash', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field quorum_set_hash for XdrSCPStatementPrepare'
+            );
+        }
+        $quorumSetHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['quorum_set_hash']);
+        if (!array_key_exists('ballot', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ballot for XdrSCPStatementPrepare'
+            );
+        }
+        $ballot = XdrSCPBallot::fromJsonValue($value['ballot']);
+        if (!array_key_exists('prepared', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field prepared for XdrSCPStatementPrepare'
+            );
+        }
+        $prepared = null;
+        if ($value['prepared'] !== null) {
+            $prepared = XdrSCPBallot::fromJsonValue($value['prepared']);
+        }
+        if (!array_key_exists('prepared_prime', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field prepared_prime for XdrSCPStatementPrepare'
+            );
+        }
+        $preparedPrime = null;
+        if ($value['prepared_prime'] !== null) {
+            $preparedPrime = XdrSCPBallot::fromJsonValue($value['prepared_prime']);
+        }
+        if (!array_key_exists('n_c', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field n_c for XdrSCPStatementPrepare'
+            );
+        }
+        $nC = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_c']);
+        if (!array_key_exists('n_h', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field n_h for XdrSCPStatementPrepare'
+            );
+        }
+        $nH = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_h']);
+        return new static($quorumSetHash, $ballot, $nC, $nH, $prepared, $preparedPrime);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -38,6 +38,41 @@ class XdrBeginSponsoringFutureReservesOperation {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'sponsored_id' => $this->sponsoredID->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrBeginSponsoringFutureReservesOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('sponsored_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field sponsored_id for XdrBeginSponsoringFutureReservesOperation'
+            );
+        }
+        $sponsoredID = XdrAccountID::fromJsonValue($value['sponsored_id']);
+        return new static($sponsoredID);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.sponsoredID'] = TxRepHelper::formatAccountId($this->sponsoredID);
     }

@@ -51,4 +51,53 @@ class XdrManageOfferSuccessResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'offers_claimed' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->offersClaimed),
+            'offer' => $this->offer->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrManageOfferSuccessResult JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('offers_claimed', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field offers_claimed for XdrManageOfferSuccessResult'
+            );
+        }
+        $offersClaimed = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrClaimAtom::fromJsonValue($item); }
+            return $out;
+        })($value['offers_claimed']);
+        if (!array_key_exists('offer', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field offer for XdrManageOfferSuccessResult'
+            );
+        }
+        $offer = XdrManageOfferSuccessResultOffer::fromJsonValue($value['offer']);
+        return new static($offersClaimed, $offer);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -43,4 +43,46 @@ class XdrSendMoreExtended {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'num_messages' => $this->numMessages,
+            'num_bytes' => $this->numBytes,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSendMoreExtended JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('num_messages', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field num_messages for XdrSendMoreExtended'
+            );
+        }
+        $numMessages = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['num_messages']);
+        if (!array_key_exists('num_bytes', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field num_bytes for XdrSendMoreExtended'
+            );
+        }
+        $numBytes = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['num_bytes']);
+        return new static($numMessages, $numBytes);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

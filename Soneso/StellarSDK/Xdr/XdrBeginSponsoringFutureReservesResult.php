@@ -59,4 +59,50 @@ class XdrBeginSponsoringFutureReservesResult {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrBeginSponsoringFutureReservesResultCode::SUCCESS => 'success',
+            XdrBeginSponsoringFutureReservesResultCode::MALFORMED => 'malformed',
+            XdrBeginSponsoringFutureReservesResultCode::ALREADY_SPONSORED => 'already_sponsored',
+            XdrBeginSponsoringFutureReservesResultCode::RECURSIVE => 'recursive',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrBeginSponsoringFutureReservesResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrBeginSponsoringFutureReservesResult shape=void_only
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::SUCCESS)),
+                'malformed' => new static(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::MALFORMED)),
+                'already_sponsored' => new static(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::ALREADY_SPONSORED)),
+                'recursive' => new static(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::RECURSIVE)),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrBeginSponsoringFutureReservesResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new \InvalidArgumentException(
+            'Expected void-arm string for XdrBeginSponsoringFutureReservesResult, got ' . get_debug_type($value)
+        );
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

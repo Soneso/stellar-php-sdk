@@ -50,6 +50,55 @@ class XdrLiquidityPoolConstantProductParameters {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'asset_a' => $this->assetA->toJsonValue(),
+            'asset_b' => $this->assetB->toJsonValue(),
+            'fee' => $this->fee,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLiquidityPoolConstantProductParameters JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('asset_a', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset_a for XdrLiquidityPoolConstantProductParameters'
+            );
+        }
+        $assetA = XdrAsset::fromJsonValue($value['asset_a']);
+        if (!array_key_exists('asset_b', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset_b for XdrLiquidityPoolConstantProductParameters'
+            );
+        }
+        $assetB = XdrAsset::fromJsonValue($value['asset_b']);
+        if (!array_key_exists('fee', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field fee for XdrLiquidityPoolConstantProductParameters'
+            );
+        }
+        $fee = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fee']);
+        return new static($assetA, $assetB, $fee);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.assetA'] = TxRepHelper::formatAsset($this->assetA);
         $lines[$prefix . '.assetB'] = TxRepHelper::formatAsset($this->assetB);

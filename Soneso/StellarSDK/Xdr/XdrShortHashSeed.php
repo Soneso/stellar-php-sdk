@@ -37,4 +37,42 @@ class XdrShortHashSeed {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'seed' => XdrJsonHelper::bytesToHex($this->seed),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrShortHashSeed JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('seed', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field seed for XdrShortHashSeed'
+            );
+        }
+        if (!is_string($value['seed'])) {
+            throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['seed']));
+        }
+        $seed = XdrJsonHelper::hexToBytes($value['seed']);
+        return new static($seed);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

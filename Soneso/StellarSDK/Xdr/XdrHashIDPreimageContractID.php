@@ -43,4 +43,46 @@ class XdrHashIDPreimageContractID {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): array {
+        return [
+            'network_id' => XdrJsonHelper::bytesToHex($this->networkID),
+            'contract_id_preimage' => $this->contractIDPreimage->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrHashIDPreimageContractID JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('network_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field network_id for XdrHashIDPreimageContractID'
+            );
+        }
+        $networkID = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['network_id']);
+        if (!array_key_exists('contract_id_preimage', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field contract_id_preimage for XdrHashIDPreimageContractID'
+            );
+        }
+        $contractIDPreimage = XdrContractIDPreimage::fromJsonValue($value['contract_id_preimage']);
+        return new static($networkID, $contractIDPreimage);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

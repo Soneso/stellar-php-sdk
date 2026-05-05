@@ -44,6 +44,48 @@ class XdrSorobanAuthorizationEntry {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'credentials' => $this->credentials->toJsonValue(),
+            'root_invocation' => $this->rootInvocation->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSorobanAuthorizationEntry JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('credentials', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field credentials for XdrSorobanAuthorizationEntry'
+            );
+        }
+        $credentials = XdrSorobanCredentials::fromJsonValue($value['credentials']);
+        if (!array_key_exists('root_invocation', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field root_invocation for XdrSorobanAuthorizationEntry'
+            );
+        }
+        $rootInvocation = XdrSorobanAuthorizedInvocation::fromJsonValue($value['root_invocation']);
+        return new static($credentials, $rootInvocation);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->credentials->toTxRep($prefix . '.credentials', $lines);
         $this->rootInvocation->toTxRep($prefix . '.rootInvocation', $lines);
