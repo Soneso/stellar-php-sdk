@@ -75,6 +75,57 @@ class XdrSorobanAuthorizedFunctionBase {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN => ['contract_fn' => $this->contractFn->toJsonValue()],
+            XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN => ['create_contract_host_fn' => $this->createContractHostFn->toJsonValue()],
+            XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN => ['create_contract_v2_host_fn' => $this->createContractV2HostFn->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for type on XdrSorobanAuthorizedFunctionType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrSorobanAuthorizedFunctionBase shape=non_void
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object for XdrSorobanAuthorizedFunctionBase, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrSorobanAuthorizedFunctionBase, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'contract_fn' => (static function () use ($arm) { $r = new static(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $r->contractFn = XdrInvokeContractArgs::fromJsonValue($arm); return $r; })(),
+            'create_contract_host_fn' => (static function () use ($arm) { $r = new static(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $r->createContractHostFn = XdrCreateContractArgs::fromJsonValue($arm); return $r; })(),
+            'create_contract_v2_host_fn' => (static function () use ($arm) { $r = new static(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN)); $r->createContractV2HostFn = XdrCreateContractArgsV2::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrSorobanAuthorizedFunctionBase: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {

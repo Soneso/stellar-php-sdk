@@ -44,6 +44,59 @@ class XdrAssetAlphaNum4Base {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'asset_code' => XdrJsonHelper::escapeString(rtrim($this->assetCode, "\x00")),
+            'issuer' => $this->issuer->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrAssetAlphaNum4Base JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('asset_code', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset_code for XdrAssetAlphaNum4Base'
+            );
+        }
+        if (!is_string($value['asset_code'])) {
+            throw new \InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['asset_code'])
+            );
+        }
+        $decoded = XdrJsonHelper::unescapeString($value['asset_code']);
+        if (strlen($decoded) > 4) {
+            throw new \InvalidArgumentException(
+                'AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)
+            );
+        }
+        $assetCode = str_pad($decoded, 4, "\x00", STR_PAD_RIGHT);
+        if (!array_key_exists('issuer', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field issuer for XdrAssetAlphaNum4Base'
+            );
+        }
+        $issuer = XdrAccountID::fromJsonValue($value['issuer']);
+        return new static($assetCode, $issuer);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.assetCode'] = TxRepHelper::bytesToHex($this->assetCode);
         $lines[$prefix . '.issuer'] = TxRepHelper::formatAccountId($this->issuer);

@@ -56,6 +56,62 @@ class XdrSorobanResources {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'footprint' => $this->footprint->toJsonValue(),
+            'instructions' => $this->instructions,
+            'disk_read_bytes' => $this->diskReadBytes,
+            'write_bytes' => $this->writeBytes,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrSorobanResources JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('footprint', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field footprint for XdrSorobanResources'
+            );
+        }
+        $footprint = XdrLedgerFootprint::fromJsonValue($value['footprint']);
+        if (!array_key_exists('instructions', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field instructions for XdrSorobanResources'
+            );
+        }
+        $instructions = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['instructions']);
+        if (!array_key_exists('disk_read_bytes', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field disk_read_bytes for XdrSorobanResources'
+            );
+        }
+        $diskReadBytes = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['disk_read_bytes']);
+        if (!array_key_exists('write_bytes', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field write_bytes for XdrSorobanResources'
+            );
+        }
+        $writeBytes = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['write_bytes']);
+        return new static($footprint, $instructions, $diskReadBytes, $writeBytes);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->footprint->toTxRep($prefix . '.footprint', $lines);
         $lines[$prefix . '.instructions'] = (string)$this->instructions;

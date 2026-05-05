@@ -7,6 +7,8 @@ namespace Soneso\StellarSDK\Xdr;
 
 use phpseclib3\Math\BigInteger;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrLiquidityPoolDepositOperationBase {
 
     public string $liquidityPoolID;
@@ -62,6 +64,74 @@ class XdrLiquidityPoolDepositOperationBase {
             throw new \InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'liquidity_pool_id' => StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolID),
+            'max_amount_a' => $this->maxAmountA->toString(),
+            'max_amount_b' => $this->maxAmountB->toString(),
+            'min_price' => $this->minPrice->toJsonValue(),
+            'max_price' => $this->maxPrice->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLiquidityPoolDepositOperationBase JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('liquidity_pool_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field liquidity_pool_id for XdrLiquidityPoolDepositOperationBase'
+            );
+        }
+        if (!is_string($value['liquidity_pool_id'])) {
+            throw new \InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
+            );
+        }
+        $liquidityPoolID = StrKey::decodeLiquidityPoolIdHex($value['liquidity_pool_id']);
+        if (!array_key_exists('max_amount_a', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field max_amount_a for XdrLiquidityPoolDepositOperationBase'
+            );
+        }
+        $maxAmountA = new BigInteger(is_string($value['max_amount_a']) ? $value['max_amount_a'] : (string) (int) $value['max_amount_a']);
+        if (!array_key_exists('max_amount_b', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field max_amount_b for XdrLiquidityPoolDepositOperationBase'
+            );
+        }
+        $maxAmountB = new BigInteger(is_string($value['max_amount_b']) ? $value['max_amount_b'] : (string) (int) $value['max_amount_b']);
+        if (!array_key_exists('min_price', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field min_price for XdrLiquidityPoolDepositOperationBase'
+            );
+        }
+        $minPrice = XdrPrice::fromJsonValue($value['min_price']);
+        if (!array_key_exists('max_price', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field max_price for XdrLiquidityPoolDepositOperationBase'
+            );
+        }
+        $maxPrice = XdrPrice::fromJsonValue($value['max_price']);
+        return new static($liquidityPoolID, $maxAmountA, $maxAmountB, $minPrice, $maxPrice);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

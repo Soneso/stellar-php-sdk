@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrSignerKey {
 
     public XdrSignerKeyType $type;
@@ -82,6 +84,91 @@ class XdrSignerKey {
             throw new \InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        switch ($this->type->getValue()) {
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519:
+                if ($this->ed25519 === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSignerKey ed25519 field is null'
+                    );
+                }
+                return StrKey::encodeAccountId($this->ed25519);
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX:
+                if ($this->preAuthTx === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSignerKey preAuthTx field is null'
+                    );
+                }
+                return StrKey::encodePreAuthTx($this->preAuthTx);
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X:
+                if ($this->hashX === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSignerKey hashX field is null'
+                    );
+                }
+                return StrKey::encodeSha256Hash($this->hashX);
+            case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
+                if ($this->signedPayload === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSignerKey signedPayload field is null'
+                    );
+                }
+                return StrKey::encodeXdrSignedPayload($this->signedPayload);
+            default:
+                throw new \InvalidArgumentException(
+                    'Unknown XdrSignerKey discriminant: ' . $this->type->getValue()
+                );
+        }
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSignerKey JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if ($value === '') {
+            throw new \InvalidArgumentException(
+                'Empty XdrSignerKey JSON value'
+            );
+        }
+        $prefix = $value[0];
+        if ($prefix === 'G') {
+            $result = new static(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519));
+            $result->ed25519 = StrKey::decodeAccountId($value);
+            return $result;
+        }
+        if ($prefix === 'T') {
+            $result = new static(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX));
+            $result->preAuthTx = StrKey::decodePreAuthTx($value);
+            return $result;
+        }
+        if ($prefix === 'X') {
+            $result = new static(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X));
+            $result->hashX = StrKey::decodeSha256Hash($value);
+            return $result;
+        }
+        if ($prefix === 'P') {
+            $result = new static(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD));
+            $result->signedPayload = StrKey::decodeXdrSignedPayload($value);
+            return $result;
+        }
+        throw new \InvalidArgumentException(
+            'Invalid XdrSignerKey strkey prefix: ' . XdrJsonHelper::safePreview($value)
+        );
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

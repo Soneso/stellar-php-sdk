@@ -711,9 +711,84 @@ final class XdrJsonHelper
         return substr($sanitised, 0, $max - 3) . '...';
     }
 
+    /**
+     * Wrap an unsigned uint64 base-10 string into the matching PHP signed-int
+     * representation used by the Parts struct fields.
+     *
+     * The 128-bit / 256-bit Parts wrappers store every limb as a PHP signed
+     * int (XDR's hyper / unsigned hyper map onto the same 64-bit native slot
+     * on 64-bit systems). Values in [2^63, 2^64-1] therefore land in PHP as
+     * negative integers via two's-complement subtraction. This helper
+     * performs that conversion once, with full input validation, so the
+     * generated parts-decoder bodies do not each carry their own inline
+     * closure.
+     *
+     * Accepted input: a non-empty string of decimal digits representing an
+     * unsigned integer in [0, 2^64-1]. Out-of-range values, leading signs,
+     * empty strings, and non-digit characters are rejected.
+     *
+     * @param string $decimal Unsigned base-10 string in [0, 2^64-1].
+     * @return int PHP signed int (may be negative for values above PHP_INT_MAX).
+     * @throws \InvalidArgumentException On any validation failure.
+     */
+    public static function wrapUnsignedToSignedInt(string $decimal): int
+    {
+        if ($decimal === '') {
+            throw new \InvalidArgumentException(
+                'wrapUnsignedToSignedInt: input must not be empty'
+            );
+        }
+        if (!ctype_digit($decimal)) {
+            throw new \InvalidArgumentException(
+                'wrapUnsignedToSignedInt: input must be unsigned decimal digits; got "'
+                . self::safePreview($decimal) . '"'
+            );
+        }
+        $gmp = gmp_init($decimal, 10);
+        $upperBound = self::twoToThe64();
+        if (gmp_cmp($gmp, $upperBound) >= 0) {
+            throw new \InvalidArgumentException(
+                'wrapUnsignedToSignedInt: input out of range [0, 2^64-1]; length=' . strlen($decimal)
+            );
+        }
+        $signedHalf = self::twoToThe63();
+        if (gmp_cmp($gmp, $signedHalf) >= 0) {
+            $gmp = gmp_sub($gmp, $upperBound);
+        }
+        return gmp_intval($gmp);
+    }
+
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * Cached GMP value for 2^63, used as the boundary between signed-positive
+     * and signed-negative representations of uint64 values.
+     */
+    private static ?\GMP $twoToThe63 = null;
+
+    /**
+     * Cached GMP value for 2^64, used to subtract from uint64 values that
+     * exceed PHP_INT_MAX to produce the signed-int representation.
+     */
+    private static ?\GMP $twoToThe64 = null;
+
+    private static function twoToThe63(): \GMP
+    {
+        if (self::$twoToThe63 === null) {
+            self::$twoToThe63 = gmp_pow(2, 63);
+        }
+        return self::$twoToThe63;
+    }
+
+    private static function twoToThe64(): \GMP
+    {
+        if (self::$twoToThe64 === null) {
+            self::$twoToThe64 = gmp_pow(2, 64);
+        }
+        return self::$twoToThe64;
+    }
 
     /**
      * Validate that a string represents a valid signed int64 in base-10.

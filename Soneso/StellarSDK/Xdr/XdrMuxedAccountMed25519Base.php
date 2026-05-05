@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrMuxedAccountMed25519Base {
 
     public int $id;
@@ -42,6 +44,41 @@ class XdrMuxedAccountMed25519Base {
             throw new \InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        $packed = XdrEncoder::opaqueFixed($this->ed25519, 32);
+        $packed .= XdrEncoder::unsignedInteger64($this->id);
+        return StrKey::encodeMuxedAccountId($packed);
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrMuxedAccountMed25519 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        $raw = StrKey::decodeMuxedAccountId($value);
+        if (strlen($raw) !== 40) {
+            throw new \InvalidArgumentException(
+                'Decoded muxed account must be 40 bytes; got ' . strlen($raw)
+            );
+        }
+        $ed25519 = substr($raw, 0, 32);
+        $idBuf = new XdrBuffer(substr($raw, 32, 8));
+        $id = $idBuf->readUnsignedInteger64();
+        return new static($id, $ed25519);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

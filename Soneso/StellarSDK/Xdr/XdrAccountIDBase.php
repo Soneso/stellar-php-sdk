@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrAccountIDBase {
 
     public XdrPublicKey $accountID;
@@ -31,6 +33,31 @@ class XdrAccountIDBase {
             throw new \InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return $this->getAccountId();
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrAccountID JSON value, got ' . get_debug_type($value)
+            );
+        }
+        StrKey::decodeAccountId($value);
+        return new XdrAccountID($value);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

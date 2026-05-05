@@ -177,85 +177,150 @@ class GeneratorSnapshotTest < Minitest::Test
   SEP51_SCHEMA_STRIP =
     /array_key_exists\('\$schema',\s*\$value\)/.freeze
 
-  def test_sep51_xdr_sc_val_is_cat_b_skipped
-    # XdrSCVal is in BASE_WRAPPER_TYPES and Cat-B; Phase 4 owns its emission.
-    # Phase 3 must not emit on the wrapper, and the Base file must not yet
-    # contain SEP-51 methods either (Phase 4 will add them on the *Base.php).
-    %w[XdrSCVal.php XdrSCValBase.php].each do |fname|
-      path = File.join(OUTPUT_DIR, fname)
-      next unless File.exist?(path)
-      contents = File.read(path)
-      refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} (Cat-B) must not have SEP-51 toJsonValue until Phase 4"
-      refute_match SEP51_STRUCT_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} (Cat-B) must not have SEP-51 toJsonValue until Phase 4"
+  def test_sep51_xdr_sc_val_is_cat_b_emitted_on_base
+    # XdrSCVal is Cat-B; SEP-51 emits on XdrSCValBase.php and the wrapper
+    # XdrSCVal.php inherits via `extends`. The wrapper file must not
+    # carry duplicate SEP-51 methods.
+    base_path = File.join(OUTPUT_DIR, "XdrSCValBase.php")
+    assert File.exist?(base_path), "expected XdrSCValBase.php to exist"
+    base_contents = File.read(base_path)
+    assert_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, base_contents,
+      "XdrSCValBase.php must have SEP-51 toJsonValue (Cat-B emits on base)"
+
+    wrapper_path = File.join(OUTPUT_DIR, "XdrSCVal.php")
+    if File.exist?(wrapper_path)
+      wrapper_contents = File.read(wrapper_path)
+      refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, wrapper_contents,
+        "XdrSCVal.php (Cat-B wrapper) must not duplicate base SEP-51"
+      refute_match SEP51_STRUCT_TO_JSON_VALUE_SIGNATURE, wrapper_contents,
+        "XdrSCVal.php (Cat-B wrapper) must not duplicate base SEP-51"
     end
   end
 
-  def test_sep51_xdr_asset_cat_a_skipped
-    # XdrAsset, XdrAssetAlphaNum4, XdrAssetAlphaNum12, XdrAssetCode (typedef),
-    # and XdrSCAddress are Cat-A inline targets / Cat-B wrappers; Phase 3 must
-    # not emit on them. XdrAssetCode is not even a class — the typedef is
-    # collapsed to string at PHP level — so the file does not exist.
-    %w[XdrAsset.php XdrAssetAlphaNum4.php XdrAssetAlphaNum12.php
-       XdrAssetAlphaNum4Base.php XdrAssetAlphaNum12Base.php XdrSCAddress.php
-       XdrSCAddressBase.php].each do |fname|
+  def test_sep51_xdr_asset_emits_bespoke_shape
+    # XdrAsset is Cat-A with a stellar_json_overrides entry; the override
+    # body emits the native/credit_alphanum* dispatch.
+    asset_contents = File.read(File.join(OUTPUT_DIR, "XdrAsset.php"))
+    assert_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, asset_contents,
+      "XdrAsset.php must have SEP-51 toJsonValue (Cat-A bespoke override; mixed shape)"
+    assert_match(/return 'native';/, asset_contents,
+      "XdrAsset.php missing 'native' bare-string emission")
+    assert_match(/'credit_alphanum4'/, asset_contents,
+      "XdrAsset.php missing credit_alphanum4 arm emission")
+    assert_match(/'credit_alphanum12'/, asset_contents,
+      "XdrAsset.php missing credit_alphanum12 arm emission")
+
+    # Cat-B AlphaNum4/12 wrappers must inherit, not duplicate; the base
+    # files must have SEP-51 emission.
+    %w[XdrAssetAlphaNum4Base.php XdrAssetAlphaNum12Base.php].each do |fname|
       path = File.join(OUTPUT_DIR, fname)
       next unless File.exist?(path)
       contents = File.read(path)
-      refute_match SEP51_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} is a Cat-A/Cat-B target; SEP-51 must not be emitted until Phase 4"
-      refute_match SEP51_STRUCT_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} is a Cat-A/Cat-B target; SEP-51 must not be emitted until Phase 4"
-      refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} is a Cat-A/Cat-B target; SEP-51 must not be emitted until Phase 4"
+      assert_match SEP51_STRUCT_TO_JSON_VALUE_SIGNATURE, contents,
+        "#{fname} (Cat-B base) must have SEP-51 toJsonValue"
     end
+    %w[XdrAssetAlphaNum4.php XdrAssetAlphaNum12.php].each do |fname|
+      path = File.join(OUTPUT_DIR, fname)
+      next unless File.exist?(path)
+      contents = File.read(path)
+      refute_match SEP51_STRUCT_TO_JSON_VALUE_SIGNATURE, contents,
+        "#{fname} (Cat-B wrapper) must not duplicate base SEP-51"
+    end
+
+    # SCAddress: Cat-B with bespoke override on the base; wrapper must
+    # not duplicate.
+    base_contents = File.read(File.join(OUTPUT_DIR, "XdrSCAddressBase.php"))
+    assert_match SEP51_TO_JSON_VALUE_SIGNATURE, base_contents,
+      "XdrSCAddressBase.php must have SEP-51 toJsonValue (Cat-B bespoke; string)"
+    assert_match(/StrKey::encodeContractIdHex/, base_contents,
+      "XdrSCAddressBase.php missing C-strkey emission")
+    wrapper_contents = File.read(File.join(OUTPUT_DIR, "XdrSCAddress.php"))
+    refute_match SEP51_TO_JSON_VALUE_SIGNATURE, wrapper_contents,
+      "XdrSCAddress.php (Cat-B wrapper) must not duplicate base SEP-51 (string)"
+    refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, wrapper_contents,
+      "XdrSCAddress.php (Cat-B wrapper) must not duplicate base SEP-51 (mixed)"
   end
 
-  def test_sep51_xdr_memo_cat_a_skipped
-    # XdrMemo is in CAT_A_INLINE_TARGETS; Phase 4 emits its bespoke shape.
+  def test_sep51_xdr_memo_emits_bespoke_shape
+    # XdrMemo is in CAT_A_INLINE_TARGETS with a stellar_json_overrides
+    # entry; the override emits "none" bare-string and per-arm objects.
     contents = File.read(File.join(OUTPUT_DIR, "XdrMemo.php"))
-    refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, contents
-  end
-
-  def test_sep51_xdr_preconditions_cat_a_skipped
-    # XdrPreconditions and XdrPreconditionsV2 are Cat-A.
-    %w[XdrPreconditions.php XdrPreconditionsV2.php].each do |fname|
-      contents = File.read(File.join(OUTPUT_DIR, fname))
-      refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} is Cat-A; SEP-51 must not be emitted until Phase 4"
-      refute_match SEP51_STRUCT_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} is Cat-A; SEP-51 must not be emitted until Phase 4"
+    assert_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, contents,
+      "XdrMemo.php must have SEP-51 toJsonValue (Cat-A bespoke override; mixed shape)"
+    assert_match(/return 'none';/, contents,
+      "XdrMemo.php missing 'none' bare-string emission")
+    %w[text id hash return].each do |arm|
+      assert_match Regexp.new("'#{arm}'\\s*=>"), contents,
+        "XdrMemo.php missing '#{arm}' arm emission"
     end
   end
 
-  def test_sep51_xdr_signer_key_cat_a_skipped
-    # XdrSignerKey is a Cat-A inline target; Phase 4 emits its bespoke
-    # P-strkey-bearing shape. Phase 3 must not emit.
+  def test_sep51_xdr_preconditions_emits_via_default_template
+    # XdrPreconditions (union) and XdrPreconditionsV2 (struct) are Cat-A
+    # but have no stellar_json_overrides entry — the standard generator
+    # template handles them. The post-Phase-4 emits_sep51? predicate
+    # allows them through.
+    pre_contents = File.read(File.join(OUTPUT_DIR, "XdrPreconditions.php"))
+    assert_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, pre_contents,
+      "XdrPreconditions.php must have SEP-51 union toJsonValue"
+    %w[time v2].each do |arm|
+      assert_match Regexp.new("'#{arm}'"), pre_contents,
+        "XdrPreconditions.php missing arm '#{arm}'"
+    end
+
+    v2_contents = File.read(File.join(OUTPUT_DIR, "XdrPreconditionsV2.php"))
+    assert_match SEP51_STRUCT_TO_JSON_VALUE_SIGNATURE, v2_contents,
+      "XdrPreconditionsV2.php must have SEP-51 struct toJsonValue"
+    %w[time_bounds ledger_bounds min_seq_num min_seq_age min_seq_ledger_gap extra_signers].each do |key|
+      assert_match Regexp.new("'#{key}'"), v2_contents,
+        "XdrPreconditionsV2.php missing key '#{key}'"
+    end
+  end
+
+  def test_sep51_xdr_signer_key_emits_bespoke_shape
+    # XdrSignerKey is Cat-A with a stellar_json_overrides entry; the
+    # override emits a single-string strkey dispatch (G/T/X/P).
     contents = File.read(File.join(OUTPUT_DIR, "XdrSignerKey.php"))
-    refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, contents,
-      "XdrSignerKey.php is Cat-A; SEP-51 must not be emitted until Phase 4"
+    assert_match SEP51_TO_JSON_VALUE_SIGNATURE, contents,
+      "XdrSignerKey.php must have SEP-51 toJsonValue (Cat-A bespoke; string)"
+    assert_match(/StrKey::encodeAccountId/, contents)
+    assert_match(/StrKey::encodePreAuthTx/, contents)
+    assert_match(/StrKey::encodeSha256Hash/, contents)
+    assert_match(/StrKey::encodeXdrSignedPayload/, contents)
   end
 
-  def test_sep51_xdr_ledger_key_cat_b_skipped
-    # XdrLedgerKey is in BASE_WRAPPER_TYPES; Phase 4 emits.
-    %w[XdrLedgerKey.php XdrLedgerKeyBase.php].each do |fname|
-      path = File.join(OUTPUT_DIR, fname)
-      next unless File.exist?(path)
-      contents = File.read(path)
-      refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} is Cat-B; SEP-51 must not be emitted until Phase 4"
+  def test_sep51_xdr_ledger_key_emits_on_base
+    # XdrLedgerKey is in BASE_WRAPPER_TYPES; SEP-51 emits on the base
+    # via the standard union template (no bespoke override registered).
+    base_path = File.join(OUTPUT_DIR, "XdrLedgerKeyBase.php")
+    assert File.exist?(base_path)
+    base_contents = File.read(base_path)
+    assert_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, base_contents,
+      "XdrLedgerKeyBase.php must have SEP-51 union toJsonValue"
+
+    wrapper_path = File.join(OUTPUT_DIR, "XdrLedgerKey.php")
+    if File.exist?(wrapper_path)
+      wrapper_contents = File.read(wrapper_path)
+      refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, wrapper_contents,
+        "XdrLedgerKey.php (Cat-B wrapper) must not duplicate base SEP-51"
     end
   end
 
-  def test_sep51_xdr_transaction_envelope_cat_b_skipped
-    # XdrTransactionEnvelope is in BASE_WRAPPER_TYPES; Phase 4 emits.
-    %w[XdrTransactionEnvelope.php XdrTransactionEnvelopeBase.php].each do |fname|
-      path = File.join(OUTPUT_DIR, fname)
-      next unless File.exist?(path)
-      contents = File.read(path)
-      refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, contents,
-        "#{fname} is Cat-B; SEP-51 must not be emitted until Phase 4"
+  def test_sep51_xdr_transaction_envelope_emits_on_base
+    # XdrTransactionEnvelope is in BASE_WRAPPER_TYPES; SEP-51 emits on
+    # the base via the standard union template.
+    base_path = File.join(OUTPUT_DIR, "XdrTransactionEnvelopeBase.php")
+    if File.exist?(base_path)
+      base_contents = File.read(base_path)
+      assert_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, base_contents,
+        "XdrTransactionEnvelopeBase.php must have SEP-51 union toJsonValue"
+    end
+
+    wrapper_path = File.join(OUTPUT_DIR, "XdrTransactionEnvelope.php")
+    if File.exist?(wrapper_path)
+      wrapper_contents = File.read(wrapper_path)
+      refute_match SEP51_UNION_TO_JSON_VALUE_SIGNATURE, wrapper_contents,
+        "XdrTransactionEnvelope.php (Cat-B wrapper) must not duplicate base SEP-51"
     end
   end
 

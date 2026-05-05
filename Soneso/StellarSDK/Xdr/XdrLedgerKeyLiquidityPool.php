@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrLedgerKeyLiquidityPool {
 
     public string $liquidityPoolID;
@@ -40,7 +42,7 @@ class XdrLedgerKeyLiquidityPool {
 
     public function toJsonValue(): array {
         return [
-            'liquidity_pool_id' => XdrJsonHelper::bytesToHex($this->liquidityPoolID),
+            'liquidity_pool_id' => StrKey::encodeLiquidityPoolId($this->liquidityPoolID),
         ];
     }
 
@@ -58,7 +60,12 @@ class XdrLedgerKeyLiquidityPool {
                 'Missing required field liquidity_pool_id for XdrLedgerKeyLiquidityPool'
             );
         }
-        $liquidityPoolID = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['liquidity_pool_id']);
+        if (!is_string($value['liquidity_pool_id'])) {
+            throw new \InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
+            );
+        }
+        $liquidityPoolID = StrKey::decodeLiquidityPoolId($value['liquidity_pool_id']);
         return new static($liquidityPoolID);
     }
 

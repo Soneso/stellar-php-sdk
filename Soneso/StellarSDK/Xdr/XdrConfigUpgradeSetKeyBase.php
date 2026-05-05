@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrConfigUpgradeSetKeyBase {
 
     public string $contractID;
@@ -42,5 +44,52 @@ class XdrConfigUpgradeSetKeyBase {
             throw new \InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'contract_id' => StrKey::encodeContractIdHex($this->contractID),
+            'content_hash' => XdrJsonHelper::bytesToHex($this->contentHash),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrConfigUpgradeSetKeyBase JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('contract_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field contract_id for XdrConfigUpgradeSetKeyBase'
+            );
+        }
+        if (!is_string($value['contract_id'])) {
+            throw new \InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['contract_id'])
+            );
+        }
+        $contractID = StrKey::decodeContractIdHex($value['contract_id']);
+        if (!array_key_exists('content_hash', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field content_hash for XdrConfigUpgradeSetKeyBase'
+            );
+        }
+        $contentHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['content_hash']);
+        return new static($contractID, $contentHash);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

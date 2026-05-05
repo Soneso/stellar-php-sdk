@@ -1429,4 +1429,62 @@ class XdrJsonHelperTest extends TestCase
         $this->expectExceptionMessageMatches('/maximum recursion depth/');
         XdrJsonHelper::ksortRecursive($value, 3);
     }
+
+    // =========================================================================
+    // wrapUnsignedToSignedInt — boundary cases for the parts-decoder helper
+    // =========================================================================
+
+    public function testWrapUnsignedToSignedInt_zero(): void
+    {
+        $this->assertSame(0, XdrJsonHelper::wrapUnsignedToSignedInt('0'));
+    }
+
+    public function testWrapUnsignedToSignedInt_signedPositiveBoundary(): void
+    {
+        // 2^63 - 1 = PHP_INT_MAX = 9223372036854775807 (largest signed-positive).
+        $this->assertSame(PHP_INT_MAX, XdrJsonHelper::wrapUnsignedToSignedInt('9223372036854775807'));
+    }
+
+    public function testWrapUnsignedToSignedInt_signedNegativeBoundary(): void
+    {
+        // 2^63 = 9223372036854775808 (smallest unsigned that wraps to negative).
+        // Two's-complement: 2^63 - 2^64 = -2^63 = PHP_INT_MIN.
+        $this->assertSame(PHP_INT_MIN, XdrJsonHelper::wrapUnsignedToSignedInt('9223372036854775808'));
+    }
+
+    public function testWrapUnsignedToSignedInt_uint64Max(): void
+    {
+        // 2^64 - 1 = 18446744073709551615 wraps to -1 in PHP signed-int form.
+        $this->assertSame(-1, XdrJsonHelper::wrapUnsignedToSignedInt('18446744073709551615'));
+    }
+
+    public function testWrapUnsignedToSignedInt_rejectsExactlyTwoToThe64(): void
+    {
+        // 2^64 is one past the upper bound; must reject.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/out of range/');
+        XdrJsonHelper::wrapUnsignedToSignedInt('18446744073709551616');
+    }
+
+    public function testWrapUnsignedToSignedInt_rejectsNegativeInput(): void
+    {
+        // Leading minus is not valid for an unsigned input.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/unsigned decimal digits/');
+        XdrJsonHelper::wrapUnsignedToSignedInt('-1');
+    }
+
+    public function testWrapUnsignedToSignedInt_rejectsNonDigits(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/unsigned decimal digits/');
+        XdrJsonHelper::wrapUnsignedToSignedInt('abc');
+    }
+
+    public function testWrapUnsignedToSignedInt_rejectsEmpty(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/must not be empty/');
+        XdrJsonHelper::wrapUnsignedToSignedInt('');
+    }
 }

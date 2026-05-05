@@ -32,4 +32,23 @@ class XdrNodeID {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): string {
+        return $this->nodeID->toJsonValue();
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        return new static(XdrPublicKey::fromJsonValue($value));
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrPublicKey {
 
     public XdrPublicKeyType $type;
@@ -55,6 +57,37 @@ class XdrPublicKey {
             throw new \InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        if ($this->ed25519 === null) {
+            throw new \InvalidArgumentException(
+                'XdrPublicKey ed25519 field is null; cannot encode strkey'
+            );
+        }
+        return StrKey::encodeAccountId($this->ed25519);
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrPublicKey JSON value, got ' . get_debug_type($value)
+            );
+        }
+        $result = new static(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519));
+        $result->ed25519 = StrKey::decodeAccountId($value);
+        return $result;
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

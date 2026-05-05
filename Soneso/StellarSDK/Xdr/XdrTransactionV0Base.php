@@ -90,6 +90,93 @@ class XdrTransactionV0Base {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'source_account_ed25519' => XdrJsonHelper::bytesToHex($this->sourceAccountEd25519),
+            'fee' => $this->fee,
+            'seq_num' => $this->seqNum->toJsonValue(),
+            'time_bounds' => ($this->timeBounds !== null ? $this->timeBounds->toJsonValue() : null),
+            'memo' => $this->memo->toJsonValue(),
+            'operations' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->operations),
+            'ext' => $this->ext->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrTransactionV0Base JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('source_account_ed25519', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field source_account_ed25519 for XdrTransactionV0Base'
+            );
+        }
+        $sourceAccountEd25519 = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['source_account_ed25519']);
+        if (!array_key_exists('fee', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field fee for XdrTransactionV0Base'
+            );
+        }
+        $fee = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fee']);
+        if (!array_key_exists('seq_num', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field seq_num for XdrTransactionV0Base'
+            );
+        }
+        $seqNum = XdrSequenceNumber::fromJsonValue($value['seq_num']);
+        if (!array_key_exists('time_bounds', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field time_bounds for XdrTransactionV0Base'
+            );
+        }
+        $timeBounds = null;
+        if ($value['time_bounds'] !== null) {
+            $timeBounds = XdrTimeBounds::fromJsonValue($value['time_bounds']);
+        }
+        if (!array_key_exists('memo', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field memo for XdrTransactionV0Base'
+            );
+        }
+        $memo = XdrMemo::fromJsonValue($value['memo']);
+        if (!array_key_exists('operations', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field operations for XdrTransactionV0Base'
+            );
+        }
+        $operations = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrOperation::fromJsonValue($item); }
+            return $out;
+        })($value['operations']);
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrTransactionV0Base'
+            );
+        }
+        $ext = XdrTransactionV0Ext::fromJsonValue($value['ext']);
+        return new static($sourceAccountEd25519, $fee, $seqNum, $memo, $operations, $ext, $timeBounds);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.sourceAccountEd25519'] = TxRepHelper::bytesToHex($this->sourceAccountEd25519);
         $lines[$prefix . '.fee'] = (string)$this->fee;

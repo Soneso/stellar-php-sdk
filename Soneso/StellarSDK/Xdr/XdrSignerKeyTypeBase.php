@@ -66,6 +66,50 @@ class XdrSignerKeyTypeBase {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SIGNER_KEY_TYPE_ED25519 => 'ed25519',
+            self::SIGNER_KEY_TYPE_PRE_AUTH_TX => 'pre_auth_tx',
+            self::SIGNER_KEY_TYPE_HASH_X => 'hash_x',
+            self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD => 'ed25519_signed_payload',
+            XdrSignerKeyType::MUXED_ED25519 => 'muxed_ed25519',
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSignerKeyType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSignerKeyType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'ed25519' => new static(self::SIGNER_KEY_TYPE_ED25519),
+            'pre_auth_tx' => new static(self::SIGNER_KEY_TYPE_PRE_AUTH_TX),
+            'hash_x' => new static(self::SIGNER_KEY_TYPE_HASH_X),
+            'ed25519_signed_payload' => new static(self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD),
+            'muxed_ed25519' => new static(XdrSignerKeyType::MUXED_ED25519),
+            default => throw new \InvalidArgumentException(
+                'Unknown XdrSignerKeyType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function enumName(): string {
         switch ($this->value) {
             case self::SIGNER_KEY_TYPE_ED25519:

@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrSCAddressBase {
 
     public XdrSCAddressType $type;
@@ -91,6 +93,114 @@ class XdrSCAddressBase {
             throw new \InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        switch ($this->type->getValue()) {
+            case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
+                if ($this->accountId === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSCAddress accountId field is null'
+                    );
+                }
+                return $this->accountId->toJsonValue();
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                if ($this->contractId === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSCAddress contractId field is null'
+                    );
+                }
+                return StrKey::encodeContractIdHex($this->contractId);
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+                if ($this->muxedAccount === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSCAddress muxedAccount field is null'
+                    );
+                }
+                $packed = XdrEncoder::opaqueFixed($this->muxedAccount->ed25519, 32);
+                $packed .= XdrEncoder::unsignedInteger64($this->muxedAccount->id);
+                return StrKey::encodeMuxedAccountId($packed);
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+                if ($this->claimableBalanceId === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSCAddress claimableBalanceId field is null'
+                    );
+                }
+                return $this->claimableBalanceId->toJsonValue();
+            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                if ($this->liquidityPoolId === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrSCAddress liquidityPoolId field is null'
+                    );
+                }
+                return StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolId);
+            default:
+                throw new \InvalidArgumentException(
+                    'Unknown XdrSCAddress discriminant: ' . $this->type->getValue()
+                );
+        }
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrSCAddress JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if ($value === '') {
+            throw new \InvalidArgumentException(
+                'Empty XdrSCAddress JSON value'
+            );
+        }
+        $prefix = $value[0];
+        if ($prefix === 'G') {
+            $result = new static(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT));
+            $result->accountId = XdrAccountID::fromJsonValue($value);
+            return $result;
+        }
+        if ($prefix === 'C') {
+            $result = new static(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT));
+            $result->contractId = StrKey::decodeContractIdHex($value);
+            return $result;
+        }
+        if ($prefix === 'M') {
+            $raw = StrKey::decodeMuxedAccountId($value);
+            if (strlen($raw) !== 40) {
+                throw new \InvalidArgumentException(
+                    'Decoded muxed account must be 40 bytes; got ' . strlen($raw)
+                );
+            }
+            $ed25519 = substr($raw, 0, 32);
+            $idBuf = new XdrBuffer(substr($raw, 32, 8));
+            $id = $idBuf->readUnsignedInteger64();
+            $result = new static(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT));
+            $result->muxedAccount = new XdrMuxedAccountMed25519($id, $ed25519);
+            return $result;
+        }
+        if ($prefix === 'B') {
+            $result = new static(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE));
+            $result->claimableBalanceId = XdrClaimableBalanceID::fromJsonValue($value);
+            return $result;
+        }
+        if ($prefix === 'L') {
+            $result = new static(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL));
+            $result->liquidityPoolId = StrKey::decodeLiquidityPoolIdHex($value);
+            return $result;
+        }
+        throw new \InvalidArgumentException(
+            'Invalid XdrSCAddress strkey prefix: ' . XdrJsonHelper::safePreview($value)
+        );
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

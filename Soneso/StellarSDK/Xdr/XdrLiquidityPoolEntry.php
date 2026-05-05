@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrLiquidityPoolEntry {
 
     public string $liquidityPoolID;
@@ -42,5 +44,52 @@ class XdrLiquidityPoolEntry {
             throw new \InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'liquidity_pool_id' => StrKey::encodeLiquidityPoolId($this->liquidityPoolID),
+            'body' => $this->body->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrLiquidityPoolEntry JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('liquidity_pool_id', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field liquidity_pool_id for XdrLiquidityPoolEntry'
+            );
+        }
+        if (!is_string($value['liquidity_pool_id'])) {
+            throw new \InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
+            );
+        }
+        $liquidityPoolID = StrKey::decodeLiquidityPoolId($value['liquidity_pool_id']);
+        if (!array_key_exists('body', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field body for XdrLiquidityPoolEntry'
+            );
+        }
+        $body = XdrLiquidityPoolBody::fromJsonValue($value['body']);
+        return new static($liquidityPoolID, $body);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

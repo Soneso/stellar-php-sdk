@@ -88,6 +88,119 @@ class XdrMemo {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): mixed {
+        switch ($this->type->getValue()) {
+            case XdrMemoType::MEMO_NONE:
+                return 'none';
+            case XdrMemoType::MEMO_TEXT:
+                if ($this->text === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrMemo text field is null'
+                    );
+                }
+                return ['text' => XdrJsonHelper::escapeString($this->text)];
+            case XdrMemoType::MEMO_ID:
+                if ($this->id === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrMemo id field is null'
+                    );
+                }
+                return ['id' => XdrJsonHelper::uint64ToString($this->id)];
+            case XdrMemoType::MEMO_HASH:
+                if ($this->hash === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrMemo hash field is null'
+                    );
+                }
+                return ['hash' => XdrJsonHelper::bytesToHex($this->hash)];
+            case XdrMemoType::MEMO_RETURN:
+                if ($this->returnHash === null) {
+                    throw new \InvalidArgumentException(
+                        'XdrMemo returnHash field is null'
+                    );
+                }
+                return ['return' => XdrJsonHelper::bytesToHex($this->returnHash)];
+            default:
+                throw new \InvalidArgumentException(
+                    'Unknown XdrMemo discriminant: ' . $this->type->getValue()
+                );
+        }
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            if ($value !== 'none') {
+                throw new \InvalidArgumentException(
+                    'Unknown XdrMemo bare string: ' . XdrJsonHelper::safePreview($value)
+                );
+            }
+            return new static(new XdrMemoType(XdrMemoType::MEMO_NONE));
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or "none" for XdrMemo JSON value'
+            );
+        }
+        $key = array_key_first($value);
+        if ($key === 'text') {
+            if (!is_string($value['text'])) {
+                throw new \InvalidArgumentException(
+                    'Expected string for XdrMemo text arm, got ' . get_debug_type($value['text'])
+                );
+            }
+            $result = new static(new XdrMemoType(XdrMemoType::MEMO_TEXT));
+            $result->text = XdrJsonHelper::unescapeString($value['text']);
+            return $result;
+        }
+        if ($key === 'id') {
+            $result = new static(new XdrMemoType(XdrMemoType::MEMO_ID));
+            if (!is_string($value['id']) && !is_int($value['id'])) {
+                throw new \InvalidArgumentException(
+                    'Expected string or int for XdrMemo id arm, got ' . get_debug_type($value['id'])
+                );
+            }
+            $result->id = XdrJsonHelper::stringToUint64($value['id']);
+            return $result;
+        }
+        if ($key === 'hash') {
+            if (!is_string($value['hash'])) {
+                throw new \InvalidArgumentException(
+                    'Expected hex string for XdrMemo hash arm, got ' . get_debug_type($value['hash'])
+                );
+            }
+            $result = new static(new XdrMemoType(XdrMemoType::MEMO_HASH));
+            $result->hash = XdrJsonHelper::hexToBytes($value['hash']);
+            return $result;
+        }
+        if ($key === 'return') {
+            if (!is_string($value['return'])) {
+                throw new \InvalidArgumentException(
+                    'Expected hex string for XdrMemo return arm, got ' . get_debug_type($value['return'])
+                );
+            }
+            $result = new static(new XdrMemoType(XdrMemoType::MEMO_RETURN));
+            $result->returnHash = XdrJsonHelper::hexToBytes($value['return']);
+            return $result;
+        }
+        throw new \InvalidArgumentException(
+            'Unknown arm key for XdrMemo: ' . XdrJsonHelper::safePreview($key)
+        );
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {

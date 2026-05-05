@@ -44,6 +44,48 @@ class XdrTimeBoundsBase {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'min_time' => XdrJsonHelper::uint64ToString($this->minTimestamp),
+            'max_time' => XdrJsonHelper::uint64ToString($this->maxTimestamp),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrTimeBoundsBase JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('min_time', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field min_time for XdrTimeBoundsBase'
+            );
+        }
+        $minTimestamp = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['min_time']);
+        if (!array_key_exists('max_time', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field max_time for XdrTimeBoundsBase'
+            );
+        }
+        $maxTimestamp = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['max_time']);
+        return new static($minTimestamp, $maxTimestamp);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.minTime'] = (string)$this->minTimestamp;
         $lines[$prefix . '.maxTime'] = (string)$this->maxTimestamp;

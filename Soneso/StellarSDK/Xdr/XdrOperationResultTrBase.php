@@ -290,4 +290,103 @@ class XdrOperationResultTrBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrOperationType::CREATE_ACCOUNT => ['create_account' => $this->createAccountResult->toJsonValue()],
+            XdrOperationType::PAYMENT => ['payment' => $this->paymentResult->toJsonValue()],
+            XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE => ['path_payment_strict_receive' => $this->pathPaymentStrictReceiveResult->toJsonValue()],
+            XdrOperationType::MANAGE_SELL_OFFER => ['manage_sell_offer' => $this->manageOfferResult->toJsonValue()],
+            XdrOperationType::CREATE_PASSIVE_SELL_OFFER => ['create_passive_sell_offer' => $this->createPassiveSellOfferResult->toJsonValue()],
+            XdrOperationType::SET_OPTIONS => ['set_options' => $this->setOptionsResult->toJsonValue()],
+            XdrOperationType::CHANGE_TRUST => ['change_trust' => $this->changeTrustResult->toJsonValue()],
+            XdrOperationType::ALLOW_TRUST => ['allow_trust' => $this->allowTrustResult->toJsonValue()],
+            XdrOperationType::ACCOUNT_MERGE => ['account_merge' => $this->accountMergeResult->toJsonValue()],
+            XdrOperationType::INFLATION => ['inflation' => $this->inflationResult->toJsonValue()],
+            XdrOperationType::MANAGE_DATA => ['manage_data' => $this->manageDataResult->toJsonValue()],
+            XdrOperationType::BUMP_SEQUENCE => ['bump_sequence' => $this->bumpSequenceResult->toJsonValue()],
+            XdrOperationType::MANAGE_BUY_OFFER => ['manage_buy_offer' => $this->manageBuyOfferResult->toJsonValue()],
+            XdrOperationType::PATH_PAYMENT_STRICT_SEND => ['path_payment_strict_send' => $this->pathPaymentStrictSendResult->toJsonValue()],
+            XdrOperationType::CREATE_CLAIMABLE_BALANCE => ['create_claimable_balance' => $this->createClaimableBalanceResult->toJsonValue()],
+            XdrOperationType::CLAIM_CLAIMABLE_BALANCE => ['claim_claimable_balance' => $this->claimClaimableBalanceResult->toJsonValue()],
+            XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES => ['begin_sponsoring_future_reserves' => $this->beginSponsoringFutureReservesResult->toJsonValue()],
+            XdrOperationType::END_SPONSORING_FUTURE_RESERVES => ['end_sponsoring_future_reserves' => $this->endSponsoringFutureReservesResult->toJsonValue()],
+            XdrOperationType::REVOKE_SPONSORSHIP => ['revoke_sponsorship' => $this->revokeSponsorshipResult->toJsonValue()],
+            XdrOperationType::CLAWBACK => ['clawback' => $this->clawbackResult->toJsonValue()],
+            XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE => ['clawback_claimable_balance' => $this->clawbackClaimableBalanceResult->toJsonValue()],
+            XdrOperationType::SET_TRUST_LINE_FLAGS => ['set_trust_line_flags' => $this->setTrustLineFlagsResult->toJsonValue()],
+            XdrOperationType::LIQUIDITY_POOL_DEPOSIT => ['liquidity_pool_deposit' => $this->liquidityPoolDepositResult->toJsonValue()],
+            XdrOperationType::LIQUIDITY_POOL_WITHDRAW => ['liquidity_pool_withdraw' => $this->liquidityPoolWithdrawResult->toJsonValue()],
+            XdrOperationType::INVOKE_HOST_FUNCTION => ['invoke_host_function' => $this->invokeHostFunctionResult->toJsonValue()],
+            XdrOperationType::EXTEND_FOOTPRINT_TTL => ['extend_footprint_ttl' => $this->extendFootprintTTLResult->toJsonValue()],
+            XdrOperationType::RESTORE_FOOTPRINT => ['restore_footprint' => $this->restoreFootprintResult->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for type on XdrOperationType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrOperationResultTrBase shape=non_void
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object for XdrOperationResultTrBase, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrOperationResultTrBase, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'create_account' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $r->createAccountResult = XdrCreateAccountResult::fromJsonValue($arm); return $r; })(),
+            'payment' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::PAYMENT)); $r->paymentResult = XdrPaymentResult::fromJsonValue($arm); return $r; })(),
+            'path_payment_strict_receive' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE)); $r->pathPaymentStrictReceiveResult = XdrPathPaymentStrictReceiveResult::fromJsonValue($arm); return $r; })(),
+            'manage_sell_offer' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::MANAGE_SELL_OFFER)); $r->manageOfferResult = XdrManageOfferResult::fromJsonValue($arm); return $r; })(),
+            'create_passive_sell_offer' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::CREATE_PASSIVE_SELL_OFFER)); $r->createPassiveSellOfferResult = XdrManageOfferResult::fromJsonValue($arm); return $r; })(),
+            'set_options' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::SET_OPTIONS)); $r->setOptionsResult = XdrSetOptionsResult::fromJsonValue($arm); return $r; })(),
+            'change_trust' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::CHANGE_TRUST)); $r->changeTrustResult = XdrChangeTrustResult::fromJsonValue($arm); return $r; })(),
+            'allow_trust' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::ALLOW_TRUST)); $r->allowTrustResult = XdrAllowTrustResult::fromJsonValue($arm); return $r; })(),
+            'account_merge' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::ACCOUNT_MERGE)); $r->accountMergeResult = XdrAccountMergeResult::fromJsonValue($arm); return $r; })(),
+            'inflation' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::INFLATION)); $r->inflationResult = XdrInflationResult::fromJsonValue($arm); return $r; })(),
+            'manage_data' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::MANAGE_DATA)); $r->manageDataResult = XdrManageDataResult::fromJsonValue($arm); return $r; })(),
+            'bump_sequence' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::BUMP_SEQUENCE)); $r->bumpSequenceResult = XdrBumpSequenceResult::fromJsonValue($arm); return $r; })(),
+            'manage_buy_offer' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::MANAGE_BUY_OFFER)); $r->manageBuyOfferResult = XdrManageOfferResult::fromJsonValue($arm); return $r; })(),
+            'path_payment_strict_send' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_SEND)); $r->pathPaymentStrictSendResult = XdrPathPaymentStrictSendResult::fromJsonValue($arm); return $r; })(),
+            'create_claimable_balance' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::CREATE_CLAIMABLE_BALANCE)); $r->createClaimableBalanceResult = XdrCreateClaimableBalanceResult::fromJsonValue($arm); return $r; })(),
+            'claim_claimable_balance' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::CLAIM_CLAIMABLE_BALANCE)); $r->claimClaimableBalanceResult = XdrClaimClaimableBalanceResult::fromJsonValue($arm); return $r; })(),
+            'begin_sponsoring_future_reserves' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES)); $r->beginSponsoringFutureReservesResult = XdrBeginSponsoringFutureReservesResult::fromJsonValue($arm); return $r; })(),
+            'end_sponsoring_future_reserves' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::END_SPONSORING_FUTURE_RESERVES)); $r->endSponsoringFutureReservesResult = XdrEndSponsoringFutureReservesResult::fromJsonValue($arm); return $r; })(),
+            'revoke_sponsorship' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::REVOKE_SPONSORSHIP)); $r->revokeSponsorshipResult = XdrRevokeSponsorshipResult::fromJsonValue($arm); return $r; })(),
+            'clawback' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::CLAWBACK)); $r->clawbackResult = XdrClawbackResult::fromJsonValue($arm); return $r; })(),
+            'clawback_claimable_balance' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE)); $r->clawbackClaimableBalanceResult = XdrClawbackClaimableBalanceResult::fromJsonValue($arm); return $r; })(),
+            'set_trust_line_flags' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::SET_TRUST_LINE_FLAGS)); $r->setTrustLineFlagsResult = XdrSetTrustLineFlagsResult::fromJsonValue($arm); return $r; })(),
+            'liquidity_pool_deposit' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_DEPOSIT)); $r->liquidityPoolDepositResult = XdrLiquidityPoolDepositResult::fromJsonValue($arm); return $r; })(),
+            'liquidity_pool_withdraw' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_WITHDRAW)); $r->liquidityPoolWithdrawResult = XdrLiquidityPoolWithdrawResult::fromJsonValue($arm); return $r; })(),
+            'invoke_host_function' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION)); $r->invokeHostFunctionResult = XdrInvokeHostFunctionResult::fromJsonValue($arm); return $r; })(),
+            'extend_footprint_ttl' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL)); $r->extendFootprintTTLResult = XdrExtendFootprintTTLResult::fromJsonValue($arm); return $r; })(),
+            'restore_footprint' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::RESTORE_FOOTPRINT)); $r->restoreFootprintResult = XdrRestoreFootprintResult::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrOperationResultTrBase: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

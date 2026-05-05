@@ -70,6 +70,70 @@ class XdrPreconditions {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrPreconditionType::NONE => 'none',
+            XdrPreconditionType::TIME => ['time' => $this->timeBounds->toJsonValue()],
+            XdrPreconditionType::V2 => ['v2' => $this->v2->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for type on XdrPreconditionType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrPreconditions shape=mixed
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'none' => new static(new XdrPreconditionType(XdrPreconditionType::NONE)),
+                'time' => throw new \InvalidArgumentException(
+                    "Arm 'time' on XdrPreconditions is non-void; supply a single-key object {\"time\": <payload>} instead of a bare string."
+                ),
+                'v2' => throw new \InvalidArgumentException(
+                    "Arm 'v2' on XdrPreconditions is non-void; supply a single-key object {\"v2\": <payload>} instead of a bare string."
+                ),
+                default => throw new \InvalidArgumentException(
+                    'Unknown XdrPreconditions void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrPreconditions, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrPreconditions, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'time' => (static function () use ($arm) { $r = new static(new XdrPreconditionType(XdrPreconditionType::TIME)); $r->timeBounds = XdrTimeBounds::fromJsonValue($arm); return $r; })(),
+            'v2' => (static function () use ($arm) { $r = new static(new XdrPreconditionType(XdrPreconditionType::V2)); $r->v2 = XdrPreconditionsV2::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrPreconditions: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {

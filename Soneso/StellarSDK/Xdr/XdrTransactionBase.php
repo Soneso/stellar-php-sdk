@@ -82,6 +82,90 @@ class XdrTransactionBase {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'source_account' => $this->sourceAccount->toJsonValue(),
+            'fee' => $this->fee,
+            'seq_num' => $this->sequenceNumber->toJsonValue(),
+            'cond' => $this->preconditions->toJsonValue(),
+            'memo' => $this->memo->toJsonValue(),
+            'operations' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->operations),
+            'ext' => $this->ext->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrTransactionBase JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('source_account', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field source_account for XdrTransactionBase'
+            );
+        }
+        $sourceAccount = XdrMuxedAccount::fromJsonValue($value['source_account']);
+        if (!array_key_exists('fee', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field fee for XdrTransactionBase'
+            );
+        }
+        $fee = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fee']);
+        if (!array_key_exists('seq_num', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field seq_num for XdrTransactionBase'
+            );
+        }
+        $sequenceNumber = XdrSequenceNumber::fromJsonValue($value['seq_num']);
+        if (!array_key_exists('cond', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field cond for XdrTransactionBase'
+            );
+        }
+        $preconditions = XdrPreconditions::fromJsonValue($value['cond']);
+        if (!array_key_exists('memo', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field memo for XdrTransactionBase'
+            );
+        }
+        $memo = XdrMemo::fromJsonValue($value['memo']);
+        if (!array_key_exists('operations', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field operations for XdrTransactionBase'
+            );
+        }
+        $operations = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrOperation::fromJsonValue($item); }
+            return $out;
+        })($value['operations']);
+        if (!array_key_exists('ext', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ext for XdrTransactionBase'
+            );
+        }
+        $ext = XdrTransactionExt::fromJsonValue($value['ext']);
+        return new static($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.sourceAccount'] = TxRepHelper::formatMuxedAccount($this->sourceAccount);
         $lines[$prefix . '.fee'] = (string)$this->fee;

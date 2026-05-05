@@ -44,6 +44,34 @@ class XdrInt128Parts {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): string {
+        return XdrJsonHelper::int128PartsToString((string) $this->hi, (string) $this->lo);
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected string for XdrInt128Parts JSON value, got ' . get_debug_type($value)
+            );
+        }
+        $parts = XdrJsonHelper::stringToInt128Parts($value);
+        return new static(
+            intval($parts['hi']),
+            XdrJsonHelper::wrapUnsignedToSignedInt($parts['lo'])
+        );
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.hi'] = (string)$this->hi;
         $lines[$prefix . '.lo'] = (string)$this->lo;

@@ -42,4 +42,53 @@ class XdrDataValue
         }
         return new XdrDataValue($value);
     }
+
+    /**
+     * SEP-51 (XDR-JSON) emission for the DataValue typedef.
+     *
+     * The XDR is `typedef opaque DataValue<64>`; per SEP-51 §Opaque the
+     * variable-opaque wire form is a hex string. This PHP class is a
+     * hand-written wrapper used for optional fields (e.g. ManageData
+     * dataValue), so the value field is nullable; the SEP-51 to/from
+     * methods preserve the null state by emitting JSON null when the
+     * wrapper carries no bytes.
+     *
+     * Method bodies match the scratch-generator emission for the bare
+     * typedef (XdrJsonHelper::bytesToHex / hexToBytes via the
+     * render_scalar_typedef_sep51_methods code path) extended only by
+     * the null-guard required for the optional wrapper semantics.
+     */
+    public function toJsonValue(): mixed
+    {
+        if ($this->value === null) {
+            return null;
+        }
+        return XdrJsonHelper::bytesToHex($this->value);
+    }
+
+    public static function fromJsonValue(mixed $value): static
+    {
+        if ($value === null) {
+            return new static(null);
+        }
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(
+                'Expected hex string or null for XdrDataValue JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return new static(XdrJsonHelper::hexToBytes($value));
+    }
+
+    public function toJson(): string
+    {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static
+    {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

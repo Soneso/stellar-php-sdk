@@ -44,6 +44,75 @@ class XdrAssetAlphaNum12Base {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'asset_code' => (static function (string $bytes): string {
+            $trimmed = rtrim($bytes, "\x00");
+            $len = strlen($trimmed);
+            if ($len === 0) {
+                throw new \InvalidArgumentException('AssetCode12 must not be all-null');
+            }
+            if ($len <= 4) {
+                $trimmed = str_pad($trimmed, 5, "\x00", STR_PAD_RIGHT);
+            }
+            return XdrJsonHelper::escapeString($trimmed);
+        })($this->assetCode),
+            'issuer' => $this->issuer->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrAssetAlphaNum12Base JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('asset_code', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field asset_code for XdrAssetAlphaNum12Base'
+            );
+        }
+        if (!is_string($value['asset_code'])) {
+            throw new \InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['asset_code'])
+            );
+        }
+        $decoded = XdrJsonHelper::unescapeString($value['asset_code']);
+        $len = strlen($decoded);
+        if ($len <= 4) {
+            throw new \InvalidArgumentException(
+                'AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'
+            );
+        }
+        if ($len > 12) {
+            throw new \InvalidArgumentException(
+                'AssetCode12 must not exceed 12 bytes; got ' . $len
+            );
+        }
+        $assetCode = str_pad($decoded, 12, "\x00", STR_PAD_RIGHT);
+        if (!array_key_exists('issuer', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field issuer for XdrAssetAlphaNum12Base'
+            );
+        }
+        $issuer = XdrAccountID::fromJsonValue($value['issuer']);
+        return new static($assetCode, $issuer);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.assetCode'] = TxRepHelper::bytesToHex($this->assetCode);
         $lines[$prefix . '.issuer'] = TxRepHelper::formatAccountId($this->issuer);

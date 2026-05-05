@@ -101,4 +101,61 @@ class XdrSCSpecEntryBase {
         }
         return static::decode(new XdrBuffer($decoded));
     }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrSCSpecEntryKind::SC_SPEC_ENTRY_FUNCTION_V0 => ['function_v0' => $this->functionV0->toJsonValue()],
+            XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0 => ['udt_struct_v0' => $this->udtStructV0->toJsonValue()],
+            XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0 => ['udt_union_v0' => $this->udtUnionV0->toJsonValue()],
+            XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0 => ['udt_enum_v0' => $this->udtEnumV0->toJsonValue()],
+            XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 => ['udt_error_enum_v0' => $this->udtErrorEnumV0->toJsonValue()],
+            XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0 => ['event_v0' => $this->eventV0->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new \InvalidArgumentException(
+                'Unknown discriminant for type on XdrSCSpecEntryKind'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        // @sep51-union XdrSCSpecEntryBase shape=non_void
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new \InvalidArgumentException(
+                'Expected single-key object for XdrSCSpecEntryBase, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new \InvalidArgumentException(
+                'Expected string arm key for XdrSCSpecEntryBase, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'function_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_FUNCTION_V0)); $r->functionV0 = XdrSCSpecFunctionV0::fromJsonValue($arm); return $r; })(),
+            'udt_struct_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0)); $r->udtStructV0 = XdrSCSpecUDTStructV0::fromJsonValue($arm); return $r; })(),
+            'udt_union_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0)); $r->udtUnionV0 = XdrSCSpecUDTUnionV0::fromJsonValue($arm); return $r; })(),
+            'udt_enum_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0)); $r->udtEnumV0 = XdrSCSpecUDTEnumV0::fromJsonValue($arm); return $r; })(),
+            'udt_error_enum_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0)); $r->udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0::fromJsonValue($arm); return $r; })(),
+            'event_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0)); $r->eventV0 = XdrSCSpecEventV0::fromJsonValue($arm); return $r; })(),
+            default => throw new \InvalidArgumentException(
+                'Unknown arm key for XdrSCSpecEntryBase: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
 }

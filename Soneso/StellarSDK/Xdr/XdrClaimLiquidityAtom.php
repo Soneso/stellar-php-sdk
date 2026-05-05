@@ -7,6 +7,8 @@ namespace Soneso\StellarSDK\Xdr;
 
 use phpseclib3\Math\BigInteger;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrClaimLiquidityAtom {
 
     public string $liquidityPoolID;
@@ -66,7 +68,7 @@ class XdrClaimLiquidityAtom {
 
     public function toJsonValue(): array {
         return [
-            'liquidity_pool_id' => XdrJsonHelper::bytesToHex($this->liquidityPoolID),
+            'liquidity_pool_id' => StrKey::encodeLiquidityPoolId($this->liquidityPoolID),
             'asset_sold' => $this->assetSold->toJsonValue(),
             'amount_sold' => $this->amountSold->toString(),
             'asset_bought' => $this->assetBought->toJsonValue(),
@@ -88,7 +90,12 @@ class XdrClaimLiquidityAtom {
                 'Missing required field liquidity_pool_id for XdrClaimLiquidityAtom'
             );
         }
-        $liquidityPoolID = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['liquidity_pool_id']);
+        if (!is_string($value['liquidity_pool_id'])) {
+            throw new \InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
+            );
+        }
+        $liquidityPoolID = StrKey::decodeLiquidityPoolId($value['liquidity_pool_id']);
         if (!array_key_exists('asset_sold', $value)) {
             throw new \InvalidArgumentException(
                 'Missing required field asset_sold for XdrClaimLiquidityAtom'

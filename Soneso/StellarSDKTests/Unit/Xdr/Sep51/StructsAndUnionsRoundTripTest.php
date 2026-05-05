@@ -584,48 +584,48 @@ class StructsAndUnionsRoundTripTest extends TestCase
     }
 
     // =========================================================================
-    // Cat-A and Cat-B emission boundary — Phase 4's responsibility
+    // Cat-A and Cat-B emission contract.
     // =========================================================================
     //
-    // These types are deliberately NOT emitted by Phase 3. The assertions
-    // below pin that boundary so any accidental Phase 3 emission on a Cat-A
-    // or Cat-B target trips the build immediately. Phase 4 will land their
-    // bespoke shape and these assertions will be inverted at that time.
+    // Every Cat-A and Cat-B type carries SEP-51 toJsonValue / fromJsonValue /
+    // toJson / fromJson methods. Cat-B types inherit via `extends XdrFooBase`
+    // so method_exists() resolves on the wrapper class as well; Cat-A types
+    // receive the methods directly.
 
-    public function testSCValIsNotPhase3Emitted(): void
+    public function testSCValIsSep51Wired(): void
     {
-        $this->assertFalse(method_exists(XdrSCVal::class, 'toJsonValue'),
-            'XdrSCVal is Cat-B; Phase 4 owns its SEP-51 emission.');
+        $this->assertTrue(method_exists(XdrSCVal::class, 'toJsonValue'),
+            'XdrSCVal is Cat-B; SEP-51 is emitted on XdrSCValBase and inherited by XdrSCVal.');
     }
 
-    public function testMemoIsNotPhase3Emitted(): void
+    public function testMemoIsSep51Wired(): void
     {
-        $this->assertFalse(method_exists(XdrMemo::class, 'toJsonValue'),
-            'XdrMemo is Cat-A; Phase 4 owns its SEP-51 emission.');
+        $this->assertTrue(method_exists(XdrMemo::class, 'toJsonValue'),
+            'XdrMemo is Cat-A with bespoke SEP-51 emission via stellar_json_overrides.');
     }
 
-    public function testPreconditionsIsNotPhase3Emitted(): void
+    public function testPreconditionsIsSep51Wired(): void
     {
-        $this->assertFalse(method_exists(XdrPreconditions::class, 'toJsonValue'),
-            'XdrPreconditions is Cat-A; Phase 4 owns its SEP-51 emission.');
+        $this->assertTrue(method_exists(XdrPreconditions::class, 'toJsonValue'),
+            'XdrPreconditions is Cat-A and emits via the standard union template.');
     }
 
-    public function testTransactionEnvelopeIsNotPhase3Emitted(): void
+    public function testTransactionEnvelopeIsSep51Wired(): void
     {
-        $this->assertFalse(method_exists(XdrTransactionEnvelope::class, 'toJsonValue'),
-            'XdrTransactionEnvelope is Cat-B; Phase 4 owns its SEP-51 emission.');
+        $this->assertTrue(method_exists(XdrTransactionEnvelope::class, 'toJsonValue'),
+            'XdrTransactionEnvelope is Cat-B; SEP-51 lives on XdrTransactionEnvelopeBase, inherited.');
     }
 
-    public function testLedgerKeyIsNotPhase3Emitted(): void
+    public function testLedgerKeyIsSep51Wired(): void
     {
-        $this->assertFalse(method_exists(XdrLedgerKey::class, 'toJsonValue'),
-            'XdrLedgerKey is Cat-B; Phase 4 owns its SEP-51 emission.');
+        $this->assertTrue(method_exists(XdrLedgerKey::class, 'toJsonValue'),
+            'XdrLedgerKey is Cat-B; SEP-51 lives on XdrLedgerKeyBase, inherited.');
     }
 
-    public function testSignerKeyIsNotPhase3Emitted(): void
+    public function testSignerKeyIsSep51Wired(): void
     {
-        $this->assertFalse(method_exists(XdrSignerKey::class, 'toJsonValue'),
-            'XdrSignerKey is Cat-A; Phase 4 owns its SEP-51 emission.');
+        $this->assertTrue(method_exists(XdrSignerKey::class, 'toJsonValue'),
+            'XdrSignerKey is Cat-A with bespoke single-string strkey emission.');
     }
 
     public function testOperationIsPhase3EmittedShapeValidation(): void
@@ -685,83 +685,76 @@ class StructsAndUnionsRoundTripTest extends TestCase
 
     public function testAccountMergeOperationToJsonValueDelegatesToMuxedAccount(): void
     {
-        // Calling toJsonValue() on an account-merge wrapper should forward
-        // directly to XdrMuxedAccount::toJsonValue (no envelope). XdrMuxedAccount
-        // is Cat-A and gains SEP-51 methods in Phase 4; until then the call
-        // raises a Throwable from the inner type, not from any wrapper-side
-        // shape check. That failure mode is the proof of delegation.
-        $muxed = new \Soneso\StellarSDK\Xdr\XdrMuxedAccount(str_repeat("\x00", 32));
+        // The wrapper's toJsonValue forwards transparently to XdrMuxedAccount
+        // and emits the bare strkey wire form (G... or M...). XdrMuxedAccount
+        // carries SEP-51 methods of its own, so the delegation resolves to a
+        // real strkey value rather than a Throwable.
+        $ed25519Bytes = str_repeat("\x01", 32);
+        $expectedAccountId = \Soneso\StellarSDK\Crypto\StrKey::encodeAccountId($ed25519Bytes);
+        $muxed = new \Soneso\StellarSDK\Xdr\XdrMuxedAccount($ed25519Bytes);
         $op = new \Soneso\StellarSDK\Xdr\XdrAccountMergeOperation($muxed);
-        try {
-            $op->toJsonValue();
-            $this->fail('Expected toJsonValue() to forward to XdrMuxedAccount and raise a Throwable');
-        } catch (\Throwable $e) {
-            $this->assertNotInstanceOf(\InvalidArgumentException::class, $e);
-        }
+        $value = $op->toJsonValue();
+        $this->assertSame($expectedAccountId, $value);
+        $this->assertStringStartsWith('G', $value);
     }
 
     public function testAccountMergeOperationFromJsonValueDelegatesBareStringToMuxedAccount(): void
     {
-        // A bare string payload (the wire form for an ed25519 destination)
-        // must be forwarded to XdrMuxedAccount::fromJsonValue without any
-        // wrapper-side rejection. XdrMuxedAccount is Cat-A so the call
-        // raises a Throwable until Phase 4; that failure mode is the proof
-        // of delegation.
-        try {
-            \Soneso\StellarSDK\Xdr\XdrAccountMergeOperation::fromJsonValue(
-                'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-            );
-            $this->fail('Expected fromJsonValue() to forward to XdrMuxedAccount and raise a Throwable');
-        } catch (\Throwable $e) {
-            $this->assertStringNotContainsString('Expected object for XdrAccountMergeOperation', $e->getMessage());
-            $this->assertStringNotContainsString('Missing required field destination', $e->getMessage());
-        }
+        // A bare strkey string must be forwarded to XdrMuxedAccount::fromJsonValue.
+        // The reconstructed wrapper carries a KEY_TYPE_ED25519 muxed account
+        // whose ed25519 field equals the strkey's raw 32 bytes.
+        $ed25519Bytes = str_repeat("\x02", 32);
+        $accountId = \Soneso\StellarSDK\Crypto\StrKey::encodeAccountId($ed25519Bytes);
+
+        $rt = \Soneso\StellarSDK\Xdr\XdrAccountMergeOperation::fromJsonValue($accountId);
+        $this->assertInstanceOf(\Soneso\StellarSDK\Xdr\XdrMuxedAccount::class, $rt->getDestination());
+        $this->assertSame($ed25519Bytes, $rt->getDestination()->ed25519);
     }
 
-    public function testAccountMergeOperationToJsonValueProducesNoEnvelopeKey(): void
+    public function testAccountMergeOperationFullRoundTrip(): void
     {
-        // Lock-in: the wire form is bare — never an array carrying a
-        // 'destination' key. Even when the inner Cat-A delegation throws,
-        // we can prove the wrapper itself never builds an envelope by
-        // catching the Throwable and asserting that no array-with-destination
-        // ever reached the caller.
-        $muxed = new \Soneso\StellarSDK\Xdr\XdrMuxedAccount(str_repeat("\x00", 32));
+        // Full round-trip: build an account-merge op, encode to JSON,
+        // decode, encode again, assert the JSON forms are identical.
+        $ed25519Bytes = str_repeat("\x03", 32);
+        $muxed = new \Soneso\StellarSDK\Xdr\XdrMuxedAccount($ed25519Bytes);
         $op = new \Soneso\StellarSDK\Xdr\XdrAccountMergeOperation($muxed);
-        $produced = null;
-        try {
-            $produced = $op->toJsonValue();
-        } catch (\Throwable) {
-            // Expected during Phase 3; the wrapper still must not have
-            // returned an envelope from a prior path.
-        }
-        if (is_array($produced)) {
-            $this->assertArrayNotHasKey('destination', $produced);
-        } else {
-            $this->assertTrue(true);
-        }
+        $json = $op->toJson();
+        $rt = \Soneso\StellarSDK\Xdr\XdrAccountMergeOperation::fromJson($json);
+        $this->assertSame($json, $rt->toJson());
+    }
+
+    public function testAccountMergeOperationToJsonValueProducesBareString(): void
+    {
+        // Lock-in: the wire form is a bare strkey string, never an array
+        // carrying a 'destination' key.
+        $ed25519Bytes = str_repeat("\x04", 32);
+        $muxed = new \Soneso\StellarSDK\Xdr\XdrMuxedAccount($ed25519Bytes);
+        $op = new \Soneso\StellarSDK\Xdr\XdrAccountMergeOperation($muxed);
+        $produced = $op->toJsonValue();
+        $this->assertIsString($produced, 'XdrAccountMergeOperation must emit a bare strkey, not an envelope');
+        $this->assertStringStartsWith('G', $produced);
     }
 
     // =========================================================================
     // XdrOperationBody — account_merge arm wiring through XdrAccountMergeOperation
     // =========================================================================
 
-    public function testOperationBodyAccountMergeArmDispatchesToOperationStruct(): void
+    public function testOperationBodyAccountMergeArmRoundTrip(): void
     {
-        // The account_merge arm payload is a bare destination value (matching
-        // the wrapper's transparent wire form). Round-trip fails inside
-        // XdrMuxedAccount::fromJsonValue, a Cat-A type whose SEP-51 methods
-        // land in Phase 4. Asserting that the failure originates from the
-        // delegation path — not from a wrapper-side shape rejection — proves
-        // the OperationBody arm is wired correctly.
-        try {
-            \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue([
-                'account_merge' => 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            ]);
-            $this->fail('Expected delegation to XdrMuxedAccount to raise a Throwable');
-        } catch (\Throwable $e) {
-            $this->assertStringNotContainsString('Expected object for XdrAccountMergeOperation', $e->getMessage());
-            $this->assertStringNotContainsString('Missing required field destination', $e->getMessage());
-        }
+        // The account_merge arm payload is a bare destination value
+        // (matching the wrapper's transparent wire form). The arm wire
+        // name on OperationBody is 'account_merge' (the prefix-stripped
+        // form of OPERATION_TYPE_ACCOUNT_MERGE). The inner
+        // XdrAccountMergeOperation transparently forwards to
+        // XdrMuxedAccount, whose own SEP-51 emission lets this round-trip
+        // resolve end-to-end.
+        $ed25519Bytes = str_repeat("\x05", 32);
+        $accountId = \Soneso\StellarSDK\Crypto\StrKey::encodeAccountId($ed25519Bytes);
+
+        $payload = ['account_merge' => $accountId];
+        $rt = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($payload);
+        $this->assertInstanceOf(\Soneso\StellarSDK\Xdr\XdrAccountMergeOperation::class, $rt->accountMergeOp);
+        $this->assertSame($ed25519Bytes, $rt->accountMergeOp->getDestination()->ed25519);
     }
 
     // =========================================================================

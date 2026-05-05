@@ -100,6 +100,92 @@ class XdrPreconditionsV2 {
         return static::decode(new XdrBuffer($decoded));
     }
 
+    public function toJsonValue(): array {
+        return [
+            'time_bounds' => ($this->timeBounds !== null ? $this->timeBounds->toJsonValue() : null),
+            'ledger_bounds' => ($this->ledgerBounds !== null ? $this->ledgerBounds->toJsonValue() : null),
+            'min_seq_num' => ($this->minSeqNum !== null ? $this->minSeqNum->toJsonValue() : null),
+            'min_seq_age' => XdrJsonHelper::uint64ToString($this->minSeqAge),
+            'min_seq_ledger_gap' => $this->minSeqLedgerGap,
+            'extra_signers' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->extraSigners),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                'Expected object for XdrPreconditionsV2 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('time_bounds', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field time_bounds for XdrPreconditionsV2'
+            );
+        }
+        $timeBounds = null;
+        if ($value['time_bounds'] !== null) {
+            $timeBounds = XdrTimeBounds::fromJsonValue($value['time_bounds']);
+        }
+        if (!array_key_exists('ledger_bounds', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field ledger_bounds for XdrPreconditionsV2'
+            );
+        }
+        $ledgerBounds = null;
+        if ($value['ledger_bounds'] !== null) {
+            $ledgerBounds = XdrLedgerBounds::fromJsonValue($value['ledger_bounds']);
+        }
+        if (!array_key_exists('min_seq_num', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field min_seq_num for XdrPreconditionsV2'
+            );
+        }
+        $minSeqNum = null;
+        if ($value['min_seq_num'] !== null) {
+            $minSeqNum = XdrSequenceNumber::fromJsonValue($value['min_seq_num']);
+        }
+        if (!array_key_exists('min_seq_age', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field min_seq_age for XdrPreconditionsV2'
+            );
+        }
+        $minSeqAge = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['min_seq_age']);
+        if (!array_key_exists('min_seq_ledger_gap', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field min_seq_ledger_gap for XdrPreconditionsV2'
+            );
+        }
+        $minSeqLedgerGap = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['min_seq_ledger_gap']);
+        if (!array_key_exists('extra_signers', $value)) {
+            throw new \InvalidArgumentException(
+                'Missing required field extra_signers for XdrPreconditionsV2'
+            );
+        }
+        $extraSigners = (static function ($v) {
+            if (!is_array($v)) {
+                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSignerKey::fromJsonValue($item); }
+            return $out;
+        })($value['extra_signers']);
+        return new static($minSeqAge, $minSeqLedgerGap, $extraSigners, $timeBounds, $ledgerBounds, $minSeqNum);
+    }
+
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
     public function toTxRep(string $prefix, array &$lines): void {
         if ($this->timeBounds !== null) {
             $lines[$prefix . '.timeBounds._present'] = 'true';

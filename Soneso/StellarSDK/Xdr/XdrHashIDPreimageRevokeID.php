@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrHashIDPreimageRevokeID {
 
     public XdrAccountID $sourceAccount;
@@ -67,7 +69,7 @@ class XdrHashIDPreimageRevokeID {
             'source_account' => $this->sourceAccount->toJsonValue(),
             'seq_num' => $this->seqNum->toJsonValue(),
             'op_num' => $this->opNum,
-            'liquidity_pool_id' => XdrJsonHelper::bytesToHex($this->liquidityPoolID),
+            'liquidity_pool_id' => StrKey::encodeLiquidityPoolId($this->liquidityPoolID),
             'asset' => $this->asset->toJsonValue(),
         ];
     }
@@ -104,7 +106,12 @@ class XdrHashIDPreimageRevokeID {
                 'Missing required field liquidity_pool_id for XdrHashIDPreimageRevokeID'
             );
         }
-        $liquidityPoolID = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['liquidity_pool_id']);
+        if (!is_string($value['liquidity_pool_id'])) {
+            throw new \InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
+            );
+        }
+        $liquidityPoolID = StrKey::decodeLiquidityPoolId($value['liquidity_pool_id']);
         if (!array_key_exists('asset', $value)) {
             throw new \InvalidArgumentException(
                 'Missing required field asset for XdrHashIDPreimageRevokeID'
