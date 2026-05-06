@@ -2,7 +2,9 @@
 
 ## Overview
 
-XDR (External Data Representation) is the binary serialization format used by Stellar for all on-chain data: transactions, operations, ledger entries, and smart contract values. The PHP SDK provides 309 XDR classes in `Soneso\StellarSDK\Xdr\` for encoding and decoding.
+XDR (External Data Representation) is the binary serialization format used by Stellar for all on-chain data: transactions, operations, ledger entries, and smart contract values. The PHP SDK provides a class for every XDR type under `Soneso\StellarSDK\Xdr\`.
+
+Every XDR class also supports the SEP-51 JSON form for human-readable interchange via `toJson()` / `fromJson()` (and the lower-level `toJsonValue()` / `fromJsonValue()` pair). See [sep-51.md](./sep-51.md) for the full encoding rules; the `## JSON Encoding (SEP-51)` section below covers the round-trip pattern.
 
 ## Transaction Envelope Encoding
 
@@ -86,6 +88,25 @@ if ($xdrEnvelope->getV1() !== null) {
     $xdrSignatures = $xdrEnvelope->getV1()->signatures;
 }
 ```
+
+## JSON Encoding (SEP-51)
+
+Every XDR class exposes the four SEP-51 methods alongside the binary base64 pair. JSON is human-readable and useful for debugging, logging, and tooling that needs structural visibility into transaction internals.
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+
+$envelope = XdrTransactionEnvelope::fromEnvelopeBase64XdrString($base64Xdr);
+
+// Binary <-> JSON: same envelope, two surfaces
+$json   = $envelope->toJson();              // SEP-51 JSON string
+$decoded = XdrTransactionEnvelope::fromJson($json);
+$base64Roundtrip = $decoded->toBase64Xdr(); // === $base64Xdr
+```
+
+The `*Value` pair (`toJsonValue()` returning `mixed`, `fromJsonValue(mixed $value)`) skips the JSON encode/decode step and is preferred when composing or piping. See [sep-51.md](./sep-51.md) for numeric encoding rules, the string escape ladder, StrKey-encoded types, discriminated-union shapes, and the full error-handling contract.
 
 ## Inspecting Transactions Before Signing
 

@@ -2,7 +2,8 @@
 
 **Purpose:** Convert any Stellar XDR type to and from a SEP-0051-conformant JSON form. Covers every XDR primitive plus the Stellar-specific types (StrKey-encoded addresses, Asset, AssetCode, MuxedAccount, ClaimableBalanceID, SignerKey).
 **Prerequisites:** None. Most callers only need the four methods on the target XDR class.
-**SDK Namespace:** `Soneso\StellarSDK\Xdr` (every class), helper at `Soneso\StellarSDK\Xdr\XdrJsonHelper`.
+**SDK Namespace:** `Soneso\StellarSDK\Xdr`
+**Note:** SEP-51 is currently Draft status (v2.0.1).
 
 ## Table of Contents
 
@@ -19,7 +20,7 @@
 
 ## The four-method contract
 
-Every SEP-51-aware XDR class carries:
+Every XDR class under `Soneso\StellarSDK\Xdr\` carries:
 
 ```php
 public function toJsonValue(): mixed;
@@ -28,7 +29,7 @@ public function toJson(): string;
 public static function fromJson(string $json): static;
 ```
 
-`toJson` is `json_encode(toJsonValue(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)`. `fromJson` is `static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR))`. Use the `*Value` pair when composing or piping; use the plain `toJson` / `fromJson` pair at API boundaries.
+`toJson` is `json_encode(toJsonValue(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)`. `fromJson` is `static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR))`. Use the `*Value` pair when composing or piping; use the plain `toJson` / `fromJson` pair at API boundaries. Lower-level primitives shared by every type live on `Soneso\StellarSDK\Xdr\XdrJsonHelper`.
 
 ## Quick round-trip
 
@@ -133,6 +134,13 @@ XdrAsset::fromJson(
 );
 ```
 
+```php
+// WRONG: native arm wrapped as a single-key object
+XdrAsset::fromJson('{"native":null}');
+// CORRECT: native arm is a bare string
+XdrAsset::fromJson('"native"');
+```
+
 `asset_code` itself is a string emitted through the escape ladder. AssetCode4 trims trailing NULs; AssetCode12 also trims but pads back to a minimum of 5 bytes per spec — the PHP SDK rejects an all-NUL AssetCode12 rather than emit a degenerate 5-NUL output.
 
 ## Discriminated unions
@@ -164,6 +172,13 @@ A nullable XDR field renders as `null` when absent. This is distinct from a unio
 // inside a struct:
 //   "source_account": null     -> the Optional<MuxedAccount> field is absent
 //   "memo":           "none"   -> the Memo union is on its MEMO_NONE void arm
+```
+
+```php
+// WRONG: void arm decoded from null
+XdrMemo::fromJson('null');
+// CORRECT: void arm is the bare arm-name string
+XdrMemo::fromJson('"none"');
 ```
 
 `null` and `"none"` are not interchangeable. Confusing them on input throws `InvalidArgumentException` from `fromJsonValue`.
