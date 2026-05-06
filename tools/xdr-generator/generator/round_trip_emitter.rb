@@ -289,48 +289,39 @@ class RoundTripEmitter
       }
 
       function try_build_fixture(string $fqcn): ?string {
-          // Attempt to construct a default instance and serialise to base64.
-          // Many union/struct classes accept a no-argument constructor or a
-          // single nullable discriminator; for those we can produce a
-          // fixture. When construction fails we return null and the
-          // emitter skips fixture-dependent paths for that type.
+          // Top-level entry point: attempt to construct a default instance
+          // for $fqcn and serialise it to base64. Returns null when
+          // construction or round-trip validation fails so the emitter can
+          // fall back to a presence-only contract assertion.
           try {
-              $rc = new \\ReflectionClass($fqcn);
-              $ctor = $rc->getConstructor();
-              if ($ctor === null) {
-                  $instance = $rc->newInstance();
-              } else {
-                  $params = $ctor->getParameters();
-                  $allOptional = true;
-                  foreach ($params as $p) {
-                      if (!$p->isOptional() && !$p->allowsNull()) {
-                          $allOptional = false;
-                          break;
-                      }
-                  }
-                  if (!$allOptional) return null;
-                  // Build with all-null arguments where allowed.
-                  $args = [];
-                  foreach ($params as $p) {
-                      if ($p->isOptional()) {
-                          $args[] = $p->getDefaultValue();
-                      } else {
-                          $args[] = null;
-                      }
-                  }
-                  $instance = $rc->newInstanceArgs($args);
-              }
-              if (!method_exists($instance, 'encode') || !method_exists($instance, 'toBase64Xdr')) {
+              $inflight = [];
+              $instance = build_default_instance($fqcn, $inflight);
+              if ($instance === null) {
                   return null;
               }
-              // Some encode paths require populated fields (e.g. unions
-              // whose discriminator is unset). Suppress and return null.
-              $b64 = @$instance->toBase64Xdr();
-              if ($b64 === '' || $b64 === null) return null;
+              // Top-level types expose toBase64Xdr; inner types only
+              // expose encode(). Both produce a base64 payload acceptable
+              // to fromBase64Xdr / static decode.
+              if (method_exists($instance, 'toBase64Xdr')) {
+                  $b64 = @$instance->toBase64Xdr();
+              } elseif (method_exists($instance, 'encode')) {
+                  $bytes = @$instance->encode();
+                  $b64 = ($bytes === null || $bytes === '') ? null : base64_encode($bytes);
+              } else {
+                  return null;
+              }
+              if ($b64 === '' || $b64 === null) {
+                  return null;
+              }
+              if (!method_exists($fqcn, 'fromBase64Xdr')) {
+                  return null;
+              }
               // Validate round-trip: fromBase64Xdr must succeed and
               // produce a value whose toJsonValue does not throw.
               $rt = @$fqcn::fromBase64Xdr($b64);
-              if ($rt === null) return null;
+              if ($rt === null) {
+                  return null;
+              }
               try {
                   $rt->toJsonValue();
               } catch (\\Throwable $t) {
@@ -340,6 +331,585 @@ class RoundTripEmitter
           } catch (\\Throwable $t) {
               return null;
           }
+      }
+
+      // Recursively construct a default instance of $fqcn. Returns null
+      // when construction is impossible (cycle, unknown parameter type,
+      // schema-specific constraints that cannot be satisfied with default
+      // values). Cycle protection via $inflight prevents unbounded
+      // recursion if the type graph is ever extended with a cyclic
+      // self-reference; XDR types are nominally a DAG so this is purely
+      // defensive.
+      function build_default_instance(string $fqcn, array &$inflight): ?object {
+          if (isset($inflight[$fqcn])) {
+              return null; // cycle guard
+          }
+          $inflight[$fqcn] = true;
+          try {
+              $instance = build_default_instance_for_class($fqcn, $inflight);
+              if ($instance !== null && instance_can_encode($instance)) {
+                  return $instance;
+              }
+              // Wrapper / base fallback. Many XDR types use a thin
+              // hand-written wrapper (e.g. XdrMuxedAccount, XdrAccountID)
+              // sitting on top of an auto-generated XdrMuxedAccountBase.
+              // The wrapper may override __construct or encode() with
+              // logic that requires StrKey-encoded private state. Build a
+              // base instance, serialise it, then decode through the
+              // wrapper class's fromBase64Xdr so the resulting object is
+              // typed as the wrapper (decode uses late static binding,
+              // and the wrapper's decode() rebuilds private state from
+              // canonical bytes).
+              if (class_exists($fqcn)) {
+                  $rcWalk = new \\ReflectionClass($fqcn);
+                  $parent = $rcWalk->getParentClass();
+                  while ($parent !== false) {
+                      $parentName = $parent->getName();
+                      if (str_starts_with($parentName, 'Soneso\\\\StellarSDK\\\\Xdr\\\\')) {
+                          $candidate = build_default_instance_for_class($parentName, $inflight);
+                          if ($candidate !== null && instance_can_encode($candidate)) {
+                              $rehydrated = rehydrate_via_wrapper($fqcn, $candidate);
+                              if ($rehydrated !== null && instance_can_encode($rehydrated)) {
+                                  return $rehydrated;
+                              }
+                              // Last resort: return the base instance.
+                              // Type-check at the call site may reject it
+                              // unless the parameter accepts the parent.
+                              return $candidate;
+                          }
+                      }
+                      $parent = $parent->getParentClass();
+                  }
+              }
+              return null;
+          } catch (\\Throwable $t) {
+              return null;
+          } finally {
+              unset($inflight[$fqcn]);
+          }
+      }
+
+      // Re-decode a base instance through the wrapper's fromBase64Xdr so
+      // the resulting object is an instance of the wrapper class. The
+      // wrapper's decode() rebuilds whatever private state its custom
+      // encode() relies on. Returns null on round-trip failure.
+      function rehydrate_via_wrapper(string $wrapperFqcn, object $baseInstance): ?object {
+          try {
+              if (!method_exists($baseInstance, 'encode')) return null;
+              $bytes = @$baseInstance->encode();
+              if (!is_string($bytes)) return null;
+              if (!method_exists($wrapperFqcn, 'fromBase64Xdr')) return null;
+              $b64 = base64_encode($bytes);
+              $rehydrated = @$wrapperFqcn::fromBase64Xdr($b64);
+              if (!is_object($rehydrated)) return null;
+              if (!is_a($rehydrated, $wrapperFqcn)) return null;
+              return $rehydrated;
+          } catch (\\Throwable $t) {
+              return null;
+          }
+      }
+
+      // Verify that an instance can produce bytes via encode() without
+      // throwing. Used to gate constructor-skipped wrapper instances
+      // whose private state may be uninitialised — encode() either
+      // succeeds or throws, and only encodable instances are useful as
+      // synthetic fixtures.
+      function instance_can_encode(object $instance): bool {
+          if (!method_exists($instance, 'encode')) {
+              return false;
+          }
+          try {
+              $bytes = @$instance->encode();
+              return is_string($bytes);
+          } catch (\\Throwable $t) {
+              return false;
+          }
+      }
+
+      // Verify that an instance both encodes AND its bytes round-trip
+      // through fromBase64Xdr -> toJsonValue without throwing. This is
+      // the criterion used inside build_union_instance to choose between
+      // candidate arms, since some discriminator values yield a
+      // serialisable form whose toJsonValue throws (the default arm of a
+      // union with no void variant).
+      function instance_round_trip_ok(object $instance): bool {
+          if (!instance_can_encode($instance)) return false;
+          $fqcn = get_class($instance);
+          if (!method_exists($fqcn, 'fromBase64Xdr')) {
+              // Inner types without a static fromBase64Xdr still flow
+              // through their parent's decode path; treat encode success
+              // as sufficient.
+              if (method_exists($instance, 'toJsonValue')) {
+                  try { @$instance->toJsonValue(); return true; }
+                  catch (\\Throwable $t) { return false; }
+              }
+              return true;
+          }
+          try {
+              $b64 = base64_encode(@$instance->encode());
+              $rt = @$fqcn::fromBase64Xdr($b64);
+              if (!is_object($rt)) return false;
+              if (method_exists($rt, 'toJsonValue')) {
+                  @$rt->toJsonValue();
+              }
+              return true;
+          } catch (\\Throwable $t) {
+              return false;
+          }
+      }
+
+      function build_default_instance_for_class(string $fqcn, array &$inflight): ?object {
+          try {
+              if (!class_exists($fqcn)) {
+                  return null;
+              }
+              $rc = new \\ReflectionClass($fqcn);
+              if ($rc->isAbstract() || $rc->isInterface()) {
+                  return null;
+              }
+
+              // Enum-shaped class: take the smallest declared int constant.
+              if (is_xdr_enum_class($rc)) {
+                  $consts = array_filter($rc->getConstants(), fn($v) => is_int($v));
+                  if (empty($consts)) {
+                      return null;
+                  }
+                  $value = min(array_values($consts));
+                  return $rc->newInstance($value);
+              }
+
+              // Union-shaped class: requires choosing a discriminator arm
+              // and populating the corresponding payload property.
+              $discProp = find_discriminator_property($rc);
+              if ($discProp !== null) {
+                  return build_union_instance($rc, $discProp, $inflight);
+              }
+
+              // Struct: build constructor arguments from declared parameter
+              // types. Public properties not bound to constructor parameters
+              // remain at their declared defaults (typically null for
+              // optionals).
+              $ctor = $rc->getConstructor();
+              if ($ctor === null) {
+                  return $rc->newInstance();
+              }
+              try {
+                  $args = [];
+                  foreach ($ctor->getParameters() as $p) {
+                      $arg = build_default_param_value($rc, $p, $inflight);
+                      $args[] = $arg;
+                  }
+                  return $rc->newInstanceArgs($args);
+              } catch (\\Throwable $ctorErr) {
+                  // Wrappers with custom validation in __construct (e.g.
+                  // XdrMuxedAccount, XdrAccountID) reject all-default
+                  // arguments. Bypass the constructor to obtain a typed
+                  // instance, then populate public properties using the
+                  // base class encode() / decode() conventions.
+                  if (!$rc->hasMethod('encode')) {
+                      throw $ctorErr;
+                  }
+                  $instance = $rc->newInstanceWithoutConstructor();
+                  if (!populate_struct_properties($rc, $instance, $inflight)) {
+                      throw $ctorErr;
+                  }
+                  return $instance;
+              }
+          } catch (\\Throwable $t) {
+              return null;
+          }
+      }
+
+      // Populate non-nullable public properties on a constructor-skipped
+      // instance using default values for each property type. Returns
+      // true on success; false when at least one required property
+      // cannot be synthesised. Nullable / explicitly-defaulted properties
+      // are left as-is.
+      function populate_struct_properties(\\ReflectionClass $rc, object $instance, array &$inflight): bool {
+          // First check if there's a discriminator-like property that
+          // suggests this is a union; if so, defer to the union builder
+          // path for arm selection.
+          $discProp = find_discriminator_property($rc);
+          if ($discProp !== null) {
+              $union = build_union_instance($rc, $discProp, $inflight);
+              if ($union !== null) {
+                  // Copy populated fields onto our constructor-skipped
+                  // instance so the original $instance reference can be
+                  // returned with the right runtime class.
+                  foreach ($rc->getProperties(\\ReflectionProperty::IS_PUBLIC) as $p) {
+                      $name = $p->getName();
+                      if (!$p->isInitialized($union)) continue;
+                      $val = $p->getValue($union);
+                      $p->setValue($instance, $val);
+                  }
+                  return true;
+              }
+              return false;
+          }
+          foreach ($rc->getProperties(\\ReflectionProperty::IS_PUBLIC) as $p) {
+              if ($p->hasDefaultValue()) continue;
+              if ($p->isInitialized($instance)) continue;
+              $type = $p->getType();
+              if (!($type instanceof \\ReflectionNamedType)) {
+                  if ($type === null) {
+                      $p->setValue($instance, null);
+                      continue;
+                  }
+                  return false;
+              }
+              if ($type->allowsNull()) {
+                  $p->setValue($instance, null);
+                  continue;
+              }
+              try {
+                  $val = build_default_value_for_type($type->getName(), $rc, $p->getName(), $inflight);
+              } catch (\\Throwable $t) {
+                  return false;
+              }
+              $p->setValue($instance, $val);
+          }
+          return true;
+      }
+
+      function is_xdr_enum_class(\\ReflectionClass $rc): bool {
+          if (!$rc->hasProperty('value')) return false;
+          $vp = $rc->getProperty('value');
+          $vt = $vp->getType();
+          if (!($vt instanceof \\ReflectionNamedType) || $vt->getName() !== 'int') {
+              return false;
+          }
+          $intConsts = array_filter($rc->getConstants(), fn($v) => is_int($v));
+          return !empty($intConsts);
+      }
+
+      // Identify the public property that acts as union discriminator,
+      // matching the same shape rule used by classify_type. Returns null
+      // when no candidate is present.
+      function find_discriminator_property(\\ReflectionClass $rc): ?\\ReflectionProperty {
+          foreach ($rc->getProperties(\\ReflectionProperty::IS_PUBLIC) as $p) {
+              $t = $p->getType();
+              if (!$t instanceof \\ReflectionNamedType) continue;
+              $tn = $t->getName();
+              if (!str_starts_with($tn, 'Soneso\\\\StellarSDK\\\\Xdr\\\\')) continue;
+              if (!class_exists($tn)) continue;
+              $tr = new \\ReflectionClass($tn);
+              if (is_xdr_enum_class($tr)) {
+                  return $p;
+              }
+          }
+          return null;
+      }
+
+      // Construct a union instance by selecting a discriminator arm and
+      // populating the corresponding payload property. Arms declared by
+      // the encode() switch are preferred because they map to a real
+      // toJsonValue arm (default arms typically throw on toJsonValue,
+      // which would invalidate the synthetic fixture downstream).
+      function build_union_instance(\\ReflectionClass $rc, \\ReflectionProperty $discProp, array &$inflight): ?object {
+          $discType = $discProp->getType();
+          if (!($discType instanceof \\ReflectionNamedType)) return null;
+          $discFqcn = $discType->getName();
+          if (!class_exists($discFqcn)) return null;
+          $discRc = new \\ReflectionClass($discFqcn);
+          $intConsts = array_filter($discRc->getConstants(), fn($v) => is_int($v));
+          if (empty($intConsts)) return null;
+          $encodeArmMap = parse_union_encode_arms($rc);
+
+          // Stable arm selection: prefer constants present in the encode
+          // switch (so toJsonValue's match has a non-default branch),
+          // ordered by value then name. Constants without payload mapping
+          // are tried after as a last resort for void-only unions.
+          $primary = [];
+          $secondary = [];
+          foreach ($intConsts as $cname => $cval) {
+              $entry = ['name' => $cname, 'value' => $cval];
+              if (array_key_exists($cname, $encodeArmMap)) {
+                  $primary[] = $entry;
+              } else {
+                  $secondary[] = $entry;
+              }
+          }
+          $orderArms = function ($a, $b) {
+              if ($a['value'] !== $b['value']) return $a['value'] - $b['value'];
+              return strcmp($a['name'], $b['name']);
+          };
+          usort($primary, $orderArms);
+          usort($secondary, $orderArms);
+          $candidates = array_merge($primary, $secondary);
+
+          foreach ($candidates as $cand) {
+              try {
+                  $instance = construct_union_with_arm($rc, $discProp, $discRc, $cand, $encodeArmMap, $inflight);
+                  if ($instance === null) continue;
+                  if (!instance_round_trip_ok($instance)) continue;
+                  return $instance;
+              } catch (\\Throwable $t) {
+                  continue;
+              }
+          }
+          return null;
+      }
+
+      function construct_union_with_arm(
+          \\ReflectionClass $rc,
+          \\ReflectionProperty $discProp,
+          \\ReflectionClass $discRc,
+          array $cand,
+          array $encodeArmMap,
+          array &$inflight
+      ): ?object {
+          // Most unions accept the discriminator as their sole constructor
+          // argument (typed nullable). We feed an instance directly when
+          // the constructor parameter is the discriminator type.
+          $ctor = $rc->getConstructor();
+          $discInstance = $discRc->newInstance($cand['value']);
+          if ($ctor === null) {
+              $instance = $rc->newInstance();
+              $discProp->setValue($instance, $discInstance);
+          } else {
+              $params = $ctor->getParameters();
+              if (count($params) === 1) {
+                  $p = $params[0];
+                  $pt = $p->getType();
+                  if ($pt instanceof \\ReflectionNamedType
+                      && $pt->getName() === $discRc->getName()) {
+                      $instance = $rc->newInstanceArgs([$discInstance]);
+                  } else {
+                      // Fall back: try generic struct-style construction
+                      // and then assign the discriminator property.
+                      $args = [];
+                      foreach ($params as $pp) {
+                          $args[] = build_default_param_value($rc, $pp, $inflight);
+                      }
+                      $instance = $rc->newInstanceArgs($args);
+                      $discProp->setValue($instance, $discInstance);
+                  }
+              } else {
+                  $args = [];
+                  foreach ($params as $pp) {
+                      $args[] = build_default_param_value($rc, $pp, $inflight);
+                  }
+                  $instance = $rc->newInstanceArgs($args);
+                  $discProp->setValue($instance, $discInstance);
+              }
+          }
+
+          // Ensure discriminator is set even when constructor ignored a
+          // null default (some unions store nothing when arg is null).
+          if (!$discProp->isInitialized($instance)) {
+              $discProp->setValue($instance, $discInstance);
+          }
+
+          // Populate the arm payload field (if any) using the encode()
+          // switch source map. Void arms have no field to set.
+          if (isset($encodeArmMap[$cand['name']])) {
+              $payloadProp = $encodeArmMap[$cand['name']];
+              if ($rc->hasProperty($payloadProp)) {
+                  $rp = $rc->getProperty($payloadProp);
+                  $val = build_default_property_value($rc, $rp, $inflight);
+                  if ($val === '__failed__') {
+                      return null;
+                  }
+                  $rp->setValue($instance, $val);
+              }
+          }
+          return $instance;
+      }
+
+      // Parse the encode() body of a union to map arm constant name ->
+      // payload property name. Walks the wrapper-base inheritance chain
+      // because encode() typically lives on the generated base class.
+      // Returns an empty array when no source can be located. Void arms
+      // (case X: break;) are intentionally absent from the map.
+      function parse_union_encode_arms(\\ReflectionClass $rc): array {
+          $sources = [];
+          $rcWalk = $rc;
+          while ($rcWalk !== false) {
+              $fn = $rcWalk->getFileName();
+              if ($fn !== false && $fn !== null) {
+                  $sources[$fn] = $fn;
+              }
+              $rcWalk = $rcWalk->getParentClass();
+          }
+          $map = [];
+          foreach ($sources as $fileName) {
+              $src = @file_get_contents($fileName);
+              if ($src === false) continue;
+              if (!preg_match('/function\\s+encode\\s*\\([^)]*\\)\\s*[^{]*\\{(.*?)\\n\\s*\\}\\s*\\n/s', $src, $m)) {
+                  continue;
+              }
+              $body = $m[1];
+              if (preg_match_all(
+                  '/case\\s+[A-Za-z_][A-Za-z0-9_\\\\\\\\]*::([A-Z0-9_]+)\\s*:(.*?)break\\s*;/s',
+                  $body,
+                  $matches,
+                  PREG_SET_ORDER
+              )) {
+                  foreach ($matches as $mm) {
+                      $arm = $mm[1];
+                      $section = $mm[2];
+                      if (isset($map[$arm])) continue;
+                      // Prefer a `$this->prop->encode()` reference when the
+                      // arm payload is a class instance; otherwise pick up
+                      // any `$this->prop` reference that flows into an
+                      // XdrEncoder::xxx call.
+                      if (preg_match('/\\$this->([A-Za-z_][A-Za-z0-9_]*)/', $section, $pm)) {
+                          $map[$arm] = $pm[1];
+                      }
+                  }
+              }
+          }
+          return $map;
+      }
+
+      // Build a default value for a constructor parameter. Returns the
+      // chosen value (which may legitimately be null) or throws on
+      // unsupported types so the surrounding catch falls back to the
+      // class-existence emitter.
+      function build_default_param_value(\\ReflectionClass $rc, \\ReflectionParameter $p, array &$inflight) {
+          $type = $p->getType();
+          if ($type === null) {
+              if ($p->isDefaultValueAvailable()) return $p->getDefaultValue();
+              return null;
+          }
+          if ($type instanceof \\ReflectionUnionType || $type instanceof \\ReflectionIntersectionType) {
+              if ($p->isDefaultValueAvailable()) return $p->getDefaultValue();
+              if ($p->allowsNull()) return null;
+              throw new \\RuntimeException('unsupported union/intersection parameter type');
+          }
+          if (!($type instanceof \\ReflectionNamedType)) {
+              if ($p->isDefaultValueAvailable()) return $p->getDefaultValue();
+              if ($p->allowsNull()) return null;
+              throw new \\RuntimeException('unsupported parameter type kind');
+          }
+          $tn = $type->getName();
+          $name = $p->getName();
+          if ($p->allowsNull()) {
+              // A nullable parameter corresponding to a non-nullable
+              // public property is the discriminator-only constructor
+              // pattern (e.g. XdrExtensionPoint::__construct(?int $d=null)
+              // backing public int $discriminant). Forwarding null leaves
+              // the underlying property uninitialised and breaks
+              // encode(). Populate with a real default in this case so
+              // the resulting instance is encodable.
+              if ($rc->hasProperty($name)) {
+                  $prop = $rc->getProperty($name);
+                  $pt = $prop->getType();
+                  if ($pt instanceof \\ReflectionNamedType && !$pt->allowsNull()) {
+                      return build_default_value_for_type($tn, $rc, $name, $inflight);
+                  }
+              }
+              if ($p->isDefaultValueAvailable()) {
+                  return $p->getDefaultValue();
+              }
+              return null;
+          }
+          return build_default_value_for_type($tn, $rc, $name, $inflight);
+      }
+
+      // Build a default value for a public property whose constructor
+      // has not initialised it (e.g. union arm payload fields).
+      function build_default_property_value(\\ReflectionClass $rc, \\ReflectionProperty $p, array &$inflight) {
+          $type = $p->getType();
+          if (!($type instanceof \\ReflectionNamedType)) {
+              return '__failed__';
+          }
+          try {
+              return build_default_value_for_type($type->getName(), $rc, $p->getName(), $inflight);
+          } catch (\\Throwable $t) {
+              return '__failed__';
+          }
+      }
+
+      function build_default_value_for_type(string $tn, \\ReflectionClass $owner, string $memberName, array &$inflight) {
+          switch ($tn) {
+              case 'int':
+                  return 0;
+              case 'float':
+                  return 0.0;
+              case 'bool':
+                  return false;
+              case 'string':
+                  return default_string_for_member($owner, $memberName);
+              case 'array':
+                  return [];
+              case 'mixed':
+                  return null;
+          }
+          if (class_exists($tn)) {
+              if ($tn === 'phpseclib3\\\\Math\\\\BigInteger'
+                  || ltrim($tn, '\\\\') === 'phpseclib3\\\\Math\\\\BigInteger') {
+                  return new \\phpseclib3\\Math\\BigInteger(0);
+              }
+              if (is_a($tn, '\\\\GMP', true) || $tn === 'GMP') {
+                  return \\gmp_init(0);
+              }
+              $sub = build_default_instance($tn, $inflight);
+              if ($sub === null) {
+                  throw new \\RuntimeException('cannot build sub-instance for ' . $tn);
+              }
+              return $sub;
+          }
+          throw new \\RuntimeException('unknown type ' . $tn);
+      }
+
+      // Determine the default string value for a property/parameter by
+      // inspecting the encode() body of $owner. opaqueFixed(N) demands an
+      // exactly N-byte string; opaqueVariable, string and the implicit
+      // default accept any length and so receive an empty string.
+      function default_string_for_member(\\ReflectionClass $owner, string $memberName): string {
+          static $cache = [];
+          $cacheKey = $owner->getName() . '::' . $memberName;
+          if (array_key_exists($cacheKey, $cache)) {
+              return $cache[$cacheKey];
+          }
+          // Aggregate sources from the owner's full inheritance chain so
+          // wrapper (XdrFoo) -> base (XdrFooBase) classes are both
+          // considered. Most XDR types declare encode() on the base; the
+          // wrapper file never references $this->memberName when only the
+          // base implements encoding.
+          $sources = [];
+          $rcWalk = $owner;
+          while ($rcWalk !== false) {
+              $fn = $rcWalk->getFileName();
+              if ($fn !== false && $fn !== null) {
+                  $sources[$fn] = $fn;
+              }
+              $rcWalk = $rcWalk->getParentClass();
+          }
+          // Find any opaqueFixed call referencing $this->memberName and
+          // capture the literal length argument. The largest declared
+          // length wins; encoders for the same property must agree on
+          // the same exact length so this reduction is safe.
+          $pattern = '/opaqueFixed\\s*\\(\\s*\\$this->'
+              . preg_quote($memberName, '/')
+              . '\\s*,\\s*([0-9]+)\\s*\\)/';
+          // Fixed-length array of opaque strings inside a struct: pattern
+          // such as `for ($i = 0; $i < N; $i++) opaqueFixed($this->m[$i], M)`.
+          $indexPattern = '/opaqueFixed\\s*\\(\\s*\\$this->'
+              . preg_quote($memberName, '/')
+              . '\\s*\\[\\s*\\$i\\s*\\]\\s*,\\s*([0-9]+)\\s*\\)/';
+          $maxLen = 0;
+          foreach ($sources as $fileName) {
+              $src = @file_get_contents($fileName);
+              if ($src === false) continue;
+              if (preg_match_all($pattern, $src, $mm)) {
+                  foreach ($mm[1] as $ln) {
+                      $n = (int)$ln;
+                      if ($n > $maxLen) $maxLen = $n;
+                  }
+              }
+              if (preg_match_all($indexPattern, $src, $mm2)) {
+                  foreach ($mm2[1] as $ln) {
+                      $n = (int)$ln;
+                      if ($n > $maxLen) $maxLen = $n;
+                  }
+              }
+          }
+          if ($maxLen > 0) {
+              return $cache[$cacheKey] = str_repeat("\\0", $maxLen);
+          }
+          return $cache[$cacheKey] = '';
       }
     PHP
   end

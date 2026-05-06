@@ -1151,6 +1151,84 @@ module StellarJsonOverrides
       end,
     },
 
+    # XdrTransactionV0 — Cat-B wrapper carve-out. The wrapper's constructor
+    # reorders parameters vs. the generated base (`(string sourceAccountEd25519,
+    # XdrSequenceNumber sequenceNumber, array operations, ?int fee, ?XdrMemo
+    # memo, ?XdrTimeBounds timeBounds, ?XdrTransactionV0Ext ext)` vs the
+    # base's `(string sourceAccountEd25519, int fee, XdrSequenceNumber seqNum,
+    # XdrMemo memo, array operations, XdrTransactionV0Ext ext, ?XdrTimeBounds
+    # timeBounds)`). At runtime `new static(sourceAccountEd25519, fee,
+    # seqNum, ...)` ends up in the wrapper constructor, where the int `fee`
+    # is bound to `XdrSequenceNumber $sequenceNumber` and trips a TypeError.
+    # The override emits the same SEP-0051 §Structs wire form the default
+    # template would emit; the from-side calls the wrapper constructor
+    # through `new static(...)` using the wrapper's parameter order.
+    'XdrTransactionV0' => {
+      to_value_signature: 'public function toJsonValue(): array',
+      to_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  return [
+                      'source_account_ed25519' => XdrJsonHelper::bytesToHex($this->sourceAccountEd25519),
+                      'fee' => $this->fee,
+                      'seq_num' => $this->seqNum->toJsonValue(),
+                      'time_bounds' => ($this->timeBounds !== null ? $this->timeBounds->toJsonValue() : null),
+                      'memo' => $this->memo->toJsonValue(),
+                      'operations' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->operations),
+                      'ext' => $this->ext->toJsonValue(),
+                  ];
+        PHP
+      end,
+      from_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  if (is_array($value) && array_key_exists('$schema', $value)) {
+                      unset($value['$schema']);
+                  }
+                  if (!is_array($value)) {
+                      throw new \\InvalidArgumentException(
+                          'Expected object for XdrTransactionV0 JSON value, got ' . get_debug_type($value)
+                      );
+                  }
+                  foreach (['source_account_ed25519', 'fee', 'seq_num', 'time_bounds', 'memo', 'operations', 'ext'] as $required) {
+                      if (!array_key_exists($required, $value)) {
+                          throw new \\InvalidArgumentException(
+                              'Missing required field ' . $required . ' for XdrTransactionV0'
+                          );
+                      }
+                  }
+                  if (!is_string($value['source_account_ed25519'])) {
+                      throw new \\InvalidArgumentException(
+                          'Expected hex string for source_account_ed25519, got ' . get_debug_type($value['source_account_ed25519'])
+                      );
+                  }
+                  $sourceAccountEd25519 = XdrJsonHelper::hexToBytes($value['source_account_ed25519']);
+                  if (!is_int($value['fee'])) {
+                      throw new \\InvalidArgumentException(
+                              'Expected int for fee, got ' . get_debug_type($value['fee'])
+                      );
+                  }
+                  $fee = $value['fee'];
+                  $sequenceNumber = XdrSequenceNumber::fromJsonValue($value['seq_num']);
+                  $timeBounds = null;
+                  if ($value['time_bounds'] !== null) {
+                      $timeBounds = XdrTimeBounds::fromJsonValue($value['time_bounds']);
+                  }
+                  $memo = XdrMemo::fromJsonValue($value['memo']);
+                  if (!is_array($value['operations'])) {
+                      throw new \\InvalidArgumentException(
+                          'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
+                      );
+                  }
+                  $operations = [];
+                  foreach ($value['operations'] as $item) {
+                      $operations[] = XdrOperation::fromJsonValue($item);
+                  }
+                  $ext = XdrTransactionV0Ext::fromJsonValue($value['ext']);
+                  // Wrapper signature: (sourceAccountEd25519, sequenceNumber, operations, ?fee, ?memo, ?timeBounds, ?ext).
+                  return new static($sourceAccountEd25519, $sequenceNumber, $operations, $fee, $memo, $timeBounds, $ext);
+        PHP
+      end,
+    },
+
     # XdrManageDataOperation — Cat-B wrapper carve-out. The wrapper's
     # constructor signature is `(string $key, XdrDataValue $value)` — it
     # always wraps the second arg in `XdrDataValue` and forwards

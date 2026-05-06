@@ -108,62 +108,46 @@ class XdrTransactionV0Base {
         }
         if (!is_array($value)) {
             throw new \InvalidArgumentException(
-                'Expected object for XdrTransactionV0Base JSON value, got ' . get_debug_type($value)
+                'Expected object for XdrTransactionV0 JSON value, got ' . get_debug_type($value)
             );
         }
-        if (!array_key_exists('source_account_ed25519', $value)) {
+        foreach (['source_account_ed25519', 'fee', 'seq_num', 'time_bounds', 'memo', 'operations', 'ext'] as $required) {
+            if (!array_key_exists($required, $value)) {
+                throw new \InvalidArgumentException(
+                    'Missing required field ' . $required . ' for XdrTransactionV0'
+                );
+            }
+        }
+        if (!is_string($value['source_account_ed25519'])) {
             throw new \InvalidArgumentException(
-                'Missing required field source_account_ed25519 for XdrTransactionV0Base'
+                'Expected hex string for source_account_ed25519, got ' . get_debug_type($value['source_account_ed25519'])
             );
         }
-        $sourceAccountEd25519 = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['source_account_ed25519']);
-        if (!array_key_exists('fee', $value)) {
+        $sourceAccountEd25519 = XdrJsonHelper::hexToBytes($value['source_account_ed25519']);
+        if (!is_int($value['fee'])) {
             throw new \InvalidArgumentException(
-                'Missing required field fee for XdrTransactionV0Base'
+                    'Expected int for fee, got ' . get_debug_type($value['fee'])
             );
         }
-        $fee = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fee']);
-        if (!array_key_exists('seq_num', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field seq_num for XdrTransactionV0Base'
-            );
-        }
-        $seqNum = XdrSequenceNumber::fromJsonValue($value['seq_num']);
-        if (!array_key_exists('time_bounds', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field time_bounds for XdrTransactionV0Base'
-            );
-        }
+        $fee = $value['fee'];
+        $sequenceNumber = XdrSequenceNumber::fromJsonValue($value['seq_num']);
         $timeBounds = null;
         if ($value['time_bounds'] !== null) {
             $timeBounds = XdrTimeBounds::fromJsonValue($value['time_bounds']);
         }
-        if (!array_key_exists('memo', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field memo for XdrTransactionV0Base'
-            );
-        }
         $memo = XdrMemo::fromJsonValue($value['memo']);
-        if (!array_key_exists('operations', $value)) {
+        if (!is_array($value['operations'])) {
             throw new \InvalidArgumentException(
-                'Missing required field operations for XdrTransactionV0Base'
+                'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
             );
         }
-        $operations = (static function ($v) {
-            if (!is_array($v)) {
-                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
-            }
-            $out = [];
-            foreach ($v as $item) { $out[] = XdrOperation::fromJsonValue($item); }
-            return $out;
-        })($value['operations']);
-        if (!array_key_exists('ext', $value)) {
-            throw new \InvalidArgumentException(
-                'Missing required field ext for XdrTransactionV0Base'
-            );
+        $operations = [];
+        foreach ($value['operations'] as $item) {
+            $operations[] = XdrOperation::fromJsonValue($item);
         }
         $ext = XdrTransactionV0Ext::fromJsonValue($value['ext']);
-        return new static($sourceAccountEd25519, $fee, $seqNum, $memo, $operations, $ext, $timeBounds);
+        // Wrapper signature: (sourceAccountEd25519, sequenceNumber, operations, ?fee, ?memo, ?timeBounds, ?ext).
+        return new static($sourceAccountEd25519, $sequenceNumber, $operations, $fee, $memo, $timeBounds, $ext);
     }
 
     public function toJson(): string {
