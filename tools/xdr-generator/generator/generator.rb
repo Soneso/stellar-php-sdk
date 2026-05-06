@@ -3138,17 +3138,15 @@ class Generator < Xdrgen::Generators::Base
 
   # Render the four SEP-51 methods on a generated union class. Dispatches by
   # discriminant kind (enum vs int) and arm shape (void vs non-void) into the
-  # SEP-51 wire forms specified in the plan: void arms render as bare strings,
-  # non-void arms render as single-key objects, and the four shape categories
-  # (void_only, non_void, mixed, int_cased) each get a marker comment that
-  # the negative-test gate uses to dispatch the per-shape battery.
+  # SEP-0051 wire forms: void arms render as bare strings, non-void arms render
+  # as single-key objects.
   #
-  # The `class_name` argument is the emission-target PHP class (e.g. the
-  # `*Base` form for Cat-B types). It is threaded through to the per-arm
-  # field-override dispatch so SEP51_FIELD_OVERRIDES[[parent_type, field_name]]
-  # is consulted with the same precedence as the struct-field path.
+  # The `class_name` argument is the emission-target PHP class (e.g. the base
+  # form for types that ship a hand-written wrapper). It is threaded through to
+  # the per-arm field-override dispatch so SEP51_FIELD_OVERRIDES[[parent_type,
+  # field_name]] is consulted with the same precedence as the struct-field
+  # path.
   def render_union_sep51_methods(out, union_name, class_name, disc_info, arms)
-    shape = union_shape_for_marker(disc_info, arms)
     arm_keys = compute_union_arm_keys(disc_info, arms)
     void_arm_strings = collect_void_arm_strings(arm_keys, arms)
 
@@ -3159,7 +3157,6 @@ class Generator < Xdrgen::Generators::Base
 
     out.puts ""
     out.puts "    public static function fromJsonValue(mixed $value): static {"
-    out.puts "        // @sep51-union #{class_name} shape=#{shape}"
     out.puts "        if (is_array($value) && array_key_exists('$schema', $value)) {"
     out.puts "            unset($value['$schema']);"
     out.puts "        }"
@@ -3231,20 +3228,6 @@ class Generator < Xdrgen::Generators::Base
   # build the void-string dispatch table.
   def collect_void_arm_strings(arm_keys, _arms)
     arm_keys.select { |k| k[:arm][:void] && k[:wire].is_a?(String) }
-  end
-
-  # Determine the shape marker for the negative-test gate. Precedence per
-  # plan §5 Phase 3 rule 10:
-  #   1. int discriminant -> int_cased (regardless of arm coverage)
-  #   2. all arms void    -> void_only
-  #   3. no arm void      -> non_void
-  #   4. otherwise        -> mixed
-  def union_shape_for_marker(disc_info, arms)
-    return "int_cased" if disc_info[:kind] == :int
-    void_count = arms.count { |a| a[:void] }
-    return "void_only" if void_count == arms.length
-    return "non_void" if void_count == 0
-    "mixed"
   end
 
   # Emit the body of toJsonValue for a union. Uses match on the discriminant

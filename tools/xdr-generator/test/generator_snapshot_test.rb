@@ -159,7 +159,7 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   # ------------------------------------------------------------------
-  # Phase 3 AST-shape assertions for structs and unions
+  # AST-shape assertions for struct and union emit
   # ------------------------------------------------------------------
 
   SEP51_STRUCT_TO_JSON_VALUE_SIGNATURE =
@@ -352,7 +352,6 @@ class GeneratorSnapshotTest < Minitest::Test
     assert_sep51_union_shape(
       "XdrLedgerEntryData.php",
       class_name: "XdrLedgerEntryData",
-      shape: "non_void",
       expected_arm_keys: %w[account trustline offer data claimable_balance liquidity_pool contract_data contract_code config_setting ttl]
     )
   end
@@ -374,21 +373,19 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   def test_sep51_xdr_account_entry_v1_ext_int_cased_mixed
-    # AccountEntryExtensionV1Ext has case 0 (void) and case 2 (V2 struct):
-    # int-cased; per plan rule 10 precedence (1) -> shape=int_cased.
+    # AccountEntryExtensionV1Ext has case 0 (void) and case 2 (V2 struct);
+    # the int discriminant is rendered as v0 / v2 wire keys.
     assert_sep51_union_shape(
       "XdrAccountEntryV1Ext.php",
       class_name: "XdrAccountEntryV1Ext",
-      shape: "int_cased",
       expected_arm_keys: %w[v0 v2]
     )
   end
 
   def test_sep51_xdr_extension_point_void_only_int_cased
-    # ExtensionPoint has only case 0 (void); int-cased; shape=int_cased.
+    # ExtensionPoint has only case 0 (void); the int discriminant is
+    # rendered as the bare-string wire form 'v0'.
     contents = File.read(File.join(OUTPUT_DIR, "XdrExtensionPoint.php"))
-    assert_match(/@sep51-union\s+XdrExtensionPoint\s+shape=int_cased/, contents,
-      "XdrExtensionPoint.php missing int_cased marker")
     assert_match(/=>\s*'v0'/, contents)
     assert_match(/'v0'\s*=>/, contents)
   end
@@ -396,8 +393,6 @@ class GeneratorSnapshotTest < Minitest::Test
   def test_sep51_xdr_transaction_meta_int_cased_non_void_v0_to_v4
     # TransactionMeta is int-cased with v0..v4; every arm is non-void.
     contents = File.read(File.join(OUTPUT_DIR, "XdrTransactionMeta.php"))
-    assert_match(/@sep51-union\s+XdrTransactionMeta\s+shape=int_cased/, contents,
-      "XdrTransactionMeta.php missing int_cased marker")
     %w[v0 v1 v2 v3 v4].each do |arm|
       assert_match Regexp.new("=>\\s*\\['#{arm}'\\s*=>"), contents,
         "XdrTransactionMeta.php: missing to-side arm key '#{arm}'"
@@ -408,8 +403,6 @@ class GeneratorSnapshotTest < Minitest::Test
 
   def test_sep51_xdr_ledger_close_meta_int_cased
     contents = File.read(File.join(OUTPUT_DIR, "XdrLedgerCloseMeta.php"))
-    assert_match(/@sep51-union\s+XdrLedgerCloseMeta\s+shape=int_cased/, contents,
-      "XdrLedgerCloseMeta.php missing int_cased marker")
     %w[v0 v1 v2].each do |arm|
       assert_match Regexp.new("'#{arm}'\\s*=>"), contents,
         "XdrLedgerCloseMeta.php: missing arm '#{arm}'"
@@ -418,8 +411,6 @@ class GeneratorSnapshotTest < Minitest::Test
 
   def test_sep51_xdr_soroban_transaction_meta_ext_int_cased_non_void
     contents = File.read(File.join(OUTPUT_DIR, "XdrSorobanTransactionMetaExt.php"))
-    assert_match(/@sep51-union\s+XdrSorobanTransactionMetaExt\s+shape=int_cased/, contents,
-      "XdrSorobanTransactionMetaExt.php missing int_cased marker")
     %w[v0 v1].each do |arm|
       assert_match Regexp.new("'#{arm}'"), contents,
         "XdrSorobanTransactionMetaExt.php: missing arm '#{arm}'"
@@ -490,9 +481,9 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   # Assert that a union file was emitted with the expected SEP-51 shape:
-  # the @sep51-union shape marker, the schema strip, and each expected
-  # arm key on both the to-side and from-side.
-  def assert_sep51_union_shape(filename, class_name:, shape:, expected_arm_keys:)
+  # the SEP-51 method signatures, the schema strip, and each expected
+  # arm key on the from-side.
+  def assert_sep51_union_shape(filename, class_name:, expected_arm_keys:)
     path = File.join(OUTPUT_DIR, filename)
     assert File.exist?(path), "Generated file not found: #{path}"
     contents = File.read(path)
@@ -505,18 +496,6 @@ class GeneratorSnapshotTest < Minitest::Test
       "#{filename} missing JSON encoder flag triple"
     assert_match SEP51_SCHEMA_STRIP, contents,
       "#{filename} missing $schema strip in fromJsonValue"
-
-    marker_re = Regexp.new("@sep51-union\\s+#{Regexp.escape(class_name)}\\s+shape=#{shape}")
-    assert_match marker_re, contents,
-      "#{filename} missing or wrong @sep51-union marker (expected shape=#{shape})"
-
-    # The marker MUST appear on the FIRST line of the fromJsonValue body so
-    # that negative_gate.sh's shape-detection regex can locate it.
-    body_match = contents.match(/public static function fromJsonValue\(mixed \$value\): static \{\n([^\n]*)/m)
-    assert body_match, "#{filename}: could not locate fromJsonValue body"
-    first_line = body_match[1].to_s.strip
-    assert_match marker_re, first_line,
-      "#{filename}: @sep51-union marker not on first line of fromJsonValue body"
 
     expected_arm_keys.each do |arm|
       assert_match Regexp.new("'#{Regexp.escape(arm)}'\\s*=>"), contents,

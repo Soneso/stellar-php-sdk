@@ -185,6 +185,15 @@ class XdrJsonHelperTest extends TestCase
         XdrJsonHelper::unescapeString('\x4');
     }
 
+    public function testUnescape_truncatedHexAtBoundary_throws(): void
+    {
+        // \x followed by exactly one hex digit at the very end of the input
+        // must reject — the boundary case for truncated hex escapes.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('truncated');
+        XdrJsonHelper::unescapeString('hello\\xa');
+    }
+
     public function testUnescape_trailingBackslash_throws(): void
     {
         // A lone trailing backslash with no following character is malformed.
@@ -244,6 +253,15 @@ class XdrJsonHelperTest extends TestCase
         // SEP-0051 §Opaque mandates lowercase hex on output; the decoder mirrors that constraint.
         $this->expectException(\InvalidArgumentException::class);
         XdrJsonHelper::hexToBytes('FF');
+    }
+
+    public function testHex_mixedCaseRejected(): void
+    {
+        // Even a single uppercase nibble within an otherwise-lowercase pair
+        // must reject — the lowercase rule is enforced character-by-character.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('lowercase');
+        XdrJsonHelper::hexToBytes('aB');
     }
 
     // =========================================================================
@@ -314,6 +332,14 @@ class XdrJsonHelperTest extends TestCase
     {
         $this->expectException(\JsonException::class);
         XdrJsonHelper::canonicalJson('{invalid');
+    }
+
+    public function testCanonical_truncatedInputThrows(): void
+    {
+        // Truncated JSON (missing the value and the closing brace) must
+        // raise a JsonException rather than silently coerce.
+        $this->expectException(\JsonException::class);
+        XdrJsonHelper::canonicalJson('{"a":');
     }
 
     public function testKsortRecursive_associativeArray(): void
@@ -713,6 +739,20 @@ class XdrJsonHelperTest extends TestCase
         XdrJsonHelper::stringToInt128Parts('1e10');
     }
 
+    public function testInt128_rejectsEmpty(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        XdrJsonHelper::stringToInt128Parts('');
+    }
+
+    public function testInt128_rejectsLeadingPlus(): void
+    {
+        // Leading "+" is rejected by the strict-validation rules; only an
+        // optional leading "-" is accepted.
+        $this->expectException(\InvalidArgumentException::class);
+        XdrJsonHelper::stringToInt128Parts('+1');
+    }
+
     public function testInt128_overflowThrows(): void
     {
         // One above INT128_MAX.
@@ -1016,6 +1056,12 @@ class XdrJsonHelperTest extends TestCase
         XdrJsonHelper::stringToInt256Parts('1e100');
     }
 
+    public function testInt256_rejectsEmpty(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        XdrJsonHelper::stringToInt256Parts('');
+    }
+
     public function testInt256_overflowThrows(): void
     {
         $tooBig = gmp_strval(gmp_pow(2, 255)); // INT256_MAX + 1
@@ -1233,9 +1279,9 @@ class XdrJsonHelperTest extends TestCase
     /**
      * canonicalJson inherits json_decode's last-value-wins behaviour on duplicate keys.
      *
-     * This pins the behaviour at the spec-vs-impl boundary. json_decode in PHP treats
-     * duplicate keys by retaining the last value. Cross-SDK tests that encounter this
-     * path should be aware of this documented difference.
+     * This pins the behaviour at the spec-vs-impl boundary. json_decode in PHP retains
+     * the last value when an object contains duplicate keys; SEP-51 itself does not
+     * address duplicate keys, so this test documents the inherited behaviour.
      */
     public function testCanonical_duplicateKeyLastWins(): void
     {

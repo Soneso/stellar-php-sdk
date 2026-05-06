@@ -133,7 +133,7 @@ XdrAsset::fromJson(
 );
 ```
 
-`asset_code` itself is a string emitted through the escape ladder. AssetCode4 trims trailing NULs; AssetCode12 also trims but pads back to a minimum of 5 bytes per spec — the PHP SDK rejects an all-NUL AssetCode12 as a chosen divergence rather than emit a degenerate 5-NUL output.
+`asset_code` itself is a string emitted through the escape ladder. AssetCode4 trims trailing NULs; AssetCode12 also trims but pads back to a minimum of 5 bytes per spec — the PHP SDK rejects an all-NUL AssetCode12 rather than emit a degenerate 5-NUL output.
 
 ## Discriminated unions
 
@@ -170,7 +170,7 @@ A nullable XDR field renders as `null` when absent. This is distinct from a unio
 
 ## Canonical JSON normalisation
 
-`XdrJsonHelper::canonicalJson($json)` returns a deterministic byte form: object keys sorted lexicographically at every level, no insignificant whitespace, list element order preserved. Used for cross-SDK byte-equal comparisons after structural equality is established.
+`XdrJsonHelper::canonicalJson($json)` returns a deterministic byte form: object keys sorted lexicographically at every level, no insignificant whitespace, list element order preserved. Used to obtain a deterministic byte form for snapshot comparison.
 
 ```php
 <?php declare(strict_types=1);

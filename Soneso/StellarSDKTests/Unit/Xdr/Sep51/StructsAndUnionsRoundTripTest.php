@@ -44,23 +44,20 @@ use Soneso\StellarSDK\Xdr\XdrTrustLineEntryExtensionV2;
 use Soneso\StellarSDK\Xdr\XdrValue;
 
 /**
- * Round-trip tests for the SEP-51 (XDR-JSON) emission on Phase 3 structs and
- * discriminated unions.
+ * Round-trip tests for the SEP-51 (XDR-JSON) emission on structs and
+ * discriminated unions that follow the default JSON template (snake_case
+ * struct fields, single-key-object union arms, bare-string void arms).
  *
- * Phase 3 emits SEP-51 toJson/fromJson methods on every non-Cat-A, non-Cat-B
- * struct and union. The set of Cat-A and Cat-B types is deliberately exempt
- * — Phase 4 owns their bespoke JSON shape (StrKey-encoded addresses, hex
- * contract identifiers, GMP-driven 128/256-bit assembly, and so on). To keep
- * Phase 3 testable in isolation, the positive round-trip cases here cover
- * types whose entire transitive field/arm graph stays inside Phase 3 (or
- * Phase 2 enums and helpers). End-to-end round-trips through Cat-A/Cat-B
- * delegations are exercised in Phase 5b once Phase 4 has landed.
+ * Types whose JSON shape is bespoke (StrKey-encoded addresses, hex contract
+ * identifiers, GMP-driven 128/256-bit assembly, and so on) are covered by
+ * StellarSpecificTypesTest instead; the positive round-trips here cover
+ * types whose entire transitive field/arm graph stays on the default
+ * template.
  *
- * The negative cases trip on the Phase 3 shape-validation paths the generator
- * emits at the top of fromJsonValue: the missing-required-field guard, the
+ * The negative cases trip on the shape-validation paths the generator emits
+ * at the top of fromJsonValue: the missing-required-field guard, the
  * wrong-shape guard (non-array vs single-key-object), and the
- * unknown-arm-key / unknown-void-string guards. These run before any nested
- * delegation, so they pass independently of Phase 4 progress.
+ * unknown-arm-key / unknown-void-string guards.
  */
 class StructsAndUnionsRoundTripTest extends TestCase
 {
@@ -198,7 +195,7 @@ class StructsAndUnionsRoundTripTest extends TestCase
     public function testSCErrorRoundTripValue(): void
     {
         // SCE_VALUE is one of the enum-payload arms: delegates to
-        // XdrSCErrorCode::toJsonValue() which is a Phase 2 enum.
+        // XdrSCErrorCode::toJsonValue().
         $err = new XdrSCError(new XdrSCErrorType(XdrSCErrorType::SCE_VALUE));
         $err->code = new XdrSCErrorCode(XdrSCErrorCode::SCEC_ARITH_DOMAIN);
         $rt = XdrSCError::fromJson($err->toJson());
@@ -447,8 +444,8 @@ class StructsAndUnionsRoundTripTest extends TestCase
     // =========================================================================
     //
     // The arm payloads delegate to operation-meta and v1..v4 structs whose
-    // own fromJsonValue chains route through Cat-A/Cat-B types — those
-    // round-trips are exercised in Phase 5b. Here we verify the union
+    // own fromJsonValue chains route through bespoke types covered by
+    // StellarSpecificTypesTest. The cases here verify only that the union
     // dispatch chooses the correct arm key.
 
     public function testTransactionMetaArmKeyDispatch(): void
@@ -487,7 +484,8 @@ class StructsAndUnionsRoundTripTest extends TestCase
 
     // =========================================================================
     // XdrLedgerEntryData — enum-discriminated multi-arm non-void union;
-    // shape-validation negatives only (arm payloads route through Cat-B).
+    // shape-validation negatives only (arm payloads route through types
+    // with hand-written wrappers).
     // =========================================================================
 
     public function testLedgerEntryDataRejectsBareString(): void
@@ -522,9 +520,9 @@ class StructsAndUnionsRoundTripTest extends TestCase
         // exactly $schema + one arm reduces to a single-key object after
         // stripping.
         $this->expectException(\InvalidArgumentException::class);
-        // We expect failure here because XdrAccountEntry's chain goes through
-        // Cat-B types not yet emitted; the failure occurs INSIDE the dispatch
-        // (proving $schema strip succeeded).
+        // We expect failure here because XdrAccountEntry's chain rejects an
+        // empty payload object; the failure occurs INSIDE the dispatch
+        // (proving the $schema strip succeeded).
         XdrLedgerEntryData::fromJsonValue(['$schema' => 'https://x', 'account' => []]);
     }
 
@@ -584,63 +582,62 @@ class StructsAndUnionsRoundTripTest extends TestCase
     }
 
     // =========================================================================
-    // Cat-A and Cat-B emission contract.
+    // SEP-51 method-presence contract for Stellar-specific types.
     // =========================================================================
     //
-    // Every Cat-A and Cat-B type carries SEP-51 toJsonValue / fromJsonValue /
-    // toJson / fromJson methods. Cat-B types inherit via `extends XdrFooBase`
-    // so method_exists() resolves on the wrapper class as well; Cat-A types
-    // receive the methods directly.
+    // Every Stellar-specific type — both bespoke-shape types and wrapper
+    // types backed by a hand-written subclass — carries SEP-51 toJsonValue /
+    // fromJsonValue / toJson / fromJson methods. Wrapper subclasses inherit
+    // from the generated base, so method_exists() resolves on the subclass.
 
     public function testSCValIsSep51Wired(): void
     {
         $this->assertTrue(method_exists(XdrSCVal::class, 'toJsonValue'),
-            'XdrSCVal is Cat-B; SEP-51 is emitted on XdrSCValBase and inherited by XdrSCVal.');
+            'XdrSCVal: SEP-51 is emitted on XdrSCValBase and inherited by the wrapper.');
     }
 
     public function testMemoIsSep51Wired(): void
     {
         $this->assertTrue(method_exists(XdrMemo::class, 'toJsonValue'),
-            'XdrMemo is Cat-A with bespoke SEP-51 emission via stellar_json_overrides.');
+            'XdrMemo: bespoke SEP-51 emission via stellar_json_overrides.');
     }
 
     public function testPreconditionsIsSep51Wired(): void
     {
         $this->assertTrue(method_exists(XdrPreconditions::class, 'toJsonValue'),
-            'XdrPreconditions is Cat-A and emits via the standard union template.');
+            'XdrPreconditions: emits via the standard union template.');
     }
 
     public function testTransactionEnvelopeIsSep51Wired(): void
     {
         $this->assertTrue(method_exists(XdrTransactionEnvelope::class, 'toJsonValue'),
-            'XdrTransactionEnvelope is Cat-B; SEP-51 lives on XdrTransactionEnvelopeBase, inherited.');
+            'XdrTransactionEnvelope: SEP-51 lives on XdrTransactionEnvelopeBase, inherited.');
     }
 
     public function testLedgerKeyIsSep51Wired(): void
     {
         $this->assertTrue(method_exists(XdrLedgerKey::class, 'toJsonValue'),
-            'XdrLedgerKey is Cat-B; SEP-51 lives on XdrLedgerKeyBase, inherited.');
+            'XdrLedgerKey: SEP-51 lives on XdrLedgerKeyBase, inherited.');
     }
 
     public function testSignerKeyIsSep51Wired(): void
     {
         $this->assertTrue(method_exists(XdrSignerKey::class, 'toJsonValue'),
-            'XdrSignerKey is Cat-A with bespoke single-string strkey emission.');
+            'XdrSignerKey: bespoke single-string strkey emission.');
     }
 
-    public function testOperationIsPhase3EmittedShapeValidation(): void
+    public function testOperationStructShapeValidation(): void
     {
-        // XdrOperation is a struct — Phase 3 owns its shape. Its body field
-        // delegates to XdrOperationBody (Phase 3 union), whose arms route
-        // through Cat-A/Cat-B operation types in turn; the outermost shape
-        // validation is testable in isolation.
+        // XdrOperation is a struct whose body field delegates to
+        // XdrOperationBody; the outermost struct-shape validation is
+        // testable in isolation here.
         $this->assertTrue(method_exists(XdrOperation::class, 'toJsonValue'));
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Missing required field body for XdrOperation');
         XdrOperation::fromJsonValue(['source_account' => null]);
     }
 
-    public function testAccountEntryIsPhase3EmittedShapeValidation(): void
+    public function testAccountEntryStructShapeValidation(): void
     {
         $this->assertTrue(method_exists(XdrAccountEntry::class, 'toJsonValue'));
         $this->expectException(\InvalidArgumentException::class);
@@ -648,7 +645,7 @@ class StructsAndUnionsRoundTripTest extends TestCase
         XdrAccountEntry::fromJsonValue([]);
     }
 
-    public function testTrustLineEntryIsPhase3EmittedShapeValidation(): void
+    public function testTrustLineEntryStructShapeValidation(): void
     {
         $this->assertTrue(method_exists(XdrTrustLineEntry::class, 'toJsonValue'));
         $this->expectException(\InvalidArgumentException::class);
@@ -656,7 +653,7 @@ class StructsAndUnionsRoundTripTest extends TestCase
         XdrTrustLineEntry::fromJsonValue('not_an_object');
     }
 
-    public function testClaimableBalanceEntryIsPhase3EmittedShapeValidation(): void
+    public function testClaimableBalanceEntryStructShapeValidation(): void
     {
         $this->assertTrue(method_exists(XdrClaimableBalanceEntry::class, 'toJsonValue'));
         $this->expectException(\InvalidArgumentException::class);
@@ -668,11 +665,12 @@ class StructsAndUnionsRoundTripTest extends TestCase
     // XdrAccountMergeOperation — hand-written struct wrapping XdrMuxedAccount
     // =========================================================================
     //
-    // The wrapper is an SDK-only construct over the IDL's bare MuxedAccount; the
-    // SEP-51 wire form is fully transparent — toJsonValue/fromJsonValue delegate
-    // to XdrMuxedAccount with no envelope. XdrMuxedAccount is a Cat-A type whose
-    // SEP-51 methods land in Phase 4, so the inner round-trip is covered in
-    // Phase 5b. Tests here lock in the delegation contract.
+    // The wrapper is an SDK-only construct over the IDL's bare MuxedAccount;
+    // the SEP-51 wire form is fully transparent — toJsonValue/fromJsonValue
+    // delegate to XdrMuxedAccount with no envelope. XdrMuxedAccount is a
+    // bespoke-shape type whose SEP-51 emission is covered by
+    // StellarSpecificTypesTest. The cases here lock in the delegation
+    // contract.
     // =========================================================================
 
     public function testAccountMergeOperationIsSep51Wired(): void
@@ -758,8 +756,8 @@ class StructsAndUnionsRoundTripTest extends TestCase
     }
 
     // =========================================================================
-    // XdrContractCodeEntryExtV1 — hand-written struct duplicate; ext is a
-    // void-only extension point so its round-trip stays inside Phase 3.
+    // XdrContractCodeEntryExtV1 — hand-written struct duplicate; the ext
+    // field is a void-only extension point with the default JSON shape.
     // =========================================================================
 
     public function testContractCodeEntryExtV1RoundTrip(): void

@@ -11,7 +11,7 @@ use Soneso\StellarSDK\Xdr\XdrJsonHelper;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
 /**
- * SEP-51 frozen-reference rollback rehearsal.
+ * SEP-51 frozen-reference regression test.
  *
  * Holds a known-good TransactionEnvelope JSON byte string and its matching
  * XDR base64 encoding as constants. The single test asserts that
@@ -25,10 +25,6 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
  * re-emitted toJson output canonicalises to the same bytes as the constant,
  * isolating "JSON output drift but XDR round-trip still works" as a
  * separate failure direction.
- *
- * This test is re-run on every minor SDK release as a regression guard
- * against silent generator-side behaviour changes; if it ever fails,
- * the change set must be reviewed before merging.
  */
 class RollbackRehearsalTest extends TestCase
 {
@@ -62,7 +58,7 @@ class RollbackRehearsalTest extends TestCase
         $this->assertSame(
             self::CANONICAL_TX_ENVELOPE_XDR_BASE64,
             $envelope->toBase64Xdr(),
-            'Frozen-reference rollback rehearsal: fromJson(CANONICAL_TX_ENVELOPE_JSON)->toBase64Xdr()'
+            'Frozen-reference regression: fromJson(CANONICAL_TX_ENVELOPE_JSON)->toBase64Xdr()'
             . ' must match the pinned canonical XDR byte-identically.'
         );
     }
@@ -84,7 +80,7 @@ class RollbackRehearsalTest extends TestCase
         $this->assertSame(
             self::CANONICAL_TX_ENVELOPE_JSON,
             $jsonOut,
-            'Frozen-reference rollback rehearsal: toJson output drifted from the'
+            'Frozen-reference regression: toJson output drifted from the'
             . ' pinned canonical JSON. If the change is intentional, update the'
             . ' constant and document the bump in the SDK changelog as part of'
             . ' the next minor release.'

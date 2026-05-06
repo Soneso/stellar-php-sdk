@@ -84,7 +84,6 @@ class XdrAllowTrustResult {
     }
 
     public static function fromJsonValue(mixed $value): static {
-        // @sep51-union XdrAllowTrustResult shape=void_only
         if (is_array($value) && array_key_exists('$schema', $value)) {
             unset($value['$schema']);
         }

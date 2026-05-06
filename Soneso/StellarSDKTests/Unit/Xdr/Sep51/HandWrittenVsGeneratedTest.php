@@ -11,18 +11,12 @@ use Soneso\StellarSDK\Xdr\XdrDataValue;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
 
 /**
- * SEP-51 hand-written vs. generator-emitted parity for Category C types.
+ * SEP-51 parity tests for hand-written XdrDataValue.
  *
- * Category C in the SEP-51 plan is the closed set of types whose SEP-51
- * methods are hand-authored on the wrapper class rather than emitted onto
- * a generator-produced *Base.php file. Today the set is exactly one type:
- * XdrDataValue (the optional opaque-variable wrapper used by ManageData).
- *
- * Because the generator never produces a parallel scratch class for this
- * type, the parity check works in the opposite direction: every wire form
- * the hand-written XdrDataValue::toJson can emit must match what the
- * generator's render_scalar_typedef_sep51_methods code path would emit for
- * the bare typedef DataValue<64>:
+ * XdrDataValue is hand-authored rather than generator-produced (it is the
+ * optional opaque-variable wrapper used by ManageData). Its SEP-51 wire form
+ * must match what the generator emits for a bare opaque typedef
+ * (typedef opaque DataValue<64>):
  *
  *   - non-null inner value -> hex string of the bytes
  *   - null inner value     -> JSON null (hand-written wrapper extension)
@@ -36,8 +30,8 @@ class HandWrittenVsGeneratedTest extends TestCase
 {
     /**
      * The hand-written XdrDataValue::toJson must produce the same shape the
-     * scratch-generator emits for `typedef opaque DataValue<64>`. These
-     * fixtures cover the documented boundary cases:
+     * generator emits for `typedef opaque DataValue<64>`. These fixtures
+     * cover the documented boundary cases:
      *
      *   - null inner value (wrapper extension; generator path is "no-op
      *     here, but the contract holds").
@@ -78,8 +72,8 @@ class HandWrittenVsGeneratedTest extends TestCase
         $this->assertSame(
             $expectedJson,
             $instance->toJson(),
-            'XdrDataValue::toJson shape diverged from the scratch-generator'
-            . ' opaque-variable typedef contract.'
+            'XdrDataValue::toJson shape diverged from the opaque-variable'
+            . ' typedef contract.'
         );
     }
 
@@ -103,7 +97,7 @@ class HandWrittenVsGeneratedTest extends TestCase
             $expectedRaw,
             $instance->toJsonValue(),
             'XdrDataValue::toJsonValue must delegate to XdrJsonHelper::bytesToHex'
-            . ' just as the scratch-generator opaque-variable emission does.'
+            . ' just as the generator opaque-variable emission does.'
         );
     }
 
@@ -129,9 +123,9 @@ class HandWrittenVsGeneratedTest extends TestCase
 
     /**
      * Subgate (d): the JSON null-arm contract — null inner -> JSON null.
-     * The scratch-generator does not emit this case (its native typedef has
-     * no null state), so the hand-written extension must be visibly explicit
-     * rather than fall through to ''.
+     * The generator does not emit this case (its native typedef has no null
+     * state), so the hand-written extension must be visibly explicit rather
+     * than fall through to ''.
      */
     public function testHandWrittenNullArmEmitsJsonNullNotEmptyString(): void
     {

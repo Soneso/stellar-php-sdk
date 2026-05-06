@@ -72,8 +72,12 @@ class XdrInt256Parts {
             );
         }
         $parts = XdrJsonHelper::stringToInt256Parts($value);
+        // Direct (int) cast is safe: XdrJsonHelper::stringToInt256Parts
+        // already validates the 'hiHi' limb as a digit-only signed
+        // int64 string, so the value fits in PHP int and contains no
+        // characters that would silently coerce to 0.
         return new static(
-            intval($parts['hiHi']),
+            (int) $parts['hiHi'],
             XdrJsonHelper::wrapUnsignedToSignedInt($parts['hiLo']),
             XdrJsonHelper::wrapUnsignedToSignedInt($parts['loHi']),
             XdrJsonHelper::wrapUnsignedToSignedInt($parts['loLo'])

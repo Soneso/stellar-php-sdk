@@ -53,10 +53,9 @@ class XdrDataValue
      * methods preserve the null state by emitting JSON null when the
      * wrapper carries no bytes.
      *
-     * Method bodies match the scratch-generator emission for the bare
-     * typedef (XdrJsonHelper::bytesToHex / hexToBytes via the
-     * render_scalar_typedef_sep51_methods code path) extended only by
-     * the null-guard required for the optional wrapper semantics.
+     * Mirrors the bare opaque-typedef emission
+     * (XdrJsonHelper::bytesToHex / hexToBytes), with an additional null
+     * guard for the optional wrapper semantics.
      */
     public function toJsonValue(): mixed
     {

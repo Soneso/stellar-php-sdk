@@ -113,18 +113,4 @@ module XdrJsonHelpers
     result
   end
 
-  # Compose the wire-form arm name for an int-cased discriminated union.
-  #
-  # SEP-51 emits int-cased arms as "<discriminant>0", "<discriminant>1", etc.,
-  # with the discriminant variable name lowercased. ExtensionPoint's `switch
-  # (int v)` produces "v0" for case 0, "v1" for case 1, and so on.
-  #
-  # The integer is rendered in base-10 with no zero-padding.
-  def int_cased_arm_name(discriminant_var_name, integer)
-    raise ArgumentError, 'discriminant_var_name must be a non-empty string' \
-      if discriminant_var_name.nil? || discriminant_var_name.empty?
-    raise ArgumentError, 'integer must be an Integer' unless integer.is_a?(Integer)
-
-    "#{discriminant_var_name.downcase}#{integer}"
-  end
 end

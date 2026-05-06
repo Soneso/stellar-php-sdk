@@ -433,22 +433,24 @@ class RoundTripEmitter
   def build_enum_method(method_name, type_name, member_name, value)
     fqcn = "#{XDR_NAMESPACE}\\#{type_name}"
     broken = KNOWN_BROKEN_ENUM_MEMBERS[[type_name, member_name]]
-    xdr_block = if broken
+    xdr_lines = if broken
       reason = broken[:reason]
-      <<~PHP.chomp
-                  // Skip XDR round-trip for this wrapper-only extension.
-                  // Reason: #{reason}
-                  // The JSON round-trip above is fully exercised; this skip
-                  // only suppresses the XDR-level assertion that cannot pass
-                  // until the canonical Base::decode is widened.
-      PHP
+      [
+        '// Skip XDR round-trip for this wrapper-only extension.',
+        "// Reason: #{reason}",
+        '// The JSON round-trip above is fully exercised; this skip',
+        '// only suppresses the XDR-level assertion that cannot pass',
+        '// until the canonical Base::decode is widened.',
+      ]
     else
-      <<~PHP.chomp
-                  $xdr = $instance->toBase64Xdr();
-                  $fromXdr = \\#{fqcn}::fromBase64Xdr($xdr);
-                  $this->assertSame($jsonValue, $fromXdr->toJsonValue());
-      PHP
+      [
+        '$xdr = $instance->toBase64Xdr();',
+        "$fromXdr = \\#{fqcn}::fromBase64Xdr($xdr);",
+        '$this->assertSame($jsonValue, $fromXdr->toJsonValue());',
+      ]
     end
+    indent = ' ' * 8
+    xdr_block = xdr_lines.map { |l| indent + l }.join("\n")
     <<~PHP.rstrip
           public function #{method_name}(): void
           {
@@ -564,16 +566,16 @@ class RoundTripEmitter
       # Without a constructable default the test still validates that
       # the arm name is recognised by the discriminant enum. This is a
       # reduced assertion — reachability is verified, full round-trip is
-      # exercised by the corpus and the cross-SDK fixture suite cross-SDK tests.
+      # exercised by the corpus snapshot.
       <<~PHP.rstrip
             public function #{method_name}(): void
             {
                 // Discriminator-only reachability assertion: confirms the
                 // arm constant is declared on the discriminant enum and
                 // resolves to an int. Full round-trip coverage for this
-                // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-                // available; this method guards against silent removal of
-                // the arm constant.
+                // arm is provided by the snapshot corpus when available;
+                // this method guards against silent removal of the arm
+                // constant.
                 $reflect = new \\ReflectionClass(\\#{fqcn}::class);
                 $found = false;
                 foreach ($reflect->getProperties(\\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -685,7 +687,7 @@ class RoundTripEmitter
               // (constructor demands populated members). The test asserts
               // contract presence: the class declares toJsonValue,
               // fromJsonValue, toJson and fromJson with the expected
-              // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+              // signatures so that corpus-driven snapshot tests can
               // exercise it. Removing any of these methods breaks the
               // contract and fails this test loudly.
               $rc = new \\ReflectionClass(\\#{fqcn}::class);
@@ -783,7 +785,7 @@ class RoundTripEmitter
                 // No deterministic fixture available — assert contract
                 // presence on the wrapper class. Optional-field branch
                 // coverage for this type is exercised by the corpus and
-                // by the cross-SDK fixture suite spec-anchor tests when available.
+                // by the spec-anchor tests when available.
                 $rc = new \\ReflectionClass(\\#{fqcn}::class);
                 $this->assertTrue($rc->hasMethod('toJsonValue'));
                 $this->assertTrue($rc->hasMethod('fromJsonValue'));

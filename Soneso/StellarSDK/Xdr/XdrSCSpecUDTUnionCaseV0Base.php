@@ -79,7 +79,6 @@ class XdrSCSpecUDTUnionCaseV0Base {
     }
 
     public static function fromJsonValue(mixed $value): static {
-        // @sep51-union XdrSCSpecUDTUnionCaseV0Base shape=non_void
         if (is_array($value) && array_key_exists('$schema', $value)) {
             unset($value['$schema']);
         }

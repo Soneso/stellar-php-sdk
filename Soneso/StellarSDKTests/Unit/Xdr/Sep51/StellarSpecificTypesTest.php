@@ -41,15 +41,17 @@ use phpseclib3\Math\BigInteger;
  * diverges from the generator's default enum/struct/union templates.
  *
  * Covers:
- *   - Cat-A bespoke types: XdrPublicKey, XdrNodeID, XdrSignerKey,
+ *   - Bespoke-shape types: XdrPublicKey, XdrNodeID, XdrSignerKey,
  *     XdrSignedPayload, XdrAsset, XdrMemo, XdrUInt128Parts /
  *     XdrInt128Parts / XdrUInt256Parts / XdrInt256Parts.
- *   - Cat-B bespoke types: XdrAccountID, XdrClaimableBalanceID,
- *     XdrSCAddress, XdrMuxedAccount, XdrMuxedAccountMed25519.
- *   - Cat-B field-override types: XdrAssetAlphaNum4, XdrAssetAlphaNum12,
- *     XdrAllowTrustOperationAsset, XdrLiquidityPoolDepositOperation,
- *     XdrLiquidityPoolWithdrawOperation, XdrLedgerKeyLiquidityPool.
- *   - Cat-C: XdrDataValue (hand-edited).
+ *   - Bespoke types backed by a hand-written wrapper: XdrAccountID,
+ *     XdrClaimableBalanceID, XdrSCAddress, XdrMuxedAccount,
+ *     XdrMuxedAccountMed25519.
+ *   - Wrapper types with field-name overrides: XdrAssetAlphaNum4,
+ *     XdrAssetAlphaNum12, XdrAllowTrustOperationAsset,
+ *     XdrLiquidityPoolDepositOperation, XdrLiquidityPoolWithdrawOperation,
+ *     XdrLedgerKeyLiquidityPool.
+ *   - Hand-written XdrDataValue.
  *
  * Each test verifies (a) the toJsonValue wire form matches the SEP-51
  * specification, (b) the round-trip via fromJsonValue reproduces an
@@ -108,7 +110,7 @@ class StellarSpecificTypesTest extends TestCase
     }
 
     // -----------------------------------------------------------------
-    // XdrAccountID — Cat-B G-strkey via inner XdrPublicKey
+    // XdrAccountID — wrapper-backed G-strkey via inner XdrPublicKey
     // -----------------------------------------------------------------
 
     public function testXdrAccountIDRoundTrip(): void
@@ -880,7 +882,7 @@ class StellarSpecificTypesTest extends TestCase
     }
 
     // -----------------------------------------------------------------
-    // XdrDataValue — Cat-C hand-edited typedef wrapper
+    // XdrDataValue — hand-written typedef wrapper
     // -----------------------------------------------------------------
 
     public function testXdrDataValueEmitsHexForNonNullBytes(): void
@@ -910,7 +912,7 @@ class StellarSpecificTypesTest extends TestCase
     }
 
     // -----------------------------------------------------------------
-    // XdrSCVal — Cat-B union end-to-end (covers SCAddress sub-arm)
+    // XdrSCVal — wrapper-backed union end-to-end (covers SCAddress sub-arm)
     // -----------------------------------------------------------------
 
     public function testXdrSCValAddressArmRoundTripWithAccountSubArm(): void
@@ -931,7 +933,7 @@ class StellarSpecificTypesTest extends TestCase
     }
 
     // -----------------------------------------------------------------
-    // XdrTransactionEnvelope — Cat-B int-cased union
+    // XdrTransactionEnvelope — wrapper-backed int-cased union
     // -----------------------------------------------------------------
 
     public function testXdrTransactionEnvelopeIsSep51Wired(): void
@@ -940,7 +942,7 @@ class StellarSpecificTypesTest extends TestCase
         // template (no bespoke override). The wire form is an int-cased
         // single-key object. This test confirms the methods exist and
         // reject obvious malformed input. End-to-end XDR round-trip via
-        // JSON is exercised by the cross-SDK fixture battery.
+        // JSON is exercised by the snapshot corpus.
         $this->assertTrue(method_exists(\Soneso\StellarSDK\Xdr\XdrTransactionEnvelope::class, 'toJsonValue'));
         $this->assertTrue(method_exists(\Soneso\StellarSDK\Xdr\XdrTransactionEnvelope::class, 'fromJsonValue'));
 

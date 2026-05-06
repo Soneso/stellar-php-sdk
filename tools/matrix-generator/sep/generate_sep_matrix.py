@@ -2689,13 +2689,13 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Discriminated Union --
-        union_marker_line = self._grep_line(gen_rb, r"@sep51-union")
+        union_render_line = self._grep_line(gen_rb, r"def render_union_sep51_methods")
         union_schema_line = self._grep_line(gen_rb, r"is_array.*array_key_exists.*\\\$schema")
         union_note = (
             "Four sub-arm shapes supported: void arm (JSON string), non-void arm (JSON object), "
             "multi-void (JSON string for each void case), int-cased (discriminant-name + integer). "
-            + "Marker emitted at "
-            + (self._cite(gen_rb, union_marker_line) if union_marker_line else self._cite(gen_rb, 3161))
+            + "Union emitter at "
+            + (self._cite(gen_rb, union_render_line) if union_render_line else self._cite(gen_rb, 3150))
             + "; $schema strip at "
             + (self._cite(gen_rb, union_schema_line) if union_schema_line else self._cite(gen_rb, 3162))
         )
@@ -2710,7 +2710,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
         void_note = (
             "Void union arms render as the discriminant string (JSON string). "
             "Void in struct context is omitted. "
-            + self._cite(gen_rb, union_marker_line if union_marker_line else 3161)
+            + self._cite(gen_rb, union_render_line if union_render_line else 3150)
         )
         section.fields.append(self._make_field(
             name="Void",

@@ -30,9 +30,9 @@ class AllTypesRoundTripTest extends TestCase
         $back = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountFlags_AUTH_REVOCABLE_FLAG(): void
@@ -49,9 +49,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountFlags_AUTH_IMMUTABLE_FLAG(): void
@@ -68,9 +68,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountFlags_AUTH_CLAWBACK_ENABLED_FLAG(): void
@@ -87,9 +87,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountMergeResultCode_IS_SPONSOR(): void
@@ -106,9 +106,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountMergeResultCode_DEST_FULL(): void
@@ -125,9 +125,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountMergeResultCode_SEQNUM_TOO_FAR(): void
@@ -144,9 +144,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountMergeResultCode_HAS_SUB_ENTRIES(): void
@@ -163,9 +163,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountMergeResultCode_IMMUTABLE_SET(): void
@@ -182,9 +182,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountMergeResultCode_NO_ACCOUNT(): void
@@ -201,9 +201,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountMergeResultCode_MALFORMED(): void
@@ -220,9 +220,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAccountMergeResultCode_SUCCESS(): void
@@ -239,9 +239,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAccountMergeResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAllowTrustResultCode_LOW_RESERVE(): void
@@ -258,9 +258,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAllowTrustResultCode_SELF_NOT_ALLOWED(): void
@@ -277,9 +277,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAllowTrustResultCode_CANT_REVOKE(): void
@@ -296,9 +296,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAllowTrustResultCode_TRUST_NOT_REQUIRED(): void
@@ -315,9 +315,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAllowTrustResultCode_NO_TRUST_LINE(): void
@@ -334,9 +334,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAllowTrustResultCode_MALFORMED(): void
@@ -353,9 +353,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAllowTrustResultCode_SUCCESS(): void
@@ -372,9 +372,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAllowTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAssetType_ASSET_TYPE_NATIVE(): void
@@ -391,9 +391,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAssetType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAssetType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAssetType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4(): void
@@ -410,9 +410,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAssetType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAssetType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAssetType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12(): void
@@ -429,9 +429,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAssetType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAssetType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAssetType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrAssetType_ASSET_TYPE_POOL_SHARE(): void
@@ -448,9 +448,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrAssetType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrAssetType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrAssetType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBeginSponsoringFutureReservesResultCode_RECURSIVE(): void
@@ -467,9 +467,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBeginSponsoringFutureReservesResultCode_ALREADY_SPONSORED(): void
@@ -486,9 +486,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBeginSponsoringFutureReservesResultCode_MALFORMED(): void
@@ -505,9 +505,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBeginSponsoringFutureReservesResultCode_SUCCESS(): void
@@ -524,9 +524,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBinaryFuseFilterType_BINARY_FUSE_FILTER_8_BIT(): void
@@ -543,9 +543,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBinaryFuseFilterType_BINARY_FUSE_FILTER_16_BIT(): void
@@ -562,9 +562,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBinaryFuseFilterType_BINARY_FUSE_FILTER_32_BIT(): void
@@ -581,9 +581,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBucketEntryType_METAENTRY(): void
@@ -600,9 +600,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBucketEntryType_LIVEENTRY(): void
@@ -619,9 +619,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBucketEntryType_DEADENTRY(): void
@@ -638,9 +638,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBucketEntryType_INITENTRY(): void
@@ -657,9 +657,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBucketListType_LIVE(): void
@@ -676,9 +676,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBucketListType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketListType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketListType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBucketListType_HOT_ARCHIVE(): void
@@ -695,9 +695,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBucketListType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketListType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBucketListType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBumpSequenceResultCode_BAD_SEQ(): void
@@ -714,9 +714,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrBumpSequenceResultCode_SUCCESS(): void
@@ -733,9 +733,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_NOT_AUTH_MAINTAIN_LIABILITIES(): void
@@ -752,9 +752,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_CANNOT_DELETE(): void
@@ -771,9 +771,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_TRUST_LINE_MISSING(): void
@@ -790,9 +790,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_SELF_NOT_ALLOWED(): void
@@ -809,9 +809,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_LOW_RESERVE(): void
@@ -828,9 +828,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_INVALID_LIMIT(): void
@@ -847,9 +847,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_NO_ISSUER(): void
@@ -866,9 +866,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_MALFORMED(): void
@@ -885,9 +885,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrChangeTrustResultCode_SUCCESS(): void
@@ -904,9 +904,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrChangeTrustResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimAtomType_V0(): void
@@ -923,9 +923,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimAtomType_ORDER_BOOK(): void
@@ -942,9 +942,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimAtomType_LIQUIDITY_POOL(): void
@@ -961,9 +961,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimAtomType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimClaimableBalanceResultCode_TRUSTLINE_FROZEN(): void
@@ -980,9 +980,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimClaimableBalanceResultCode_NOT_AUTHORIZED(): void
@@ -999,9 +999,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimClaimableBalanceResultCode_NO_TRUST(): void
@@ -1018,9 +1018,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimClaimableBalanceResultCode_LINE_FULL(): void
@@ -1037,9 +1037,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimClaimableBalanceResultCode_CANNOT_CLAIM(): void
@@ -1056,9 +1056,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimClaimableBalanceResultCode_DOES_NOT_EXIST(): void
@@ -1075,9 +1075,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimClaimableBalanceResultCode_SUCCESS(): void
@@ -1094,9 +1094,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimPredicateType_UNCONDITIONAL(): void
@@ -1113,9 +1113,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimPredicateType_AND(): void
@@ -1132,9 +1132,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimPredicateType_OR(): void
@@ -1151,9 +1151,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimPredicateType_NOT(): void
@@ -1170,9 +1170,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimPredicateType_BEFORE_ABSOLUTE_TIME(): void
@@ -1189,9 +1189,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimPredicateType_BEFORE_RELATIVE_TIME(): void
@@ -1208,9 +1208,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimPredicateType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimableBalanceFlags_CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG(): void
@@ -1227,9 +1227,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimableBalanceIDType_CLAIMABLE_BALANCE_ID_TYPE_V0(): void
@@ -1246,9 +1246,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClaimantType_V0(): void
@@ -1265,9 +1265,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackClaimableBalanceResultCode_NOT_CLAWBACK_ENABLED(): void
@@ -1284,9 +1284,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackClaimableBalanceResultCode_NOT_ISSUER(): void
@@ -1303,9 +1303,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackClaimableBalanceResultCode_DOES_NOT_EXIST(): void
@@ -1322,9 +1322,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackClaimableBalanceResultCode_SUCCESS(): void
@@ -1341,9 +1341,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackResultCode_UNDERFUNDED(): void
@@ -1360,9 +1360,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackResultCode_NO_TRUST(): void
@@ -1379,9 +1379,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackResultCode_NOT_ENABLED(): void
@@ -1398,9 +1398,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackResultCode_MALFORMED(): void
@@ -1417,9 +1417,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrClawbackResultCode_SUCCESS(): void
@@ -1436,9 +1436,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrClawbackResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES(): void
@@ -1455,9 +1455,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COMPUTE_V0(): void
@@ -1474,9 +1474,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_V0(): void
@@ -1493,9 +1493,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0(): void
@@ -1512,9 +1512,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EVENTS_V0(): void
@@ -1531,9 +1531,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_BANDWIDTH_V0(): void
@@ -1550,9 +1550,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS(): void
@@ -1569,9 +1569,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES(): void
@@ -1588,9 +1588,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES(): void
@@ -1607,9 +1607,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES(): void
@@ -1626,9 +1626,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_STATE_ARCHIVAL(): void
@@ -1645,9 +1645,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EXECUTION_LANES(): void
@@ -1664,9 +1664,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW(): void
@@ -1683,9 +1683,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_EVICTION_ITERATOR(): void
@@ -1702,9 +1702,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(13, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0(): void
@@ -1721,9 +1721,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(14, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0(): void
@@ -1740,9 +1740,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(15, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_SCP_TIMING(): void
@@ -1759,9 +1759,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(16, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS(): void
@@ -1778,9 +1778,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(17, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA(): void
@@ -1797,9 +1797,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(18, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS(): void
@@ -1816,9 +1816,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(19, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA(): void
@@ -1835,9 +1835,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(20, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrConfigSettingID::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_WasmInsnExec(): void
@@ -1854,9 +1854,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_MemAlloc(): void
@@ -1873,9 +1873,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_MemCpy(): void
@@ -1892,9 +1892,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_MemCmp(): void
@@ -1911,9 +1911,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_DispatchHostFunction(): void
@@ -1930,9 +1930,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_VisitObject(): void
@@ -1949,9 +1949,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ValSer(): void
@@ -1968,9 +1968,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ValDeser(): void
@@ -1987,9 +1987,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ComputeSha256Hash(): void
@@ -2006,9 +2006,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ComputeEd25519PubKey(): void
@@ -2025,9 +2025,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_VerifyEd25519Sig(): void
@@ -2044,9 +2044,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_VmInstantiation(): void
@@ -2063,9 +2063,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_VmCachedInstantiation(): void
@@ -2082,9 +2082,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InvokeVMFunction(): void
@@ -2101,9 +2101,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(13, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ComputeKeccak256Hash(): void
@@ -2120,9 +2120,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(14, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_DecodeEcdsaCurve256Sig(): void
@@ -2139,9 +2139,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(15, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_RecoverEcdsaSecp256k1Key(): void
@@ -2158,9 +2158,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(16, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Int256AddSub(): void
@@ -2177,9 +2177,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(17, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Int256Mul(): void
@@ -2196,9 +2196,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(18, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Int256Div(): void
@@ -2215,9 +2215,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(19, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Int256Pow(): void
@@ -2234,9 +2234,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(20, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Int256Shift(): void
@@ -2253,9 +2253,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(21, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ChaCha20DrawBytes(): void
@@ -2272,9 +2272,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(22, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmInstructions(): void
@@ -2291,9 +2291,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(23, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmFunctions(): void
@@ -2310,9 +2310,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(24, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmGlobals(): void
@@ -2329,9 +2329,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(25, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmTableEntries(): void
@@ -2348,9 +2348,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(26, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmTypes(): void
@@ -2367,9 +2367,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(27, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmDataSegments(): void
@@ -2386,9 +2386,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(28, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmElemSegments(): void
@@ -2405,9 +2405,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(29, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmImports(): void
@@ -2424,9 +2424,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(30, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmExports(): void
@@ -2443,9 +2443,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(31, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_ParseWasmDataSegmentBytes(): void
@@ -2462,9 +2462,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(32, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmInstructions(): void
@@ -2481,9 +2481,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(33, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmFunctions(): void
@@ -2500,9 +2500,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(34, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmGlobals(): void
@@ -2519,9 +2519,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(35, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmTableEntries(): void
@@ -2538,9 +2538,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(36, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmTypes(): void
@@ -2557,9 +2557,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(37, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmDataSegments(): void
@@ -2576,9 +2576,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(38, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmElemSegments(): void
@@ -2595,9 +2595,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(39, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmImports(): void
@@ -2614,9 +2614,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(40, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmExports(): void
@@ -2633,9 +2633,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(41, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_InstantiateWasmDataSegmentBytes(): void
@@ -2652,9 +2652,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(42, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Sec1DecodePointUncompressed(): void
@@ -2671,9 +2671,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(43, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_VerifyEcdsaSecp256r1Sig(): void
@@ -2690,9 +2690,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(44, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381EncodeFp(): void
@@ -2709,9 +2709,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(45, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381DecodeFp(): void
@@ -2728,9 +2728,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(46, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G1CheckPointOnCurve(): void
@@ -2747,9 +2747,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(47, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G1CheckPointInSubgroup(): void
@@ -2766,9 +2766,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(48, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G2CheckPointOnCurve(): void
@@ -2785,9 +2785,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(49, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G2CheckPointInSubgroup(): void
@@ -2804,9 +2804,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(50, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G1ProjectiveToAffine(): void
@@ -2823,9 +2823,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(51, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G2ProjectiveToAffine(): void
@@ -2842,9 +2842,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(52, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G1Add(): void
@@ -2861,9 +2861,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(53, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G1Mul(): void
@@ -2880,9 +2880,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(54, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G1Msm(): void
@@ -2899,9 +2899,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(55, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381MapFpToG1(): void
@@ -2918,9 +2918,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(56, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381HashToG1(): void
@@ -2937,9 +2937,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(57, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G2Add(): void
@@ -2956,9 +2956,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(58, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G2Mul(): void
@@ -2975,9 +2975,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(59, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381G2Msm(): void
@@ -2994,9 +2994,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(60, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381MapFp2ToG2(): void
@@ -3013,9 +3013,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(61, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381HashToG2(): void
@@ -3032,9 +3032,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(62, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381Pairing(): void
@@ -3051,9 +3051,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(63, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381FrFromU256(): void
@@ -3070,9 +3070,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(64, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381FrToU256(): void
@@ -3089,9 +3089,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(65, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381FrAddSub(): void
@@ -3108,9 +3108,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(66, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381FrMul(): void
@@ -3127,9 +3127,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(67, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381FrPow(): void
@@ -3146,9 +3146,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(68, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bls12381FrInv(): void
@@ -3165,9 +3165,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(69, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254EncodeFp(): void
@@ -3184,9 +3184,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(70, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254DecodeFp(): void
@@ -3203,9 +3203,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(71, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254G1CheckPointOnCurve(): void
@@ -3222,9 +3222,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(72, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254G2CheckPointOnCurve(): void
@@ -3241,9 +3241,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(73, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254G2CheckPointInSubgroup(): void
@@ -3260,9 +3260,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(74, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254G1ProjectiveToAffine(): void
@@ -3279,9 +3279,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(75, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254G1Add(): void
@@ -3298,9 +3298,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(76, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254G1Mul(): void
@@ -3317,9 +3317,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(77, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254Pairing(): void
@@ -3336,9 +3336,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(78, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254FrFromU256(): void
@@ -3355,9 +3355,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(79, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254FrToU256(): void
@@ -3374,9 +3374,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(80, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254FrAddSub(): void
@@ -3393,9 +3393,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(81, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254FrMul(): void
@@ -3412,9 +3412,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(82, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254FrPow(): void
@@ -3431,9 +3431,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(83, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254FrInv(): void
@@ -3450,9 +3450,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(84, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractCostType_Bn254G1Msm(): void
@@ -3469,9 +3469,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(85, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractDataDurability_TEMPORARY(): void
@@ -3488,9 +3488,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractDataDurability::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractDataDurability::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractDataDurability::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractDataDurability_PERSISTENT(): void
@@ -3507,9 +3507,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractDataDurability::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractDataDurability::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractDataDurability::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractEventType_CONTRACT_EVENT_TYPE_SYSTEM(): void
@@ -3526,9 +3526,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractEventType_CONTRACT_EVENT_TYPE_CONTRACT(): void
@@ -3545,9 +3545,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractEventType_CONTRACT_EVENT_TYPE_DIAGNOSTIC(): void
@@ -3564,9 +3564,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractEventType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractExecutableType_CONTRACT_EXECUTABLE_WASM(): void
@@ -3583,9 +3583,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET(): void
@@ -3602,9 +3602,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ADDRESS(): void
@@ -3621,9 +3621,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractIDPreimageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractIDPreimageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractIDPreimageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ASSET(): void
@@ -3640,9 +3640,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrContractIDPreimageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrContractIDPreimageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractIDPreimageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateAccountResultCode_ACCOUNT_ALREADY_EXIST(): void
@@ -3659,9 +3659,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateAccountResultCode_LOW_RESERVE(): void
@@ -3678,9 +3678,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateAccountResultCode_UNDERFUNDED(): void
@@ -3697,9 +3697,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateAccountResultCode_MALFORMED(): void
@@ -3716,9 +3716,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateAccountResultCode_SUCCESS(): void
@@ -3735,9 +3735,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateClaimableBalanceResultCode_UNDERFUNDED(): void
@@ -3754,9 +3754,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateClaimableBalanceResultCode_NOT_AUTHORIZED(): void
@@ -3773,9 +3773,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateClaimableBalanceResultCode_NO_TRUST(): void
@@ -3792,9 +3792,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateClaimableBalanceResultCode_LOW_RESERVE(): void
@@ -3811,9 +3811,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateClaimableBalanceResultCode_MALFORMED(): void
@@ -3830,9 +3830,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCreateClaimableBalanceResultCode_SUCCESS(): void
@@ -3849,9 +3849,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCryptoKeyType_KEY_TYPE_ED25519(): void
@@ -3868,9 +3868,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCryptoKeyType_KEY_TYPE_PRE_AUTH_TX(): void
@@ -3887,9 +3887,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCryptoKeyType_KEY_TYPE_HASH_X(): void
@@ -3906,9 +3906,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCryptoKeyType_KEY_TYPE_ED25519_SIGNED_PAYLOAD(): void
@@ -3925,9 +3925,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrCryptoKeyType_KEY_TYPE_MUXED_ED25519(): void
@@ -3944,9 +3944,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(256, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrCryptoKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEndSponsoringFutureReservesResultCode_NOT_SPONSORED(): void
@@ -3963,9 +3963,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEndSponsoringFutureReservesResultCode_SUCCESS(): void
@@ -3982,9 +3982,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_TX_V0(): void
@@ -4001,9 +4001,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_SCP(): void
@@ -4020,9 +4020,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_TX(): void
@@ -4039,9 +4039,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_AUTH(): void
@@ -4058,9 +4058,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_SCPVALUE(): void
@@ -4077,9 +4077,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_TX_FEE_BUMP(): void
@@ -4096,9 +4096,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_OP_ID(): void
@@ -4115,9 +4115,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_POOL_REVOKE_OP_ID(): void
@@ -4134,9 +4134,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_CONTRACT_ID(): void
@@ -4153,9 +4153,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION(): void
@@ -4172,9 +4172,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrErrorCode_ERR_MISC(): void
@@ -4191,9 +4191,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrErrorCode_ERR_DATA(): void
@@ -4210,9 +4210,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrErrorCode_ERR_CONF(): void
@@ -4229,9 +4229,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrErrorCode_ERR_AUTH(): void
@@ -4248,9 +4248,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrErrorCode_ERR_LOAD(): void
@@ -4267,9 +4267,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE(): void
@@ -4286,9 +4286,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED(): void
@@ -4305,9 +4305,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_MALFORMED(): void
@@ -4324,9 +4324,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_SUCCESS(): void
@@ -4343,9 +4343,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrHostFunctionType_HOST_FUNCTION_TYPE_INVOKE_CONTRACT(): void
@@ -4362,9 +4362,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT(): void
@@ -4381,9 +4381,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrHostFunctionType_HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM(): void
@@ -4400,9 +4400,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2(): void
@@ -4419,9 +4419,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrHostFunctionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrHotArchiveBucketEntryType_HOT_ARCHIVE_METAENTRY(): void
@@ -4438,9 +4438,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrHotArchiveBucketEntryType_HOT_ARCHIVE_ARCHIVED(): void
@@ -4457,9 +4457,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrHotArchiveBucketEntryType_HOT_ARCHIVE_LIVE(): void
@@ -4476,9 +4476,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrIPAddrType_IPv4(): void
@@ -4495,9 +4495,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrIPAddrType_IPv6(): void
@@ -4514,9 +4514,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrInflationResultCode_NOT_TIME(): void
@@ -4533,9 +4533,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrInflationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrInflationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrInflationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrInflationResultCode_SUCCESS(): void
@@ -4552,9 +4552,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrInflationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrInflationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrInflationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE(): void
@@ -4571,9 +4571,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED(): void
@@ -4590,9 +4590,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED(): void
@@ -4609,9 +4609,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_TRAPPED(): void
@@ -4628,9 +4628,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_MALFORMED(): void
@@ -4647,9 +4647,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_SUCCESS(): void
@@ -4666,9 +4666,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryChangeType_LEDGER_ENTRY_CREATED(): void
@@ -4685,9 +4685,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryChangeType_LEDGER_ENTRY_UPDATED(): void
@@ -4704,9 +4704,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryChangeType_LEDGER_ENTRY_REMOVED(): void
@@ -4723,9 +4723,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryChangeType_LEDGER_ENTRY_STATE(): void
@@ -4742,9 +4742,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryChangeType_LEDGER_ENTRY_RESTORED(): void
@@ -4761,9 +4761,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChangeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_ACCOUNT(): void
@@ -4780,9 +4780,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_TRUSTLINE(): void
@@ -4799,9 +4799,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_OFFER(): void
@@ -4818,9 +4818,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_DATA(): void
@@ -4837,9 +4837,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_CLAIMABLE_BALANCE(): void
@@ -4856,9 +4856,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_LIQUIDITY_POOL(): void
@@ -4875,9 +4875,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_CONTRACT_DATA(): void
@@ -4894,9 +4894,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_CONTRACT_CODE(): void
@@ -4913,9 +4913,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_CONFIG_SETTING(): void
@@ -4932,9 +4932,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerEntryType_TTL(): void
@@ -4951,9 +4951,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerEntryType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerHeaderFlags_DISABLE_LIQUIDITY_POOL_TRADING_FLAG(): void
@@ -4970,9 +4970,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerHeaderFlags_DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG(): void
@@ -4989,9 +4989,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerHeaderFlags_DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG(): void
@@ -5008,9 +5008,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerUpgradeType_LEDGER_UPGRADE_VERSION(): void
@@ -5027,9 +5027,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerUpgradeType_LEDGER_UPGRADE_BASE_FEE(): void
@@ -5046,9 +5046,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerUpgradeType_LEDGER_UPGRADE_MAX_TX_SET_SIZE(): void
@@ -5065,9 +5065,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerUpgradeType_LEDGER_UPGRADE_BASE_RESERVE(): void
@@ -5084,9 +5084,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerUpgradeType_LEDGER_UPGRADE_FLAGS(): void
@@ -5103,9 +5103,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerUpgradeType_LEDGER_UPGRADE_CONFIG(): void
@@ -5122,9 +5122,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLedgerUpgradeType_LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE(): void
@@ -5141,9 +5141,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLedgerUpgradeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_TRUSTLINE_FROZEN(): void
@@ -5160,9 +5160,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_POOL_FULL(): void
@@ -5179,9 +5179,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_BAD_PRICE(): void
@@ -5198,9 +5198,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_LINE_FULL(): void
@@ -5217,9 +5217,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_UNDERFUNDED(): void
@@ -5236,9 +5236,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_NOT_AUTHORIZED(): void
@@ -5255,9 +5255,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_NO_TRUST(): void
@@ -5274,9 +5274,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_MALFORMED(): void
@@ -5293,9 +5293,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolDepositResultCode_SUCCESS(): void
@@ -5312,9 +5312,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolType_LIQUIDITY_POOL_CONSTANT_PRODUCT(): void
@@ -5331,9 +5331,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolWithdrawResultCode_TRUSTLINE_FROZEN(): void
@@ -5350,9 +5350,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolWithdrawResultCode_UNDER_MINIMUM(): void
@@ -5369,9 +5369,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolWithdrawResultCode_LINE_FULL(): void
@@ -5388,9 +5388,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolWithdrawResultCode_UNDERFUNDED(): void
@@ -5407,9 +5407,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolWithdrawResultCode_NO_TRUST(): void
@@ -5426,9 +5426,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolWithdrawResultCode_MALFORMED(): void
@@ -5445,9 +5445,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrLiquidityPoolWithdrawResultCode_SUCCESS(): void
@@ -5464,9 +5464,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageDataResultCode_INVALID_NAME(): void
@@ -5483,9 +5483,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageDataResultCode_LOW_RESERVE(): void
@@ -5502,9 +5502,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageDataResultCode_NAME_NOT_FOUND(): void
@@ -5521,9 +5521,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageDataResultCode_NOT_SUPPORTED_YET(): void
@@ -5540,9 +5540,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageDataResultCode_SUCCESS(): void
@@ -5559,9 +5559,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageDataResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferEffect_MANAGE_OFFER_CREATED(): void
@@ -5578,9 +5578,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferEffect_MANAGE_OFFER_UPDATED(): void
@@ -5597,9 +5597,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferEffect_MANAGE_OFFER_DELETED(): void
@@ -5616,9 +5616,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferEffect::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_LOW_RESERVE(): void
@@ -5635,9 +5635,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_NOT_FOUND(): void
@@ -5654,9 +5654,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_BUY_NO_ISSUER(): void
@@ -5673,9 +5673,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_SELL_NO_ISSUER(): void
@@ -5692,9 +5692,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_CROSS_SELF(): void
@@ -5711,9 +5711,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_UNDERFUNDED(): void
@@ -5730,9 +5730,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_LINE_FULL(): void
@@ -5749,9 +5749,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_BUY_NOT_AUTHORIZED(): void
@@ -5768,9 +5768,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_SELL_NOT_AUTHORIZED(): void
@@ -5787,9 +5787,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_BUY_NO_TRUST(): void
@@ -5806,9 +5806,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_SELL_NO_TRUST(): void
@@ -5825,9 +5825,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_MALFORMED(): void
@@ -5844,9 +5844,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrManageOfferResultCode_SUCCESS(): void
@@ -5863,9 +5863,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrManageOfferResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMemoType_MEMO_NONE(): void
@@ -5882,9 +5882,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMemoType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMemoType_MEMO_TEXT(): void
@@ -5901,9 +5901,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMemoType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMemoType_MEMO_ID(): void
@@ -5920,9 +5920,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMemoType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMemoType_MEMO_HASH(): void
@@ -5939,9 +5939,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMemoType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMemoType_MEMO_RETURN(): void
@@ -5958,9 +5958,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMemoType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMemoType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_ERROR_MSG(): void
@@ -5977,9 +5977,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_AUTH(): void
@@ -5996,9 +5996,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_DONT_HAVE(): void
@@ -6015,9 +6015,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_PEERS(): void
@@ -6034,9 +6034,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_GET_TX_SET(): void
@@ -6053,9 +6053,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_TX_SET(): void
@@ -6072,9 +6072,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_TRANSACTION(): void
@@ -6091,9 +6091,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_GET_SCP_QUORUMSET(): void
@@ -6110,9 +6110,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_SCP_QUORUMSET(): void
@@ -6129,9 +6129,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_SCP_MESSAGE(): void
@@ -6148,9 +6148,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_GET_SCP_STATE(): void
@@ -6167,9 +6167,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_HELLO(): void
@@ -6186,9 +6186,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(13, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_SEND_MORE(): void
@@ -6205,9 +6205,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(16, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_GENERALIZED_TX_SET(): void
@@ -6224,9 +6224,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(17, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_FLOOD_ADVERT(): void
@@ -6243,9 +6243,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(18, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_FLOOD_DEMAND(): void
@@ -6262,9 +6262,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(19, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_SEND_MORE_EXTENDED(): void
@@ -6281,9 +6281,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(20, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_TIME_SLICED_SURVEY_REQUEST(): void
@@ -6300,9 +6300,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(21, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_TIME_SLICED_SURVEY_RESPONSE(): void
@@ -6319,9 +6319,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(22, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_TIME_SLICED_SURVEY_START_COLLECTING(): void
@@ -6338,9 +6338,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(23, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrMessageType_TIME_SLICED_SURVEY_STOP_COLLECTING(): void
@@ -6357,9 +6357,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrMessageType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(24, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrMessageType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOfferEntryFlags_PASSIVE_FLAG(): void
@@ -6376,9 +6376,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOfferEntryFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOfferEntryFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOfferEntryFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationResultCode_TOO_MANY_SPONSORING(): void
@@ -6395,9 +6395,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationResultCode_EXCEEDED_WORK_LIMIT(): void
@@ -6414,9 +6414,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationResultCode_TOO_MANY_SUBENTRIES(): void
@@ -6433,9 +6433,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationResultCode_NOT_SUPPORTED(): void
@@ -6452,9 +6452,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationResultCode_NO_ACCOUNT(): void
@@ -6471,9 +6471,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationResultCode_BAD_AUTH(): void
@@ -6490,9 +6490,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationResultCode_INNER(): void
@@ -6509,9 +6509,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_CREATE_ACCOUNT(): void
@@ -6528,9 +6528,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_PAYMENT(): void
@@ -6547,9 +6547,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_PATH_PAYMENT_STRICT_RECEIVE(): void
@@ -6566,9 +6566,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_MANAGE_SELL_OFFER(): void
@@ -6585,9 +6585,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_CREATE_PASSIVE_SELL_OFFER(): void
@@ -6604,9 +6604,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_SET_OPTIONS(): void
@@ -6623,9 +6623,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_CHANGE_TRUST(): void
@@ -6642,9 +6642,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_ALLOW_TRUST(): void
@@ -6661,9 +6661,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_ACCOUNT_MERGE(): void
@@ -6680,9 +6680,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_INFLATION(): void
@@ -6699,9 +6699,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_MANAGE_DATA(): void
@@ -6718,9 +6718,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_BUMP_SEQUENCE(): void
@@ -6737,9 +6737,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_MANAGE_BUY_OFFER(): void
@@ -6756,9 +6756,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_PATH_PAYMENT_STRICT_SEND(): void
@@ -6775,9 +6775,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(13, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_CREATE_CLAIMABLE_BALANCE(): void
@@ -6794,9 +6794,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(14, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_CLAIM_CLAIMABLE_BALANCE(): void
@@ -6813,9 +6813,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(15, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_BEGIN_SPONSORING_FUTURE_RESERVES(): void
@@ -6832,9 +6832,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(16, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_END_SPONSORING_FUTURE_RESERVES(): void
@@ -6851,9 +6851,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(17, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_REVOKE_SPONSORSHIP(): void
@@ -6870,9 +6870,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(18, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_CLAWBACK(): void
@@ -6889,9 +6889,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(19, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_CLAWBACK_CLAIMABLE_BALANCE(): void
@@ -6908,9 +6908,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(20, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_SET_TRUST_LINE_FLAGS(): void
@@ -6927,9 +6927,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(21, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_LIQUIDITY_POOL_DEPOSIT(): void
@@ -6946,9 +6946,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(22, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_LIQUIDITY_POOL_WITHDRAW(): void
@@ -6965,9 +6965,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(23, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_INVOKE_HOST_FUNCTION(): void
@@ -6984,9 +6984,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(24, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_EXTEND_FOOTPRINT_TTL(): void
@@ -7003,9 +7003,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(25, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrOperationType_RESTORE_FOOTPRINT(): void
@@ -7022,9 +7022,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrOperationType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(26, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrOperationType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_OVER_SENDMAX(): void
@@ -7041,9 +7041,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_OFFER_CROSS_SELF(): void
@@ -7060,9 +7060,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_TOO_FEW_OFFERS(): void
@@ -7079,9 +7079,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_NO_ISSUER(): void
@@ -7098,9 +7098,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_LINE_FULL(): void
@@ -7117,9 +7117,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_NOT_AUTHORIZED(): void
@@ -7136,9 +7136,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_NO_TRUST(): void
@@ -7155,9 +7155,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_NO_DESTINATION(): void
@@ -7174,9 +7174,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_SRC_NOT_AUTHORIZED(): void
@@ -7193,9 +7193,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_SRC_NO_TRUST(): void
@@ -7212,9 +7212,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_UNDERFUNDED(): void
@@ -7231,9 +7231,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_MALFORMED(): void
@@ -7250,9 +7250,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictReceiveResultCode_SUCCESS(): void
@@ -7269,9 +7269,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_UNDER_DESTMIN(): void
@@ -7288,9 +7288,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_OFFER_CROSS_SELF(): void
@@ -7307,9 +7307,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_TOO_FEW_OFFERS(): void
@@ -7326,9 +7326,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_NO_ISSUER(): void
@@ -7345,9 +7345,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_LINE_FULL(): void
@@ -7364,9 +7364,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_NOT_AUTHORIZED(): void
@@ -7383,9 +7383,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_NO_TRUST(): void
@@ -7402,9 +7402,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_NO_DESTINATION(): void
@@ -7421,9 +7421,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_SRC_NOT_AUTHORIZED(): void
@@ -7440,9 +7440,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_SRC_NO_TRUST(): void
@@ -7459,9 +7459,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_UNDERFUNDED(): void
@@ -7478,9 +7478,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_MALFORMED(): void
@@ -7497,9 +7497,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPathPaymentStrictSendResultCode_SUCCESS(): void
@@ -7516,9 +7516,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_NO_ISSUER(): void
@@ -7535,9 +7535,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_LINE_FULL(): void
@@ -7554,9 +7554,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_NOT_AUTHORIZED(): void
@@ -7573,9 +7573,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_NO_TRUST(): void
@@ -7592,9 +7592,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_NO_DESTINATION(): void
@@ -7611,9 +7611,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_SRC_NOT_AUTHORIZED(): void
@@ -7630,9 +7630,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_SRC_NO_TRUST(): void
@@ -7649,9 +7649,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_UNDERFUNDED(): void
@@ -7668,9 +7668,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_MALFORMED(): void
@@ -7687,9 +7687,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPaymentResultCode_SUCCESS(): void
@@ -7706,9 +7706,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPaymentResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPreconditionType_NONE(): void
@@ -7725,9 +7725,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPreconditionType_TIME(): void
@@ -7744,9 +7744,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPreconditionType_V2(): void
@@ -7763,9 +7763,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPreconditionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrPublicKeyType_PUBLIC_KEY_TYPE_ED25519(): void
@@ -7782,9 +7782,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrPublicKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrPublicKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrPublicKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE(): void
@@ -7801,9 +7801,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED(): void
@@ -7820,9 +7820,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_MALFORMED(): void
@@ -7839,9 +7839,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_SUCCESS(): void
@@ -7858,9 +7858,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRevokeSponsorshipResultCode_MALFORMED(): void
@@ -7877,9 +7877,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRevokeSponsorshipResultCode_ONLY_TRANSFERABLE(): void
@@ -7896,9 +7896,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRevokeSponsorshipResultCode_LOW_RESERVE(): void
@@ -7915,9 +7915,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRevokeSponsorshipResultCode_NOT_SPONSOR(): void
@@ -7934,9 +7934,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRevokeSponsorshipResultCode_DOES_NOT_EXIST(): void
@@ -7953,9 +7953,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRevokeSponsorshipResultCode_SUCCESS(): void
@@ -7972,9 +7972,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRevokeSponsorshipType_LEDGER_ENTRY(): void
@@ -7991,9 +7991,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrRevokeSponsorshipType_SIGNER(): void
@@ -8010,9 +8010,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCAddressType_SC_ADDRESS_TYPE_ACCOUNT(): void
@@ -8029,9 +8029,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCAddressType_SC_ADDRESS_TYPE_CONTRACT(): void
@@ -8048,9 +8048,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCAddressType_SC_ADDRESS_TYPE_MUXED_ACCOUNT(): void
@@ -8067,9 +8067,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCAddressType_SC_ADDRESS_TYPE_CLAIMABLE_BALANCE(): void
@@ -8086,9 +8086,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCAddressType_SC_ADDRESS_TYPE_LIQUIDITY_POOL(): void
@@ -8105,9 +8105,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCEnvMetaKind_SC_ENV_META_KIND_INTERFACE_VERSION(): void
@@ -8124,9 +8124,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCEnvMetaKind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCEnvMetaKind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCEnvMetaKind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_ARITH_DOMAIN(): void
@@ -8143,9 +8143,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_INDEX_BOUNDS(): void
@@ -8162,9 +8162,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_INVALID_INPUT(): void
@@ -8181,9 +8181,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_MISSING_VALUE(): void
@@ -8200,9 +8200,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_EXISTING_VALUE(): void
@@ -8219,9 +8219,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_EXCEEDED_LIMIT(): void
@@ -8238,9 +8238,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_INVALID_ACTION(): void
@@ -8257,9 +8257,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_INTERNAL_ERROR(): void
@@ -8276,9 +8276,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_UNEXPECTED_TYPE(): void
@@ -8295,9 +8295,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorCode_SCEC_UNEXPECTED_SIZE(): void
@@ -8314,9 +8314,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_CONTRACT(): void
@@ -8333,9 +8333,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_WASM_VM(): void
@@ -8352,9 +8352,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_CONTEXT(): void
@@ -8371,9 +8371,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_STORAGE(): void
@@ -8390,9 +8390,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_OBJECT(): void
@@ -8409,9 +8409,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_CRYPTO(): void
@@ -8428,9 +8428,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_EVENTS(): void
@@ -8447,9 +8447,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_BUDGET(): void
@@ -8466,9 +8466,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_VALUE(): void
@@ -8485,9 +8485,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCErrorType_SCE_AUTH(): void
@@ -8504,9 +8504,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCErrorType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCMetaKind_SC_META_V0(): void
@@ -8523,9 +8523,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCMetaKind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCMetaKind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCMetaKind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCPStatementType_SCP_ST_PREPARE(): void
@@ -8542,9 +8542,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCPStatementType_SCP_ST_CONFIRM(): void
@@ -8561,9 +8561,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCPStatementType_SCP_ST_EXTERNALIZE(): void
@@ -8580,9 +8580,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCPStatementType_SCP_ST_NOMINATE(): void
@@ -8599,9 +8599,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCPStatementType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEntryKind_SC_SPEC_ENTRY_FUNCTION_V0(): void
@@ -8618,9 +8618,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEntryKind_SC_SPEC_ENTRY_UDT_STRUCT_V0(): void
@@ -8637,9 +8637,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEntryKind_SC_SPEC_ENTRY_UDT_UNION_V0(): void
@@ -8656,9 +8656,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEntryKind_SC_SPEC_ENTRY_UDT_ENUM_V0(): void
@@ -8675,9 +8675,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEntryKind_SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0(): void
@@ -8694,9 +8694,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEntryKind_SC_SPEC_ENTRY_EVENT_V0(): void
@@ -8713,9 +8713,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEventDataFormat_SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE(): void
@@ -8732,9 +8732,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEventDataFormat_SC_SPEC_EVENT_DATA_FORMAT_VEC(): void
@@ -8751,9 +8751,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEventDataFormat_SC_SPEC_EVENT_DATA_FORMAT_MAP(): void
@@ -8770,9 +8770,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventDataFormat::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEventParamLocationV0_SC_SPEC_EVENT_PARAM_LOCATION_DATA(): void
@@ -8789,9 +8789,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEventParamLocationV0::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventParamLocationV0::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventParamLocationV0::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecEventParamLocationV0_SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST(): void
@@ -8808,9 +8808,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecEventParamLocationV0::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventParamLocationV0::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecEventParamLocationV0::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_VAL(): void
@@ -8827,9 +8827,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_BOOL(): void
@@ -8846,9 +8846,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_VOID(): void
@@ -8865,9 +8865,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_ERROR(): void
@@ -8884,9 +8884,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_U32(): void
@@ -8903,9 +8903,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_I32(): void
@@ -8922,9 +8922,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_U64(): void
@@ -8941,9 +8941,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_I64(): void
@@ -8960,9 +8960,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_TIMEPOINT(): void
@@ -8979,9 +8979,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_DURATION(): void
@@ -8998,9 +8998,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_U128(): void
@@ -9017,9 +9017,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_I128(): void
@@ -9036,9 +9036,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_U256(): void
@@ -9055,9 +9055,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_I256(): void
@@ -9074,9 +9074,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(13, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_BYTES(): void
@@ -9093,9 +9093,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(14, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_STRING(): void
@@ -9112,9 +9112,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(16, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_SYMBOL(): void
@@ -9131,9 +9131,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(17, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_ADDRESS(): void
@@ -9150,9 +9150,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(19, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_MUXED_ADDRESS(): void
@@ -9169,9 +9169,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(20, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_OPTION(): void
@@ -9188,9 +9188,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1000, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_RESULT(): void
@@ -9207,9 +9207,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1001, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_VEC(): void
@@ -9226,9 +9226,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1002, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_MAP(): void
@@ -9245,9 +9245,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1004, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_TUPLE(): void
@@ -9264,9 +9264,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1005, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_BYTES_N(): void
@@ -9283,9 +9283,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1006, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecType_SC_SPEC_TYPE_UDT(): void
@@ -9302,9 +9302,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2000, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecUDTUnionCaseV0Kind_SC_SPEC_UDT_UNION_CASE_VOID_V0(): void
@@ -9321,9 +9321,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCSpecUDTUnionCaseV0Kind_SC_SPEC_UDT_UNION_CASE_TUPLE_V0(): void
@@ -9340,9 +9340,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_BOOL(): void
@@ -9359,9 +9359,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_VOID(): void
@@ -9378,9 +9378,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_ERROR(): void
@@ -9397,9 +9397,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_U32(): void
@@ -9416,9 +9416,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_I32(): void
@@ -9435,9 +9435,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_U64(): void
@@ -9454,9 +9454,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_I64(): void
@@ -9473,9 +9473,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_TIMEPOINT(): void
@@ -9492,9 +9492,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_DURATION(): void
@@ -9511,9 +9511,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_U128(): void
@@ -9530,9 +9530,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_I128(): void
@@ -9549,9 +9549,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_U256(): void
@@ -9568,9 +9568,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_I256(): void
@@ -9587,9 +9587,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_BYTES(): void
@@ -9606,9 +9606,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(13, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_STRING(): void
@@ -9625,9 +9625,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(14, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_SYMBOL(): void
@@ -9644,9 +9644,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(15, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_VEC(): void
@@ -9663,9 +9663,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(16, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_MAP(): void
@@ -9682,9 +9682,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(17, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_ADDRESS(): void
@@ -9701,9 +9701,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(18, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_CONTRACT_INSTANCE(): void
@@ -9720,9 +9720,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(19, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_LEDGER_KEY_CONTRACT_INSTANCE(): void
@@ -9739,9 +9739,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(20, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSCValType_SCV_LEDGER_KEY_NONCE(): void
@@ -9758,9 +9758,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(21, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_AUTH_REVOCABLE_REQUIRED(): void
@@ -9777,9 +9777,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_INVALID_HOME_DOMAIN(): void
@@ -9796,9 +9796,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_BAD_SIGNER(): void
@@ -9815,9 +9815,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_THRESHOLD_OUT_OF_RANGE(): void
@@ -9834,9 +9834,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_UNKNOWN_FLAG(): void
@@ -9853,9 +9853,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_CANT_CHANGE(): void
@@ -9872,9 +9872,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_INVALID_INFLATION(): void
@@ -9891,9 +9891,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_BAD_FLAGS(): void
@@ -9910,9 +9910,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_TOO_MANY_SIGNERS(): void
@@ -9929,9 +9929,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_LOW_RESERVE(): void
@@ -9948,9 +9948,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetOptionsResultCode_SUCCESS(): void
@@ -9967,9 +9967,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetTrustLineFlagsResultCode_LOW_RESERVE(): void
@@ -9986,9 +9986,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetTrustLineFlagsResultCode_INVALID_STATE(): void
@@ -10005,9 +10005,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetTrustLineFlagsResultCode_CANT_REVOKE(): void
@@ -10024,9 +10024,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetTrustLineFlagsResultCode_NO_TRUST_LINE(): void
@@ -10043,9 +10043,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetTrustLineFlagsResultCode_MALFORMED(): void
@@ -10062,9 +10062,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSetTrustLineFlagsResultCode_SUCCESS(): void
@@ -10081,9 +10081,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_ED25519(): void
@@ -10100,9 +10100,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_SIGNER_KEY_TYPE_ED25519(): void
@@ -10119,9 +10119,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_PRE_AUTH_TX(): void
@@ -10138,9 +10138,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_SIGNER_KEY_TYPE_PRE_AUTH_TX(): void
@@ -10157,9 +10157,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_HASH_X(): void
@@ -10176,9 +10176,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_SIGNER_KEY_TYPE_HASH_X(): void
@@ -10195,9 +10195,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_ED25519_SIGNED_PAYLOAD(): void
@@ -10214,9 +10214,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD(): void
@@ -10233,9 +10233,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSignerKeyType_MUXED_ED25519(): void
@@ -10252,9 +10252,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(256, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSignerKeyType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN(): void
@@ -10271,9 +10271,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN(): void
@@ -10290,9 +10290,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN(): void
@@ -10309,9 +10309,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_SOURCE_ACCOUNT(): void
@@ -10328,9 +10328,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS(): void
@@ -10347,9 +10347,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrStellarValueType_STELLAR_VALUE_BASIC(): void
@@ -10366,9 +10366,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrStellarValueType_STELLAR_VALUE_SIGNED(): void
@@ -10385,9 +10385,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSurveyMessageCommandType_TIME_SLICED_SURVEY_TOPOLOGY(): void
@@ -10404,9 +10404,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSurveyMessageCommandType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSurveyMessageCommandType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSurveyMessageCommandType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrSurveyMessageResponseType_SURVEY_TOPOLOGY_RESPONSE_V2(): void
@@ -10423,9 +10423,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrSurveyMessageResponseType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrSurveyMessageResponseType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSurveyMessageResponseType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrThresholdIndexes_THRESHOLD_MASTER_WEIGHT(): void
@@ -10442,9 +10442,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrThresholdIndexes_THRESHOLD_LOW(): void
@@ -10461,9 +10461,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrThresholdIndexes_THRESHOLD_MED(): void
@@ -10480,9 +10480,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrThresholdIndexes_THRESHOLD_HIGH(): void
@@ -10499,9 +10499,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrThresholdIndexes::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionEventStage_TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS(): void
@@ -10518,9 +10518,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionEventStage_TRANSACTION_EVENT_STAGE_AFTER_TX(): void
@@ -10537,9 +10537,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionEventStage_TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS(): void
@@ -10556,9 +10556,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionEventStage::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_FROZEN_KEY_ACCESSED(): void
@@ -10575,9 +10575,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-18, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_SOROBAN_INVALID(): void
@@ -10594,9 +10594,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-17, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_MALFORMED(): void
@@ -10613,9 +10613,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-16, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_BAD_MIN_SEQ_AGE_OR_GAP(): void
@@ -10632,9 +10632,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-15, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_BAD_SPONSORSHIP(): void
@@ -10651,9 +10651,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-14, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_FEE_BUMP_INNER_FAILED(): void
@@ -10670,9 +10670,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-13, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_NOT_SUPPORTED(): void
@@ -10689,9 +10689,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-12, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_INTERNAL_ERROR(): void
@@ -10708,9 +10708,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-11, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_BAD_AUTH_EXTRA(): void
@@ -10727,9 +10727,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-10, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_INSUFFICIENT_FEE(): void
@@ -10746,9 +10746,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-9, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_NO_ACCOUNT(): void
@@ -10765,9 +10765,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-8, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_INSUFFICIENT_BALANCE(): void
@@ -10784,9 +10784,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-7, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_BAD_AUTH(): void
@@ -10803,9 +10803,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-6, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_BAD_SEQ(): void
@@ -10822,9 +10822,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-5, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_MISSING_OPERATION(): void
@@ -10841,9 +10841,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_TOO_LATE(): void
@@ -10860,9 +10860,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-3, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_TOO_EARLY(): void
@@ -10879,9 +10879,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_FAILED(): void
@@ -10898,9 +10898,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(-1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_SUCCESS(): void
@@ -10917,9 +10917,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTransactionResultCode_FEE_BUMP_INNER_SUCCESS(): void
@@ -10936,9 +10936,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTransactionResultCode::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTrustLineFlags_AUTHORIZED_FLAG(): void
@@ -10955,9 +10955,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTrustLineFlags_AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG(): void
@@ -10974,9 +10974,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(2, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTrustLineFlags_TRUSTLINE_CLAWBACK_ENABLED_FLAG(): void
@@ -10993,9 +10993,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTrustLineFlags::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
     public function testRoundTrip_XdrTxSetComponentType_TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE(): void
@@ -11012,9 +11012,9 @@ $this->assertSame($jsonValue, $fromXdr->toJsonValue());
         $back = \Soneso\StellarSDK\Xdr\XdrTxSetComponentType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(0, $back->getValue());
-$xdr = $instance->toBase64Xdr();
-$fromXdr = \Soneso\StellarSDK\Xdr\XdrTxSetComponentType::fromBase64Xdr($xdr);
-$this->assertSame($jsonValue, $fromXdr->toJsonValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrTxSetComponentType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
 public function testRoundTrip_XdrAccountID_corpus_account_id_g(): void
@@ -13337,276 +13337,6 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bool_false(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'corpus[scval_bool_false] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_0(): void
-{
-    $base64 = 'AAAAAAAAAAE=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_0] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_0] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_0] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_0] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_1(): void
-{
-    $base64 = 'AAAAAAAAAAA=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_1] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_1] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_1] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_1] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_2(): void
-{
-    $base64 = 'AAAAAAAAAAE=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_2] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_2] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_2] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_2] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_3(): void
-{
-    $base64 = 'AAAAAAAAAAA=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_3] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_3] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_3] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_3] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_4(): void
-{
-    $base64 = 'AAAAAAAAAAE=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_4] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_4] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_4] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_4] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_5(): void
-{
-    $base64 = 'AAAAAAAAAAA=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_5] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_5] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_5] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_5] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_6(): void
-{
-    $base64 = 'AAAAAAAAAAE=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_6] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_6] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_6] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_6] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_7(): void
-{
-    $base64 = 'AAAAAAAAAAA=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_7] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_7] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_7] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_7] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_8(): void
-{
-    $base64 = 'AAAAAAAAAAE=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_8] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_8] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_8] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_8] XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSCVal_corpus_scval_bool_iter_9(): void
-{
-    $base64 = 'AAAAAAAAAAA=';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'corpus[scval_bool_iter_9] toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJsonValue($jsonValue);
-    $this->assertSame(
-        $jsonValue,
-        $decoded->toJsonValue(),
-        'corpus[scval_bool_iter_9] toJsonValue idempotence broken'
-    );
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'corpus[scval_bool_iter_9] toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'corpus[scval_bool_iter_9] XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrSCVal_corpus_scval_bool_true(): void
@@ -17124,9 +16854,9 @@ public function testRoundTrip_XdrAccountMergeResultUnion_DEST_FULL(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17153,9 +16883,9 @@ public function testRoundTrip_XdrAccountMergeResultUnion_HAS_SUB_ENTRIES(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17182,9 +16912,9 @@ public function testRoundTrip_XdrAccountMergeResultUnion_IMMUTABLE_SET(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17211,9 +16941,9 @@ public function testRoundTrip_XdrAccountMergeResultUnion_IS_SPONSOR(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17240,9 +16970,9 @@ public function testRoundTrip_XdrAccountMergeResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17269,9 +16999,9 @@ public function testRoundTrip_XdrAccountMergeResultUnion_NO_ACCOUNT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17298,9 +17028,9 @@ public function testRoundTrip_XdrAccountMergeResultUnion_SEQNUM_TOO_FAR(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17327,9 +17057,9 @@ public function testRoundTrip_XdrAccountMergeResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17357,7 +17087,7 @@ public function testRoundTrip_XdrAllowTrustOperationAsset(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset::class);
@@ -17379,9 +17109,9 @@ public function testRoundTrip_XdrAllowTrustResultUnion_CANT_REVOKE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17408,9 +17138,9 @@ public function testRoundTrip_XdrAllowTrustResultUnion_LOW_RESERVE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17437,9 +17167,9 @@ public function testRoundTrip_XdrAllowTrustResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17466,9 +17196,9 @@ public function testRoundTrip_XdrAllowTrustResultUnion_NO_TRUST_LINE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17495,9 +17225,9 @@ public function testRoundTrip_XdrAllowTrustResultUnion_SELF_NOT_ALLOWED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17524,9 +17254,9 @@ public function testRoundTrip_XdrAllowTrustResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17553,9 +17283,9 @@ public function testRoundTrip_XdrAllowTrustResultUnion_TRUST_NOT_REQUIRED(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17582,9 +17312,9 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_ALREAD
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17611,9 +17341,9 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_MALFOR
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17640,9 +17370,9 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_RECURS
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17669,9 +17399,9 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_SUCCES
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17699,7 +17429,7 @@ public function testRoundTrip_XdrBucketMetadataExt(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBucketMetadataExt::class);
@@ -17721,9 +17451,9 @@ public function testRoundTrip_XdrBumpSequenceResultUnion_BAD_SEQ(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17750,9 +17480,9 @@ public function testRoundTrip_XdrBumpSequenceResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17780,7 +17510,7 @@ public function testRoundTrip_XdrChangeTrustAsset(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustAsset::class);
@@ -17802,9 +17532,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_CANNOT_DELETE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17831,9 +17561,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_INVALID_LIMIT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17860,9 +17590,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_LOW_RESERVE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17889,9 +17619,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17918,9 +17648,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_NOT_AUTH_MAINTAIN_LIABIL
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17947,9 +17677,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_NO_ISSUER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -17976,9 +17706,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_SELF_NOT_ALLOWED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18005,9 +17735,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18034,9 +17764,9 @@ public function testRoundTrip_XdrChangeTrustResultUnion_TRUST_LINE_MISSING(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18063,9 +17793,9 @@ public function testRoundTrip_XdrClaimAtomUnion_LIQUIDITY_POOL(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimAtom::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18092,9 +17822,9 @@ public function testRoundTrip_XdrClaimAtomUnion_ORDER_BOOK(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimAtom::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18121,9 +17851,9 @@ public function testRoundTrip_XdrClaimAtomUnion_V0(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimAtom::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18150,9 +17880,9 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_CANNOT_CLAIM()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18179,9 +17909,9 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_DOES_NOT_EXIST
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18208,9 +17938,9 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_LINE_FULL(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18237,9 +17967,9 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_NOT_AUTHORIZED
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18266,9 +17996,9 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_NO_TRUST(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18295,9 +18025,9 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_SUCCESS(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18324,9 +18054,9 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_TRUSTLINE_FROZ
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18353,9 +18083,9 @@ public function testRoundTrip_XdrClaimPredicateUnion_AND(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18382,9 +18112,9 @@ public function testRoundTrip_XdrClaimPredicateUnion_BEFORE_ABSOLUTE_TIME(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18411,9 +18141,9 @@ public function testRoundTrip_XdrClaimPredicateUnion_BEFORE_RELATIVE_TIME(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18440,9 +18170,9 @@ public function testRoundTrip_XdrClaimPredicateUnion_NOT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18469,9 +18199,9 @@ public function testRoundTrip_XdrClaimPredicateUnion_OR(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18498,9 +18228,9 @@ public function testRoundTrip_XdrClaimPredicateUnion_UNCONDITIONAL(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18527,9 +18257,9 @@ public function testRoundTrip_XdrClaimantUnion_V0(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimant::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18556,9 +18286,9 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_DOES_NOT_EX
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18585,9 +18315,9 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_NOT_CLAWBAC
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18614,9 +18344,9 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_NOT_ISSUER(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18643,9 +18373,9 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_SUCCESS(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18672,9 +18402,9 @@ public function testRoundTrip_XdrClawbackResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18701,9 +18431,9 @@ public function testRoundTrip_XdrClawbackResultUnion_NOT_ENABLED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18730,9 +18460,9 @@ public function testRoundTrip_XdrClawbackResultUnion_NO_TRUST(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18759,9 +18489,9 @@ public function testRoundTrip_XdrClawbackResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18788,9 +18518,9 @@ public function testRoundTrip_XdrClawbackResultUnion_UNDERFUNDED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18818,7 +18548,7 @@ public function testRoundTrip_XdrContractDataEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractDataEntry::class);
@@ -18841,7 +18571,7 @@ public function testRoundTrip_XdrContractEvent(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractEvent::class);
@@ -18864,7 +18594,7 @@ public function testRoundTrip_XdrContractExecutable(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractExecutable::class);
@@ -18887,7 +18617,7 @@ public function testRoundTrip_XdrContractIDPreimage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractIDPreimage::class);
@@ -18909,9 +18639,9 @@ public function testRoundTrip_XdrCreateAccountResultUnion_ACCOUNT_ALREADY_EXIST(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18938,9 +18668,9 @@ public function testRoundTrip_XdrCreateAccountResultUnion_LOW_RESERVE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18967,9 +18697,9 @@ public function testRoundTrip_XdrCreateAccountResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -18996,9 +18726,9 @@ public function testRoundTrip_XdrCreateAccountResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19025,9 +18755,9 @@ public function testRoundTrip_XdrCreateAccountResultUnion_UNDERFUNDED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19054,9 +18784,9 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_LOW_RESERVE()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19083,9 +18813,9 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_MALFORMED(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19112,9 +18842,9 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_NOT_AUTHORIZE
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19141,9 +18871,9 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_NO_TRUST(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19170,9 +18900,9 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_SUCCESS(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19199,9 +18929,9 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_UNDERFUNDED()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19229,7 +18959,7 @@ public function testRoundTrip_XdrDontHave(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDontHave::class);
@@ -19251,9 +18981,9 @@ public function testRoundTrip_XdrEndSponsoringFutureReservesResultUnion_NOT_SPON
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19280,9 +19010,9 @@ public function testRoundTrip_XdrEndSponsoringFutureReservesResultUnion_SUCCESS(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19310,7 +19040,7 @@ public function testRoundTrip_XdrError(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrError::class);
@@ -19332,9 +19062,9 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19361,9 +19091,9 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19390,9 +19120,9 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19419,9 +19149,9 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19448,9 +19178,9 @@ public function testRoundTrip_XdrFeeBumpTransactionInnerTxUnion_ENVELOPE_TYPE_TX
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19477,9 +19207,9 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_CONTRACT_ID()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19506,9 +19236,9 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_OP_ID(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19535,9 +19265,9 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_POOL_REVOKE_O
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19564,9 +19294,9 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_SOROBAN_AUTHO
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19594,7 +19324,7 @@ public function testRoundTrip_XdrHostFunction(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHostFunction::class);
@@ -19616,9 +19346,9 @@ public function testRoundTrip_XdrInflationResultUnion_NOT_TIME(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInflationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19645,9 +19375,9 @@ public function testRoundTrip_XdrInflationResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInflationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19674,9 +19404,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_AUTH(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19703,9 +19433,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_AUTH_EXTR
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19732,9 +19462,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_MIN_SEQ_A
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19761,9 +19491,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_SEQ(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19790,9 +19520,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_SPONSORSH
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19819,9 +19549,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_FAILED(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19848,9 +19578,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_FROZEN_KEY_AC
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19877,9 +19607,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INSUFFICIENT_
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19906,9 +19636,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INSUFFICIENT_
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19935,9 +19665,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INTERNAL_ERRO
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19964,9 +19694,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_MALFORMED(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -19993,9 +19723,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_MISSING_OPERA
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20022,9 +19752,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_NOT_SUPPORTED
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20051,9 +19781,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_NO_ACCOUNT():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20080,9 +19810,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_SOROBAN_INVAL
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20109,9 +19839,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_SUCCESS(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20138,9 +19868,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_TOO_EARLY(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20167,9 +19897,9 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_TOO_LATE(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20196,9 +19926,9 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20225,9 +19955,9 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20254,9 +19984,9 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20283,9 +20013,9 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20312,9 +20042,9 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20341,9 +20071,9 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20370,9 +20100,9 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_CREATED(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20399,9 +20129,9 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_REMOVED(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20428,9 +20158,9 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_RESTORED():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20457,9 +20187,9 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_STATE(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20486,9 +20216,9 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_UPDATED(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20515,9 +20245,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_ACCOUNT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20544,9 +20274,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CLAIMABLE_BALANCE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20573,9 +20303,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONFIG_SETTING(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20602,9 +20332,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONTRACT_CODE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20631,9 +20361,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONTRACT_DATA(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20660,9 +20390,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_DATA(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20689,9 +20419,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_LIQUIDITY_POOL(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20718,9 +20448,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_OFFER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20747,9 +20477,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_TRUSTLINE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20776,9 +20506,9 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_TTL(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20806,7 +20536,7 @@ public function testRoundTrip_XdrLedgerKeyConfigSetting(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyConfigSetting::class);
@@ -20829,7 +20559,7 @@ public function testRoundTrip_XdrLedgerKeyContractData(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyContractData::class);
@@ -20851,9 +20581,9 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_BASE_FEE(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20880,9 +20610,9 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_BASE_RESERVE(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20909,9 +20639,9 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_CONFIG(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20938,9 +20668,9 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_FLAGS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20967,9 +20697,9 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_MAX_SOROBAN_T
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -20996,9 +20726,9 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_MAX_TX_SET_SI
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21025,9 +20755,9 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_VERSION(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21054,9 +20784,9 @@ public function testRoundTrip_XdrLiquidityPoolBodyUnion_LIQUIDITY_POOL_CONSTANT_
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21083,9 +20813,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_BAD_PRICE(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21112,9 +20842,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_LINE_FULL(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21141,9 +20871,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_MALFORMED(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21170,9 +20900,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_NOT_AUTHORIZED(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21199,9 +20929,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_NO_TRUST(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21228,9 +20958,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_POOL_FULL(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21257,9 +20987,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21286,9 +21016,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_TRUSTLINE_FROZE
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21315,9 +21045,9 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_UNDERFUNDED(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21344,9 +21074,9 @@ public function testRoundTrip_XdrLiquidityPoolParametersUnion_LIQUIDITY_POOL_CON
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21373,9 +21103,9 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_LINE_FULL(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21402,9 +21132,9 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_MALFORMED(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21431,9 +21161,9 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_NO_TRUST(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21460,9 +21190,9 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_SUCCESS(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21489,9 +21219,9 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_TRUSTLINE_FROZ
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21518,9 +21248,9 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_UNDERFUNDED():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21547,9 +21277,9 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_UNDER_MINIMUM(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21576,9 +21306,9 @@ public function testRoundTrip_XdrManageDataResultUnion_INVALID_NAME(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21605,9 +21335,9 @@ public function testRoundTrip_XdrManageDataResultUnion_LOW_RESERVE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21634,9 +21364,9 @@ public function testRoundTrip_XdrManageDataResultUnion_NAME_NOT_FOUND(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21663,9 +21393,9 @@ public function testRoundTrip_XdrManageDataResultUnion_NOT_SUPPORTED_YET(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21692,9 +21422,9 @@ public function testRoundTrip_XdrManageDataResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21721,9 +21451,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NOT_AUTHORIZED(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21750,9 +21480,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NO_ISSUER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21779,9 +21509,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NO_TRUST(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21808,9 +21538,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_CROSS_SELF(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21837,9 +21567,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_LINE_FULL(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21866,9 +21596,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_LOW_RESERVE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21895,9 +21625,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21924,9 +21654,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_NOT_FOUND(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21953,9 +21683,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NOT_AUTHORIZED(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -21982,9 +21712,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NO_ISSUER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22011,9 +21741,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NO_TRUST(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22040,9 +21770,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22069,9 +21799,9 @@ public function testRoundTrip_XdrManageOfferResultUnion_UNDERFUNDED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22098,9 +21828,9 @@ public function testRoundTrip_XdrManageOfferSuccessResultOfferUnion_MANAGE_OFFER
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22127,9 +21857,9 @@ public function testRoundTrip_XdrManageOfferSuccessResultOfferUnion_MANAGE_OFFER
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22156,9 +21886,9 @@ public function testRoundTrip_XdrManageOfferSuccessResultOfferUnion_MANAGE_OFFER
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22185,9 +21915,9 @@ public function testRoundTrip_XdrOperationBodyUnion_ACCOUNT_MERGE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22214,9 +21944,9 @@ public function testRoundTrip_XdrOperationBodyUnion_ALLOW_TRUST(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22243,9 +21973,9 @@ public function testRoundTrip_XdrOperationBodyUnion_BEGIN_SPONSORING_FUTURE_RESE
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22272,9 +22002,9 @@ public function testRoundTrip_XdrOperationBodyUnion_BUMP_SEQUENCE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22301,9 +22031,9 @@ public function testRoundTrip_XdrOperationBodyUnion_CHANGE_TRUST(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22330,9 +22060,9 @@ public function testRoundTrip_XdrOperationBodyUnion_CLAIM_CLAIMABLE_BALANCE(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22359,9 +22089,9 @@ public function testRoundTrip_XdrOperationBodyUnion_CLAWBACK(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22388,9 +22118,9 @@ public function testRoundTrip_XdrOperationBodyUnion_CLAWBACK_CLAIMABLE_BALANCE()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22417,9 +22147,9 @@ public function testRoundTrip_XdrOperationBodyUnion_CREATE_ACCOUNT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22446,9 +22176,9 @@ public function testRoundTrip_XdrOperationBodyUnion_CREATE_CLAIMABLE_BALANCE(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22475,9 +22205,9 @@ public function testRoundTrip_XdrOperationBodyUnion_CREATE_PASSIVE_SELL_OFFER():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22504,9 +22234,9 @@ public function testRoundTrip_XdrOperationBodyUnion_END_SPONSORING_FUTURE_RESERV
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22533,9 +22263,9 @@ public function testRoundTrip_XdrOperationBodyUnion_EXTEND_FOOTPRINT_TTL(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22562,9 +22292,9 @@ public function testRoundTrip_XdrOperationBodyUnion_INFLATION(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22591,9 +22321,9 @@ public function testRoundTrip_XdrOperationBodyUnion_INVOKE_HOST_FUNCTION(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22620,9 +22350,9 @@ public function testRoundTrip_XdrOperationBodyUnion_LIQUIDITY_POOL_DEPOSIT(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22649,9 +22379,9 @@ public function testRoundTrip_XdrOperationBodyUnion_LIQUIDITY_POOL_WITHDRAW(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22678,9 +22408,9 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_BUY_OFFER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22707,9 +22437,9 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_DATA(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22736,9 +22466,9 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_SELL_OFFER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22765,9 +22495,9 @@ public function testRoundTrip_XdrOperationBodyUnion_PATH_PAYMENT_STRICT_RECEIVE(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22794,9 +22524,9 @@ public function testRoundTrip_XdrOperationBodyUnion_PATH_PAYMENT_STRICT_SEND(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22823,9 +22553,9 @@ public function testRoundTrip_XdrOperationBodyUnion_PAYMENT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22852,9 +22582,9 @@ public function testRoundTrip_XdrOperationBodyUnion_RESTORE_FOOTPRINT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22881,9 +22611,9 @@ public function testRoundTrip_XdrOperationBodyUnion_REVOKE_SPONSORSHIP(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22910,9 +22640,9 @@ public function testRoundTrip_XdrOperationBodyUnion_SET_OPTIONS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22939,9 +22669,9 @@ public function testRoundTrip_XdrOperationBodyUnion_SET_TRUST_LINE_FLAGS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22968,9 +22698,9 @@ public function testRoundTrip_XdrOperationResultUnion_BAD_AUTH(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -22997,9 +22727,9 @@ public function testRoundTrip_XdrOperationResultUnion_EXCEEDED_WORK_LIMIT(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23026,9 +22756,9 @@ public function testRoundTrip_XdrOperationResultUnion_INNER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23055,9 +22785,9 @@ public function testRoundTrip_XdrOperationResultUnion_NOT_SUPPORTED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23084,9 +22814,9 @@ public function testRoundTrip_XdrOperationResultUnion_NO_ACCOUNT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23113,9 +22843,9 @@ public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SPONSORING(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23142,9 +22872,9 @@ public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SUBENTRIES(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23172,7 +22902,7 @@ public function testRoundTrip_XdrOperationResultTr(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResultTr::class);
@@ -23194,9 +22924,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_LINE_FULL()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23223,9 +22953,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_MALFORMED()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23252,9 +22982,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NOT_AUTHORI
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23281,9 +23011,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NO_DESTINAT
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23310,9 +23040,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NO_ISSUER()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23339,9 +23069,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NO_TRUST():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23368,9 +23098,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_OFFER_CROSS
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23397,9 +23127,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_OVER_SENDMA
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23426,9 +23156,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SRC_NOT_AUT
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23455,9 +23185,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SRC_NO_TRUS
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23484,9 +23214,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SUCCESS(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23513,9 +23243,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_TOO_FEW_OFF
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23542,9 +23272,9 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_UNDERFUNDED
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23571,9 +23301,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_LINE_FULL(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23600,9 +23330,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_MALFORMED(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23629,9 +23359,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NOT_AUTHORIZED
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23658,9 +23388,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NO_DESTINATION
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23687,9 +23417,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NO_ISSUER(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23716,9 +23446,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NO_TRUST(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23745,9 +23475,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_OFFER_CROSS_SE
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23774,9 +23504,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SRC_NOT_AUTHOR
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23803,9 +23533,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SRC_NO_TRUST()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23832,9 +23562,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SUCCESS(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23861,9 +23591,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_TOO_FEW_OFFERS
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23890,9 +23620,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_UNDERFUNDED():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23919,9 +23649,9 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_UNDER_DESTMIN(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23948,9 +23678,9 @@ public function testRoundTrip_XdrPaymentResultUnion_LINE_FULL(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -23977,9 +23707,9 @@ public function testRoundTrip_XdrPaymentResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24006,9 +23736,9 @@ public function testRoundTrip_XdrPaymentResultUnion_NOT_AUTHORIZED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24035,9 +23765,9 @@ public function testRoundTrip_XdrPaymentResultUnion_NO_DESTINATION(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24064,9 +23794,9 @@ public function testRoundTrip_XdrPaymentResultUnion_NO_ISSUER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24093,9 +23823,9 @@ public function testRoundTrip_XdrPaymentResultUnion_NO_TRUST(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24122,9 +23852,9 @@ public function testRoundTrip_XdrPaymentResultUnion_SRC_NOT_AUTHORIZED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24151,9 +23881,9 @@ public function testRoundTrip_XdrPaymentResultUnion_SRC_NO_TRUST(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24180,9 +23910,9 @@ public function testRoundTrip_XdrPaymentResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24209,9 +23939,9 @@ public function testRoundTrip_XdrPaymentResultUnion_UNDERFUNDED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24239,7 +23969,7 @@ public function testRoundTrip_XdrPeerAddressIp(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPeerAddressIp::class);
@@ -24261,9 +23991,9 @@ public function testRoundTrip_XdrPreconditionsUnion_NONE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditions::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24290,9 +24020,9 @@ public function testRoundTrip_XdrPreconditionsUnion_TIME(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditions::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24319,9 +24049,9 @@ public function testRoundTrip_XdrPreconditionsUnion_V2(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditions::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24349,7 +24079,7 @@ public function testRoundTrip_XdrPublicKey(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPublicKey::class);
@@ -24371,9 +24101,9 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_I
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24400,9 +24130,9 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_M
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24429,9 +24159,9 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_R
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24458,9 +24188,9 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_S
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24487,9 +24217,9 @@ public function testRoundTrip_XdrRevokeSponsorshipOperationUnion_LEDGER_ENTRY():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24516,9 +24246,9 @@ public function testRoundTrip_XdrRevokeSponsorshipOperationUnion_SIGNER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24545,9 +24275,9 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_DOES_NOT_EXIST(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24574,9 +24304,9 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_LOW_RESERVE(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24603,9 +24333,9 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24632,9 +24362,9 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_NOT_SPONSOR(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24661,9 +24391,9 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_ONLY_TRANSFERABLE(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24690,9 +24420,9 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24720,7 +24450,7 @@ public function testRoundTrip_XdrSCAddress(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCAddress::class);
@@ -24742,9 +24472,9 @@ public function testRoundTrip_XdrSCEnvMetaEntryUnion_SC_ENV_META_KIND_INTERFACE_
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24771,9 +24501,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_AUTH(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24800,9 +24530,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_BUDGET(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24829,9 +24559,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_CONTEXT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24858,9 +24588,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_CONTRACT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24887,9 +24617,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_CRYPTO(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24916,9 +24646,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_EVENTS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24945,9 +24675,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_OBJECT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -24974,9 +24704,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_STORAGE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25003,9 +24733,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_VALUE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25032,9 +24762,9 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_WASM_VM(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25061,9 +24791,9 @@ public function testRoundTrip_XdrSCMetaEntryUnion_SC_META_V0(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCMetaEntry::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25090,9 +24820,9 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_CONFIRM(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25119,9 +24849,9 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_EXTERNALIZE(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25148,9 +24878,9 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_NOMINATE(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25177,9 +24907,9 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_PREPARE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25207,7 +24937,7 @@ public function testRoundTrip_XdrSCSpecEventParamV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecEventParamV0::class);
@@ -25230,7 +24960,7 @@ public function testRoundTrip_XdrSCSpecEventV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecEventV0::class);
@@ -25253,7 +24983,7 @@ public function testRoundTrip_XdrSCSpecTypeDef(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecTypeDef::class);
@@ -25276,7 +25006,7 @@ public function testRoundTrip_XdrSCSpecUDTUnionCaseV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0::class);
@@ -25299,7 +25029,7 @@ public function testRoundTrip_XdrSerializedBinaryFuseFilter(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::class);
@@ -25321,9 +25051,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_AUTH_REVOCABLE_REQUIRED()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25350,9 +25080,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_BAD_FLAGS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25379,9 +25109,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_BAD_SIGNER(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25408,9 +25138,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_CANT_CHANGE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25437,9 +25167,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_INVALID_HOME_DOMAIN(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25466,9 +25196,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_INVALID_INFLATION(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25495,9 +25225,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_LOW_RESERVE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25524,9 +25254,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25553,9 +25283,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_THRESHOLD_OUT_OF_RANGE():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25582,9 +25312,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_TOO_MANY_SIGNERS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25611,9 +25341,9 @@ public function testRoundTrip_XdrSetOptionsResultUnion_UNKNOWN_FLAG(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25640,9 +25370,9 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_CANT_REVOKE(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25669,9 +25399,9 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_INVALID_STATE(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25698,9 +25428,9 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_LOW_RESERVE(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25727,9 +25457,9 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25756,9 +25486,9 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_NO_TRUST_LINE(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25785,9 +25515,9 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25815,7 +25545,7 @@ public function testRoundTrip_XdrSorobanAuthorizedFunction(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunction::class);
@@ -25838,7 +25568,7 @@ public function testRoundTrip_XdrSorobanCredentials(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanCredentials::class);
@@ -25860,9 +25590,9 @@ public function testRoundTrip_XdrStellarMessageUnion_AUTH(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25889,9 +25619,9 @@ public function testRoundTrip_XdrStellarMessageUnion_DONT_HAVE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25918,9 +25648,9 @@ public function testRoundTrip_XdrStellarMessageUnion_ERROR_MSG(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25947,9 +25677,9 @@ public function testRoundTrip_XdrStellarMessageUnion_FLOOD_ADVERT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -25976,9 +25706,9 @@ public function testRoundTrip_XdrStellarMessageUnion_FLOOD_DEMAND(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26005,9 +25735,9 @@ public function testRoundTrip_XdrStellarMessageUnion_GENERALIZED_TX_SET(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26034,9 +25764,9 @@ public function testRoundTrip_XdrStellarMessageUnion_GET_SCP_QUORUMSET(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26063,9 +25793,9 @@ public function testRoundTrip_XdrStellarMessageUnion_GET_SCP_STATE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26092,9 +25822,9 @@ public function testRoundTrip_XdrStellarMessageUnion_GET_TX_SET(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26121,9 +25851,9 @@ public function testRoundTrip_XdrStellarMessageUnion_HELLO(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26150,9 +25880,9 @@ public function testRoundTrip_XdrStellarMessageUnion_PEERS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26179,9 +25909,9 @@ public function testRoundTrip_XdrStellarMessageUnion_SCP_MESSAGE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26208,9 +25938,9 @@ public function testRoundTrip_XdrStellarMessageUnion_SCP_QUORUMSET(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26237,9 +25967,9 @@ public function testRoundTrip_XdrStellarMessageUnion_SEND_MORE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26266,9 +25996,9 @@ public function testRoundTrip_XdrStellarMessageUnion_SEND_MORE_EXTENDED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26295,9 +26025,9 @@ public function testRoundTrip_XdrStellarMessageUnion_TIME_SLICED_SURVEY_REQUEST(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26324,9 +26054,9 @@ public function testRoundTrip_XdrStellarMessageUnion_TIME_SLICED_SURVEY_RESPONSE
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26353,9 +26083,9 @@ public function testRoundTrip_XdrStellarMessageUnion_TIME_SLICED_SURVEY_START_CO
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26382,9 +26112,9 @@ public function testRoundTrip_XdrStellarMessageUnion_TIME_SLICED_SURVEY_STOP_COL
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26411,9 +26141,9 @@ public function testRoundTrip_XdrStellarMessageUnion_TRANSACTION(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26440,9 +26170,9 @@ public function testRoundTrip_XdrStellarMessageUnion_TX_SET(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26469,9 +26199,9 @@ public function testRoundTrip_XdrStellarValueExtUnion_STELLAR_VALUE_BASIC(): voi
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarValueExt::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26498,9 +26228,9 @@ public function testRoundTrip_XdrStellarValueExtUnion_STELLAR_VALUE_SIGNED(): vo
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarValueExt::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26528,7 +26258,7 @@ public function testRoundTrip_XdrSurveyRequestMessage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSurveyRequestMessage::class);
@@ -26550,9 +26280,9 @@ public function testRoundTrip_XdrSurveyResponseBodyUnion_SURVEY_TOPOLOGY_RESPONS
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSurveyResponseBody::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26580,7 +26310,7 @@ public function testRoundTrip_XdrSurveyResponseMessage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSurveyResponseMessage::class);
@@ -26603,7 +26333,7 @@ public function testRoundTrip_XdrTransactionEvent(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionEvent::class);
@@ -26625,9 +26355,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_AUTH(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26654,9 +26384,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_AUTH_EXTRA(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26683,9 +26413,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_MIN_SEQ_AGE_OR
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26712,9 +26442,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_SEQ(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26741,9 +26471,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_SPONSORSHIP():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26770,9 +26500,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FAILED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26799,9 +26529,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FEE_BUMP_INNER_FAI
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26828,9 +26558,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FEE_BUMP_INNER_SUC
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26857,9 +26587,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FROZEN_KEY_ACCESSE
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26886,9 +26616,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INSUFFICIENT_BALAN
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26915,9 +26645,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INSUFFICIENT_FEE()
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26944,9 +26674,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INTERNAL_ERROR(): 
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -26973,9 +26703,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_MALFORMED(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27002,9 +26732,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_MISSING_OPERATION(
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27031,9 +26761,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_NOT_SUPPORTED(): v
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27060,9 +26790,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_NO_ACCOUNT(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27089,9 +26819,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_SOROBAN_INVALID():
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27118,9 +26848,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_SUCCESS(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27147,9 +26877,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_TOO_EARLY(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27176,9 +26906,9 @@ public function testRoundTrip_XdrTransactionResultResultUnion_TOO_LATE(): void
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27205,9 +26935,9 @@ public function testRoundTrip_XdrTransactionSignaturePayloadTaggedTransactionUni
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27234,9 +26964,9 @@ public function testRoundTrip_XdrTransactionSignaturePayloadTaggedTransactionUni
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27264,7 +26994,7 @@ public function testRoundTrip_XdrTrustlineAsset(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustlineAsset::class);
@@ -27286,9 +27016,9 @@ public function testRoundTrip_XdrTxSetComponentUnion_TXSET_COMP_TXS_MAYBE_DISCOU
     // Discriminator-only reachability assertion: confirms the
     // arm constant is declared on the discriminant enum and
     // resolves to an int. Full round-trip coverage for this
-    // arm is provided by the corpus fixtures (the cross-SDK fixture suite) when
-    // available; this method guards against silent removal of
-    // the arm constant.
+    // arm is provided by the snapshot corpus when available;
+    // this method guards against silent removal of the arm
+    // constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTxSetComponent::class);
     $found = false;
     foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
@@ -27316,7 +27046,7 @@ public function testRoundTrip_XdrAccountEntryV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryV1::class);
@@ -27339,7 +27069,7 @@ public function testRoundTrip_XdrAccountEntryV2(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryV2::class);
@@ -27362,7 +27092,7 @@ public function testRoundTrip_XdrAccountEntryV3(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryV3::class);
@@ -27385,7 +27115,7 @@ public function testRoundTrip_XdrAccountMergeOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeOperation::class);
@@ -27408,7 +27138,7 @@ public function testRoundTrip_XdrAllowTrustOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustOperation::class);
@@ -27431,7 +27161,7 @@ public function testRoundTrip_XdrAssetAlphaNum12(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::class);
@@ -27454,7 +27184,7 @@ public function testRoundTrip_XdrAssetAlphaNum4(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::class);
@@ -27477,7 +27207,7 @@ public function testRoundTrip_XdrAuth(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAuth::class);
@@ -27500,7 +27230,7 @@ public function testRoundTrip_XdrAuthCert(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAuthCert::class);
@@ -27523,7 +27253,7 @@ public function testRoundTrip_XdrAuthenticatedMessageV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::class);
@@ -27546,7 +27276,7 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesOperation::class);
@@ -27569,7 +27299,7 @@ public function testRoundTrip_XdrBucketMetadata(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBucketMetadata::class);
@@ -27592,7 +27322,7 @@ public function testRoundTrip_XdrBumpSequenceOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBumpSequenceOperation::class);
@@ -27615,7 +27345,7 @@ public function testRoundTrip_XdrChangeTrustOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustOperation::class);
@@ -27638,7 +27368,7 @@ public function testRoundTrip_XdrClaimClaimableBalanceOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceOperation::class);
@@ -27661,7 +27391,7 @@ public function testRoundTrip_XdrClaimLiquidityAtom(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::class);
@@ -27684,7 +27414,7 @@ public function testRoundTrip_XdrClaimOfferAtom(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::class);
@@ -27707,7 +27437,7 @@ public function testRoundTrip_XdrClaimOfferAtomV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::class);
@@ -27730,7 +27460,7 @@ public function testRoundTrip_XdrClaimableBalanceEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry::class);
@@ -27753,7 +27483,7 @@ public function testRoundTrip_XdrClaimableBalanceEntryExtV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExtV1::class);
@@ -27776,7 +27506,7 @@ public function testRoundTrip_XdrClaimableBalanceEntryExtV1Ext(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExtV1Ext::class);
@@ -27799,7 +27529,7 @@ public function testRoundTrip_XdrClaimantV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimantV0::class);
@@ -27822,7 +27552,7 @@ public function testRoundTrip_XdrClawbackClaimableBalanceOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation::class);
@@ -27845,7 +27575,7 @@ public function testRoundTrip_XdrClawbackOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackOperation::class);
@@ -27868,7 +27598,7 @@ public function testRoundTrip_XdrConfigSettingContractBandwidthV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingContractBandwidthV0::class);
@@ -27891,7 +27621,7 @@ public function testRoundTrip_XdrConfigSettingContractComputeV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingContractComputeV0::class);
@@ -27914,7 +27644,7 @@ public function testRoundTrip_XdrConfigSettingContractEventsV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingContractEventsV0::class);
@@ -27937,7 +27667,7 @@ public function testRoundTrip_XdrConfigSettingContractExecutionLanesV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingContractExecutionLanesV0::class);
@@ -27960,7 +27690,7 @@ public function testRoundTrip_XdrConfigSettingContractHistoricalDataV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingContractHistoricalDataV0::class);
@@ -27983,7 +27713,7 @@ public function testRoundTrip_XdrConfigSettingContractLedgerCostExtV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingContractLedgerCostExtV0::class);
@@ -28006,7 +27736,7 @@ public function testRoundTrip_XdrConfigSettingContractLedgerCostV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingContractLedgerCostV0::class);
@@ -28029,7 +27759,7 @@ public function testRoundTrip_XdrConfigSettingContractParallelComputeV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingContractParallelComputeV0::class);
@@ -28052,7 +27782,7 @@ public function testRoundTrip_XdrConfigSettingSCPTiming(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingSCPTiming::class);
@@ -28075,7 +27805,7 @@ public function testRoundTrip_XdrConfigUpgradeSet(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigUpgradeSet::class);
@@ -28098,7 +27828,7 @@ public function testRoundTrip_XdrConfigUpgradeSetKey(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigUpgradeSetKey::class);
@@ -28121,7 +27851,7 @@ public function testRoundTrip_XdrConstantProduct(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConstantProduct::class);
@@ -28144,7 +27874,7 @@ public function testRoundTrip_XdrContractCodeCostInputs(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractCodeCostInputs::class);
@@ -28167,7 +27897,7 @@ public function testRoundTrip_XdrContractCodeEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractCodeEntry::class);
@@ -28190,7 +27920,7 @@ public function testRoundTrip_XdrContractCodeEntryExtV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractCodeEntryExtV1::class);
@@ -28213,7 +27943,7 @@ public function testRoundTrip_XdrContractCodeEntryV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractCodeEntryV1::class);
@@ -28236,7 +27966,7 @@ public function testRoundTrip_XdrContractCostParamEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractCostParamEntry::class);
@@ -28259,7 +27989,7 @@ public function testRoundTrip_XdrContractCostParams(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractCostParams::class);
@@ -28282,7 +28012,7 @@ public function testRoundTrip_XdrContractEventBodyV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractEventBodyV0::class);
@@ -28305,7 +28035,7 @@ public function testRoundTrip_XdrContractIDPreimageFromAddress(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractIDPreimageFromAddress::class);
@@ -28328,7 +28058,7 @@ public function testRoundTrip_XdrCreateAccountOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountOperation::class);
@@ -28351,7 +28081,7 @@ public function testRoundTrip_XdrCreateClaimableBalanceOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::class);
@@ -28374,7 +28104,7 @@ public function testRoundTrip_XdrCreateContractArgs(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateContractArgs::class);
@@ -28397,7 +28127,7 @@ public function testRoundTrip_XdrCreateContractArgsV2(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2::class);
@@ -28420,7 +28150,7 @@ public function testRoundTrip_XdrCreatePassiveSellOfferOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::class);
@@ -28443,7 +28173,7 @@ public function testRoundTrip_XdrCurve25519Public(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCurve25519Public::class);
@@ -28466,7 +28196,7 @@ public function testRoundTrip_XdrCurve25519Secret(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCurve25519Secret::class);
@@ -28489,7 +28219,7 @@ public function testRoundTrip_XdrDataEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDataEntry::class);
@@ -28512,7 +28242,7 @@ public function testRoundTrip_XdrDataEntryExt(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDataEntryExt::class);
@@ -28535,7 +28265,7 @@ public function testRoundTrip_XdrDataValue(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDataValue::class);
@@ -28558,7 +28288,7 @@ public function testRoundTrip_XdrDataValueMandatory(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDataValueMandatory::class);
@@ -28581,7 +28311,7 @@ public function testRoundTrip_XdrDependentTxCluster(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDependentTxCluster::class);
@@ -28604,7 +28334,7 @@ public function testRoundTrip_XdrDiagnosticEvent(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDiagnosticEvent::class);
@@ -28627,7 +28357,7 @@ public function testRoundTrip_XdrEncodedLedgerKey(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrEncodedLedgerKey::class);
@@ -28650,7 +28380,7 @@ public function testRoundTrip_XdrEncryptedBody(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrEncryptedBody::class);
@@ -28673,7 +28403,7 @@ public function testRoundTrip_XdrEvictionIterator(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrEvictionIterator::class);
@@ -28696,7 +28426,7 @@ public function testRoundTrip_XdrExtendFootprintTTLOp(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLOp::class);
@@ -28719,7 +28449,7 @@ public function testRoundTrip_XdrExtensionPoint(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtensionPoint::class);
@@ -28742,7 +28472,7 @@ public function testRoundTrip_XdrFeeBumpTransaction(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction::class);
@@ -28765,7 +28495,7 @@ public function testRoundTrip_XdrFeeBumpTransactionEnvelope(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope::class);
@@ -28788,7 +28518,7 @@ public function testRoundTrip_XdrFeeBumpTransactionExt(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionExt::class);
@@ -28811,7 +28541,7 @@ public function testRoundTrip_XdrFloodAdvert(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFloodAdvert::class);
@@ -28834,7 +28564,7 @@ public function testRoundTrip_XdrFloodDemand(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFloodDemand::class);
@@ -28857,7 +28587,7 @@ public function testRoundTrip_XdrFreezeBypassTxs(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFreezeBypassTxs::class);
@@ -28880,7 +28610,7 @@ public function testRoundTrip_XdrFreezeBypassTxsDelta(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFreezeBypassTxsDelta::class);
@@ -28903,7 +28633,7 @@ public function testRoundTrip_XdrFrozenLedgerKeys(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFrozenLedgerKeys::class);
@@ -28926,7 +28656,7 @@ public function testRoundTrip_XdrFrozenLedgerKeysDelta(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFrozenLedgerKeysDelta::class);
@@ -28949,7 +28679,7 @@ public function testRoundTrip_XdrHashIDPreimageContractID(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimageContractID::class);
@@ -28972,7 +28702,7 @@ public function testRoundTrip_XdrHashIDPreimageOperationID(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimageOperationID::class);
@@ -28995,7 +28725,7 @@ public function testRoundTrip_XdrHashIDPreimageRevokeID(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::class);
@@ -29018,7 +28748,7 @@ public function testRoundTrip_XdrHashIDPreimageSorobanAuthorization(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorization::class);
@@ -29041,7 +28771,7 @@ public function testRoundTrip_XdrHello(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHello::class);
@@ -29064,7 +28794,7 @@ public function testRoundTrip_XdrHmacSha256Key(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHmacSha256Key::class);
@@ -29087,7 +28817,7 @@ public function testRoundTrip_XdrHmacSha256Mac(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHmacSha256Mac::class);
@@ -29110,7 +28840,7 @@ public function testRoundTrip_XdrInflationPayout(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInflationPayout::class);
@@ -29133,7 +28863,7 @@ public function testRoundTrip_XdrInnerTransactionResult(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::class);
@@ -29156,7 +28886,7 @@ public function testRoundTrip_XdrInnerTransactionResultPair(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultPair::class);
@@ -29179,7 +28909,7 @@ public function testRoundTrip_XdrInvokeContractArgs(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeContractArgs::class);
@@ -29202,7 +28932,7 @@ public function testRoundTrip_XdrInvokeHostFunctionOp(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp::class);
@@ -29225,7 +28955,7 @@ public function testRoundTrip_XdrInvokeHostFunctionSuccessPreImage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionSuccessPreImage::class);
@@ -29248,7 +28978,7 @@ public function testRoundTrip_XdrLedgerCloseMetaBatch(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaBatch::class);
@@ -29271,7 +29001,7 @@ public function testRoundTrip_XdrLedgerCloseMetaExtV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExtV1::class);
@@ -29294,7 +29024,7 @@ public function testRoundTrip_XdrLedgerCloseMetaV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV0::class);
@@ -29317,7 +29047,7 @@ public function testRoundTrip_XdrLedgerCloseMetaV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV1::class);
@@ -29340,7 +29070,7 @@ public function testRoundTrip_XdrLedgerCloseMetaV2(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV2::class);
@@ -29363,7 +29093,7 @@ public function testRoundTrip_XdrLedgerCloseValueSignature(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseValueSignature::class);
@@ -29386,7 +29116,7 @@ public function testRoundTrip_XdrLedgerEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntry::class);
@@ -29409,7 +29139,7 @@ public function testRoundTrip_XdrLedgerEntryV1Ext(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryV1Ext::class);
@@ -29432,7 +29162,7 @@ public function testRoundTrip_XdrLedgerFootprint(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerFootprint::class);
@@ -29455,7 +29185,7 @@ public function testRoundTrip_XdrLedgerHeader(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeader::class);
@@ -29478,7 +29208,7 @@ public function testRoundTrip_XdrLedgerHeaderExtensionV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeaderExtensionV1::class);
@@ -29501,7 +29231,7 @@ public function testRoundTrip_XdrLedgerHeaderExtensionV1Ext(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeaderExtensionV1Ext::class);
@@ -29524,7 +29254,7 @@ public function testRoundTrip_XdrLedgerHeaderHistoryEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeaderHistoryEntry::class);
@@ -29547,7 +29277,7 @@ public function testRoundTrip_XdrLedgerHeaderHistoryEntryExt(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeaderHistoryEntryExt::class);
@@ -29570,7 +29300,7 @@ public function testRoundTrip_XdrLedgerKeyAccount(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount::class);
@@ -29593,7 +29323,7 @@ public function testRoundTrip_XdrLedgerKeyClaimableBalance(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyClaimableBalance::class);
@@ -29616,7 +29346,7 @@ public function testRoundTrip_XdrLedgerKeyContractCode(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode::class);
@@ -29639,7 +29369,7 @@ public function testRoundTrip_XdrLedgerKeyData(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyData::class);
@@ -29662,7 +29392,7 @@ public function testRoundTrip_XdrLedgerKeyLiquidityPool(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyLiquidityPool::class);
@@ -29685,7 +29415,7 @@ public function testRoundTrip_XdrLedgerKeyOffer(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyOffer::class);
@@ -29708,7 +29438,7 @@ public function testRoundTrip_XdrLedgerKeyTTL(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyTTL::class);
@@ -29731,7 +29461,7 @@ public function testRoundTrip_XdrLedgerKeyTrustLine(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyTrustLine::class);
@@ -29754,7 +29484,7 @@ public function testRoundTrip_XdrLedgerSCPMessages(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerSCPMessages::class);
@@ -29777,7 +29507,7 @@ public function testRoundTrip_XdrLiabilities(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiabilities::class);
@@ -29800,7 +29530,7 @@ public function testRoundTrip_XdrLiquidityPoolConstantProductParameters(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::class);
@@ -29823,7 +29553,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperation::class);
@@ -29846,7 +29576,7 @@ public function testRoundTrip_XdrLiquidityPoolEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolEntry::class);
@@ -29869,7 +29599,7 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperation::class);
@@ -29892,7 +29622,7 @@ public function testRoundTrip_XdrManageBuyOfferOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::class);
@@ -29915,7 +29645,7 @@ public function testRoundTrip_XdrManageOfferSuccessResult(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::class);
@@ -29938,7 +29668,7 @@ public function testRoundTrip_XdrManageSellOfferOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::class);
@@ -29961,7 +29691,7 @@ public function testRoundTrip_XdrMuxedAccountMed25519(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519::class);
@@ -29984,7 +29714,7 @@ public function testRoundTrip_XdrNodeID(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrNodeID::class);
@@ -30007,7 +29737,7 @@ public function testRoundTrip_XdrOfferEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOfferEntry::class);
@@ -30030,7 +29760,7 @@ public function testRoundTrip_XdrOfferEntryExt(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOfferEntryExt::class);
@@ -30053,7 +29783,7 @@ public function testRoundTrip_XdrOperationMeta(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationMeta::class);
@@ -30076,7 +29806,7 @@ public function testRoundTrip_XdrOperationMetaV2(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationMetaV2::class);
@@ -30099,7 +29829,7 @@ public function testRoundTrip_XdrParallelTxExecutionStage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrParallelTxExecutionStage::class);
@@ -30122,7 +29852,7 @@ public function testRoundTrip_XdrPathPaymentResultSuccess(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentResultSuccess::class);
@@ -30145,7 +29875,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::class);
@@ -30168,7 +29898,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::class);
@@ -30191,7 +29921,7 @@ public function testRoundTrip_XdrPaymentOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentOperation::class);
@@ -30214,7 +29944,7 @@ public function testRoundTrip_XdrPeerAddress(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPeerAddress::class);
@@ -30237,7 +29967,7 @@ public function testRoundTrip_XdrPeerStats(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPeerStats::class);
@@ -30260,7 +29990,7 @@ public function testRoundTrip_XdrPersistedSCPStateV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPersistedSCPStateV0::class);
@@ -30283,7 +30013,7 @@ public function testRoundTrip_XdrPersistedSCPStateV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPersistedSCPStateV1::class);
@@ -30306,7 +30036,7 @@ public function testRoundTrip_XdrPrice(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPrice::class);
@@ -30329,7 +30059,7 @@ public function testRoundTrip_XdrRestoreFootprintOp(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintOp::class);
@@ -30352,7 +30082,7 @@ public function testRoundTrip_XdrRevokeSponsorshipSigner(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipSigner::class);
@@ -30375,7 +30105,7 @@ public function testRoundTrip_XdrSCEnvMetaEntryInterfaceVersion(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntryInterfaceVersion::class);
@@ -30398,7 +30128,7 @@ public function testRoundTrip_XdrSCMapEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCMapEntry::class);
@@ -30421,7 +30151,7 @@ public function testRoundTrip_XdrSCMetaV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCMetaV0::class);
@@ -30444,7 +30174,7 @@ public function testRoundTrip_XdrSCNonceKey(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCNonceKey::class);
@@ -30467,7 +30197,7 @@ public function testRoundTrip_XdrSCPBallot(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPBallot::class);
@@ -30490,7 +30220,7 @@ public function testRoundTrip_XdrSCPEnvelope(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPEnvelope::class);
@@ -30513,7 +30243,7 @@ public function testRoundTrip_XdrSCPHistoryEntryV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPHistoryEntryV0::class);
@@ -30536,7 +30266,7 @@ public function testRoundTrip_XdrSCPNomination(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPNomination::class);
@@ -30559,7 +30289,7 @@ public function testRoundTrip_XdrSCPQuorumSet(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPQuorumSet::class);
@@ -30582,7 +30312,7 @@ public function testRoundTrip_XdrSCPStatement(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatement::class);
@@ -30605,7 +30335,7 @@ public function testRoundTrip_XdrSCPStatementConfirm(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementConfirm::class);
@@ -30628,7 +30358,7 @@ public function testRoundTrip_XdrSCPStatementExternalize(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementExternalize::class);
@@ -30651,7 +30381,7 @@ public function testRoundTrip_XdrSCSpecFunctionInputV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecFunctionInputV0::class);
@@ -30674,7 +30404,7 @@ public function testRoundTrip_XdrSCSpecFunctionV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecFunctionV0::class);
@@ -30697,7 +30427,7 @@ public function testRoundTrip_XdrSCSpecTypeBytesN(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecTypeBytesN::class);
@@ -30720,7 +30450,7 @@ public function testRoundTrip_XdrSCSpecTypeMap(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecTypeMap::class);
@@ -30743,7 +30473,7 @@ public function testRoundTrip_XdrSCSpecTypeOption(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecTypeOption::class);
@@ -30766,7 +30496,7 @@ public function testRoundTrip_XdrSCSpecTypeResult(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecTypeResult::class);
@@ -30789,7 +30519,7 @@ public function testRoundTrip_XdrSCSpecTypeTuple(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecTypeTuple::class);
@@ -30812,7 +30542,7 @@ public function testRoundTrip_XdrSCSpecTypeUDT(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecTypeUDT::class);
@@ -30835,7 +30565,7 @@ public function testRoundTrip_XdrSCSpecTypeVec(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecTypeVec::class);
@@ -30858,7 +30588,7 @@ public function testRoundTrip_XdrSCSpecUDTEnumCaseV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTEnumCaseV0::class);
@@ -30881,7 +30611,7 @@ public function testRoundTrip_XdrSCSpecUDTEnumV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTEnumV0::class);
@@ -30904,7 +30634,7 @@ public function testRoundTrip_XdrSCSpecUDTErrorEnumCaseV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTErrorEnumCaseV0::class);
@@ -30927,7 +30657,7 @@ public function testRoundTrip_XdrSCSpecUDTErrorEnumV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTErrorEnumV0::class);
@@ -30950,7 +30680,7 @@ public function testRoundTrip_XdrSCSpecUDTStructFieldV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructFieldV0::class);
@@ -30973,7 +30703,7 @@ public function testRoundTrip_XdrSCSpecUDTStructV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructV0::class);
@@ -30996,7 +30726,7 @@ public function testRoundTrip_XdrSCSpecUDTUnionCaseTupleV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseTupleV0::class);
@@ -31019,7 +30749,7 @@ public function testRoundTrip_XdrSCSpecUDTUnionCaseVoidV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseVoidV0::class);
@@ -31042,7 +30772,7 @@ public function testRoundTrip_XdrSCSpecUDTUnionV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0::class);
@@ -31065,7 +30795,7 @@ public function testRoundTrip_XdrSendMore(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSendMore::class);
@@ -31088,7 +30818,7 @@ public function testRoundTrip_XdrSendMoreExtended(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSendMoreExtended::class);
@@ -31111,7 +30841,7 @@ public function testRoundTrip_XdrSequenceNumber(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSequenceNumber::class);
@@ -31134,7 +30864,7 @@ public function testRoundTrip_XdrSetTrustLineFlagsOperation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::class);
@@ -31157,7 +30887,7 @@ public function testRoundTrip_XdrShortHashSeed(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrShortHashSeed::class);
@@ -31180,7 +30910,7 @@ public function testRoundTrip_XdrSignedTimeSlicedSurveyRequestMessage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyRequestMessage::class);
@@ -31203,7 +30933,7 @@ public function testRoundTrip_XdrSignedTimeSlicedSurveyResponseMessage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyResponseMessage::class);
@@ -31226,7 +30956,7 @@ public function testRoundTrip_XdrSignedTimeSlicedSurveyStartCollectingMessage():
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyStartCollectingMessage::class);
@@ -31249,7 +30979,7 @@ public function testRoundTrip_XdrSignedTimeSlicedSurveyStopCollectingMessage(): 
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyStopCollectingMessage::class);
@@ -31272,7 +31002,7 @@ public function testRoundTrip_XdrSigner(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSigner::class);
@@ -31295,7 +31025,7 @@ public function testRoundTrip_XdrSimplePaymentResult(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::class);
@@ -31318,7 +31048,7 @@ public function testRoundTrip_XdrSorobanAddressCredentials(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentials::class);
@@ -31341,7 +31071,7 @@ public function testRoundTrip_XdrSorobanAuthorizationEntries(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntries::class);
@@ -31364,7 +31094,7 @@ public function testRoundTrip_XdrSorobanAuthorizationEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry::class);
@@ -31387,7 +31117,7 @@ public function testRoundTrip_XdrSorobanAuthorizedInvocation(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation::class);
@@ -31410,7 +31140,7 @@ public function testRoundTrip_XdrSorobanResources(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanResources::class);
@@ -31433,7 +31163,7 @@ public function testRoundTrip_XdrSorobanResourcesExtV0(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanResourcesExtV0::class);
@@ -31456,7 +31186,7 @@ public function testRoundTrip_XdrSorobanTransactionData(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionData::class);
@@ -31479,7 +31209,7 @@ public function testRoundTrip_XdrSorobanTransactionMeta(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionMeta::class);
@@ -31502,7 +31232,7 @@ public function testRoundTrip_XdrSorobanTransactionMetaExtV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExtV1::class);
@@ -31525,7 +31255,7 @@ public function testRoundTrip_XdrSponsorshipDescriptor(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::class);
@@ -31548,7 +31278,7 @@ public function testRoundTrip_XdrStateArchivalSettings(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStateArchivalSettings::class);
@@ -31571,7 +31301,7 @@ public function testRoundTrip_XdrStellarValue(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarValue::class);
@@ -31594,7 +31324,7 @@ public function testRoundTrip_XdrStoredDebugTransactionSet(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStoredDebugTransactionSet::class);
@@ -31617,7 +31347,7 @@ public function testRoundTrip_XdrTTLEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTTLEntry::class);
@@ -31640,7 +31370,7 @@ public function testRoundTrip_XdrTimeSlicedNodeData(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTimeSlicedNodeData::class);
@@ -31663,7 +31393,7 @@ public function testRoundTrip_XdrTimeSlicedPeerData(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTimeSlicedPeerData::class);
@@ -31686,7 +31416,7 @@ public function testRoundTrip_XdrTimeSlicedPeerDataList(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTimeSlicedPeerDataList::class);
@@ -31709,7 +31439,7 @@ public function testRoundTrip_XdrTimeSlicedSurveyRequestMessage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyRequestMessage::class);
@@ -31732,7 +31462,7 @@ public function testRoundTrip_XdrTimeSlicedSurveyResponseMessage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyResponseMessage::class);
@@ -31755,7 +31485,7 @@ public function testRoundTrip_XdrTimeSlicedSurveyStartCollectingMessage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyStartCollectingMessage::class);
@@ -31778,7 +31508,7 @@ public function testRoundTrip_XdrTimeSlicedSurveyStopCollectingMessage(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyStopCollectingMessage::class);
@@ -31801,7 +31531,7 @@ public function testRoundTrip_XdrTopologyResponseBodyV2(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTopologyResponseBodyV2::class);
@@ -31824,7 +31554,7 @@ public function testRoundTrip_XdrTransaction(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransaction::class);
@@ -31847,7 +31577,7 @@ public function testRoundTrip_XdrTransactionHistoryEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionHistoryEntry::class);
@@ -31870,7 +31600,7 @@ public function testRoundTrip_XdrTransactionHistoryResultEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionHistoryResultEntry::class);
@@ -31893,7 +31623,7 @@ public function testRoundTrip_XdrTransactionHistoryResultEntryExt(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionHistoryResultEntryExt::class);
@@ -31916,7 +31646,7 @@ public function testRoundTrip_XdrTransactionMetaV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMetaV1::class);
@@ -31939,7 +31669,7 @@ public function testRoundTrip_XdrTransactionMetaV2(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMetaV2::class);
@@ -31962,7 +31692,7 @@ public function testRoundTrip_XdrTransactionResult(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResult::class);
@@ -31985,7 +31715,7 @@ public function testRoundTrip_XdrTransactionResultExt(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultExt::class);
@@ -32008,7 +31738,7 @@ public function testRoundTrip_XdrTransactionResultMeta(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultMeta::class);
@@ -32031,7 +31761,7 @@ public function testRoundTrip_XdrTransactionResultMetaV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultMetaV1::class);
@@ -32054,7 +31784,7 @@ public function testRoundTrip_XdrTransactionResultPair(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultPair::class);
@@ -32077,7 +31807,7 @@ public function testRoundTrip_XdrTransactionResultSet(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultSet::class);
@@ -32100,7 +31830,7 @@ public function testRoundTrip_XdrTransactionSet(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionSet::class);
@@ -32123,7 +31853,7 @@ public function testRoundTrip_XdrTransactionSetV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionSetV1::class);
@@ -32146,7 +31876,7 @@ public function testRoundTrip_XdrTransactionSignaturePayload(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::class);
@@ -32169,7 +31899,7 @@ public function testRoundTrip_XdrTransactionV0Envelope(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionV0Envelope::class);
@@ -32192,7 +31922,7 @@ public function testRoundTrip_XdrTransactionV0Ext(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionV0Ext::class);
@@ -32215,7 +31945,7 @@ public function testRoundTrip_XdrTransactionV1Envelope(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope::class);
@@ -32238,7 +31968,7 @@ public function testRoundTrip_XdrTrustLineEntry(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustLineEntry::class);
@@ -32261,7 +31991,7 @@ public function testRoundTrip_XdrTrustLineEntryExtensionV2(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustLineEntryExtensionV2::class);
@@ -32284,7 +32014,7 @@ public function testRoundTrip_XdrTrustLineEntryExtensionV2Ext(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustLineEntryExtensionV2Ext::class);
@@ -32307,7 +32037,7 @@ public function testRoundTrip_XdrTrustLineEntryV1(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustLineEntryV1::class);
@@ -32330,7 +32060,7 @@ public function testRoundTrip_XdrTxAdvertVector(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTxAdvertVector::class);
@@ -32353,7 +32083,7 @@ public function testRoundTrip_XdrTxDemandVector(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTxDemandVector::class);
@@ -32376,7 +32106,7 @@ public function testRoundTrip_XdrUpgradeEntryMeta(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::class);
@@ -32399,7 +32129,7 @@ public function testRoundTrip_XdrUpgradeType(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrUpgradeType::class);
@@ -32422,7 +32152,7 @@ public function testRoundTrip_XdrValue(): void
     // (constructor demands populated members). The test asserts
     // contract presence: the class declares toJsonValue,
     // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven and the cross-SDK fixture suite tests can
+    // signatures so that corpus-driven snapshot tests can
     // exercise it. Removing any of these methods breaks the
     // contract and fails this test loudly.
     $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrValue::class);
@@ -32445,7 +32175,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntry::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32458,7 +32188,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntry::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32470,7 +32200,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32483,7 +32213,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32495,7 +32225,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryV1Ext::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32508,7 +32238,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryV1Ext::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32520,7 +32250,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryV2Ext::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32533,7 +32263,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountEntryV2Ext::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32545,7 +32275,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAuthenticatedMessage::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32558,7 +32288,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAuthenticatedMessage::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32570,7 +32300,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32583,7 +32313,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32595,7 +32325,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32608,7 +32338,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32620,7 +32350,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractEventBody::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32633,7 +32363,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractEventBody::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32645,7 +32375,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrGeneralizedTransactionSet::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32658,7 +32388,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrGeneralizedTransactionSet::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32670,7 +32400,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32683,7 +32413,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32695,7 +32425,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32708,7 +32438,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32720,7 +32450,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryV1::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32733,7 +32463,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryV1::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32745,7 +32475,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeaderExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32758,7 +32488,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeaderExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32770,7 +32500,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataOperation::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32783,7 +32513,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataOperation::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32795,7 +32525,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrParallelTxsComponent::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32808,7 +32538,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrParallelTxsComponent::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32820,7 +32550,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPersistedSCPState::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32833,7 +32563,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPersistedSCPState::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32846,7 +32576,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPersistedSCPState::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32859,7 +32589,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPersistedSCPState::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32871,7 +32601,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32884,7 +32614,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32897,7 +32627,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32910,7 +32640,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32923,7 +32653,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32936,7 +32666,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32949,7 +32679,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32962,7 +32692,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32974,7 +32704,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCContractInstance::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32987,7 +32717,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCContractInstance::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -32999,7 +32729,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPHistoryEntry::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33012,7 +32742,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPHistoryEntry::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33024,7 +32754,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33037,7 +32767,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33050,7 +32780,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33063,7 +32793,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33170,7 +32900,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33183,7 +32913,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33195,7 +32925,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33208,7 +32938,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33220,7 +32950,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33233,7 +32963,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33245,7 +32975,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStoredTransactionSet::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33258,7 +32988,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStoredTransactionSet::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33271,7 +33001,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStoredTransactionSet::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33284,7 +33014,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStoredTransactionSet::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33296,7 +33026,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33309,7 +33039,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33321,7 +33051,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionHistoryEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33334,7 +33064,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionHistoryEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33347,7 +33077,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33359,7 +33089,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33372,7 +33102,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33385,7 +33115,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33398,7 +33128,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33411,7 +33141,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33424,7 +33154,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33437,7 +33167,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33449,7 +33179,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMetaV3::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33462,7 +33192,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMetaV3::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33474,7 +33204,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMetaV4::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33487,7 +33217,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMetaV4::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33499,7 +33229,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionPhase::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33512,7 +33242,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionPhase::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33525,7 +33255,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionPhase::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33538,7 +33268,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionPhase::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33550,7 +33280,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionV0::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33563,7 +33293,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionV0::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33575,7 +33305,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustLineEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33588,7 +33318,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustLineEntryExt::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33600,7 +33330,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustLineEntryV1Ext::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33613,7 +33343,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTrustLineEntryV1Ext::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33625,7 +33355,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTxSetComponentTxsMaybeDiscountedFee::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
@@ -33638,7 +33368,7 @@ public function testRoundTrip_XdrValue(): void
         // No deterministic fixture available — assert contract
         // presence on the wrapper class. Optional-field branch
         // coverage for this type is exercised by the corpus and
-        // by the cross-SDK fixture suite spec-anchor tests when available.
+        // by the spec-anchor tests when available.
         $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTxSetComponentTxsMaybeDiscountedFee::class);
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));

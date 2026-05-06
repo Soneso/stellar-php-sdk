@@ -64,7 +64,7 @@ Generate a single SEP matrix:
 python tools/matrix-generator/sep/generate_sep_matrix.py --sep 10
 ```
 
-Generate all supported SEPs (20 as of SDK 1.10.0):
+Generate all supported SEPs (currently 20 SEP analyzers):
 
 ```bash
 python tools/matrix-generator/sep/generate_sep_matrix.py --all

@@ -329,7 +329,7 @@ There are two notions of equality for SEP-51 round-trips:
 - **Byte equality.** Two JSON strings are byte-identical: same key order, same whitespace, same number formatting. Practical SEP-51 producers do not all emit the same byte sequence — JSON object key order is not specified, and small whitespace differences are common.
 - **Structural equality.** Two JSON values decode to the same logical structure: same keys, same scalar values, same array order. This is the contract SEP-51 actually guarantees.
 
-`XdrJsonHelper::canonicalJson` normalises a JSON string to a deterministic byte form by lexicographically sorting object keys at every level and stripping insignificant whitespace. After canonical normalisation, structural equality coincides with byte equality, which is how the SDK compares snapshot regressions against committed baselines.
+`XdrJsonHelper::canonicalJson` normalises a JSON string to a deterministic byte form by lexicographically sorting object keys at every level and stripping insignificant whitespace. After canonical normalisation, structural equality coincides with byte equality.
 
 ```php
 <?php declare(strict_types=1);
@@ -347,7 +347,7 @@ echo (XdrJsonHelper::canonicalJson($a) === XdrJsonHelper::canonicalJson($b) ? 'e
 equal
 -->
 
-A round-trip through XDR is lossless: parsing a base64 envelope to PHP objects, emitting JSON, parsing the JSON back to PHP objects, and re-encoding to base64 must yield the original bytes. This guarantee underlies the SDK's rollback rehearsal test that every release re-runs against the canonical SEP-0051 transaction envelope example.
+A round-trip through XDR is lossless: parsing a base64 envelope to PHP objects, emitting JSON, parsing the JSON back to PHP objects, and re-encoding to base64 must yield the original bytes.
 
 ## Pitfalls
 
@@ -365,10 +365,6 @@ echo $memo->getType()->getValue() . PHP_EOL;
 ```
 <!-- expected: 0
 -->
-
-### Snapshot regression baseline
-
-The PHP SDK ships a snapshot corpus at `tools/sep-51-test-fixtures/corpus.json` covering every Stellar XDR type that participates in SEP-51. Each entry pairs a base64 XDR input with the canonical SEP-0051 JSON the SDK emits for that input. The corpus is regenerated from PHP's own `toJson` output and re-asserted on every CI run, so any unintended change to the emission surface fails fast as a snapshot diff.
 
 ## API Reference
 
@@ -411,7 +407,6 @@ hello\x07world
 ## Further Reading
 
 - [SEP-51 specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md)
-- [`tools/baselines/sep-51-divergence-catalogue.md`](../../tools/baselines/sep-51-divergence-catalogue.md) — exhaustive cross-SDK divergence list with citations.
 - [`compatibility/sep/SEP-0051_COMPATIBILITY_MATRIX.md`](../../compatibility/sep/SEP-0051_COMPATIBILITY_MATRIX.md) — per-type status with file:line evidence (generated).
 
 ---

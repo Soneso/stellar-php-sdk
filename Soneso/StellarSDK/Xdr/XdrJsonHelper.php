@@ -218,8 +218,8 @@ final class XdrJsonHelper
     /**
      * Parse a base-10 integer string (or a PHP int) to a 64-bit signed int.
      *
-     * Accepts int|string per D5 v1 backward compatibility (the spec encourages
-     * implementations to accept JSON numbers for 64-bit types).
+     * Accepts int|string for compatibility with JSON producers that emit numbers
+     * for 64-bit integers in addition to the spec-required strings.
      *
      * Strict validation rules:
      *   - Empty string is rejected.
@@ -285,7 +285,8 @@ final class XdrJsonHelper
     /**
      * Parse a base-10 unsigned-integer string (or a PHP int) to a uint64 value.
      *
-     * Accepts int|string per D5 v1 backward compatibility.
+     * Accepts int|string for compatibility with JSON producers that emit numbers
+     * for 64-bit integers in addition to the spec-required strings.
      *
      * For uint64 values above PHP_INT_MAX (i.e. 9223372036854775808..18446744073709551615)
      * a string must be provided; those values cannot be expressed as a PHP native int.
@@ -585,7 +586,7 @@ final class XdrJsonHelper
     }
 
     /**
-     * Canonical JSON normalisation for cross-SDK structural comparison (G-CrossSDK gate).
+     * Canonical JSON normalisation for structural JSON comparison.
      *
      * The algorithm:
      *   1. Decode with assoc=false (stdClass mode) so the empty-object / empty-array

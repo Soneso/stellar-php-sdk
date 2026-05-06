@@ -4,7 +4,7 @@
     "role": "Snapshot regression baseline for the PHP SDK's SEP-0051 emission. Each entry's spec_reference_json is the SDK's own canonical toJson() output for the entry's base64 XDR input; CorpusSnapshotTest re-asserts every entry on every CI run to catch unintended drift.",
     "spec_anchor": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md"
   },
-  "generated_at": "2026-05-06T11:19:26.329685+00:00",
+  "generated_at": "2026-05-06T12:00:41.182521+00:00",
   "entries": [
     {
       "id": "scval_bool_true",
@@ -1731,86 +1731,6 @@
       "type": "SCVal",
       "base64": "AAAADQAAAAQAACQA",
       "spec_reference_json": "{\"bytes\":\"00002400\"}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_0",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAE=",
-      "spec_reference_json": "{\"bool\":true}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_1",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAA=",
-      "spec_reference_json": "{\"bool\":false}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_2",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAE=",
-      "spec_reference_json": "{\"bool\":true}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_3",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAA=",
-      "spec_reference_json": "{\"bool\":false}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_4",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAE=",
-      "spec_reference_json": "{\"bool\":true}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_5",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAA=",
-      "spec_reference_json": "{\"bool\":false}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_6",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAE=",
-      "spec_reference_json": "{\"bool\":true}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_7",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAA=",
-      "spec_reference_json": "{\"bool\":false}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_8",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAE=",
-      "spec_reference_json": "{\"bool\":true}",
-      "spec_anchor": null,
-      "notes": null
-    },
-    {
-      "id": "scval_bool_iter_9",
-      "type": "SCVal",
-      "base64": "AAAAAAAAAAA=",
-      "spec_reference_json": "{\"bool\":false}",
       "spec_anchor": null,
       "notes": null
     }

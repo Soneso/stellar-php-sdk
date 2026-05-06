@@ -19,10 +19,9 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
  * using assertEquals over json_decode (NOT byte-equality), per the plan
  * requirement that this gate is structural-only.
  *
- * The canonical-byte side of the comparison is owned by SpecAnchorTest and
- * by CrossSdkFixtureTest's subgate (b); this test's contract is that the
- * decoded structure round-trips with the spec output, not that the bytes
- * are identical.
+ * Byte-equality with the spec example is enforced by SpecAnchorTest and by
+ * CorpusSnapshotTest; this test's contract is that the decoded structure
+ * round-trips with the spec output, not that the bytes are identical.
  */
 class CanonicalExampleTest extends TestCase
 {

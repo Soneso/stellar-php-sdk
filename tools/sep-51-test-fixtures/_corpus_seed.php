@@ -1077,9 +1077,9 @@ foreach (range(0, 9) as $i) {
 foreach (range(0, 9) as $i) {
     add($fixtures, "scval_bytes_iter_$i", 'SCVal', XdrSCVal::forBytes(pack('N', $i * 1024)));
 }
-foreach (range(0, 9) as $i) {
-    add($fixtures, "scval_bool_iter_$i", 'SCVal', XdrSCVal::forBool($i % 2 === 0));
-}
+// scval_bool has only two distinct wire forms (true / false); both are
+// already covered by scval_bool_true and scval_bool_false above, so no
+// per-iteration fixtures are emitted here.
 
 // -----------------------------------------------------------------------
 // Output JSON

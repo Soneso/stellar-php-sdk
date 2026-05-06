@@ -65,7 +65,6 @@ class XdrTransactionV0Ext {
     }
 
     public static function fromJsonValue(mixed $value): static {
-        // @sep51-union XdrTransactionV0Ext shape=int_cased
         if (is_array($value) && array_key_exists('$schema', $value)) {
             unset($value['$schema']);
         }

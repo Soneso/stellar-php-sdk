@@ -14,8 +14,9 @@
 #     "<fieldName>" => "<overrideValue>",
 #   }
 #
-# Phase 2 note: These are skeletons. A full field-by-field audit will be
-# performed in Phase 2 to populate both maps completely.
+# The maps are populated lazily as new divergences between the XDR spec and
+# the existing SDK API are encountered; entries are added when they are
+# needed by a generated type.
 
 # ---------------------------------------------------------------------------
 # Field name overrides

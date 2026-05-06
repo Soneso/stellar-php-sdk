@@ -488,9 +488,9 @@ module StellarJsonOverrides
     },
 
     # XdrInt128Parts — int128 = hi (signed int64) * 2^64 + lo (unsigned
-    # uint64). The from-side keeps `hi` as a PHP signed int via intval (the
-    # helper returns it in signed int64 base-10 form already), and wraps
-    # `lo` from its unsigned uint64 form to PHP's signed-int representation
+    # uint64). The from-side casts `hi` directly to int (the helper already
+    # validates the limb as a signed int64 base-10 string) and wraps `lo`
+    # from its unsigned uint64 form to PHP's signed-int representation
     # using the same closure as XdrUInt128Parts.
     'XdrInt128Parts' => {
       to_value_signature: 'public function toJsonValue(): string',
@@ -507,8 +507,12 @@ module StellarJsonOverrides
                       );
                   }
                   $parts = XdrJsonHelper::stringToInt128Parts($value);
+                  // Direct (int) cast is safe: XdrJsonHelper::stringToInt128Parts
+                  // already validates the 'hi' limb as a digit-only signed int64
+                  // string, so the value fits in PHP int and contains no
+                  // characters that would silently coerce to 0.
                   return new static(
-                      intval($parts['hi']),
+                      (int) $parts['hi'],
                       XdrJsonHelper::wrapUnsignedToSignedInt($parts['lo'])
                   );
         PHP
@@ -572,8 +576,12 @@ module StellarJsonOverrides
                       );
                   }
                   $parts = XdrJsonHelper::stringToInt256Parts($value);
+                  // Direct (int) cast is safe: XdrJsonHelper::stringToInt256Parts
+                  // already validates the 'hiHi' limb as a digit-only signed
+                  // int64 string, so the value fits in PHP int and contains no
+                  // characters that would silently coerce to 0.
                   return new static(
-                      intval($parts['hiHi']),
+                      (int) $parts['hiHi'],
                       XdrJsonHelper::wrapUnsignedToSignedInt($parts['hiLo']),
                       XdrJsonHelper::wrapUnsignedToSignedInt($parts['loHi']),
                       XdrJsonHelper::wrapUnsignedToSignedInt($parts['loLo'])

@@ -6,8 +6,9 @@
 # "Xdr", producing names like "XdrTransaction". Only include entries here where
 # that default produces the wrong name for the existing PHP SDK class.
 #
-# Phase 2 note: This skeleton covers the obvious mismatches. A full audit of
-# all 309 types will be performed in Phase 2 to catch any remaining gaps.
+# Entries are added when a new XDR type's default-generated name does not
+# match the existing PHP SDK class name; the registry only carries the
+# divergences, never the names that already follow the default rule.
 
 NAME_OVERRIDES = {
   # AlphaNum4/12 -> XdrAssetAlphaNum4/12 (prefixed with "Asset")

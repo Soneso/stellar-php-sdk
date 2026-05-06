@@ -80,7 +80,6 @@ class XdrPersistedSCPState {
     }
 
     public static function fromJsonValue(mixed $value): static {
-        // @sep51-union XdrPersistedSCPState shape=int_cased
         if (is_array($value) && array_key_exists('$schema', $value)) {
             unset($value['$schema']);
         }

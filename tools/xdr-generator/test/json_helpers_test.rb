@@ -373,41 +373,4 @@ class JsonHelpersTest < Minitest::Test
   end
 
 
-  # ------------------------------------------------------------------
-  # int_cased_arm_name — int-cased union arm naming (ExtensionPoint)
-  # ------------------------------------------------------------------
-
-  def test_int_cased_arm_extension_point_case_zero
-    assert_equal 'v0', XdrJsonHelpers.int_cased_arm_name('v', 0)
-  end
-
-  def test_int_cased_arm_extension_point_case_one
-    assert_equal 'v1', XdrJsonHelpers.int_cased_arm_name('v', 1)
-  end
-
-  def test_int_cased_arm_uses_lowercase_discriminant_name
-    assert_equal 'v2', XdrJsonHelpers.int_cased_arm_name('V', 2)
-  end
-
-  def test_int_cased_arm_two_digit_index
-    assert_equal 'v42', XdrJsonHelpers.int_cased_arm_name('v', 42)
-  end
-
-  def test_int_cased_arm_rejects_empty_discriminant_name
-    assert_raises(ArgumentError) do
-      XdrJsonHelpers.int_cased_arm_name('', 0)
-    end
-  end
-
-  def test_int_cased_arm_rejects_nil_discriminant_name
-    assert_raises(ArgumentError) do
-      XdrJsonHelpers.int_cased_arm_name(nil, 0)
-    end
-  end
-
-  def test_int_cased_arm_rejects_non_integer
-    assert_raises(ArgumentError) do
-      XdrJsonHelpers.int_cased_arm_name('v', '0')
-    end
-  end
 end
