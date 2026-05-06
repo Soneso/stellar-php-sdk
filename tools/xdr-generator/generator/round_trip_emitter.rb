@@ -47,20 +47,24 @@ class RoundTripEmitter
     REPO_ROOT,
     'Soneso', 'StellarSDKTests', 'Unit', 'Xdr', 'Sep51',
   )
-  # Round-trip tests are split across four files by emit-pass category so no
+  # Round-trip tests are split across five files by emit-pass category so no
   # single PHP source file grows unbounded as the XDR schema expands. PHPUnit
-  # discovers each as a separate test class.
+  # discovers each as a separate test class. The :rejection bucket holds
+  # per-non-void-arm bare-string-rejection tests that round-trip tests cannot
+  # reach by construction.
   OUTPUT_FILES = {
     enum: File.join(TEST_DIR, 'EnumRoundTripTest.php'),
     corpus: File.join(TEST_DIR, 'CorpusRoundTripTest.php'),
     union: File.join(TEST_DIR, 'UnionArmRoundTripTest.php'),
     struct: File.join(TEST_DIR, 'StructRoundTripTest.php'),
+    rejection: File.join(TEST_DIR, 'UnionArmRejectionTest.php'),
   }.freeze
   CLASS_NAMES = {
     enum: 'EnumRoundTripTest',
     corpus: 'CorpusRoundTripTest',
     union: 'UnionArmRoundTripTest',
     struct: 'StructRoundTripTest',
+    rejection: 'UnionArmRejectionTest',
   }.freeze
   TEST_NAMESPACE = 'Soneso\\StellarSDKTests\\Unit\\Xdr\\Sep51'
   XDR_NAMESPACE = 'Soneso\\StellarSDK\\Xdr'
@@ -241,6 +245,15 @@ class RoundTripEmitter
               // appear in corpus are filled in by the union arm-fill pass.
               $bareName = str_starts_with($stem, 'Xdr') ? substr($stem, 3) : $stem;
               $entry['corpus_covered_arms'] = corpus_covered_arms($rc, $fqcn, $corpusByType[$bareName] ?? []);
+              // Bare-string JSON keys whose fromJsonValue match arm throws
+              // an InvalidArgumentException because the arm is non-void
+              // (i.e. requires a single-key object payload, not a bare
+              // string). Parsed directly from the generated source so the
+              // emitted rejection tests assert exactly the messages that
+              // ship in the SDK. Walks the wrapper-base inheritance chain
+              // because fromJsonValue typically lives on the generated
+              // base class while the wrapper inherits unchanged.
+              $entry['non_void_arm_strings'] = collect_non_void_arm_strings($rc);
           } else { // struct
               $entry['optionals'] = collect_struct_optionals($rc);
               $entry['fixture_base64'] = try_build_fixture($fqcn);
@@ -1068,6 +1081,53 @@ class RoundTripEmitter
           return $names;
       }
 
+      // Parse the fromJsonValue source of a union to extract the bare-string
+      // JSON keys that map to a non-void-arm rejection. The generated source
+      // has the precise shape:
+      //   'arm_key' => throw new \\InvalidArgumentException(
+      //       "Arm 'arm_key' on XdrType is non-void; ..."
+      //   ),
+      // Returns a sorted, deduplicated list. Walks the wrapper -> base
+      // inheritance chain so unions where fromJsonValue lives on a generated
+      // base class (e.g. XdrSCValBase under wrapper XdrSCVal) are still
+      // discovered. Non-void arms with structurally identical throw bodies
+      // collapse to the same arm string.
+      function collect_non_void_arm_strings(\\ReflectionClass $rc): array {
+          $sources = [];
+          $rcWalk = $rc;
+          while ($rcWalk !== false) {
+              $fn = $rcWalk->getFileName();
+              if ($fn !== false && $fn !== null) {
+                  $sources[$fn] = $fn;
+              }
+              $rcWalk = $rcWalk->getParentClass();
+          }
+          $found = [];
+          // Anchor on the canonical "is non-void;" phrase emitted only by
+          // the per-arm rejection throw inside fromJsonValue — uniquely
+          // identifies the construct without needing to delimit the
+          // surrounding method body, which contains nested closures whose
+          // braces defeat naive regex extraction. Match the arm-key
+          // literal followed by `=> throw new \\InvalidArgumentException(`
+          // and the canonical phrase, scanning the entire source file.
+          foreach ($sources as $fileName) {
+              $src = @file_get_contents($fileName);
+              if ($src === false) continue;
+              if (preg_match_all(
+                  '/[\\\'"]([A-Za-z0-9_]+)[\\\'"]\\s*=>\\s*throw\\s+new\\s+\\\\\\\\?InvalidArgumentException\\s*\\(\\s*"[^"]*is non-void;/s',
+                  $src,
+                  $matches
+              )) {
+                  foreach ($matches[1] as $arm) {
+                      $found[$arm] = true;
+                  }
+              }
+          }
+          $names = array_keys($found);
+          sort($names, SORT_STRING);
+          return $names;
+      }
+
       // For a struct $rc, identify non-nullable public fields whose
       // declared type is itself a union-shaped XDR class. For each such
       // field, enumerate the union's arms and build a per-arm full
@@ -1234,7 +1294,7 @@ class RoundTripEmitter
   # ---------------------------------------------------------------------
 
   def emit(metadata:, corpus:)
-    buckets = { enum: [], corpus: [], union: [], struct: [] }
+    buckets = { enum: [], corpus: [], union: [], struct: [], rejection: [] }
     used_methods = {}
 
     # Pass 1 — enums.
@@ -1292,6 +1352,20 @@ class RoundTripEmitter
         emit_struct_union_field_methods(t, buckets[:struct], used_methods)
       end
 
+    # Pass 7 — per-non-void-arm bare-string rejection tests. Closes a
+    # coverage gap that round-trip tests cannot reach by construction:
+    # each non-void arm of a discriminated union has a per-arm
+    # `throw new \InvalidArgumentException("Arm 'X' on Y is non-void; ...")`
+    # branch in fromJsonValue that only fires when a user passes a bare
+    # string for an arm that requires a single-key object payload. The
+    # round-trip tests always pass valid input, so these throws stay
+    # uncovered until exercised here.
+    metadata['types']
+      .select { |t| t['kind'] == 'union' }
+      .each do |t|
+        emit_union_arm_rejection_methods(t, buckets[:rejection], used_methods)
+      end
+
     counts = {}
     buckets.each do |kind, blocks|
       counts[kind] = blocks.size
@@ -1300,7 +1374,8 @@ class RoundTripEmitter
     total = counts.values.sum
     warn(
       "Round-trip tests emitted: enum=#{counts[:enum]} corpus=#{counts[:corpus]} " \
-      "union=#{counts[:union]} struct=#{counts[:struct]} (total=#{total})."
+      "union=#{counts[:union]} struct=#{counts[:struct]} " \
+      "rejection=#{counts[:rejection]} (total=#{total})."
     )
   end
 
@@ -1546,6 +1621,11 @@ class RoundTripEmitter
                 $decoded = \\#{fqcn}::fromJsonValue($jsonValue);
                 $this->assertSame($jsonValue, $decoded->toJsonValue(),
                     '#{type_name} default-fixture toJsonValue idempotence broken');
+                // Exercise the JSON-string boundary too.
+                $json = $instance->toJson();
+                $reparsed = \\#{fqcn}::fromJson($json);
+                $this->assertSame($json, $reparsed->toJson(),
+                    '#{type_name} default-fixture toJson idempotence broken');
 
                 // Reachability of the #{arm_const} arm constant.
                 $reflect = new \\ReflectionClass(\\#{fqcn}::class);
@@ -1567,6 +1647,67 @@ class RoundTripEmitter
             }
       PHP
     end
+  end
+
+  # ---------------------------------------------------------------------
+  # Union arm bare-string rejection emission (Pass 7)
+  # ---------------------------------------------------------------------
+
+  # For each non-void arm string declared on this union (parsed from the
+  # generated fromJsonValue source), emit one test that asserts:
+  # - Calling Xdr<Union>::fromJson('"<arm_string>"') throws
+  #   \InvalidArgumentException.
+  # - The exception message contains both the arm string and the phrase
+  #   "non-void", proving that the per-arm rejection branch fired (not the
+  #   catch-all "Unknown ... void arm string" default arm).
+  #
+  # Determinism: arms are pre-sorted by the introspection helper, so
+  # iteration order is stable. The reserve() helper guarantees unique PHP
+  # method names even if two unions share a non-void arm string by
+  # coincidence (the type name in the method name keeps them distinct).
+  def emit_union_arm_rejection_methods(t, blocks, used)
+    name = t['name']
+    arm_strings = t['non_void_arm_strings'] || []
+    return if arm_strings.empty?
+    arm_strings.each do |arm_string|
+      base = "testRejectsBareStringFor_#{name}_#{php_method_safe(arm_string)}"
+      method_name = reserve(used, base)
+      blocks << build_union_arm_rejection_method(method_name, name, arm_string)
+    end
+  end
+
+  def build_union_arm_rejection_method(method_name, type_name, arm_string)
+    fqcn = "#{XDR_NAMESPACE}\\#{type_name}"
+    # Build the `'"arm"'` literal for fromJson. Using json_encode-equivalent
+    # escaping is unnecessary because arm strings are constrained to
+    # [A-Za-z0-9_]+ by the source-side parser; a simple double-quoted
+    # JSON string suffices.
+    json_input = "\"#{arm_string}\""
+    json_input_php = php_string_literal(json_input)
+    arm_php = php_string_literal(arm_string)
+    fail_message = php_string_literal(
+      "Expected InvalidArgumentException for bare string \"#{arm_string}\" on #{type_name}"
+    )
+    <<~PHP.rstrip
+          public function #{method_name}(): void
+          {
+              // Per-non-void-arm rejection: round-trip tests pass valid
+              // payloads only, so the per-arm rejection throw inside
+              // fromJsonValue stays uncovered. This test exercises that
+              // branch directly by passing a bare string for an arm that
+              // requires a single-key object payload, then asserts the
+              // resulting message contains both the arm token and the
+              // canonical "non-void" phrase to prove the per-arm branch
+              // fired (not the catch-all default arm).
+              try {
+                  \\#{fqcn}::fromJson(#{json_input_php});
+                  $this->fail(#{fail_message});
+              } catch (\\InvalidArgumentException $e) {
+                  $this->assertStringContainsString(#{arm_php}, $e->getMessage());
+                  $this->assertStringContainsString('non-void', $e->getMessage());
+              }
+          }
+    PHP
   end
 
   # ---------------------------------------------------------------------
@@ -1835,6 +1976,11 @@ class RoundTripEmitter
                 $decoded = \\#{fqcn}::fromJsonValue($jsonValue);
                 $this->assertSame($jsonValue, $decoded->toJsonValue(),
                     '#{type_name} optset round-trip idempotence broken');
+                // Exercise the JSON-string boundary too.
+                $json = $instance->toJson();
+                $reparsed = \\#{fqcn}::fromJson($json);
+                $this->assertSame($json, $reparsed->toJson(),
+                    '#{type_name} optset toJson idempotence broken');
             }
       PHP
     end
@@ -1858,7 +2004,8 @@ class RoundTripEmitter
       //
       // The emitter walks every Soneso\\StellarSDK\\Xdr class with toJson
       // and emits per-arm / per-permutation round-trip tests, partitioned
-      // across four files by emit-pass category.
+      // across five files by emit-pass category (one of which holds
+      // bare-string rejection tests for non-void union arms).
 
       namespace #{TEST_NAMESPACE};
 

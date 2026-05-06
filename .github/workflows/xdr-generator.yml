@@ -63,7 +63,8 @@ jobs:
               Soneso/StellarSDKTests/Unit/Xdr/Sep51/EnumRoundTripTest.php \
               Soneso/StellarSDKTests/Unit/Xdr/Sep51/CorpusRoundTripTest.php \
               Soneso/StellarSDKTests/Unit/Xdr/Sep51/UnionArmRoundTripTest.php \
-              Soneso/StellarSDKTests/Unit/Xdr/Sep51/StructRoundTripTest.php; then
+              Soneso/StellarSDKTests/Unit/Xdr/Sep51/StructRoundTripTest.php \
+              Soneso/StellarSDKTests/Unit/Xdr/Sep51/UnionArmRejectionTest.php; then
             echo "::error::Generated XDR files are out of date. Run 'make xdr-update' and commit the changes."
             exit 1
           fi

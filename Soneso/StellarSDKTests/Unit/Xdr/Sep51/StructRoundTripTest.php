@@ -9,7 +9,8 @@
 //
 // The emitter walks every Soneso\StellarSDK\Xdr class with toJson
 // and emits per-arm / per-permutation round-trip tests, partitioned
-// across four files by emit-pass category.
+// across five files by emit-pass category (one of which holds
+// bare-string rejection tests for non-void union arms).
 
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
@@ -4741,6 +4742,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrAccountEntry::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrAccountEntry optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountEntry::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrAccountEntry optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrAccountEntry_optset_1(): void
@@ -4753,6 +4759,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrAccountEntry::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrAccountEntry optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountEntry::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrAccountEntry optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrAccountEntryExt_optset_0(): void
@@ -4764,6 +4775,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrAccountEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrAccountEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrAccountEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrAccountEntryExt_optset_1(): void
@@ -4776,6 +4792,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrAccountEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrAccountEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrAccountEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrAccountEntryV1Ext_optset_0(): void
@@ -4787,6 +4808,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrAccountEntryV1Ext::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrAccountEntryV1Ext optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountEntryV1Ext::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrAccountEntryV1Ext optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrAccountEntryV1Ext_optset_1(): void
@@ -4799,6 +4825,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrAccountEntryV1Ext::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrAccountEntryV1Ext optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountEntryV1Ext::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrAccountEntryV1Ext optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrAccountEntryV2Ext_optset_0(): void
@@ -4810,6 +4841,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrAccountEntryV2Ext::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrAccountEntryV2Ext optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountEntryV2Ext::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrAccountEntryV2Ext optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrAccountEntryV2Ext_optset_1(): void
@@ -4822,6 +4858,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrAccountEntryV2Ext::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrAccountEntryV2Ext optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountEntryV2Ext::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrAccountEntryV2Ext optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrAuthenticatedMessage_optset_0(): void
@@ -4858,6 +4899,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrClaimableBalanceEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrClaimableBalanceEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrClaimableBalanceEntryExt_optset_1(): void
@@ -4870,6 +4916,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrClaimableBalanceEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrClaimableBalanceEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrContractCodeEntryExt_optset_0(): void
@@ -4881,6 +4932,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrContractCodeEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrContractCodeEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrContractCodeEntryExt_optset_1(): void
@@ -4893,6 +4949,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrContractCodeEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrContractCodeEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrContractEventBody_optset_0(): void
@@ -4954,6 +5015,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrLedgerCloseMetaExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrLedgerCloseMetaExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrLedgerCloseMetaExt_optset_1(): void
@@ -4966,6 +5032,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrLedgerCloseMetaExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrLedgerCloseMetaExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrLedgerEntryExt_optset_0(): void
@@ -4977,6 +5048,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrLedgerEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrLedgerEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrLedgerEntryExt_optset_1(): void
@@ -4989,6 +5065,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrLedgerEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrLedgerEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrLedgerEntryV1_optset_0(): void
@@ -5000,6 +5081,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryV1::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrLedgerEntryV1 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryV1::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrLedgerEntryV1 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrLedgerEntryV1_optset_1(): void
@@ -5012,6 +5098,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryV1::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrLedgerEntryV1 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryV1::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrLedgerEntryV1 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrLedgerHeaderExt_optset_0(): void
@@ -5023,6 +5114,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrLedgerHeaderExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrLedgerHeaderExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrLedgerHeaderExt_optset_1(): void
@@ -5035,6 +5131,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrLedgerHeaderExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrLedgerHeaderExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrManageDataOperation_optset_0(): void
@@ -5046,6 +5147,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrManageDataOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrManageDataOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrManageDataOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrManageDataOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrManageDataOperation_optset_1(): void
@@ -5058,6 +5164,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrManageDataOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrManageDataOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrManageDataOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrManageDataOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrParallelTxsComponent_optset_0(): void
@@ -5069,6 +5180,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrParallelTxsComponent::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrParallelTxsComponent optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrParallelTxsComponent::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrParallelTxsComponent optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrParallelTxsComponent_optset_1(): void
@@ -5081,6 +5197,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrParallelTxsComponent::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrParallelTxsComponent optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrParallelTxsComponent::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrParallelTxsComponent optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrPersistedSCPState_optset_00(): void
@@ -5143,6 +5264,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrPreconditionsV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrPreconditionsV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrPreconditionsV2_optset_001(): void
@@ -5155,6 +5281,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrPreconditionsV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrPreconditionsV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrPreconditionsV2_optset_010(): void
@@ -5167,6 +5298,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrPreconditionsV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrPreconditionsV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrPreconditionsV2_optset_011(): void
@@ -5179,6 +5315,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrPreconditionsV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrPreconditionsV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrPreconditionsV2_optset_100(): void
@@ -5191,6 +5332,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrPreconditionsV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrPreconditionsV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrPreconditionsV2_optset_101(): void
@@ -5203,6 +5349,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrPreconditionsV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrPreconditionsV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrPreconditionsV2_optset_110(): void
@@ -5215,6 +5366,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrPreconditionsV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrPreconditionsV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrPreconditionsV2_optset_111(): void
@@ -5227,6 +5383,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrPreconditionsV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrPreconditionsV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSCContractInstance_optset_0(): void
@@ -5238,6 +5399,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSCContractInstance::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSCContractInstance optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSCContractInstance::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSCContractInstance optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSCContractInstance_optset_1(): void
@@ -5250,6 +5416,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSCContractInstance::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSCContractInstance optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSCContractInstance::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSCContractInstance optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSCPHistoryEntry_optset_0(): void
@@ -5286,6 +5457,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSCPStatementPrepare optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSCPStatementPrepare optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSCPStatementPrepare_optset_01(): void
@@ -5298,6 +5474,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSCPStatementPrepare optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSCPStatementPrepare optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSCPStatementPrepare_optset_10(): void
@@ -5310,6 +5491,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSCPStatementPrepare optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSCPStatementPrepare optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSCPStatementPrepare_optset_11(): void
@@ -5322,6 +5508,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSCPStatementPrepare optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSCPStatementPrepare optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSetOptionsOperation_all_set(): void
@@ -5334,6 +5525,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSetOptionsOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSetOptionsOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSetOptionsOperation_all_null(): void
@@ -5345,6 +5541,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSetOptionsOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSetOptionsOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSetOptionsOperation_first_only(): void
@@ -5357,6 +5558,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSetOptionsOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSetOptionsOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSetOptionsOperation_last_only(): void
@@ -5369,6 +5575,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSetOptionsOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSetOptionsOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSetOptionsOperation_alt_odd(): void
@@ -5381,6 +5592,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSetOptionsOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSetOptionsOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSetOptionsOperation_alt_even(): void
@@ -5393,6 +5609,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSetOptionsOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSetOptionsOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSetOptionsOperation_middle_half(): void
@@ -5405,6 +5626,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSetOptionsOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSetOptionsOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSetOptionsOperation_edge_pair(): void
@@ -5417,6 +5643,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSetOptionsOperation optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSetOptionsOperation optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSorobanTransactionDataExt_optset_0(): void
@@ -5428,6 +5659,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSorobanTransactionDataExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSorobanTransactionDataExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSorobanTransactionDataExt_optset_1(): void
@@ -5440,6 +5676,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSorobanTransactionDataExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSorobanTransactionDataExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSorobanTransactionMetaExt_optset_0(): void
@@ -5451,6 +5692,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSorobanTransactionMetaExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSorobanTransactionMetaExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSorobanTransactionMetaExt_optset_1(): void
@@ -5463,6 +5709,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSorobanTransactionMetaExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSorobanTransactionMetaExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSorobanTransactionMetaV2_optset_0(): void
@@ -5474,6 +5725,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSorobanTransactionMetaV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSorobanTransactionMetaV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrSorobanTransactionMetaV2_optset_1(): void
@@ -5486,6 +5742,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrSorobanTransactionMetaV2 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSorobanTransactionMetaV2 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrStoredTransactionSet_optset_00(): void
@@ -5548,6 +5809,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionExt_optset_1(): void
@@ -5560,6 +5826,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionHistoryEntryExt_optset_0(): void
@@ -5571,6 +5842,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionHistoryEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionHistoryEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionHistoryEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionHistoryEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionHistoryEntryExt_optset_1(): void
@@ -5583,6 +5859,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionHistoryEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionHistoryEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionHistoryEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionHistoryEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionMeta_all_set(): void
@@ -5801,6 +6082,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionMetaV3::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionMetaV3 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionMetaV3::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionMetaV3 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionMetaV3_optset_1(): void
@@ -5813,6 +6099,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionMetaV3::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionMetaV3 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionMetaV3::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionMetaV3 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionMetaV4_optset_0(): void
@@ -5824,6 +6115,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionMetaV4::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionMetaV4 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionMetaV4::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionMetaV4 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionMetaV4_optset_1(): void
@@ -5836,6 +6132,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionMetaV4::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionMetaV4 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionMetaV4::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionMetaV4 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionPhase_optset_00(): void
@@ -5898,6 +6199,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionV0 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionV0 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTransactionV0_optset_1(): void
@@ -5910,6 +6216,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTransactionV0 optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTransactionV0 optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTrustLineEntryExt_optset_0(): void
@@ -5921,6 +6232,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTrustLineEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTrustLineEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTrustLineEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTrustLineEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTrustLineEntryExt_optset_1(): void
@@ -5933,6 +6249,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTrustLineEntryExt::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTrustLineEntryExt optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTrustLineEntryExt::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTrustLineEntryExt optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTrustLineEntryV1Ext_optset_0(): void
@@ -5944,6 +6265,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTrustLineEntryV1Ext::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTrustLineEntryV1Ext optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTrustLineEntryV1Ext::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTrustLineEntryV1Ext optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTrustLineEntryV1Ext_optset_1(): void
@@ -5956,6 +6282,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTrustLineEntryV1Ext::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTrustLineEntryV1Ext optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTrustLineEntryV1Ext::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTrustLineEntryV1Ext optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTxSetComponentTxsMaybeDiscountedFee_optset_0(): void
@@ -5967,6 +6298,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTxSetComponentTxsMaybeDiscountedFee::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTxSetComponentTxsMaybeDiscountedFee optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTxSetComponentTxsMaybeDiscountedFee::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTxSetComponentTxsMaybeDiscountedFee optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrTxSetComponentTxsMaybeDiscountedFee_optset_1(): void
@@ -5979,6 +6315,11 @@ public function testRoundTrip_XdrValue(): void
         $decoded = \Soneso\StellarSDK\Xdr\XdrTxSetComponentTxsMaybeDiscountedFee::fromJsonValue($jsonValue);
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTxSetComponentTxsMaybeDiscountedFee optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrTxSetComponentTxsMaybeDiscountedFee::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrTxSetComponentTxsMaybeDiscountedFee optset toJson idempotence broken');
     }
 
 public function testRoundTrip_XdrAuthenticatedMessageV0_messageArm_AUTH(): void

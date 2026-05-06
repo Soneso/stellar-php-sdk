@@ -9,7 +9,8 @@
 //
 // The emitter walks every Soneso\StellarSDK\Xdr class with toJson
 // and emits per-arm / per-permutation round-trip tests, partitioned
-// across four files by emit-pass category.
+// across five files by emit-pass category (one of which holds
+// bare-string rejection tests for non-void union arms).
 
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
@@ -31,6 +32,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -65,6 +71,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -99,6 +110,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -133,6 +149,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -167,6 +188,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_EVICTION
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_EVICTION_ITERATOR arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -201,6 +227,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_FREEZE_B
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_FREEZE_BYPASS_TXS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -235,6 +266,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_FREEZE_B
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -269,6 +305,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_FROZEN_L
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_FROZEN_LEDGER_KEYS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -303,6 +344,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_FROZEN_L
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -337,6 +383,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_SCP_TIMI
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_SCP_TIMING arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -371,6 +422,11 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_STATE_AR
     $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrConfigSettingEntry default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING_STATE_ARCHIVAL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
@@ -405,6 +461,11 @@ public function testRoundTrip_XdrSignerKeyUnion_SIGNER_KEY_TYPE_ED25519(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSignerKey default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSignerKey default-fixture toJson idempotence broken');
 
     // Reachability of the SIGNER_KEY_TYPE_ED25519 arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSignerKey::class);
@@ -439,6 +500,11 @@ public function testRoundTrip_XdrAccountMergeResultUnion_DEST_FULL(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAccountMergeResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAccountMergeResult default-fixture toJson idempotence broken');
 
     // Reachability of the DEST_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
@@ -473,6 +539,11 @@ public function testRoundTrip_XdrAccountMergeResultUnion_HAS_SUB_ENTRIES(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAccountMergeResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAccountMergeResult default-fixture toJson idempotence broken');
 
     // Reachability of the HAS_SUB_ENTRIES arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
@@ -507,6 +578,11 @@ public function testRoundTrip_XdrAccountMergeResultUnion_IMMUTABLE_SET(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAccountMergeResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAccountMergeResult default-fixture toJson idempotence broken');
 
     // Reachability of the IMMUTABLE_SET arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
@@ -541,6 +617,11 @@ public function testRoundTrip_XdrAccountMergeResultUnion_IS_SPONSOR(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAccountMergeResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAccountMergeResult default-fixture toJson idempotence broken');
 
     // Reachability of the IS_SPONSOR arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
@@ -575,6 +656,11 @@ public function testRoundTrip_XdrAccountMergeResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAccountMergeResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAccountMergeResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
@@ -609,6 +695,11 @@ public function testRoundTrip_XdrAccountMergeResultUnion_NO_ACCOUNT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAccountMergeResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAccountMergeResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_ACCOUNT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
@@ -643,6 +734,11 @@ public function testRoundTrip_XdrAccountMergeResultUnion_SEQNUM_TOO_FAR(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAccountMergeResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAccountMergeResult default-fixture toJson idempotence broken');
 
     // Reachability of the SEQNUM_TOO_FAR arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
@@ -677,6 +773,11 @@ public function testRoundTrip_XdrAccountMergeResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAccountMergeResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAccountMergeResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAccountMergeResult::class);
@@ -732,6 +833,11 @@ public function testRoundTrip_XdrAllowTrustResultUnion_CANT_REVOKE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAllowTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAllowTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the CANT_REVOKE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
@@ -766,6 +872,11 @@ public function testRoundTrip_XdrAllowTrustResultUnion_LOW_RESERVE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAllowTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAllowTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
@@ -800,6 +911,11 @@ public function testRoundTrip_XdrAllowTrustResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAllowTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAllowTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
@@ -834,6 +950,11 @@ public function testRoundTrip_XdrAllowTrustResultUnion_NO_TRUST_LINE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAllowTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAllowTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST_LINE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
@@ -868,6 +989,11 @@ public function testRoundTrip_XdrAllowTrustResultUnion_SELF_NOT_ALLOWED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAllowTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAllowTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the SELF_NOT_ALLOWED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
@@ -902,6 +1028,11 @@ public function testRoundTrip_XdrAllowTrustResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAllowTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAllowTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
@@ -936,6 +1067,11 @@ public function testRoundTrip_XdrAllowTrustResultUnion_TRUST_NOT_REQUIRED(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrAllowTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrAllowTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the TRUST_NOT_REQUIRED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAllowTrustResult::class);
@@ -970,6 +1106,11 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_ALREAD
     $decoded = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrBeginSponsoringFutureReservesResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrBeginSponsoringFutureReservesResult default-fixture toJson idempotence broken');
 
     // Reachability of the ALREADY_SPONSORED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::class);
@@ -1004,6 +1145,11 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_MALFOR
     $decoded = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrBeginSponsoringFutureReservesResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrBeginSponsoringFutureReservesResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::class);
@@ -1038,6 +1184,11 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_RECURS
     $decoded = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrBeginSponsoringFutureReservesResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrBeginSponsoringFutureReservesResult default-fixture toJson idempotence broken');
 
     // Reachability of the RECURSIVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::class);
@@ -1072,6 +1223,11 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_SUCCES
     $decoded = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrBeginSponsoringFutureReservesResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrBeginSponsoringFutureReservesResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::class);
@@ -1127,6 +1283,11 @@ public function testRoundTrip_XdrBumpSequenceResultUnion_BAD_SEQ(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrBumpSequenceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrBumpSequenceResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_SEQ arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::class);
@@ -1161,6 +1322,11 @@ public function testRoundTrip_XdrBumpSequenceResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrBumpSequenceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrBumpSequenceResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::class);
@@ -1216,6 +1382,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_CANNOT_DELETE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the CANNOT_DELETE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1250,6 +1421,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_INVALID_LIMIT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVALID_LIMIT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1284,6 +1460,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_LOW_RESERVE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1318,6 +1499,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1352,6 +1538,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_NOT_AUTH_MAINTAIN_LIABIL
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_AUTH_MAINTAIN_LIABILITIES arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1386,6 +1577,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_NO_ISSUER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_ISSUER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1420,6 +1616,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_SELF_NOT_ALLOWED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the SELF_NOT_ALLOWED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1454,6 +1655,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1488,6 +1694,11 @@ public function testRoundTrip_XdrChangeTrustResultUnion_TRUST_LINE_MISSING(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrChangeTrustResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrChangeTrustResult default-fixture toJson idempotence broken');
 
     // Reachability of the TRUST_LINE_MISSING arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrChangeTrustResult::class);
@@ -1522,6 +1733,11 @@ public function testRoundTrip_XdrClaimAtomUnion_LIQUIDITY_POOL(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimAtom default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimAtom default-fixture toJson idempotence broken');
 
     // Reachability of the LIQUIDITY_POOL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimAtom::class);
@@ -1556,6 +1772,11 @@ public function testRoundTrip_XdrClaimAtomUnion_ORDER_BOOK(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimAtom default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimAtom default-fixture toJson idempotence broken');
 
     // Reachability of the ORDER_BOOK arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimAtom::class);
@@ -1590,6 +1811,11 @@ public function testRoundTrip_XdrClaimAtomUnion_V0(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimAtom default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimAtom default-fixture toJson idempotence broken');
 
     // Reachability of the V0 arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimAtom::class);
@@ -1624,6 +1850,11 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_CANNOT_CLAIM()
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the CANNOT_CLAIM arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
@@ -1658,6 +1889,11 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_DOES_NOT_EXIST
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the DOES_NOT_EXIST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
@@ -1692,6 +1928,11 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_LINE_FULL(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the LINE_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
@@ -1726,6 +1967,11 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_NOT_AUTHORIZED
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
@@ -1760,6 +2006,11 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_NO_TRUST(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
@@ -1794,6 +2045,11 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_SUCCESS(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
@@ -1828,6 +2084,11 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_TRUSTLINE_FROZ
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the TRUSTLINE_FROZEN arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::class);
@@ -1862,6 +2123,11 @@ public function testRoundTrip_XdrClaimPredicateUnion_AND(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimPredicate default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimPredicate default-fixture toJson idempotence broken');
 
     // Reachability of the AND arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
@@ -1896,6 +2162,11 @@ public function testRoundTrip_XdrClaimPredicateUnion_BEFORE_ABSOLUTE_TIME(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimPredicate default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimPredicate default-fixture toJson idempotence broken');
 
     // Reachability of the BEFORE_ABSOLUTE_TIME arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
@@ -1930,6 +2201,11 @@ public function testRoundTrip_XdrClaimPredicateUnion_BEFORE_RELATIVE_TIME(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimPredicate default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimPredicate default-fixture toJson idempotence broken');
 
     // Reachability of the BEFORE_RELATIVE_TIME arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
@@ -1964,6 +2240,11 @@ public function testRoundTrip_XdrClaimPredicateUnion_NOT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimPredicate default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimPredicate default-fixture toJson idempotence broken');
 
     // Reachability of the NOT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
@@ -1998,6 +2279,11 @@ public function testRoundTrip_XdrClaimPredicateUnion_OR(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimPredicate default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimPredicate default-fixture toJson idempotence broken');
 
     // Reachability of the OR arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
@@ -2032,6 +2318,11 @@ public function testRoundTrip_XdrClaimPredicateUnion_UNCONDITIONAL(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimPredicate default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimPredicate default-fixture toJson idempotence broken');
 
     // Reachability of the UNCONDITIONAL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimPredicate::class);
@@ -2066,6 +2357,11 @@ public function testRoundTrip_XdrClaimantUnion_V0(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClaimant::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClaimant default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimant::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClaimant default-fixture toJson idempotence broken');
 
     // Reachability of the V0 arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimant::class);
@@ -2100,6 +2396,11 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_DOES_NOT_EX
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the DOES_NOT_EXIST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::class);
@@ -2134,6 +2435,11 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_NOT_CLAWBAC
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_CLAWBACK_ENABLED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::class);
@@ -2168,6 +2474,11 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_NOT_ISSUER(
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_ISSUER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::class);
@@ -2202,6 +2513,11 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_SUCCESS(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::class);
@@ -2236,6 +2552,11 @@ public function testRoundTrip_XdrClawbackResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
@@ -2270,6 +2591,11 @@ public function testRoundTrip_XdrClawbackResultUnion_NOT_ENABLED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_ENABLED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
@@ -2304,6 +2630,11 @@ public function testRoundTrip_XdrClawbackResultUnion_NO_TRUST(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
@@ -2338,6 +2669,11 @@ public function testRoundTrip_XdrClawbackResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
@@ -2372,6 +2708,11 @@ public function testRoundTrip_XdrClawbackResultUnion_UNDERFUNDED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
@@ -2492,6 +2833,11 @@ public function testRoundTrip_XdrCreateAccountResultUnion_ACCOUNT_ALREADY_EXIST(
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
 
     // Reachability of the ACCOUNT_ALREADY_EXIST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
@@ -2526,6 +2872,11 @@ public function testRoundTrip_XdrCreateAccountResultUnion_LOW_RESERVE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
@@ -2560,6 +2911,11 @@ public function testRoundTrip_XdrCreateAccountResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
@@ -2594,6 +2950,11 @@ public function testRoundTrip_XdrCreateAccountResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
@@ -2628,6 +2989,11 @@ public function testRoundTrip_XdrCreateAccountResultUnion_UNDERFUNDED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
@@ -2662,6 +3028,11 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_LOW_RESERVE()
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
@@ -2696,6 +3067,11 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_MALFORMED(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
@@ -2730,6 +3106,11 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_NOT_AUTHORIZE
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
@@ -2764,6 +3145,11 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_NO_TRUST(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
@@ -2798,6 +3184,11 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_SUCCESS(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
@@ -2832,6 +3223,11 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_UNDERFUNDED()
     $decoded = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrCreateClaimableBalanceResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateClaimableBalanceResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::class);
@@ -2887,6 +3283,11 @@ public function testRoundTrip_XdrEndSponsoringFutureReservesResultUnion_NOT_SPON
     $decoded = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrEndSponsoringFutureReservesResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrEndSponsoringFutureReservesResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_SPONSORED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::class);
@@ -2921,6 +3322,11 @@ public function testRoundTrip_XdrEndSponsoringFutureReservesResultUnion_SUCCESS(
     $decoded = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrEndSponsoringFutureReservesResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrEndSponsoringFutureReservesResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::class);
@@ -2976,6 +3382,11 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     $decoded = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrExtendFootprintTTLResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrExtendFootprintTTLResult default-fixture toJson idempotence broken');
 
     // Reachability of the EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::class);
@@ -3010,6 +3421,11 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     $decoded = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrExtendFootprintTTLResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrExtendFootprintTTLResult default-fixture toJson idempotence broken');
 
     // Reachability of the EXTEND_FOOTPRINT_TTL_MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::class);
@@ -3044,6 +3460,11 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     $decoded = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrExtendFootprintTTLResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrExtendFootprintTTLResult default-fixture toJson idempotence broken');
 
     // Reachability of the EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::class);
@@ -3078,6 +3499,11 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     $decoded = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrExtendFootprintTTLResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrExtendFootprintTTLResult default-fixture toJson idempotence broken');
 
     // Reachability of the EXTEND_FOOTPRINT_TTL_SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::class);
@@ -3112,6 +3538,11 @@ public function testRoundTrip_XdrFeeBumpTransactionInnerTxUnion_ENVELOPE_TYPE_TX
     $decoded = \Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrFeeBumpTransactionInnerTx default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrFeeBumpTransactionInnerTx default-fixture toJson idempotence broken');
 
     // Reachability of the ENVELOPE_TYPE_TX arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx::class);
@@ -3146,6 +3577,11 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_CONTRACT_ID()
     $decoded = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrHashIDPreimage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrHashIDPreimage default-fixture toJson idempotence broken');
 
     // Reachability of the ENVELOPE_TYPE_CONTRACT_ID arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
@@ -3180,6 +3616,11 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_OP_ID(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrHashIDPreimage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrHashIDPreimage default-fixture toJson idempotence broken');
 
     // Reachability of the ENVELOPE_TYPE_OP_ID arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
@@ -3214,6 +3655,11 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_POOL_REVOKE_O
     $decoded = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrHashIDPreimage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrHashIDPreimage default-fixture toJson idempotence broken');
 
     // Reachability of the ENVELOPE_TYPE_POOL_REVOKE_OP_ID arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
@@ -3248,6 +3694,11 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_SOROBAN_AUTHO
     $decoded = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrHashIDPreimage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrHashIDPreimage default-fixture toJson idempotence broken');
 
     // Reachability of the ENVELOPE_TYPE_SOROBAN_AUTHORIZATION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
@@ -3303,6 +3754,11 @@ public function testRoundTrip_XdrInflationResultUnion_NOT_TIME(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrInflationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInflationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInflationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInflationResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_TIME arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInflationResult::class);
@@ -3337,6 +3793,11 @@ public function testRoundTrip_XdrInflationResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrInflationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInflationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInflationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInflationResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInflationResult::class);
@@ -3371,6 +3832,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_AUTH(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_AUTH arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3405,6 +3871,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_AUTH_EXTR
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_AUTH_EXTRA arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3439,6 +3910,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_MIN_SEQ_A
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_MIN_SEQ_AGE_OR_GAP arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3473,6 +3949,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_SEQ(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_SEQ arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3507,6 +3988,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_SPONSORSH
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_SPONSORSHIP arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3541,6 +4027,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_FAILED(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the FAILED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3575,6 +4066,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_FROZEN_KEY_AC
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the FROZEN_KEY_ACCESSED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3609,6 +4105,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INSUFFICIENT_
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the INSUFFICIENT_BALANCE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3643,6 +4144,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INSUFFICIENT_
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the INSUFFICIENT_FEE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3677,6 +4183,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INTERNAL_ERRO
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the INTERNAL_ERROR arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3711,6 +4222,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_MALFORMED(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3745,6 +4261,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_MISSING_OPERA
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the MISSING_OPERATION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3779,6 +4300,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_NOT_SUPPORTED
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_SUPPORTED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3813,6 +4339,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_NO_ACCOUNT():
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_ACCOUNT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3847,6 +4378,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_SOROBAN_INVAL
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the SOROBAN_INVALID arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3881,6 +4417,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_SUCCESS(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3915,6 +4456,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_TOO_EARLY(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_EARLY arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3949,6 +4495,11 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_TOO_LATE(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInnerTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInnerTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_LATE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::class);
@@ -3983,6 +4534,11 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     $decoded = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInvokeHostFunctionResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInvokeHostFunctionResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
@@ -4017,6 +4573,11 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     $decoded = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInvokeHostFunctionResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInvokeHostFunctionResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
@@ -4051,6 +4612,11 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     $decoded = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInvokeHostFunctionResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInvokeHostFunctionResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVOKE_HOST_FUNCTION_MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
@@ -4085,6 +4651,11 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     $decoded = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInvokeHostFunctionResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInvokeHostFunctionResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
@@ -4119,6 +4690,11 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     $decoded = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInvokeHostFunctionResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInvokeHostFunctionResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVOKE_HOST_FUNCTION_SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
@@ -4153,6 +4729,11 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     $decoded = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrInvokeHostFunctionResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrInvokeHostFunctionResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVOKE_HOST_FUNCTION_TRAPPED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::class);
@@ -4187,6 +4768,11 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_CREATED(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryChange default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryChange default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_ENTRY_CREATED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
@@ -4221,6 +4807,11 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_REMOVED(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryChange default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryChange default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_ENTRY_REMOVED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
@@ -4255,6 +4846,11 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_RESTORED():
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryChange default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryChange default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_ENTRY_RESTORED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
@@ -4289,6 +4885,11 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_STATE(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryChange default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryChange default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_ENTRY_STATE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
@@ -4323,6 +4924,11 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_UPDATED(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryChange default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryChange default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_ENTRY_UPDATED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::class);
@@ -4357,6 +4963,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_ACCOUNT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the ACCOUNT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4391,6 +5002,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CLAIMABLE_BALANCE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the CLAIMABLE_BALANCE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4425,6 +5041,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONFIG_SETTING(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the CONFIG_SETTING arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4459,6 +5080,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONTRACT_CODE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the CONTRACT_CODE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4493,6 +5119,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONTRACT_DATA(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the CONTRACT_DATA arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4527,6 +5158,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_DATA(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the DATA arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4561,6 +5197,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_LIQUIDITY_POOL(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the LIQUIDITY_POOL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4595,6 +5236,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_OFFER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the OFFER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4629,6 +5275,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_TRUSTLINE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the TRUSTLINE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4663,6 +5314,11 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_TTL(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerEntryData default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerEntryData default-fixture toJson idempotence broken');
 
     // Reachability of the TTL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerEntryData::class);
@@ -4739,6 +5395,11 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_BASE_FEE(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerUpgrade default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerUpgrade default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_UPGRADE_BASE_FEE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
@@ -4773,6 +5434,11 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_BASE_RESERVE(
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerUpgrade default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerUpgrade default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_UPGRADE_BASE_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
@@ -4807,6 +5473,11 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_CONFIG(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerUpgrade default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerUpgrade default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_UPGRADE_CONFIG arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
@@ -4841,6 +5512,11 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_FLAGS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerUpgrade default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerUpgrade default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_UPGRADE_FLAGS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
@@ -4875,6 +5551,11 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_MAX_SOROBAN_T
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerUpgrade default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerUpgrade default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
@@ -4909,6 +5590,11 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_MAX_TX_SET_SI
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerUpgrade default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerUpgrade default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_UPGRADE_MAX_TX_SET_SIZE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
@@ -4943,6 +5629,11 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_VERSION(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLedgerUpgrade default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLedgerUpgrade default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_UPGRADE_VERSION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::class);
@@ -4977,6 +5668,11 @@ public function testRoundTrip_XdrLiquidityPoolBodyUnion_LIQUIDITY_POOL_CONSTANT_
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolBody default-fixture toJson idempotence broken');
 
     // Reachability of the LIQUIDITY_POOL_CONSTANT_PRODUCT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolBody::class);
@@ -5011,6 +5707,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_BAD_PRICE(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_PRICE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5045,6 +5746,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_LINE_FULL(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the LINE_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5079,6 +5785,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_MALFORMED(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5113,6 +5824,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_NOT_AUTHORIZED(
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5147,6 +5863,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_NO_TRUST(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5181,6 +5902,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_POOL_FULL(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the POOL_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5215,6 +5941,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5249,6 +5980,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_TRUSTLINE_FROZE
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the TRUSTLINE_FROZEN arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5283,6 +6019,11 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_UNDERFUNDED(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolDepositResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolDepositResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::class);
@@ -5317,6 +6058,11 @@ public function testRoundTrip_XdrLiquidityPoolParametersUnion_LIQUIDITY_POOL_CON
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolParameters default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolParameters default-fixture toJson idempotence broken');
 
     // Reachability of the LIQUIDITY_POOL_CONSTANT_PRODUCT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters::class);
@@ -5351,6 +6097,11 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_LINE_FULL(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolWithdrawResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolWithdrawResult default-fixture toJson idempotence broken');
 
     // Reachability of the LINE_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
@@ -5385,6 +6136,11 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_MALFORMED(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolWithdrawResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolWithdrawResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
@@ -5419,6 +6175,11 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_NO_TRUST(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolWithdrawResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolWithdrawResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
@@ -5453,6 +6214,11 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_SUCCESS(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolWithdrawResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolWithdrawResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
@@ -5487,6 +6253,11 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_TRUSTLINE_FROZ
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolWithdrawResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolWithdrawResult default-fixture toJson idempotence broken');
 
     // Reachability of the TRUSTLINE_FROZEN arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
@@ -5521,6 +6292,11 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_UNDERFUNDED():
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolWithdrawResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolWithdrawResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
@@ -5555,6 +6331,11 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_UNDER_MINIMUM(
     $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrLiquidityPoolWithdrawResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrLiquidityPoolWithdrawResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDER_MINIMUM arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::class);
@@ -5589,6 +6370,11 @@ public function testRoundTrip_XdrManageDataResultUnion_INVALID_NAME(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageDataResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageDataResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVALID_NAME arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
@@ -5623,6 +6409,11 @@ public function testRoundTrip_XdrManageDataResultUnion_LOW_RESERVE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageDataResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageDataResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
@@ -5657,6 +6448,11 @@ public function testRoundTrip_XdrManageDataResultUnion_NAME_NOT_FOUND(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageDataResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageDataResult default-fixture toJson idempotence broken');
 
     // Reachability of the NAME_NOT_FOUND arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
@@ -5691,6 +6487,11 @@ public function testRoundTrip_XdrManageDataResultUnion_NOT_SUPPORTED_YET(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageDataResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageDataResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_SUPPORTED_YET arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
@@ -5725,6 +6526,11 @@ public function testRoundTrip_XdrManageDataResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageDataResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageDataResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageDataResult::class);
@@ -5759,6 +6565,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NOT_AUTHORIZED(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the BUY_NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -5793,6 +6604,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NO_ISSUER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the BUY_NO_ISSUER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -5827,6 +6643,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NO_TRUST(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the BUY_NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -5861,6 +6682,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_CROSS_SELF(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the CROSS_SELF arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -5895,6 +6721,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_LINE_FULL(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the LINE_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -5929,6 +6760,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_LOW_RESERVE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -5963,6 +6799,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -5997,6 +6838,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_NOT_FOUND(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_FOUND arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -6031,6 +6877,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NOT_AUTHORIZED(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the SELL_NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -6065,6 +6916,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NO_ISSUER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the SELL_NO_ISSUER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -6099,6 +6955,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NO_TRUST(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the SELL_NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -6133,6 +6994,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -6167,6 +7033,11 @@ public function testRoundTrip_XdrManageOfferResultUnion_UNDERFUNDED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferResult::class);
@@ -6201,6 +7072,11 @@ public function testRoundTrip_XdrManageOfferSuccessResultOfferUnion_MANAGE_OFFER
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferSuccessResultOffer default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferSuccessResultOffer default-fixture toJson idempotence broken');
 
     // Reachability of the MANAGE_OFFER_CREATED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::class);
@@ -6235,6 +7111,11 @@ public function testRoundTrip_XdrManageOfferSuccessResultOfferUnion_MANAGE_OFFER
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferSuccessResultOffer default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferSuccessResultOffer default-fixture toJson idempotence broken');
 
     // Reachability of the MANAGE_OFFER_DELETED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::class);
@@ -6269,6 +7150,11 @@ public function testRoundTrip_XdrManageOfferSuccessResultOfferUnion_MANAGE_OFFER
     $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrManageOfferSuccessResultOffer default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrManageOfferSuccessResultOffer default-fixture toJson idempotence broken');
 
     // Reachability of the MANAGE_OFFER_UPDATED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::class);
@@ -6303,6 +7189,11 @@ public function testRoundTrip_XdrOperationBodyUnion_ACCOUNT_MERGE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the ACCOUNT_MERGE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6337,6 +7228,11 @@ public function testRoundTrip_XdrOperationBodyUnion_ALLOW_TRUST(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the ALLOW_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6371,6 +7267,11 @@ public function testRoundTrip_XdrOperationBodyUnion_BEGIN_SPONSORING_FUTURE_RESE
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the BEGIN_SPONSORING_FUTURE_RESERVES arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6405,6 +7306,11 @@ public function testRoundTrip_XdrOperationBodyUnion_BUMP_SEQUENCE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the BUMP_SEQUENCE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6439,6 +7345,11 @@ public function testRoundTrip_XdrOperationBodyUnion_CHANGE_TRUST(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the CHANGE_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6473,6 +7384,11 @@ public function testRoundTrip_XdrOperationBodyUnion_CLAIM_CLAIMABLE_BALANCE(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the CLAIM_CLAIMABLE_BALANCE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6507,6 +7423,11 @@ public function testRoundTrip_XdrOperationBodyUnion_CLAWBACK(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the CLAWBACK arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6541,6 +7462,11 @@ public function testRoundTrip_XdrOperationBodyUnion_CLAWBACK_CLAIMABLE_BALANCE()
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the CLAWBACK_CLAIMABLE_BALANCE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6575,6 +7501,11 @@ public function testRoundTrip_XdrOperationBodyUnion_CREATE_ACCOUNT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the CREATE_ACCOUNT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6609,6 +7540,11 @@ public function testRoundTrip_XdrOperationBodyUnion_CREATE_CLAIMABLE_BALANCE(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the CREATE_CLAIMABLE_BALANCE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6643,6 +7579,11 @@ public function testRoundTrip_XdrOperationBodyUnion_CREATE_PASSIVE_SELL_OFFER():
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the CREATE_PASSIVE_SELL_OFFER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6677,6 +7618,11 @@ public function testRoundTrip_XdrOperationBodyUnion_END_SPONSORING_FUTURE_RESERV
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the END_SPONSORING_FUTURE_RESERVES arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6711,6 +7657,11 @@ public function testRoundTrip_XdrOperationBodyUnion_EXTEND_FOOTPRINT_TTL(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the EXTEND_FOOTPRINT_TTL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6745,6 +7696,11 @@ public function testRoundTrip_XdrOperationBodyUnion_INFLATION(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the INFLATION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6779,6 +7735,11 @@ public function testRoundTrip_XdrOperationBodyUnion_INVOKE_HOST_FUNCTION(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the INVOKE_HOST_FUNCTION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6813,6 +7774,11 @@ public function testRoundTrip_XdrOperationBodyUnion_LIQUIDITY_POOL_DEPOSIT(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the LIQUIDITY_POOL_DEPOSIT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6847,6 +7813,11 @@ public function testRoundTrip_XdrOperationBodyUnion_LIQUIDITY_POOL_WITHDRAW(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the LIQUIDITY_POOL_WITHDRAW arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6881,6 +7852,11 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_BUY_OFFER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the MANAGE_BUY_OFFER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6915,6 +7891,11 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_DATA(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the MANAGE_DATA arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6949,6 +7930,11 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_SELL_OFFER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the MANAGE_SELL_OFFER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -6983,6 +7969,11 @@ public function testRoundTrip_XdrOperationBodyUnion_PATH_PAYMENT_STRICT_RECEIVE(
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the PATH_PAYMENT_STRICT_RECEIVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -7017,6 +8008,11 @@ public function testRoundTrip_XdrOperationBodyUnion_PATH_PAYMENT_STRICT_SEND(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the PATH_PAYMENT_STRICT_SEND arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -7051,6 +8047,11 @@ public function testRoundTrip_XdrOperationBodyUnion_PAYMENT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the PAYMENT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -7085,6 +8086,11 @@ public function testRoundTrip_XdrOperationBodyUnion_RESTORE_FOOTPRINT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the RESTORE_FOOTPRINT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -7119,6 +8125,11 @@ public function testRoundTrip_XdrOperationBodyUnion_REVOKE_SPONSORSHIP(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the REVOKE_SPONSORSHIP arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -7153,6 +8164,11 @@ public function testRoundTrip_XdrOperationBodyUnion_SET_OPTIONS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the SET_OPTIONS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -7187,6 +8203,11 @@ public function testRoundTrip_XdrOperationBodyUnion_SET_TRUST_LINE_FLAGS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationBody default-fixture toJson idempotence broken');
 
     // Reachability of the SET_TRUST_LINE_FLAGS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationBody::class);
@@ -7221,6 +8242,11 @@ public function testRoundTrip_XdrOperationResultUnion_BAD_AUTH(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_AUTH arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
@@ -7255,6 +8281,11 @@ public function testRoundTrip_XdrOperationResultUnion_EXCEEDED_WORK_LIMIT(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
 
     // Reachability of the EXCEEDED_WORK_LIMIT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
@@ -7289,6 +8320,11 @@ public function testRoundTrip_XdrOperationResultUnion_INNER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
 
     // Reachability of the INNER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
@@ -7323,6 +8359,11 @@ public function testRoundTrip_XdrOperationResultUnion_NOT_SUPPORTED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_SUPPORTED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
@@ -7357,6 +8398,11 @@ public function testRoundTrip_XdrOperationResultUnion_NO_ACCOUNT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_ACCOUNT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
@@ -7391,6 +8437,11 @@ public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SPONSORING(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_MANY_SPONSORING arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
@@ -7425,6 +8476,11 @@ public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SUBENTRIES(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_MANY_SUBENTRIES arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
@@ -7480,6 +8536,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_LINE_FULL()
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the LINE_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7514,6 +8575,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_MALFORMED()
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7548,6 +8614,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NOT_AUTHORI
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7582,6 +8653,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NO_DESTINAT
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_DESTINATION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7616,6 +8692,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NO_ISSUER()
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_ISSUER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7650,6 +8731,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NO_TRUST():
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7684,6 +8770,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_OFFER_CROSS
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the OFFER_CROSS_SELF arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7718,6 +8809,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_OVER_SENDMA
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the OVER_SENDMAX arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7752,6 +8848,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SRC_NOT_AUT
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the SRC_NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7786,6 +8887,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SRC_NO_TRUS
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the SRC_NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7820,6 +8926,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SUCCESS(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7854,6 +8965,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_TOO_FEW_OFF
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_FEW_OFFERS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7888,6 +9004,11 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_UNDERFUNDED
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictReceiveResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictReceiveResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::class);
@@ -7922,6 +9043,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_LINE_FULL(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the LINE_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -7956,6 +9082,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_MALFORMED(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -7990,6 +9121,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NOT_AUTHORIZED
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8024,6 +9160,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NO_DESTINATION
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_DESTINATION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8058,6 +9199,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NO_ISSUER(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_ISSUER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8092,6 +9238,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NO_TRUST(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8126,6 +9277,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_OFFER_CROSS_SE
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the OFFER_CROSS_SELF arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8160,6 +9316,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SRC_NOT_AUTHOR
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the SRC_NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8194,6 +9355,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SRC_NO_TRUST()
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the SRC_NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8228,6 +9394,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SUCCESS(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8262,6 +9433,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_TOO_FEW_OFFERS
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_FEW_OFFERS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8296,6 +9472,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_UNDERFUNDED():
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8330,6 +9511,11 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_UNDER_DESTMIN(
     $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPathPaymentStrictSendResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPathPaymentStrictSendResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDER_DESTMIN arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::class);
@@ -8364,6 +9550,11 @@ public function testRoundTrip_XdrPaymentResultUnion_LINE_FULL(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the LINE_FULL arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8398,6 +9589,11 @@ public function testRoundTrip_XdrPaymentResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8432,6 +9628,11 @@ public function testRoundTrip_XdrPaymentResultUnion_NOT_AUTHORIZED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8466,6 +9667,11 @@ public function testRoundTrip_XdrPaymentResultUnion_NO_DESTINATION(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_DESTINATION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8500,6 +9706,11 @@ public function testRoundTrip_XdrPaymentResultUnion_NO_ISSUER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_ISSUER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8534,6 +9745,11 @@ public function testRoundTrip_XdrPaymentResultUnion_NO_TRUST(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8568,6 +9784,11 @@ public function testRoundTrip_XdrPaymentResultUnion_SRC_NOT_AUTHORIZED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the SRC_NOT_AUTHORIZED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8602,6 +9823,11 @@ public function testRoundTrip_XdrPaymentResultUnion_SRC_NO_TRUST(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the SRC_NO_TRUST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8636,6 +9862,11 @@ public function testRoundTrip_XdrPaymentResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8670,6 +9901,11 @@ public function testRoundTrip_XdrPaymentResultUnion_UNDERFUNDED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPaymentResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPaymentResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNDERFUNDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPaymentResult::class);
@@ -8727,6 +9963,11 @@ public function testRoundTrip_XdrPreconditionsUnion_NONE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPreconditions default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPreconditions default-fixture toJson idempotence broken');
 
     // Reachability of the NONE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditions::class);
@@ -8761,6 +10002,11 @@ public function testRoundTrip_XdrPreconditionsUnion_TIME(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPreconditions default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPreconditions default-fixture toJson idempotence broken');
 
     // Reachability of the TIME arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditions::class);
@@ -8795,6 +10041,11 @@ public function testRoundTrip_XdrPreconditionsUnion_V2(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrPreconditions default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrPreconditions default-fixture toJson idempotence broken');
 
     // Reachability of the V2 arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPreconditions::class);
@@ -8850,6 +10101,11 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_I
     $decoded = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRestoreFootprintResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRestoreFootprintResult default-fixture toJson idempotence broken');
 
     // Reachability of the RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::class);
@@ -8884,6 +10140,11 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_M
     $decoded = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRestoreFootprintResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRestoreFootprintResult default-fixture toJson idempotence broken');
 
     // Reachability of the RESTORE_FOOTPRINT_MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::class);
@@ -8918,6 +10179,11 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_R
     $decoded = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRestoreFootprintResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRestoreFootprintResult default-fixture toJson idempotence broken');
 
     // Reachability of the RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::class);
@@ -8952,6 +10218,11 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_S
     $decoded = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRestoreFootprintResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRestoreFootprintResult default-fixture toJson idempotence broken');
 
     // Reachability of the RESTORE_FOOTPRINT_SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::class);
@@ -8986,6 +10257,11 @@ public function testRoundTrip_XdrRevokeSponsorshipOperationUnion_LEDGER_ENTRY():
     $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRevokeSponsorshipOperation default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRevokeSponsorshipOperation default-fixture toJson idempotence broken');
 
     // Reachability of the LEDGER_ENTRY arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::class);
@@ -9020,6 +10296,11 @@ public function testRoundTrip_XdrRevokeSponsorshipOperationUnion_SIGNER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRevokeSponsorshipOperation default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRevokeSponsorshipOperation default-fixture toJson idempotence broken');
 
     // Reachability of the SIGNER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::class);
@@ -9054,6 +10335,11 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_DOES_NOT_EXIST(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRevokeSponsorshipResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRevokeSponsorshipResult default-fixture toJson idempotence broken');
 
     // Reachability of the DOES_NOT_EXIST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
@@ -9088,6 +10374,11 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_LOW_RESERVE(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRevokeSponsorshipResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRevokeSponsorshipResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
@@ -9122,6 +10413,11 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRevokeSponsorshipResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRevokeSponsorshipResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
@@ -9156,6 +10452,11 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_NOT_SPONSOR(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRevokeSponsorshipResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRevokeSponsorshipResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_SPONSOR arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
@@ -9190,6 +10491,11 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_ONLY_TRANSFERABLE(
     $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRevokeSponsorshipResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRevokeSponsorshipResult default-fixture toJson idempotence broken');
 
     // Reachability of the ONLY_TRANSFERABLE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
@@ -9224,6 +10530,11 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrRevokeSponsorshipResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrRevokeSponsorshipResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::class);
@@ -9279,6 +10590,11 @@ public function testRoundTrip_XdrSCEnvMetaEntryUnion_SC_ENV_META_KIND_INTERFACE_
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCEnvMetaEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCEnvMetaEntry default-fixture toJson idempotence broken');
 
     // Reachability of the SC_ENV_META_KIND_INTERFACE_VERSION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry::class);
@@ -9313,6 +10629,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_AUTH(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_AUTH arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9347,6 +10668,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_BUDGET(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_BUDGET arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9381,6 +10707,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_CONTEXT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_CONTEXT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9415,6 +10746,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_CONTRACT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_CONTRACT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9449,6 +10785,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_CRYPTO(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_CRYPTO arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9483,6 +10824,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_EVENTS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_EVENTS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9517,6 +10863,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_OBJECT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_OBJECT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9551,6 +10902,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_STORAGE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_STORAGE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9585,6 +10941,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_VALUE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_VALUE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9619,6 +10980,11 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_WASM_VM(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCError::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCError default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCError::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCError default-fixture toJson idempotence broken');
 
     // Reachability of the SCE_WASM_VM arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCError::class);
@@ -9653,6 +11019,11 @@ public function testRoundTrip_XdrSCMetaEntryUnion_SC_META_V0(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCMetaEntry::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCMetaEntry default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCMetaEntry::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCMetaEntry default-fixture toJson idempotence broken');
 
     // Reachability of the SC_META_V0 arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCMetaEntry::class);
@@ -9687,6 +11058,11 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_CONFIRM(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCPStatementPledges default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCPStatementPledges default-fixture toJson idempotence broken');
 
     // Reachability of the SCP_ST_CONFIRM arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::class);
@@ -9721,6 +11097,11 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_EXTERNALIZE(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCPStatementPledges default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCPStatementPledges default-fixture toJson idempotence broken');
 
     // Reachability of the SCP_ST_EXTERNALIZE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::class);
@@ -9755,6 +11136,11 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_NOMINATE(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCPStatementPledges default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCPStatementPledges default-fixture toJson idempotence broken');
 
     // Reachability of the SCP_ST_NOMINATE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::class);
@@ -9789,6 +11175,11 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_PREPARE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSCPStatementPledges default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSCPStatementPledges default-fixture toJson idempotence broken');
 
     // Reachability of the SCP_ST_PREPARE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::class);
@@ -9928,6 +11319,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_AUTH_REVOCABLE_REQUIRED()
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the AUTH_REVOCABLE_REQUIRED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -9962,6 +11358,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_BAD_FLAGS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_FLAGS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -9996,6 +11397,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_BAD_SIGNER(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_SIGNER arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10030,6 +11436,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_CANT_CHANGE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the CANT_CHANGE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10064,6 +11475,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_INVALID_HOME_DOMAIN(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVALID_HOME_DOMAIN arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10098,6 +11514,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_INVALID_INFLATION(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVALID_INFLATION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10132,6 +11553,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_LOW_RESERVE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10166,6 +11592,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10200,6 +11631,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_THRESHOLD_OUT_OF_RANGE():
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the THRESHOLD_OUT_OF_RANGE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10234,6 +11670,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_TOO_MANY_SIGNERS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_MANY_SIGNERS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10268,6 +11709,11 @@ public function testRoundTrip_XdrSetOptionsResultUnion_UNKNOWN_FLAG(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetOptionsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetOptionsResult default-fixture toJson idempotence broken');
 
     // Reachability of the UNKNOWN_FLAG arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetOptionsResult::class);
@@ -10302,6 +11748,11 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_CANT_REVOKE(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetTrustLineFlagsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetTrustLineFlagsResult default-fixture toJson idempotence broken');
 
     // Reachability of the CANT_REVOKE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
@@ -10336,6 +11787,11 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_INVALID_STATE(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetTrustLineFlagsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetTrustLineFlagsResult default-fixture toJson idempotence broken');
 
     // Reachability of the INVALID_STATE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
@@ -10370,6 +11826,11 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_LOW_RESERVE(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetTrustLineFlagsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetTrustLineFlagsResult default-fixture toJson idempotence broken');
 
     // Reachability of the LOW_RESERVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
@@ -10404,6 +11865,11 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetTrustLineFlagsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetTrustLineFlagsResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
@@ -10438,6 +11904,11 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_NO_TRUST_LINE(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetTrustLineFlagsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetTrustLineFlagsResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_TRUST_LINE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
@@ -10472,6 +11943,11 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSetTrustLineFlagsResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSetTrustLineFlagsResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::class);
@@ -10548,6 +12024,11 @@ public function testRoundTrip_XdrStellarMessageUnion_AUTH(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the AUTH arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10582,6 +12063,11 @@ public function testRoundTrip_XdrStellarMessageUnion_DONT_HAVE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the DONT_HAVE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10616,6 +12102,11 @@ public function testRoundTrip_XdrStellarMessageUnion_ERROR_MSG(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the ERROR_MSG arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10650,6 +12141,11 @@ public function testRoundTrip_XdrStellarMessageUnion_FLOOD_ADVERT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the FLOOD_ADVERT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10684,6 +12180,11 @@ public function testRoundTrip_XdrStellarMessageUnion_FLOOD_DEMAND(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the FLOOD_DEMAND arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10718,6 +12219,11 @@ public function testRoundTrip_XdrStellarMessageUnion_GENERALIZED_TX_SET(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the GENERALIZED_TX_SET arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10752,6 +12258,11 @@ public function testRoundTrip_XdrStellarMessageUnion_GET_SCP_QUORUMSET(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the GET_SCP_QUORUMSET arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10786,6 +12297,11 @@ public function testRoundTrip_XdrStellarMessageUnion_GET_SCP_STATE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the GET_SCP_STATE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10820,6 +12336,11 @@ public function testRoundTrip_XdrStellarMessageUnion_GET_TX_SET(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the GET_TX_SET arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10854,6 +12375,11 @@ public function testRoundTrip_XdrStellarMessageUnion_HELLO(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the HELLO arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10888,6 +12414,11 @@ public function testRoundTrip_XdrStellarMessageUnion_PEERS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the PEERS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10922,6 +12453,11 @@ public function testRoundTrip_XdrStellarMessageUnion_SCP_MESSAGE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the SCP_MESSAGE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10956,6 +12492,11 @@ public function testRoundTrip_XdrStellarMessageUnion_SCP_QUORUMSET(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the SCP_QUORUMSET arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -10990,6 +12531,11 @@ public function testRoundTrip_XdrStellarMessageUnion_SEND_MORE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the SEND_MORE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -11024,6 +12570,11 @@ public function testRoundTrip_XdrStellarMessageUnion_SEND_MORE_EXTENDED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the SEND_MORE_EXTENDED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -11058,6 +12609,11 @@ public function testRoundTrip_XdrStellarMessageUnion_TIME_SLICED_SURVEY_REQUEST(
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the TIME_SLICED_SURVEY_REQUEST arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -11092,6 +12648,11 @@ public function testRoundTrip_XdrStellarMessageUnion_TIME_SLICED_SURVEY_RESPONSE
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the TIME_SLICED_SURVEY_RESPONSE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -11126,6 +12687,11 @@ public function testRoundTrip_XdrStellarMessageUnion_TIME_SLICED_SURVEY_START_CO
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the TIME_SLICED_SURVEY_START_COLLECTING arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -11160,6 +12726,11 @@ public function testRoundTrip_XdrStellarMessageUnion_TIME_SLICED_SURVEY_STOP_COL
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the TIME_SLICED_SURVEY_STOP_COLLECTING arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -11194,6 +12765,11 @@ public function testRoundTrip_XdrStellarMessageUnion_TRANSACTION(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the TRANSACTION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -11228,6 +12804,11 @@ public function testRoundTrip_XdrStellarMessageUnion_TX_SET(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarMessage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarMessage default-fixture toJson idempotence broken');
 
     // Reachability of the TX_SET arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarMessage::class);
@@ -11262,6 +12843,11 @@ public function testRoundTrip_XdrStellarValueExtUnion_STELLAR_VALUE_BASIC(): voi
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarValueExt default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarValueExt default-fixture toJson idempotence broken');
 
     // Reachability of the STELLAR_VALUE_BASIC arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarValueExt::class);
@@ -11296,6 +12882,11 @@ public function testRoundTrip_XdrStellarValueExtUnion_STELLAR_VALUE_SIGNED(): vo
     $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrStellarValueExt default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarValueExt default-fixture toJson idempotence broken');
 
     // Reachability of the STELLAR_VALUE_SIGNED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarValueExt::class);
@@ -11351,6 +12942,11 @@ public function testRoundTrip_XdrSurveyResponseBodyUnion_SURVEY_TOPOLOGY_RESPONS
     $decoded = \Soneso\StellarSDK\Xdr\XdrSurveyResponseBody::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrSurveyResponseBody default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSurveyResponseBody::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSurveyResponseBody default-fixture toJson idempotence broken');
 
     // Reachability of the SURVEY_TOPOLOGY_RESPONSE_V2 arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSurveyResponseBody::class);
@@ -11429,6 +13025,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_AUTH(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_AUTH arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11463,6 +13064,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_AUTH_EXTRA(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_AUTH_EXTRA arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11497,6 +13103,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_MIN_SEQ_AGE_OR
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_MIN_SEQ_AGE_OR_GAP arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11531,6 +13142,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_SEQ(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_SEQ arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11565,6 +13181,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_SPONSORSHIP():
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the BAD_SPONSORSHIP arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11599,6 +13220,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FAILED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the FAILED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11633,6 +13259,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FEE_BUMP_INNER_FAI
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the FEE_BUMP_INNER_FAILED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11667,6 +13298,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FEE_BUMP_INNER_SUC
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the FEE_BUMP_INNER_SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11701,6 +13337,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FROZEN_KEY_ACCESSE
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the FROZEN_KEY_ACCESSED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11735,6 +13376,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INSUFFICIENT_BALAN
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the INSUFFICIENT_BALANCE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11769,6 +13415,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INSUFFICIENT_FEE()
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the INSUFFICIENT_FEE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11803,6 +13454,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INTERNAL_ERROR(): 
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the INTERNAL_ERROR arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11837,6 +13493,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_MALFORMED(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the MALFORMED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11871,6 +13532,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_MISSING_OPERATION(
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the MISSING_OPERATION arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11905,6 +13571,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_NOT_SUPPORTED(): v
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the NOT_SUPPORTED arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11939,6 +13610,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_NO_ACCOUNT(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the NO_ACCOUNT arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -11973,6 +13649,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_SOROBAN_INVALID():
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the SOROBAN_INVALID arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -12007,6 +13688,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_SUCCESS(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the SUCCESS arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -12041,6 +13727,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_TOO_EARLY(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_EARLY arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -12075,6 +13766,11 @@ public function testRoundTrip_XdrTransactionResultResultUnion_TOO_LATE(): void
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionResultResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionResultResult default-fixture toJson idempotence broken');
 
     // Reachability of the TOO_LATE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultResult::class);
@@ -12109,6 +13805,11 @@ public function testRoundTrip_XdrTransactionSignaturePayloadTaggedTransactionUni
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionSignaturePayloadTaggedTransaction default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionSignaturePayloadTaggedTransaction default-fixture toJson idempotence broken');
 
     // Reachability of the ENVELOPE_TYPE_TX arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::class);
@@ -12143,6 +13844,11 @@ public function testRoundTrip_XdrTransactionSignaturePayloadTaggedTransactionUni
     $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTransactionSignaturePayloadTaggedTransaction default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTransactionSignaturePayloadTaggedTransaction default-fixture toJson idempotence broken');
 
     // Reachability of the ENVELOPE_TYPE_TX_FEE_BUMP arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::class);
@@ -12198,6 +13904,11 @@ public function testRoundTrip_XdrTxSetComponentUnion_TXSET_COMP_TXS_MAYBE_DISCOU
     $decoded = \Soneso\StellarSDK\Xdr\XdrTxSetComponent::fromJsonValue($jsonValue);
     $this->assertSame($jsonValue, $decoded->toJsonValue(),
         'XdrTxSetComponent default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrTxSetComponent::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrTxSetComponent default-fixture toJson idempotence broken');
 
     // Reachability of the TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE arm constant.
     $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTxSetComponent::class);

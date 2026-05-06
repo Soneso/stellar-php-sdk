@@ -9,7 +9,8 @@
 //
 // The emitter walks every Soneso\StellarSDK\Xdr class with toJson
 // and emits per-arm / per-permutation round-trip tests, partitioned
-// across four files by emit-pass category.
+// across five files by emit-pass category (one of which holds
+// bare-string rejection tests for non-void union arms).
 
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
