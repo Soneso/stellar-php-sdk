@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
 
 class XdrAccountEntry {
@@ -105,7 +107,7 @@ class XdrAccountEntry {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -130,36 +132,36 @@ class XdrAccountEntry {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrAccountEntry JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('account_id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field account_id for XdrAccountEntry'
             );
         }
         $accountID = XdrAccountID::fromJsonValue($value['account_id']);
         if (!array_key_exists('balance', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field balance for XdrAccountEntry'
             );
         }
         $balance = new BigInteger(is_string($value['balance']) ? $value['balance'] : (string) (int) $value['balance']);
         if (!array_key_exists('seq_num', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field seq_num for XdrAccountEntry'
             );
         }
         $seqNum = XdrSequenceNumber::fromJsonValue($value['seq_num']);
         if (!array_key_exists('num_sub_entries', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field num_sub_entries for XdrAccountEntry'
             );
         }
-        $numSubEntries = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['num_sub_entries']);
+        $numSubEntries = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['num_sub_entries']);
         if (!array_key_exists('inflation_dest', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field inflation_dest for XdrAccountEntry'
             );
         }
@@ -168,38 +170,38 @@ class XdrAccountEntry {
             $inflationDest = XdrAccountID::fromJsonValue($value['inflation_dest']);
         }
         if (!array_key_exists('flags', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field flags for XdrAccountEntry'
             );
         }
-        $flags = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['flags']);
+        $flags = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['flags']);
         if (!array_key_exists('home_domain', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field home_domain for XdrAccountEntry'
             );
         }
-        $homeDomain = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['home_domain']);
+        $homeDomain = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['home_domain']);
         if (!array_key_exists('thresholds', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field thresholds for XdrAccountEntry'
             );
         }
-        $thresholds = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['thresholds']);
+        $thresholds = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['thresholds']);
         if (!array_key_exists('signers', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field signers for XdrAccountEntry'
             );
         }
         $signers = (static function ($v) {
             if (!is_array($v)) {
-                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
             foreach ($v as $item) { $out[] = XdrSigner::fromJsonValue($item); }
             return $out;
         })($value['signers']);
         if (!array_key_exists('ext', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ext for XdrAccountEntry'
             );
         }
@@ -208,7 +210,7 @@ class XdrAccountEntry {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -218,8 +220,8 @@ class XdrAccountEntry {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

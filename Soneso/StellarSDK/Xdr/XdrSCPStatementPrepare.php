@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCPStatementPrepare {
 
     public string $quorumSetHash;
@@ -79,7 +82,7 @@ class XdrSCPStatementPrepare {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -100,24 +103,24 @@ class XdrSCPStatementPrepare {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrSCPStatementPrepare JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('quorum_set_hash', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field quorum_set_hash for XdrSCPStatementPrepare'
             );
         }
-        $quorumSetHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['quorum_set_hash']);
+        $quorumSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['quorum_set_hash']);
         if (!array_key_exists('ballot', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ballot for XdrSCPStatementPrepare'
             );
         }
         $ballot = XdrSCPBallot::fromJsonValue($value['ballot']);
         if (!array_key_exists('prepared', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field prepared for XdrSCPStatementPrepare'
             );
         }
@@ -126,7 +129,7 @@ class XdrSCPStatementPrepare {
             $prepared = XdrSCPBallot::fromJsonValue($value['prepared']);
         }
         if (!array_key_exists('prepared_prime', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field prepared_prime for XdrSCPStatementPrepare'
             );
         }
@@ -135,22 +138,22 @@ class XdrSCPStatementPrepare {
             $preparedPrime = XdrSCPBallot::fromJsonValue($value['prepared_prime']);
         }
         if (!array_key_exists('n_c', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field n_c for XdrSCPStatementPrepare'
             );
         }
-        $nC = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_c']);
+        $nC = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_c']);
         if (!array_key_exists('n_h', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field n_h for XdrSCPStatementPrepare'
             );
         }
-        $nH = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_h']);
+        $nH = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_h']);
         return new static($quorumSetHash, $ballot, $nC, $nH, $prepared, $preparedPrime);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -160,8 +163,8 @@ class XdrSCPStatementPrepare {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

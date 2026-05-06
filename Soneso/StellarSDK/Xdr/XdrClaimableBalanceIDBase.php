@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrClaimableBalanceIDBase {
@@ -54,7 +56,7 @@ class XdrClaimableBalanceIDBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -63,19 +65,19 @@ class XdrClaimableBalanceIDBase {
         switch ($this->type->getValue()) {
             case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
                 if ($this->hash === null || $this->hash === '') {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrClaimableBalanceID hash field is null or empty'
                     );
                 }
                 $rawHash = hex2bin($this->hash);
                 if ($rawHash === false || strlen($rawHash) !== 32) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrClaimableBalanceID hash must be a 64-char hex string'
                     );
                 }
                 return StrKey::encodeClaimableBalanceId($rawHash);
             default:
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Unknown XdrClaimableBalanceID discriminant: ' . $this->type->getValue()
                 );
         }
@@ -83,20 +85,20 @@ class XdrClaimableBalanceIDBase {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrClaimableBalanceID JSON value, got ' . get_debug_type($value)
             );
         }
         $raw = StrKey::decodeClaimableBalanceId($value);
         if (strlen($raw) !== 33) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Decoded XdrClaimableBalanceID must be 33 bytes; got ' . strlen($raw)
                 . ' for input ' . XdrJsonHelper::safePreview($value)
             );
         }
         $typeByte = ord($raw[0]);
         if ($typeByte !== XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Unsupported XdrClaimableBalanceID type byte: ' . $typeByte
                 . ' for input ' . XdrJsonHelper::safePreview($value)
             );
@@ -109,7 +111,7 @@ class XdrClaimableBalanceIDBase {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -119,8 +121,8 @@ class XdrClaimableBalanceIDBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

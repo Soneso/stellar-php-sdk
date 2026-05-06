@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrPathPaymentResultSuccess {
 
     public array $offers;
@@ -47,7 +50,7 @@ class XdrPathPaymentResultSuccess {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -64,25 +67,25 @@ class XdrPathPaymentResultSuccess {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrPathPaymentResultSuccess JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('offers', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field offers for XdrPathPaymentResultSuccess'
             );
         }
         $offers = (static function ($v) {
             if (!is_array($v)) {
-                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
             foreach ($v as $item) { $out[] = XdrClaimAtom::fromJsonValue($item); }
             return $out;
         })($value['offers']);
         if (!array_key_exists('last', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field last for XdrPathPaymentResultSuccess'
             );
         }
@@ -91,7 +94,7 @@ class XdrPathPaymentResultSuccess {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -101,8 +104,8 @@ class XdrPathPaymentResultSuccess {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

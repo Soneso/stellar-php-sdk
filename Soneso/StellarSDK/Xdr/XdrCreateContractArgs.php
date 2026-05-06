@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrCreateContractArgs {
 
     public XdrContractIDPreimage $contractIDPreimage;
@@ -39,7 +42,7 @@ class XdrCreateContractArgs {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -56,18 +59,18 @@ class XdrCreateContractArgs {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrCreateContractArgs JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('contract_id_preimage', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field contract_id_preimage for XdrCreateContractArgs'
             );
         }
         $contractIDPreimage = XdrContractIDPreimage::fromJsonValue($value['contract_id_preimage']);
         if (!array_key_exists('executable', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field executable for XdrCreateContractArgs'
             );
         }
@@ -76,7 +79,7 @@ class XdrCreateContractArgs {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -86,8 +89,8 @@ class XdrCreateContractArgs {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrBucketEntry {
 
     public XdrBucketEntryType $type;
@@ -72,7 +75,7 @@ class XdrBucketEntry {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -84,7 +87,7 @@ class XdrBucketEntry {
             XdrBucketEntryType::DEADENTRY => ['deadentry' => $this->deadEntry->toJsonValue()],
             XdrBucketEntryType::METAENTRY => ['metaentry' => $this->metaEntry->toJsonValue()],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrBucketEntryType'
             ),
             // @codeCoverageIgnoreEnd
@@ -96,13 +99,13 @@ class XdrBucketEntry {
             unset($value['$schema']);
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object for XdrBucketEntry, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrBucketEntry, got ' . get_debug_type($key)
             );
         }
@@ -112,14 +115,14 @@ class XdrBucketEntry {
             'initentry' => (static function () use ($arm) { $r = new static(new XdrBucketEntryType(XdrBucketEntryType::INITENTRY)); $r->liveEntry = XdrLedgerEntry::fromJsonValue($arm); return $r; })(),
             'deadentry' => (static function () use ($arm) { $r = new static(new XdrBucketEntryType(XdrBucketEntryType::DEADENTRY)); $r->deadEntry = XdrLedgerKey::fromJsonValue($arm); return $r; })(),
             'metaentry' => (static function () use ($arm) { $r = new static(new XdrBucketEntryType(XdrBucketEntryType::METAENTRY)); $r->metaEntry = XdrBucketMetadata::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrBucketEntry: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -129,8 +132,8 @@ class XdrBucketEntry {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

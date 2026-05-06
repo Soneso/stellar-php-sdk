@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLedgerHeader {
 
     public int $ledgerVersion;
@@ -123,7 +126,7 @@ class XdrLedgerHeader {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -153,103 +156,103 @@ class XdrLedgerHeader {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrLedgerHeader JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('ledger_version', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ledger_version for XdrLedgerHeader'
             );
         }
-        $ledgerVersion = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_version']);
+        $ledgerVersion = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_version']);
         if (!array_key_exists('previous_ledger_hash', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field previous_ledger_hash for XdrLedgerHeader'
             );
         }
-        $previousLedgerHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['previous_ledger_hash']);
+        $previousLedgerHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['previous_ledger_hash']);
         if (!array_key_exists('scp_value', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field scp_value for XdrLedgerHeader'
             );
         }
         $scpValue = XdrStellarValue::fromJsonValue($value['scp_value']);
         if (!array_key_exists('tx_set_result_hash', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field tx_set_result_hash for XdrLedgerHeader'
             );
         }
-        $txSetResultHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['tx_set_result_hash']);
+        $txSetResultHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['tx_set_result_hash']);
         if (!array_key_exists('bucket_list_hash', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field bucket_list_hash for XdrLedgerHeader'
             );
         }
-        $bucketListHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['bucket_list_hash']);
+        $bucketListHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['bucket_list_hash']);
         if (!array_key_exists('ledger_seq', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ledger_seq for XdrLedgerHeader'
             );
         }
-        $ledgerSeq = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_seq']);
+        $ledgerSeq = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_seq']);
         if (!array_key_exists('total_coins', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field total_coins for XdrLedgerHeader'
             );
         }
-        $totalCoins = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['total_coins']);
+        $totalCoins = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['total_coins']);
         if (!array_key_exists('fee_pool', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field fee_pool for XdrLedgerHeader'
             );
         }
-        $feePool = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee_pool']);
+        $feePool = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee_pool']);
         if (!array_key_exists('inflation_seq', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field inflation_seq for XdrLedgerHeader'
             );
         }
-        $inflationSeq = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['inflation_seq']);
+        $inflationSeq = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['inflation_seq']);
         if (!array_key_exists('id_pool', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field id_pool for XdrLedgerHeader'
             );
         }
-        $idPool = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['id_pool']);
+        $idPool = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['id_pool']);
         if (!array_key_exists('base_fee', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field base_fee for XdrLedgerHeader'
             );
         }
-        $baseFee = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['base_fee']);
+        $baseFee = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['base_fee']);
         if (!array_key_exists('base_reserve', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field base_reserve for XdrLedgerHeader'
             );
         }
-        $baseReserve = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['base_reserve']);
+        $baseReserve = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['base_reserve']);
         if (!array_key_exists('max_tx_set_size', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field max_tx_set_size for XdrLedgerHeader'
             );
         }
-        $maxTxSetSize = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['max_tx_set_size']);
+        $maxTxSetSize = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['max_tx_set_size']);
         if (!array_key_exists('skip_list', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field skip_list for XdrLedgerHeader'
             );
         }
         $skipList = (static function ($v) {
             if (!is_array($v)) {
-                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
-            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
+            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
             return $out;
         })($value['skip_list']);
         if (!array_key_exists('ext', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ext for XdrLedgerHeader'
             );
         }
@@ -258,7 +261,7 @@ class XdrLedgerHeader {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -268,8 +271,8 @@ class XdrLedgerHeader {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

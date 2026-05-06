@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLedgerHeaderFlags {
     public int $value;
 
@@ -44,7 +47,7 @@ class XdrLedgerHeaderFlags {
             case 4:
                 return new XdrLedgerHeaderFlags($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -55,7 +58,7 @@ class XdrLedgerHeaderFlags {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -66,7 +69,7 @@ class XdrLedgerHeaderFlags {
             self::DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG => 'deposit_flag',
             self::DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG => 'withdrawal_flag',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrLedgerHeaderFlags enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -75,7 +78,7 @@ class XdrLedgerHeaderFlags {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrLedgerHeaderFlags JSON value, got ' . get_debug_type($value)
             );
         }
@@ -83,14 +86,14 @@ class XdrLedgerHeaderFlags {
             'trading_flag' => new static(self::DISABLE_LIQUIDITY_POOL_TRADING_FLAG),
             'deposit_flag' => new static(self::DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG),
             'withdrawal_flag' => new static(self::DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrLedgerHeaderFlags JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -100,8 +103,8 @@ class XdrLedgerHeaderFlags {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

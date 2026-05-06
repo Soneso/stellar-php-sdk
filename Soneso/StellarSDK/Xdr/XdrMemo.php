@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrMemo {
 
     public XdrMemoType $type;
@@ -83,7 +86,7 @@ class XdrMemo {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -94,34 +97,34 @@ class XdrMemo {
                 return 'none';
             case XdrMemoType::MEMO_TEXT:
                 if ($this->text === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrMemo text field is null'
                     );
                 }
                 return ['text' => XdrJsonHelper::escapeString($this->text)];
             case XdrMemoType::MEMO_ID:
                 if ($this->id === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrMemo id field is null'
                     );
                 }
                 return ['id' => XdrJsonHelper::uint64ToString($this->id)];
             case XdrMemoType::MEMO_HASH:
                 if ($this->hash === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrMemo hash field is null'
                     );
                 }
                 return ['hash' => XdrJsonHelper::bytesToHex($this->hash)];
             case XdrMemoType::MEMO_RETURN:
                 if ($this->returnHash === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrMemo returnHash field is null'
                     );
                 }
                 return ['return' => XdrJsonHelper::bytesToHex($this->returnHash)];
             default:
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Unknown XdrMemo discriminant: ' . $this->type->getValue()
                 );
         }
@@ -133,21 +136,21 @@ class XdrMemo {
         }
         if (is_string($value)) {
             if ($value !== 'none') {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Unknown XdrMemo bare string: ' . XdrJsonHelper::safePreview($value)
                 );
             }
             return new static(new XdrMemoType(XdrMemoType::MEMO_NONE));
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or "none" for XdrMemo JSON value'
             );
         }
         $key = array_key_first($value);
         if ($key === 'text') {
             if (!is_string($value['text'])) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Expected string for XdrMemo text arm, got ' . get_debug_type($value['text'])
                 );
             }
@@ -158,7 +161,7 @@ class XdrMemo {
         if ($key === 'id') {
             $result = new static(new XdrMemoType(XdrMemoType::MEMO_ID));
             if (!is_string($value['id']) && !is_int($value['id'])) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Expected string or int for XdrMemo id arm, got ' . get_debug_type($value['id'])
                 );
             }
@@ -167,7 +170,7 @@ class XdrMemo {
         }
         if ($key === 'hash') {
             if (!is_string($value['hash'])) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Expected hex string for XdrMemo hash arm, got ' . get_debug_type($value['hash'])
                 );
             }
@@ -177,7 +180,7 @@ class XdrMemo {
         }
         if ($key === 'return') {
             if (!is_string($value['return'])) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Expected hex string for XdrMemo return arm, got ' . get_debug_type($value['return'])
                 );
             }
@@ -185,13 +188,13 @@ class XdrMemo {
             $result->returnHash = XdrJsonHelper::hexToBytes($value['return']);
             return $result;
         }
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Unknown arm key for XdrMemo: ' . XdrJsonHelper::safePreview($key)
         );
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -201,8 +204,8 @@ class XdrMemo {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

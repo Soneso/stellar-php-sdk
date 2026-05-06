@@ -58,7 +58,7 @@ module StellarJsonOverrides
   def facade_block
     <<~PHP.strip
       /**
-       * @throws \\JsonException If the value contains structures that cannot be encoded as JSON.
+       * @throws JsonException If the value contains structures that cannot be encoded as JSON.
        */
       public function toJson(): string {
           return json_encode(
@@ -68,8 +68,8 @@ module StellarJsonOverrides
       }
 
       /**
-       * @throws \\JsonException If $json is not syntactically valid JSON.
-       * @throws \\InvalidArgumentException If the JSON shape does not match this type.
+       * @throws JsonException If $json is not syntactically valid JSON.
+       * @throws InvalidArgumentException If the JSON shape does not match this type.
        */
       public static function fromJson(string $json): static {
           return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
@@ -119,7 +119,7 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrAccountID JSON value, got ' . get_debug_type($value)
                       );
                   }
@@ -136,7 +136,7 @@ module StellarJsonOverrides
       to_body: lambda do |_ctx|
         <<~PHP.chomp
                   if ($this->ed25519 === null) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'XdrPublicKey ed25519 field is null; cannot encode strkey'
                       );
                   }
@@ -146,7 +146,7 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrPublicKey JSON value, got ' . get_debug_type($value)
                       );
                   }
@@ -183,34 +183,34 @@ module StellarJsonOverrides
                   switch ($this->type->getValue()) {
                       case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519:
                           if ($this->ed25519 === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSignerKey ed25519 field is null'
                               );
                           }
                           return StrKey::encodeAccountId($this->ed25519);
                       case XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX:
                           if ($this->preAuthTx === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSignerKey preAuthTx field is null'
                               );
                           }
                           return StrKey::encodePreAuthTx($this->preAuthTx);
                       case XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X:
                           if ($this->hashX === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSignerKey hashX field is null'
                               );
                           }
                           return StrKey::encodeSha256Hash($this->hashX);
                       case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
                           if ($this->signedPayload === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSignerKey signedPayload field is null'
                               );
                           }
                           return StrKey::encodeXdrSignedPayload($this->signedPayload);
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrSignerKey discriminant: ' . $this->type->getValue()
                           );
                   }
@@ -219,12 +219,12 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrSignerKey JSON value, got ' . get_debug_type($value)
                       );
                   }
                   if ($value === '') {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Empty XdrSignerKey JSON value'
                       );
                   }
@@ -249,7 +249,7 @@ module StellarJsonOverrides
                       $result->signedPayload = StrKey::decodeXdrSignedPayload($value);
                       return $result;
                   }
-                  throw new \\InvalidArgumentException(
+                  throw new InvalidArgumentException(
                       'Invalid XdrSignerKey strkey prefix: ' . XdrJsonHelper::safePreview($value)
                   );
         PHP
@@ -268,7 +268,7 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrSignedPayload JSON value, got ' . get_debug_type($value)
                       );
                   }
@@ -293,20 +293,20 @@ module StellarJsonOverrides
                           return 'native';
                       case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
                           if ($this->alphaNum4 === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrAsset alphaNum4 field is null'
                               );
                           }
                           return ['credit_alphanum4' => $this->alphaNum4->toJsonValue()];
                       case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                           if ($this->alphaNum12 === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrAsset alphaNum12 field is null'
                               );
                           }
                           return ['credit_alphanum12' => $this->alphaNum12->toJsonValue()];
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrAsset discriminant: ' . $this->type->getValue()
                           );
                   }
@@ -319,14 +319,14 @@ module StellarJsonOverrides
                   }
                   if (is_string($value)) {
                       if ($value !== 'native') {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrAsset bare string: ' . XdrJsonHelper::safePreview($value)
                           );
                       }
                       return new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
                   }
                   if (!is_array($value) || count($value) !== 1) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected single-key object or "native" for XdrAsset JSON value'
                       );
                   }
@@ -341,7 +341,7 @@ module StellarJsonOverrides
                       $result->alphaNum12 = XdrAssetAlphaNum12::fromJsonValue($value['credit_alphanum12']);
                       return $result;
                   }
-                  throw new \\InvalidArgumentException(
+                  throw new InvalidArgumentException(
                       'Unknown arm key for XdrAsset: ' . XdrJsonHelper::safePreview($key)
                   );
         PHP
@@ -361,34 +361,34 @@ module StellarJsonOverrides
                           return 'none';
                       case XdrMemoType::MEMO_TEXT:
                           if ($this->text === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrMemo text field is null'
                               );
                           }
                           return ['text' => XdrJsonHelper::escapeString($this->text)];
                       case XdrMemoType::MEMO_ID:
                           if ($this->id === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrMemo id field is null'
                               );
                           }
                           return ['id' => XdrJsonHelper::uint64ToString($this->id)];
                       case XdrMemoType::MEMO_HASH:
                           if ($this->hash === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrMemo hash field is null'
                               );
                           }
                           return ['hash' => XdrJsonHelper::bytesToHex($this->hash)];
                       case XdrMemoType::MEMO_RETURN:
                           if ($this->returnHash === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrMemo returnHash field is null'
                               );
                           }
                           return ['return' => XdrJsonHelper::bytesToHex($this->returnHash)];
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrMemo discriminant: ' . $this->type->getValue()
                           );
                   }
@@ -401,21 +401,21 @@ module StellarJsonOverrides
                   }
                   if (is_string($value)) {
                       if ($value !== 'none') {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrMemo bare string: ' . XdrJsonHelper::safePreview($value)
                           );
                       }
                       return new static(new XdrMemoType(XdrMemoType::MEMO_NONE));
                   }
                   if (!is_array($value) || count($value) !== 1) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected single-key object or "none" for XdrMemo JSON value'
                       );
                   }
                   $key = array_key_first($value);
                   if ($key === 'text') {
                       if (!is_string($value['text'])) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Expected string for XdrMemo text arm, got ' . get_debug_type($value['text'])
                           );
                       }
@@ -426,7 +426,7 @@ module StellarJsonOverrides
                   if ($key === 'id') {
                       $result = new static(new XdrMemoType(XdrMemoType::MEMO_ID));
                       if (!is_string($value['id']) && !is_int($value['id'])) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Expected string or int for XdrMemo id arm, got ' . get_debug_type($value['id'])
                           );
                       }
@@ -435,7 +435,7 @@ module StellarJsonOverrides
                   }
                   if ($key === 'hash') {
                       if (!is_string($value['hash'])) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Expected hex string for XdrMemo hash arm, got ' . get_debug_type($value['hash'])
                           );
                       }
@@ -445,7 +445,7 @@ module StellarJsonOverrides
                   }
                   if ($key === 'return') {
                       if (!is_string($value['return'])) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Expected hex string for XdrMemo return arm, got ' . get_debug_type($value['return'])
                           );
                       }
@@ -453,7 +453,7 @@ module StellarJsonOverrides
                       $result->returnHash = XdrJsonHelper::hexToBytes($value['return']);
                       return $result;
                   }
-                  throw new \\InvalidArgumentException(
+                  throw new InvalidArgumentException(
                       'Unknown arm key for XdrMemo: ' . XdrJsonHelper::safePreview($key)
                   );
         PHP
@@ -481,7 +481,7 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrUInt128Parts JSON value, got ' . get_debug_type($value)
                       );
                   }
@@ -509,7 +509,7 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrInt128Parts JSON value, got ' . get_debug_type($value)
                       );
                   }
@@ -545,7 +545,7 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrUInt256Parts JSON value, got ' . get_debug_type($value)
                       );
                   }
@@ -578,7 +578,7 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrInt256Parts JSON value, got ' . get_debug_type($value)
                       );
                   }
@@ -613,19 +613,19 @@ module StellarJsonOverrides
                   switch ($this->type->getValue()) {
                       case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
                           if ($this->hash === null || $this->hash === '') {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrClaimableBalanceID hash field is null or empty'
                               );
                           }
                           $rawHash = hex2bin($this->hash);
                           if ($rawHash === false || strlen($rawHash) !== 32) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrClaimableBalanceID hash must be a 64-char hex string'
                               );
                           }
                           return StrKey::encodeClaimableBalanceId($rawHash);
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrClaimableBalanceID discriminant: ' . $this->type->getValue()
                           );
                   }
@@ -634,20 +634,20 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrClaimableBalanceID JSON value, got ' . get_debug_type($value)
                       );
                   }
                   $raw = StrKey::decodeClaimableBalanceId($value);
                   if (strlen($raw) !== 33) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Decoded XdrClaimableBalanceID must be 33 bytes; got ' . strlen($raw)
                           . ' for input ' . XdrJsonHelper::safePreview($value)
                       );
                   }
                   $typeByte = ord($raw[0]);
                   if ($typeByte !== XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Unsupported XdrClaimableBalanceID type byte: ' . $typeByte
                           . ' for input ' . XdrJsonHelper::safePreview($value)
                       );
@@ -673,21 +673,21 @@ module StellarJsonOverrides
                   switch ($this->type->getValue()) {
                       case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
                           if ($this->accountId === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSCAddress accountId field is null'
                               );
                           }
                           return $this->accountId->toJsonValue();
                       case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
                           if ($this->contractId === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSCAddress contractId field is null'
                               );
                           }
                           return StrKey::encodeContractIdHex($this->contractId);
                       case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
                           if ($this->muxedAccount === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSCAddress muxedAccount field is null'
                               );
                           }
@@ -696,20 +696,20 @@ module StellarJsonOverrides
                           return StrKey::encodeMuxedAccountId($packed);
                       case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
                           if ($this->claimableBalanceId === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSCAddress claimableBalanceId field is null'
                               );
                           }
                           return $this->claimableBalanceId->toJsonValue();
                       case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                           if ($this->liquidityPoolId === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrSCAddress liquidityPoolId field is null'
                               );
                           }
                           return StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolId);
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrSCAddress discriminant: ' . $this->type->getValue()
                           );
                   }
@@ -718,12 +718,12 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrSCAddress JSON value, got ' . get_debug_type($value)
                       );
                   }
                   if ($value === '') {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Empty XdrSCAddress JSON value'
                       );
                   }
@@ -741,7 +741,7 @@ module StellarJsonOverrides
                   if ($prefix === 'M') {
                       $raw = StrKey::decodeMuxedAccountId($value);
                       if (strlen($raw) !== 40) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Decoded muxed account must be 40 bytes; got ' . strlen($raw)
                           );
                       }
@@ -762,7 +762,7 @@ module StellarJsonOverrides
                       $result->liquidityPoolId = StrKey::decodeLiquidityPoolIdHex($value);
                       return $result;
                   }
-                  throw new \\InvalidArgumentException(
+                  throw new InvalidArgumentException(
                       'Invalid XdrSCAddress strkey prefix: ' . XdrJsonHelper::safePreview($value)
                   );
         PHP
@@ -788,20 +788,20 @@ module StellarJsonOverrides
                   switch ($this->type->getValue()) {
                       case XdrCryptoKeyType::KEY_TYPE_ED25519:
                           if ($this->ed25519 === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrMuxedAccount ed25519 field is null'
                               );
                           }
                           return StrKey::encodeAccountId($this->ed25519);
                       case XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519:
                           if ($this->med25519 === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrMuxedAccount med25519 field is null'
                               );
                           }
                           return $this->med25519->toJsonValue();
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrMuxedAccount discriminant: ' . $this->type->getValue()
                           );
                   }
@@ -810,12 +810,12 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrMuxedAccount JSON value, got ' . get_debug_type($value)
                       );
                   }
                   if ($value === '') {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Empty XdrMuxedAccount JSON value'
                       );
                   }
@@ -834,7 +834,7 @@ module StellarJsonOverrides
                       // XdrSCAddress.
                       $raw = StrKey::decodeMuxedAccountId($value);
                       if (strlen($raw) !== 40) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Decoded muxed account must be 40 bytes; got ' . strlen($raw)
                               . ' for input ' . XdrJsonHelper::safePreview($value)
                           );
@@ -842,7 +842,7 @@ module StellarJsonOverrides
                       $med25519 = XdrMuxedAccountMed25519::fromJsonValue($value);
                       return new XdrMuxedAccount(null, $med25519);
                   }
-                  throw new \\InvalidArgumentException(
+                  throw new InvalidArgumentException(
                       'Invalid XdrMuxedAccount strkey prefix: ' . XdrJsonHelper::safePreview($value)
                   );
         PHP
@@ -874,7 +874,7 @@ module StellarJsonOverrides
                   switch ($this->type->getValue()) {
                       case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
                           if ($this->assetCode4 === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrAllowTrustOperationAsset assetCode4 field is null'
                               );
                           }
@@ -882,7 +882,7 @@ module StellarJsonOverrides
                           return ['credit_alphanum4' => XdrJsonHelper::escapeString(rtrim($this->assetCode4, "\\x00"))];
                       case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                           if ($this->assetCode12 === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrAllowTrustOperationAsset assetCode12 field is null'
                               );
                           }
@@ -893,14 +893,14 @@ module StellarJsonOverrides
                           $trimmed = rtrim($this->assetCode12, "\\x00");
                           $len = strlen($trimmed);
                           if ($len === 0) {
-                              throw new \\InvalidArgumentException('AssetCode12 must not be all-null');
+                              throw new InvalidArgumentException('AssetCode12 must not be all-null');
                           }
                           if ($len <= 4) {
                               $trimmed = str_pad($trimmed, 5, "\\x00", STR_PAD_RIGHT);
                           }
                           return ['credit_alphanum12' => XdrJsonHelper::escapeString($trimmed)];
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown XdrAllowTrustOperationAsset discriminant: ' . $this->type->getValue()
                           );
                   }
@@ -912,26 +912,26 @@ module StellarJsonOverrides
                       unset($value['$schema']);
                   }
                   if (!is_array($value) || count($value) !== 1) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected single-key object for XdrAllowTrustOperationAsset, got ' . get_debug_type($value)
                       );
                   }
                   $key = array_key_first($value);
                   if (!is_string($key)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string arm key for XdrAllowTrustOperationAsset, got ' . get_debug_type($key)
                       );
                   }
                   $arm = $value[$key];
                   if ($key === 'credit_alphanum4') {
                       if (!is_string($arm)) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Expected string for credit_alphanum4 arm, got ' . get_debug_type($arm)
                           );
                       }
                       $decoded = XdrJsonHelper::unescapeString($arm);
                       if (strlen($decoded) > 4) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)
                           );
                       }
@@ -941,19 +941,19 @@ module StellarJsonOverrides
                   }
                   if ($key === 'credit_alphanum12') {
                       if (!is_string($arm)) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Expected string for credit_alphanum12 arm, got ' . get_debug_type($arm)
                           );
                       }
                       $decoded = XdrJsonHelper::unescapeString($arm);
                       $len = strlen($decoded);
                       if ($len <= 4) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'
                           );
                       }
                       if ($len > 12) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'AssetCode12 must not exceed 12 bytes; got ' . $len
                           );
                       }
@@ -961,7 +961,7 @@ module StellarJsonOverrides
                       $result->assetCode12 = str_pad($decoded, 12, "\\x00", STR_PAD_RIGHT);
                       return $result;
                   }
-                  throw new \\InvalidArgumentException(
+                  throw new InvalidArgumentException(
                       'Unknown arm key for XdrAllowTrustOperationAsset: ' . XdrJsonHelper::safePreview($key)
                   );
         PHP
@@ -996,7 +996,7 @@ module StellarJsonOverrides
                       self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD => 'ed25519_signed_payload',
                       XdrSignerKeyType::MUXED_ED25519 => 'muxed_ed25519',
                       // @codeCoverageIgnoreStart
-                      default => throw new \\InvalidArgumentException(
+                      default => throw new InvalidArgumentException(
                           'Unknown XdrSignerKeyType enum value: ' . $this->value
                       ),
                       // @codeCoverageIgnoreEnd
@@ -1006,7 +1006,7 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrSignerKeyType JSON value, got ' . get_debug_type($value)
                       );
                   }
@@ -1016,7 +1016,7 @@ module StellarJsonOverrides
                       'hash_x' => new static(self::SIGNER_KEY_TYPE_HASH_X),
                       'ed25519_signed_payload' => new static(self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD),
                       'muxed_ed25519' => new static(XdrSignerKeyType::MUXED_ED25519),
-                      default => throw new \\InvalidArgumentException(
+                      default => throw new InvalidArgumentException(
                           'Unknown XdrSignerKeyType JSON value: ' . XdrJsonHelper::safePreview($value)
                       ),
                   };
@@ -1051,29 +1051,29 @@ module StellarJsonOverrides
                       unset($value['$schema']);
                   }
                   if (!is_array($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected object for XdrTimeBounds JSON value, got ' . get_debug_type($value)
                       );
                   }
                   if (!array_key_exists('min_time', $value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Missing required field min_time for XdrTimeBounds'
                       );
                   }
                   if (!array_key_exists('max_time', $value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Missing required field max_time for XdrTimeBounds'
                       );
                   }
                   $minRaw = $value['min_time'];
                   $maxRaw = $value['max_time'];
                   if (!is_string($minRaw) && !is_int($minRaw)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected uint64 JSON value (string or int) for min_time, got ' . get_debug_type($minRaw)
                       );
                   }
                   if (!is_string($maxRaw) && !is_int($maxRaw)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected uint64 JSON value (string or int) for max_time, got ' . get_debug_type($maxRaw)
                       );
                   }
@@ -1121,20 +1121,20 @@ module StellarJsonOverrides
                       unset($value['$schema']);
                   }
                   if (!is_array($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected object for XdrTransaction JSON value, got ' . get_debug_type($value)
                       );
                   }
                   foreach (['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'] as $required) {
                       if (!array_key_exists($required, $value)) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Missing required field ' . $required . ' for XdrTransaction'
                           );
                       }
                   }
                   $sourceAccount = XdrMuxedAccount::fromJsonValue($value['source_account']);
                   if (!is_int($value['fee'])) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                               'Expected int for fee, got ' . get_debug_type($value['fee'])
                       );
                   }
@@ -1143,7 +1143,7 @@ module StellarJsonOverrides
                   $preconditions = XdrPreconditions::fromJsonValue($value['cond']);
                   $memo = XdrMemo::fromJsonValue($value['memo']);
                   if (!is_array($value['operations'])) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
                       );
                   }
@@ -1191,25 +1191,25 @@ module StellarJsonOverrides
                       unset($value['$schema']);
                   }
                   if (!is_array($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected object for XdrTransactionV0 JSON value, got ' . get_debug_type($value)
                       );
                   }
                   foreach (['source_account_ed25519', 'fee', 'seq_num', 'time_bounds', 'memo', 'operations', 'ext'] as $required) {
                       if (!array_key_exists($required, $value)) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Missing required field ' . $required . ' for XdrTransactionV0'
                           );
                       }
                   }
                   if (!is_string($value['source_account_ed25519'])) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected hex string for source_account_ed25519, got ' . get_debug_type($value['source_account_ed25519'])
                       );
                   }
                   $sourceAccountEd25519 = XdrJsonHelper::hexToBytes($value['source_account_ed25519']);
                   if (!is_int($value['fee'])) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                               'Expected int for fee, got ' . get_debug_type($value['fee'])
                       );
                   }
@@ -1221,7 +1221,7 @@ module StellarJsonOverrides
                   }
                   $memo = XdrMemo::fromJsonValue($value['memo']);
                   if (!is_array($value['operations'])) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
                       );
                   }
@@ -1264,22 +1264,22 @@ module StellarJsonOverrides
                       unset($value['$schema']);
                   }
                   if (!is_array($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected object for XdrManageDataOperation JSON value, got ' . get_debug_type($value)
                       );
                   }
                   if (!array_key_exists('data_name', $value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Missing required field data_name for XdrManageDataOperation'
                       );
                   }
                   if (!array_key_exists('data_value', $value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Missing required field data_value for XdrManageDataOperation'
                       );
                   }
                   if (!is_string($value['data_name'])) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for data_name, got ' . get_debug_type($value['data_name'])
                       );
                   }
@@ -1287,7 +1287,7 @@ module StellarJsonOverrides
                   $rawBytes = null;
                   if ($value['data_value'] !== null) {
                       if (!is_string($value['data_value'])) {
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Expected hex string or null for data_value, got ' . get_debug_type($value['data_value'])
                           );
                       }
@@ -1318,21 +1318,21 @@ module StellarJsonOverrides
                   switch ($this->type->getValue()) {
                       case XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
                           if ($this->invokeContract === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrHostFunction invokeContract field is null'
                               );
                           }
                           return ['invoke_contract' => $this->invokeContract->toJsonValue()];
                       case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT:
                           if ($this->createContract === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrHostFunction createContract field is null'
                               );
                           }
                           return ['create_contract' => $this->createContract->toJsonValue()];
                       case XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
                           if ($this->wasm === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrHostFunction wasm field is null'
                               );
                           }
@@ -1340,14 +1340,14 @@ module StellarJsonOverrides
                           return ['upload_contract_wasm' => XdrJsonHelper::bytesToHex($this->wasm->getValue())];
                       case XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
                           if ($this->createContractV2 === null) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'XdrHostFunction createContractV2 field is null'
                               );
                           }
                           return ['create_contract_v2' => $this->createContractV2->toJsonValue()];
                       // @codeCoverageIgnoreStart
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown discriminant for type on XdrHostFunctionType'
                           );
                       // @codeCoverageIgnoreEnd
@@ -1360,13 +1360,13 @@ module StellarJsonOverrides
                       unset($value['$schema']);
                   }
                   if (!is_array($value) || count($value) !== 1) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected single-key object for XdrHostFunction, got ' . get_debug_type($value)
                       );
                   }
                   $key = array_key_first($value);
                   if (!is_string($key)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string arm key for XdrHostFunction, got ' . get_debug_type($key)
                       );
                   }
@@ -1382,7 +1382,7 @@ module StellarJsonOverrides
                           return $r;
                       case 'upload_contract_wasm':
                           if (!is_string($arm)) {
-                              throw new \\InvalidArgumentException(
+                              throw new InvalidArgumentException(
                                   'Expected hex string for upload_contract_wasm arm, got ' . get_debug_type($arm)
                               );
                           }
@@ -1395,7 +1395,7 @@ module StellarJsonOverrides
                           $r->createContractV2 = XdrCreateContractArgsV2::fromJsonValue($arm);
                           return $r;
                       default:
-                          throw new \\InvalidArgumentException(
+                          throw new InvalidArgumentException(
                               'Unknown arm key for XdrHostFunction: ' . XdrJsonHelper::safePreview($key)
                           );
                   }
@@ -1416,13 +1416,13 @@ module StellarJsonOverrides
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (!is_string($value)) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Expected string for XdrMuxedAccountMed25519 JSON value, got ' . get_debug_type($value)
                       );
                   }
                   $raw = StrKey::decodeMuxedAccountId($value);
                   if (strlen($raw) !== 40) {
-                      throw new \\InvalidArgumentException(
+                      throw new InvalidArgumentException(
                           'Decoded muxed account must be 40 bytes; got ' . strlen($raw)
                       );
                   }

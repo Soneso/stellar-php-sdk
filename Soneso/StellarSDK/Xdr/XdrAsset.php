@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrAsset {
 
     public XdrAssetType $type;
@@ -65,7 +68,7 @@ class XdrAsset {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -76,20 +79,20 @@ class XdrAsset {
                 return 'native';
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
                 if ($this->alphaNum4 === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrAsset alphaNum4 field is null'
                     );
                 }
                 return ['credit_alphanum4' => $this->alphaNum4->toJsonValue()];
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 if ($this->alphaNum12 === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrAsset alphaNum12 field is null'
                     );
                 }
                 return ['credit_alphanum12' => $this->alphaNum12->toJsonValue()];
             default:
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Unknown XdrAsset discriminant: ' . $this->type->getValue()
                 );
         }
@@ -101,14 +104,14 @@ class XdrAsset {
         }
         if (is_string($value)) {
             if ($value !== 'native') {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Unknown XdrAsset bare string: ' . XdrJsonHelper::safePreview($value)
                 );
             }
             return new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or "native" for XdrAsset JSON value'
             );
         }
@@ -123,13 +126,13 @@ class XdrAsset {
             $result->alphaNum12 = XdrAssetAlphaNum12::fromJsonValue($value['credit_alphanum12']);
             return $result;
         }
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Unknown arm key for XdrAsset: ' . XdrJsonHelper::safePreview($key)
         );
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -139,8 +142,8 @@ class XdrAsset {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrCreateAccountResult {
 
     public XdrCreateAccountResultCode $resultCode;
@@ -57,7 +60,7 @@ class XdrCreateAccountResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -70,7 +73,7 @@ class XdrCreateAccountResult {
             XdrCreateAccountResultCode::LOW_RESERVE => 'low_reserve',
             XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST => 'already_exist',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for resultCode on XdrCreateAccountResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -88,18 +91,18 @@ class XdrCreateAccountResult {
                 'underfunded' => new static(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::UNDERFUNDED)),
                 'low_reserve' => new static(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::LOW_RESERVE)),
                 'already_exist' => new static(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST)),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrCreateAccountResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Expected void-arm string for XdrCreateAccountResult, got ' . get_debug_type($value)
         );
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -109,8 +112,8 @@ class XdrCreateAccountResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrCreateAccountResultCode {
     public int $value;
 
@@ -56,7 +59,7 @@ class XdrCreateAccountResultCode {
             case -4:
                 return new XdrCreateAccountResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -67,7 +70,7 @@ class XdrCreateAccountResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -80,7 +83,7 @@ class XdrCreateAccountResultCode {
             self::LOW_RESERVE => 'low_reserve',
             self::ACCOUNT_ALREADY_EXIST => 'account_already_exist',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrCreateAccountResultCode enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -89,7 +92,7 @@ class XdrCreateAccountResultCode {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrCreateAccountResultCode JSON value, got ' . get_debug_type($value)
             );
         }
@@ -99,14 +102,14 @@ class XdrCreateAccountResultCode {
             'underfunded' => new static(self::UNDERFUNDED),
             'low_reserve' => new static(self::LOW_RESERVE),
             'account_already_exist' => new static(self::ACCOUNT_ALREADY_EXIST),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrCreateAccountResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -116,8 +119,8 @@ class XdrCreateAccountResultCode {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

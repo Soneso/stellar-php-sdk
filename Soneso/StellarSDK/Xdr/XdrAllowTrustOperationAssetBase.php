@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrAllowTrustOperationAssetBase {
 
     public XdrAssetType $type;
@@ -61,7 +64,7 @@ class XdrAllowTrustOperationAssetBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -70,7 +73,7 @@ class XdrAllowTrustOperationAssetBase {
         switch ($this->type->getValue()) {
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
                 if ($this->assetCode4 === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrAllowTrustOperationAsset assetCode4 field is null'
                     );
                 }
@@ -78,7 +81,7 @@ class XdrAllowTrustOperationAssetBase {
                 return ['credit_alphanum4' => XdrJsonHelper::escapeString(rtrim($this->assetCode4, "\x00"))];
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 if ($this->assetCode12 === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrAllowTrustOperationAsset assetCode12 field is null'
                     );
                 }
@@ -89,14 +92,14 @@ class XdrAllowTrustOperationAssetBase {
                 $trimmed = rtrim($this->assetCode12, "\x00");
                 $len = strlen($trimmed);
                 if ($len === 0) {
-                    throw new \InvalidArgumentException('AssetCode12 must not be all-null');
+                    throw new InvalidArgumentException('AssetCode12 must not be all-null');
                 }
                 if ($len <= 4) {
                     $trimmed = str_pad($trimmed, 5, "\x00", STR_PAD_RIGHT);
                 }
                 return ['credit_alphanum12' => XdrJsonHelper::escapeString($trimmed)];
             default:
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Unknown XdrAllowTrustOperationAsset discriminant: ' . $this->type->getValue()
                 );
         }
@@ -107,26 +110,26 @@ class XdrAllowTrustOperationAssetBase {
             unset($value['$schema']);
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object for XdrAllowTrustOperationAsset, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrAllowTrustOperationAsset, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         if ($key === 'credit_alphanum4') {
             if (!is_string($arm)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Expected string for credit_alphanum4 arm, got ' . get_debug_type($arm)
                 );
             }
             $decoded = XdrJsonHelper::unescapeString($arm);
             if (strlen($decoded) > 4) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)
                 );
             }
@@ -136,19 +139,19 @@ class XdrAllowTrustOperationAssetBase {
         }
         if ($key === 'credit_alphanum12') {
             if (!is_string($arm)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Expected string for credit_alphanum12 arm, got ' . get_debug_type($arm)
                 );
             }
             $decoded = XdrJsonHelper::unescapeString($arm);
             $len = strlen($decoded);
             if ($len <= 4) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'
                 );
             }
             if ($len > 12) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'AssetCode12 must not exceed 12 bytes; got ' . $len
                 );
             }
@@ -156,13 +159,13 @@ class XdrAllowTrustOperationAssetBase {
             $result->assetCode12 = str_pad($decoded, 12, "\x00", STR_PAD_RIGHT);
             return $result;
         }
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Unknown arm key for XdrAllowTrustOperationAsset: ' . XdrJsonHelper::safePreview($key)
         );
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -172,8 +175,8 @@ class XdrAllowTrustOperationAssetBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

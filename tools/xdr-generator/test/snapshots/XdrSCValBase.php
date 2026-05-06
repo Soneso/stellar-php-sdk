@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCValBase {
 
     public XdrSCValType $type;
@@ -261,7 +264,7 @@ class XdrSCValBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -291,7 +294,7 @@ class XdrSCValBase {
             XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE => 'ledger_key_contract_instance',
             XdrSCValType::SCV_LEDGER_KEY_NONCE => ['ledger_key_nonce' => $this->nonceKey->toJsonValue()],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrSCValType'
             ),
             // @codeCoverageIgnoreEnd
@@ -306,110 +309,113 @@ class XdrSCValBase {
             return match ($value) {
                 'void' => new static(new XdrSCValType(XdrSCValType::SCV_VOID)),
                 'ledger_key_contract_instance' => new static(new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE)),
-                'bool' => throw new \InvalidArgumentException(
+                'bool' => throw new InvalidArgumentException(
                     "Arm 'bool' on XdrSCValBase is non-void; supply a single-key object {\"bool\": <payload>} instead of a bare string."
                 ),
-                'error' => throw new \InvalidArgumentException(
+                'error' => throw new InvalidArgumentException(
                     "Arm 'error' on XdrSCValBase is non-void; supply a single-key object {\"error\": <payload>} instead of a bare string."
                 ),
-                'u32' => throw new \InvalidArgumentException(
+                'u32' => throw new InvalidArgumentException(
                     "Arm 'u32' on XdrSCValBase is non-void; supply a single-key object {\"u32\": <payload>} instead of a bare string."
                 ),
-                'i32' => throw new \InvalidArgumentException(
+                'i32' => throw new InvalidArgumentException(
                     "Arm 'i32' on XdrSCValBase is non-void; supply a single-key object {\"i32\": <payload>} instead of a bare string."
                 ),
-                'u64' => throw new \InvalidArgumentException(
+                'u64' => throw new InvalidArgumentException(
                     "Arm 'u64' on XdrSCValBase is non-void; supply a single-key object {\"u64\": <payload>} instead of a bare string."
                 ),
-                'i64' => throw new \InvalidArgumentException(
+                'i64' => throw new InvalidArgumentException(
                     "Arm 'i64' on XdrSCValBase is non-void; supply a single-key object {\"i64\": <payload>} instead of a bare string."
                 ),
-                'timepoint' => throw new \InvalidArgumentException(
+                'timepoint' => throw new InvalidArgumentException(
                     "Arm 'timepoint' on XdrSCValBase is non-void; supply a single-key object {\"timepoint\": <payload>} instead of a bare string."
                 ),
-                'duration' => throw new \InvalidArgumentException(
+                'duration' => throw new InvalidArgumentException(
                     "Arm 'duration' on XdrSCValBase is non-void; supply a single-key object {\"duration\": <payload>} instead of a bare string."
                 ),
-                'u128' => throw new \InvalidArgumentException(
+                'u128' => throw new InvalidArgumentException(
                     "Arm 'u128' on XdrSCValBase is non-void; supply a single-key object {\"u128\": <payload>} instead of a bare string."
                 ),
-                'i128' => throw new \InvalidArgumentException(
+                'i128' => throw new InvalidArgumentException(
                     "Arm 'i128' on XdrSCValBase is non-void; supply a single-key object {\"i128\": <payload>} instead of a bare string."
                 ),
-                'u256' => throw new \InvalidArgumentException(
+                'u256' => throw new InvalidArgumentException(
                     "Arm 'u256' on XdrSCValBase is non-void; supply a single-key object {\"u256\": <payload>} instead of a bare string."
                 ),
-                'i256' => throw new \InvalidArgumentException(
+                'i256' => throw new InvalidArgumentException(
                     "Arm 'i256' on XdrSCValBase is non-void; supply a single-key object {\"i256\": <payload>} instead of a bare string."
                 ),
-                'bytes' => throw new \InvalidArgumentException(
+                'bytes' => throw new InvalidArgumentException(
                     "Arm 'bytes' on XdrSCValBase is non-void; supply a single-key object {\"bytes\": <payload>} instead of a bare string."
                 ),
-                'string' => throw new \InvalidArgumentException(
+                'string' => throw new InvalidArgumentException(
                     "Arm 'string' on XdrSCValBase is non-void; supply a single-key object {\"string\": <payload>} instead of a bare string."
                 ),
-                'symbol' => throw new \InvalidArgumentException(
+                'symbol' => throw new InvalidArgumentException(
                     "Arm 'symbol' on XdrSCValBase is non-void; supply a single-key object {\"symbol\": <payload>} instead of a bare string."
                 ),
-                'vec' => throw new \InvalidArgumentException(
+                'vec' => throw new InvalidArgumentException(
                     "Arm 'vec' on XdrSCValBase is non-void; supply a single-key object {\"vec\": <payload>} instead of a bare string."
                 ),
-                'map' => throw new \InvalidArgumentException(
+                'map' => throw new InvalidArgumentException(
                     "Arm 'map' on XdrSCValBase is non-void; supply a single-key object {\"map\": <payload>} instead of a bare string."
                 ),
-                'address' => throw new \InvalidArgumentException(
+                'address' => throw new InvalidArgumentException(
                     "Arm 'address' on XdrSCValBase is non-void; supply a single-key object {\"address\": <payload>} instead of a bare string."
                 ),
-                'contract_instance' => throw new \InvalidArgumentException(
+                'contract_instance' => throw new InvalidArgumentException(
                     "Arm 'contract_instance' on XdrSCValBase is non-void; supply a single-key object {\"contract_instance\": <payload>} instead of a bare string."
                 ),
-                'ledger_key_nonce' => throw new \InvalidArgumentException(
+                'ledger_key_nonce' => throw new InvalidArgumentException(
                     "Arm 'ledger_key_nonce' on XdrSCValBase is non-void; supply a single-key object {\"ledger_key_nonce\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrSCValBase void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrSCValBase, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrSCValBase, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         return match ($key) {
-            'bool' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_BOOL)); $r->b = (static function ($v) { if (!is_bool($v)) { throw new \InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'bool' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_BOOL)); $r->b = (static function ($v) { if (!is_bool($v)) { throw new InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
             'error' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_ERROR)); $r->error = XdrSCError::fromJsonValue($arm); return $r; })(),
-            'u32' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_U32)); $r->u32 = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
-            'i32' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_I32)); $r->i32 = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
-            'u64' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_U64)); $r->u64 = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($arm); return $r; })(),
-            'i64' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_I64)); $r->i64 = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($arm); return $r; })(),
-            'timepoint' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_TIMEPOINT)); $r->timepoint = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($arm); return $r; })(),
-            'duration' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_DURATION)); $r->duration = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($arm); return $r; })(),
+            'u32' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_U32)); $r->u32 = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'i32' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_I32)); $r->i32 = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'u64' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_U64)); $r->u64 = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($arm); return $r; })(),
+            'i64' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_I64)); $r->i64 = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($arm); return $r; })(),
+            'timepoint' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_TIMEPOINT)); $r->timepoint = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($arm); return $r; })(),
+            'duration' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_DURATION)); $r->duration = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($arm); return $r; })(),
             'u128' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_U128)); $r->u128 = XdrUInt128Parts::fromJsonValue($arm); return $r; })(),
             'i128' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_I128)); $r->i128 = XdrInt128Parts::fromJsonValue($arm); return $r; })(),
             'u256' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_U256)); $r->u256 = XdrUInt256Parts::fromJsonValue($arm); return $r; })(),
             'i256' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_I256)); $r->i256 = XdrInt256Parts::fromJsonValue($arm); return $r; })(),
             'bytes' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_BYTES)); $r->bytes = XdrDataValueMandatory::fromJsonValue($arm); return $r; })(),
-            'string' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_STRING)); $r->str = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($arm); return $r; })(),
-            'symbol' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_SYMBOL)); $r->sym = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($arm); return $r; })(),
-            'vec' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_VEC)); $r->vec = ($arm === null ? null : (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrSCVal::fromJsonValue($item); } return $out; })($arm)); return $r; })(),
-            'map' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_MAP)); $r->map = ($arm === null ? null : (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrSCMapEntry::fromJsonValue($item); } return $out; })($arm)); return $r; })(),
+            'string' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_STRING)); $r->str = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($arm); return $r; })(),
+            'symbol' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_SYMBOL)); $r->sym = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($arm); return $r; })(),
+            'vec' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_VEC)); $r->vec = ($arm === null ? null : (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrSCVal::fromJsonValue($item); } return $out; })($arm)); return $r; })(),
+            'map' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_MAP)); $r->map = ($arm === null ? null : (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrSCMapEntry::fromJsonValue($item); } return $out; })($arm)); return $r; })(),
             'address' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_ADDRESS)); $r->address = XdrSCAddress::fromJsonValue($arm); return $r; })(),
             'contract_instance' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_CONTRACT_INSTANCE)); $r->instance = XdrSCContractInstance::fromJsonValue($arm); return $r; })(),
             'ledger_key_nonce' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_NONCE)); $r->nonceKey = XdrSCNonceKey::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrSCValBase: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
     public function toJson(): string {
         return json_encode(
             $this->toJsonValue(),
@@ -417,6 +423,10 @@ class XdrSCValBase {
         );
     }
 
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }

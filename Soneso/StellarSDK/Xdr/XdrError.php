@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrError {
 
     public XdrErrorCode $code;
@@ -39,7 +42,7 @@ class XdrError {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -56,30 +59,30 @@ class XdrError {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrError JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('code', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field code for XdrError'
             );
         }
         $code = XdrErrorCode::fromJsonValue($value['code']);
         if (!array_key_exists('msg', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field msg for XdrError'
             );
         }
         if (!is_string($value['msg'])) {
-            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['msg']));
+            throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['msg']));
         }
         $msg = XdrJsonHelper::unescapeString($value['msg']);
         return new static($code, $msg);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -89,8 +92,8 @@ class XdrError {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrRevokeSponsorshipResult {
 
     public XdrRevokeSponsorshipResultCode $resultCode;
@@ -59,7 +62,7 @@ class XdrRevokeSponsorshipResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -73,7 +76,7 @@ class XdrRevokeSponsorshipResult {
             XdrRevokeSponsorshipResultCode::ONLY_TRANSFERABLE => 'only_transferable',
             XdrRevokeSponsorshipResultCode::MALFORMED => 'malformed',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for resultCode on XdrRevokeSponsorshipResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -92,18 +95,18 @@ class XdrRevokeSponsorshipResult {
                 'low_reserve' => new static(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::LOW_RESERVE)),
                 'only_transferable' => new static(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::ONLY_TRANSFERABLE)),
                 'malformed' => new static(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::MALFORMED)),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrRevokeSponsorshipResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Expected void-arm string for XdrRevokeSponsorshipResult, got ' . get_debug_type($value)
         );
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -113,8 +116,8 @@ class XdrRevokeSponsorshipResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

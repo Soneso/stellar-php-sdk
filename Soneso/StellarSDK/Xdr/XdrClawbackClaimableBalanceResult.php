@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrClawbackClaimableBalanceResult {
 
     public XdrClawbackClaimableBalanceResultCode $resultCode;
@@ -55,7 +58,7 @@ class XdrClawbackClaimableBalanceResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -67,7 +70,7 @@ class XdrClawbackClaimableBalanceResult {
             XdrClawbackClaimableBalanceResultCode::NOT_ISSUER => 'not_issuer',
             XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED => 'not_clawback_enabled',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for resultCode on XdrClawbackClaimableBalanceResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -84,18 +87,18 @@ class XdrClawbackClaimableBalanceResult {
                 'does_not_exist' => new static(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::DOES_NOT_EXIST)),
                 'not_issuer' => new static(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_ISSUER)),
                 'not_clawback_enabled' => new static(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED)),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrClawbackClaimableBalanceResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Expected void-arm string for XdrClawbackClaimableBalanceResult, got ' . get_debug_type($value)
         );
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -105,8 +108,8 @@ class XdrClawbackClaimableBalanceResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

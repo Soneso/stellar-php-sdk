@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrTrustLineFlags {
     public int $value;
 
@@ -44,7 +47,7 @@ class XdrTrustLineFlags {
             case 4:
                 return new XdrTrustLineFlags($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -55,7 +58,7 @@ class XdrTrustLineFlags {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -66,7 +69,7 @@ class XdrTrustLineFlags {
             self::AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG => 'authorized_to_maintain_liabilities_flag',
             self::TRUSTLINE_CLAWBACK_ENABLED_FLAG => 'trustline_clawback_enabled_flag',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrTrustLineFlags enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -75,7 +78,7 @@ class XdrTrustLineFlags {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrTrustLineFlags JSON value, got ' . get_debug_type($value)
             );
         }
@@ -83,14 +86,14 @@ class XdrTrustLineFlags {
             'authorized_flag' => new static(self::AUTHORIZED_FLAG),
             'authorized_to_maintain_liabilities_flag' => new static(self::AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG),
             'trustline_clawback_enabled_flag' => new static(self::TRUSTLINE_CLAWBACK_ENABLED_FLAG),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrTrustLineFlags JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -100,8 +103,8 @@ class XdrTrustLineFlags {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

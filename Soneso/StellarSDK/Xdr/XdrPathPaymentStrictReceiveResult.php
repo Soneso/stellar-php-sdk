@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrPathPaymentStrictReceiveResult {
 
     public XdrPathPaymentStrictReceiveResultCode $code;
@@ -87,7 +90,7 @@ class XdrPathPaymentStrictReceiveResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -108,7 +111,7 @@ class XdrPathPaymentStrictReceiveResult {
             XdrPathPaymentStrictReceiveResultCode::OFFER_CROSS_SELF => 'offer_cross_self',
             XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX => 'over_sendmax',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for code on XdrPathPaymentStrictReceiveResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -132,25 +135,25 @@ class XdrPathPaymentStrictReceiveResult {
                 'too_few_offers' => new static(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::TOO_FEW_OFFERS)),
                 'offer_cross_self' => new static(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::OFFER_CROSS_SELF)),
                 'over_sendmax' => new static(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX)),
-                'success' => throw new \InvalidArgumentException(
+                'success' => throw new InvalidArgumentException(
                     "Arm 'success' on XdrPathPaymentStrictReceiveResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
                 ),
-                'no_issuer' => throw new \InvalidArgumentException(
+                'no_issuer' => throw new InvalidArgumentException(
                     "Arm 'no_issuer' on XdrPathPaymentStrictReceiveResult is non-void; supply a single-key object {\"no_issuer\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrPathPaymentStrictReceiveResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrPathPaymentStrictReceiveResult, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrPathPaymentStrictReceiveResult, got ' . get_debug_type($key)
             );
         }
@@ -158,14 +161,14 @@ class XdrPathPaymentStrictReceiveResult {
         return match ($key) {
             'success' => (static function () use ($arm) { $r = new static(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SUCCESS)); $r->success = XdrPathPaymentResultSuccess::fromJsonValue($arm); return $r; })(),
             'no_issuer' => (static function () use ($arm) { $r = new static(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_ISSUER)); $r->noIssuer = XdrAsset::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrPathPaymentStrictReceiveResult: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -175,8 +178,8 @@ class XdrPathPaymentStrictReceiveResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

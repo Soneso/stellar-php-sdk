@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrManageOfferResult {
 
     public XdrManageOfferResultCode $code;
@@ -78,7 +81,7 @@ class XdrManageOfferResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -99,7 +102,7 @@ class XdrManageOfferResult {
             XdrManageOfferResultCode::NOT_FOUND => 'not_found',
             XdrManageOfferResultCode::LOW_RESERVE => 'low_reserve',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for code on XdrManageOfferResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -124,36 +127,36 @@ class XdrManageOfferResult {
                 'buy_no_issuer' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_ISSUER)),
                 'not_found' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::NOT_FOUND)),
                 'low_reserve' => new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::LOW_RESERVE)),
-                'success' => throw new \InvalidArgumentException(
+                'success' => throw new InvalidArgumentException(
                     "Arm 'success' on XdrManageOfferResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrManageOfferResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrManageOfferResult, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrManageOfferResult, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         return match ($key) {
             'success' => (static function () use ($arm) { $r = new static(new XdrManageOfferResultCode(XdrManageOfferResultCode::SUCCESS)); $r->success = XdrManageOfferSuccessResult::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrManageOfferResult: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -163,8 +166,8 @@ class XdrManageOfferResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

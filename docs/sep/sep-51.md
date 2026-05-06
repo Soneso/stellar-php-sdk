@@ -381,8 +381,8 @@ The semantics:
 
 - `toJsonValue` returns the value-level PHP representation: a string for strkey-rendered types, an int for 32-bit integers, an associative array for structs, a single-key array for non-void union arms, `null` for null optionals, and the bare arm name for void union arms.
 - `fromJsonValue` accepts the inverse of `toJsonValue`. Input shape errors throw `InvalidArgumentException` with a bounded preview of the offending value (control bytes are escaped to prevent log injection).
-- `toJson` is `json_encode($this->toJsonValue(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)`. It throws `\JsonException` on encode failure.
-- `fromJson` is `static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR))`. It throws `\JsonException` on malformed input and `\InvalidArgumentException` on shape mismatch.
+- `toJson` is `json_encode($this->toJsonValue(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)`. It throws `JsonException` on encode failure.
+- `fromJson` is `static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR))`. It throws `JsonException` on malformed input and `InvalidArgumentException` on shape mismatch.
 
 `Soneso\StellarSDK\Xdr\XdrJsonHelper` exposes the lower-level primitives that every type's `toJsonValue` / `fromJsonValue` delegate to: `escapeString`, `unescapeString`, `bytesToHex`, `hexToBytes`, the integer conversion helpers (`int64ToString`, `stringToInt64`, `uint64ToString`, `stringToUint64`, `int128PartsToString`, `stringToInt128Parts`, the `uint128` and `int256` / `uint256` equivalents), `canonicalJson`, `ksortRecursive`, and `safePreview`.
 

@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrTrustlineAssetBase {
@@ -76,7 +78,7 @@ class XdrTrustlineAssetBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -88,7 +90,7 @@ class XdrTrustlineAssetBase {
             XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12 => ['credit_alphanum12' => $this->alphaNum12->toJsonValue()],
             XdrAssetType::ASSET_TYPE_POOL_SHARE => ['pool_share' => StrKey::encodeLiquidityPoolId($this->liquidityPoolID)],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrAssetType'
             ),
             // @codeCoverageIgnoreEnd
@@ -102,28 +104,28 @@ class XdrTrustlineAssetBase {
         if (is_string($value)) {
             return match ($value) {
                 'native' => new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)),
-                'credit_alphanum4' => throw new \InvalidArgumentException(
+                'credit_alphanum4' => throw new InvalidArgumentException(
                     "Arm 'credit_alphanum4' on XdrTrustlineAssetBase is non-void; supply a single-key object {\"credit_alphanum4\": <payload>} instead of a bare string."
                 ),
-                'credit_alphanum12' => throw new \InvalidArgumentException(
+                'credit_alphanum12' => throw new InvalidArgumentException(
                     "Arm 'credit_alphanum12' on XdrTrustlineAssetBase is non-void; supply a single-key object {\"credit_alphanum12\": <payload>} instead of a bare string."
                 ),
-                'pool_share' => throw new \InvalidArgumentException(
+                'pool_share' => throw new InvalidArgumentException(
                     "Arm 'pool_share' on XdrTrustlineAssetBase is non-void; supply a single-key object {\"pool_share\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrTrustlineAssetBase void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrTrustlineAssetBase, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrTrustlineAssetBase, got ' . get_debug_type($key)
             );
         }
@@ -131,15 +133,15 @@ class XdrTrustlineAssetBase {
         return match ($key) {
             'credit_alphanum4' => (static function () use ($arm) { $r = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4)); $r->alphaNum4 = XdrAssetAlphaNum4::fromJsonValue($arm); return $r; })(),
             'credit_alphanum12' => (static function () use ($arm) { $r = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12)); $r->alphaNum12 = XdrAssetAlphaNum12::fromJsonValue($arm); return $r; })(),
-            'pool_share' => (static function () use ($arm) { $r = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE)); $r->liquidityPoolID = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } return StrKey::decodeLiquidityPoolId($v); })($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            'pool_share' => (static function () use ($arm) { $r = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE)); $r->liquidityPoolID = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } return StrKey::decodeLiquidityPoolId($v); })($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrTrustlineAssetBase: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -149,8 +151,8 @@ class XdrTrustlineAssetBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

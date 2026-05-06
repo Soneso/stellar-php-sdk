@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrMuxedAccountBase {
@@ -63,7 +65,7 @@ class XdrMuxedAccountBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -72,20 +74,20 @@ class XdrMuxedAccountBase {
         switch ($this->type->getValue()) {
             case XdrCryptoKeyType::KEY_TYPE_ED25519:
                 if ($this->ed25519 === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrMuxedAccount ed25519 field is null'
                     );
                 }
                 return StrKey::encodeAccountId($this->ed25519);
             case XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519:
                 if ($this->med25519 === null) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'XdrMuxedAccount med25519 field is null'
                     );
                 }
                 return $this->med25519->toJsonValue();
             default:
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Unknown XdrMuxedAccount discriminant: ' . $this->type->getValue()
                 );
         }
@@ -93,12 +95,12 @@ class XdrMuxedAccountBase {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrMuxedAccount JSON value, got ' . get_debug_type($value)
             );
         }
         if ($value === '') {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Empty XdrMuxedAccount JSON value'
             );
         }
@@ -117,7 +119,7 @@ class XdrMuxedAccountBase {
             // XdrSCAddress.
             $raw = StrKey::decodeMuxedAccountId($value);
             if (strlen($raw) !== 40) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Decoded muxed account must be 40 bytes; got ' . strlen($raw)
                     . ' for input ' . XdrJsonHelper::safePreview($value)
                 );
@@ -125,13 +127,13 @@ class XdrMuxedAccountBase {
             $med25519 = XdrMuxedAccountMed25519::fromJsonValue($value);
             return new XdrMuxedAccount(null, $med25519);
         }
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Invalid XdrMuxedAccount strkey prefix: ' . XdrJsonHelper::safePreview($value)
         );
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -141,8 +143,8 @@ class XdrMuxedAccountBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

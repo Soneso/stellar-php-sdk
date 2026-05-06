@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+
 class XdrContractCodeEntryExtV1
 {
     public XdrExtensionPoint $ext;
@@ -77,7 +79,7 @@ class XdrContractCodeEntryExtV1
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -94,23 +96,23 @@ class XdrContractCodeEntryExtV1
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrContractCodeEntryExtV1 JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('ext', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ext for XdrContractCodeEntryExtV1'
             );
         }
         if ($value['ext'] !== 'v0') {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected v0 for XdrContractCodeEntryExtV1 extension point field ext, got '
                 . (is_string($value['ext']) ? "'" . XdrJsonHelper::safePreview($value['ext']) . "'" : get_debug_type($value['ext']))
             );
         }
         if (!array_key_exists('cost_inputs', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field cost_inputs for XdrContractCodeEntryExtV1'
             );
         }

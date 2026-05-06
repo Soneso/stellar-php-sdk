@@ -5,8 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
-
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrLiquidityPoolDepositOperationBase {
@@ -61,7 +62,7 @@ class XdrLiquidityPoolDepositOperationBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -81,41 +82,41 @@ class XdrLiquidityPoolDepositOperationBase {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrLiquidityPoolDepositOperationBase JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('liquidity_pool_id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field liquidity_pool_id for XdrLiquidityPoolDepositOperationBase'
             );
         }
         if (!is_string($value['liquidity_pool_id'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
             );
         }
         $liquidityPoolID = StrKey::decodeLiquidityPoolIdHex($value['liquidity_pool_id']);
         if (!array_key_exists('max_amount_a', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field max_amount_a for XdrLiquidityPoolDepositOperationBase'
             );
         }
         $maxAmountA = new BigInteger(is_string($value['max_amount_a']) ? $value['max_amount_a'] : (string) (int) $value['max_amount_a']);
         if (!array_key_exists('max_amount_b', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field max_amount_b for XdrLiquidityPoolDepositOperationBase'
             );
         }
         $maxAmountB = new BigInteger(is_string($value['max_amount_b']) ? $value['max_amount_b'] : (string) (int) $value['max_amount_b']);
         if (!array_key_exists('min_price', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field min_price for XdrLiquidityPoolDepositOperationBase'
             );
         }
         $minPrice = XdrPrice::fromJsonValue($value['min_price']);
         if (!array_key_exists('max_price', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field max_price for XdrLiquidityPoolDepositOperationBase'
             );
         }
@@ -124,7 +125,7 @@ class XdrLiquidityPoolDepositOperationBase {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -134,8 +135,8 @@ class XdrLiquidityPoolDepositOperationBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -200,7 +200,7 @@ XdrJsonHelper::canonicalJson('{"a":2,"b":1}'); // '{"a":2,"b":1}'
 
 ## Errors and validation
 
-Every `fromJsonValue` throws `\InvalidArgumentException` on shape errors with `XdrJsonHelper::safePreview($value)` of the offending input embedded in the message. `safePreview` truncates to 80 bytes by default and replaces ASCII control bytes with their `\\xHH` form so logged messages are not vulnerable to ANSI-escape injection.
+Every `fromJsonValue` throws `InvalidArgumentException` on shape errors with `XdrJsonHelper::safePreview($value)` of the offending input embedded in the message. `safePreview` truncates to 80 bytes by default and replaces ASCII control bytes with their `\\xHH` form so logged messages are not vulnerable to ANSI-escape injection.
 
 ```php
 <?php declare(strict_types=1);
@@ -214,4 +214,4 @@ try {
 }
 ```
 
-`fromJson` (the JSON-string entry point) throws `\JsonException` on malformed JSON before reaching `fromJsonValue`.
+`fromJson` (the JSON-string entry point) throws `JsonException` on malformed JSON before reaching `fromJsonValue`.

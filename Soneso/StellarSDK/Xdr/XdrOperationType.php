@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrOperationType {
     public int $value;
 
@@ -188,7 +191,7 @@ class XdrOperationType {
             case 26:
                 return new XdrOperationType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -199,7 +202,7 @@ class XdrOperationType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -234,7 +237,7 @@ class XdrOperationType {
             self::EXTEND_FOOTPRINT_TTL => 'extend_footprint_ttl',
             self::RESTORE_FOOTPRINT => 'restore_footprint',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrOperationType enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -243,7 +246,7 @@ class XdrOperationType {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrOperationType JSON value, got ' . get_debug_type($value)
             );
         }
@@ -275,14 +278,14 @@ class XdrOperationType {
             'invoke_host_function' => new static(self::INVOKE_HOST_FUNCTION),
             'extend_footprint_ttl' => new static(self::EXTEND_FOOTPRINT_TTL),
             'restore_footprint' => new static(self::RESTORE_FOOTPRINT),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrOperationType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -292,8 +295,8 @@ class XdrOperationType {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
@@ -422,7 +425,7 @@ class XdrOperationType {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -433,7 +436,7 @@ class XdrOperationType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

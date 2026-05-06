@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrMuxedAccountMed25519Base {
@@ -41,7 +43,7 @@ class XdrMuxedAccountMed25519Base {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -54,13 +56,13 @@ class XdrMuxedAccountMed25519Base {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrMuxedAccountMed25519 JSON value, got ' . get_debug_type($value)
             );
         }
         $raw = StrKey::decodeMuxedAccountId($value);
         if (strlen($raw) !== 40) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Decoded muxed account must be 40 bytes; got ' . strlen($raw)
             );
         }
@@ -71,7 +73,7 @@ class XdrMuxedAccountMed25519Base {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -81,8 +83,8 @@ class XdrMuxedAccountMed25519Base {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

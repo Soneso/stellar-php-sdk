@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCValType {
     public int $value;
 
@@ -158,7 +161,7 @@ class XdrSCValType {
             case 21:
                 return new XdrSCValType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -169,7 +172,7 @@ class XdrSCValType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -199,7 +202,7 @@ class XdrSCValType {
             self::SCV_LEDGER_KEY_CONTRACT_INSTANCE => 'ledger_key_contract_instance',
             self::SCV_LEDGER_KEY_NONCE => 'ledger_key_nonce',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrSCValType enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -208,7 +211,7 @@ class XdrSCValType {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrSCValType JSON value, got ' . get_debug_type($value)
             );
         }
@@ -235,14 +238,14 @@ class XdrSCValType {
             'contract_instance' => new static(self::SCV_CONTRACT_INSTANCE),
             'ledger_key_contract_instance' => new static(self::SCV_LEDGER_KEY_CONTRACT_INSTANCE),
             'ledger_key_nonce' => new static(self::SCV_LEDGER_KEY_NONCE),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrSCValType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -252,8 +255,8 @@ class XdrSCValType {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
@@ -362,7 +365,7 @@ class XdrSCValType {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -373,7 +376,7 @@ class XdrSCValType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrContractExecutableBase {
 
     public XdrContractExecutableType $type;
@@ -56,7 +59,7 @@ class XdrContractExecutableBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -66,7 +69,7 @@ class XdrContractExecutableBase {
             XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM => ['wasm' => XdrJsonHelper::bytesToHex($this->wasmIdHex)],
             XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET => 'stellar_asset',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrContractExecutableType'
             ),
             // @codeCoverageIgnoreEnd
@@ -80,36 +83,36 @@ class XdrContractExecutableBase {
         if (is_string($value)) {
             return match ($value) {
                 'stellar_asset' => new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET)),
-                'wasm' => throw new \InvalidArgumentException(
+                'wasm' => throw new InvalidArgumentException(
                     "Arm 'wasm' on XdrContractExecutableBase is non-void; supply a single-key object {\"wasm\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrContractExecutableBase void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrContractExecutableBase, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrContractExecutableBase, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         return match ($key) {
-            'wasm' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $r->wasmIdHex = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            'wasm' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $r->wasmIdHex = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrContractExecutableBase: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -119,8 +122,8 @@ class XdrContractExecutableBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

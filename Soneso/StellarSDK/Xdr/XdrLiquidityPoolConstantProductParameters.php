@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLiquidityPoolConstantProductParameters {
 
     public XdrAsset $assetA;
@@ -45,7 +48,7 @@ class XdrLiquidityPoolConstantProductParameters {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -63,33 +66,33 @@ class XdrLiquidityPoolConstantProductParameters {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrLiquidityPoolConstantProductParameters JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('asset_a', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field asset_a for XdrLiquidityPoolConstantProductParameters'
             );
         }
         $assetA = XdrAsset::fromJsonValue($value['asset_a']);
         if (!array_key_exists('asset_b', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field asset_b for XdrLiquidityPoolConstantProductParameters'
             );
         }
         $assetB = XdrAsset::fromJsonValue($value['asset_b']);
         if (!array_key_exists('fee', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field fee for XdrLiquidityPoolConstantProductParameters'
             );
         }
-        $fee = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fee']);
+        $fee = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fee']);
         return new static($assetA, $assetB, $fee);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -99,8 +102,8 @@ class XdrLiquidityPoolConstantProductParameters {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

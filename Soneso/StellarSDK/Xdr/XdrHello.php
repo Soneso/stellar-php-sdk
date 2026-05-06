@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrHello {
 
     public int $ledgerVersion;
@@ -81,7 +84,7 @@ class XdrHello {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -105,72 +108,72 @@ class XdrHello {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrHello JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('ledger_version', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ledger_version for XdrHello'
             );
         }
-        $ledgerVersion = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_version']);
+        $ledgerVersion = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_version']);
         if (!array_key_exists('overlay_version', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field overlay_version for XdrHello'
             );
         }
-        $overlayVersion = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['overlay_version']);
+        $overlayVersion = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['overlay_version']);
         if (!array_key_exists('overlay_min_version', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field overlay_min_version for XdrHello'
             );
         }
-        $overlayMinVersion = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['overlay_min_version']);
+        $overlayMinVersion = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['overlay_min_version']);
         if (!array_key_exists('network_id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field network_id for XdrHello'
             );
         }
-        $networkID = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['network_id']);
+        $networkID = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['network_id']);
         if (!array_key_exists('version_str', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field version_str for XdrHello'
             );
         }
         if (!is_string($value['version_str'])) {
-            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['version_str']));
+            throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['version_str']));
         }
         $versionStr = XdrJsonHelper::unescapeString($value['version_str']);
         if (!array_key_exists('listening_port', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field listening_port for XdrHello'
             );
         }
-        $listeningPort = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int32 JSON int, got ' . get_debug_type($v)); } return $v; })($value['listening_port']);
+        $listeningPort = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int32 JSON int, got ' . get_debug_type($v)); } return $v; })($value['listening_port']);
         if (!array_key_exists('peer_id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field peer_id for XdrHello'
             );
         }
         $peerID = XdrNodeID::fromJsonValue($value['peer_id']);
         if (!array_key_exists('cert', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field cert for XdrHello'
             );
         }
         $cert = XdrAuthCert::fromJsonValue($value['cert']);
         if (!array_key_exists('nonce', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field nonce for XdrHello'
             );
         }
-        $nonce = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['nonce']);
+        $nonce = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['nonce']);
         return new static($ledgerVersion, $overlayVersion, $overlayMinVersion, $networkID, $versionStr, $listeningPort, $peerID, $cert, $nonce);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -180,8 +183,8 @@ class XdrHello {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

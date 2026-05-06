@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCSpecEntryBase {
 
     public XdrSCSpecEntryKind $type;
@@ -97,7 +100,7 @@ class XdrSCSpecEntryBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -111,7 +114,7 @@ class XdrSCSpecEntryBase {
             XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 => ['udt_error_enum_v0' => $this->udtErrorEnumV0->toJsonValue()],
             XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0 => ['event_v0' => $this->eventV0->toJsonValue()],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrSCSpecEntryKind'
             ),
             // @codeCoverageIgnoreEnd
@@ -123,13 +126,13 @@ class XdrSCSpecEntryBase {
             unset($value['$schema']);
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object for XdrSCSpecEntryBase, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrSCSpecEntryBase, got ' . get_debug_type($key)
             );
         }
@@ -141,14 +144,14 @@ class XdrSCSpecEntryBase {
             'udt_enum_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0)); $r->udtEnumV0 = XdrSCSpecUDTEnumV0::fromJsonValue($arm); return $r; })(),
             'udt_error_enum_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0)); $r->udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0::fromJsonValue($arm); return $r; })(),
             'event_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_EVENT_V0)); $r->eventV0 = XdrSCSpecEventV0::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrSCSpecEntryBase: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -158,8 +161,8 @@ class XdrSCSpecEntryBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

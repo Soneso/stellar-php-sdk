@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSurveyRequestMessage {
 
     public XdrNodeID $surveyorPeerID;
@@ -57,7 +60,7 @@ class XdrSurveyRequestMessage {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -77,36 +80,36 @@ class XdrSurveyRequestMessage {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrSurveyRequestMessage JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('surveyor_peer_id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field surveyor_peer_id for XdrSurveyRequestMessage'
             );
         }
         $surveyorPeerID = XdrNodeID::fromJsonValue($value['surveyor_peer_id']);
         if (!array_key_exists('surveyed_peer_id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field surveyed_peer_id for XdrSurveyRequestMessage'
             );
         }
         $surveyedPeerID = XdrNodeID::fromJsonValue($value['surveyed_peer_id']);
         if (!array_key_exists('ledger_num', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ledger_num for XdrSurveyRequestMessage'
             );
         }
-        $ledgerNum = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_num']);
+        $ledgerNum = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_num']);
         if (!array_key_exists('encryption_key', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field encryption_key for XdrSurveyRequestMessage'
             );
         }
         $encryptionKey = XdrCurve25519Public::fromJsonValue($value['encryption_key']);
         if (!array_key_exists('command_type', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field command_type for XdrSurveyRequestMessage'
             );
         }
@@ -115,7 +118,7 @@ class XdrSurveyRequestMessage {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -125,8 +128,8 @@ class XdrSurveyRequestMessage {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrConfigSettingEntry {
 
     public XdrConfigSettingID $configSettingID;
@@ -240,7 +243,7 @@ class XdrConfigSettingEntry {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -269,7 +272,7 @@ class XdrConfigSettingEntry {
             XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS => ['freeze_bypass_txs' => $this->freezeBypassTxs->toJsonValue()],
             XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA => ['freeze_bypass_txs_delta' => $this->freezeBypassTxsDelta->toJsonValue()],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for configSettingID on XdrConfigSettingID'
             ),
             // @codeCoverageIgnoreEnd
@@ -281,19 +284,19 @@ class XdrConfigSettingEntry {
             unset($value['$schema']);
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object for XdrConfigSettingEntry, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrConfigSettingEntry, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         return match ($key) {
-            'contract_max_size_bytes' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES)); $r->contractMaxSizeBytes = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'contract_max_size_bytes' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES)); $r->contractMaxSizeBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
             'contract_compute_v0' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0)); $r->contractCompute = XdrConfigSettingContractComputeV0::fromJsonValue($arm); return $r; })(),
             'contract_ledger_cost_v0' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0)); $r->contractLedgerCost = XdrConfigSettingContractLedgerCostV0::fromJsonValue($arm); return $r; })(),
             'contract_historical_data_v0' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0)); $r->contractHistoricalData = XdrConfigSettingContractHistoricalDataV0::fromJsonValue($arm); return $r; })(),
@@ -301,11 +304,11 @@ class XdrConfigSettingEntry {
             'contract_bandwidth_v0' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0)); $r->contractBandwidth = XdrConfigSettingContractBandwidthV0::fromJsonValue($arm); return $r; })(),
             'contract_cost_params_cpu_instructions' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS)); $r->contractCostParamsCpuInsns = XdrContractCostParams::fromJsonValue($arm); return $r; })(),
             'contract_cost_params_memory_bytes' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES)); $r->contractCostParamsMemBytes = XdrContractCostParams::fromJsonValue($arm); return $r; })(),
-            'contract_data_key_size_bytes' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES)); $r->contractDataKeySizeBytes = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
-            'contract_data_entry_size_bytes' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES)); $r->contractDataEntrySizeBytes = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'contract_data_key_size_bytes' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES)); $r->contractDataKeySizeBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'contract_data_entry_size_bytes' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES)); $r->contractDataEntrySizeBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
             'state_archival' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL)); $r->stateArchivalSettings = XdrStateArchivalSettings::fromJsonValue($arm); return $r; })(),
             'contract_execution_lanes' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES)); $r->contractExecutionLanes = XdrConfigSettingContractExecutionLanesV0::fromJsonValue($arm); return $r; })(),
-            'live_soroban_state_size_window' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW)); $r->liveSorobanStateSizeWindow = (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($item); } return $out; })($arm); return $r; })(),
+            'live_soroban_state_size_window' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW)); $r->liveSorobanStateSizeWindow = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($item); } return $out; })($arm); return $r; })(),
             'eviction_iterator' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR)); $r->evictionIterator = XdrEvictionIterator::fromJsonValue($arm); return $r; })(),
             'contract_parallel_compute_v0' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0)); $r->contractParallelCompute = XdrConfigSettingContractParallelComputeV0::fromJsonValue($arm); return $r; })(),
             'contract_ledger_cost_ext_v0' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0)); $r->contractLedgerCostExt = XdrConfigSettingContractLedgerCostExtV0::fromJsonValue($arm); return $r; })(),
@@ -314,14 +317,14 @@ class XdrConfigSettingEntry {
             'frozen_ledger_keys_delta' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA)); $r->frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta::fromJsonValue($arm); return $r; })(),
             'freeze_bypass_txs' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS)); $r->freezeBypassTxs = XdrFreezeBypassTxs::fromJsonValue($arm); return $r; })(),
             'freeze_bypass_txs_delta' => (static function () use ($arm) { $r = new static(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA)); $r->freezeBypassTxsDelta = XdrFreezeBypassTxsDelta::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrConfigSettingEntry: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -331,8 +334,8 @@ class XdrConfigSettingEntry {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

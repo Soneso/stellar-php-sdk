@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrPeerStats {
 
     public XdrNodeID $id;
@@ -117,7 +120,7 @@ class XdrPeerStats {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -147,108 +150,108 @@ class XdrPeerStats {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrPeerStats JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field id for XdrPeerStats'
             );
         }
         $id = XdrNodeID::fromJsonValue($value['id']);
         if (!array_key_exists('version_str', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field version_str for XdrPeerStats'
             );
         }
         if (!is_string($value['version_str'])) {
-            throw new \InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['version_str']));
+            throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['version_str']));
         }
         $versionStr = XdrJsonHelper::unescapeString($value['version_str']);
         if (!array_key_exists('messages_read', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field messages_read for XdrPeerStats'
             );
         }
-        $messagesRead = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['messages_read']);
+        $messagesRead = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['messages_read']);
         if (!array_key_exists('messages_written', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field messages_written for XdrPeerStats'
             );
         }
-        $messagesWritten = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['messages_written']);
+        $messagesWritten = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['messages_written']);
         if (!array_key_exists('bytes_read', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field bytes_read for XdrPeerStats'
             );
         }
-        $bytesRead = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['bytes_read']);
+        $bytesRead = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['bytes_read']);
         if (!array_key_exists('bytes_written', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field bytes_written for XdrPeerStats'
             );
         }
-        $bytesWritten = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['bytes_written']);
+        $bytesWritten = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['bytes_written']);
         if (!array_key_exists('seconds_connected', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field seconds_connected for XdrPeerStats'
             );
         }
-        $secondsConnected = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['seconds_connected']);
+        $secondsConnected = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['seconds_connected']);
         if (!array_key_exists('unique_flood_bytes_recv', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field unique_flood_bytes_recv for XdrPeerStats'
             );
         }
-        $uniqueFloodBytesRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['unique_flood_bytes_recv']);
+        $uniqueFloodBytesRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['unique_flood_bytes_recv']);
         if (!array_key_exists('duplicate_flood_bytes_recv', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field duplicate_flood_bytes_recv for XdrPeerStats'
             );
         }
-        $duplicateFloodBytesRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['duplicate_flood_bytes_recv']);
+        $duplicateFloodBytesRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['duplicate_flood_bytes_recv']);
         if (!array_key_exists('unique_fetch_bytes_recv', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field unique_fetch_bytes_recv for XdrPeerStats'
             );
         }
-        $uniqueFetchBytesRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['unique_fetch_bytes_recv']);
+        $uniqueFetchBytesRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['unique_fetch_bytes_recv']);
         if (!array_key_exists('duplicate_fetch_bytes_recv', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field duplicate_fetch_bytes_recv for XdrPeerStats'
             );
         }
-        $duplicateFetchBytesRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['duplicate_fetch_bytes_recv']);
+        $duplicateFetchBytesRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['duplicate_fetch_bytes_recv']);
         if (!array_key_exists('unique_flood_message_recv', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field unique_flood_message_recv for XdrPeerStats'
             );
         }
-        $uniqueFloodMessageRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['unique_flood_message_recv']);
+        $uniqueFloodMessageRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['unique_flood_message_recv']);
         if (!array_key_exists('duplicate_flood_message_recv', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field duplicate_flood_message_recv for XdrPeerStats'
             );
         }
-        $duplicateFloodMessageRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['duplicate_flood_message_recv']);
+        $duplicateFloodMessageRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['duplicate_flood_message_recv']);
         if (!array_key_exists('unique_fetch_message_recv', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field unique_fetch_message_recv for XdrPeerStats'
             );
         }
-        $uniqueFetchMessageRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['unique_fetch_message_recv']);
+        $uniqueFetchMessageRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['unique_fetch_message_recv']);
         if (!array_key_exists('duplicate_fetch_message_recv', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field duplicate_fetch_message_recv for XdrPeerStats'
             );
         }
-        $duplicateFetchMessageRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['duplicate_fetch_message_recv']);
+        $duplicateFetchMessageRecv = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['duplicate_fetch_message_recv']);
         return new static($id, $versionStr, $messagesRead, $messagesWritten, $bytesRead, $bytesWritten, $secondsConnected, $uniqueFloodBytesRecv, $duplicateFloodBytesRecv, $uniqueFetchBytesRecv, $duplicateFetchBytesRecv, $uniqueFloodMessageRecv, $duplicateFloodMessageRecv, $uniqueFetchMessageRecv, $duplicateFetchMessageRecv);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -258,8 +261,8 @@ class XdrPeerStats {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

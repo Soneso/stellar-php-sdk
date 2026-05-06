@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrEvictionIterator {
 
     public int $bucketListLevel;
@@ -45,7 +48,7 @@ class XdrEvictionIterator {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -63,33 +66,33 @@ class XdrEvictionIterator {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrEvictionIterator JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('bucket_list_level', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field bucket_list_level for XdrEvictionIterator'
             );
         }
-        $bucketListLevel = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['bucket_list_level']);
+        $bucketListLevel = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['bucket_list_level']);
         if (!array_key_exists('is_curr_bucket', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field is_curr_bucket for XdrEvictionIterator'
             );
         }
-        $isCurrBucket = (static function ($v) { if (!is_bool($v)) { throw new \InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })($value['is_curr_bucket']);
+        $isCurrBucket = (static function ($v) { if (!is_bool($v)) { throw new InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })($value['is_curr_bucket']);
         if (!array_key_exists('bucket_file_offset', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field bucket_file_offset for XdrEvictionIterator'
             );
         }
-        $bucketFileOffset = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['bucket_file_offset']);
+        $bucketFileOffset = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['bucket_file_offset']);
         return new static($bucketListLevel, $isCurrBucket, $bucketFileOffset);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -99,8 +102,8 @@ class XdrEvictionIterator {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

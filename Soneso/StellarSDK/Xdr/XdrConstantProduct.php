@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
 
 class XdrConstantProduct {
@@ -59,7 +61,7 @@ class XdrConstantProduct {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -79,45 +81,45 @@ class XdrConstantProduct {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrConstantProduct JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('params', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field params for XdrConstantProduct'
             );
         }
         $params = XdrLiquidityPoolConstantProductParameters::fromJsonValue($value['params']);
         if (!array_key_exists('reserve_a', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field reserve_a for XdrConstantProduct'
             );
         }
         $reserveA = new BigInteger(is_string($value['reserve_a']) ? $value['reserve_a'] : (string) (int) $value['reserve_a']);
         if (!array_key_exists('reserve_b', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field reserve_b for XdrConstantProduct'
             );
         }
         $reserveB = new BigInteger(is_string($value['reserve_b']) ? $value['reserve_b'] : (string) (int) $value['reserve_b']);
         if (!array_key_exists('total_pool_shares', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field total_pool_shares for XdrConstantProduct'
             );
         }
         $totalPoolShares = new BigInteger(is_string($value['total_pool_shares']) ? $value['total_pool_shares'] : (string) (int) $value['total_pool_shares']);
         if (!array_key_exists('pool_shares_trust_line_count', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field pool_shares_trust_line_count for XdrConstantProduct'
             );
         }
-        $poolSharesTrustLineCount = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['pool_shares_trust_line_count']);
+        $poolSharesTrustLineCount = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['pool_shares_trust_line_count']);
         return new static($params, $reserveA, $reserveB, $totalPoolShares, $poolSharesTrustLineCount);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -127,8 +129,8 @@ class XdrConstantProduct {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

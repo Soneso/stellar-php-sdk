@@ -5,8 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
-
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrClaimLiquidityAtom {
@@ -61,7 +62,7 @@ class XdrClaimLiquidityAtom {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -81,41 +82,41 @@ class XdrClaimLiquidityAtom {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrClaimLiquidityAtom JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('liquidity_pool_id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field liquidity_pool_id for XdrClaimLiquidityAtom'
             );
         }
         if (!is_string($value['liquidity_pool_id'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
             );
         }
         $liquidityPoolID = StrKey::decodeLiquidityPoolId($value['liquidity_pool_id']);
         if (!array_key_exists('asset_sold', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field asset_sold for XdrClaimLiquidityAtom'
             );
         }
         $assetSold = XdrAsset::fromJsonValue($value['asset_sold']);
         if (!array_key_exists('amount_sold', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field amount_sold for XdrClaimLiquidityAtom'
             );
         }
         $amountSold = new BigInteger(is_string($value['amount_sold']) ? $value['amount_sold'] : (string) (int) $value['amount_sold']);
         if (!array_key_exists('asset_bought', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field asset_bought for XdrClaimLiquidityAtom'
             );
         }
         $assetBought = XdrAsset::fromJsonValue($value['asset_bought']);
         if (!array_key_exists('amount_bought', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field amount_bought for XdrClaimLiquidityAtom'
             );
         }
@@ -124,7 +125,7 @@ class XdrClaimLiquidityAtom {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -134,8 +135,8 @@ class XdrClaimLiquidityAtom {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

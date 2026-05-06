@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSorobanTransactionMeta {
 
     public XdrSorobanTransactionMetaExt $ext;
@@ -67,7 +70,7 @@ class XdrSorobanTransactionMeta {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -86,43 +89,43 @@ class XdrSorobanTransactionMeta {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrSorobanTransactionMeta JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('ext', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ext for XdrSorobanTransactionMeta'
             );
         }
         $ext = XdrSorobanTransactionMetaExt::fromJsonValue($value['ext']);
         if (!array_key_exists('events', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field events for XdrSorobanTransactionMeta'
             );
         }
         $events = (static function ($v) {
             if (!is_array($v)) {
-                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
             foreach ($v as $item) { $out[] = XdrContractEvent::fromJsonValue($item); }
             return $out;
         })($value['events']);
         if (!array_key_exists('return_value', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field return_value for XdrSorobanTransactionMeta'
             );
         }
         $returnValue = XdrSCVal::fromJsonValue($value['return_value']);
         if (!array_key_exists('diagnostic_events', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field diagnostic_events for XdrSorobanTransactionMeta'
             );
         }
         $diagnosticEvents = (static function ($v) {
             if (!is_array($v)) {
-                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
             foreach ($v as $item) { $out[] = XdrDiagnosticEvent::fromJsonValue($item); }
@@ -132,7 +135,7 @@ class XdrSorobanTransactionMeta {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -142,8 +145,8 @@ class XdrSorobanTransactionMeta {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrConfigSettingContractEventsV0 {
 
     public int $txMaxContractEventsSizeBytes;
@@ -39,7 +42,7 @@ class XdrConfigSettingContractEventsV0 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -56,27 +59,27 @@ class XdrConfigSettingContractEventsV0 {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrConfigSettingContractEventsV0 JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('tx_max_contract_events_size_bytes', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field tx_max_contract_events_size_bytes for XdrConfigSettingContractEventsV0'
             );
         }
-        $txMaxContractEventsSizeBytes = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['tx_max_contract_events_size_bytes']);
+        $txMaxContractEventsSizeBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['tx_max_contract_events_size_bytes']);
         if (!array_key_exists('fee_contract_events1_kb', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field fee_contract_events1_kb for XdrConfigSettingContractEventsV0'
             );
         }
-        $feeContractEvents1KB = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee_contract_events1_kb']);
+        $feeContractEvents1KB = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee_contract_events1_kb']);
         return new static($txMaxContractEventsSizeBytes, $feeContractEvents1KB);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -86,8 +89,8 @@ class XdrConfigSettingContractEventsV0 {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

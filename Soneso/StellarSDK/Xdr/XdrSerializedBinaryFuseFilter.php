@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSerializedBinaryFuseFilter {
 
     public XdrBinaryFuseFilterType $type;
@@ -81,7 +84,7 @@ class XdrSerializedBinaryFuseFilter {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -105,72 +108,72 @@ class XdrSerializedBinaryFuseFilter {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrSerializedBinaryFuseFilter JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('type', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field type for XdrSerializedBinaryFuseFilter'
             );
         }
         $type = XdrBinaryFuseFilterType::fromJsonValue($value['type']);
         if (!array_key_exists('input_hash_seed', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field input_hash_seed for XdrSerializedBinaryFuseFilter'
             );
         }
         $inputHashSeed = XdrShortHashSeed::fromJsonValue($value['input_hash_seed']);
         if (!array_key_exists('filter_seed', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field filter_seed for XdrSerializedBinaryFuseFilter'
             );
         }
         $filterSeed = XdrShortHashSeed::fromJsonValue($value['filter_seed']);
         if (!array_key_exists('segment_length', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field segment_length for XdrSerializedBinaryFuseFilter'
             );
         }
-        $segmentLength = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['segment_length']);
+        $segmentLength = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['segment_length']);
         if (!array_key_exists('segement_length_mask', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field segement_length_mask for XdrSerializedBinaryFuseFilter'
             );
         }
-        $segementLengthMask = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['segement_length_mask']);
+        $segementLengthMask = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['segement_length_mask']);
         if (!array_key_exists('segment_count', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field segment_count for XdrSerializedBinaryFuseFilter'
             );
         }
-        $segmentCount = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['segment_count']);
+        $segmentCount = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['segment_count']);
         if (!array_key_exists('segment_count_length', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field segment_count_length for XdrSerializedBinaryFuseFilter'
             );
         }
-        $segmentCountLength = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['segment_count_length']);
+        $segmentCountLength = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['segment_count_length']);
         if (!array_key_exists('fingerprint_length', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field fingerprint_length for XdrSerializedBinaryFuseFilter'
             );
         }
-        $fingerprintLength = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fingerprint_length']);
+        $fingerprintLength = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['fingerprint_length']);
         if (!array_key_exists('fingerprints', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field fingerprints for XdrSerializedBinaryFuseFilter'
             );
         }
         if (!is_string($value['fingerprints'])) {
-            throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['fingerprints']));
+            throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['fingerprints']));
         }
         $fingerprints = XdrJsonHelper::hexToBytes($value['fingerprints']);
         return new static($type, $inputHashSeed, $filterSeed, $segmentLength, $segementLengthMask, $segmentCount, $segmentCountLength, $fingerprintLength, $fingerprints);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -180,8 +183,8 @@ class XdrSerializedBinaryFuseFilter {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

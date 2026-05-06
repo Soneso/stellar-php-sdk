@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrStellarMessage {
 
     public XdrMessageType $type;
@@ -240,7 +243,7 @@ class XdrStellarMessage {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -269,7 +272,7 @@ class XdrStellarMessage {
             XdrMessageType::FLOOD_ADVERT => ['flood_advert' => $this->floodAdvert->toJsonValue()],
             XdrMessageType::FLOOD_DEMAND => ['flood_demand' => $this->floodDemand->toJsonValue()],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrMessageType'
             ),
             // @codeCoverageIgnoreEnd
@@ -281,13 +284,13 @@ class XdrStellarMessage {
             unset($value['$schema']);
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object for XdrStellarMessage, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrStellarMessage, got ' . get_debug_type($key)
             );
         }
@@ -297,8 +300,8 @@ class XdrStellarMessage {
             'hello' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::HELLO)); $r->hello = XdrHello::fromJsonValue($arm); return $r; })(),
             'auth' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::AUTH)); $r->auth = XdrAuth::fromJsonValue($arm); return $r; })(),
             'dont_have' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::DONT_HAVE)); $r->dontHave = XdrDontHave::fromJsonValue($arm); return $r; })(),
-            'peers' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::PEERS)); $r->peers = (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrPeerAddress::fromJsonValue($item); } return $out; })($arm); return $r; })(),
-            'get_tx_set' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GET_TX_SET)); $r->txSetHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
+            'peers' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::PEERS)); $r->peers = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrPeerAddress::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'get_tx_set' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GET_TX_SET)); $r->txSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
             'tx_set' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::TX_SET)); $r->txSet = XdrTransactionSet::fromJsonValue($arm); return $r; })(),
             'generalized_tx_set' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GENERALIZED_TX_SET)); $r->generalizedTxSet = XdrGeneralizedTransactionSet::fromJsonValue($arm); return $r; })(),
             'transaction' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::TRANSACTION)); $r->transaction = XdrTransactionEnvelope::fromJsonValue($arm); return $r; })(),
@@ -306,22 +309,22 @@ class XdrStellarMessage {
             'time_sliced_survey_response' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_RESPONSE)); $r->signedTimeSlicedSurveyResponseMessage = XdrSignedTimeSlicedSurveyResponseMessage::fromJsonValue($arm); return $r; })(),
             'time_sliced_survey_start_collecting' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_START_COLLECTING)); $r->signedTimeSlicedSurveyStartCollectingMessage = XdrSignedTimeSlicedSurveyStartCollectingMessage::fromJsonValue($arm); return $r; })(),
             'time_sliced_survey_stop_collecting' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_STOP_COLLECTING)); $r->signedTimeSlicedSurveyStopCollectingMessage = XdrSignedTimeSlicedSurveyStopCollectingMessage::fromJsonValue($arm); return $r; })(),
-            'get_scp_quorumset' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GET_SCP_QUORUMSET)); $r->qSetHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
+            'get_scp_quorumset' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GET_SCP_QUORUMSET)); $r->qSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
             'scp_quorumset' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::SCP_QUORUMSET)); $r->qSet = XdrSCPQuorumSet::fromJsonValue($arm); return $r; })(),
             'scp_message' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::SCP_MESSAGE)); $r->envelope = XdrSCPEnvelope::fromJsonValue($arm); return $r; })(),
-            'get_scp_state' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GET_SCP_STATE)); $r->getSCPLedgerSeq = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'get_scp_state' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GET_SCP_STATE)); $r->getSCPLedgerSeq = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
             'send_more' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::SEND_MORE)); $r->sendMoreMessage = XdrSendMore::fromJsonValue($arm); return $r; })(),
             'send_more_extended' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::SEND_MORE_EXTENDED)); $r->sendMoreExtendedMessage = XdrSendMoreExtended::fromJsonValue($arm); return $r; })(),
             'flood_advert' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::FLOOD_ADVERT)); $r->floodAdvert = XdrFloodAdvert::fromJsonValue($arm); return $r; })(),
             'flood_demand' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::FLOOD_DEMAND)); $r->floodDemand = XdrFloodDemand::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrStellarMessage: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -331,8 +334,8 @@ class XdrStellarMessage {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

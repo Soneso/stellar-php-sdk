@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrExtendFootprintTTLResult {
 
     public XdrExtendFootprintTTLResultCode $code;
@@ -55,7 +58,7 @@ class XdrExtendFootprintTTLResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -67,7 +70,7 @@ class XdrExtendFootprintTTLResult {
             XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED => 'resource_limit_exceeded',
             XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE => 'insufficient_refundable_fee',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for code on XdrExtendFootprintTTLResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -84,18 +87,18 @@ class XdrExtendFootprintTTLResult {
                 'malformed' => new static(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_MALFORMED)),
                 'resource_limit_exceeded' => new static(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED)),
                 'insufficient_refundable_fee' => new static(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE)),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrExtendFootprintTTLResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Expected void-arm string for XdrExtendFootprintTTLResult, got ' . get_debug_type($value)
         );
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -105,8 +108,8 @@ class XdrExtendFootprintTTLResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSorobanAuthorizedFunctionType {
     public int $value;
 
@@ -44,7 +47,7 @@ class XdrSorobanAuthorizedFunctionType {
             case 2:
                 return new XdrSorobanAuthorizedFunctionType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -55,7 +58,7 @@ class XdrSorobanAuthorizedFunctionType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -66,7 +69,7 @@ class XdrSorobanAuthorizedFunctionType {
             self::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN => 'create_contract_host_fn',
             self::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN => 'create_contract_v2_host_fn',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrSorobanAuthorizedFunctionType enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -75,7 +78,7 @@ class XdrSorobanAuthorizedFunctionType {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrSorobanAuthorizedFunctionType JSON value, got ' . get_debug_type($value)
             );
         }
@@ -83,14 +86,14 @@ class XdrSorobanAuthorizedFunctionType {
             'contract_fn' => new static(self::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN),
             'create_contract_host_fn' => new static(self::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN),
             'create_contract_v2_host_fn' => new static(self::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrSorobanAuthorizedFunctionType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -100,8 +103,8 @@ class XdrSorobanAuthorizedFunctionType {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
@@ -134,7 +137,7 @@ class XdrSorobanAuthorizedFunctionType {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -145,7 +148,7 @@ class XdrSorobanAuthorizedFunctionType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

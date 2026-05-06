@@ -6,6 +6,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+
 /**
  * Primitive SEP-51 (XDR-JSON) helper methods.
  *
@@ -86,7 +88,7 @@ final class XdrJsonHelper
      *
      * @param string $escaped The escaped-ASCII string (output of escapeString).
      * @return string Raw binary bytes.
-     * @throws \InvalidArgumentException On unrecognised escape sequence, truncated \x, or invalid hex digits.
+     * @throws InvalidArgumentException On unrecognised escape sequence, truncated \x, or invalid hex digits.
      */
     public static function unescapeString(string $escaped): string
     {
@@ -102,7 +104,7 @@ final class XdrJsonHelper
             }
             // We have a backslash; require at least one more character.
             if ($i + 1 >= $len) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Malformed SEP-51 escaped string: trailing backslash at position ' . $i
                 );
             }
@@ -125,7 +127,7 @@ final class XdrJsonHelper
             } elseif ($next === 'x') {
                 // Require exactly two hex digits.
                 if ($i + 3 >= $len) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'Malformed SEP-51 escaped string: truncated \\x escape at position ' . $i
                     );
                 }
@@ -135,7 +137,7 @@ final class XdrJsonHelper
                 // ctype_xdigit also accepts A-F, creating a de-canonicalisation surface
                 // where \xff and \xFF would map to the same byte from distinct ASCII inputs.
                 if (!preg_match('/^[0-9a-f]$/', $hi) || !preg_match('/^[0-9a-f]$/', $lo)) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'Malformed SEP-51 escaped string: \\x escape requires lowercase hex digits '
                         . '[0-9a-f] at position ' . $i
                         . ' (got \\x' . bin2hex($hi) . bin2hex($lo) . ')'
@@ -144,7 +146,7 @@ final class XdrJsonHelper
                 $out .= chr(hexdec($hi . $lo));
                 $i += 4;
             } else {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Malformed SEP-51 escaped string: unrecognised escape sequence \\' . bin2hex($next)
                     . ' at position ' . $i
                 );
@@ -181,7 +183,7 @@ final class XdrJsonHelper
      *
      * @param string $hex Lowercase hex string (even length; zero length allowed).
      * @return string Raw binary bytes.
-     * @throws \InvalidArgumentException On odd-length input, uppercase characters, or non-hex characters.
+     * @throws InvalidArgumentException On odd-length input, uppercase characters, or non-hex characters.
      */
     public static function hexToBytes(string $hex): string
     {
@@ -189,14 +191,14 @@ final class XdrJsonHelper
             return '';
         }
         if (strlen($hex) % 2 !== 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'SEP-51 hex string must have even length; got ' . strlen($hex) . ' characters'
             );
         }
         // Use \A and \z anchors (not ^ and $) so that a trailing newline does not bypass the
         // check — PHP PCRE treats $ as matching before a trailing \n in default mode.
         if (!preg_match('/\A[0-9a-f]+\z/', $hex)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'SEP-51 hex string must contain only lowercase hexadecimal characters [0-9a-f]; '
                 . 'uppercase hex is not accepted (see SEP-0051 §Opaque)'
             );
@@ -235,7 +237,7 @@ final class XdrJsonHelper
      *
      * @param int|string $value The value to parse.
      * @return int The parsed 64-bit signed integer.
-     * @throws \InvalidArgumentException On any validation failure.
+     * @throws InvalidArgumentException On any validation failure.
      */
     public static function stringToInt64(int|string $value): int
     {
@@ -247,7 +249,7 @@ final class XdrJsonHelper
         $min = gmp_init('-9223372036854775808');
         $max = gmp_init('9223372036854775807');
         if (gmp_cmp($gmp, $min) < 0 || gmp_cmp($gmp, $max) > 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'int64 string of length ' . strlen($value) . ' is out of the range [-2^63, 2^63-1]'
             );
         }
@@ -266,7 +268,7 @@ final class XdrJsonHelper
      *
      * @param int $value A PHP int in [0, PHP_INT_MAX].
      * @return string Base-10 decimal string.
-     * @throws \InvalidArgumentException If $value is negative.
+     * @throws InvalidArgumentException If $value is negative.
      */
     public static function uint64ToString(int $value): string
     {
@@ -274,7 +276,7 @@ final class XdrJsonHelper
             // Negative PHP ints cannot represent valid uint64 values via this path.
             // Callers with uint64 values in (PHP_INT_MAX, 2^64-1] must use the
             // string-accepting stringToUint64() + sprintf pattern instead.
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'uint64ToString accepts only non-negative values; got ' . $value
                 . '. For uint64 values above PHP_INT_MAX, pass the value as a string to stringToUint64().'
             );
@@ -298,13 +300,13 @@ final class XdrJsonHelper
      *
      * @param int|string $value The value to parse.
      * @return int The uint64 value stored as a PHP int (may be negative for values > PHP_INT_MAX).
-     * @throws \InvalidArgumentException On any validation failure including values < 0 or > 2^64-1.
+     * @throws InvalidArgumentException On any validation failure including values < 0 or > 2^64-1.
      */
     public static function stringToUint64(int|string $value): int
     {
         if (is_int($value)) {
             if ($value < 0) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Negative PHP int cannot represent a valid uint64; got ' . $value
                 );
             }
@@ -314,7 +316,7 @@ final class XdrJsonHelper
         $gmp = gmp_init($value, 10);
         $max = gmp_sub(gmp_pow(2, 64), 1); // 2^64-1 = 18446744073709551615
         if (gmp_cmp($gmp, 0) < 0 || gmp_cmp($gmp, $max) > 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'uint64 string of length ' . strlen($value) . ' is out of the range [0, 2^64-1]'
             );
         }
@@ -344,7 +346,7 @@ final class XdrJsonHelper
      *     when the uint64 value exceeds PHP_INT_MAX and is stored as a signed PHP int (the
      *     negative form is reinterpreted as the unsigned bit pattern via two's-complement).
      * @return string Base-10 decimal string of the assembled 128-bit signed integer.
-     * @throws \InvalidArgumentException If hi or lo are not valid integer strings.
+     * @throws InvalidArgumentException If hi or lo are not valid integer strings.
      */
     public static function int128PartsToString(string $hi, string $lo): string
     {
@@ -369,7 +371,7 @@ final class XdrJsonHelper
      *
      * @param string $value Base-10 decimal string of a signed 128-bit integer.
      * @return array{hi: string, lo: string}
-     * @throws \InvalidArgumentException If $value is not a valid int128 string.
+     * @throws InvalidArgumentException If $value is not a valid int128 string.
      */
     public static function stringToInt128Parts(string $value): array
     {
@@ -400,7 +402,7 @@ final class XdrJsonHelper
      *     when the uint64 value exceeds PHP_INT_MAX and is stored as a signed PHP int (the
      *     negative form is reinterpreted as the unsigned bit pattern via two's-complement).
      * @return string Base-10 decimal string of the assembled 128-bit unsigned integer.
-     * @throws \InvalidArgumentException If hi or lo are not valid int64-fitting strings.
+     * @throws InvalidArgumentException If hi or lo are not valid int64-fitting strings.
      */
     public static function uint128PartsToString(string $hi, string $lo): string
     {
@@ -420,7 +422,7 @@ final class XdrJsonHelper
      *
      * @param string $value Base-10 decimal string of an unsigned 128-bit integer.
      * @return array{hi: string, lo: string}
-     * @throws \InvalidArgumentException If $value is not a valid uint128 string.
+     * @throws InvalidArgumentException If $value is not a valid uint128 string.
      */
     public static function stringToUint128Parts(string $value): array
     {
@@ -451,7 +453,7 @@ final class XdrJsonHelper
      * @param string $loHi Unsigned uint64 as base-10 string (same note as hiLo).
      * @param string $loLo Unsigned uint64 as base-10 string (same note as hiLo).
      * @return string Base-10 decimal string of the assembled 256-bit signed integer.
-     * @throws \InvalidArgumentException If any limb string is invalid.
+     * @throws InvalidArgumentException If any limb string is invalid.
      */
     public static function int256PartsToString(
         string $hiHi,
@@ -502,7 +504,7 @@ final class XdrJsonHelper
      *
      * @param string $value Base-10 decimal string of a signed 256-bit integer.
      * @return array{hiHi: string, hiLo: string, loHi: string, loLo: string}
-     * @throws \InvalidArgumentException If $value is not a valid int256 string.
+     * @throws InvalidArgumentException If $value is not a valid int256 string.
      */
     public static function stringToInt256Parts(string $value): array
     {
@@ -534,7 +536,7 @@ final class XdrJsonHelper
      * @param string $loHi Unsigned uint64 as base-10 string (same note as hiHi).
      * @param string $loLo Unsigned uint64 as base-10 string (least significant limb; same note as hiHi).
      * @return string Base-10 decimal string of the assembled 256-bit unsigned integer.
-     * @throws \InvalidArgumentException If any limb string is invalid.
+     * @throws InvalidArgumentException If any limb string is invalid.
      */
     public static function uint256PartsToString(
         string $hiHi,
@@ -571,7 +573,7 @@ final class XdrJsonHelper
      *
      * @param string $value Base-10 decimal string of an unsigned 256-bit integer.
      * @return array{hiHi: string, hiLo: string, loHi: string, loLo: string}
-     * @throws \InvalidArgumentException If $value is not a valid uint256 string.
+     * @throws InvalidArgumentException If $value is not a valid uint256 string.
      */
     public static function stringToUint256Parts(string $value): array
     {
@@ -606,7 +608,7 @@ final class XdrJsonHelper
      *
      * @param string $json Any valid JSON string.
      * @return string Canonical (sorted-keys, compact) JSON string.
-     * @throws \JsonException On malformed input JSON.
+     * @throws JsonException On malformed input JSON.
      */
     public static function canonicalJson(string $json): string
     {
@@ -634,12 +636,12 @@ final class XdrJsonHelper
      * @param mixed $value Any decoded JSON value.
      * @param int   $depth Remaining recursion depth. Throws when it reaches zero.
      * @return mixed The same structure with all object property keys sorted recursively.
-     * @throws \InvalidArgumentException When $depth is exhausted (nesting too deep).
+     * @throws InvalidArgumentException When $depth is exhausted (nesting too deep).
      */
     public static function ksortRecursive(mixed $value, int $depth = 512): mixed
     {
         if ($depth < 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'ksortRecursive: maximum recursion depth exceeded'
             );
         }
@@ -730,17 +732,17 @@ final class XdrJsonHelper
      *
      * @param string $decimal Unsigned base-10 string in [0, 2^64-1].
      * @return int PHP signed int (may be negative for values above PHP_INT_MAX).
-     * @throws \InvalidArgumentException On any validation failure.
+     * @throws InvalidArgumentException On any validation failure.
      */
     public static function wrapUnsignedToSignedInt(string $decimal): int
     {
         if ($decimal === '') {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'wrapUnsignedToSignedInt: input must not be empty'
             );
         }
         if (!ctype_digit($decimal)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'wrapUnsignedToSignedInt: input must be unsigned decimal digits; got "'
                 . self::safePreview($decimal) . '"'
             );
@@ -748,7 +750,7 @@ final class XdrJsonHelper
         $gmp = gmp_init($decimal, 10);
         $upperBound = self::twoToThe64();
         if (gmp_cmp($gmp, $upperBound) >= 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'wrapUnsignedToSignedInt: input out of range [0, 2^64-1]; length=' . strlen($decimal)
             );
         }
@@ -798,24 +800,24 @@ final class XdrJsonHelper
      * Leading zeros are accepted. No whitespace, no scientific notation,
      * no "+" prefix, no decimal points.
      *
-     * @throws \InvalidArgumentException On format violation.
+     * @throws InvalidArgumentException On format violation.
      */
     private static function validateInt64String(string $s): void
     {
         if ($s === '') {
-            throw new \InvalidArgumentException('SEP-51 int64 string must not be empty');
+            throw new InvalidArgumentException('SEP-51 int64 string must not be empty');
         }
         $digits = $s;
         if ($s[0] === '-') {
             $digits = substr($s, 1);
             if ($digits === '') {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'SEP-51 int64 string must have digits after minus sign; got "-"'
                 );
             }
         }
         if (!ctype_digit($digits)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'SEP-51 int64 string must contain only decimal digits (with optional leading minus); '
                 . 'got "' . self::safePreview($s) . '"'
             );
@@ -828,15 +830,15 @@ final class XdrJsonHelper
      * Used for uint64 values and for the lo/loHi/loLo limbs of signed 256-bit types
      * (which are uint64-ranged even though stored as PHP signed ints).
      *
-     * @throws \InvalidArgumentException On format violation.
+     * @throws InvalidArgumentException On format violation.
      */
     private static function validateUint64String(string $s): void
     {
         if ($s === '') {
-            throw new \InvalidArgumentException('SEP-51 uint64 string must not be empty');
+            throw new InvalidArgumentException('SEP-51 uint64 string must not be empty');
         }
         if (!ctype_digit($s)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'SEP-51 uint64 string must contain only decimal digits (no sign); got "'
                 . self::safePreview($s) . '"'
             );
@@ -852,7 +854,7 @@ final class XdrJsonHelper
      * and negative decimal representations and rely on uint64HalfToGmp() to reconstruct the
      * correct unsigned GMP value.
      *
-     * @throws \InvalidArgumentException On format violation.
+     * @throws InvalidArgumentException On format violation.
      */
     private static function validateInt64OrUint64HalfString(string $s): void
     {
@@ -896,7 +898,7 @@ final class XdrJsonHelper
     /**
      * Parse and range-validate a signed 128-bit integer string.
      *
-     * @throws \InvalidArgumentException If the string is not a valid int128.
+     * @throws InvalidArgumentException If the string is not a valid int128.
      */
     private static function parseAndValidateInt128(string $value): \GMP
     {
@@ -905,7 +907,7 @@ final class XdrJsonHelper
         $min = gmp_neg(gmp_pow(2, 127));
         $max = gmp_sub(gmp_pow(2, 127), 1);
         if (gmp_cmp($gmp, $min) < 0 || gmp_cmp($gmp, $max) > 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'int128 string of length ' . strlen($value) . ' is out of the range [-2^127, 2^127-1]'
             );
         }
@@ -915,7 +917,7 @@ final class XdrJsonHelper
     /**
      * Parse and range-validate an unsigned 128-bit integer string.
      *
-     * @throws \InvalidArgumentException If the string is not a valid uint128.
+     * @throws InvalidArgumentException If the string is not a valid uint128.
      */
     private static function parseAndValidateUint128(string $value): \GMP
     {
@@ -923,7 +925,7 @@ final class XdrJsonHelper
         $gmp = gmp_init($value, 10);
         $max = gmp_sub(gmp_pow(2, 128), 1);
         if (gmp_cmp($gmp, 0) < 0 || gmp_cmp($gmp, $max) > 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'uint128 string of length ' . strlen($value) . ' is out of the range [0, 2^128-1]'
             );
         }
@@ -933,7 +935,7 @@ final class XdrJsonHelper
     /**
      * Parse and range-validate a signed 256-bit integer string.
      *
-     * @throws \InvalidArgumentException If the string is not a valid int256.
+     * @throws InvalidArgumentException If the string is not a valid int256.
      */
     private static function parseAndValidateInt256(string $value): \GMP
     {
@@ -942,7 +944,7 @@ final class XdrJsonHelper
         $min = gmp_neg(gmp_pow(2, 255));
         $max = gmp_sub(gmp_pow(2, 255), 1);
         if (gmp_cmp($gmp, $min) < 0 || gmp_cmp($gmp, $max) > 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'int256 string of length ' . strlen($value) . ' is out of the range [-2^255, 2^255-1]'
             );
         }
@@ -952,7 +954,7 @@ final class XdrJsonHelper
     /**
      * Parse and range-validate an unsigned 256-bit integer string.
      *
-     * @throws \InvalidArgumentException If the string is not a valid uint256.
+     * @throws InvalidArgumentException If the string is not a valid uint256.
      */
     private static function parseAndValidateUint256(string $value): \GMP
     {
@@ -960,7 +962,7 @@ final class XdrJsonHelper
         $gmp = gmp_init($value, 10);
         $max = gmp_sub(gmp_pow(2, 256), 1);
         if (gmp_cmp($gmp, 0) < 0 || gmp_cmp($gmp, $max) > 0) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'uint256 string of length ' . strlen($value) . ' is out of the range [0, 2^256-1]'
             );
         }

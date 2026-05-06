@@ -110,7 +110,17 @@ class Generator < Xdrgen::Generators::Base
     file = file_name(class_name)
     out = @output.open(file)
 
+    emits_sep51_methods = emits_sep51?(php_name, is_base) && (
+      StellarJsonOverrides.has?(php_name) ||
+      enum_uses_simple_identifier_members?(php_name, enum_defn)
+    )
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51_methods
+
     out.puts GENERATED_HEADER
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts "    public int $value;"
@@ -171,7 +181,7 @@ class Generator < Xdrgen::Generators::Base
     end
     out.puts "                return #{new_call}($value);"
     out.puts "            default:"
-    out.puts "                throw new \\InvalidArgumentException(\"Unknown enum value: $value\");"
+    out.puts "                throw new InvalidArgumentException(\"Unknown enum value: $value\");"
     out.puts "        }"
     out.puts "    }"
     out.puts ""
@@ -218,15 +228,16 @@ class Generator < Xdrgen::Generators::Base
 
     has_big_integer = fields.any? { |f| f[:php_type] == "BigInteger" }
     needs_strkey = sep51_needs_strkey?(struct_name, is_base, fields: fields)
+    emits_sep51_methods = emits_sep51?(struct_name, is_base)
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51_methods
+    imports << "use phpseclib3\\Math\\BigInteger;" if has_big_integer
+    imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;" if needs_strkey
+
     out.puts GENERATED_HEADER
-    if has_big_integer
-      out.puts ""
-      out.puts "use phpseclib3\\Math\\BigInteger;"
-    end
-    if needs_strkey
-      out.puts ""
-      out.puts "use Soneso\\StellarSDK\\Crypto\\StrKey;"
-    end
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -459,16 +470,16 @@ class Generator < Xdrgen::Generators::Base
     # Imports
     needs_bigint = arms.any? { |a| !a[:void] && a[:php_type] == "BigInteger" }
     needs_strkey = sep51_needs_strkey?(union_name, is_base, arms: arms)
+    emits_sep51_methods = emits_sep51?(union_name, is_base)
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51_methods
+    imports << "use phpseclib3\\Math\\BigInteger;" if needs_bigint
+    imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;" if needs_strkey
 
     out.puts GENERATED_HEADER
-    if needs_bigint
-      out.puts ""
-      out.puts "use phpseclib3\\Math\\BigInteger;"
-    end
-    if needs_strkey
-      out.puts ""
-      out.puts "use Soneso\\StellarSDK\\Crypto\\StrKey;"
-    end
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -718,17 +729,16 @@ class Generator < Xdrgen::Generators::Base
 
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
 
-    imports = []
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51?(php_name, is_base)
     imports << "use phpseclib3\\Math\\BigInteger;" if php_type == "BigInteger"
     if sep51_needs_strkey?(php_name, is_base)
       imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;"
     end
 
     out.puts GENERATED_HEADER
-    unless imports.empty?
-      out.puts ""
-      imports.each { |imp| out.puts imp }
-    end
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -770,16 +780,15 @@ class Generator < Xdrgen::Generators::Base
     field_name = underscore_field(php_name)
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
 
-    imports = []
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51?(php_name, is_base)
     if sep51_needs_strkey?(php_name, is_base)
       imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;"
     end
 
     out.puts GENERATED_HEADER
-    unless imports.empty?
-      out.puts ""
-      imports.each { |imp| out.puts imp }
-    end
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -826,16 +835,15 @@ class Generator < Xdrgen::Generators::Base
     end
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
 
-    imports = []
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51?(php_name, is_base)
     if sep51_needs_strkey?(php_name, is_base)
       imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;"
     end
 
     out.puts GENERATED_HEADER
-    unless imports.empty?
-      out.puts ""
-      imports.each { |imp| out.puts imp }
-    end
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -1690,7 +1698,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "                    $val = (int) substr($name, strlen($prefix));"
     out.puts "                    return new static($val);"
     out.puts "                }"
-    out.puts "                throw new \\InvalidArgumentException('Unknown enum value: ' . $name);"
+    out.puts "                throw new InvalidArgumentException('Unknown enum value: ' . $name);"
     out.puts "        }"
     out.puts "    }"
     out.puts ""
@@ -1701,7 +1709,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    public static function fromTxRep(array $map, string $prefix): static {"
     out.puts "        $raw = TxRepHelper::getValue($map, $prefix);"
     out.puts "        if ($raw === null) {"
-    out.puts "            throw new \\InvalidArgumentException('Missing TxRep value for: ' . $prefix);"
+    out.puts "            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);"
     out.puts "        }"
     out.puts "        return self::fromTxRepName($raw);"
     out.puts "    }"
@@ -2554,7 +2562,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    public static function fromBase64Xdr(string $xdr): static {"
     out.puts "        $decoded = base64_decode($xdr, true);"
     out.puts "        if ($decoded === false) {"
-    out.puts "            throw new \\InvalidArgumentException('Invalid base64-encoded XDR');"
+    out.puts "            throw new InvalidArgumentException('Invalid base64-encoded XDR');"
     out.puts "        }"
     out.puts "        return static::decode(new XdrBuffer($decoded));"
     out.puts "    }"
@@ -2698,7 +2706,7 @@ class Generator < Xdrgen::Generators::Base
     # exercise path that could only be triggered by manipulating private
     # state out-of-band.
     out.puts "            // @codeCoverageIgnoreStart"
-    out.puts "            default => throw new \\InvalidArgumentException("
+    out.puts "            default => throw new InvalidArgumentException("
     out.puts "                'Unknown #{class_name} enum value: ' . $this->value"
     out.puts "            ),"
     out.puts "            // @codeCoverageIgnoreEnd"
@@ -2709,7 +2717,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "    public static function fromJsonValue(mixed $value): static {"
     out.puts "        if (!is_string($value)) {"
-    out.puts "            throw new \\InvalidArgumentException("
+    out.puts "            throw new InvalidArgumentException("
     out.puts "                'Expected string for #{class_name} JSON value, got ' . get_debug_type($value)"
     out.puts "            );"
     out.puts "        }"
@@ -2724,7 +2732,7 @@ class Generator < Xdrgen::Generators::Base
     # bounded prefix to avoid log amplification on long attacker-controlled
     # input. XdrJsonHelper lives in the same namespace as the generated class,
     # so the unqualified reference resolves without a `use` import.
-    out.puts "            default => throw new \\InvalidArgumentException("
+    out.puts "            default => throw new InvalidArgumentException("
     out.puts "                'Unknown #{class_name} JSON value: ' . XdrJsonHelper::safePreview($value)"
     out.puts "            ),"
     out.puts "        };"
@@ -2733,7 +2741,7 @@ class Generator < Xdrgen::Generators::Base
     # toJson / fromJson — JSON-string facade over the value methods.
     out.puts ""
     out.puts "    /**"
-    out.puts "     * @throws \\JsonException If the value contains structures that cannot be encoded as JSON."
+    out.puts "     * @throws JsonException If the value contains structures that cannot be encoded as JSON."
     out.puts "     */"
     out.puts "    public function toJson(): string {"
     out.puts "        return json_encode("
@@ -2743,8 +2751,8 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     out.puts "    /**"
-    out.puts "     * @throws \\JsonException If $json is not syntactically valid JSON."
-    out.puts "     * @throws \\InvalidArgumentException If the JSON shape does not match this type."
+    out.puts "     * @throws JsonException If $json is not syntactically valid JSON."
+    out.puts "     * @throws InvalidArgumentException If the JSON shape does not match this type."
     out.puts "     */"
     out.puts "    public static function fromJson(string $json): static {"
     out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
@@ -2784,7 +2792,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "            unset($value['$schema']);"
     out.puts "        }"
     out.puts "        if (!is_array($value)) {"
-    out.puts "            throw new \\InvalidArgumentException("
+    out.puts "            throw new InvalidArgumentException("
     out.puts "                'Expected object for #{class_name} JSON value, got ' . get_debug_type($value)"
     out.puts "            );"
     out.puts "        }"
@@ -2977,7 +2985,7 @@ class Generator < Xdrgen::Generators::Base
       "            $trimmed = rtrim($bytes, \"\\x00\");\n" +
       "            $len = strlen($trimmed);\n" +
       "            if ($len === 0) {\n" +
-      "                throw new \\InvalidArgumentException('AssetCode12 must not be all-null');\n" +
+      "                throw new InvalidArgumentException('AssetCode12 must not be all-null');\n" +
       "            }\n" +
       "            if ($len <= 4) {\n" +
       "                $trimmed = str_pad($trimmed, 5, \"\\x00\", STR_PAD_RIGHT);\n" +
@@ -3009,12 +3017,12 @@ class Generator < Xdrgen::Generators::Base
 
     if field[:is_ext_point]
       out.puts "        if (!array_key_exists('#{php_string_escape(xdr_key)}', $value)) {"
-      out.puts "            throw new \\InvalidArgumentException("
+      out.puts "            throw new InvalidArgumentException("
       out.puts "                'Missing required field #{php_string_escape(xdr_key)} for #{class_name}'"
       out.puts "            );"
       out.puts "        }"
       out.puts "        if (#{json_lookup} !== 'v0') {"
-      out.puts "            throw new \\InvalidArgumentException("
+      out.puts "            throw new InvalidArgumentException("
       out.puts "                'Expected v0 for #{class_name} extension point field #{php_string_escape(xdr_key)}, got '"
       out.puts "                . (is_string(#{json_lookup}) ? \"'\" . XdrJsonHelper::safePreview(#{json_lookup}) . \"'\" : get_debug_type(#{json_lookup}))"
       out.puts "            );"
@@ -3027,7 +3035,7 @@ class Generator < Xdrgen::Generators::Base
 
     if field[:is_optional]
       out.puts "        if (!array_key_exists('#{php_string_escape(xdr_key)}', $value)) {"
-      out.puts "            throw new \\InvalidArgumentException("
+      out.puts "            throw new InvalidArgumentException("
       out.puts "                'Missing required field #{php_string_escape(xdr_key)} for #{class_name}'"
       out.puts "            );"
       out.puts "        }"
@@ -3037,7 +3045,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        }"
     else
       out.puts "        if (!array_key_exists('#{php_string_escape(xdr_key)}', $value)) {"
-      out.puts "            throw new \\InvalidArgumentException("
+      out.puts "            throw new InvalidArgumentException("
       out.puts "                'Missing required field #{php_string_escape(xdr_key)} for #{class_name}'"
       out.puts "            );"
       out.puts "        }"
@@ -3073,12 +3081,12 @@ class Generator < Xdrgen::Generators::Base
       render_array_from_json(out, target, json_lookup, element_type, element_typespec, indent, field[:elements_optional])
     when AST::Declarations::Opaque
       out.puts "#{indent}if (!is_string(#{json_lookup})) {"
-      out.puts "#{indent}    throw new \\InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type(#{json_lookup}));"
+      out.puts "#{indent}    throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type(#{json_lookup}));"
       out.puts "#{indent}}"
       out.puts "#{indent}#{target} = XdrJsonHelper::hexToBytes(#{json_lookup});"
     when AST::Declarations::String
       out.puts "#{indent}if (!is_string(#{json_lookup})) {"
-      out.puts "#{indent}    throw new \\InvalidArgumentException('Expected string JSON value, got ' . get_debug_type(#{json_lookup}));"
+      out.puts "#{indent}    throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type(#{json_lookup}));"
       out.puts "#{indent}}"
       out.puts "#{indent}#{target} = XdrJsonHelper::unescapeString(#{json_lookup});"
     else
@@ -3090,7 +3098,7 @@ class Generator < Xdrgen::Generators::Base
   # Emit the from-JSON parse block for a SEP51_FIELD_OVERRIDES entry.
   def render_field_override_from_json(out, override, target, json_lookup, indent)
     out.puts "#{indent}if (!is_string(#{json_lookup})) {"
-    out.puts "#{indent}    throw new \\InvalidArgumentException("
+    out.puts "#{indent}    throw new InvalidArgumentException("
     out.puts "#{indent}        'Expected string JSON value for SEP-51 field, got ' . get_debug_type(#{json_lookup})"
     out.puts "#{indent}    );"
     out.puts "#{indent}}"
@@ -3107,7 +3115,7 @@ class Generator < Xdrgen::Generators::Base
         # Inverse: SEP-51-unescape, right-pad with \x00 to 4 bytes; reject > 4.
         out.puts "#{indent}$decoded = XdrJsonHelper::unescapeString(#{json_lookup});"
         out.puts "#{indent}if (strlen($decoded) > 4) {"
-        out.puts "#{indent}    throw new \\InvalidArgumentException("
+        out.puts "#{indent}    throw new InvalidArgumentException("
         out.puts "#{indent}        'AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)"
         out.puts "#{indent}    );"
         out.puts "#{indent}}"
@@ -3119,12 +3127,12 @@ class Generator < Xdrgen::Generators::Base
         out.puts "#{indent}$decoded = XdrJsonHelper::unescapeString(#{json_lookup});"
         out.puts "#{indent}$len = strlen($decoded);"
         out.puts "#{indent}if ($len <= 4) {"
-        out.puts "#{indent}    throw new \\InvalidArgumentException("
+        out.puts "#{indent}    throw new InvalidArgumentException("
         out.puts "#{indent}        'AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'"
         out.puts "#{indent}    );"
         out.puts "#{indent}}"
         out.puts "#{indent}if ($len > 12) {"
-        out.puts "#{indent}    throw new \\InvalidArgumentException("
+        out.puts "#{indent}    throw new InvalidArgumentException("
         out.puts "#{indent}        'AssetCode12 must not exceed 12 bytes; got ' . $len"
         out.puts "#{indent}    );"
         out.puts "#{indent}}"
@@ -3286,7 +3294,7 @@ class Generator < Xdrgen::Generators::Base
       # default arm is unreachable when every constant is covered, retained as
       # a defensive guard against reflection-corrupted instances.
       out.puts "            // @codeCoverageIgnoreStart"
-      out.puts "            default => throw new \\InvalidArgumentException("
+      out.puts "            default => throw new InvalidArgumentException("
       out.puts "                'Unknown discriminant for #{disc_info[:field_name]} on #{disc_info[:php_name] || class_name}'"
       out.puts "            ),"
       out.puts "            // @codeCoverageIgnoreEnd"
@@ -3374,12 +3382,12 @@ class Generator < Xdrgen::Generators::Base
       if !non_void_arm_wire_keys.empty?
         non_void_arm_wire_keys.each do |wire|
           escaped = php_string_escape(wire.to_s)
-          out.puts "                '#{escaped}' => throw new \\InvalidArgumentException("
+          out.puts "                '#{escaped}' => throw new InvalidArgumentException("
           out.puts "                    \"Arm '#{escaped}' on #{class_name} is non-void; supply a single-key object {\\\"#{escaped}\\\": <payload>} instead of a bare string.\""
           out.puts "                ),"
         end
       end
-      out.puts "                default => throw new \\InvalidArgumentException("
+      out.puts "                default => throw new InvalidArgumentException("
       out.puts "                    'Unknown #{class_name} void arm string: ' . XdrJsonHelper::safePreview($value)"
       out.puts "                ),"
       out.puts "            };"
@@ -3394,13 +3402,13 @@ class Generator < Xdrgen::Generators::Base
         else
           "Expected single-key object for #{class_name}, got "
         end
-      out.puts "            throw new \\InvalidArgumentException("
+      out.puts "            throw new InvalidArgumentException("
       out.puts "                '#{php_string_escape(shape_msg)}' . get_debug_type($value)"
       out.puts "            );"
       out.puts "        }"
       out.puts "        $key = array_key_first($value);"
       out.puts "        if (!is_string($key)) {"
-      out.puts "            throw new \\InvalidArgumentException("
+      out.puts "            throw new InvalidArgumentException("
       out.puts "                '#{php_string_escape("Expected string arm key for #{class_name}, got ")}' . get_debug_type($key)"
       out.puts "            );"
       out.puts "        }"
@@ -3419,7 +3427,7 @@ class Generator < Xdrgen::Generators::Base
         # possible discriminant value here. Detect at runtime.
         out.puts "            default => static::fromJsonValueDefaultArm($key, $arm),"
       else
-        out.puts "            default => throw new \\InvalidArgumentException("
+        out.puts "            default => throw new InvalidArgumentException("
         out.puts "                'Unknown arm key for #{class_name}: ' . XdrJsonHelper::safePreview($key)"
         out.puts "            ),"
       end
@@ -3428,12 +3436,12 @@ class Generator < Xdrgen::Generators::Base
         render_union_default_arm_helper(out, disc_info, default_non_void, class_name)
       end
     elsif !has_void
-      out.puts "        throw new \\InvalidArgumentException("
+      out.puts "        throw new InvalidArgumentException("
       out.puts "            'No SEP-51 dispatch defined for #{class_name}'"
       out.puts "        );"
     elsif !has_non_void_in_arms
       # void-only path: from-side only accepts strings; reject everything else.
-      out.puts "        throw new \\InvalidArgumentException("
+      out.puts "        throw new InvalidArgumentException("
       out.puts "            'Expected void-arm string for #{class_name}, got ' . get_debug_type($value)"
       out.puts "        );"
     end
@@ -3494,13 +3502,13 @@ class Generator < Xdrgen::Generators::Base
     if disc_info[:kind] == :int
       out.puts "        $prefix = '#{php_string_escape(disc_info[:xdr_name].downcase)}';"
       out.puts "        if (!str_starts_with($key, $prefix)) {"
-      out.puts "            throw new \\InvalidArgumentException("
+      out.puts "            throw new InvalidArgumentException("
       out.puts "                'Unknown arm key for default arm dispatch: ' . XdrJsonHelper::safePreview($key)"
       out.puts "            );"
       out.puts "        }"
       out.puts "        $remainder = substr($key, strlen($prefix));"
       out.puts "        if ($remainder === '' || !ctype_digit($remainder)) {"
-      out.puts "            throw new \\InvalidArgumentException("
+      out.puts "            throw new InvalidArgumentException("
       out.puts "                'Expected integer suffix on default arm key, got: ' . XdrJsonHelper::safePreview($key)"
       out.puts "            );"
       out.puts "        }"
@@ -3564,15 +3572,15 @@ class Generator < Xdrgen::Generators::Base
   def field_override_from_json_expr(override, source)
     if override.key?(:strkey)
       decoder = strkey_encoder_method(override[:strkey], override[:encoding], :decode)
-      return "(static function ($v) { if (!is_string($v)) { throw new \\InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } return StrKey::#{decoder}($v); })(#{source})"
+      return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } return StrKey::#{decoder}($v); })(#{source})"
     end
     if override.key?(:asset_code)
       width = override[:asset_code]
       case width
       when 4
-        return "(static function ($v) { if (!is_string($v)) { throw new \\InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } $decoded = XdrJsonHelper::unescapeString($v); if (strlen($decoded) > 4) { throw new \\InvalidArgumentException('AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)); } return str_pad($decoded, 4, \"\\x00\", STR_PAD_RIGHT); })(#{source})"
+        return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } $decoded = XdrJsonHelper::unescapeString($v); if (strlen($decoded) > 4) { throw new InvalidArgumentException('AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)); } return str_pad($decoded, 4, \"\\x00\", STR_PAD_RIGHT); })(#{source})"
       when 12
-        return "(static function ($v) { if (!is_string($v)) { throw new \\InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } $decoded = XdrJsonHelper::unescapeString($v); $len = strlen($decoded); if ($len <= 4) { throw new \\InvalidArgumentException('AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'); } if ($len > 12) { throw new \\InvalidArgumentException('AssetCode12 must not exceed 12 bytes; got ' . $len); } return str_pad($decoded, 12, \"\\x00\", STR_PAD_RIGHT); })(#{source})"
+        return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } $decoded = XdrJsonHelper::unescapeString($v); $len = strlen($decoded); if ($len <= 4) { throw new InvalidArgumentException('AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'); } if ($len > 12) { throw new InvalidArgumentException('AssetCode12 must not exceed 12 bytes; got ' . $len); } return str_pad($decoded, 12, \"\\x00\", STR_PAD_RIGHT); })(#{source})"
       end
     end
     if override.key?(:proc)
@@ -3627,7 +3635,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "    public static function fromJsonValue(mixed $value): static {"
     out.puts "        if (!is_string($value)) {"
-    out.puts "            throw new \\InvalidArgumentException("
+    out.puts "            throw new InvalidArgumentException("
     out.puts "                'Expected string for #{php_name} JSON value, got ' . get_debug_type($value)"
     out.puts "            );"
     out.puts "        }"
@@ -3657,7 +3665,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "    public static function fromJsonValue(mixed $value): static {"
     out.puts "        if (!is_array($value)) {"
-    out.puts "            throw new \\InvalidArgumentException("
+    out.puts "            throw new InvalidArgumentException("
     out.puts "                'Expected JSON array for #{php_name}, got ' . get_debug_type($value)"
     out.puts "            );"
     out.puts "        }"
@@ -3676,7 +3684,7 @@ class Generator < Xdrgen::Generators::Base
   def render_to_json_facade(out)
     out.puts ""
     out.puts "    /**"
-    out.puts "     * @throws \\JsonException If the value contains structures that cannot be encoded as JSON."
+    out.puts "     * @throws JsonException If the value contains structures that cannot be encoded as JSON."
     out.puts "     */"
     out.puts "    public function toJson(): string {"
     out.puts "        return json_encode("
@@ -3691,8 +3699,8 @@ class Generator < Xdrgen::Generators::Base
   def render_from_json_facade(out)
     out.puts ""
     out.puts "    /**"
-    out.puts "     * @throws \\JsonException If $json is not syntactically valid JSON."
-    out.puts "     * @throws \\InvalidArgumentException If the JSON shape does not match this type."
+    out.puts "     * @throws JsonException If $json is not syntactically valid JSON."
+    out.puts "     * @throws InvalidArgumentException If the JSON shape does not match this type."
     out.puts "     */"
     out.puts "    public static function fromJson(string $json): static {"
     out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
@@ -3754,24 +3762,24 @@ class Generator < Xdrgen::Generators::Base
     # a string (or coercible to one — we accept int input for backward
     # compatibility with JSON encoders that emit small int64 values as ints).
     if php_type == "BigInteger"
-      return "(static function ($v) { if (is_int($v)) { return new BigInteger((string) $v); } if (!is_string($v)) { throw new \\InvalidArgumentException('Expected base-10 integer string for BigInteger JSON value, got ' . get_debug_type($v)); } XdrJsonHelper::stringToInt64($v); return new BigInteger($v); })(#{source})"
+      return "(static function ($v) { if (is_int($v)) { return new BigInteger((string) $v); } if (!is_string($v)) { throw new InvalidArgumentException('Expected base-10 integer string for BigInteger JSON value, got ' . get_debug_type($v)); } XdrJsonHelper::stringToInt64($v); return new BigInteger($v); })(#{source})"
     end
 
     if typespec
       width = primitive_width(typespec)
       case width
       when :int32
-        return "(static function ($v) { if (!is_int($v)) { throw new \\InvalidArgumentException('Expected int32 JSON int, got ' . get_debug_type($v)); } return $v; })(#{source})"
+        return "(static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int32 JSON int, got ' . get_debug_type($v)); } return $v; })(#{source})"
       when :uint32
-        return "(static function ($v) { if (!is_int($v)) { throw new \\InvalidArgumentException('Expected uint32 JSON int, got ' . get_debug_type($v)); } return $v; })(#{source})"
+        return "(static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected uint32 JSON int, got ' . get_debug_type($v)); } return $v; })(#{source})"
       when :bool
-        return "(static function ($v) { if (!is_bool($v)) { throw new \\InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
+        return "(static function ($v) { if (!is_bool($v)) { throw new InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
       when :int64
-        return "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \\InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })(#{source})"
+        return "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })(#{source})"
       when :uint64
-        return "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \\InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })(#{source})"
+        return "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })(#{source})"
       when :string
-        return "(static function ($v) { if (!is_string($v)) { throw new \\InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })(#{source})"
+        return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })(#{source})"
       end
 
       typedef_form = resolve_typedef_json_form(typespec)
@@ -3780,9 +3788,9 @@ class Generator < Xdrgen::Generators::Base
 
     case php_type
     when "bool"
-      "(static function ($v) { if (!is_bool($v)) { throw new \\InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
+      "(static function ($v) { if (!is_bool($v)) { throw new InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
     when "int"
-      "(static function ($v) { if (!is_int($v)) { throw new \\InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
+      "(static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
     when "string"
       "XdrJsonHelper::unescapeString((string) #{source})"
     else
@@ -3805,7 +3813,7 @@ class Generator < Xdrgen::Generators::Base
   # Inverse of array_to_json_expr: read a JSON list and parse each element.
   def array_from_json_expr(source, element_type, element_typespec)
     elem_expr = simple_value_from_json_expr(element_type, element_typespec, "$item")
-    "(static function ($v) { if (!is_array($v)) { throw new \\InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = #{elem_expr}; } return $out; })(#{source})"
+    "(static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = #{elem_expr}; } return $out; })(#{source})"
   end
 
   def render_array_from_json(out, target, json_lookup, element_type, element_typespec, indent, elements_optional)
@@ -3817,7 +3825,7 @@ class Generator < Xdrgen::Generators::Base
       end
     out.puts "#{indent}#{target} = (static function ($v) {"
     out.puts "#{indent}    if (!is_array($v)) {"
-    out.puts "#{indent}        throw new \\InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));"
+    out.puts "#{indent}        throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));"
     out.puts "#{indent}    }"
     out.puts "#{indent}    $out = [];"
     out.puts "#{indent}    foreach ($v as $item) { $out[] = #{elem_expr}; }"
@@ -3851,9 +3859,9 @@ class Generator < Xdrgen::Generators::Base
     when "BigInteger"
       out.puts "#{indent}#{target} = new BigInteger(is_string(#{json_lookup}) ? #{json_lookup} : (string) (int) #{json_lookup});"
     when "int"
-      out.puts "#{indent}#{target} = (static function ($v) { if (!is_int($v)) { throw new \\InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{json_lookup});"
+      out.puts "#{indent}#{target} = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{json_lookup});"
     when "bool"
-      out.puts "#{indent}#{target} = (static function ($v) { if (!is_bool($v)) { throw new \\InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{json_lookup});"
+      out.puts "#{indent}#{target} = (static function ($v) { if (!is_bool($v)) { throw new InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{json_lookup});"
     when "string"
       out.puts "#{indent}#{target} = XdrJsonHelper::unescapeString((string) #{json_lookup});"
     else
@@ -3940,17 +3948,17 @@ class Generator < Xdrgen::Generators::Base
   def typedef_form_from_json_expr(form, source)
     case form[:kind]
     when :hex_fixed, :hex_variable
-      "(static function ($v) { if (!is_string($v)) { throw new \\InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })(#{source})"
+      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })(#{source})"
     when :string
-      "(static function ($v) { if (!is_string($v)) { throw new \\InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })(#{source})"
+      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })(#{source})"
     when :primitive
       case form[:width]
       when :int64
-        "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \\InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })(#{source})"
+        "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })(#{source})"
       when :uint64
-        "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \\InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })(#{source})"
+        "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })(#{source})"
       else
-        "(static function ($v) { if (!is_int($v)) { throw new \\InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
+        "(static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
       end
     end
   end

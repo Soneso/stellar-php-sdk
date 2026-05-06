@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCSpecType {
     public int $value;
 
@@ -182,7 +185,7 @@ class XdrSCSpecType {
             case 2000:
                 return new XdrSCSpecType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -193,7 +196,7 @@ class XdrSCSpecType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -227,7 +230,7 @@ class XdrSCSpecType {
             self::SC_SPEC_TYPE_BYTES_N => 'bytes_n',
             self::SC_SPEC_TYPE_UDT => 'udt',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrSCSpecType enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -236,7 +239,7 @@ class XdrSCSpecType {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrSCSpecType JSON value, got ' . get_debug_type($value)
             );
         }
@@ -267,14 +270,14 @@ class XdrSCSpecType {
             'tuple' => new static(self::SC_SPEC_TYPE_TUPLE),
             'bytes_n' => new static(self::SC_SPEC_TYPE_BYTES_N),
             'udt' => new static(self::SC_SPEC_TYPE_UDT),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrSCSpecType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -284,8 +287,8 @@ class XdrSCSpecType {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

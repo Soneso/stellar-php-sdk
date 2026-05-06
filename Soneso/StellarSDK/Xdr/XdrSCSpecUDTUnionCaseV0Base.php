@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCSpecUDTUnionCaseV0Base {
 
     public XdrSCSpecUDTUnionCaseV0Kind $kind;
@@ -61,7 +64,7 @@ class XdrSCSpecUDTUnionCaseV0Base {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -71,7 +74,7 @@ class XdrSCSpecUDTUnionCaseV0Base {
             XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_VOID_V0 => ['void_v0' => $this->voidCase->toJsonValue()],
             XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_TUPLE_V0 => ['tuple_v0' => $this->tupleCase->toJsonValue()],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for kind on XdrSCSpecUDTUnionCaseV0Kind'
             ),
             // @codeCoverageIgnoreEnd
@@ -83,13 +86,13 @@ class XdrSCSpecUDTUnionCaseV0Base {
             unset($value['$schema']);
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object for XdrSCSpecUDTUnionCaseV0Base, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrSCSpecUDTUnionCaseV0Base, got ' . get_debug_type($key)
             );
         }
@@ -97,14 +100,14 @@ class XdrSCSpecUDTUnionCaseV0Base {
         return match ($key) {
             'void_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecUDTUnionCaseV0Kind(XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_VOID_V0)); $r->voidCase = XdrSCSpecUDTUnionCaseVoidV0::fromJsonValue($arm); return $r; })(),
             'tuple_v0' => (static function () use ($arm) { $r = new static(new XdrSCSpecUDTUnionCaseV0Kind(XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_TUPLE_V0)); $r->tupleCase = XdrSCSpecUDTUnionCaseTupleV0::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrSCSpecUDTUnionCaseV0Base: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -114,8 +117,8 @@ class XdrSCSpecUDTUnionCaseV0Base {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

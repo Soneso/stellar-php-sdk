@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrBeginSponsoringFutureReservesResultCode {
     public int $value;
 
@@ -50,7 +53,7 @@ class XdrBeginSponsoringFutureReservesResultCode {
             case -3:
                 return new XdrBeginSponsoringFutureReservesResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -61,7 +64,7 @@ class XdrBeginSponsoringFutureReservesResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -73,7 +76,7 @@ class XdrBeginSponsoringFutureReservesResultCode {
             self::ALREADY_SPONSORED => 'already_sponsored',
             self::RECURSIVE => 'recursive',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrBeginSponsoringFutureReservesResultCode enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -82,7 +85,7 @@ class XdrBeginSponsoringFutureReservesResultCode {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrBeginSponsoringFutureReservesResultCode JSON value, got ' . get_debug_type($value)
             );
         }
@@ -91,14 +94,14 @@ class XdrBeginSponsoringFutureReservesResultCode {
             'malformed' => new static(self::MALFORMED),
             'already_sponsored' => new static(self::ALREADY_SPONSORED),
             'recursive' => new static(self::RECURSIVE),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrBeginSponsoringFutureReservesResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -108,8 +111,8 @@ class XdrBeginSponsoringFutureReservesResultCode {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

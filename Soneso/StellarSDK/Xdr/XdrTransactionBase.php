@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrTransactionBase {
 
     public XdrMuxedAccount $sourceAccount;
@@ -77,7 +80,7 @@ class XdrTransactionBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -99,20 +102,20 @@ class XdrTransactionBase {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrTransaction JSON value, got ' . get_debug_type($value)
             );
         }
         foreach (['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'] as $required) {
             if (!array_key_exists($required, $value)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Missing required field ' . $required . ' for XdrTransaction'
                 );
             }
         }
         $sourceAccount = XdrMuxedAccount::fromJsonValue($value['source_account']);
         if (!is_int($value['fee'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                     'Expected int for fee, got ' . get_debug_type($value['fee'])
             );
         }
@@ -121,7 +124,7 @@ class XdrTransactionBase {
         $preconditions = XdrPreconditions::fromJsonValue($value['cond']);
         $memo = XdrMemo::fromJsonValue($value['memo']);
         if (!is_array($value['operations'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
             );
         }
@@ -135,7 +138,7 @@ class XdrTransactionBase {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -145,8 +148,8 @@ class XdrTransactionBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

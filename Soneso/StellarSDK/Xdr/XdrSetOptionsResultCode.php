@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSetOptionsResultCode {
     public int $value;
 
@@ -92,7 +95,7 @@ class XdrSetOptionsResultCode {
             case -10:
                 return new XdrSetOptionsResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -103,7 +106,7 @@ class XdrSetOptionsResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -122,7 +125,7 @@ class XdrSetOptionsResultCode {
             self::INVALID_HOME_DOMAIN => 'invalid_home_domain',
             self::AUTH_REVOCABLE_REQUIRED => 'auth_revocable_required',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrSetOptionsResultCode enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -131,7 +134,7 @@ class XdrSetOptionsResultCode {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrSetOptionsResultCode JSON value, got ' . get_debug_type($value)
             );
         }
@@ -147,14 +150,14 @@ class XdrSetOptionsResultCode {
             'bad_signer' => new static(self::BAD_SIGNER),
             'invalid_home_domain' => new static(self::INVALID_HOME_DOMAIN),
             'auth_revocable_required' => new static(self::AUTH_REVOCABLE_REQUIRED),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrSetOptionsResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -164,8 +167,8 @@ class XdrSetOptionsResultCode {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCSpecTypeDefBase {
 
     public XdrSCSpecType $type;
@@ -146,7 +149,7 @@ class XdrSCSpecTypeDefBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -180,7 +183,7 @@ class XdrSCSpecTypeDefBase {
             XdrSCSpecType::SC_SPEC_TYPE_BYTES_N => ['bytes_n' => $this->bytesN->toJsonValue()],
             XdrSCSpecType::SC_SPEC_TYPE_UDT => ['udt' => $this->udt->toJsonValue()],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrSCSpecType'
             ),
             // @codeCoverageIgnoreEnd
@@ -212,40 +215,40 @@ class XdrSCSpecTypeDefBase {
                 'symbol' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_SYMBOL)),
                 'address' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS)),
                 'muxed_address' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS)),
-                'option' => throw new \InvalidArgumentException(
+                'option' => throw new InvalidArgumentException(
                     "Arm 'option' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"option\": <payload>} instead of a bare string."
                 ),
-                'result' => throw new \InvalidArgumentException(
+                'result' => throw new InvalidArgumentException(
                     "Arm 'result' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"result\": <payload>} instead of a bare string."
                 ),
-                'vec' => throw new \InvalidArgumentException(
+                'vec' => throw new InvalidArgumentException(
                     "Arm 'vec' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"vec\": <payload>} instead of a bare string."
                 ),
-                'map' => throw new \InvalidArgumentException(
+                'map' => throw new InvalidArgumentException(
                     "Arm 'map' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"map\": <payload>} instead of a bare string."
                 ),
-                'tuple' => throw new \InvalidArgumentException(
+                'tuple' => throw new InvalidArgumentException(
                     "Arm 'tuple' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"tuple\": <payload>} instead of a bare string."
                 ),
-                'bytes_n' => throw new \InvalidArgumentException(
+                'bytes_n' => throw new InvalidArgumentException(
                     "Arm 'bytes_n' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"bytes_n\": <payload>} instead of a bare string."
                 ),
-                'udt' => throw new \InvalidArgumentException(
+                'udt' => throw new InvalidArgumentException(
                     "Arm 'udt' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"udt\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrSCSpecTypeDefBase void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrSCSpecTypeDefBase, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrSCSpecTypeDefBase, got ' . get_debug_type($key)
             );
         }
@@ -258,14 +261,14 @@ class XdrSCSpecTypeDefBase {
             'tuple' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_TUPLE)); $r->tuple = XdrSCSpecTypeTuple::fromJsonValue($arm); return $r; })(),
             'bytes_n' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_BYTES_N)); $r->bytesN = XdrSCSpecTypeBytesN::fromJsonValue($arm); return $r; })(),
             'udt' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_UDT)); $r->udt = XdrSCSpecTypeUDT::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrSCSpecTypeDefBase: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -275,8 +278,8 @@ class XdrSCSpecTypeDefBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrInnerTransactionResultResult {
 
     public XdrTransactionResultCode $resultCode;
@@ -96,7 +99,7 @@ class XdrInnerTransactionResultResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -122,7 +125,7 @@ class XdrInnerTransactionResultResult {
             XdrTransactionResultCode::SOROBAN_INVALID => 'txsoroban_invalid',
             XdrTransactionResultCode::FROZEN_KEY_ACCESSED => 'txfrozen_key_accessed',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for resultCode on XdrTransactionResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -151,40 +154,40 @@ class XdrInnerTransactionResultResult {
                 'txmalformed' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED)),
                 'txsoroban_invalid' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID)),
                 'txfrozen_key_accessed' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED)),
-                'txsuccess' => throw new \InvalidArgumentException(
+                'txsuccess' => throw new InvalidArgumentException(
                     "Arm 'txsuccess' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"txsuccess\": <payload>} instead of a bare string."
                 ),
-                'txfailed' => throw new \InvalidArgumentException(
+                'txfailed' => throw new InvalidArgumentException(
                     "Arm 'txfailed' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"txfailed\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrInnerTransactionResultResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrInnerTransactionResultResult, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrInnerTransactionResultResult, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         return match ($key) {
-            'txsuccess' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $r->results = (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
-            'txfailed' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $r->results = (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            'txsuccess' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $r->results = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'txfailed' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $r->results = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrInnerTransactionResultResult: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -194,8 +197,8 @@ class XdrInnerTransactionResultResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

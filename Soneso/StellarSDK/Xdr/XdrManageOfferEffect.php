@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrManageOfferEffect {
     public int $value;
 
@@ -44,7 +47,7 @@ class XdrManageOfferEffect {
             case 2:
                 return new XdrManageOfferEffect($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -55,7 +58,7 @@ class XdrManageOfferEffect {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -66,7 +69,7 @@ class XdrManageOfferEffect {
             self::MANAGE_OFFER_UPDATED => 'updated',
             self::MANAGE_OFFER_DELETED => 'deleted',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrManageOfferEffect enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -75,7 +78,7 @@ class XdrManageOfferEffect {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrManageOfferEffect JSON value, got ' . get_debug_type($value)
             );
         }
@@ -83,14 +86,14 @@ class XdrManageOfferEffect {
             'created' => new static(self::MANAGE_OFFER_CREATED),
             'updated' => new static(self::MANAGE_OFFER_UPDATED),
             'deleted' => new static(self::MANAGE_OFFER_DELETED),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrManageOfferEffect JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -100,8 +103,8 @@ class XdrManageOfferEffect {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

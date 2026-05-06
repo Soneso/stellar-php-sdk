@@ -1084,7 +1084,7 @@ class RoundTripEmitter
       // Parse the fromJsonValue source of a union to extract the bare-string
       // JSON keys that map to a non-void-arm rejection. The generated source
       // has the precise shape:
-      //   'arm_key' => throw new \\InvalidArgumentException(
+      //   'arm_key' => throw new InvalidArgumentException(
       //       "Arm 'arm_key' on XdrType is non-void; ..."
       //   ),
       // Returns a sorted, deduplicated list. Walks the wrapper -> base
@@ -1108,7 +1108,7 @@ class RoundTripEmitter
           // identifies the construct without needing to delimit the
           // surrounding method body, which contains nested closures whose
           // braces defeat naive regex extraction. Match the arm-key
-          // literal followed by `=> throw new \\InvalidArgumentException(`
+          // literal followed by `=> throw new InvalidArgumentException(`
           // and the canonical phrase, scanning the entire source file.
           foreach ($sources as $fileName) {
               $src = @file_get_contents($fileName);
@@ -1355,7 +1355,7 @@ class RoundTripEmitter
     # Pass 7 — per-non-void-arm bare-string rejection tests. Closes a
     # coverage gap that round-trip tests cannot reach by construction:
     # each non-void arm of a discriminated union has a per-arm
-    # `throw new \InvalidArgumentException("Arm 'X' on Y is non-void; ...")`
+    # `throw new InvalidArgumentException("Arm 'X' on Y is non-void; ...")`
     # branch in fromJsonValue that only fires when a user passes a bare
     # string for an arm that requires a single-key object payload. The
     # round-trip tests always pass valid input, so these throws stay

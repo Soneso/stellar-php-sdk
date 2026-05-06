@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrClaimPredicate {
 
     public XdrClaimPredicateType $type;
@@ -115,7 +118,7 @@ class XdrClaimPredicate {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -129,7 +132,7 @@ class XdrClaimPredicate {
             XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME => ['before_absolute_time' => XdrJsonHelper::int64ToString($this->absBefore)],
             XdrClaimPredicateType::BEFORE_RELATIVE_TIME => ['before_relative_time' => XdrJsonHelper::int64ToString($this->relBefore)],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrClaimPredicateType'
             ),
             // @codeCoverageIgnoreEnd
@@ -143,52 +146,52 @@ class XdrClaimPredicate {
         if (is_string($value)) {
             return match ($value) {
                 'unconditional' => new static(new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL)),
-                'and' => throw new \InvalidArgumentException(
+                'and' => throw new InvalidArgumentException(
                     "Arm 'and' on XdrClaimPredicate is non-void; supply a single-key object {\"and\": <payload>} instead of a bare string."
                 ),
-                'or' => throw new \InvalidArgumentException(
+                'or' => throw new InvalidArgumentException(
                     "Arm 'or' on XdrClaimPredicate is non-void; supply a single-key object {\"or\": <payload>} instead of a bare string."
                 ),
-                'not' => throw new \InvalidArgumentException(
+                'not' => throw new InvalidArgumentException(
                     "Arm 'not' on XdrClaimPredicate is non-void; supply a single-key object {\"not\": <payload>} instead of a bare string."
                 ),
-                'before_absolute_time' => throw new \InvalidArgumentException(
+                'before_absolute_time' => throw new InvalidArgumentException(
                     "Arm 'before_absolute_time' on XdrClaimPredicate is non-void; supply a single-key object {\"before_absolute_time\": <payload>} instead of a bare string."
                 ),
-                'before_relative_time' => throw new \InvalidArgumentException(
+                'before_relative_time' => throw new InvalidArgumentException(
                     "Arm 'before_relative_time' on XdrClaimPredicate is non-void; supply a single-key object {\"before_relative_time\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrClaimPredicate void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrClaimPredicate, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrClaimPredicate, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         return match ($key) {
-            'and' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::AND)); $r->andPredicates = (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrClaimPredicate::fromJsonValue($item); } return $out; })($arm); return $r; })(),
-            'or' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::OR)); $r->orPredicates = (static function ($v) { if (!is_array($v)) { throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrClaimPredicate::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'and' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::AND)); $r->andPredicates = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrClaimPredicate::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'or' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::OR)); $r->orPredicates = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrClaimPredicate::fromJsonValue($item); } return $out; })($arm); return $r; })(),
             'not' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::NOT)); $r->notPredicate = ($arm === null ? null : XdrClaimPredicate::fromJsonValue($arm)); return $r; })(),
-            'before_absolute_time' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME)); $r->absBefore = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($arm); return $r; })(),
-            'before_relative_time' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME)); $r->relBefore = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            'before_absolute_time' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME)); $r->absBefore = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($arm); return $r; })(),
+            'before_relative_time' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME)); $r->relBefore = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrClaimPredicate: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -198,8 +201,8 @@ class XdrClaimPredicate {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

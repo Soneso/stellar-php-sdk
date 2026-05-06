@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrOperationResult {
 
     public XdrOperationResultCode $resultCode;
@@ -66,7 +69,7 @@ class XdrOperationResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -81,7 +84,7 @@ class XdrOperationResult {
             XdrOperationResultCode::EXCEEDED_WORK_LIMIT => 'opexceeded_work_limit',
             XdrOperationResultCode::TOO_MANY_SPONSORING => 'optoo_many_sponsoring',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for resultCode on XdrOperationResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -100,36 +103,36 @@ class XdrOperationResult {
                 'optoo_many_subentries' => new static(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SUBENTRIES)),
                 'opexceeded_work_limit' => new static(new XdrOperationResultCode(XdrOperationResultCode::EXCEEDED_WORK_LIMIT)),
                 'optoo_many_sponsoring' => new static(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SPONSORING)),
-                'opinner' => throw new \InvalidArgumentException(
+                'opinner' => throw new InvalidArgumentException(
                     "Arm 'opinner' on XdrOperationResult is non-void; supply a single-key object {\"opinner\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrOperationResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrOperationResult, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrOperationResult, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         return match ($key) {
             'opinner' => (static function () use ($arm) { $r = new static(new XdrOperationResultCode(XdrOperationResultCode::INNER)); $r->resultTr = XdrOperationResultTr::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrOperationResult: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -139,8 +142,8 @@ class XdrOperationResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

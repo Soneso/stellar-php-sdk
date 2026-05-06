@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
 
 class XdrInnerTransactionResult {
@@ -47,7 +49,7 @@ class XdrInnerTransactionResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -65,24 +67,24 @@ class XdrInnerTransactionResult {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrInnerTransactionResult JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('fee_charged', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field fee_charged for XdrInnerTransactionResult'
             );
         }
         $feeCharged = new BigInteger(is_string($value['fee_charged']) ? $value['fee_charged'] : (string) (int) $value['fee_charged']);
         if (!array_key_exists('result', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field result for XdrInnerTransactionResult'
             );
         }
         $result = XdrInnerTransactionResultResult::fromJsonValue($value['result']);
         if (!array_key_exists('ext', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ext for XdrInnerTransactionResult'
             );
         }
@@ -91,7 +93,7 @@ class XdrInnerTransactionResult {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -101,8 +103,8 @@ class XdrInnerTransactionResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

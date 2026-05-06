@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
 
 class XdrAccountMergeResult {
@@ -70,7 +72,7 @@ class XdrAccountMergeResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -86,7 +88,7 @@ class XdrAccountMergeResult {
             XdrAccountMergeResultCode::DEST_FULL => 'dest_full',
             XdrAccountMergeResultCode::IS_SPONSOR => 'is_sponsor',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for resultCode on XdrAccountMergeResultCode'
             ),
             // @codeCoverageIgnoreEnd
@@ -106,36 +108,36 @@ class XdrAccountMergeResult {
                 'seqnum_too_far' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SEQNUM_TOO_FAR)),
                 'dest_full' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::DEST_FULL)),
                 'is_sponsor' => new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IS_SPONSOR)),
-                'success' => throw new \InvalidArgumentException(
+                'success' => throw new InvalidArgumentException(
                     "Arm 'success' on XdrAccountMergeResult is non-void; supply a single-key object {\"success\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrAccountMergeResult void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrAccountMergeResult, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrAccountMergeResult, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
         return match ($key) {
-            'success' => (static function () use ($arm) { $r = new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SUCCESS)); $r->sourceAccountBalance = (static function ($v) { if (is_int($v)) { return new BigInteger((string) $v); } if (!is_string($v)) { throw new \InvalidArgumentException('Expected base-10 integer string for BigInteger JSON value, got ' . get_debug_type($v)); } XdrJsonHelper::stringToInt64($v); return new BigInteger($v); })($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            'success' => (static function () use ($arm) { $r = new static(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SUCCESS)); $r->sourceAccountBalance = (static function ($v) { if (is_int($v)) { return new BigInteger((string) $v); } if (!is_string($v)) { throw new InvalidArgumentException('Expected base-10 integer string for BigInteger JSON value, got ' . get_debug_type($v)); } XdrJsonHelper::stringToInt64($v); return new BigInteger($v); })($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrAccountMergeResult: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -145,8 +147,8 @@ class XdrAccountMergeResult {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

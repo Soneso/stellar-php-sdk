@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrConfigUpgradeSetKeyBase {
@@ -41,7 +43,7 @@ class XdrConfigUpgradeSetKeyBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -58,32 +60,32 @@ class XdrConfigUpgradeSetKeyBase {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrConfigUpgradeSetKeyBase JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('contract_id', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field contract_id for XdrConfigUpgradeSetKeyBase'
             );
         }
         if (!is_string($value['contract_id'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['contract_id'])
             );
         }
         $contractID = StrKey::decodeContractIdHex($value['contract_id']);
         if (!array_key_exists('content_hash', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field content_hash for XdrConfigUpgradeSetKeyBase'
             );
         }
-        $contentHash = (static function ($v) { if (!is_string($v)) { throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['content_hash']);
+        $contentHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['content_hash']);
         return new static($contractID, $contentHash);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -93,8 +95,8 @@ class XdrConfigUpgradeSetKeyBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 
 /**
@@ -24,8 +25,8 @@ class XdrEncoder
     public static function opaqueFixed(string $value, ?int $expectedLength = null, bool $padUnexpectedLength = false): string
     {
         // Length greater than expected length is always an error
-        if ($expectedLength && strlen($value) > $expectedLength) throw new \InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', strlen($value), $expectedLength));
-        if ($expectedLength && !$padUnexpectedLength && strlen($value) != $expectedLength) throw new \InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', strlen($value), $expectedLength));
+        if ($expectedLength && strlen($value) > $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', strlen($value), $expectedLength));
+        if ($expectedLength && !$padUnexpectedLength && strlen($value) != $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', strlen($value), $expectedLength));
 
         if ($expectedLength && strlen($value) != $expectedLength) {
             $value = self::applyPadding($value, $expectedLength);
@@ -45,7 +46,7 @@ class XdrEncoder
     public static function opaqueVariable(string $value): string
     {
         $maxLength = pow(2, 32) - 1;
-        if (strlen($value) > $maxLength) throw new \InvalidArgumentException(sprintf('Value of length %s is greater than the maximum allowed length of %s', strlen($value), $maxLength));
+        if (strlen($value) > $maxLength) throw new InvalidArgumentException(sprintf('Value of length %s is greater than the maximum allowed length of %s', strlen($value), $maxLength));
 
         $bytes = '';
 
@@ -160,7 +161,7 @@ class XdrEncoder
 
     public static function unsignedInteger64($value): string
     {
-        if ($value > PHP_INT_MAX) throw new \InvalidArgumentException('value is greater than PHP_INT_MAX');
+        if ($value > PHP_INT_MAX) throw new InvalidArgumentException('value is greater than PHP_INT_MAX');
 
         // unsigned 64-bit big-endian
         return pack('J', $value);
@@ -196,7 +197,7 @@ class XdrEncoder
     {
         if ($maximumLength === null) $maximumLength = pow(2, 32) - 1;
 
-        if (strlen($value) > $maximumLength) throw new \InvalidArgumentException('string exceeds maximum length');
+        if (strlen($value) > $maximumLength) throw new InvalidArgumentException('string exceeds maximum length');
 
         $bytes = self::unsignedInteger32(strlen($value));
         $bytes .= $value;

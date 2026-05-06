@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrTimeBoundsBase {
 
     public int $minTimestamp;
@@ -39,7 +42,7 @@ class XdrTimeBoundsBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -56,29 +59,29 @@ class XdrTimeBoundsBase {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrTimeBounds JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('min_time', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field min_time for XdrTimeBounds'
             );
         }
         if (!array_key_exists('max_time', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field max_time for XdrTimeBounds'
             );
         }
         $minRaw = $value['min_time'];
         $maxRaw = $value['max_time'];
         if (!is_string($minRaw) && !is_int($minRaw)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected uint64 JSON value (string or int) for min_time, got ' . get_debug_type($minRaw)
             );
         }
         if (!is_string($maxRaw) && !is_int($maxRaw)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected uint64 JSON value (string or int) for max_time, got ' . get_debug_type($maxRaw)
             );
         }
@@ -93,7 +96,7 @@ class XdrTimeBoundsBase {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -103,8 +106,8 @@ class XdrTimeBoundsBase {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

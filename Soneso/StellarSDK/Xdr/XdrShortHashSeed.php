@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrShortHashSeed {
 
     public string $seed;
@@ -33,7 +36,7 @@ class XdrShortHashSeed {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -49,24 +52,24 @@ class XdrShortHashSeed {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrShortHashSeed JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('seed', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field seed for XdrShortHashSeed'
             );
         }
         if (!is_string($value['seed'])) {
-            throw new \InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['seed']));
+            throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['seed']));
         }
         $seed = XdrJsonHelper::hexToBytes($value['seed']);
         return new static($seed);
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -76,8 +79,8 @@ class XdrShortHashSeed {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

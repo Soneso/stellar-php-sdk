@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrOperationResultCode {
     public int $value;
 
@@ -68,7 +71,7 @@ class XdrOperationResultCode {
             case -6:
                 return new XdrOperationResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -79,7 +82,7 @@ class XdrOperationResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -94,7 +97,7 @@ class XdrOperationResultCode {
             self::EXCEEDED_WORK_LIMIT => 'exceeded_work_limit',
             self::TOO_MANY_SPONSORING => 'too_many_sponsoring',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrOperationResultCode enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -103,7 +106,7 @@ class XdrOperationResultCode {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrOperationResultCode JSON value, got ' . get_debug_type($value)
             );
         }
@@ -115,14 +118,14 @@ class XdrOperationResultCode {
             'too_many_subentries' => new static(self::TOO_MANY_SUBENTRIES),
             'exceeded_work_limit' => new static(self::EXCEEDED_WORK_LIMIT),
             'too_many_sponsoring' => new static(self::TOO_MANY_SPONSORING),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrOperationResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -132,8 +135,8 @@ class XdrOperationResultCode {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

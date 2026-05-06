@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrTransactionResultCode {
     public int $value;
 
@@ -146,7 +149,7 @@ class XdrTransactionResultCode {
             case -18:
                 return new XdrTransactionResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -157,7 +160,7 @@ class XdrTransactionResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -185,7 +188,7 @@ class XdrTransactionResultCode {
             self::SOROBAN_INVALID => 'soroban_invalid',
             self::FROZEN_KEY_ACCESSED => 'frozen_key_accessed',
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrTransactionResultCode enum value: ' . $this->value
             ),
             // @codeCoverageIgnoreEnd
@@ -194,7 +197,7 @@ class XdrTransactionResultCode {
 
     public static function fromJsonValue(mixed $value): static {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string for XdrTransactionResultCode JSON value, got ' . get_debug_type($value)
             );
         }
@@ -219,14 +222,14 @@ class XdrTransactionResultCode {
             'malformed' => new static(self::MALFORMED),
             'soroban_invalid' => new static(self::SOROBAN_INVALID),
             'frozen_key_accessed' => new static(self::FROZEN_KEY_ACCESSED),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown XdrTransactionResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -236,8 +239,8 @@ class XdrTransactionResultCode {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

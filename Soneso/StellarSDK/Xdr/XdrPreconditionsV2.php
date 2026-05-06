@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrPreconditionsV2 {
 
     public ?XdrTimeBounds $timeBounds = null;
@@ -95,7 +98,7 @@ class XdrPreconditionsV2 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -116,12 +119,12 @@ class XdrPreconditionsV2 {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrPreconditionsV2 JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('time_bounds', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field time_bounds for XdrPreconditionsV2'
             );
         }
@@ -130,7 +133,7 @@ class XdrPreconditionsV2 {
             $timeBounds = XdrTimeBounds::fromJsonValue($value['time_bounds']);
         }
         if (!array_key_exists('ledger_bounds', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field ledger_bounds for XdrPreconditionsV2'
             );
         }
@@ -139,7 +142,7 @@ class XdrPreconditionsV2 {
             $ledgerBounds = XdrLedgerBounds::fromJsonValue($value['ledger_bounds']);
         }
         if (!array_key_exists('min_seq_num', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field min_seq_num for XdrPreconditionsV2'
             );
         }
@@ -148,25 +151,25 @@ class XdrPreconditionsV2 {
             $minSeqNum = XdrSequenceNumber::fromJsonValue($value['min_seq_num']);
         }
         if (!array_key_exists('min_seq_age', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field min_seq_age for XdrPreconditionsV2'
             );
         }
-        $minSeqAge = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new \InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['min_seq_age']);
+        $minSeqAge = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })($value['min_seq_age']);
         if (!array_key_exists('min_seq_ledger_gap', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field min_seq_ledger_gap for XdrPreconditionsV2'
             );
         }
-        $minSeqLedgerGap = (static function ($v) { if (!is_int($v)) { throw new \InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['min_seq_ledger_gap']);
+        $minSeqLedgerGap = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['min_seq_ledger_gap']);
         if (!array_key_exists('extra_signers', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field extra_signers for XdrPreconditionsV2'
             );
         }
         $extraSigners = (static function ($v) {
             if (!is_array($v)) {
-                throw new \InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
             foreach ($v as $item) { $out[] = XdrSignerKey::fromJsonValue($item); }
@@ -176,7 +179,7 @@ class XdrPreconditionsV2 {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -186,8 +189,8 @@ class XdrPreconditionsV2 {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

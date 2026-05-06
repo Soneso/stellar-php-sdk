@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrAssetAlphaNum12Base {
 
     public string $assetCode;
@@ -39,7 +42,7 @@ class XdrAssetAlphaNum12Base {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -50,7 +53,7 @@ class XdrAssetAlphaNum12Base {
             $trimmed = rtrim($bytes, "\x00");
             $len = strlen($trimmed);
             if ($len === 0) {
-                throw new \InvalidArgumentException('AssetCode12 must not be all-null');
+                throw new InvalidArgumentException('AssetCode12 must not be all-null');
             }
             if ($len <= 4) {
                 $trimmed = str_pad($trimmed, 5, "\x00", STR_PAD_RIGHT);
@@ -66,35 +69,35 @@ class XdrAssetAlphaNum12Base {
             unset($value['$schema']);
         }
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected object for XdrAssetAlphaNum12Base JSON value, got ' . get_debug_type($value)
             );
         }
         if (!array_key_exists('asset_code', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field asset_code for XdrAssetAlphaNum12Base'
             );
         }
         if (!is_string($value['asset_code'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['asset_code'])
             );
         }
         $decoded = XdrJsonHelper::unescapeString($value['asset_code']);
         $len = strlen($decoded);
         if ($len <= 4) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'
             );
         }
         if ($len > 12) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'AssetCode12 must not exceed 12 bytes; got ' . $len
             );
         }
         $assetCode = str_pad($decoded, 12, "\x00", STR_PAD_RIGHT);
         if (!array_key_exists('issuer', $value)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Missing required field issuer for XdrAssetAlphaNum12Base'
             );
         }
@@ -103,7 +106,7 @@ class XdrAssetAlphaNum12Base {
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -113,8 +116,8 @@ class XdrAssetAlphaNum12Base {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));

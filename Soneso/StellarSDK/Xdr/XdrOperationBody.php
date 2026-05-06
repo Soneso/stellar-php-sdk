@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrOperationBody {
 
     public XdrOperationType $type;
@@ -276,7 +279,7 @@ class XdrOperationBody {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
     }
@@ -311,7 +314,7 @@ class XdrOperationBody {
             XdrOperationType::EXTEND_FOOTPRINT_TTL => ['extend_footprint_ttl' => $this->extendFootprintTTLOp->toJsonValue()],
             XdrOperationType::RESTORE_FOOTPRINT => ['restore_footprint' => $this->restoreFootprintOp->toJsonValue()],
             // @codeCoverageIgnoreStart
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrOperationType'
             ),
             // @codeCoverageIgnoreEnd
@@ -326,94 +329,94 @@ class XdrOperationBody {
             return match ($value) {
                 'inflation' => new static(new XdrOperationType(XdrOperationType::INFLATION)),
                 'end_sponsoring_future_reserves' => new static(new XdrOperationType(XdrOperationType::END_SPONSORING_FUTURE_RESERVES)),
-                'create_account' => throw new \InvalidArgumentException(
+                'create_account' => throw new InvalidArgumentException(
                     "Arm 'create_account' on XdrOperationBody is non-void; supply a single-key object {\"create_account\": <payload>} instead of a bare string."
                 ),
-                'payment' => throw new \InvalidArgumentException(
+                'payment' => throw new InvalidArgumentException(
                     "Arm 'payment' on XdrOperationBody is non-void; supply a single-key object {\"payment\": <payload>} instead of a bare string."
                 ),
-                'path_payment_strict_receive' => throw new \InvalidArgumentException(
+                'path_payment_strict_receive' => throw new InvalidArgumentException(
                     "Arm 'path_payment_strict_receive' on XdrOperationBody is non-void; supply a single-key object {\"path_payment_strict_receive\": <payload>} instead of a bare string."
                 ),
-                'manage_sell_offer' => throw new \InvalidArgumentException(
+                'manage_sell_offer' => throw new InvalidArgumentException(
                     "Arm 'manage_sell_offer' on XdrOperationBody is non-void; supply a single-key object {\"manage_sell_offer\": <payload>} instead of a bare string."
                 ),
-                'create_passive_sell_offer' => throw new \InvalidArgumentException(
+                'create_passive_sell_offer' => throw new InvalidArgumentException(
                     "Arm 'create_passive_sell_offer' on XdrOperationBody is non-void; supply a single-key object {\"create_passive_sell_offer\": <payload>} instead of a bare string."
                 ),
-                'set_options' => throw new \InvalidArgumentException(
+                'set_options' => throw new InvalidArgumentException(
                     "Arm 'set_options' on XdrOperationBody is non-void; supply a single-key object {\"set_options\": <payload>} instead of a bare string."
                 ),
-                'change_trust' => throw new \InvalidArgumentException(
+                'change_trust' => throw new InvalidArgumentException(
                     "Arm 'change_trust' on XdrOperationBody is non-void; supply a single-key object {\"change_trust\": <payload>} instead of a bare string."
                 ),
-                'allow_trust' => throw new \InvalidArgumentException(
+                'allow_trust' => throw new InvalidArgumentException(
                     "Arm 'allow_trust' on XdrOperationBody is non-void; supply a single-key object {\"allow_trust\": <payload>} instead of a bare string."
                 ),
-                'account_merge' => throw new \InvalidArgumentException(
+                'account_merge' => throw new InvalidArgumentException(
                     "Arm 'account_merge' on XdrOperationBody is non-void; supply a single-key object {\"account_merge\": <payload>} instead of a bare string."
                 ),
-                'manage_data' => throw new \InvalidArgumentException(
+                'manage_data' => throw new InvalidArgumentException(
                     "Arm 'manage_data' on XdrOperationBody is non-void; supply a single-key object {\"manage_data\": <payload>} instead of a bare string."
                 ),
-                'bump_sequence' => throw new \InvalidArgumentException(
+                'bump_sequence' => throw new InvalidArgumentException(
                     "Arm 'bump_sequence' on XdrOperationBody is non-void; supply a single-key object {\"bump_sequence\": <payload>} instead of a bare string."
                 ),
-                'manage_buy_offer' => throw new \InvalidArgumentException(
+                'manage_buy_offer' => throw new InvalidArgumentException(
                     "Arm 'manage_buy_offer' on XdrOperationBody is non-void; supply a single-key object {\"manage_buy_offer\": <payload>} instead of a bare string."
                 ),
-                'path_payment_strict_send' => throw new \InvalidArgumentException(
+                'path_payment_strict_send' => throw new InvalidArgumentException(
                     "Arm 'path_payment_strict_send' on XdrOperationBody is non-void; supply a single-key object {\"path_payment_strict_send\": <payload>} instead of a bare string."
                 ),
-                'create_claimable_balance' => throw new \InvalidArgumentException(
+                'create_claimable_balance' => throw new InvalidArgumentException(
                     "Arm 'create_claimable_balance' on XdrOperationBody is non-void; supply a single-key object {\"create_claimable_balance\": <payload>} instead of a bare string."
                 ),
-                'claim_claimable_balance' => throw new \InvalidArgumentException(
+                'claim_claimable_balance' => throw new InvalidArgumentException(
                     "Arm 'claim_claimable_balance' on XdrOperationBody is non-void; supply a single-key object {\"claim_claimable_balance\": <payload>} instead of a bare string."
                 ),
-                'begin_sponsoring_future_reserves' => throw new \InvalidArgumentException(
+                'begin_sponsoring_future_reserves' => throw new InvalidArgumentException(
                     "Arm 'begin_sponsoring_future_reserves' on XdrOperationBody is non-void; supply a single-key object {\"begin_sponsoring_future_reserves\": <payload>} instead of a bare string."
                 ),
-                'revoke_sponsorship' => throw new \InvalidArgumentException(
+                'revoke_sponsorship' => throw new InvalidArgumentException(
                     "Arm 'revoke_sponsorship' on XdrOperationBody is non-void; supply a single-key object {\"revoke_sponsorship\": <payload>} instead of a bare string."
                 ),
-                'clawback' => throw new \InvalidArgumentException(
+                'clawback' => throw new InvalidArgumentException(
                     "Arm 'clawback' on XdrOperationBody is non-void; supply a single-key object {\"clawback\": <payload>} instead of a bare string."
                 ),
-                'clawback_claimable_balance' => throw new \InvalidArgumentException(
+                'clawback_claimable_balance' => throw new InvalidArgumentException(
                     "Arm 'clawback_claimable_balance' on XdrOperationBody is non-void; supply a single-key object {\"clawback_claimable_balance\": <payload>} instead of a bare string."
                 ),
-                'set_trust_line_flags' => throw new \InvalidArgumentException(
+                'set_trust_line_flags' => throw new InvalidArgumentException(
                     "Arm 'set_trust_line_flags' on XdrOperationBody is non-void; supply a single-key object {\"set_trust_line_flags\": <payload>} instead of a bare string."
                 ),
-                'liquidity_pool_deposit' => throw new \InvalidArgumentException(
+                'liquidity_pool_deposit' => throw new InvalidArgumentException(
                     "Arm 'liquidity_pool_deposit' on XdrOperationBody is non-void; supply a single-key object {\"liquidity_pool_deposit\": <payload>} instead of a bare string."
                 ),
-                'liquidity_pool_withdraw' => throw new \InvalidArgumentException(
+                'liquidity_pool_withdraw' => throw new InvalidArgumentException(
                     "Arm 'liquidity_pool_withdraw' on XdrOperationBody is non-void; supply a single-key object {\"liquidity_pool_withdraw\": <payload>} instead of a bare string."
                 ),
-                'invoke_host_function' => throw new \InvalidArgumentException(
+                'invoke_host_function' => throw new InvalidArgumentException(
                     "Arm 'invoke_host_function' on XdrOperationBody is non-void; supply a single-key object {\"invoke_host_function\": <payload>} instead of a bare string."
                 ),
-                'extend_footprint_ttl' => throw new \InvalidArgumentException(
+                'extend_footprint_ttl' => throw new InvalidArgumentException(
                     "Arm 'extend_footprint_ttl' on XdrOperationBody is non-void; supply a single-key object {\"extend_footprint_ttl\": <payload>} instead of a bare string."
                 ),
-                'restore_footprint' => throw new \InvalidArgumentException(
+                'restore_footprint' => throw new InvalidArgumentException(
                     "Arm 'restore_footprint' on XdrOperationBody is non-void; supply a single-key object {\"restore_footprint\": <payload>} instead of a bare string."
                 ),
-                default => throw new \InvalidArgumentException(
+                default => throw new InvalidArgumentException(
                     'Unknown XdrOperationBody void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
             };
         }
         if (!is_array($value) || count($value) !== 1) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected single-key object or void-arm string for XdrOperationBody, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Expected string arm key for XdrOperationBody, got ' . get_debug_type($key)
             );
         }
@@ -444,14 +447,14 @@ class XdrOperationBody {
             'invoke_host_function' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION)); $r->invokeHostFunctionOperation = XdrInvokeHostFunctionOp::fromJsonValue($arm); return $r; })(),
             'extend_footprint_ttl' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL)); $r->extendFootprintTTLOp = XdrExtendFootprintTTLOp::fromJsonValue($arm); return $r; })(),
             'restore_footprint' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::RESTORE_FOOTPRINT)); $r->restoreFootprintOp = XdrRestoreFootprintOp::fromJsonValue($arm); return $r; })(),
-            default => throw new \InvalidArgumentException(
+            default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrOperationBody: ' . XdrJsonHelper::safePreview($key)
             ),
         };
     }
 
     /**
-     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
         return json_encode(
@@ -461,8 +464,8 @@ class XdrOperationBody {
     }
 
     /**
-     * @throws \JsonException If $json is not syntactically valid JSON.
-     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
