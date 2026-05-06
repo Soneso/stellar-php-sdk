@@ -1,6 +1,6 @@
 # SEP Implementations
 
-The PHP SDK implements 19 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
+The PHP SDK implements 20 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
 
 ## SEP Reference Table
 
