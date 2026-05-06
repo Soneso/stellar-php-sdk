@@ -43,6 +43,9 @@ class XdrSequenceNumber {
         return new static((static function ($v) { if (is_int($v)) { return new BigInteger((string) $v); } if (!is_string($v)) { throw new \InvalidArgumentException('Expected base-10 integer string for BigInteger JSON value, got ' . get_debug_type($v)); } XdrJsonHelper::stringToInt64($v); return new BigInteger($v); })($value));
     }
 
+    /**
+     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     */
     public function toJson(): string {
         return json_encode(
             $this->toJsonValue(),
@@ -50,6 +53,10 @@ class XdrSequenceNumber {
         );
     }
 
+    /**
+     * @throws \JsonException If $json is not syntactically valid JSON.
+     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }

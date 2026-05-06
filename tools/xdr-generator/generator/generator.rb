@@ -2732,6 +2732,9 @@ class Generator < Xdrgen::Generators::Base
 
     # toJson / fromJson — JSON-string facade over the value methods.
     out.puts ""
+    out.puts "    /**"
+    out.puts "     * @throws \\JsonException If the value contains structures that cannot be encoded as JSON."
+    out.puts "     */"
     out.puts "    public function toJson(): string {"
     out.puts "        return json_encode("
     out.puts "            $this->toJsonValue(),"
@@ -2739,6 +2742,10 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        );"
     out.puts "    }"
     out.puts ""
+    out.puts "    /**"
+    out.puts "     * @throws \\JsonException If $json is not syntactically valid JSON."
+    out.puts "     * @throws \\InvalidArgumentException If the JSON shape does not match this type."
+    out.puts "     */"
     out.puts "    public static function fromJson(string $json): static {"
     out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
     out.puts "    }"
@@ -3668,6 +3675,9 @@ class Generator < Xdrgen::Generators::Base
   # to toJsonValue and applies the canonical encoder flag triple.
   def render_to_json_facade(out)
     out.puts ""
+    out.puts "    /**"
+    out.puts "     * @throws \\JsonException If the value contains structures that cannot be encoded as JSON."
+    out.puts "     */"
     out.puts "    public function toJson(): string {"
     out.puts "        return json_encode("
     out.puts "            $this->toJsonValue(),"
@@ -3680,6 +3690,10 @@ class Generator < Xdrgen::Generators::Base
   # body that delegates to fromJsonValue.
   def render_from_json_facade(out)
     out.puts ""
+    out.puts "    /**"
+    out.puts "     * @throws \\JsonException If $json is not syntactically valid JSON."
+    out.puts "     * @throws \\InvalidArgumentException If the JSON shape does not match this type."
+    out.puts "     */"
     out.puts "    public static function fromJson(string $json): static {"
     out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
     out.puts "    }"

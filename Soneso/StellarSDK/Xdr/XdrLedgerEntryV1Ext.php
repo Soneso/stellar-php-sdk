@@ -81,6 +81,9 @@ class XdrLedgerEntryV1Ext {
         );
     }
 
+    /**
+     * @throws \JsonException If the value contains structures that cannot be encoded as JSON.
+     */
     public function toJson(): string {
         return json_encode(
             $this->toJsonValue(),
@@ -88,6 +91,10 @@ class XdrLedgerEntryV1Ext {
         );
     }
 
+    /**
+     * @throws \JsonException If $json is not syntactically valid JSON.
+     * @throws \InvalidArgumentException If the JSON shape does not match this type.
+     */
     public static function fromJson(string $json): static {
         return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
