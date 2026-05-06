@@ -1,1 +1,0 @@
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/[A-Za-z0-9_]+\.php$

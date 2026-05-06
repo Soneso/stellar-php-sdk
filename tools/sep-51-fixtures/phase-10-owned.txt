@@ -1,1 +1,0 @@
-^\.github/workflows/sep-51-corpus-drift\.yml$

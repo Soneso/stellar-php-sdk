@@ -1,2 +1,0 @@
-^tools/xdr-generator/generator/round_trip_emitter\.rb$
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/AllTypesRoundTripTest\.php$

@@ -1,3 +1,0 @@
-^tools/matrix-generator/sep/generate_sep_matrix\.py$
-^tools/matrix-generator/sep/README\.md$
-^compatibility/sep/SEP-0051_COMPATIBILITY_MATRIX\.md$

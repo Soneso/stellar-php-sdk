@@ -1,7 +1,0 @@
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/CrossSdkFixtureTest\.php$
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/CanonicalExampleTest\.php$
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/SpecAnchorTest\.php$
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/NegativeInputTest\.php$
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/HandWrittenVsGeneratedTest\.php$
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/DivergenceTest\.php$
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/RollbackRehearsalTest\.php$

@@ -1,2 +1,0 @@
-^Soneso/StellarSDK/Xdr/XdrJsonHelper\.php$
-^Soneso/StellarSDKTests/Unit/Xdr/Sep51/XdrJsonHelperTest\.php$
