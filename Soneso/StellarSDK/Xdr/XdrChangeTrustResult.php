@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrChangeTrustResult {
 
     public XdrChangeTrustResultCode $resultCode;
@@ -65,8 +68,70 @@ class XdrChangeTrustResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrChangeTrustResultCode::SUCCESS => 'success',
+            XdrChangeTrustResultCode::MALFORMED => 'malformed',
+            XdrChangeTrustResultCode::NO_ISSUER => 'no_issuer',
+            XdrChangeTrustResultCode::INVALID_LIMIT => 'invalid_limit',
+            XdrChangeTrustResultCode::LOW_RESERVE => 'low_reserve',
+            XdrChangeTrustResultCode::SELF_NOT_ALLOWED => 'self_not_allowed',
+            XdrChangeTrustResultCode::TRUST_LINE_MISSING => 'trust_line_missing',
+            XdrChangeTrustResultCode::CANNOT_DELETE => 'cannot_delete',
+            XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES => 'not_auth_maintain_liabilities',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrChangeTrustResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SUCCESS)),
+                'malformed' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::MALFORMED)),
+                'no_issuer' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::NO_ISSUER)),
+                'invalid_limit' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::INVALID_LIMIT)),
+                'low_reserve' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::LOW_RESERVE)),
+                'self_not_allowed' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SELF_NOT_ALLOWED)),
+                'trust_line_missing' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::TRUST_LINE_MISSING)),
+                'cannot_delete' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::CANNOT_DELETE)),
+                'not_auth_maintain_liabilities' => new static(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES)),
+                default => throw new InvalidArgumentException(
+                    'Unknown XdrChangeTrustResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new InvalidArgumentException(
+            'Expected void-arm string for XdrChangeTrustResult, got ' . get_debug_type($value)
+        );
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

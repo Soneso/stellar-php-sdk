@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrPaymentResult {
 
     public XdrPaymentResultCode $resultCode;
@@ -67,8 +70,72 @@ class XdrPaymentResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrPaymentResultCode::SUCCESS => 'success',
+            XdrPaymentResultCode::MALFORMED => 'malformed',
+            XdrPaymentResultCode::UNDERFUNDED => 'underfunded',
+            XdrPaymentResultCode::SRC_NO_TRUST => 'src_no_trust',
+            XdrPaymentResultCode::SRC_NOT_AUTHORIZED => 'src_not_authorized',
+            XdrPaymentResultCode::NO_DESTINATION => 'no_destination',
+            XdrPaymentResultCode::NO_TRUST => 'no_trust',
+            XdrPaymentResultCode::NOT_AUTHORIZED => 'not_authorized',
+            XdrPaymentResultCode::LINE_FULL => 'line_full',
+            XdrPaymentResultCode::NO_ISSUER => 'no_issuer',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrPaymentResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::SUCCESS)),
+                'malformed' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::MALFORMED)),
+                'underfunded' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::UNDERFUNDED)),
+                'src_no_trust' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::SRC_NO_TRUST)),
+                'src_not_authorized' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::SRC_NOT_AUTHORIZED)),
+                'no_destination' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::NO_DESTINATION)),
+                'no_trust' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::NO_TRUST)),
+                'not_authorized' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::NOT_AUTHORIZED)),
+                'line_full' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::LINE_FULL)),
+                'no_issuer' => new static(new XdrPaymentResultCode(XdrPaymentResultCode::NO_ISSUER)),
+                default => throw new InvalidArgumentException(
+                    'Unknown XdrPaymentResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new InvalidArgumentException(
+            'Expected void-arm string for XdrPaymentResult, got ' . get_debug_type($value)
+        );
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

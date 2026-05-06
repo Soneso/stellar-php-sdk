@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrTransactionResultMeta {
 
     public XdrTransactionResultPair $result;
@@ -53,8 +56,71 @@ class XdrTransactionResultMeta {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'result' => $this->result->toJsonValue(),
+            'fee_processing' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->feeProcessing),
+            'tx_apply_processing' => $this->txApplyProcessing->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrTransactionResultMeta JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('result', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field result for XdrTransactionResultMeta'
+            );
+        }
+        $result = XdrTransactionResultPair::fromJsonValue($value['result']);
+        if (!array_key_exists('fee_processing', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field fee_processing for XdrTransactionResultMeta'
+            );
+        }
+        $feeProcessing = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrLedgerEntryChange::fromJsonValue($item); }
+            return $out;
+        })($value['fee_processing']);
+        if (!array_key_exists('tx_apply_processing', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field tx_apply_processing for XdrTransactionResultMeta'
+            );
+        }
+        $txApplyProcessing = XdrTransactionMeta::fromJsonValue($value['tx_apply_processing']);
+        return new static($result, $feeProcessing, $txApplyProcessing);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

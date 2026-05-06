@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLedgerCloseMetaBatch {
 
     public int $startSequence;
@@ -53,8 +56,71 @@ class XdrLedgerCloseMetaBatch {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'start_sequence' => $this->startSequence,
+            'end_sequence' => $this->endSequence,
+            'ledger_close_metas' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->ledgerCloseMetas),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrLedgerCloseMetaBatch JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('start_sequence', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field start_sequence for XdrLedgerCloseMetaBatch'
+            );
+        }
+        $startSequence = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['start_sequence']);
+        if (!array_key_exists('end_sequence', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field end_sequence for XdrLedgerCloseMetaBatch'
+            );
+        }
+        $endSequence = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['end_sequence']);
+        if (!array_key_exists('ledger_close_metas', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ledger_close_metas for XdrLedgerCloseMetaBatch'
+            );
+        }
+        $ledgerCloseMetas = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrLedgerCloseMeta::fromJsonValue($item); }
+            return $out;
+        })($value['ledger_close_metas']);
+        return new static($startSequence, $endSequence, $ledgerCloseMetas);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

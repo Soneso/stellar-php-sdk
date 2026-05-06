@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
 
 class XdrCreateClaimableBalanceOperation {
@@ -55,9 +57,72 @@ class XdrCreateClaimableBalanceOperation {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'asset' => $this->asset->toJsonValue(),
+            'amount' => $this->amount->toString(),
+            'claimants' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->claimants),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrCreateClaimableBalanceOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('asset', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field asset for XdrCreateClaimableBalanceOperation'
+            );
+        }
+        $asset = XdrAsset::fromJsonValue($value['asset']);
+        if (!array_key_exists('amount', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field amount for XdrCreateClaimableBalanceOperation'
+            );
+        }
+        $amount = new BigInteger(is_string($value['amount']) ? $value['amount'] : (string) (int) $value['amount']);
+        if (!array_key_exists('claimants', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field claimants for XdrCreateClaimableBalanceOperation'
+            );
+        }
+        $claimants = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrClaimant::fromJsonValue($item); }
+            return $out;
+        })($value['claimants']);
+        return new static($asset, $amount, $claimants);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

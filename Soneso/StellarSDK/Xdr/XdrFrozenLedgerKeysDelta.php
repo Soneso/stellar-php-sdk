@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrFrozenLedgerKeysDelta {
 
     public array $keysToFreeze;
@@ -55,8 +58,71 @@ class XdrFrozenLedgerKeysDelta {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'keys_to_freeze' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->keysToFreeze),
+            'keys_to_unfreeze' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->keysToUnfreeze),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrFrozenLedgerKeysDelta JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('keys_to_freeze', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field keys_to_freeze for XdrFrozenLedgerKeysDelta'
+            );
+        }
+        $keysToFreeze = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrEncodedLedgerKey::fromJsonValue($item); }
+            return $out;
+        })($value['keys_to_freeze']);
+        if (!array_key_exists('keys_to_unfreeze', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field keys_to_unfreeze for XdrFrozenLedgerKeysDelta'
+            );
+        }
+        $keysToUnfreeze = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrEncodedLedgerKey::fromJsonValue($item); }
+            return $out;
+        })($value['keys_to_unfreeze']);
+        return new static($keysToFreeze, $keysToUnfreeze);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLedgerUpgradeType {
     public int $value;
 
@@ -68,7 +71,7 @@ class XdrLedgerUpgradeType {
             case 7:
                 return new XdrLedgerUpgradeType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -79,8 +82,63 @@ class XdrLedgerUpgradeType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::LEDGER_UPGRADE_VERSION => 'version',
+            self::LEDGER_UPGRADE_BASE_FEE => 'base_fee',
+            self::LEDGER_UPGRADE_MAX_TX_SET_SIZE => 'max_tx_set_size',
+            self::LEDGER_UPGRADE_BASE_RESERVE => 'base_reserve',
+            self::LEDGER_UPGRADE_FLAGS => 'flags',
+            self::LEDGER_UPGRADE_CONFIG => 'config',
+            self::LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE => 'max_soroban_tx_set_size',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrLedgerUpgradeType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrLedgerUpgradeType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'version' => new static(self::LEDGER_UPGRADE_VERSION),
+            'base_fee' => new static(self::LEDGER_UPGRADE_BASE_FEE),
+            'max_tx_set_size' => new static(self::LEDGER_UPGRADE_MAX_TX_SET_SIZE),
+            'base_reserve' => new static(self::LEDGER_UPGRADE_BASE_RESERVE),
+            'flags' => new static(self::LEDGER_UPGRADE_FLAGS),
+            'config' => new static(self::LEDGER_UPGRADE_CONFIG),
+            'max_soroban_tx_set_size' => new static(self::LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrLedgerUpgradeType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

@@ -20,10 +20,10 @@ class XdrMuxedAccount extends XdrMuxedAccountBase
     public function __construct(?string $ed25519 = null, ?XdrMuxedAccountMed25519 $med25519 = null) {
 
         if (!$ed25519 && !$med25519) {
-            throw new \InvalidArgumentException("ed25519 or med25519 must be provided");
+            throw new InvalidArgumentException("ed25519 or med25519 must be provided");
         }
         if ($ed25519 && $med25519) {
-            throw new \InvalidArgumentException("can not accept both ed25519 and med25519");
+            throw new InvalidArgumentException("can not accept both ed25519 and med25519");
         }
 
         if ($ed25519) {
@@ -43,7 +43,7 @@ class XdrMuxedAccount extends XdrMuxedAccountBase
             case XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519:
                 return new static(null, XdrMuxedAccountMed25519::decode($xdr));
             default:
-                throw new \InvalidArgumentException("wrong discriminant " . $type->getValue() . " in xdrBuffer");
+                throw new InvalidArgumentException("wrong discriminant " . $type->getValue() . " in xdrBuffer");
         }
     }
 

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLiquidityPoolDepositResult {
 
     public XdrLiquidityPoolDepositResultCode $resultCode;
@@ -65,8 +68,70 @@ class XdrLiquidityPoolDepositResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrLiquidityPoolDepositResultCode::SUCCESS => 'success',
+            XdrLiquidityPoolDepositResultCode::MALFORMED => 'malformed',
+            XdrLiquidityPoolDepositResultCode::NO_TRUST => 'no_trust',
+            XdrLiquidityPoolDepositResultCode::NOT_AUTHORIZED => 'not_authorized',
+            XdrLiquidityPoolDepositResultCode::UNDERFUNDED => 'underfunded',
+            XdrLiquidityPoolDepositResultCode::LINE_FULL => 'line_full',
+            XdrLiquidityPoolDepositResultCode::BAD_PRICE => 'bad_price',
+            XdrLiquidityPoolDepositResultCode::POOL_FULL => 'pool_full',
+            XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN => 'trustline_frozen',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrLiquidityPoolDepositResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::SUCCESS)),
+                'malformed' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::MALFORMED)),
+                'no_trust' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NO_TRUST)),
+                'not_authorized' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NOT_AUTHORIZED)),
+                'underfunded' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::UNDERFUNDED)),
+                'line_full' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::LINE_FULL)),
+                'bad_price' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::BAD_PRICE)),
+                'pool_full' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::POOL_FULL)),
+                'trustline_frozen' => new static(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN)),
+                default => throw new InvalidArgumentException(
+                    'Unknown XdrLiquidityPoolDepositResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new InvalidArgumentException(
+            'Expected void-arm string for XdrLiquidityPoolDepositResult, got ' . get_debug_type($value)
+        );
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

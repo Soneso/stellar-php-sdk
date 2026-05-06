@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLedgerKeyBase {
 
     public XdrLedgerEntryType $type;
@@ -133,9 +136,80 @@ class XdrLedgerKeyBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrLedgerEntryType::ACCOUNT => ['account' => $this->account->toJsonValue()],
+            XdrLedgerEntryType::TRUSTLINE => ['trustline' => $this->trustLine->toJsonValue()],
+            XdrLedgerEntryType::OFFER => ['offer' => $this->offer->toJsonValue()],
+            XdrLedgerEntryType::DATA => ['data' => $this->data->toJsonValue()],
+            XdrLedgerEntryType::CLAIMABLE_BALANCE => ['claimable_balance' => $this->balanceID->toJsonValue()],
+            XdrLedgerEntryType::LIQUIDITY_POOL => ['liquidity_pool' => $this->liquidityPool->toJsonValue()],
+            XdrLedgerEntryType::CONTRACT_DATA => ['contract_data' => $this->contractData->toJsonValue()],
+            XdrLedgerEntryType::CONTRACT_CODE => ['contract_code' => $this->contractCode->toJsonValue()],
+            XdrLedgerEntryType::CONFIG_SETTING => ['config_setting' => $this->configSetting->toJsonValue()],
+            XdrLedgerEntryType::TTL => ['ttl' => $this->ttl->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for type on XdrLedgerEntryType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new InvalidArgumentException(
+                'Expected single-key object for XdrLedgerKeyBase, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrLedgerKeyBase, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'account' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT)); $r->account = XdrLedgerKeyAccount::fromJsonValue($arm); return $r; })(),
+            'trustline' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::TRUSTLINE)); $r->trustLine = XdrLedgerKeyTrustLine::fromJsonValue($arm); return $r; })(),
+            'offer' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::OFFER)); $r->offer = XdrLedgerKeyOffer::fromJsonValue($arm); return $r; })(),
+            'data' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::DATA)); $r->data = XdrLedgerKeyData::fromJsonValue($arm); return $r; })(),
+            'claimable_balance' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CLAIMABLE_BALANCE)); $r->balanceID = XdrClaimableBalanceID::fromJsonValue($arm); return $r; })(),
+            'liquidity_pool' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::LIQUIDITY_POOL)); $r->liquidityPool = XdrLedgerKeyLiquidityPool::fromJsonValue($arm); return $r; })(),
+            'contract_data' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_DATA)); $r->contractData = XdrLedgerKeyContractData::fromJsonValue($arm); return $r; })(),
+            'contract_code' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_CODE)); $r->contractCode = XdrLedgerKeyContractCode::fromJsonValue($arm); return $r; })(),
+            'config_setting' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CONFIG_SETTING)); $r->configSetting = XdrConfigSettingID::fromJsonValue($arm); return $r; })(),
+            'ttl' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::TTL)); $r->ttl = XdrLedgerKeyTTL::fromJsonValue($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
+                'Unknown arm key for XdrLedgerKeyBase: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

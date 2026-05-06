@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSorobanTransactionMetaV2 {
 
     public XdrSorobanTransactionMetaExt $ext;
@@ -47,8 +50,60 @@ class XdrSorobanTransactionMetaV2 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => $this->ext->toJsonValue(),
+            'return_value' => ($this->returnValue !== null ? $this->returnValue->toJsonValue() : null),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrSorobanTransactionMetaV2 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ext for XdrSorobanTransactionMetaV2'
+            );
+        }
+        $ext = XdrSorobanTransactionMetaExt::fromJsonValue($value['ext']);
+        if (!array_key_exists('return_value', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field return_value for XdrSorobanTransactionMetaV2'
+            );
+        }
+        $returnValue = null;
+        if ($value['return_value'] !== null) {
+            $returnValue = XdrSCVal::fromJsonValue($value['return_value']);
+        }
+        return new static($ext, $returnValue);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

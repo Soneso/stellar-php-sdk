@@ -1,6 +1,6 @@
 ---
 name: stellar-php-sdk
-description: Build Stellar blockchain applications in PHP using soneso/stellar-php-sdk. Use when generating PHP code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, XDR encoding/decoding, and SEP protocol integration. Covers all 26 operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with synchronous Guzzle HTTP patterns.
+description: Build Stellar blockchain applications in PHP using soneso/stellar-php-sdk. Use when generating PHP code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, XDR encoding/decoding, and SEP protocol integration. Covers all 26 operations, 50 Horizon endpoints, 12 RPC methods, and 19 SEP implementations with synchronous Guzzle HTTP patterns.
 license: Apache 2.0
 compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, and Composer
 metadata:
@@ -13,7 +13,7 @@ metadata:
 
 ## Overview
 
-The `soneso/stellar-php-sdk` is a PHP 8.0+ library for the Stellar blockchain network. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), 30/30 streaming endpoints, and 18 SEP implementations. All HTTP operations are synchronous using Guzzle 7. The root namespace is `Soneso\StellarSDK`.
+The `soneso/stellar-php-sdk` is a PHP 8.0+ library for the Stellar blockchain network. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), 30/30 streaming endpoints, and 19 SEP implementations. All HTTP operations are synchronous using Guzzle 7. The root namespace is `Soneso\StellarSDK`.
 
 ## Installation
 
@@ -447,7 +447,7 @@ For complete security patterns including input validation, transaction verificat
 
 ## 10. SEP Implementations
 
-The PHP SDK implements 18 Stellar Ecosystem Proposals (SEPs). Most commonly used: SEP-01 (Stellar TOML discovery), SEP-02 (Federation address resolution), SEP-05 (BIP-39 mnemonic key derivation), SEP-10 (Web Authentication for account ownership proof), SEP-24 (Interactive deposit/withdrawal flows). All SEP classes are under the `Soneso\StellarSDK\SEP\` namespace.
+The PHP SDK implements 19 Stellar Ecosystem Proposals (SEPs). Most commonly used: SEP-01 (Stellar TOML discovery), SEP-02 (Federation address resolution), SEP-05 (BIP-39 mnemonic key derivation), SEP-10 (Web Authentication for account ownership proof), SEP-24 (Interactive deposit/withdrawal flows), SEP-51 (XDR-JSON encoding for human-readable interchange of Stellar XDR types). All SEP classes are under the `Soneso\StellarSDK\SEP\` namespace; SEP-51 lives under `Soneso\StellarSDK\Xdr\` because it operates on XDR types directly.
 
 For all SEP examples and the complete implementation table:
 [SEP Reference](./references/sep.md)

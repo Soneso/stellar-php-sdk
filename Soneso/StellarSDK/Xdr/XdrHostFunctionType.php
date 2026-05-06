@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrHostFunctionType {
     public int $value;
 
@@ -50,7 +53,7 @@ class XdrHostFunctionType {
             case 3:
                 return new XdrHostFunctionType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -61,9 +64,58 @@ class XdrHostFunctionType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::HOST_FUNCTION_TYPE_INVOKE_CONTRACT => 'invoke_contract',
+            self::HOST_FUNCTION_TYPE_CREATE_CONTRACT => 'create_contract',
+            self::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM => 'upload_contract_wasm',
+            self::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 => 'create_contract_v2',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrHostFunctionType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrHostFunctionType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'invoke_contract' => new static(self::HOST_FUNCTION_TYPE_INVOKE_CONTRACT),
+            'create_contract' => new static(self::HOST_FUNCTION_TYPE_CREATE_CONTRACT),
+            'upload_contract_wasm' => new static(self::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM),
+            'create_contract_v2' => new static(self::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrHostFunctionType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function enumName(): string {
@@ -97,7 +149,7 @@ class XdrHostFunctionType {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -108,7 +160,7 @@ class XdrHostFunctionType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

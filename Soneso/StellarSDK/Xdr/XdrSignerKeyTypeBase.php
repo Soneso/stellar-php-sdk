@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSignerKeyTypeBase {
     public int $value;
 
@@ -48,9 +51,10 @@ class XdrSignerKeyTypeBase {
             case 1:
             case 2:
             case 3:
+            case 256:
                 return new static($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -61,9 +65,60 @@ class XdrSignerKeyTypeBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SIGNER_KEY_TYPE_ED25519 => 'ed25519',
+            self::SIGNER_KEY_TYPE_PRE_AUTH_TX => 'pre_auth_tx',
+            self::SIGNER_KEY_TYPE_HASH_X => 'hash_x',
+            self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD => 'ed25519_signed_payload',
+            XdrSignerKeyType::MUXED_ED25519 => 'muxed_ed25519',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrSignerKeyType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrSignerKeyType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'ed25519' => new static(self::SIGNER_KEY_TYPE_ED25519),
+            'pre_auth_tx' => new static(self::SIGNER_KEY_TYPE_PRE_AUTH_TX),
+            'hash_x' => new static(self::SIGNER_KEY_TYPE_HASH_X),
+            'ed25519_signed_payload' => new static(self::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD),
+            'muxed_ed25519' => new static(XdrSignerKeyType::MUXED_ED25519),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrSignerKeyType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function enumName(): string {
@@ -97,7 +152,7 @@ class XdrSignerKeyTypeBase {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -108,7 +163,7 @@ class XdrSignerKeyTypeBase {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

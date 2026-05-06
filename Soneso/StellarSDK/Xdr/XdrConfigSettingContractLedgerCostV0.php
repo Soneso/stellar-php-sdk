@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrConfigSettingContractLedgerCostV0 {
 
     public int $ledgerMaxDiskReadLedgerEntries;
@@ -117,8 +120,148 @@ class XdrConfigSettingContractLedgerCostV0 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'ledger_max_disk_read_entries' => $this->ledgerMaxDiskReadLedgerEntries,
+            'ledger_max_disk_read_bytes' => $this->ledgerMaxDiskReadBytes,
+            'ledger_max_write_ledger_entries' => $this->ledgerMaxWriteLedgerEntries,
+            'ledger_max_write_bytes' => $this->ledgerMaxWriteBytes,
+            'tx_max_disk_read_entries' => $this->txMaxDiskReadEntries,
+            'tx_max_disk_read_bytes' => $this->txMaxDiskReadBytes,
+            'tx_max_write_ledger_entries' => $this->txMaxWriteLedgerEntries,
+            'tx_max_write_bytes' => $this->txMaxWriteBytes,
+            'fee_disk_read_ledger_entry' => XdrJsonHelper::int64ToString($this->feeDiskReadLedgerEntry),
+            'fee_write_ledger_entry' => XdrJsonHelper::int64ToString($this->feeWriteLedgerEntry),
+            'fee_disk_read1_kb' => XdrJsonHelper::int64ToString($this->feeDiskRead1KB),
+            'soroban_state_target_size_bytes' => XdrJsonHelper::int64ToString($this->sorobanStateTargetSizeBytes),
+            'rent_fee1_kb_soroban_state_size_low' => XdrJsonHelper::int64ToString($this->rentFee1KBSorobanStateSizeLow),
+            'rent_fee1_kb_soroban_state_size_high' => XdrJsonHelper::int64ToString($this->rentFee1KBSorobanStateSizeHigh),
+            'soroban_state_rent_fee_growth_factor' => $this->sorobanStateRentFeeGrowthFactor,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrConfigSettingContractLedgerCostV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ledger_max_disk_read_entries', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ledger_max_disk_read_entries for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $ledgerMaxDiskReadLedgerEntries = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_max_disk_read_entries']);
+        if (!array_key_exists('ledger_max_disk_read_bytes', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ledger_max_disk_read_bytes for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $ledgerMaxDiskReadBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_max_disk_read_bytes']);
+        if (!array_key_exists('ledger_max_write_ledger_entries', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ledger_max_write_ledger_entries for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $ledgerMaxWriteLedgerEntries = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_max_write_ledger_entries']);
+        if (!array_key_exists('ledger_max_write_bytes', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ledger_max_write_bytes for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $ledgerMaxWriteBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_max_write_bytes']);
+        if (!array_key_exists('tx_max_disk_read_entries', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field tx_max_disk_read_entries for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $txMaxDiskReadEntries = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['tx_max_disk_read_entries']);
+        if (!array_key_exists('tx_max_disk_read_bytes', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field tx_max_disk_read_bytes for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $txMaxDiskReadBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['tx_max_disk_read_bytes']);
+        if (!array_key_exists('tx_max_write_ledger_entries', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field tx_max_write_ledger_entries for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $txMaxWriteLedgerEntries = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['tx_max_write_ledger_entries']);
+        if (!array_key_exists('tx_max_write_bytes', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field tx_max_write_bytes for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $txMaxWriteBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['tx_max_write_bytes']);
+        if (!array_key_exists('fee_disk_read_ledger_entry', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field fee_disk_read_ledger_entry for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $feeDiskReadLedgerEntry = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee_disk_read_ledger_entry']);
+        if (!array_key_exists('fee_write_ledger_entry', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field fee_write_ledger_entry for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $feeWriteLedgerEntry = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee_write_ledger_entry']);
+        if (!array_key_exists('fee_disk_read1_kb', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field fee_disk_read1_kb for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $feeDiskRead1KB = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['fee_disk_read1_kb']);
+        if (!array_key_exists('soroban_state_target_size_bytes', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field soroban_state_target_size_bytes for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $sorobanStateTargetSizeBytes = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['soroban_state_target_size_bytes']);
+        if (!array_key_exists('rent_fee1_kb_soroban_state_size_low', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field rent_fee1_kb_soroban_state_size_low for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $rentFee1KBSorobanStateSizeLow = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['rent_fee1_kb_soroban_state_size_low']);
+        if (!array_key_exists('rent_fee1_kb_soroban_state_size_high', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field rent_fee1_kb_soroban_state_size_high for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $rentFee1KBSorobanStateSizeHigh = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['rent_fee1_kb_soroban_state_size_high']);
+        if (!array_key_exists('soroban_state_rent_fee_growth_factor', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field soroban_state_rent_fee_growth_factor for XdrConfigSettingContractLedgerCostV0'
+            );
+        }
+        $sorobanStateRentFeeGrowthFactor = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['soroban_state_rent_fee_growth_factor']);
+        return new static($ledgerMaxDiskReadLedgerEntries, $ledgerMaxDiskReadBytes, $ledgerMaxWriteLedgerEntries, $ledgerMaxWriteBytes, $txMaxDiskReadEntries, $txMaxDiskReadBytes, $txMaxWriteLedgerEntries, $txMaxWriteBytes, $feeDiskReadLedgerEntry, $feeWriteLedgerEntry, $feeDiskRead1KB, $sorobanStateTargetSizeBytes, $rentFee1KBSorobanStateSizeLow, $rentFee1KBSorobanStateSizeHigh, $sorobanStateRentFeeGrowthFactor);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

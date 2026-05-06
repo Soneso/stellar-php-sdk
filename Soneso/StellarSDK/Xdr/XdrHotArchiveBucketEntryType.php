@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrHotArchiveBucketEntryType {
     public int $value;
 
@@ -44,7 +47,7 @@ class XdrHotArchiveBucketEntryType {
             case 1:
                 return new XdrHotArchiveBucketEntryType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -55,8 +58,55 @@ class XdrHotArchiveBucketEntryType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::HOT_ARCHIVE_METAENTRY => 'metaentry',
+            self::HOT_ARCHIVE_ARCHIVED => 'archived',
+            self::HOT_ARCHIVE_LIVE => 'live',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrHotArchiveBucketEntryType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrHotArchiveBucketEntryType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'metaentry' => new static(self::HOT_ARCHIVE_METAENTRY),
+            'archived' => new static(self::HOT_ARCHIVE_ARCHIVED),
+            'live' => new static(self::HOT_ARCHIVE_LIVE),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrHotArchiveBucketEntryType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

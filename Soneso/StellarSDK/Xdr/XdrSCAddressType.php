@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCAddressType {
     public int $value;
 
@@ -56,7 +59,7 @@ class XdrSCAddressType {
             case 4:
                 return new XdrSCAddressType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -67,9 +70,60 @@ class XdrSCAddressType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SC_ADDRESS_TYPE_ACCOUNT => 'account',
+            self::SC_ADDRESS_TYPE_CONTRACT => 'contract',
+            self::SC_ADDRESS_TYPE_MUXED_ACCOUNT => 'muxed_account',
+            self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE => 'claimable_balance',
+            self::SC_ADDRESS_TYPE_LIQUIDITY_POOL => 'liquidity_pool',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrSCAddressType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrSCAddressType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'account' => new static(self::SC_ADDRESS_TYPE_ACCOUNT),
+            'contract' => new static(self::SC_ADDRESS_TYPE_CONTRACT),
+            'muxed_account' => new static(self::SC_ADDRESS_TYPE_MUXED_ACCOUNT),
+            'claimable_balance' => new static(self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE),
+            'liquidity_pool' => new static(self::SC_ADDRESS_TYPE_LIQUIDITY_POOL),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrSCAddressType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function enumName(): string {
@@ -107,7 +161,7 @@ class XdrSCAddressType {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -118,7 +172,7 @@ class XdrSCAddressType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

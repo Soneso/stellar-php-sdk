@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrMessageType {
     public int $value;
 
@@ -152,7 +155,7 @@ class XdrMessageType {
             case 24:
                 return new XdrMessageType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -163,8 +166,91 @@ class XdrMessageType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::ERROR_MSG => 'error_msg',
+            self::AUTH => 'auth',
+            self::DONT_HAVE => 'dont_have',
+            self::PEERS => 'peers',
+            self::GET_TX_SET => 'get_tx_set',
+            self::TX_SET => 'tx_set',
+            self::GENERALIZED_TX_SET => 'generalized_tx_set',
+            self::TRANSACTION => 'transaction',
+            self::GET_SCP_QUORUMSET => 'get_scp_quorumset',
+            self::SCP_QUORUMSET => 'scp_quorumset',
+            self::SCP_MESSAGE => 'scp_message',
+            self::GET_SCP_STATE => 'get_scp_state',
+            self::HELLO => 'hello',
+            self::SEND_MORE => 'send_more',
+            self::SEND_MORE_EXTENDED => 'send_more_extended',
+            self::FLOOD_ADVERT => 'flood_advert',
+            self::FLOOD_DEMAND => 'flood_demand',
+            self::TIME_SLICED_SURVEY_REQUEST => 'time_sliced_survey_request',
+            self::TIME_SLICED_SURVEY_RESPONSE => 'time_sliced_survey_response',
+            self::TIME_SLICED_SURVEY_START_COLLECTING => 'time_sliced_survey_start_collecting',
+            self::TIME_SLICED_SURVEY_STOP_COLLECTING => 'time_sliced_survey_stop_collecting',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrMessageType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrMessageType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'error_msg' => new static(self::ERROR_MSG),
+            'auth' => new static(self::AUTH),
+            'dont_have' => new static(self::DONT_HAVE),
+            'peers' => new static(self::PEERS),
+            'get_tx_set' => new static(self::GET_TX_SET),
+            'tx_set' => new static(self::TX_SET),
+            'generalized_tx_set' => new static(self::GENERALIZED_TX_SET),
+            'transaction' => new static(self::TRANSACTION),
+            'get_scp_quorumset' => new static(self::GET_SCP_QUORUMSET),
+            'scp_quorumset' => new static(self::SCP_QUORUMSET),
+            'scp_message' => new static(self::SCP_MESSAGE),
+            'get_scp_state' => new static(self::GET_SCP_STATE),
+            'hello' => new static(self::HELLO),
+            'send_more' => new static(self::SEND_MORE),
+            'send_more_extended' => new static(self::SEND_MORE_EXTENDED),
+            'flood_advert' => new static(self::FLOOD_ADVERT),
+            'flood_demand' => new static(self::FLOOD_DEMAND),
+            'time_sliced_survey_request' => new static(self::TIME_SLICED_SURVEY_REQUEST),
+            'time_sliced_survey_response' => new static(self::TIME_SLICED_SURVEY_RESPONSE),
+            'time_sliced_survey_start_collecting' => new static(self::TIME_SLICED_SURVEY_START_COLLECTING),
+            'time_sliced_survey_stop_collecting' => new static(self::TIME_SLICED_SURVEY_STOP_COLLECTING),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrMessageType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

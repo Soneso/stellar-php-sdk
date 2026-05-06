@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCSpecFunctionV0 {
 
     public string $doc;
@@ -67,8 +70,88 @@ class XdrSCSpecFunctionV0 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'doc' => XdrJsonHelper::escapeString($this->doc),
+            'name' => XdrJsonHelper::escapeString($this->name),
+            'inputs' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->inputs),
+            'outputs' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->outputs),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrSCSpecFunctionV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('doc', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field doc for XdrSCSpecFunctionV0'
+            );
+        }
+        if (!is_string($value['doc'])) {
+            throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
+        }
+        $doc = XdrJsonHelper::unescapeString($value['doc']);
+        if (!array_key_exists('name', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field name for XdrSCSpecFunctionV0'
+            );
+        }
+        $name = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['name']);
+        if (!array_key_exists('inputs', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field inputs for XdrSCSpecFunctionV0'
+            );
+        }
+        $inputs = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCSpecFunctionInputV0::fromJsonValue($item); }
+            return $out;
+        })($value['inputs']);
+        if (!array_key_exists('outputs', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field outputs for XdrSCSpecFunctionV0'
+            );
+        }
+        $outputs = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCSpecTypeDef::fromJsonValue($item); }
+            return $out;
+        })($value['outputs']);
+        return new static($doc, $name, $inputs, $outputs);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

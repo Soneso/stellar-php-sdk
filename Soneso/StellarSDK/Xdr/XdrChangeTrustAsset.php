@@ -100,7 +100,7 @@ class XdrChangeTrustAsset extends XdrChangeTrustAssetBase
                 $result->setAlphaNum12($xdrAsset->getAlphaNum12());
                 break;
             case XdrAssetType::ASSET_TYPE_POOL_SHARE:
-                throw new \InvalidArgumentException('XdrAsset cannot represent ASSET_TYPE_POOL_SHARE. Use XdrChangeTrustAsset directly.');
+                throw new InvalidArgumentException('XdrAsset cannot represent ASSET_TYPE_POOL_SHARE. Use XdrChangeTrustAsset directly.');
         }
         return $result;
     }

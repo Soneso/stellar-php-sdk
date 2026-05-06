@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCError {
 
     public XdrSCErrorType $type;
@@ -77,9 +80,80 @@ class XdrSCError {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrSCErrorType::SCE_CONTRACT => ['contract' => $this->contractCode],
+            XdrSCErrorType::SCE_WASM_VM => ['wasm_vm' => $this->code->toJsonValue()],
+            XdrSCErrorType::SCE_CONTEXT => ['context' => $this->code->toJsonValue()],
+            XdrSCErrorType::SCE_STORAGE => ['storage' => $this->code->toJsonValue()],
+            XdrSCErrorType::SCE_OBJECT => ['object' => $this->code->toJsonValue()],
+            XdrSCErrorType::SCE_CRYPTO => ['crypto' => $this->code->toJsonValue()],
+            XdrSCErrorType::SCE_EVENTS => ['events' => $this->code->toJsonValue()],
+            XdrSCErrorType::SCE_BUDGET => ['budget' => $this->code->toJsonValue()],
+            XdrSCErrorType::SCE_VALUE => ['value' => $this->code->toJsonValue()],
+            XdrSCErrorType::SCE_AUTH => ['auth' => $this->code->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for type on XdrSCErrorType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new InvalidArgumentException(
+                'Expected single-key object for XdrSCError, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrSCError, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'contract' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_CONTRACT)); $r->contractCode = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'wasm_vm' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_WASM_VM)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            'context' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_CONTEXT)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            'storage' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_STORAGE)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            'object' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_OBJECT)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            'crypto' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_CRYPTO)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            'events' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_EVENTS)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            'budget' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_BUDGET)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            'value' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_VALUE)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            'auth' => (static function () use ($arm) { $r = new static(new XdrSCErrorType(XdrSCErrorType::SCE_AUTH)); $r->code = XdrSCErrorCode::fromJsonValue($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
+                'Unknown arm key for XdrSCError: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

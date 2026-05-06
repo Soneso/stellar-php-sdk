@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrRevokeSponsorshipResultCode {
     public int $value;
 
@@ -62,7 +65,7 @@ class XdrRevokeSponsorshipResultCode {
             case -5:
                 return new XdrRevokeSponsorshipResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -73,8 +76,61 @@ class XdrRevokeSponsorshipResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::DOES_NOT_EXIST => 'does_not_exist',
+            self::NOT_SPONSOR => 'not_sponsor',
+            self::LOW_RESERVE => 'low_reserve',
+            self::ONLY_TRANSFERABLE => 'only_transferable',
+            self::MALFORMED => 'malformed',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrRevokeSponsorshipResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrRevokeSponsorshipResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'does_not_exist' => new static(self::DOES_NOT_EXIST),
+            'not_sponsor' => new static(self::NOT_SPONSOR),
+            'low_reserve' => new static(self::LOW_RESERVE),
+            'only_transferable' => new static(self::ONLY_TRANSFERABLE),
+            'malformed' => new static(self::MALFORMED),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrRevokeSponsorshipResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCErrorType {
     public int $value;
 
@@ -86,7 +89,7 @@ class XdrSCErrorType {
             case 9:
                 return new XdrSCErrorType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -97,9 +100,70 @@ class XdrSCErrorType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SCE_CONTRACT => 'contract',
+            self::SCE_WASM_VM => 'wasm_vm',
+            self::SCE_CONTEXT => 'context',
+            self::SCE_STORAGE => 'storage',
+            self::SCE_OBJECT => 'object',
+            self::SCE_CRYPTO => 'crypto',
+            self::SCE_EVENTS => 'events',
+            self::SCE_BUDGET => 'budget',
+            self::SCE_VALUE => 'value',
+            self::SCE_AUTH => 'auth',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrSCErrorType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrSCErrorType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'contract' => new static(self::SCE_CONTRACT),
+            'wasm_vm' => new static(self::SCE_WASM_VM),
+            'context' => new static(self::SCE_CONTEXT),
+            'storage' => new static(self::SCE_STORAGE),
+            'object' => new static(self::SCE_OBJECT),
+            'crypto' => new static(self::SCE_CRYPTO),
+            'events' => new static(self::SCE_EVENTS),
+            'budget' => new static(self::SCE_BUDGET),
+            'value' => new static(self::SCE_VALUE),
+            'auth' => new static(self::SCE_AUTH),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrSCErrorType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function enumName(): string {
@@ -157,7 +221,7 @@ class XdrSCErrorType {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -168,7 +232,7 @@ class XdrSCErrorType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

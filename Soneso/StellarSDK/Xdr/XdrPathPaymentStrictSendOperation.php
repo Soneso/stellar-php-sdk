@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
 
 class XdrPathPaymentStrictSendOperation {
@@ -73,9 +75,93 @@ class XdrPathPaymentStrictSendOperation {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'send_asset' => $this->sendAsset->toJsonValue(),
+            'send_amount' => $this->sendAmount->toString(),
+            'destination' => $this->destination->toJsonValue(),
+            'dest_asset' => $this->destAsset->toJsonValue(),
+            'dest_min' => $this->destMin->toString(),
+            'path' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->path),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrPathPaymentStrictSendOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('send_asset', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field send_asset for XdrPathPaymentStrictSendOperation'
+            );
+        }
+        $sendAsset = XdrAsset::fromJsonValue($value['send_asset']);
+        if (!array_key_exists('send_amount', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field send_amount for XdrPathPaymentStrictSendOperation'
+            );
+        }
+        $sendAmount = new BigInteger(is_string($value['send_amount']) ? $value['send_amount'] : (string) (int) $value['send_amount']);
+        if (!array_key_exists('destination', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field destination for XdrPathPaymentStrictSendOperation'
+            );
+        }
+        $destination = XdrMuxedAccount::fromJsonValue($value['destination']);
+        if (!array_key_exists('dest_asset', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field dest_asset for XdrPathPaymentStrictSendOperation'
+            );
+        }
+        $destAsset = XdrAsset::fromJsonValue($value['dest_asset']);
+        if (!array_key_exists('dest_min', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field dest_min for XdrPathPaymentStrictSendOperation'
+            );
+        }
+        $destMin = new BigInteger(is_string($value['dest_min']) ? $value['dest_min'] : (string) (int) $value['dest_min']);
+        if (!array_key_exists('path', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field path for XdrPathPaymentStrictSendOperation'
+            );
+        }
+        $path = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrAsset::fromJsonValue($item); }
+            return $out;
+        })($value['path']);
+        return new static($sendAsset, $sendAmount, $destination, $destAsset, $destMin, $path);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

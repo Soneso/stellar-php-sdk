@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCSpecTypeDefBase {
 
     public XdrSCSpecType $type;
@@ -146,8 +149,139 @@ class XdrSCSpecTypeDefBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrSCSpecType::SC_SPEC_TYPE_VAL => 'val',
+            XdrSCSpecType::SC_SPEC_TYPE_BOOL => 'bool',
+            XdrSCSpecType::SC_SPEC_TYPE_VOID => 'void',
+            XdrSCSpecType::SC_SPEC_TYPE_ERROR => 'error',
+            XdrSCSpecType::SC_SPEC_TYPE_U32 => 'u32',
+            XdrSCSpecType::SC_SPEC_TYPE_I32 => 'i32',
+            XdrSCSpecType::SC_SPEC_TYPE_U64 => 'u64',
+            XdrSCSpecType::SC_SPEC_TYPE_I64 => 'i64',
+            XdrSCSpecType::SC_SPEC_TYPE_TIMEPOINT => 'timepoint',
+            XdrSCSpecType::SC_SPEC_TYPE_DURATION => 'duration',
+            XdrSCSpecType::SC_SPEC_TYPE_U128 => 'u128',
+            XdrSCSpecType::SC_SPEC_TYPE_I128 => 'i128',
+            XdrSCSpecType::SC_SPEC_TYPE_U256 => 'u256',
+            XdrSCSpecType::SC_SPEC_TYPE_I256 => 'i256',
+            XdrSCSpecType::SC_SPEC_TYPE_BYTES => 'bytes',
+            XdrSCSpecType::SC_SPEC_TYPE_STRING => 'string',
+            XdrSCSpecType::SC_SPEC_TYPE_SYMBOL => 'symbol',
+            XdrSCSpecType::SC_SPEC_TYPE_ADDRESS => 'address',
+            XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS => 'muxed_address',
+            XdrSCSpecType::SC_SPEC_TYPE_OPTION => ['option' => $this->option->toJsonValue()],
+            XdrSCSpecType::SC_SPEC_TYPE_RESULT => ['result' => $this->result->toJsonValue()],
+            XdrSCSpecType::SC_SPEC_TYPE_VEC => ['vec' => $this->vec->toJsonValue()],
+            XdrSCSpecType::SC_SPEC_TYPE_MAP => ['map' => $this->map->toJsonValue()],
+            XdrSCSpecType::SC_SPEC_TYPE_TUPLE => ['tuple' => $this->tuple->toJsonValue()],
+            XdrSCSpecType::SC_SPEC_TYPE_BYTES_N => ['bytes_n' => $this->bytesN->toJsonValue()],
+            XdrSCSpecType::SC_SPEC_TYPE_UDT => ['udt' => $this->udt->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for type on XdrSCSpecType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'val' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_VAL)),
+                'bool' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_BOOL)),
+                'void' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_VOID)),
+                'error' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_ERROR)),
+                'u32' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_U32)),
+                'i32' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_I32)),
+                'u64' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_U64)),
+                'i64' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_I64)),
+                'timepoint' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_TIMEPOINT)),
+                'duration' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_DURATION)),
+                'u128' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_U128)),
+                'i128' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_I128)),
+                'u256' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_U256)),
+                'i256' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_I256)),
+                'bytes' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_BYTES)),
+                'string' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_STRING)),
+                'symbol' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_SYMBOL)),
+                'address' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_ADDRESS)),
+                'muxed_address' => new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS)),
+                'option' => throw new InvalidArgumentException(
+                    "Arm 'option' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"option\": <payload>} instead of a bare string."
+                ),
+                'result' => throw new InvalidArgumentException(
+                    "Arm 'result' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"result\": <payload>} instead of a bare string."
+                ),
+                'vec' => throw new InvalidArgumentException(
+                    "Arm 'vec' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"vec\": <payload>} instead of a bare string."
+                ),
+                'map' => throw new InvalidArgumentException(
+                    "Arm 'map' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"map\": <payload>} instead of a bare string."
+                ),
+                'tuple' => throw new InvalidArgumentException(
+                    "Arm 'tuple' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"tuple\": <payload>} instead of a bare string."
+                ),
+                'bytes_n' => throw new InvalidArgumentException(
+                    "Arm 'bytes_n' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"bytes_n\": <payload>} instead of a bare string."
+                ),
+                'udt' => throw new InvalidArgumentException(
+                    "Arm 'udt' on XdrSCSpecTypeDefBase is non-void; supply a single-key object {\"udt\": <payload>} instead of a bare string."
+                ),
+                default => throw new InvalidArgumentException(
+                    'Unknown XdrSCSpecTypeDefBase void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrSCSpecTypeDefBase, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrSCSpecTypeDefBase, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'option' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_OPTION)); $r->option = XdrSCSpecTypeOption::fromJsonValue($arm); return $r; })(),
+            'result' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_RESULT)); $r->result = XdrSCSpecTypeResult::fromJsonValue($arm); return $r; })(),
+            'vec' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_VEC)); $r->vec = XdrSCSpecTypeVec::fromJsonValue($arm); return $r; })(),
+            'map' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_MAP)); $r->map = XdrSCSpecTypeMap::fromJsonValue($arm); return $r; })(),
+            'tuple' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_TUPLE)); $r->tuple = XdrSCSpecTypeTuple::fromJsonValue($arm); return $r; })(),
+            'bytes_n' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_BYTES_N)); $r->bytesN = XdrSCSpecTypeBytesN::fromJsonValue($arm); return $r; })(),
+            'udt' => (static function () use ($arm) { $r = new static(new XdrSCSpecType(XdrSCSpecType::SC_SPEC_TYPE_UDT)); $r->udt = XdrSCSpecTypeUDT::fromJsonValue($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
+                'Unknown arm key for XdrSCSpecTypeDefBase: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

@@ -13,6 +13,10 @@ require_relative 'member_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
 require_relative 'txrep_types'
+require_relative 'cat_a_inline_targets'
+require_relative 'json_helpers'
+require_relative 'sep51_field_overrides'
+require_relative 'stellar_json_overrides'
 
 AST = Xdrgen::AST
 
@@ -106,7 +110,17 @@ class Generator < Xdrgen::Generators::Base
     file = file_name(class_name)
     out = @output.open(file)
 
+    emits_sep51_methods = emits_sep51?(php_name, is_base) && (
+      StellarJsonOverrides.has?(php_name) ||
+      enum_uses_simple_identifier_members?(php_name, enum_defn)
+    )
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51_methods
+
     out.puts GENERATED_HEADER
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts "    public int $value;"
@@ -157,13 +171,32 @@ class Generator < Xdrgen::Generators::Base
     enum_defn.members.each do |m|
       out.puts "            case #{m.value}:"
     end
+    # EXTRA_ENUM_VALUES: wrapper-introduced sentinels the base must accept
+    # at the XDR decode boundary. See member_overrides.rb for rationale.
+    extras = EXTRA_ENUM_VALUES[php_name]
+    if extras
+      extras.each do |extra_value|
+        out.puts "            case #{extra_value}:"
+      end
+    end
     out.puts "                return #{new_call}($value);"
     out.puts "            default:"
-    out.puts "                throw new \\InvalidArgumentException(\"Unknown enum value: $value\");"
+    out.puts "                throw new InvalidArgumentException(\"Unknown enum value: $value\");"
     out.puts "        }"
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if emits_sep51?(php_name, is_base)
+      if StellarJsonOverrides.has?(php_name)
+        # Per-type override: replaces the standard enum-emission template.
+        # Used for enums that need bespoke handling (e.g. wrapper-extended
+        # enums whose wrapper introduces additional constants the base
+        # template does not know about).
+        render_overridden_sep51_methods(out, php_name, class_name)
+      elsif enum_uses_simple_identifier_members?(php_name, enum_defn)
+        render_enum_sep51_methods(out, php_name, class_name, enum_defn)
+      end
+    end
     if should_generate_txrep?(php_name)
       render_enum_txrep_methods(out, php_name, class_name, enum_defn)
     end
@@ -194,11 +227,17 @@ class Generator < Xdrgen::Generators::Base
     fields = collect_struct_fields(struct, struct_name)
 
     has_big_integer = fields.any? { |f| f[:php_type] == "BigInteger" }
+    needs_strkey = sep51_needs_strkey?(struct_name, is_base, fields: fields)
+    emits_sep51_methods = emits_sep51?(struct_name, is_base)
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51_methods
+    imports << "use phpseclib3\\Math\\BigInteger;" if has_big_integer
+    imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;" if needs_strkey
+
     out.puts GENERATED_HEADER
-    if has_big_integer
-      out.puts ""
-      out.puts "use phpseclib3\\Math\\BigInteger;"
-    end
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -254,6 +293,13 @@ class Generator < Xdrgen::Generators::Base
     render_struct_accessors(out, fields)
 
     render_base64_methods(out)
+    if emits_sep51?(struct_name, is_base)
+      if StellarJsonOverrides.has?(struct_name)
+        render_overridden_sep51_methods(out, struct_name, class_name)
+      else
+        render_struct_sep51_methods(out, struct_name, class_name, fields)
+      end
+    end
     if should_generate_txrep?(struct_name)
       render_struct_txrep_methods(out, struct_name, class_name, fields)
     end
@@ -423,12 +469,17 @@ class Generator < Xdrgen::Generators::Base
 
     # Imports
     needs_bigint = arms.any? { |a| !a[:void] && a[:php_type] == "BigInteger" }
+    needs_strkey = sep51_needs_strkey?(union_name, is_base, arms: arms)
+    emits_sep51_methods = emits_sep51?(union_name, is_base)
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51_methods
+    imports << "use phpseclib3\\Math\\BigInteger;" if needs_bigint
+    imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;" if needs_strkey
 
     out.puts GENERATED_HEADER
-    if needs_bigint
-      out.puts ""
-      out.puts "use phpseclib3\\Math\\BigInteger;"
-    end
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -477,6 +528,13 @@ class Generator < Xdrgen::Generators::Base
     render_union_accessors(out, disc_info, arms)
 
     render_base64_methods(out)
+    if emits_sep51?(union_name, is_base)
+      if StellarJsonOverrides.has?(union_name)
+        render_overridden_sep51_methods(out, union_name, class_name)
+      else
+        render_union_sep51_methods(out, union_name, class_name, disc_info, arms)
+      end
+    end
     if should_generate_txrep?(union_name)
       render_union_txrep_methods(out, union_name, class_name, union, disc_info, arms)
     end
@@ -669,14 +727,18 @@ class Generator < Xdrgen::Generators::Base
       end
     end
 
-    imports = []
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51?(php_name, is_base)
     imports << "use phpseclib3\\Math\\BigInteger;" if php_type == "BigInteger"
+    if sep51_needs_strkey?(php_name, is_base)
+      imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;"
+    end
 
     out.puts GENERATED_HEADER
-    unless imports.empty?
-      out.puts ""
-      imports.each { |imp| out.puts imp }
-    end
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -695,6 +757,13 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if emits_sep51?(php_name, is_base)
+      if StellarJsonOverrides.has?(php_name)
+        render_overridden_sep51_methods(out, php_name, class_name)
+      else
+        render_simple_typedef_sep51_methods(out, php_name, php_type, field_name, decl)
+      end
+    end
     if should_generate_txrep?(php_name)
       render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name)
     end
@@ -709,8 +778,17 @@ class Generator < Xdrgen::Generators::Base
     out = @output.open(file)
 
     field_name = underscore_field(php_name)
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51?(php_name, is_base)
+    if sep51_needs_strkey?(php_name, is_base)
+      imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;"
+    end
 
     out.puts GENERATED_HEADER
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -729,6 +807,13 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if emits_sep51?(php_name, is_base)
+      if StellarJsonOverrides.has?(php_name)
+        render_overridden_sep51_methods(out, php_name, class_name)
+      else
+        render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind)
+      end
+    end
     if should_generate_txrep?(php_name)
       render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind)
     end
@@ -748,8 +833,17 @@ class Generator < Xdrgen::Generators::Base
     if FIELD_OVERRIDES.key?(php_name) && FIELD_OVERRIDES[php_name].key?(field_name)
       field_name = FIELD_OVERRIDES[php_name][field_name]
     end
+    is_base = BASE_WRAPPER_TYPES.include?(php_name)
+
+    imports = ["use InvalidArgumentException;"]
+    imports << "use JsonException;" if emits_sep51?(php_name, is_base)
+    if sep51_needs_strkey?(php_name, is_base)
+      imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;"
+    end
 
     out.puts GENERATED_HEADER
+    out.puts ""
+    imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
@@ -800,6 +894,13 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     render_base64_methods(out)
+    if emits_sep51?(php_name, is_base)
+      if StellarJsonOverrides.has?(php_name)
+        render_overridden_sep51_methods(out, php_name, class_name)
+      else
+        render_array_typedef_sep51_methods(out, php_name, field_name, element_type, element_typespec, decl)
+      end
+    end
     if should_generate_txrep?(php_name)
       render_array_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, element_type, decl)
     end
@@ -1121,14 +1222,15 @@ class Generator < Xdrgen::Generators::Base
 
     union.normal_arms.each do |arm|
       labels = arm.cases.map { |c| format_case_label(c.value, disc_info) }
+      raw_cases = arm.cases.map { |c| raw_case_value(c.value) }
       if arm.void?
-        arms << { case_labels: labels, void: true, is_default: false }
+        arms << { case_labels: labels, raw_cases: raw_cases, void: true, is_default: false }
       else
         xdr_arm_name = arm.name.to_s
         field_name = resolve_field_name(union_name, xdr_arm_name)
         next if seen_fields.include?(field_name)
         seen_fields.add(field_name)
-        arms << build_typed_arm(arm, union_name, field_name, xdr_arm_name, labels, false)
+        arms << build_typed_arm(arm, union_name, field_name, xdr_arm_name, labels, raw_cases, false)
       end
     end
 
@@ -1136,18 +1238,18 @@ class Generator < Xdrgen::Generators::Base
     if union.default_arm.present?
       da = union.default_arm
       if da.void?
-        arms << { case_labels: ["default"], void: true, is_default: true }
+        arms << { case_labels: ["default"], raw_cases: [:default], void: true, is_default: true }
       else
         xdr_arm_name = da.name.to_s
         field_name = resolve_field_name(union_name, xdr_arm_name)
-        arms << build_typed_arm(da, union_name, field_name, xdr_arm_name, ["default"], true)
+        arms << build_typed_arm(da, union_name, field_name, xdr_arm_name, ["default"], [:default], true)
       end
     end
 
     arms
   end
 
-  def build_typed_arm(arm, union_name, field_name, xdr_name, labels, is_default)
+  def build_typed_arm(arm, union_name, field_name, xdr_name, labels, raw_cases, is_default)
     arm_info = resolve_php_arm_info(arm, union_name)
 
     if FIELD_TYPE_OVERRIDES.key?(union_name) && FIELD_TYPE_OVERRIDES[union_name].key?(field_name)
@@ -1157,6 +1259,7 @@ class Generator < Xdrgen::Generators::Base
 
     {
       case_labels: labels,
+      raw_cases: raw_cases,
       void: false,
       field_name: field_name,
       xdr_name: xdr_name,
@@ -1171,6 +1274,17 @@ class Generator < Xdrgen::Generators::Base
       typespec: arm_info[:typespec],
       is_default: is_default,
     }
+  end
+
+  # Extract the raw case value as either a String identifier (e.g. "SCV_BOOL")
+  # or an Integer (e.g. 0). Used by SEP-51 emission to compute wire-form arm
+  # keys without re-parsing the rendered PHP-side case label.
+  def raw_case_value(value)
+    if value.is_a?(AST::Identifier)
+      value.name.to_s
+    else
+      Integer(value.value)
+    end
   end
 
   def format_case_label(value, disc_info)
@@ -1584,7 +1698,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "                    $val = (int) substr($name, strlen($prefix));"
     out.puts "                    return new static($val);"
     out.puts "                }"
-    out.puts "                throw new \\InvalidArgumentException('Unknown enum value: ' . $name);"
+    out.puts "                throw new InvalidArgumentException('Unknown enum value: ' . $name);"
     out.puts "        }"
     out.puts "    }"
     out.puts ""
@@ -1595,7 +1709,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    public static function fromTxRep(array $map, string $prefix): static {"
     out.puts "        $raw = TxRepHelper::getValue($map, $prefix);"
     out.puts "        if ($raw === null) {"
-    out.puts "            throw new \\InvalidArgumentException('Missing TxRep value for: ' . $prefix);"
+    out.puts "            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);"
     out.puts "        }"
     out.puts "        return self::fromTxRepName($raw);"
     out.puts "    }"
@@ -2448,10 +2562,1421 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    public static function fromBase64Xdr(string $xdr): static {"
     out.puts "        $decoded = base64_decode($xdr, true);"
     out.puts "        if ($decoded === false) {"
-    out.puts "            throw new \\InvalidArgumentException('Invalid base64-encoded XDR');"
+    out.puts "            throw new InvalidArgumentException('Invalid base64-encoded XDR');"
     out.puts "        }"
     out.puts "        return static::decode(new XdrBuffer($decoded));"
     out.puts "    }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # SEP-0051 (XDR-JSON) emission
+  #
+  # Override precedence chain (verified at every emission site):
+  #   1. sep51_field_overrides[parent_type, field_name] (per-field) — wins
+  #      whenever a struct/union field has a registered override; emits a
+  #      single PHP expression per field that bypasses the generator's
+  #      default decl-shape emission.
+  #   2. stellar_json_overrides[type] (per-type) — wins when the whole type
+  #      requires a bespoke method body (e.g. XdrSCAddress's 5-arm strkey
+  #      dispatch, XdrUInt128Parts's GMP reassembly, XdrAccountID's G-strkey
+  #      single-string form). The override registry holds proc-emitted
+  #      method bodies that replace the standard enum/struct/union template.
+  #   3. generator default emission for the type's syntactic shape (enum /
+  #      struct / union / typedef) — used when no per-type override is
+  #      registered and no per-field overrides apply at the field level.
+  #
+  # The chain is enforced at every render site that crosses a SEP-51 path:
+  # struct field emit/parse, union arm emit/parse, type-level method
+  # selection. `name_overrides` and `member_overrides` shape identifier
+  # rendering (camelCase vs snake_case symbols) and compose orthogonally
+  # with the override chain — they alter what the standard template emits
+  # but do not change which override wins.
+  # ---------------------------------------------------------------------------
+
+  # True when the file the generator is emitting will reference the
+  # StrKey class through a SEP-51 method (either via a stellar_json_overrides
+  # body or through a SEP51_FIELD_OVERRIDES strkey kind on a struct field
+  # / union arm). Used at file-level to decide whether to emit a `use`
+  # import for `Soneso\StellarSDK\Crypto\StrKey`.
+  def sep51_needs_strkey?(type_name, is_base, fields: nil, arms: nil)
+    return false unless emits_sep51?(type_name, is_base)
+    # Type-level override: probe the rendered body for "StrKey::" so that
+    # GMP-only overrides (e.g. XdrUInt128Parts, XdrInt256Parts) do not
+    # pull in an unused StrKey import.
+    if StellarJsonOverrides.has?(type_name)
+      entry = StellarJsonOverrides.lookup(type_name)
+      ctx = { class_name: is_base ? "#{type_name}Base" : type_name, type_name: type_name }
+      to_body = entry[:to_body].call(ctx)
+      from_body = entry[:from_body].call(ctx)
+      return true if to_body.include?('StrKey::') || from_body.include?('StrKey::')
+    end
+    # Field-level override (struct path).
+    if fields
+      target_type = is_base ? "#{type_name}Base" : type_name
+      fields.each do |f|
+        override = SEP51_FIELD_OVERRIDES[[target_type, f[:name]]]
+        next unless override
+        return true if override.key?(:strkey)
+      end
+    end
+    # Union arm path: per-field overrides on union arms are wired into
+    # `union_arm_field_to_json_expr` and `union_arm_from_json_expr` with
+    # the same precedence as struct-field overrides. Probe the registry
+    # against the (parent_type, arm_field_name) pair so that strkey
+    # overrides on union arms also pull in the StrKey import.
+    if arms
+      target_type = is_base ? "#{type_name}Base" : type_name
+      arms.each do |a|
+        next if a[:void]
+        next if a[:field_name].nil?
+        override = SEP51_FIELD_OVERRIDES[[target_type, a[:field_name]]]
+        next unless override
+        return true if override.key?(:strkey)
+      end
+    end
+    false
+  end
+
+  # True when the generator should emit SEP-51 methods on this type at the
+  # current file. The dispatcher considers the file role (base vs wrapper)
+  # because Cat-B types in BASE_WRAPPER_TYPES emit on the *Base.php* file
+  # (the wrapper inherits via `extends`); all other types emit on the bare
+  # file (which is the only file generated for them).
+  #
+  # Returns false for BASE_WRAPPER_TYPES when is_base is false (do not
+  # double-emit on the wrapper); returns true for BASE_WRAPPER_TYPES when
+  # is_base is true (emit on the base). Returns true for non-Cat-B types
+  # when is_base is false (the only generator-emitted file for them).
+  def emits_sep51?(php_name, is_base = nil)
+    if BASE_WRAPPER_TYPES.include?(php_name)
+      # Cat-B: emit on the base file, never on the wrapper. The wrapper is
+      # hand-written and never generated.
+      return is_base == true unless is_base.nil?
+      # Backwards-compat: when called without an is_base argument by older
+      # call sites, treat the type as emit-eligible only if it has a
+      # bespoke override registered via stellar_json_overrides.rb.
+      return true
+    end
+    # Non-Cat-B types: emit on their bare file. The is_base argument is
+    # not meaningful for these types because there is no Base/wrapper
+    # split.
+    true
+  end
+
+  # True when every member identifier is a simple ASCII identifier (a leading
+  # letter followed by letters, digits, or underscores). Both
+  # ALL_CAPS_WITH_UNDERSCORES (e.g. "ASSET_TYPE_NATIVE") and CamelCase
+  # (e.g. "WasmInsnExec", "IPv4") shapes are accepted: tokenize_identifier in
+  # XdrJsonHelpers splits on underscores only and lowercases the result, which
+  # produces the canonical wire form for both shapes per SEP-0051
+  # §Discriminated unions (e.g. IPAddrType -> ["ipv4","ipv6"];
+  # ContractCostType -> ["wasminsnexec","memalloc",...]).
+  def enum_uses_simple_identifier_members?(php_name, enum_defn)
+    enum_defn.members.all? do |m|
+      member_name = resolve_member_name(php_name, m.name.to_s)
+      member_name =~ /\A[A-Za-z][A-Za-z0-9_]*\z/
+    end
+  end
+
+  # Render the four SEP-51 methods on a generated enum class:
+  #   public function toJsonValue(): string
+  #   public static function fromJsonValue(mixed $value): static
+  #   public function toJson(): string
+  #   public static function fromJson(string $json): static
+  #
+  # The wire-form value for each enum member is computed from the PHP-side
+  # member identifiers via the prefix-stripping algorithm in json_helpers.rb.
+  # Values are baked in at codegen time and never recomputed at runtime.
+  def render_enum_sep51_methods(out, php_name, class_name, enum_defn)
+    member_names = enum_defn.members.map { |m| resolve_member_name(php_name, m.name.to_s) }
+    json_map = XdrJsonHelpers.strip_shared_prefix(member_names)
+
+    # toJsonValue — match on the integer value to the wire-form string.
+    out.puts ""
+    out.puts "    public function toJsonValue(): string {"
+    out.puts "        return match ($this->value) {"
+    member_names.each do |member_name|
+      json_value = json_map[member_name]
+      out.puts "            self::#{member_name} => '#{php_string_escape(json_value)}',"
+    end
+    # The default arm is unreachable under normal control flow because every
+    # constant defined on the class is listed above. It is retained as a
+    # belt-and-braces guard against reflection-corrupted instances and is
+    # marked @codeCoverageIgnore so the coverage gate does not require an
+    # exercise path that could only be triggered by manipulating private
+    # state out-of-band.
+    out.puts "            // @codeCoverageIgnoreStart"
+    out.puts "            default => throw new InvalidArgumentException("
+    out.puts "                'Unknown #{class_name} enum value: ' . $this->value"
+    out.puts "            ),"
+    out.puts "            // @codeCoverageIgnoreEnd"
+    out.puts "        };"
+    out.puts "    }"
+
+    # fromJsonValue — guard the input shape, then dispatch on the wire string.
+    out.puts ""
+    out.puts "    public static function fromJsonValue(mixed $value): static {"
+    out.puts "        if (!is_string($value)) {"
+    out.puts "            throw new InvalidArgumentException("
+    out.puts "                'Expected string for #{class_name} JSON value, got ' . get_debug_type($value)"
+    out.puts "            );"
+    out.puts "        }"
+    out.puts "        return match ($value) {"
+    member_names.each do |member_name|
+      json_value = json_map[member_name]
+      out.puts "            '#{php_string_escape(json_value)}' => new static(self::#{member_name}),"
+    end
+    # The default arm IS reachable via malformed input — the SEP-51 negative
+    # test battery exercises it explicitly. Caller-supplied $value is bounded
+    # by XdrJsonHelper::safePreview: the message echoes only the type and a
+    # bounded prefix to avoid log amplification on long attacker-controlled
+    # input. XdrJsonHelper lives in the same namespace as the generated class,
+    # so the unqualified reference resolves without a `use` import.
+    out.puts "            default => throw new InvalidArgumentException("
+    out.puts "                'Unknown #{class_name} JSON value: ' . XdrJsonHelper::safePreview($value)"
+    out.puts "            ),"
+    out.puts "        };"
+    out.puts "    }"
+
+    # toJson / fromJson — JSON-string facade over the value methods.
+    out.puts ""
+    out.puts "    /**"
+    out.puts "     * @throws JsonException If the value contains structures that cannot be encoded as JSON."
+    out.puts "     */"
+    out.puts "    public function toJson(): string {"
+    out.puts "        return json_encode("
+    out.puts "            $this->toJsonValue(),"
+    out.puts "            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE"
+    out.puts "        );"
+    out.puts "    }"
+    out.puts ""
+    out.puts "    /**"
+    out.puts "     * @throws JsonException If $json is not syntactically valid JSON."
+    out.puts "     * @throws InvalidArgumentException If the JSON shape does not match this type."
+    out.puts "     */"
+    out.puts "    public static function fromJson(string $json): static {"
+    out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
+    out.puts "    }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # SEP-0051 struct emission
+  # ---------------------------------------------------------------------------
+
+  # Render the four SEP-51 methods on a generated struct class:
+  #   public function toJsonValue(): array
+  #   public static function fromJsonValue(mixed $value): static
+  #   public function toJson(): string
+  #   public static function fromJson(string $json): static
+  #
+  # JSON keys are the snake_case XDR field names taken from the .x IDL; PHP
+  # property names retain their camelCase form per project convention. Optional
+  # struct fields set to null serialise as JSON null. Extension-point fields
+  # collapsed to int are emitted as the bare void-arm string "v0" (treated as
+  # a void int-cased union with arm 0) and reject any other input on the from
+  # side.
+  def render_struct_sep51_methods(out, struct_name, class_name, fields)
+    out.puts ""
+    out.puts "    public function toJsonValue(): array {"
+    out.puts "        return ["
+    fields.each do |f|
+      key = "'#{php_string_escape(struct_field_json_key(f))}'"
+      out.puts "            #{key} => #{struct_field_to_json_expr(f, class_name)},"
+    end
+    out.puts "        ];"
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromJsonValue(mixed $value): static {"
+    out.puts "        if (is_array($value) && array_key_exists('$schema', $value)) {"
+    out.puts "            unset($value['$schema']);"
+    out.puts "        }"
+    out.puts "        if (!is_array($value)) {"
+    out.puts "            throw new InvalidArgumentException("
+    out.puts "                'Expected object for #{class_name} JSON value, got ' . get_debug_type($value)"
+    out.puts "            );"
+    out.puts "        }"
+    fields.each do |f|
+      render_struct_field_from_json(out, f, class_name)
+    end
+    constructor_fields = fields.reject { |f| f[:is_ext_point] }
+    required_fields = constructor_fields.reject { |f| f[:is_optional] }
+    optional_fields = constructor_fields.select { |f| f[:is_optional] }
+    ordered_fields = required_fields + optional_fields
+    args = ordered_fields.map { |f| "$#{f[:name]}" }.join(", ")
+    out.puts "        return new static(#{args});"
+    out.puts "    }"
+
+    render_to_json_facade(out)
+    render_from_json_facade(out)
+  end
+
+  # ---------------------------------------------------------------------------
+  # SEP-0051 Stellar-specific override emission (Cat-A bespoke + Cat-B base)
+  # ---------------------------------------------------------------------------
+  #
+  # Emit the four SEP-51 methods on a class whose JSON shape is registered
+  # in StellarJsonOverrides. The override hash supplies the toJsonValue
+  # signature (typically `mixed` or `string`) plus the bodies of toJsonValue
+  # and fromJsonValue; the toJson/fromJson facades are emitted using the
+  # canonical templates (identical to the standard renderer's facades) so
+  # that the encoder flag triple stays consistent across all SEP-51 paths.
+  #
+  # Bodies emitted by the override procs are PHP source fragments already
+  # indented for the method's interior (4 spaces from class brace + 4 for
+  # method body = 8 leading spaces per line).
+  def render_overridden_sep51_methods(out, type_name, class_name)
+    entry = StellarJsonOverrides.lookup(type_name)
+    raise "StellarJsonOverrides missing entry for #{type_name}" unless entry
+
+    to_signature = entry[:to_value_signature] || 'public function toJsonValue(): mixed'
+    ctx = { class_name: class_name, type_name: type_name }
+
+    out.puts ""
+    out.puts "    #{to_signature} {"
+    write_indented_body(out, entry[:to_body].call(ctx))
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromJsonValue(mixed $value): static {"
+    write_indented_body(out, entry[:from_body].call(ctx))
+    out.puts "    }"
+
+    render_to_json_facade(out)
+    render_from_json_facade(out)
+  end
+
+  # Write a multi-line PHP body with consistent 8-space indentation. The
+  # bodies in stellar_json_overrides.rb are written with 10-space leading
+  # indentation inside the heredoc so the natural source layout aligns
+  # against the method's opening brace; the heredoc operator removes the
+  # outermost `~` (squiggly) margin uniformly. We re-indent every non-blank
+  # line to exactly 8 leading spaces so that the emitted PHP is uniform
+  # regardless of how the proc author indented their heredoc.
+  def write_indented_body(out, body)
+    lines = body.split("\n", -1)
+    # Find the minimum leading-whitespace count across non-blank lines so
+    # we can strip the heredoc's natural left margin and re-anchor at the
+    # method body's required 8-space indent.
+    min_lead = lines.reject { |l| l.strip.empty? }.map { |l| l[/^ */].length }.min || 0
+    lines.each do |line|
+      if line.strip.empty?
+        out.puts line
+      else
+        out.puts "        #{line[min_lead..]}"
+      end
+    end
+  end
+
+  # Build the PHP expression that produces the JSON value for a struct field.
+  # The expression evaluates against $this->FIELDNAME and returns whatever
+  # native shape the SEP-51 wire form requires (string, int, array, null).
+  #
+  # The parent_type argument is the emission-target class name (e.g.
+  # "XdrLiquidityPoolDepositOperationBase" for Cat-B emission, the bare
+  # type name for non-Cat-B types). It feeds the per-field override lookup
+  # below; see SEP51_FIELD_OVERRIDES in sep51_field_overrides.rb.
+  def struct_field_to_json_expr(field, parent_type = nil)
+    if field[:is_ext_point]
+      # EXTENSION_POINT_FIELDS: parent emits the bare void int-cased union
+      # arm string for the only legal value (arm 0).
+      return "'v0'"
+    end
+
+    accessor = "$this->#{field[:name]}"
+
+    # Per-field override has highest precedence (precedence-chain step 1).
+    # The override returns the entire to-JSON expression as a single PHP
+    # snippet that is wrapped in the standard null-guard for optional
+    # fields below.
+    override = parent_type ? SEP51_FIELD_OVERRIDES[[parent_type, field[:name]]] : nil
+    if override
+      inner = field_override_to_json_expr(override, accessor)
+      if field[:is_optional]
+        return "(#{accessor} !== null ? #{inner} : null)"
+      end
+      return inner
+    end
+
+    if field[:is_optional]
+      inner = struct_field_to_json_expr_inner(field, accessor)
+      return "(#{accessor} !== null ? #{inner} : null)"
+    end
+
+    struct_field_to_json_expr_inner(field, accessor)
+  end
+
+  # Inner JSON-emission expression for a non-null struct field value. Optional
+  # fields wrap this in a null-guard at the call site.
+  def struct_field_to_json_expr_inner(field, accessor)
+    decl = field[:decl]
+
+    # Type-overridden fields (e.g. BigInteger) take precedence over the AST
+    # declaration shape; the override wins because XDR encode/decode dispatch
+    # also obeys the override.
+    if field[:type_overridden]
+      return type_overridden_to_json_expr(field, accessor)
+    end
+
+    case decl
+    when AST::Declarations::Array
+      element_typespec = decl.type
+      element_type = php_type_for_typespec(element_typespec)
+      array_to_json_expr(accessor, element_type, element_typespec, field[:elements_optional])
+    when AST::Declarations::Opaque
+      bytes_to_json_expr(accessor)
+    when AST::Declarations::String
+      "XdrJsonHelper::escapeString(#{accessor})"
+    else
+      typespec = decl.respond_to?(:type) ? decl.type : nil
+      simple_value_to_json_expr(field[:php_type], typespec, accessor)
+    end
+  end
+
+  # Render the to-JSON PHP expression for a SEP51_FIELD_OVERRIDES entry.
+  # The override spec is one of the four shapes documented in
+  # sep51_field_overrides.rb.
+  def field_override_to_json_expr(override, accessor)
+    if override.key?(:strkey)
+      return strkey_field_override_to_json_expr(override, accessor)
+    end
+    if override.key?(:asset_code)
+      return asset_code_field_override_to_json_expr(override, accessor)
+    end
+    if override.key?(:proc)
+      return override[:proc][:to].call(accessor)
+    end
+    raise "Unknown SEP51_FIELD_OVERRIDES override shape: #{override.inspect}"
+  end
+
+  def strkey_field_override_to_json_expr(override, accessor)
+    encoder = strkey_encoder_method(override[:strkey], override[:encoding], :encode)
+    "StrKey::#{encoder}(#{accessor})"
+  end
+
+  # Map a (kind, encoding) pair to the matching StrKey method name. Kept
+  # in one place so the registry's :encoding discriminator drives the
+  # exact StrKey method picked at codegen time.
+  def strkey_encoder_method(kind, encoding, direction)
+    suffix = encoding == :hex ? 'Hex' : ''
+    base =
+      case kind
+      when :liquidity_pool then 'LiquidityPoolId'
+      when :contract then 'ContractId'
+      when :claimable_balance then 'ClaimableBalanceId'
+      else
+        raise "Unknown SEP51 strkey kind: #{kind.inspect}"
+      end
+    direction == :encode ? "encode#{base}#{suffix}" : "decode#{base}#{suffix}"
+  end
+
+  def asset_code_field_override_to_json_expr(override, accessor)
+    width = override[:asset_code]
+    case width
+    when 4
+      # AssetCode4: trim trailing \x00, then SEP-51-escape.
+      "XdrJsonHelper::escapeString(rtrim(#{accessor}, \"\\x00\"))"
+    when 12
+      # AssetCode12: trim trailing \x00 fully; if trimmed length <= 4,
+      # right-pad with \x00 to exactly 5 (preserves AssetCode4 vs
+      # AssetCode12 distinguishability per SEP-51 spec); if 5..12, leave
+      # as-is. If 0, throw. Then escape.
+      "(static function (string $bytes): string {\n" +
+      "            $trimmed = rtrim($bytes, \"\\x00\");\n" +
+      "            $len = strlen($trimmed);\n" +
+      "            if ($len === 0) {\n" +
+      "                throw new InvalidArgumentException('AssetCode12 must not be all-null');\n" +
+      "            }\n" +
+      "            if ($len <= 4) {\n" +
+      "                $trimmed = str_pad($trimmed, 5, \"\\x00\", STR_PAD_RIGHT);\n" +
+      "            }\n" +
+      "            return XdrJsonHelper::escapeString($trimmed);\n" +
+      "        })(#{accessor})"
+    else
+      raise "Unsupported asset_code width: #{width.inspect}"
+    end
+  end
+
+  # The SEP-51 wire-form key for one struct field. The post-name-override XDR
+  # field name (after name_overrides.rb has run) feeds into ActiveSupport's
+  # String#underscore to produce snake_case per SEP-0051 §Structs, which
+  # specifies the camelCase IDL field name is converted to snake_case
+  # (e.g. "account_id" for `accountID`, "signer_sponsoring_i_ds" for
+  # `signerSponsoringIDs`).
+  def struct_field_json_key(field)
+    field[:xdr_name].to_s.underscore
+  end
+
+  # Emit the inverse: a sequence of PHP statements that parse one struct field
+  # from $value into a local variable named $FIELDNAME. Extension-point fields
+  # are not parsed into a local because they do not appear in the constructor
+  # signature; their JSON value is validated and discarded.
+  def render_struct_field_from_json(out, field, class_name)
+    xdr_key = struct_field_json_key(field)
+    json_lookup = "$value['#{php_string_escape(xdr_key)}']"
+
+    if field[:is_ext_point]
+      out.puts "        if (!array_key_exists('#{php_string_escape(xdr_key)}', $value)) {"
+      out.puts "            throw new InvalidArgumentException("
+      out.puts "                'Missing required field #{php_string_escape(xdr_key)} for #{class_name}'"
+      out.puts "            );"
+      out.puts "        }"
+      out.puts "        if (#{json_lookup} !== 'v0') {"
+      out.puts "            throw new InvalidArgumentException("
+      out.puts "                'Expected v0 for #{class_name} extension point field #{php_string_escape(xdr_key)}, got '"
+      out.puts "                . (is_string(#{json_lookup}) ? \"'\" . XdrJsonHelper::safePreview(#{json_lookup}) . \"'\" : get_debug_type(#{json_lookup}))"
+      out.puts "            );"
+      out.puts "        }"
+      return
+    end
+
+    fname = field[:name]
+    target = "$#{fname}"
+
+    if field[:is_optional]
+      out.puts "        if (!array_key_exists('#{php_string_escape(xdr_key)}', $value)) {"
+      out.puts "            throw new InvalidArgumentException("
+      out.puts "                'Missing required field #{php_string_escape(xdr_key)} for #{class_name}'"
+      out.puts "            );"
+      out.puts "        }"
+      out.puts "        #{target} = null;"
+      out.puts "        if (#{json_lookup} !== null) {"
+      render_struct_field_from_json_inner(out, field, target, json_lookup, "            ", class_name)
+      out.puts "        }"
+    else
+      out.puts "        if (!array_key_exists('#{php_string_escape(xdr_key)}', $value)) {"
+      out.puts "            throw new InvalidArgumentException("
+      out.puts "                'Missing required field #{php_string_escape(xdr_key)} for #{class_name}'"
+      out.puts "            );"
+      out.puts "        }"
+      render_struct_field_from_json_inner(out, field, target, json_lookup, "        ", class_name)
+    end
+  end
+
+  # Inner parsing block for one struct field; emits "$target = ...;" for the
+  # given JSON-lookup expression, dispatching by the field's AST shape.
+  #
+  # parent_type is the emission-target class name; it feeds the per-field
+  # SEP51_FIELD_OVERRIDES lookup which has highest precedence in the
+  # override chain.
+  def render_struct_field_from_json_inner(out, field, target, json_lookup, indent, parent_type = nil)
+    decl = field[:decl]
+
+    # Per-field override has highest precedence (precedence-chain step 1).
+    override = parent_type ? SEP51_FIELD_OVERRIDES[[parent_type, field[:name]]] : nil
+    if override
+      render_field_override_from_json(out, override, target, json_lookup, indent)
+      return
+    end
+
+    if field[:type_overridden]
+      render_type_overridden_from_json(out, field, target, json_lookup, indent)
+      return
+    end
+
+    case decl
+    when AST::Declarations::Array
+      element_typespec = decl.type
+      element_type = php_type_for_typespec(element_typespec)
+      render_array_from_json(out, target, json_lookup, element_type, element_typespec, indent, field[:elements_optional])
+    when AST::Declarations::Opaque
+      out.puts "#{indent}if (!is_string(#{json_lookup})) {"
+      out.puts "#{indent}    throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type(#{json_lookup}));"
+      out.puts "#{indent}}"
+      out.puts "#{indent}#{target} = XdrJsonHelper::hexToBytes(#{json_lookup});"
+    when AST::Declarations::String
+      out.puts "#{indent}if (!is_string(#{json_lookup})) {"
+      out.puts "#{indent}    throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type(#{json_lookup}));"
+      out.puts "#{indent}}"
+      out.puts "#{indent}#{target} = XdrJsonHelper::unescapeString(#{json_lookup});"
+    else
+      typespec = decl.respond_to?(:type) ? decl.type : nil
+      render_simple_value_from_json(out, target, json_lookup, field[:php_type], typespec, indent)
+    end
+  end
+
+  # Emit the from-JSON parse block for a SEP51_FIELD_OVERRIDES entry.
+  def render_field_override_from_json(out, override, target, json_lookup, indent)
+    out.puts "#{indent}if (!is_string(#{json_lookup})) {"
+    out.puts "#{indent}    throw new InvalidArgumentException("
+    out.puts "#{indent}        'Expected string JSON value for SEP-51 field, got ' . get_debug_type(#{json_lookup})"
+    out.puts "#{indent}    );"
+    out.puts "#{indent}}"
+
+    if override.key?(:strkey)
+      decoder = strkey_encoder_method(override[:strkey], override[:encoding], :decode)
+      out.puts "#{indent}#{target} = StrKey::#{decoder}(#{json_lookup});"
+      return
+    end
+    if override.key?(:asset_code)
+      width = override[:asset_code]
+      case width
+      when 4
+        # Inverse: SEP-51-unescape, right-pad with \x00 to 4 bytes; reject > 4.
+        out.puts "#{indent}$decoded = XdrJsonHelper::unescapeString(#{json_lookup});"
+        out.puts "#{indent}if (strlen($decoded) > 4) {"
+        out.puts "#{indent}    throw new InvalidArgumentException("
+        out.puts "#{indent}        'AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)"
+        out.puts "#{indent}    );"
+        out.puts "#{indent}}"
+        out.puts "#{indent}#{target} = str_pad($decoded, 4, \"\\x00\", STR_PAD_RIGHT);"
+        return
+      when 12
+        # Inverse: SEP-51-unescape, right-pad with \x00 to 12 bytes;
+        # reject <= 4 (must be AssetCode4) and > 12.
+        out.puts "#{indent}$decoded = XdrJsonHelper::unescapeString(#{json_lookup});"
+        out.puts "#{indent}$len = strlen($decoded);"
+        out.puts "#{indent}if ($len <= 4) {"
+        out.puts "#{indent}    throw new InvalidArgumentException("
+        out.puts "#{indent}        'AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'"
+        out.puts "#{indent}    );"
+        out.puts "#{indent}}"
+        out.puts "#{indent}if ($len > 12) {"
+        out.puts "#{indent}    throw new InvalidArgumentException("
+        out.puts "#{indent}        'AssetCode12 must not exceed 12 bytes; got ' . $len"
+        out.puts "#{indent}    );"
+        out.puts "#{indent}}"
+        out.puts "#{indent}#{target} = str_pad($decoded, 12, \"\\x00\", STR_PAD_RIGHT);"
+        return
+      end
+    end
+    if override.key?(:proc)
+      out.puts "#{indent}#{target} = #{override[:proc][:from].call(json_lookup)};"
+      return
+    end
+    raise "Unknown SEP51_FIELD_OVERRIDES override shape: #{override.inspect}"
+  end
+
+  # ---------------------------------------------------------------------------
+  # SEP-0051 union emission
+  # ---------------------------------------------------------------------------
+
+  # Render the four SEP-51 methods on a generated union class. Dispatches by
+  # discriminant kind (enum vs int) and arm shape (void vs non-void) into the
+  # SEP-0051 wire forms: void arms render as bare strings, non-void arms render
+  # as single-key objects.
+  #
+  # The `class_name` argument is the emission-target PHP class (e.g. the base
+  # form for types that ship a hand-written wrapper). It is threaded through to
+  # the per-arm field-override dispatch so SEP51_FIELD_OVERRIDES[[parent_type,
+  # field_name]] is consulted with the same precedence as the struct-field
+  # path.
+  def render_union_sep51_methods(out, union_name, class_name, disc_info, arms)
+    arm_keys = compute_union_arm_keys(disc_info, arms)
+    void_arm_strings = collect_void_arm_strings(arm_keys, arms)
+
+    out.puts ""
+    out.puts "    public function toJsonValue(): mixed {"
+    render_union_to_json_body(out, disc_info, arms, arm_keys, class_name)
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromJsonValue(mixed $value): static {"
+    out.puts "        if (is_array($value) && array_key_exists('$schema', $value)) {"
+    out.puts "            unset($value['$schema']);"
+    out.puts "        }"
+    render_union_from_json_body(out, disc_info, arms, arm_keys, void_arm_strings, class_name)
+    out.puts "    }"
+
+    render_to_json_facade(out)
+    render_from_json_facade(out)
+  end
+
+  # Compute the list of (arm_index, raw_case_value) -> wire_form_string pairs
+  # for the union's enum-discriminated case labels. For int-cased unions the
+  # wire form is "<discriminant>0", "<discriminant>1", etc. For enum-cased
+  # unions the wire form is the prefix-stripped lowercase ENUM VALUE name.
+  # Each non-void arm has exactly one key (its first case label); multi-void
+  # arms expose all of their case labels so multi-void unions accept any of
+  # the void-arm strings on the from side.
+  def compute_union_arm_keys(disc_info, arms)
+    if disc_info[:kind] == :int
+      compute_int_cased_arm_keys(disc_info, arms)
+    else
+      compute_enum_cased_arm_keys(disc_info, arms)
+    end
+  end
+
+  def compute_int_cased_arm_keys(disc_info, arms)
+    disc = disc_info[:xdr_name].to_s.downcase
+    out = []
+    arms.each do |arm|
+      arm[:raw_cases].each do |raw|
+        wire =
+          if raw == :default
+            # Default arms in int-cased unions render the JSON wire form for
+            # whatever integer was decoded from XDR. Captured at runtime via
+            # PHP-side concatenation; emitted as a placeholder here so that
+            # render_union_to_json_body can detect default-arm cases and emit
+            # a runtime-computed key.
+            :runtime_int
+          else
+            "#{disc}#{raw}"
+          end
+        out << { arm: arm, raw: raw, wire: wire }
+      end
+    end
+    out
+  end
+
+  def compute_enum_cased_arm_keys(disc_info, arms)
+    raw_idents = []
+    arms.each do |arm|
+      arm[:raw_cases].each do |raw|
+        next if raw == :default
+        raw_idents << raw
+      end
+    end
+    json_map = XdrJsonHelpers.strip_shared_prefix(raw_idents)
+
+    out = []
+    arms.each do |arm|
+      arm[:raw_cases].each do |raw|
+        wire = raw == :default ? :runtime_default : json_map[raw]
+        out << { arm: arm, raw: raw, wire: wire }
+      end
+    end
+    out
+  end
+
+  # Collect the wire-form strings for all void arms; used on the from-side to
+  # build the void-string dispatch table.
+  def collect_void_arm_strings(arm_keys, _arms)
+    arm_keys.select { |k| k[:arm][:void] && k[:wire].is_a?(String) }
+  end
+
+  # Emit the body of toJsonValue for a union. Uses match on the discriminant
+  # value, dispatching to wire-form expressions per arm.
+  def render_union_to_json_body(out, disc_info, arms, arm_keys, class_name)
+    if disc_info[:kind] == :enum
+      out.puts "        return match ($this->#{disc_info[:field_name]}->getValue()) {"
+    else
+      out.puts "        return match ($this->#{disc_info[:field_name]}) {"
+    end
+
+    keys_by_arm = arm_keys.group_by { |k| k[:arm].object_id }
+    arms.each do |arm|
+      next if arm[:is_default] # default emitted separately
+      this_keys = keys_by_arm[arm.object_id] || []
+      arm[:case_labels].each_with_index do |label, idx|
+        next if label == "default"
+        wire_entry = this_keys[idx]
+        next unless wire_entry
+        wire = wire_entry[:wire]
+        out.puts "            #{label} => #{union_arm_to_json_expr(arm, wire, class_name)},"
+      end
+    end
+
+    default_arm = arms.find { |a| a[:is_default] }
+    if default_arm
+      if default_arm[:void] && disc_info[:kind] == :int
+        # Int-cased default void: the JSON arm key is computed at runtime from
+        # the discriminant integer because the spec emits "<discriminant><N>"
+        # for every arm and a default-void arm covers any integer not listed
+        # explicitly.
+        out.puts "            default => '#{php_string_escape(disc_info[:xdr_name].downcase)}' . $this->#{disc_info[:field_name]},"
+      elsif default_arm[:void]
+        # Default-void on enum-cased unions: emit the prefix-stripped lowercase
+        # form of the discriminant's enum-value name at runtime via toJsonValue.
+        out.puts "            default => $this->#{disc_info[:field_name]}->toJsonValue(),"
+      else
+        # Default non-void: emit a single-key object whose key is the runtime
+        # discriminant wire form and whose value is the arm's serialised form.
+        if disc_info[:kind] == :int
+          key_expr = "'#{php_string_escape(disc_info[:xdr_name].downcase)}' . $this->#{disc_info[:field_name]}"
+        else
+          key_expr = "$this->#{disc_info[:field_name]}->toJsonValue()"
+        end
+        out.puts "            default => [#{key_expr} => #{union_arm_field_to_json_expr(default_arm, class_name)}],"
+      end
+    else
+      # @codeCoverageIgnore comments mirror the enum emission pattern: the
+      # default arm is unreachable when every constant is covered, retained as
+      # a defensive guard against reflection-corrupted instances.
+      out.puts "            // @codeCoverageIgnoreStart"
+      out.puts "            default => throw new InvalidArgumentException("
+      out.puts "                'Unknown discriminant for #{disc_info[:field_name]} on #{disc_info[:php_name] || class_name}'"
+      out.puts "            ),"
+      out.puts "            // @codeCoverageIgnoreEnd"
+    end
+
+    out.puts "        };"
+  end
+
+  # Build the PHP expression that produces the JSON wire form for one arm of
+  # a union with a known wire-form key.
+  #
+  # The `parent_type` argument is the emission-target class name. It is
+  # threaded into `union_arm_field_to_json_expr` so the per-field override
+  # registry consultation matches the precedence chain documented at the
+  # top of the SEP-0051 emission section (field > type > default).
+  def union_arm_to_json_expr(arm, wire, parent_type = nil)
+    if arm[:void]
+      "'#{php_string_escape(wire.to_s)}'"
+    else
+      value_expr = union_arm_field_to_json_expr(arm, parent_type)
+      "['#{php_string_escape(wire.to_s)}' => #{value_expr}]"
+    end
+  end
+
+  # The serialised expression for a non-void arm's payload field. Consults
+  # SEP51_FIELD_OVERRIDES first (precedence-chain step 1) so per-field
+  # registry entries take effect on union arms with the same precedence
+  # they have on struct fields. The `parent_type` argument is the union's
+  # emission-target class name (e.g. the `*Base` form for Cat-B types).
+  def union_arm_field_to_json_expr(arm, parent_type = nil)
+    accessor = "$this->#{arm[:field_name]}"
+
+    # Per-field override has highest precedence (precedence-chain step 1).
+    override = parent_type ? SEP51_FIELD_OVERRIDES[[parent_type, arm[:field_name]]] : nil
+    if override
+      return field_override_to_json_expr(override, accessor)
+    end
+
+    case arm[:encode_style]
+    when :string
+      "XdrJsonHelper::escapeString(#{accessor})"
+    when :opaque_fixed, :opaque_var
+      bytes_to_json_expr(accessor)
+    when :array
+      array_to_json_expr(accessor, arm[:element_type], arm[:element_typespec], false)
+    when :optional
+      inner = simple_value_to_json_expr(arm[:inner_type], arm[:inner_typespec], accessor)
+      "(#{accessor} !== null ? #{inner} : null)"
+    when :optional_array
+      inner = array_to_json_expr(accessor, arm[:element_type], arm[:element_typespec], false)
+      "(#{accessor} !== null ? #{inner} : null)"
+    when :simple
+      simple_value_to_json_expr(arm[:php_type], arm[:typespec], accessor)
+    else
+      raise "Unknown union arm encode_style: #{arm[:encode_style].inspect}"
+    end
+  end
+
+  # Emit the body of fromJsonValue for a union. Strips $schema (already done
+  # by the caller), validates input shape, and dispatches by void-string vs
+  # single-key-object.
+  def render_union_from_json_body(out, disc_info, arms, arm_keys, void_arm_strings, class_name)
+    has_void = !void_arm_strings.empty?
+    has_non_void_in_arms = arms.any? { |a| !a[:void] }
+
+    if has_void
+      non_void_arm_wire_keys =
+        if has_non_void_in_arms
+          arm_keys.reject { |e| e[:arm][:void] || e[:arm][:is_default] }
+                  .map { |e| e[:wire] }
+                  .select { |w| w.is_a?(String) }
+                  .uniq
+        else
+          []
+        end
+
+      out.puts "        if (is_string($value)) {"
+      out.puts "            return match ($value) {"
+      void_arm_strings.each do |entry|
+        wire = entry[:wire]
+        case_label = entry[:arm][:case_labels][entry[:arm][:raw_cases].index(entry[:raw]) || 0]
+        new_call = build_union_constructor_for_void_arm(disc_info, case_label, entry)
+        out.puts "                '#{php_string_escape(wire.to_s)}' => #{new_call},"
+      end
+      if !non_void_arm_wire_keys.empty?
+        non_void_arm_wire_keys.each do |wire|
+          escaped = php_string_escape(wire.to_s)
+          out.puts "                '#{escaped}' => throw new InvalidArgumentException("
+          out.puts "                    \"Arm '#{escaped}' on #{class_name} is non-void; supply a single-key object {\\\"#{escaped}\\\": <payload>} instead of a bare string.\""
+          out.puts "                ),"
+        end
+      end
+      out.puts "                default => throw new InvalidArgumentException("
+      out.puts "                    'Unknown #{class_name} void arm string: ' . XdrJsonHelper::safePreview($value)"
+      out.puts "                ),"
+      out.puts "            };"
+      out.puts "        }"
+    end
+
+    if has_non_void_in_arms
+      out.puts "        if (!is_array($value) || count($value) !== 1) {"
+      shape_msg =
+        if has_void
+          "Expected single-key object or void-arm string for #{class_name}, got "
+        else
+          "Expected single-key object for #{class_name}, got "
+        end
+      out.puts "            throw new InvalidArgumentException("
+      out.puts "                '#{php_string_escape(shape_msg)}' . get_debug_type($value)"
+      out.puts "            );"
+      out.puts "        }"
+      out.puts "        $key = array_key_first($value);"
+      out.puts "        if (!is_string($key)) {"
+      out.puts "            throw new InvalidArgumentException("
+      out.puts "                '#{php_string_escape("Expected string arm key for #{class_name}, got ")}' . get_debug_type($key)"
+      out.puts "            );"
+      out.puts "        }"
+      out.puts "        $arm = $value[$key];"
+      out.puts "        return match ($key) {"
+      arm_keys.each do |entry|
+        next if entry[:arm][:void]
+        next if entry[:arm][:is_default]
+        next unless entry[:wire].is_a?(String)
+        body = build_union_arm_from_json_body(disc_info, entry, class_name)
+        out.puts "            '#{php_string_escape(entry[:wire].to_s)}' => #{body},"
+      end
+      default_non_void = arms.find { |a| a[:is_default] && !a[:void] }
+      if default_non_void
+        # The default arm matches any unknown key; we cannot enumerate every
+        # possible discriminant value here. Detect at runtime.
+        out.puts "            default => static::fromJsonValueDefaultArm($key, $arm),"
+      else
+        out.puts "            default => throw new InvalidArgumentException("
+        out.puts "                'Unknown arm key for #{class_name}: ' . XdrJsonHelper::safePreview($key)"
+        out.puts "            ),"
+      end
+      out.puts "        };"
+      if default_non_void
+        render_union_default_arm_helper(out, disc_info, default_non_void, class_name)
+      end
+    elsif !has_void
+      out.puts "        throw new InvalidArgumentException("
+      out.puts "            'No SEP-51 dispatch defined for #{class_name}'"
+      out.puts "        );"
+    elsif !has_non_void_in_arms
+      # void-only path: from-side only accepts strings; reject everything else.
+      out.puts "        throw new InvalidArgumentException("
+      out.puts "            'Expected void-arm string for #{class_name}, got ' . get_debug_type($value)"
+      out.puts "        );"
+    end
+  end
+
+  # Build a "new static(...)" expression that instantiates the union for one
+  # specific void arm, recording the discriminant value the JSON string maps
+  # to. Used inside the void-string match.
+  def build_union_constructor_for_void_arm(disc_info, case_label, entry)
+    if disc_info[:kind] == :int
+      raw = entry[:raw]
+      if raw.is_a?(Integer)
+        "new static(#{raw})"
+      else
+        # Default int-cased void arm: cannot precompute the integer because the
+        # caller's input might be anything; defer to the from-string dispatch
+        # which will only be reached for explicitly-listed void labels.
+        "new static($v)"
+      end
+    else
+      "new static(new #{disc_info[:php_name]}(#{case_label}))"
+    end
+  end
+
+  # Build the body of the match arm that constructs the union from a single-
+  # key object input. Sets the dedicated arm field after constructing with the
+  # appropriate discriminant.
+  #
+  # The `parent_type` argument is the union's emission-target class name; it
+  # threads into `union_arm_from_json_expr` so the per-field override
+  # registry consultation matches the precedence chain documented at the top
+  # of the SEP-0051 emission section (field > type > default).
+  def build_union_arm_from_json_body(disc_info, entry, parent_type = nil)
+    arm = entry[:arm]
+    case_label = arm[:case_labels][arm[:raw_cases].index(entry[:raw]) || 0]
+    constructor =
+      if disc_info[:kind] == :int
+        "new static(#{entry[:raw]})"
+      else
+        "new static(new #{disc_info[:php_name]}(#{case_label}))"
+      end
+
+    parse_expr = union_arm_from_json_expr(arm, "$arm", parent_type)
+    # Use a closure to set the field and return the instance in a single
+    # expression so that the surrounding match arm remains a single statement.
+    "(static function () use ($arm) { $r = #{constructor}; $r->#{arm[:field_name]} = #{parse_expr}; return $r; })()"
+  end
+
+  # Helper rendered alongside fromJsonValue to handle default-arm dispatch for
+  # unions whose IDL declares a default arm. Captures all unknown JSON keys
+  # and routes them through the default arm's payload type. The `parent_type`
+  # argument threads into `union_arm_from_json_expr` so per-field overrides
+  # apply on the default-arm path with the same precedence as on enumerated
+  # arms.
+  def render_union_default_arm_helper(out, disc_info, default_arm, parent_type = nil)
+    out.puts ""
+    out.puts "    private static function fromJsonValueDefaultArm(string $key, mixed $arm): static {"
+    if disc_info[:kind] == :int
+      out.puts "        $prefix = '#{php_string_escape(disc_info[:xdr_name].downcase)}';"
+      out.puts "        if (!str_starts_with($key, $prefix)) {"
+      out.puts "            throw new InvalidArgumentException("
+      out.puts "                'Unknown arm key for default arm dispatch: ' . XdrJsonHelper::safePreview($key)"
+      out.puts "            );"
+      out.puts "        }"
+      out.puts "        $remainder = substr($key, strlen($prefix));"
+      out.puts "        if ($remainder === '' || !ctype_digit($remainder)) {"
+      out.puts "            throw new InvalidArgumentException("
+      out.puts "                'Expected integer suffix on default arm key, got: ' . XdrJsonHelper::safePreview($key)"
+      out.puts "            );"
+      out.puts "        }"
+      out.puts "        $disc = (int) $remainder;"
+      out.puts "        $r = new static($disc);"
+    else
+      out.puts "        $disc = #{disc_info[:php_name]}::fromJsonValue($key);"
+      out.puts "        $r = new static($disc);"
+    end
+    parse_expr = union_arm_from_json_expr(default_arm, "$arm", parent_type)
+    out.puts "        $r->#{default_arm[:field_name]} = #{parse_expr};"
+    out.puts "        return $r;"
+    out.puts "    }"
+  end
+
+  # The PHP expression that parses one arm payload from $arm into the field's
+  # native PHP value. Consults SEP51_FIELD_OVERRIDES first (precedence-chain
+  # step 1) so per-field registry entries take effect on union arms with the
+  # same precedence they have on struct fields. The `parent_type` argument is
+  # the union's emission-target class name (e.g. the `*Base` form for Cat-B
+  # types).
+  def union_arm_from_json_expr(arm, source, parent_type = nil)
+    # Per-field override has highest precedence (precedence-chain step 1).
+    override = parent_type ? SEP51_FIELD_OVERRIDES[[parent_type, arm[:field_name]]] : nil
+    if override
+      return field_override_from_json_expr(override, source)
+    end
+
+    case arm[:decode_style]
+    when :string
+      "XdrJsonHelper::unescapeString((string) #{source})"
+    when :opaque_fixed, :opaque_var
+      "XdrJsonHelper::hexToBytes((string) #{source})"
+    when :array
+      array_from_json_expr(source, arm[:element_type], arm[:element_typespec])
+    when :optional
+      inner = simple_value_from_json_expr(arm[:inner_type], arm[:inner_typespec], source)
+      "(#{source} === null ? null : #{inner})"
+    when :optional_array
+      inner = array_from_json_expr(source, arm[:element_type], arm[:element_typespec])
+      "(#{source} === null ? null : #{inner})"
+    when :simple
+      simple_value_from_json_expr(arm[:php_type], arm[:typespec], source)
+    else
+      raise "Unknown union arm decode_style: #{arm[:decode_style].inspect}"
+    end
+  end
+
+  # Build the from-JSON parse PHP expression for a SEP51_FIELD_OVERRIDES
+  # entry, suitable for inline use on a union arm path. This mirrors
+  # `render_field_override_from_json` but returns a single PHP expression
+  # rather than emitting multi-line statements; the union-arm emission site
+  # consumes it as the value side of a match arm closure.
+  #
+  # The expression validates that the JSON value is a string before invoking
+  # the override-specific decoder, matching the semantic of the struct-path
+  # `render_field_override_from_json` (which emits a separate is_string check
+  # ahead of the decoder call). For union arms the wrap idiom `(static
+  # function ($v) { ... })($source)` keeps the whole thing as one PHP
+  # expression.
+  def field_override_from_json_expr(override, source)
+    if override.key?(:strkey)
+      decoder = strkey_encoder_method(override[:strkey], override[:encoding], :decode)
+      return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } return StrKey::#{decoder}($v); })(#{source})"
+    end
+    if override.key?(:asset_code)
+      width = override[:asset_code]
+      case width
+      when 4
+        return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } $decoded = XdrJsonHelper::unescapeString($v); if (strlen($decoded) > 4) { throw new InvalidArgumentException('AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)); } return str_pad($decoded, 4, \"\\x00\", STR_PAD_RIGHT); })(#{source})"
+      when 12
+        return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } $decoded = XdrJsonHelper::unescapeString($v); $len = strlen($decoded); if ($len <= 4) { throw new InvalidArgumentException('AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'); } if ($len > 12) { throw new InvalidArgumentException('AssetCode12 must not exceed 12 bytes; got ' . $len); } return str_pad($decoded, 12, \"\\x00\", STR_PAD_RIGHT); })(#{source})"
+      end
+    end
+    if override.key?(:proc)
+      return override[:proc][:from].call(source)
+    end
+    raise "Unknown SEP51_FIELD_OVERRIDES override shape: #{override.inspect}"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Shared SEP-0051 emission helpers (struct + union)
+  # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # SEP-0051 typedef-wrapper emission (simple / scalar / array)
+  # ---------------------------------------------------------------------------
+
+  # Render SEP-51 methods for a simple typedef wrapper class. The wire form is
+  # whatever the underlying primitive's wire form would be: int32 stays int,
+  # int64 becomes a base-10 string, named-XDR-type delegates to its own
+  # toJsonValue. The toJsonValue return type is `mixed` because typedef
+  # wrappers cover several wire-form shapes depending on the underlying type.
+  def render_simple_typedef_sep51_methods(out, php_name, php_type, field_name, decl)
+    typespec = decl.respond_to?(:type) ? decl.type : nil
+
+    out.puts ""
+    out.puts "    public function toJsonValue(): mixed {"
+    out.puts "        return #{simple_value_to_json_expr(php_type, typespec, "$this->#{field_name}")};"
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromJsonValue(mixed $value): static {"
+    out.puts "        return new static(#{simple_value_from_json_expr(php_type, typespec, "$value")});"
+    out.puts "    }"
+
+    render_to_json_facade(out)
+    render_from_json_facade(out)
+  end
+
+  # Render SEP-51 methods for a scalar typedef wrapper (opaque or string).
+  # scalar_kind is :opaque (hex form) or :string (escaped-ASCII form).
+  def render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind)
+    out.puts ""
+    out.puts "    public function toJsonValue(): string {"
+    case scalar_kind
+    when :opaque
+      out.puts "        return XdrJsonHelper::bytesToHex($this->#{field_name});"
+    when :string
+      out.puts "        return XdrJsonHelper::escapeString($this->#{field_name});"
+    end
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromJsonValue(mixed $value): static {"
+    out.puts "        if (!is_string($value)) {"
+    out.puts "            throw new InvalidArgumentException("
+    out.puts "                'Expected string for #{php_name} JSON value, got ' . get_debug_type($value)"
+    out.puts "            );"
+    out.puts "        }"
+    case scalar_kind
+    when :opaque
+      out.puts "        return new static(XdrJsonHelper::hexToBytes($value));"
+    when :string
+      out.puts "        return new static(XdrJsonHelper::unescapeString($value));"
+    end
+    out.puts "    }"
+
+    render_to_json_facade(out)
+    render_from_json_facade(out)
+  end
+
+  # Render SEP-51 methods for an array typedef wrapper. The wire form is a
+  # JSON list whose element wire form depends on the element's underlying
+  # XDR type. element_typespec is the AST::Typespec for one element, used to
+  # dispatch the precise per-element wire form.
+  def render_array_typedef_sep51_methods(out, php_name, field_name, element_type, element_typespec, decl)
+    out.puts ""
+    out.puts "    public function toJsonValue(): array {"
+    elem_to_expr = simple_value_to_json_expr(element_type, element_typespec, "$item")
+    out.puts "        return array_map(static function ($item) { return #{elem_to_expr}; }, $this->#{field_name});"
+    out.puts "    }"
+
+    out.puts ""
+    out.puts "    public static function fromJsonValue(mixed $value): static {"
+    out.puts "        if (!is_array($value)) {"
+    out.puts "            throw new InvalidArgumentException("
+    out.puts "                'Expected JSON array for #{php_name}, got ' . get_debug_type($value)"
+    out.puts "            );"
+    out.puts "        }"
+    elem_from_expr = simple_value_from_json_expr(element_type, element_typespec, "$item")
+    out.puts "        $out = [];"
+    out.puts "        foreach ($value as $item) { $out[] = #{elem_from_expr}; }"
+    out.puts "        return new static($out);"
+    out.puts "    }"
+
+    render_to_json_facade(out)
+    render_from_json_facade(out)
+  end
+
+  # Render the "public function toJson(): string" facade body that delegates
+  # to toJsonValue and applies the canonical encoder flag triple.
+  def render_to_json_facade(out)
+    out.puts ""
+    out.puts "    /**"
+    out.puts "     * @throws JsonException If the value contains structures that cannot be encoded as JSON."
+    out.puts "     */"
+    out.puts "    public function toJson(): string {"
+    out.puts "        return json_encode("
+    out.puts "            $this->toJsonValue(),"
+    out.puts "            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE"
+    out.puts "        );"
+    out.puts "    }"
+  end
+
+  # Render the "public static function fromJson(string $json): static" facade
+  # body that delegates to fromJsonValue.
+  def render_from_json_facade(out)
+    out.puts ""
+    out.puts "    /**"
+    out.puts "     * @throws JsonException If $json is not syntactically valid JSON."
+    out.puts "     * @throws InvalidArgumentException If the JSON shape does not match this type."
+    out.puts "     */"
+    out.puts "    public static function fromJson(string $json): static {"
+    out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
+    out.puts "    }"
+  end
+
+  # Wrap an Opaque (fixed or variable) byte field as the SEP-51 hex form.
+  def bytes_to_json_expr(accessor)
+    "XdrJsonHelper::bytesToHex(#{accessor})"
+  end
+
+  # Build the to-JSON expression for a typed primitive or named-XDR value.
+  # Bool stays bool; int32/uint32 stay raw int; int64/uint64 emit base-10
+  # string; named types delegate to their own toJsonValue.
+  def simple_value_to_json_expr(php_type, typespec, accessor)
+    # BigInteger short-circuits the typespec path because the underlying
+    # storage is a phpseclib3 BigInteger, not a PHP int. The wire form is
+    # the base-10 string `BigInteger::toString()` produces, which matches the
+    # int64/uint64 SEP-51 encoding without needing a per-int helper call.
+    return "#{accessor}->toString()" if php_type == "BigInteger"
+
+    if typespec
+      width = primitive_width(typespec)
+      case width
+      when :int32, :uint32, :bool
+        return accessor
+      when :int64
+        return "XdrJsonHelper::int64ToString(#{accessor})"
+      when :uint64
+        return "XdrJsonHelper::uint64ToString(#{accessor})"
+      when :string
+        return "XdrJsonHelper::escapeString(#{accessor})"
+      end
+
+      # Typedef chain: PoolID -> Hash -> opaque[32] etc. Treat as opaque hex
+      # at the leaf if the chain bottoms out there; otherwise as the
+      # underlying primitive's wire form.
+      typedef_form = resolve_typedef_json_form(typespec)
+      return typedef_form_to_json_expr(typedef_form, accessor) if typedef_form
+    end
+
+    case php_type
+    when "bool", "int"
+      accessor
+    when "string"
+      # No typespec or unrecognised typespec: default to escape (text). Opaque
+      # paths reach this method through the AST::Declarations::Opaque branch
+      # in struct_field_to_json_expr_inner, which emits bytesToHex directly.
+      "XdrJsonHelper::escapeString(#{accessor})"
+    else
+      "#{accessor}->toJsonValue()"
+    end
+  end
+
+  # Build the from-JSON expression for a typed primitive or named-XDR value.
+  def simple_value_from_json_expr(php_type, typespec, source)
+    # BigInteger short-circuits: the JSON wire form is a base-10 string;
+    # construct a BigInteger from it directly, validating that the input is
+    # a string (or coercible to one — we accept int input for backward
+    # compatibility with JSON encoders that emit small int64 values as ints).
+    if php_type == "BigInteger"
+      return "(static function ($v) { if (is_int($v)) { return new BigInteger((string) $v); } if (!is_string($v)) { throw new InvalidArgumentException('Expected base-10 integer string for BigInteger JSON value, got ' . get_debug_type($v)); } XdrJsonHelper::stringToInt64($v); return new BigInteger($v); })(#{source})"
+    end
+
+    if typespec
+      width = primitive_width(typespec)
+      case width
+      when :int32
+        return "(static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int32 JSON int, got ' . get_debug_type($v)); } return $v; })(#{source})"
+      when :uint32
+        return "(static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected uint32 JSON int, got ' . get_debug_type($v)); } return $v; })(#{source})"
+      when :bool
+        return "(static function ($v) { if (!is_bool($v)) { throw new InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
+      when :int64
+        return "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })(#{source})"
+      when :uint64
+        return "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })(#{source})"
+      when :string
+        return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })(#{source})"
+      end
+
+      typedef_form = resolve_typedef_json_form(typespec)
+      return typedef_form_from_json_expr(typedef_form, source) if typedef_form
+    end
+
+    case php_type
+    when "bool"
+      "(static function ($v) { if (!is_bool($v)) { throw new InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
+    when "int"
+      "(static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
+    when "string"
+      "XdrJsonHelper::unescapeString((string) #{source})"
+    else
+      "#{php_type}::fromJsonValue(#{source})"
+    end
+  end
+
+  # Render a struct array field as JSON array. Element_type / element_typespec
+  # describe one element. elements_optional is true for arrays whose elements
+  # are themselves optional (e.g. SponsorshipDescriptor*).
+  def array_to_json_expr(accessor, element_type, element_typespec, elements_optional)
+    elem_expr = simple_value_to_json_expr(element_type, element_typespec, "$item")
+    if elements_optional
+      "array_map(static function ($item) { return $item === null ? null : #{elem_expr}; }, #{accessor})"
+    else
+      "array_map(static function ($item) { return #{elem_expr}; }, #{accessor})"
+    end
+  end
+
+  # Inverse of array_to_json_expr: read a JSON list and parse each element.
+  def array_from_json_expr(source, element_type, element_typespec)
+    elem_expr = simple_value_from_json_expr(element_type, element_typespec, "$item")
+    "(static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = #{elem_expr}; } return $out; })(#{source})"
+  end
+
+  def render_array_from_json(out, target, json_lookup, element_type, element_typespec, indent, elements_optional)
+    elem_expr =
+      if elements_optional
+        "($item === null ? null : #{simple_value_from_json_expr(element_type, element_typespec, "$item")})"
+      else
+        simple_value_from_json_expr(element_type, element_typespec, "$item")
+      end
+    out.puts "#{indent}#{target} = (static function ($v) {"
+    out.puts "#{indent}    if (!is_array($v)) {"
+    out.puts "#{indent}        throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));"
+    out.puts "#{indent}    }"
+    out.puts "#{indent}    $out = [];"
+    out.puts "#{indent}    foreach ($v as $item) { $out[] = #{elem_expr}; }"
+    out.puts "#{indent}    return $out;"
+    out.puts "#{indent}})(#{json_lookup});"
+  end
+
+  def render_simple_value_from_json(out, target, json_lookup, php_type, typespec, indent)
+    out.puts "#{indent}#{target} = #{simple_value_from_json_expr(php_type, typespec, json_lookup)};"
+  end
+
+  # Build the to-JSON expression for a FIELD_TYPE_OVERRIDE-substituted field
+  # (the only kind that takes precedence over the AST shape).
+  def type_overridden_to_json_expr(field, accessor)
+    case field[:php_type]
+    when "BigInteger"
+      "#{accessor}->toString()"
+    when "int"
+      accessor
+    when "bool"
+      accessor
+    when "string"
+      "XdrJsonHelper::escapeString(#{accessor})"
+    else
+      "#{accessor}->toJsonValue()"
+    end
+  end
+
+  def render_type_overridden_from_json(out, field, target, json_lookup, indent)
+    case field[:php_type]
+    when "BigInteger"
+      out.puts "#{indent}#{target} = new BigInteger(is_string(#{json_lookup}) ? #{json_lookup} : (string) (int) #{json_lookup});"
+    when "int"
+      out.puts "#{indent}#{target} = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{json_lookup});"
+    when "bool"
+      out.puts "#{indent}#{target} = (static function ($v) { if (!is_bool($v)) { throw new InvalidArgumentException('Expected bool JSON value, got ' . get_debug_type($v)); } return $v; })(#{json_lookup});"
+    when "string"
+      out.puts "#{indent}#{target} = XdrJsonHelper::unescapeString((string) #{json_lookup});"
+    else
+      out.puts "#{indent}#{target} = #{field[:php_type]}::fromJsonValue(#{json_lookup});"
+    end
+  end
+
+  # Returns one of :int32, :uint32, :int64, :uint64, :bool, :string, or nil
+  # for a primitive typespec. Used to dispatch the precise SEP-51 wire form.
+  def primitive_width(typespec)
+    case typespec
+    when AST::Typespecs::Int
+      :int32
+    when AST::Typespecs::UnsignedInt
+      :uint32
+    when AST::Typespecs::Hyper
+      :int64
+    when AST::Typespecs::UnsignedHyper
+      :uint64
+    when AST::Typespecs::Bool
+      :bool
+    when AST::Typespecs::String
+      :string
+    else
+      nil
+    end
+  end
+
+  # Walk a Simple typespec through TYPE_OVERRIDES'd typedef chains to identify
+  # the leaf SEP-51 wire form. Returns one of:
+  #   {kind: :hex_fixed, size: N}     -- opaque[N]
+  #   {kind: :hex_variable}           -- opaque<>
+  #   {kind: :string}                 -- string<>
+  #   {kind: :primitive, width: ...}  -- int32/uint32/int64/uint64/bool
+  # or nil if the typespec is not a typedef-collapsed primitive/opaque/string.
+  def resolve_typedef_json_form(typespec)
+    return nil unless typespec.is_a?(AST::Typespecs::Simple)
+    resolved = typespec.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef)
+    return nil unless TYPE_OVERRIDES.key?(name(resolved))
+    resolve_typedef_json_form_inner(resolved.declaration)
+  end
+
+  def resolve_typedef_json_form_inner(decl)
+    case decl
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        { kind: :hex_fixed, size: resolve_size(decl) }
+      else
+        { kind: :hex_variable }
+      end
+    when AST::Declarations::String
+      { kind: :string }
+    else
+      ut = decl.respond_to?(:type) ? decl.type : nil
+      return nil unless ut
+      width = primitive_width(ut)
+      return { kind: :primitive, width: width } if width
+      if ut.is_a?(AST::Typespecs::Simple) && ut.resolved_type.is_a?(AST::Definitions::Typedef)
+        return resolve_typedef_json_form_inner(ut.resolved_type.declaration)
+      end
+      nil
+    end
+  end
+
+  def typedef_form_to_json_expr(form, accessor)
+    case form[:kind]
+    when :hex_fixed, :hex_variable
+      bytes_to_json_expr(accessor)
+    when :string
+      "XdrJsonHelper::escapeString(#{accessor})"
+    when :primitive
+      case form[:width]
+      when :int64
+        "XdrJsonHelper::int64ToString(#{accessor})"
+      when :uint64
+        "XdrJsonHelper::uint64ToString(#{accessor})"
+      else
+        accessor
+      end
+    end
+  end
+
+  def typedef_form_from_json_expr(form, source)
+    case form[:kind]
+    when :hex_fixed, :hex_variable
+      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })(#{source})"
+    when :string
+      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })(#{source})"
+    when :primitive
+      case form[:width]
+      when :int64
+        "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })(#{source})"
+      when :uint64
+        "(static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected uint64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToUint64($v); })(#{source})"
+      else
+        "(static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })(#{source})"
+      end
+    end
+  end
+
+  # Escape a string for safe inclusion inside a single-quoted PHP literal.
+  # SEP-51 wire-form strings emitted today are restricted to ASCII identifier
+  # characters ([a-z0-9_]), so callers never feed adversarial bytes through
+  # here in practice. The helper is nevertheless implemented defensively so
+  # any future widening of the wire-form alphabet remains correct.
+  #
+  # The block form of gsub is used because Ruby's two-argument gsub re-parses
+  # the replacement string for back-references (\1, \\, etc.); passing a
+  # literal backslash via the replacement-string form requires four
+  # backslashes for one and produces incorrect output for inputs containing
+  # combinations of backslash and single-quote. The block form bypasses that
+  # parser and yields the replacement verbatim.
+  def php_string_escape(s)
+    s.gsub('\\') { '\\\\' }.gsub("'") { "\\'" }
   end
 
   # ---------------------------------------------------------------------------

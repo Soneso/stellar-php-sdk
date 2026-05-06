@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrAsset {
 
     public XdrAssetType $type;
@@ -65,9 +68,85 @@ class XdrAsset {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        switch ($this->type->getValue()) {
+            case XdrAssetType::ASSET_TYPE_NATIVE:
+                return 'native';
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
+                if ($this->alphaNum4 === null) {
+                    throw new InvalidArgumentException(
+                        'XdrAsset alphaNum4 field is null'
+                    );
+                }
+                return ['credit_alphanum4' => $this->alphaNum4->toJsonValue()];
+            case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
+                if ($this->alphaNum12 === null) {
+                    throw new InvalidArgumentException(
+                        'XdrAsset alphaNum12 field is null'
+                    );
+                }
+                return ['credit_alphanum12' => $this->alphaNum12->toJsonValue()];
+            default:
+                throw new InvalidArgumentException(
+                    'Unknown XdrAsset discriminant: ' . $this->type->getValue()
+                );
+        }
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            if ($value !== 'native') {
+                throw new InvalidArgumentException(
+                    'Unknown XdrAsset bare string: ' . XdrJsonHelper::safePreview($value)
+                );
+            }
+            return new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new InvalidArgumentException(
+                'Expected single-key object or "native" for XdrAsset JSON value'
+            );
+        }
+        $key = array_key_first($value);
+        if ($key === 'credit_alphanum4') {
+            $result = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+            $result->alphaNum4 = XdrAssetAlphaNum4::fromJsonValue($value['credit_alphanum4']);
+            return $result;
+        }
+        if ($key === 'credit_alphanum12') {
+            $result = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12));
+            $result->alphaNum12 = XdrAssetAlphaNum12::fromJsonValue($value['credit_alphanum12']);
+            return $result;
+        }
+        throw new InvalidArgumentException(
+            'Unknown arm key for XdrAsset: ' . XdrJsonHelper::safePreview($key)
+        );
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

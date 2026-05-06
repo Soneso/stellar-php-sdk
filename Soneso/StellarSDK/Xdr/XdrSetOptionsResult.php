@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSetOptionsResult {
 
     public XdrSetOptionsResultCode $resultCode;
@@ -69,8 +72,74 @@ class XdrSetOptionsResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrSetOptionsResultCode::SUCCESS => 'success',
+            XdrSetOptionsResultCode::LOW_RESERVE => 'low_reserve',
+            XdrSetOptionsResultCode::TOO_MANY_SIGNERS => 'too_many_signers',
+            XdrSetOptionsResultCode::BAD_FLAGS => 'bad_flags',
+            XdrSetOptionsResultCode::INVALID_INFLATION => 'invalid_inflation',
+            XdrSetOptionsResultCode::CANT_CHANGE => 'cant_change',
+            XdrSetOptionsResultCode::UNKNOWN_FLAG => 'unknown_flag',
+            XdrSetOptionsResultCode::THRESHOLD_OUT_OF_RANGE => 'threshold_out_of_range',
+            XdrSetOptionsResultCode::BAD_SIGNER => 'bad_signer',
+            XdrSetOptionsResultCode::INVALID_HOME_DOMAIN => 'invalid_home_domain',
+            XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED => 'auth_revocable_required',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrSetOptionsResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::SUCCESS)),
+                'low_reserve' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::LOW_RESERVE)),
+                'too_many_signers' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::TOO_MANY_SIGNERS)),
+                'bad_flags' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::BAD_FLAGS)),
+                'invalid_inflation' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::INVALID_INFLATION)),
+                'cant_change' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::CANT_CHANGE)),
+                'unknown_flag' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::UNKNOWN_FLAG)),
+                'threshold_out_of_range' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::THRESHOLD_OUT_OF_RANGE)),
+                'bad_signer' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::BAD_SIGNER)),
+                'invalid_home_domain' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::INVALID_HOME_DOMAIN)),
+                'auth_revocable_required' => new static(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED)),
+                default => throw new InvalidArgumentException(
+                    'Unknown XdrSetOptionsResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new InvalidArgumentException(
+            'Expected void-arm string for XdrSetOptionsResult, got ' . get_debug_type($value)
+        );
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

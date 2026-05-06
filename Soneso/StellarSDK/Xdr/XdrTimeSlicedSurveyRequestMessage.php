@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrTimeSlicedSurveyRequestMessage {
 
     public XdrSurveyRequestMessage $request;
@@ -51,8 +54,71 @@ class XdrTimeSlicedSurveyRequestMessage {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'request' => $this->request->toJsonValue(),
+            'nonce' => $this->nonce,
+            'inbound_peers_index' => $this->inboundPeersIndex,
+            'outbound_peers_index' => $this->outboundPeersIndex,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrTimeSlicedSurveyRequestMessage JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('request', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field request for XdrTimeSlicedSurveyRequestMessage'
+            );
+        }
+        $request = XdrSurveyRequestMessage::fromJsonValue($value['request']);
+        if (!array_key_exists('nonce', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field nonce for XdrTimeSlicedSurveyRequestMessage'
+            );
+        }
+        $nonce = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['nonce']);
+        if (!array_key_exists('inbound_peers_index', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field inbound_peers_index for XdrTimeSlicedSurveyRequestMessage'
+            );
+        }
+        $inboundPeersIndex = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['inbound_peers_index']);
+        if (!array_key_exists('outbound_peers_index', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field outbound_peers_index for XdrTimeSlicedSurveyRequestMessage'
+            );
+        }
+        $outboundPeersIndex = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['outbound_peers_index']);
+        return new static($request, $nonce, $inboundPeersIndex, $outboundPeersIndex);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

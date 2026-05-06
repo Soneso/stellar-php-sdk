@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
 class XdrAccountID extends XdrAccountIDBase
@@ -30,16 +31,16 @@ class XdrAccountID extends XdrAccountIDBase
      * @param array<string, string> $map    Parsed TxRep map.
      * @param string                $prefix Key prefix.
      * @return static
-     * @throws \InvalidArgumentException If the value is missing or invalid.
+     * @throws InvalidArgumentException If the value is missing or invalid.
      */
     public static function fromTxRep(array $map, string $prefix): static
     {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         if (!StrKey::isValidAccountId($raw)) {
-            throw new \InvalidArgumentException('Invalid account ID in TxRep for key "' . $prefix . '": ' . $raw);
+            throw new InvalidArgumentException('Invalid account ID in TxRep for key "' . $prefix . '": ' . $raw);
         }
         return new static($raw);
     }

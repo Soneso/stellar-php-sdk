@@ -1,0 +1,67 @@
+name: SEP-51 corpus drift
+
+# Snapshot regression guard. Re-runs tools/sep-51-test-fixtures/refresh_corpus.sh,
+# which regenerates the SDK's SEP-0051 snapshot corpus from PHP's own toJson
+# output and diffs the result against the committed copy. Any drift fails the
+# workflow and opens a tracking issue.
+#
+# Manual trigger only at commit time. Activation post-merge requires
+# uncommenting the schedule block below in a separate explicit PR.
+#
+# schedule:
+#   - cron: '0 8 * * MON'
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift-check:
+    name: SEP-51 snapshot drift check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, json, bcmath, gmp, pcntl, sodium
+          tools: composer:v2
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.x'
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Refresh corpus
+        id: refresh
+        run: |
+          set +e
+          bash tools/sep-51-test-fixtures/refresh_corpus.sh
+          ec=$?
+          echo "exit_code=$ec" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Open drift issue
+        if: steps.refresh.outputs.exit_code == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "SEP-51 corpus drift detected" \
+            --label sep-51-corpus-drift \
+            --body "Corpus drift detected vs the committed reference. Re-run \`tools/sep-51-test-fixtures/refresh_corpus.sh\` locally and update the corpus accordingly."
+
+      - name: Halt on prerequisite failure
+        if: steps.refresh.outputs.exit_code == '2'
+        run: |
+          echo "refresh_corpus.sh exit 2: prerequisite missing" >&2
+          exit 1

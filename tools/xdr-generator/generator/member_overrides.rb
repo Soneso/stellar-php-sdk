@@ -139,3 +139,27 @@ FACTORY_ALIASES = {
     "EXPIRATION" => "TTL",
   },
 }.freeze
+
+# ---------------------------------------------------------------------------
+# EXTRA_ENUM_VALUES
+# Extra integer values the generated enum decode() switch must accept beyond
+# the canonical XDR discriminant set. The wrapper class extends the base with
+# additional const declarations (e.g. SDK-internal sentinels surfaced at
+# decode boundaries that may carry a wrapper-only variant). Without these
+# cases, decode() throws an "Unknown enum value" InvalidArgumentException
+# on a value that the wrapper considers valid.
+#
+# Each entry maps a base enum class name to an array of integer values to
+# append to the decode() switch. The values are emitted as additional `case`
+# arms inside the same `return new static($value);` block as the canonical
+# discriminants.
+# ---------------------------------------------------------------------------
+EXTRA_ENUM_VALUES = {
+  # XdrSignerKeyType: the wrapper introduces MUXED_ED25519 = 0x100 as a
+  # wrapper-only sentinel for muxed signer keys surfaced at decode boundaries.
+  # This sentinel is not present in the canonical SEP-0051 SignerKeyType
+  # enum; it is emitted under an SDK-internal extension. The wrapper's JSON
+  # round-trip path already emits/parses the `muxed_ed25519` arm via the
+  # Stellar JSON override, and the XDR decode path accepts the same int.
+  "XdrSignerKeyType" => [0x100],
+}.freeze

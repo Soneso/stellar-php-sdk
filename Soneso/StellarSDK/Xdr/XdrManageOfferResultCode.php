@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrManageOfferResultCode {
     public int $value;
 
@@ -104,7 +107,7 @@ class XdrManageOfferResultCode {
             case -12:
                 return new XdrManageOfferResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -115,8 +118,75 @@ class XdrManageOfferResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::MALFORMED => 'malformed',
+            self::SELL_NO_TRUST => 'sell_no_trust',
+            self::BUY_NO_TRUST => 'buy_no_trust',
+            self::SELL_NOT_AUTHORIZED => 'sell_not_authorized',
+            self::BUY_NOT_AUTHORIZED => 'buy_not_authorized',
+            self::LINE_FULL => 'line_full',
+            self::UNDERFUNDED => 'underfunded',
+            self::CROSS_SELF => 'cross_self',
+            self::SELL_NO_ISSUER => 'sell_no_issuer',
+            self::BUY_NO_ISSUER => 'buy_no_issuer',
+            self::NOT_FOUND => 'not_found',
+            self::LOW_RESERVE => 'low_reserve',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrManageOfferResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrManageOfferResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'malformed' => new static(self::MALFORMED),
+            'sell_no_trust' => new static(self::SELL_NO_TRUST),
+            'buy_no_trust' => new static(self::BUY_NO_TRUST),
+            'sell_not_authorized' => new static(self::SELL_NOT_AUTHORIZED),
+            'buy_not_authorized' => new static(self::BUY_NOT_AUTHORIZED),
+            'line_full' => new static(self::LINE_FULL),
+            'underfunded' => new static(self::UNDERFUNDED),
+            'cross_self' => new static(self::CROSS_SELF),
+            'sell_no_issuer' => new static(self::SELL_NO_ISSUER),
+            'buy_no_issuer' => new static(self::BUY_NO_ISSUER),
+            'not_found' => new static(self::NOT_FOUND),
+            'low_reserve' => new static(self::LOW_RESERVE),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrManageOfferResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

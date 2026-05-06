@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrInvokeHostFunctionResultCode {
     public int $value;
 
@@ -62,7 +65,7 @@ class XdrInvokeHostFunctionResultCode {
             case -5:
                 return new XdrInvokeHostFunctionResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -73,8 +76,61 @@ class XdrInvokeHostFunctionResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::INVOKE_HOST_FUNCTION_SUCCESS => 'success',
+            self::INVOKE_HOST_FUNCTION_MALFORMED => 'malformed',
+            self::INVOKE_HOST_FUNCTION_TRAPPED => 'trapped',
+            self::INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED => 'resource_limit_exceeded',
+            self::INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED => 'entry_archived',
+            self::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE => 'insufficient_refundable_fee',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrInvokeHostFunctionResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrInvokeHostFunctionResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::INVOKE_HOST_FUNCTION_SUCCESS),
+            'malformed' => new static(self::INVOKE_HOST_FUNCTION_MALFORMED),
+            'trapped' => new static(self::INVOKE_HOST_FUNCTION_TRAPPED),
+            'resource_limit_exceeded' => new static(self::INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED),
+            'entry_archived' => new static(self::INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED),
+            'insufficient_refundable_fee' => new static(self::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrInvokeHostFunctionResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrClaimClaimableBalanceResult {
 
     public XdrClaimClaimableBalanceResultCode $resultCode;
@@ -61,8 +64,66 @@ class XdrClaimClaimableBalanceResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrClaimClaimableBalanceResultCode::SUCCESS => 'success',
+            XdrClaimClaimableBalanceResultCode::DOES_NOT_EXIST => 'does_not_exist',
+            XdrClaimClaimableBalanceResultCode::CANNOT_CLAIM => 'cannot_claim',
+            XdrClaimClaimableBalanceResultCode::LINE_FULL => 'line_full',
+            XdrClaimClaimableBalanceResultCode::NO_TRUST => 'no_trust',
+            XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED => 'not_authorized',
+            XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN => 'trustline_frozen',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrClaimClaimableBalanceResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::SUCCESS)),
+                'does_not_exist' => new static(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::DOES_NOT_EXIST)),
+                'cannot_claim' => new static(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::CANNOT_CLAIM)),
+                'line_full' => new static(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::LINE_FULL)),
+                'no_trust' => new static(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NO_TRUST)),
+                'not_authorized' => new static(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED)),
+                'trustline_frozen' => new static(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN)),
+                default => throw new InvalidArgumentException(
+                    'Unknown XdrClaimClaimableBalanceResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new InvalidArgumentException(
+            'Expected void-arm string for XdrClaimClaimableBalanceResult, got ' . get_debug_type($value)
+        );
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

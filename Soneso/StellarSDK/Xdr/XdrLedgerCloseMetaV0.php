@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLedgerCloseMetaV0 {
 
     public XdrLedgerHeaderHistoryEntry $ledgerHeader;
@@ -81,8 +84,99 @@ class XdrLedgerCloseMetaV0 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'ledger_header' => $this->ledgerHeader->toJsonValue(),
+            'tx_set' => $this->txSet->toJsonValue(),
+            'tx_processing' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->txProcessing),
+            'upgrades_processing' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->upgradesProcessing),
+            'scp_info' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->scpInfo),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrLedgerCloseMetaV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ledger_header', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ledger_header for XdrLedgerCloseMetaV0'
+            );
+        }
+        $ledgerHeader = XdrLedgerHeaderHistoryEntry::fromJsonValue($value['ledger_header']);
+        if (!array_key_exists('tx_set', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field tx_set for XdrLedgerCloseMetaV0'
+            );
+        }
+        $txSet = XdrTransactionSet::fromJsonValue($value['tx_set']);
+        if (!array_key_exists('tx_processing', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field tx_processing for XdrLedgerCloseMetaV0'
+            );
+        }
+        $txProcessing = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrTransactionResultMeta::fromJsonValue($item); }
+            return $out;
+        })($value['tx_processing']);
+        if (!array_key_exists('upgrades_processing', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field upgrades_processing for XdrLedgerCloseMetaV0'
+            );
+        }
+        $upgradesProcessing = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrUpgradeEntryMeta::fromJsonValue($item); }
+            return $out;
+        })($value['upgrades_processing']);
+        if (!array_key_exists('scp_info', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field scp_info for XdrLedgerCloseMetaV0'
+            );
+        }
+        $scpInfo = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrSCPHistoryEntry::fromJsonValue($item); }
+            return $out;
+        })($value['scp_info']);
+        return new static($ledgerHeader, $txSet, $txProcessing, $upgradesProcessing, $scpInfo);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

@@ -5,6 +5,10 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+use Soneso\StellarSDK\Crypto\StrKey;
+
 class XdrHashIDPreimageRevokeID {
 
     public XdrAccountID $sourceAccount;
@@ -57,8 +61,83 @@ class XdrHashIDPreimageRevokeID {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'source_account' => $this->sourceAccount->toJsonValue(),
+            'seq_num' => $this->seqNum->toJsonValue(),
+            'op_num' => $this->opNum,
+            'liquidity_pool_id' => StrKey::encodeLiquidityPoolId($this->liquidityPoolID),
+            'asset' => $this->asset->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrHashIDPreimageRevokeID JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('source_account', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field source_account for XdrHashIDPreimageRevokeID'
+            );
+        }
+        $sourceAccount = XdrAccountID::fromJsonValue($value['source_account']);
+        if (!array_key_exists('seq_num', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field seq_num for XdrHashIDPreimageRevokeID'
+            );
+        }
+        $seqNum = XdrSequenceNumber::fromJsonValue($value['seq_num']);
+        if (!array_key_exists('op_num', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field op_num for XdrHashIDPreimageRevokeID'
+            );
+        }
+        $opNum = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['op_num']);
+        if (!array_key_exists('liquidity_pool_id', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field liquidity_pool_id for XdrHashIDPreimageRevokeID'
+            );
+        }
+        if (!is_string($value['liquidity_pool_id'])) {
+            throw new InvalidArgumentException(
+                'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
+            );
+        }
+        $liquidityPoolID = StrKey::decodeLiquidityPoolId($value['liquidity_pool_id']);
+        if (!array_key_exists('asset', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field asset for XdrHashIDPreimageRevokeID'
+            );
+        }
+        $asset = XdrAsset::fromJsonValue($value['asset']);
+        return new static($sourceAccount, $seqNum, $opNum, $liquidityPoolID, $asset);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

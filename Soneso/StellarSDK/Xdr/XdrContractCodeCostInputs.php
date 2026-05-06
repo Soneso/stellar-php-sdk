@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrContractCodeCostInputs {
 
     public XdrExtensionPoint $ext;
@@ -93,8 +96,120 @@ class XdrContractCodeCostInputs {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => $this->ext->toJsonValue(),
+            'n_instructions' => $this->nInstructions,
+            'n_functions' => $this->nFunctions,
+            'n_globals' => $this->nGlobals,
+            'n_table_entries' => $this->nTableEntries,
+            'n_types' => $this->nTypes,
+            'n_data_segments' => $this->nDataSegments,
+            'n_elem_segments' => $this->nElemSegments,
+            'n_imports' => $this->nImports,
+            'n_exports' => $this->nExports,
+            'n_data_segment_bytes' => $this->nDataSegmentBytes,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrContractCodeCostInputs JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ext for XdrContractCodeCostInputs'
+            );
+        }
+        $ext = XdrExtensionPoint::fromJsonValue($value['ext']);
+        if (!array_key_exists('n_instructions', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_instructions for XdrContractCodeCostInputs'
+            );
+        }
+        $nInstructions = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_instructions']);
+        if (!array_key_exists('n_functions', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_functions for XdrContractCodeCostInputs'
+            );
+        }
+        $nFunctions = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_functions']);
+        if (!array_key_exists('n_globals', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_globals for XdrContractCodeCostInputs'
+            );
+        }
+        $nGlobals = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_globals']);
+        if (!array_key_exists('n_table_entries', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_table_entries for XdrContractCodeCostInputs'
+            );
+        }
+        $nTableEntries = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_table_entries']);
+        if (!array_key_exists('n_types', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_types for XdrContractCodeCostInputs'
+            );
+        }
+        $nTypes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_types']);
+        if (!array_key_exists('n_data_segments', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_data_segments for XdrContractCodeCostInputs'
+            );
+        }
+        $nDataSegments = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_data_segments']);
+        if (!array_key_exists('n_elem_segments', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_elem_segments for XdrContractCodeCostInputs'
+            );
+        }
+        $nElemSegments = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_elem_segments']);
+        if (!array_key_exists('n_imports', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_imports for XdrContractCodeCostInputs'
+            );
+        }
+        $nImports = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_imports']);
+        if (!array_key_exists('n_exports', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_exports for XdrContractCodeCostInputs'
+            );
+        }
+        $nExports = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_exports']);
+        if (!array_key_exists('n_data_segment_bytes', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field n_data_segment_bytes for XdrContractCodeCostInputs'
+            );
+        }
+        $nDataSegmentBytes = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['n_data_segment_bytes']);
+        return new static($ext, $nInstructions, $nFunctions, $nGlobals, $nTableEntries, $nTypes, $nDataSegments, $nElemSegments, $nImports, $nExports, $nDataSegmentBytes);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

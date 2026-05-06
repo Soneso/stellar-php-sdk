@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrTransactionBase {
 
     public XdrMuxedAccount $sourceAccount;
@@ -77,9 +80,79 @@ class XdrTransactionBase {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'source_account' => $this->sourceAccount->toJsonValue(),
+            'fee' => $this->fee,
+            'seq_num' => $this->sequenceNumber->toJsonValue(),
+            'cond' => $this->preconditions->toJsonValue(),
+            'memo' => $this->memo->toJsonValue(),
+            'operations' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->operations),
+            'ext' => $this->ext->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrTransaction JSON value, got ' . get_debug_type($value)
+            );
+        }
+        foreach (['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'] as $required) {
+            if (!array_key_exists($required, $value)) {
+                throw new InvalidArgumentException(
+                    'Missing required field ' . $required . ' for XdrTransaction'
+                );
+            }
+        }
+        $sourceAccount = XdrMuxedAccount::fromJsonValue($value['source_account']);
+        if (!is_int($value['fee'])) {
+            throw new InvalidArgumentException(
+                    'Expected int for fee, got ' . get_debug_type($value['fee'])
+            );
+        }
+        $fee = $value['fee'];
+        $sequenceNumber = XdrSequenceNumber::fromJsonValue($value['seq_num']);
+        $preconditions = XdrPreconditions::fromJsonValue($value['cond']);
+        $memo = XdrMemo::fromJsonValue($value['memo']);
+        if (!is_array($value['operations'])) {
+            throw new InvalidArgumentException(
+                'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
+            );
+        }
+        $operations = [];
+        foreach ($value['operations'] as $item) {
+            $operations[] = XdrOperation::fromJsonValue($item);
+        }
+        $ext = XdrTransactionExt::fromJsonValue($value['ext']);
+        // Wrapper signature: (sourceAccount, sequenceNumber, operations, ?fee, ?memo, ?preconditions, ?ext).
+        return new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

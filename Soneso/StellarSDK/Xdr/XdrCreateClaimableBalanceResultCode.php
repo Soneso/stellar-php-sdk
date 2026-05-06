@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrCreateClaimableBalanceResultCode {
     public int $value;
 
@@ -62,7 +65,7 @@ class XdrCreateClaimableBalanceResultCode {
             case -5:
                 return new XdrCreateClaimableBalanceResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -73,8 +76,61 @@ class XdrCreateClaimableBalanceResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SUCCESS => 'success',
+            self::MALFORMED => 'malformed',
+            self::LOW_RESERVE => 'low_reserve',
+            self::NO_TRUST => 'no_trust',
+            self::NOT_AUTHORIZED => 'not_authorized',
+            self::UNDERFUNDED => 'underfunded',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrCreateClaimableBalanceResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrCreateClaimableBalanceResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'success' => new static(self::SUCCESS),
+            'malformed' => new static(self::MALFORMED),
+            'low_reserve' => new static(self::LOW_RESERVE),
+            'no_trust' => new static(self::NO_TRUST),
+            'not_authorized' => new static(self::NOT_AUTHORIZED),
+            'underfunded' => new static(self::UNDERFUNDED),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrCreateClaimableBalanceResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

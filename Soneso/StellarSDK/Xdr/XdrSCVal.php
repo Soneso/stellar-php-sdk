@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 use GMP;
+use InvalidArgumentException;
 
 
 class XdrSCVal extends XdrSCValBase
@@ -168,18 +169,18 @@ class XdrSCVal extends XdrSCValBase
      * Creates an XdrSCVal for unsigned 128-bit BigInt.
      * @param GMP|string|int $value The BigInt value (GMP object, string, or int)
      * @return XdrSCVal
-     * @throws \InvalidArgumentException if value is negative or out of range
+     * @throws InvalidArgumentException if value is negative or out of range
      */
     public static function forU128BigInt($value) : XdrSCVal {
         $bigInt = self::normalizeToBigInt($value);
 
         // Check if value is in valid range for U128 (0 to 2^128-1)
         if (gmp_cmp($bigInt, 0) < 0) {
-            throw new \InvalidArgumentException("U128 value cannot be negative");
+            throw new InvalidArgumentException("U128 value cannot be negative");
         }
         $maxU128 = gmp_sub(gmp_pow(2, 128), 1);
         if (gmp_cmp($bigInt, $maxU128) > 0) {
-            throw new \InvalidArgumentException("Value exceeds U128 maximum");
+            throw new InvalidArgumentException("Value exceeds U128 maximum");
         }
 
         list($hi, $lo) = self::bigInt128Parts($bigInt);
@@ -190,7 +191,7 @@ class XdrSCVal extends XdrSCValBase
      * Creates an XdrSCVal for signed 128-bit BigInt.
      * @param GMP|string|int $value The BigInt value (GMP object, string, or int)
      * @return XdrSCVal
-     * @throws \InvalidArgumentException if value is out of range
+     * @throws InvalidArgumentException if value is out of range
      */
     public static function forI128BigInt($value) : XdrSCVal {
         $bigInt = self::normalizeToBigInt($value);
@@ -199,7 +200,7 @@ class XdrSCVal extends XdrSCValBase
         $minI128 = gmp_neg(gmp_pow(2, 127));
         $maxI128 = gmp_sub(gmp_pow(2, 127), 1);
         if (gmp_cmp($bigInt, $minI128) < 0 || gmp_cmp($bigInt, $maxI128) > 0) {
-            throw new \InvalidArgumentException("Value out of I128 range");
+            throw new InvalidArgumentException("Value out of I128 range");
         }
 
         list($hi, $lo) = self::bigInt128Parts($bigInt);
@@ -210,18 +211,18 @@ class XdrSCVal extends XdrSCValBase
      * Creates an XdrSCVal for unsigned 256-bit BigInt.
      * @param GMP|string|int $value The BigInt value (GMP object, string, or int)
      * @return XdrSCVal
-     * @throws \InvalidArgumentException if value is negative or out of range
+     * @throws InvalidArgumentException if value is negative or out of range
      */
     public static function forU256BigInt($value) : XdrSCVal {
         $bigInt = self::normalizeToBigInt($value);
 
         // Check if value is in valid range for U256 (0 to 2^256-1)
         if (gmp_cmp($bigInt, 0) < 0) {
-            throw new \InvalidArgumentException("U256 value cannot be negative");
+            throw new InvalidArgumentException("U256 value cannot be negative");
         }
         $maxU256 = gmp_sub(gmp_pow(2, 256), 1);
         if (gmp_cmp($bigInt, $maxU256) > 0) {
-            throw new \InvalidArgumentException("Value exceeds U256 maximum");
+            throw new InvalidArgumentException("Value exceeds U256 maximum");
         }
 
         list($hihi, $hilo, $lohi, $lolo) = self::bigInt256Parts($bigInt);
@@ -234,7 +235,7 @@ class XdrSCVal extends XdrSCValBase
      * Creates an XdrSCVal for signed 256-bit BigInt.
      * @param GMP|string|int $value The BigInt value (GMP object, string, or int)
      * @return XdrSCVal
-     * @throws \InvalidArgumentException if value is out of range
+     * @throws InvalidArgumentException if value is out of range
      */
     public static function forI256BigInt($value) : XdrSCVal {
         $bigInt = self::normalizeToBigInt($value);
@@ -243,7 +244,7 @@ class XdrSCVal extends XdrSCValBase
         $minI256 = gmp_neg(gmp_pow(2, 255));
         $maxI256 = gmp_sub(gmp_pow(2, 255), 1);
         if (gmp_cmp($bigInt, $minI256) < 0 || gmp_cmp($bigInt, $maxI256) > 0) {
-            throw new \InvalidArgumentException("Value out of I256 range");
+            throw new InvalidArgumentException("Value out of I256 range");
         }
 
         list($hihi, $hilo, $lohi, $lolo) = self::bigInt256Parts($bigInt);

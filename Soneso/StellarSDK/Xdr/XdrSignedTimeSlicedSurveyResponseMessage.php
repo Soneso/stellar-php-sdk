@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSignedTimeSlicedSurveyResponseMessage {
 
     public string $responseSignature;
@@ -39,8 +42,57 @@ class XdrSignedTimeSlicedSurveyResponseMessage {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'response_signature' => XdrJsonHelper::bytesToHex($this->responseSignature),
+            'response' => $this->response->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrSignedTimeSlicedSurveyResponseMessage JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('response_signature', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field response_signature for XdrSignedTimeSlicedSurveyResponseMessage'
+            );
+        }
+        $responseSignature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['response_signature']);
+        if (!array_key_exists('response', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field response for XdrSignedTimeSlicedSurveyResponseMessage'
+            );
+        }
+        $response = XdrTimeSlicedSurveyResponseMessage::fromJsonValue($value['response']);
+        return new static($responseSignature, $response);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

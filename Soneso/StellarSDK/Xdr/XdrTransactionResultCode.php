@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrTransactionResultCode {
     public int $value;
 
@@ -146,7 +149,7 @@ class XdrTransactionResultCode {
             case -18:
                 return new XdrTransactionResultCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -157,8 +160,89 @@ class XdrTransactionResultCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::FEE_BUMP_INNER_SUCCESS => 'fee_bump_inner_success',
+            self::SUCCESS => 'success',
+            self::FAILED => 'failed',
+            self::TOO_EARLY => 'too_early',
+            self::TOO_LATE => 'too_late',
+            self::MISSING_OPERATION => 'missing_operation',
+            self::BAD_SEQ => 'bad_seq',
+            self::BAD_AUTH => 'bad_auth',
+            self::INSUFFICIENT_BALANCE => 'insufficient_balance',
+            self::NO_ACCOUNT => 'no_account',
+            self::INSUFFICIENT_FEE => 'insufficient_fee',
+            self::BAD_AUTH_EXTRA => 'bad_auth_extra',
+            self::INTERNAL_ERROR => 'internal_error',
+            self::NOT_SUPPORTED => 'not_supported',
+            self::FEE_BUMP_INNER_FAILED => 'fee_bump_inner_failed',
+            self::BAD_SPONSORSHIP => 'bad_sponsorship',
+            self::BAD_MIN_SEQ_AGE_OR_GAP => 'bad_min_seq_age_or_gap',
+            self::MALFORMED => 'malformed',
+            self::SOROBAN_INVALID => 'soroban_invalid',
+            self::FROZEN_KEY_ACCESSED => 'frozen_key_accessed',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrTransactionResultCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrTransactionResultCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'fee_bump_inner_success' => new static(self::FEE_BUMP_INNER_SUCCESS),
+            'success' => new static(self::SUCCESS),
+            'failed' => new static(self::FAILED),
+            'too_early' => new static(self::TOO_EARLY),
+            'too_late' => new static(self::TOO_LATE),
+            'missing_operation' => new static(self::MISSING_OPERATION),
+            'bad_seq' => new static(self::BAD_SEQ),
+            'bad_auth' => new static(self::BAD_AUTH),
+            'insufficient_balance' => new static(self::INSUFFICIENT_BALANCE),
+            'no_account' => new static(self::NO_ACCOUNT),
+            'insufficient_fee' => new static(self::INSUFFICIENT_FEE),
+            'bad_auth_extra' => new static(self::BAD_AUTH_EXTRA),
+            'internal_error' => new static(self::INTERNAL_ERROR),
+            'not_supported' => new static(self::NOT_SUPPORTED),
+            'fee_bump_inner_failed' => new static(self::FEE_BUMP_INNER_FAILED),
+            'bad_sponsorship' => new static(self::BAD_SPONSORSHIP),
+            'bad_min_seq_age_or_gap' => new static(self::BAD_MIN_SEQ_AGE_OR_GAP),
+            'malformed' => new static(self::MALFORMED),
+            'soroban_invalid' => new static(self::SOROBAN_INVALID),
+            'frozen_key_accessed' => new static(self::FROZEN_KEY_ACCESSED),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrTransactionResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

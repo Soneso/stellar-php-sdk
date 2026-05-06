@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrAllowTrustOperation {
 
     public XdrAccountID $trustor;
@@ -45,9 +48,65 @@ class XdrAllowTrustOperation {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'trustor' => $this->trustor->toJsonValue(),
+            'asset' => $this->asset->toJsonValue(),
+            'authorize' => $this->authorized,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrAllowTrustOperation JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('trustor', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field trustor for XdrAllowTrustOperation'
+            );
+        }
+        $trustor = XdrAccountID::fromJsonValue($value['trustor']);
+        if (!array_key_exists('asset', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field asset for XdrAllowTrustOperation'
+            );
+        }
+        $asset = XdrAllowTrustOperationAsset::fromJsonValue($value['asset']);
+        if (!array_key_exists('authorize', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field authorize for XdrAllowTrustOperation'
+            );
+        }
+        $authorized = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['authorize']);
+        return new static($trustor, $asset, $authorized);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

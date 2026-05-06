@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLedgerEntryV1 {
 
     public ?XdrAccountID $sponsoringID = null;
@@ -47,8 +50,60 @@ class XdrLedgerEntryV1 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'sponsoring_id' => ($this->sponsoringID !== null ? $this->sponsoringID->toJsonValue() : null),
+            'ext' => $this->ext->toJsonValue(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrLedgerEntryV1 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('sponsoring_id', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field sponsoring_id for XdrLedgerEntryV1'
+            );
+        }
+        $sponsoringID = null;
+        if ($value['sponsoring_id'] !== null) {
+            $sponsoringID = XdrAccountID::fromJsonValue($value['sponsoring_id']);
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ext for XdrLedgerEntryV1'
+            );
+        }
+        $ext = XdrLedgerEntryV1Ext::fromJsonValue($value['ext']);
+        return new static($ext, $sponsoringID);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

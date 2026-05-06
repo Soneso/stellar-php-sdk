@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrInnerTransactionResultResult {
 
     public XdrTransactionResultCode $resultCode;
@@ -96,8 +99,108 @@ class XdrInnerTransactionResultResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrTransactionResultCode::SUCCESS => ['txsuccess' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->results)],
+            XdrTransactionResultCode::FAILED => ['txfailed' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->results)],
+            XdrTransactionResultCode::TOO_EARLY => 'txtoo_early',
+            XdrTransactionResultCode::TOO_LATE => 'txtoo_late',
+            XdrTransactionResultCode::MISSING_OPERATION => 'txmissing_operation',
+            XdrTransactionResultCode::BAD_SEQ => 'txbad_seq',
+            XdrTransactionResultCode::BAD_AUTH => 'txbad_auth',
+            XdrTransactionResultCode::INSUFFICIENT_BALANCE => 'txinsufficient_balance',
+            XdrTransactionResultCode::NO_ACCOUNT => 'txno_account',
+            XdrTransactionResultCode::INSUFFICIENT_FEE => 'txinsufficient_fee',
+            XdrTransactionResultCode::BAD_AUTH_EXTRA => 'txbad_auth_extra',
+            XdrTransactionResultCode::INTERNAL_ERROR => 'txinternal_error',
+            XdrTransactionResultCode::NOT_SUPPORTED => 'txnot_supported',
+            XdrTransactionResultCode::BAD_SPONSORSHIP => 'txbad_sponsorship',
+            XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP => 'txbad_min_seq_age_or_gap',
+            XdrTransactionResultCode::MALFORMED => 'txmalformed',
+            XdrTransactionResultCode::SOROBAN_INVALID => 'txsoroban_invalid',
+            XdrTransactionResultCode::FROZEN_KEY_ACCESSED => 'txfrozen_key_accessed',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrTransactionResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'txtoo_early' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)),
+                'txtoo_late' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_LATE)),
+                'txmissing_operation' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::MISSING_OPERATION)),
+                'txbad_seq' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SEQ)),
+                'txbad_auth' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH)),
+                'txinsufficient_balance' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_BALANCE)),
+                'txno_account' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::NO_ACCOUNT)),
+                'txinsufficient_fee' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_FEE)),
+                'txbad_auth_extra' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH_EXTRA)),
+                'txinternal_error' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::INTERNAL_ERROR)),
+                'txnot_supported' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::NOT_SUPPORTED)),
+                'txbad_sponsorship' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SPONSORSHIP)),
+                'txbad_min_seq_age_or_gap' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP)),
+                'txmalformed' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED)),
+                'txsoroban_invalid' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID)),
+                'txfrozen_key_accessed' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED)),
+                'txsuccess' => throw new InvalidArgumentException(
+                    "Arm 'txsuccess' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"txsuccess\": <payload>} instead of a bare string."
+                ),
+                'txfailed' => throw new InvalidArgumentException(
+                    "Arm 'txfailed' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"txfailed\": <payload>} instead of a bare string."
+                ),
+                default => throw new InvalidArgumentException(
+                    'Unknown XdrInnerTransactionResultResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new InvalidArgumentException(
+                'Expected single-key object or void-arm string for XdrInnerTransactionResultResult, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrInnerTransactionResultResult, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'txsuccess' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $r->results = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'txfailed' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $r->results = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
+                'Unknown arm key for XdrInnerTransactionResultResult: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

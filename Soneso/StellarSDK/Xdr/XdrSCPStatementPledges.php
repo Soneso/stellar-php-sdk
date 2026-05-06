@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCPStatementPledges {
 
     public XdrSCPStatementType $type;
@@ -79,8 +82,67 @@ class XdrSCPStatementPledges {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrSCPStatementType::SCP_ST_PREPARE => ['prepare' => $this->prepare->toJsonValue()],
+            XdrSCPStatementType::SCP_ST_CONFIRM => ['confirm' => $this->confirm->toJsonValue()],
+            XdrSCPStatementType::SCP_ST_EXTERNALIZE => ['externalize' => $this->externalize->toJsonValue()],
+            XdrSCPStatementType::SCP_ST_NOMINATE => ['nominate' => $this->nominate->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for type on XdrSCPStatementType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new InvalidArgumentException(
+                'Expected single-key object for XdrSCPStatementPledges, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrSCPStatementPledges, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'prepare' => (static function () use ($arm) { $r = new static(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $r->prepare = XdrSCPStatementPrepare::fromJsonValue($arm); return $r; })(),
+            'confirm' => (static function () use ($arm) { $r = new static(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_CONFIRM)); $r->confirm = XdrSCPStatementConfirm::fromJsonValue($arm); return $r; })(),
+            'externalize' => (static function () use ($arm) { $r = new static(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_EXTERNALIZE)); $r->externalize = XdrSCPStatementExternalize::fromJsonValue($arm); return $r; })(),
+            'nominate' => (static function () use ($arm) { $r = new static(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_NOMINATE)); $r->nominate = XdrSCPNomination::fromJsonValue($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
+                'Unknown arm key for XdrSCPStatementPledges: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

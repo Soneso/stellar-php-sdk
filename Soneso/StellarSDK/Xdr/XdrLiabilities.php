@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
 
 class XdrLiabilities {
@@ -41,8 +43,57 @@ class XdrLiabilities {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'buying' => $this->buying->toString(),
+            'selling' => $this->selling->toString(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrLiabilities JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('buying', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field buying for XdrLiabilities'
+            );
+        }
+        $buying = new BigInteger(is_string($value['buying']) ? $value['buying'] : (string) (int) $value['buying']);
+        if (!array_key_exists('selling', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field selling for XdrLiabilities'
+            );
+        }
+        $selling = new BigInteger(is_string($value['selling']) ? $value['selling'] : (string) (int) $value['selling']);
+        return new static($buying, $selling);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

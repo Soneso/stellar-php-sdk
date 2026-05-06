@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLedgerUpgrade {
 
     public XdrLedgerUpgradeType $type;
@@ -106,8 +109,73 @@ class XdrLedgerUpgrade {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrLedgerUpgradeType::LEDGER_UPGRADE_VERSION => ['version' => $this->newLedgerVersion],
+            XdrLedgerUpgradeType::LEDGER_UPGRADE_BASE_FEE => ['base_fee' => $this->newBaseFee],
+            XdrLedgerUpgradeType::LEDGER_UPGRADE_MAX_TX_SET_SIZE => ['max_tx_set_size' => $this->newMaxTxSetSize],
+            XdrLedgerUpgradeType::LEDGER_UPGRADE_BASE_RESERVE => ['base_reserve' => $this->newBaseReserve],
+            XdrLedgerUpgradeType::LEDGER_UPGRADE_FLAGS => ['flags' => $this->newFlags],
+            XdrLedgerUpgradeType::LEDGER_UPGRADE_CONFIG => ['config' => $this->newConfig->toJsonValue()],
+            XdrLedgerUpgradeType::LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE => ['max_soroban_tx_set_size' => $this->newMaxSorobanTxSetSize],
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for type on XdrLedgerUpgradeType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new InvalidArgumentException(
+                'Expected single-key object for XdrLedgerUpgrade, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrLedgerUpgrade, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'version' => (static function () use ($arm) { $r = new static(new XdrLedgerUpgradeType(XdrLedgerUpgradeType::LEDGER_UPGRADE_VERSION)); $r->newLedgerVersion = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'base_fee' => (static function () use ($arm) { $r = new static(new XdrLedgerUpgradeType(XdrLedgerUpgradeType::LEDGER_UPGRADE_BASE_FEE)); $r->newBaseFee = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'max_tx_set_size' => (static function () use ($arm) { $r = new static(new XdrLedgerUpgradeType(XdrLedgerUpgradeType::LEDGER_UPGRADE_MAX_TX_SET_SIZE)); $r->newMaxTxSetSize = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'base_reserve' => (static function () use ($arm) { $r = new static(new XdrLedgerUpgradeType(XdrLedgerUpgradeType::LEDGER_UPGRADE_BASE_RESERVE)); $r->newBaseReserve = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'flags' => (static function () use ($arm) { $r = new static(new XdrLedgerUpgradeType(XdrLedgerUpgradeType::LEDGER_UPGRADE_FLAGS)); $r->newFlags = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            'config' => (static function () use ($arm) { $r = new static(new XdrLedgerUpgradeType(XdrLedgerUpgradeType::LEDGER_UPGRADE_CONFIG)); $r->newConfig = XdrConfigUpgradeSetKey::fromJsonValue($arm); return $r; })(),
+            'max_soroban_tx_set_size' => (static function () use ($arm) { $r = new static(new XdrLedgerUpgradeType(XdrLedgerUpgradeType::LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE)); $r->newMaxSorobanTxSetSize = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
+                'Unknown arm key for XdrLedgerUpgrade: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrLiquidityPoolWithdrawResult {
 
     public XdrLiquidityPoolWithdrawResultCode $resultCode;
@@ -61,8 +64,66 @@ class XdrLiquidityPoolWithdrawResult {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->resultCode->getValue()) {
+            XdrLiquidityPoolWithdrawResultCode::SUCCESS => 'success',
+            XdrLiquidityPoolWithdrawResultCode::MALFORMED => 'malformed',
+            XdrLiquidityPoolWithdrawResultCode::NO_TRUST => 'no_trust',
+            XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED => 'underfunded',
+            XdrLiquidityPoolWithdrawResultCode::LINE_FULL => 'line_full',
+            XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM => 'under_minimum',
+            XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN => 'trustline_frozen',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for resultCode on XdrLiquidityPoolWithdrawResultCode'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (is_string($value)) {
+            return match ($value) {
+                'success' => new static(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::SUCCESS)),
+                'malformed' => new static(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::MALFORMED)),
+                'no_trust' => new static(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::NO_TRUST)),
+                'underfunded' => new static(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED)),
+                'line_full' => new static(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::LINE_FULL)),
+                'under_minimum' => new static(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM)),
+                'trustline_frozen' => new static(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN)),
+                default => throw new InvalidArgumentException(
+                    'Unknown XdrLiquidityPoolWithdrawResult void arm string: ' . XdrJsonHelper::safePreview($value)
+                ),
+            };
+        }
+        throw new InvalidArgumentException(
+            'Expected void-arm string for XdrLiquidityPoolWithdrawResult, got ' . get_debug_type($value)
+        );
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

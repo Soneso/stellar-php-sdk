@@ -20,7 +20,8 @@
 # ---------------------------------------------------------------------------
 # TYPE_OVERRIDES
 # Maps generated typedef names to the types the SDK actually uses.
-# Phase 2: Populate with typedef resolution rules as types are audited.
+# Entries are added when a typedef's default resolution does not match the
+# type the existing PHP SDK exposes for that name.
 # ---------------------------------------------------------------------------
 TYPE_OVERRIDES = {
   # Integer typedefs — SDK uses plain int
@@ -66,8 +67,9 @@ TYPE_OVERRIDES = {
 
 # ---------------------------------------------------------------------------
 # BASE_WRAPPER_TYPES
-# Types that generate *Base.php files. The hand-written wrapper extends the base.
-# Phase 1: Populated when wrapper types are identified and created.
+# Types that generate *Base.php files. The hand-written wrapper extends the
+# base. Listed here when a hand-maintained wrapper provides factory methods
+# or other helpers that cannot be derived from the XDR spec alone.
 # ---------------------------------------------------------------------------
 BASE_WRAPPER_TYPES = %w[
   XdrAccountID
@@ -132,7 +134,7 @@ SKIP_TYPES = %w[
 # EXTENSION_POINT_FIELDS
 # Maps struct names to field names that are void-only extension unions.
 # These are simplified to `public int $fieldName = 0` instead of full unions.
-# Phase 2: Populate as extension point fields are identified during audit.
+# Entries are added when a struct introduces such a void-only extension.
 # ---------------------------------------------------------------------------
 EXTENSION_POINT_FIELDS = {
   # Batch 16: Struct fields that are void-only ext unions, simplified to int

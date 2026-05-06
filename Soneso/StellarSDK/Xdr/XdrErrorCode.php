@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrErrorCode {
     public int $value;
 
@@ -56,7 +59,7 @@ class XdrErrorCode {
             case 4:
                 return new XdrErrorCode($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -67,8 +70,59 @@ class XdrErrorCode {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::ERR_MISC => 'misc',
+            self::ERR_DATA => 'data',
+            self::ERR_CONF => 'conf',
+            self::ERR_AUTH => 'auth',
+            self::ERR_LOAD => 'load',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrErrorCode enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrErrorCode JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'misc' => new static(self::ERR_MISC),
+            'data' => new static(self::ERR_DATA),
+            'conf' => new static(self::ERR_CONF),
+            'auth' => new static(self::ERR_AUTH),
+            'load' => new static(self::ERR_LOAD),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrErrorCode JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

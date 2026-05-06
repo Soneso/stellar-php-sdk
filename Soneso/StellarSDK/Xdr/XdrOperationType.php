@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrOperationType {
     public int $value;
 
@@ -188,7 +191,7 @@ class XdrOperationType {
             case 26:
                 return new XdrOperationType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -199,9 +202,104 @@ class XdrOperationType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::CREATE_ACCOUNT => 'create_account',
+            self::PAYMENT => 'payment',
+            self::PATH_PAYMENT_STRICT_RECEIVE => 'path_payment_strict_receive',
+            self::MANAGE_SELL_OFFER => 'manage_sell_offer',
+            self::CREATE_PASSIVE_SELL_OFFER => 'create_passive_sell_offer',
+            self::SET_OPTIONS => 'set_options',
+            self::CHANGE_TRUST => 'change_trust',
+            self::ALLOW_TRUST => 'allow_trust',
+            self::ACCOUNT_MERGE => 'account_merge',
+            self::INFLATION => 'inflation',
+            self::MANAGE_DATA => 'manage_data',
+            self::BUMP_SEQUENCE => 'bump_sequence',
+            self::MANAGE_BUY_OFFER => 'manage_buy_offer',
+            self::PATH_PAYMENT_STRICT_SEND => 'path_payment_strict_send',
+            self::CREATE_CLAIMABLE_BALANCE => 'create_claimable_balance',
+            self::CLAIM_CLAIMABLE_BALANCE => 'claim_claimable_balance',
+            self::BEGIN_SPONSORING_FUTURE_RESERVES => 'begin_sponsoring_future_reserves',
+            self::END_SPONSORING_FUTURE_RESERVES => 'end_sponsoring_future_reserves',
+            self::REVOKE_SPONSORSHIP => 'revoke_sponsorship',
+            self::CLAWBACK => 'clawback',
+            self::CLAWBACK_CLAIMABLE_BALANCE => 'clawback_claimable_balance',
+            self::SET_TRUST_LINE_FLAGS => 'set_trust_line_flags',
+            self::LIQUIDITY_POOL_DEPOSIT => 'liquidity_pool_deposit',
+            self::LIQUIDITY_POOL_WITHDRAW => 'liquidity_pool_withdraw',
+            self::INVOKE_HOST_FUNCTION => 'invoke_host_function',
+            self::EXTEND_FOOTPRINT_TTL => 'extend_footprint_ttl',
+            self::RESTORE_FOOTPRINT => 'restore_footprint',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrOperationType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrOperationType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'create_account' => new static(self::CREATE_ACCOUNT),
+            'payment' => new static(self::PAYMENT),
+            'path_payment_strict_receive' => new static(self::PATH_PAYMENT_STRICT_RECEIVE),
+            'manage_sell_offer' => new static(self::MANAGE_SELL_OFFER),
+            'create_passive_sell_offer' => new static(self::CREATE_PASSIVE_SELL_OFFER),
+            'set_options' => new static(self::SET_OPTIONS),
+            'change_trust' => new static(self::CHANGE_TRUST),
+            'allow_trust' => new static(self::ALLOW_TRUST),
+            'account_merge' => new static(self::ACCOUNT_MERGE),
+            'inflation' => new static(self::INFLATION),
+            'manage_data' => new static(self::MANAGE_DATA),
+            'bump_sequence' => new static(self::BUMP_SEQUENCE),
+            'manage_buy_offer' => new static(self::MANAGE_BUY_OFFER),
+            'path_payment_strict_send' => new static(self::PATH_PAYMENT_STRICT_SEND),
+            'create_claimable_balance' => new static(self::CREATE_CLAIMABLE_BALANCE),
+            'claim_claimable_balance' => new static(self::CLAIM_CLAIMABLE_BALANCE),
+            'begin_sponsoring_future_reserves' => new static(self::BEGIN_SPONSORING_FUTURE_RESERVES),
+            'end_sponsoring_future_reserves' => new static(self::END_SPONSORING_FUTURE_RESERVES),
+            'revoke_sponsorship' => new static(self::REVOKE_SPONSORSHIP),
+            'clawback' => new static(self::CLAWBACK),
+            'clawback_claimable_balance' => new static(self::CLAWBACK_CLAIMABLE_BALANCE),
+            'set_trust_line_flags' => new static(self::SET_TRUST_LINE_FLAGS),
+            'liquidity_pool_deposit' => new static(self::LIQUIDITY_POOL_DEPOSIT),
+            'liquidity_pool_withdraw' => new static(self::LIQUIDITY_POOL_WITHDRAW),
+            'invoke_host_function' => new static(self::INVOKE_HOST_FUNCTION),
+            'extend_footprint_ttl' => new static(self::EXTEND_FOOTPRINT_TTL),
+            'restore_footprint' => new static(self::RESTORE_FOOTPRINT),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrOperationType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function enumName(): string {
@@ -327,7 +425,7 @@ class XdrOperationType {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -338,7 +436,7 @@ class XdrOperationType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

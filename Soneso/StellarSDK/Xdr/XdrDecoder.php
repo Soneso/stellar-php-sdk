@@ -7,6 +7,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+
 class XdrDecoder
 {
 
@@ -84,7 +86,7 @@ class XdrDecoder
     {
         $value = self::unsignedInteger($xdr);
         if ($value !== 1 && $value !== 0) {
-            throw new \InvalidArgumentException('Unexpected XDR for a boolean value');
+            throw new InvalidArgumentException('Unexpected XDR for a boolean value');
         }
         
         // Equivalent to 1 or 0 uint32

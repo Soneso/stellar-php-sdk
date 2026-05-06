@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrSCSpecEventDataFormat {
     public int $value;
 
@@ -44,7 +47,7 @@ class XdrSCSpecEventDataFormat {
             case 2:
                 return new XdrSCSpecEventDataFormat($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -55,8 +58,55 @@ class XdrSCSpecEventDataFormat {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE => 'single_value',
+            self::SC_SPEC_EVENT_DATA_FORMAT_VEC => 'vec',
+            self::SC_SPEC_EVENT_DATA_FORMAT_MAP => 'map',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrSCSpecEventDataFormat enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrSCSpecEventDataFormat JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'single_value' => new static(self::SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE),
+            'vec' => new static(self::SC_SPEC_EVENT_DATA_FORMAT_VEC),
+            'map' => new static(self::SC_SPEC_EVENT_DATA_FORMAT_MAP),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrSCSpecEventDataFormat JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

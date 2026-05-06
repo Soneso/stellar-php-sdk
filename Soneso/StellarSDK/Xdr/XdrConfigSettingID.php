@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrConfigSettingID {
     public int $value;
 
@@ -152,7 +155,7 @@ class XdrConfigSettingID {
             case 20:
                 return new XdrConfigSettingID($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -163,9 +166,92 @@ class XdrConfigSettingID {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES => 'contract_max_size_bytes',
+            self::CONFIG_SETTING_CONTRACT_COMPUTE_V0 => 'contract_compute_v0',
+            self::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 => 'contract_ledger_cost_v0',
+            self::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 => 'contract_historical_data_v0',
+            self::CONFIG_SETTING_CONTRACT_EVENTS_V0 => 'contract_events_v0',
+            self::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 => 'contract_bandwidth_v0',
+            self::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS => 'contract_cost_params_cpu_instructions',
+            self::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES => 'contract_cost_params_memory_bytes',
+            self::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES => 'contract_data_key_size_bytes',
+            self::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES => 'contract_data_entry_size_bytes',
+            self::CONFIG_SETTING_STATE_ARCHIVAL => 'state_archival',
+            self::CONFIG_SETTING_CONTRACT_EXECUTION_LANES => 'contract_execution_lanes',
+            self::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW => 'live_soroban_state_size_window',
+            self::CONFIG_SETTING_EVICTION_ITERATOR => 'eviction_iterator',
+            self::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 => 'contract_parallel_compute_v0',
+            self::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 => 'contract_ledger_cost_ext_v0',
+            self::CONFIG_SETTING_SCP_TIMING => 'scp_timing',
+            self::CONFIG_SETTING_FROZEN_LEDGER_KEYS => 'frozen_ledger_keys',
+            self::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA => 'frozen_ledger_keys_delta',
+            self::CONFIG_SETTING_FREEZE_BYPASS_TXS => 'freeze_bypass_txs',
+            self::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA => 'freeze_bypass_txs_delta',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrConfigSettingID enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrConfigSettingID JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'contract_max_size_bytes' => new static(self::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES),
+            'contract_compute_v0' => new static(self::CONFIG_SETTING_CONTRACT_COMPUTE_V0),
+            'contract_ledger_cost_v0' => new static(self::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0),
+            'contract_historical_data_v0' => new static(self::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0),
+            'contract_events_v0' => new static(self::CONFIG_SETTING_CONTRACT_EVENTS_V0),
+            'contract_bandwidth_v0' => new static(self::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0),
+            'contract_cost_params_cpu_instructions' => new static(self::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS),
+            'contract_cost_params_memory_bytes' => new static(self::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES),
+            'contract_data_key_size_bytes' => new static(self::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES),
+            'contract_data_entry_size_bytes' => new static(self::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES),
+            'state_archival' => new static(self::CONFIG_SETTING_STATE_ARCHIVAL),
+            'contract_execution_lanes' => new static(self::CONFIG_SETTING_CONTRACT_EXECUTION_LANES),
+            'live_soroban_state_size_window' => new static(self::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW),
+            'eviction_iterator' => new static(self::CONFIG_SETTING_EVICTION_ITERATOR),
+            'contract_parallel_compute_v0' => new static(self::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0),
+            'contract_ledger_cost_ext_v0' => new static(self::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0),
+            'scp_timing' => new static(self::CONFIG_SETTING_SCP_TIMING),
+            'frozen_ledger_keys' => new static(self::CONFIG_SETTING_FROZEN_LEDGER_KEYS),
+            'frozen_ledger_keys_delta' => new static(self::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA),
+            'freeze_bypass_txs' => new static(self::CONFIG_SETTING_FREEZE_BYPASS_TXS),
+            'freeze_bypass_txs_delta' => new static(self::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrConfigSettingID JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function enumName(): string {
@@ -267,7 +353,7 @@ class XdrConfigSettingID {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -278,7 +364,7 @@ class XdrConfigSettingID {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

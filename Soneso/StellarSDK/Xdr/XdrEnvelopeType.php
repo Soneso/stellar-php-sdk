@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrEnvelopeType {
     public int $value;
 
@@ -86,7 +89,7 @@ class XdrEnvelopeType {
             case 9:
                 return new XdrEnvelopeType($value);
             default:
-                throw new \InvalidArgumentException("Unknown enum value: $value");
+                throw new InvalidArgumentException("Unknown enum value: $value");
         }
     }
 
@@ -97,9 +100,70 @@ class XdrEnvelopeType {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return match ($this->value) {
+            self::ENVELOPE_TYPE_TX_V0 => 'tx_v0',
+            self::ENVELOPE_TYPE_SCP => 'scp',
+            self::ENVELOPE_TYPE_TX => 'tx',
+            self::ENVELOPE_TYPE_AUTH => 'auth',
+            self::ENVELOPE_TYPE_SCPVALUE => 'scpvalue',
+            self::ENVELOPE_TYPE_TX_FEE_BUMP => 'tx_fee_bump',
+            self::ENVELOPE_TYPE_OP_ID => 'op_id',
+            self::ENVELOPE_TYPE_POOL_REVOKE_OP_ID => 'pool_revoke_op_id',
+            self::ENVELOPE_TYPE_CONTRACT_ID => 'contract_id',
+            self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION => 'soroban_authorization',
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown XdrEnvelopeType enum value: ' . $this->value
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrEnvelopeType JSON value, got ' . get_debug_type($value)
+            );
+        }
+        return match ($value) {
+            'tx_v0' => new static(self::ENVELOPE_TYPE_TX_V0),
+            'scp' => new static(self::ENVELOPE_TYPE_SCP),
+            'tx' => new static(self::ENVELOPE_TYPE_TX),
+            'auth' => new static(self::ENVELOPE_TYPE_AUTH),
+            'scpvalue' => new static(self::ENVELOPE_TYPE_SCPVALUE),
+            'tx_fee_bump' => new static(self::ENVELOPE_TYPE_TX_FEE_BUMP),
+            'op_id' => new static(self::ENVELOPE_TYPE_OP_ID),
+            'pool_revoke_op_id' => new static(self::ENVELOPE_TYPE_POOL_REVOKE_OP_ID),
+            'contract_id' => new static(self::ENVELOPE_TYPE_CONTRACT_ID),
+            'soroban_authorization' => new static(self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION),
+            default => throw new InvalidArgumentException(
+                'Unknown XdrEnvelopeType JSON value: ' . XdrJsonHelper::safePreview($value)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function enumName(): string {
@@ -157,7 +221,7 @@ class XdrEnvelopeType {
                     $val = (int) substr($name, strlen($prefix));
                     return new static($val);
                 }
-                throw new \InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . $name);
         }
     }
 
@@ -168,7 +232,7 @@ class XdrEnvelopeType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new \InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         return self::fromTxRepName($raw);
     }

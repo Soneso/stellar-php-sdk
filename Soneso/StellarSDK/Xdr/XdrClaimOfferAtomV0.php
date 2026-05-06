@@ -5,6 +5,8 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
 use phpseclib3\Math\BigInteger;
 
 class XdrClaimOfferAtomV0 {
@@ -65,8 +67,85 @@ class XdrClaimOfferAtomV0 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'seller_ed25519' => XdrJsonHelper::bytesToHex($this->sellerEd25519),
+            'offer_id' => XdrJsonHelper::int64ToString($this->offerId),
+            'asset_sold' => $this->assetSold->toJsonValue(),
+            'amount_sold' => $this->amountSold->toString(),
+            'asset_bought' => $this->assetBought->toJsonValue(),
+            'amount_bought' => $this->amountBought->toString(),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrClaimOfferAtomV0 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('seller_ed25519', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field seller_ed25519 for XdrClaimOfferAtomV0'
+            );
+        }
+        $sellerEd25519 = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['seller_ed25519']);
+        if (!array_key_exists('offer_id', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field offer_id for XdrClaimOfferAtomV0'
+            );
+        }
+        $offerId = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($value['offer_id']);
+        if (!array_key_exists('asset_sold', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field asset_sold for XdrClaimOfferAtomV0'
+            );
+        }
+        $assetSold = XdrAsset::fromJsonValue($value['asset_sold']);
+        if (!array_key_exists('amount_sold', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field amount_sold for XdrClaimOfferAtomV0'
+            );
+        }
+        $amountSold = new BigInteger(is_string($value['amount_sold']) ? $value['amount_sold'] : (string) (int) $value['amount_sold']);
+        if (!array_key_exists('asset_bought', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field asset_bought for XdrClaimOfferAtomV0'
+            );
+        }
+        $assetBought = XdrAsset::fromJsonValue($value['asset_bought']);
+        if (!array_key_exists('amount_bought', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field amount_bought for XdrClaimOfferAtomV0'
+            );
+        }
+        $amountBought = new BigInteger(is_string($value['amount_bought']) ? $value['amount_bought'] : (string) (int) $value['amount_bought']);
+        return new static($sellerEd25519, $offerId, $assetSold, $amountSold, $assetBought, $amountBought);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrRevokeSponsorshipOperation {
 
     public XdrRevokeSponsorshipType $type;
@@ -61,9 +64,64 @@ class XdrRevokeSponsorshipOperation {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): mixed {
+        return match ($this->type->getValue()) {
+            XdrRevokeSponsorshipType::LEDGER_ENTRY => ['ledger_entry' => $this->ledgerKey->toJsonValue()],
+            XdrRevokeSponsorshipType::SIGNER => ['signer' => $this->signer->toJsonValue()],
+            // @codeCoverageIgnoreStart
+            default => throw new InvalidArgumentException(
+                'Unknown discriminant for type on XdrRevokeSponsorshipType'
+            ),
+            // @codeCoverageIgnoreEnd
+        };
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value) || count($value) !== 1) {
+            throw new InvalidArgumentException(
+                'Expected single-key object for XdrRevokeSponsorshipOperation, got ' . get_debug_type($value)
+            );
+        }
+        $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrRevokeSponsorshipOperation, got ' . get_debug_type($key)
+            );
+        }
+        $arm = $value[$key];
+        return match ($key) {
+            'ledger_entry' => (static function () use ($arm) { $r = new static(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY)); $r->ledgerKey = XdrLedgerKey::fromJsonValue($arm); return $r; })(),
+            'signer' => (static function () use ($arm) { $r = new static(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::SIGNER)); $r->signer = XdrRevokeSponsorshipSigner::fromJsonValue($arm); return $r; })(),
+            default => throw new InvalidArgumentException(
+                'Unknown arm key for XdrRevokeSponsorshipOperation: ' . XdrJsonHelper::safePreview($key)
+            ),
+        };
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

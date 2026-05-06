@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrConfigSettingSCPTiming {
 
     public int $ledgerTargetCloseTimeMilliseconds;
@@ -57,8 +60,78 @@ class XdrConfigSettingSCPTiming {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'ledger_target_close_time_milliseconds' => $this->ledgerTargetCloseTimeMilliseconds,
+            'nomination_timeout_initial_milliseconds' => $this->nominationTimeoutInitialMilliseconds,
+            'nomination_timeout_increment_milliseconds' => $this->nominationTimeoutIncrementMilliseconds,
+            'ballot_timeout_initial_milliseconds' => $this->ballotTimeoutInitialMilliseconds,
+            'ballot_timeout_increment_milliseconds' => $this->ballotTimeoutIncrementMilliseconds,
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrConfigSettingSCPTiming JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ledger_target_close_time_milliseconds', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ledger_target_close_time_milliseconds for XdrConfigSettingSCPTiming'
+            );
+        }
+        $ledgerTargetCloseTimeMilliseconds = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ledger_target_close_time_milliseconds']);
+        if (!array_key_exists('nomination_timeout_initial_milliseconds', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field nomination_timeout_initial_milliseconds for XdrConfigSettingSCPTiming'
+            );
+        }
+        $nominationTimeoutInitialMilliseconds = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['nomination_timeout_initial_milliseconds']);
+        if (!array_key_exists('nomination_timeout_increment_milliseconds', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field nomination_timeout_increment_milliseconds for XdrConfigSettingSCPTiming'
+            );
+        }
+        $nominationTimeoutIncrementMilliseconds = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['nomination_timeout_increment_milliseconds']);
+        if (!array_key_exists('ballot_timeout_initial_milliseconds', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ballot_timeout_initial_milliseconds for XdrConfigSettingSCPTiming'
+            );
+        }
+        $ballotTimeoutInitialMilliseconds = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ballot_timeout_initial_milliseconds']);
+        if (!array_key_exists('ballot_timeout_increment_milliseconds', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ballot_timeout_increment_milliseconds for XdrConfigSettingSCPTiming'
+            );
+        }
+        $ballotTimeoutIncrementMilliseconds = (static function ($v) { if (!is_int($v)) { throw new InvalidArgumentException('Expected int JSON value, got ' . get_debug_type($v)); } return $v; })($value['ballot_timeout_increment_milliseconds']);
+        return new static($ledgerTargetCloseTimeMilliseconds, $nominationTimeoutInitialMilliseconds, $nominationTimeoutIncrementMilliseconds, $ballotTimeoutInitialMilliseconds, $ballotTimeoutIncrementMilliseconds);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

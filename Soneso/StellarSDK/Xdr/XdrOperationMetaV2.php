@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrOperationMetaV2 {
 
     public XdrExtensionPoint $ext;
@@ -61,8 +64,78 @@ class XdrOperationMetaV2 {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): array {
+        return [
+            'ext' => $this->ext->toJsonValue(),
+            'changes' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->changes),
+            'events' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->events),
+        ];
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (is_array($value) && array_key_exists('$schema', $value)) {
+            unset($value['$schema']);
+        }
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Expected object for XdrOperationMetaV2 JSON value, got ' . get_debug_type($value)
+            );
+        }
+        if (!array_key_exists('ext', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field ext for XdrOperationMetaV2'
+            );
+        }
+        $ext = XdrExtensionPoint::fromJsonValue($value['ext']);
+        if (!array_key_exists('changes', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field changes for XdrOperationMetaV2'
+            );
+        }
+        $changes = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrLedgerEntryChange::fromJsonValue($item); }
+            return $out;
+        })($value['changes']);
+        if (!array_key_exists('events', $value)) {
+            throw new InvalidArgumentException(
+                'Missing required field events for XdrOperationMetaV2'
+            );
+        }
+        $events = (static function ($v) {
+            if (!is_array($v)) {
+                throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
+            }
+            $out = [];
+            foreach ($v as $item) { $out[] = XdrContractEvent::fromJsonValue($item); }
+            return $out;
+        })($value['events']);
+        return new static($ext, $changes, $events);
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 }

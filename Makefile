@@ -14,12 +14,24 @@ xdr/%.x:
 	@mkdir -p xdr
 	curl -Lsf -o $@ https://raw.githubusercontent.com/stellar/stellar-xdr/$(XDR_COMMIT)/$(@F)
 
-# Generate PHP XDR types via Docker
+# Generate PHP XDR types via Docker (Ruby-only stage)
 xdr-generate: $(XDR_SRCS)
 	docker run --rm -v $(PWD):/wd -w /wd $(RUBY_IMAGE) /bin/bash -c '\
 		cd tools/xdr-generator && \
 		bundle install --quiet && \
 		bundle exec ruby generate.rb'
+
+# Emit SEP-51 round-trip tests (native — needs PHP and composer-installed vendor)
+xdr-emit-roundtrip-tests:
+	@if [ ! -f vendor/autoload.php ]; then \
+		echo "vendor/autoload.php missing; run 'composer install' first."; \
+		exit 1; \
+	fi
+	@if ! command -v php >/dev/null 2>&1; then \
+		echo "php not found on PATH; install PHP CLI first."; \
+		exit 1; \
+	fi
+	cd tools/xdr-generator && ruby emit_roundtrip_tests.rb
 
 # Remove only generated PHP files (detected by header comment)
 xdr-clean-generated:
@@ -30,7 +42,7 @@ xdr-clean-all: xdr-clean-generated
 	rm -rf xdr/
 
 # Full regeneration cycle
-xdr-update: xdr-clean-all xdr-generate
+xdr-update: xdr-clean-all xdr-generate xdr-emit-roundtrip-tests
 
 # Run snapshot tests
 xdr-generator-test: $(XDR_SRCS)
@@ -65,4 +77,4 @@ xdr-generate-tests: $(XDR_SRCS)
 		bundle install --quiet && \
 		bundle exec ruby test/generate_tests.rb'
 
-.PHONY: xdr-generate xdr-clean-generated xdr-clean-all xdr-update xdr-generator-test xdr-generator-update-snapshots xdr-validate xdr-compare xdr-generate-tests
+.PHONY: xdr-generate xdr-emit-roundtrip-tests xdr-clean-generated xdr-clean-all xdr-update xdr-generator-test xdr-generator-update-snapshots xdr-validate xdr-compare xdr-generate-tests

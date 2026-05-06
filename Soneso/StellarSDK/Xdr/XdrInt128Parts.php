@@ -5,6 +5,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+use InvalidArgumentException;
+use JsonException;
+
 class XdrInt128Parts {
 
     public int $hi;
@@ -39,9 +42,48 @@ class XdrInt128Parts {
     public static function fromBase64Xdr(string $xdr): static {
         $decoded = base64_decode($xdr, true);
         if ($decoded === false) {
-            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+            throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
         return static::decode(new XdrBuffer($decoded));
+    }
+
+    public function toJsonValue(): string {
+        return XdrJsonHelper::int128PartsToString((string) $this->hi, (string) $this->lo);
+    }
+
+    public static function fromJsonValue(mixed $value): static {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException(
+                'Expected string for XdrInt128Parts JSON value, got ' . get_debug_type($value)
+            );
+        }
+        $parts = XdrJsonHelper::stringToInt128Parts($value);
+        // Direct (int) cast is safe: XdrJsonHelper::stringToInt128Parts
+        // already validates the 'hi' limb as a digit-only signed int64
+        // string, so the value fits in PHP int and contains no
+        // characters that would silently coerce to 0.
+        return new static(
+            (int) $parts['hi'],
+            XdrJsonHelper::wrapUnsignedToSignedInt($parts['lo'])
+        );
+    }
+
+    /**
+     * @throws JsonException If the value contains structures that cannot be encoded as JSON.
+     */
+    public function toJson(): string {
+        return json_encode(
+            $this->toJsonValue(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+    }
+
+    /**
+     * @throws JsonException If $json is not syntactically valid JSON.
+     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     */
+    public static function fromJson(string $json): static {
+        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {
