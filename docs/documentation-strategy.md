@@ -359,6 +359,7 @@ docs/
 │   ├── sep-31.md              # Cross-border payments
 │   ├── sep-38.md              # Anchor quotes
 │   ├── sep-45.md              # Contract account authentication
+│   ├── sep-51.md              # XDR-JSON encoding
 │   └── sep-53.md              # Message signing and verification
 └── documentation-strategy.md   # This file
 ```
