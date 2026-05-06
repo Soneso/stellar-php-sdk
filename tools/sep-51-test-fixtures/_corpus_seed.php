@@ -40,10 +40,16 @@ use Soneso\StellarSDK\Xdr\XdrBumpSequenceOperation;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustOperation;
 use Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceOperation;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType;
 use Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrClawbackOperation;
+use Soneso\StellarSDK\Xdr\XdrContractEvent;
+use Soneso\StellarSDK\Xdr\XdrContractEventBody;
+use Soneso\StellarSDK\Xdr\XdrContractEventBodyV0;
+use Soneso\StellarSDK\Xdr\XdrContractEventType;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractBandwidthV0;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractComputeV0;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractEventsV0;
@@ -57,8 +63,10 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrCreateAccountOperation;
 use Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation;
+use Soneso\StellarSDK\Xdr\XdrDataValue;
 use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
+use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLOp;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
@@ -86,6 +94,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerHeaderHistoryEntry;
 use Soneso\StellarSDK\Xdr\XdrLedgerHeaderHistoryEntryExt;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyClaimableBalance;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperation;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperation;
 use Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation;
@@ -95,9 +104,12 @@ use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
+use Soneso\StellarSDK\Xdr\XdrIPAddrType;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrPeerAddress;
+use Soneso\StellarSDK\Xdr\XdrPeerAddressIp;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation;
 use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
@@ -135,10 +147,22 @@ use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use Soneso\StellarSDK\Xdr\XdrStellarValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueExt;
 use Soneso\StellarSDK\Xdr\XdrStellarValueType;
+use Soneso\StellarSDK\Xdr\XdrStoredDebugTransactionSet;
+use Soneso\StellarSDK\Xdr\XdrStoredTransactionSet;
 use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 use Soneso\StellarSDK\Xdr\XdrTransaction;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionEvent;
+use Soneso\StellarSDK\Xdr\XdrTransactionEventStage;
 use Soneso\StellarSDK\Xdr\XdrTransactionExt;
+use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
+use Soneso\StellarSDK\Xdr\XdrTransactionResult;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultExt;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultMeta;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultMetaV1;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultPair;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionSet;
 use Soneso\StellarSDK\Xdr\XdrTransactionSetV1;
 use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
@@ -1080,6 +1104,200 @@ foreach (range(0, 9) as $i) {
 // scval_bool has only two distinct wire forms (true / false); both are
 // already covered by scval_bool_true and scval_bool_false above, so no
 // per-iteration fixtures are emitted here.
+
+// -----------------------------------------------------------------------
+// Standalone Cat-A entries: types whose recursive instance synthesis is
+// not deterministic enough for the round-trip emitter's auto-fixture
+// path. Each entry below pins a minimal-valid instance so the emitter
+// switches the corresponding type from its reflection-only fallback to
+// a real corpus round-trip test.
+// -----------------------------------------------------------------------
+
+// AssetCode4 / AssetCode12 standalone (the inner alphanum payload — Asset
+// fixtures above cover these only as the nested arm of an XdrAsset).
+add($fixtures, 'asset_alphanum4_standalone', 'AssetAlphaNum4',
+    new XdrAssetAlphaNum4('USDX', XdrAccountID::fromAccountId(TEST_ACCOUNT_G)),
+    'SEP-0051 §Stellar-Specific Types > AssetCode4',
+    'standalone AssetAlphaNum4 (Asset fixtures above embed it as a nested arm)');
+add($fixtures, 'asset_alphanum12_standalone', 'AssetAlphaNum12',
+    new XdrAssetAlphaNum12('CUSTOM', XdrAccountID::fromAccountId(TEST_ACCOUNT_G_2)),
+    'SEP-0051 §Stellar-Specific Types > AssetCode12',
+    'standalone AssetAlphaNum12 (Asset fixtures above embed it as a nested arm)');
+
+// DataValue (optional bytes wrapper used by ManageData).
+add($fixtures, 'data_value_present', 'DataValue', new XdrDataValue('value-bytes'),
+    'SEP-0051 §Specification > Opaque (variable)',
+    'DataValue carrying a non-null payload');
+add($fixtures, 'data_value_absent', 'DataValue', new XdrDataValue(null),
+    'SEP-0051 §Specification > Opaque (variable, optional)',
+    'DataValue with null payload (optional-absent form)');
+
+// LedgerKeyClaimableBalance standalone. ClaimableBalanceID stores the V0
+// hash as a 64-character hex string (see XdrClaimableBalanceID::encode,
+// which packs it via pack("H*", ...) before opaqueFixed-32).
+$lkcbId = new XdrClaimableBalanceID(
+    new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0),
+    str_repeat('a1', 32)
+);
+add($fixtures, 'ledger_key_claimable_balance_standalone', 'LedgerKeyClaimableBalance',
+    new XdrLedgerKeyClaimableBalance($lkcbId),
+    'SEP-0051 §Stellar-Specific Types > LedgerKey > CLAIMABLE_BALANCE');
+
+// ClaimableBalanceEntry (account / claimants / asset / amount / ext).
+$cbeNative = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+$cbeId = new XdrClaimableBalanceID(
+    new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0),
+    str_repeat('b2', 32)
+);
+$cbeEntry = new XdrClaimableBalanceEntry(
+    $cbeId,
+    [],
+    $cbeNative,
+    new BigInteger(1000000),
+    new XdrClaimableBalanceEntryExt(0)
+);
+add($fixtures, 'claimable_balance_entry_native_no_claimants', 'ClaimableBalanceEntry',
+    $cbeEntry,
+    'SEP-0051 §Stellar-Specific Types > LedgerEntry > CLAIMABLE_BALANCE');
+
+// ClaimClaimableBalanceOperation / ClawbackClaimableBalanceOperation standalone
+// (each is a struct that just wraps a ClaimableBalanceID; the matching
+// OperationBody fixtures above embed them as nested arms only).
+$claimCbId = new XdrClaimableBalanceID(
+    new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0),
+    str_repeat('c3', 32)
+);
+add($fixtures, 'claim_claimable_balance_operation_standalone', 'ClaimClaimableBalanceOperation',
+    new XdrClaimClaimableBalanceOperation($claimCbId),
+    'SEP-0051 §Examples > Operation > ClaimClaimableBalanceOp (standalone struct)');
+
+$clawbackCbId = new XdrClaimableBalanceID(
+    new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0),
+    str_repeat('d4', 32)
+);
+add($fixtures, 'clawback_claimable_balance_operation_standalone', 'ClawbackClaimableBalanceOperation',
+    new XdrClawbackClaimableBalanceOperation($clawbackCbId),
+    'SEP-0051 §Examples > Operation > ClawbackClaimableBalanceOp (standalone struct)');
+
+// LedgerHeader / LedgerHeaderHistoryEntry standalone (the LedgerCloseMeta
+// fixtures above embed them only as nested fields).
+add($fixtures, 'ledger_header_standalone', 'LedgerHeader', $lcmHeader,
+    'SEP-0051 §Stellar-Specific Types > LedgerHeader',
+    'minimal-zero LedgerHeader with empty upgrades and zeroed skip list');
+add($fixtures, 'ledger_header_history_entry_standalone', 'LedgerHeaderHistoryEntry', $lhhe,
+    'SEP-0051 §Stellar-Specific Types > LedgerHeaderHistoryEntry',
+    'wraps the standalone LedgerHeader fixture above');
+
+// LedgerCloseMetaV1 / LedgerCloseMetaV2 standalone (the LedgerCloseMeta
+// fixtures above embed them only as nested arms).
+add($fixtures, 'ledger_close_meta_v1_standalone', 'LedgerCloseMetaV1', $lcmV1Inner,
+    'SEP-0051 §Stellar-Specific Types > LedgerCloseMetaV1');
+add($fixtures, 'ledger_close_meta_v2_standalone', 'LedgerCloseMetaV2', $lcmV2Inner,
+    'SEP-0051 §Stellar-Specific Types > LedgerCloseMetaV2');
+
+// PeerAddress / PeerAddressIp (overlay-only types — ip-typed discriminated
+// union plus a wrapping struct with port + numFailures).
+$peerIpV4 = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4));
+$peerIpV4->ipv4 = "\x7f\x00\x00\x01"; // 127.0.0.1
+add($fixtures, 'peer_address_ip_ipv4', 'PeerAddressIp', $peerIpV4,
+    'SEP-0051 §Stellar-Specific Types > PeerAddress > IPv4');
+
+$peerIpV6 = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv6));
+$peerIpV6->ipv6 = str_repeat("\x00", 15) . "\x01"; // ::1
+add($fixtures, 'peer_address_ip_ipv6', 'PeerAddressIp', $peerIpV6,
+    'SEP-0051 §Stellar-Specific Types > PeerAddress > IPv6');
+
+add($fixtures, 'peer_address_ipv4_loopback', 'PeerAddress',
+    new XdrPeerAddress($peerIpV4, 11625, 0),
+    'SEP-0051 §Stellar-Specific Types > PeerAddress',
+    'PeerAddress carrying an IPv4 loopback at the standard Stellar overlay port');
+
+// ContractEvent / DiagnosticEvent / TransactionEvent. ContractEvent's
+// hash arm is the optional contract id (encoded as `int 1; opaque[32]` or
+// `int 0`); we exercise both presence states across the fixture pair.
+$ceTopic = XdrSCVal::forSymbol('transfer');
+$ceData = XdrSCVal::forU32(123);
+$ceBodyV0 = new XdrContractEventBodyV0([$ceTopic], $ceData);
+$ceBody = new XdrContractEventBody(0);
+$ceBody->v0 = $ceBodyV0;
+
+$contractEventNoId = new XdrContractEvent(
+    new XdrExtensionPoint(0),
+    XdrContractEventType::CONTRACT(),
+    $ceBody,
+    null
+);
+add($fixtures, 'contract_event_no_contract_id', 'ContractEvent', $contractEventNoId,
+    'SEP-0051 §Stellar-Specific Types > ContractEvent',
+    'ContractEvent without optional contract id (single transfer topic + u32 data)');
+
+$contractEventWithId = new XdrContractEvent(
+    new XdrExtensionPoint(0),
+    XdrContractEventType::CONTRACT(),
+    $ceBody,
+    str_repeat("\xe5", 32)
+);
+add($fixtures, 'contract_event_with_contract_id', 'ContractEvent', $contractEventWithId,
+    'SEP-0051 §Stellar-Specific Types > ContractEvent',
+    'ContractEvent carrying the optional contract id hash');
+
+add($fixtures, 'diagnostic_event_in_successful_call', 'DiagnosticEvent',
+    new XdrDiagnosticEvent(true, $contractEventNoId),
+    'SEP-0051 §Stellar-Specific Types > DiagnosticEvent');
+
+add($fixtures, 'transaction_event_after_tx', 'TransactionEvent',
+    new XdrTransactionEvent(
+        XdrTransactionEventStage::TRANSACTION_EVENT_STAGE_AFTER_TX(),
+        $contractEventNoId
+    ),
+    'SEP-0051 §Stellar-Specific Types > TransactionEvent');
+
+// StoredDebugTransactionSet — overlay storage type wrapping a
+// StoredTransactionSet (v0/v1 union), a ledger seq, and a StellarValue.
+$storedTxSet = new XdrStoredTransactionSet(0);
+$storedTxSet->txSet = new XdrTransactionSet(str_repeat("\x00", 32), []);
+$storedScpValue = new XdrStellarValue(
+    str_repeat("\x00", 32),
+    1700000000,
+    [],
+    new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))
+);
+add($fixtures, 'stored_debug_transaction_set_v0', 'StoredDebugTransactionSet',
+    new XdrStoredDebugTransactionSet($storedTxSet, 42, $storedScpValue),
+    'SEP-0051 §Stellar-Specific Types > StoredDebugTransactionSet',
+    'wraps an empty v0 StoredTransactionSet');
+
+// TransactionResultMeta / TransactionResultMetaV1 — both wrap a
+// TransactionResultPair plus a TransactionMeta. TransactionMeta v0 with
+// an empty operations list is the simplest valid form.
+$resultPair = new XdrTransactionResultPair(
+    str_repeat("\x00", 32),
+    new XdrTransactionResult(
+        new BigInteger(100),
+        new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)),
+        new XdrTransactionResultExt(0)
+    )
+);
+$resultPair->result->result->results = []; // SUCCESS arm carries an empty results array.
+
+$txMetaV0Empty = new XdrTransactionMeta(0);
+$txMetaV0Empty->operations = [];
+
+add($fixtures, 'transaction_result_meta_success', 'TransactionResultMeta',
+    new XdrTransactionResultMeta($resultPair, [], $txMetaV0Empty),
+    'SEP-0051 §Stellar-Specific Types > TransactionResultMeta',
+    'SUCCESS result with empty operation results, empty fee processing, v0 meta');
+
+add($fixtures, 'transaction_result_meta_v1_success', 'TransactionResultMetaV1',
+    new XdrTransactionResultMetaV1(
+        new XdrExtensionPoint(0),
+        $resultPair,
+        [],
+        $txMetaV0Empty,
+        []
+    ),
+    'SEP-0051 §Stellar-Specific Types > TransactionResultMetaV1',
+    'SUCCESS result with empty fee processing arrays and v0 meta');
 
 // -----------------------------------------------------------------------
 // Output JSON

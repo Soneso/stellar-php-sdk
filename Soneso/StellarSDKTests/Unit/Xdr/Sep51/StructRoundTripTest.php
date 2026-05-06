@@ -123,50 +123,6 @@ public function testRoundTrip_XdrAllowTrustOperation(): void
         'XdrAllowTrustOperation XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrAssetAlphaNum12(): void
-{
-    // No deterministic default fixture available for XdrAssetAlphaNum12
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrAssetAlphaNum12::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrAssetAlphaNum12::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrAssetAlphaNum12::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrAssetAlphaNum12::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrAssetAlphaNum12::fromJsonValue must be static');
-}
-
-public function testRoundTrip_XdrAssetAlphaNum4(): void
-{
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrAssetAlphaNum4 toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrAssetAlphaNum4 round-trip toJsonValue idempotence broken');
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrAssetAlphaNum4 round-trip toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'XdrAssetAlphaNum4 XDR-JSON-XDR round trip diverged');
-}
-
 public function testRoundTrip_XdrAuth(): void
 {
     $base64 = 'AAAAAA==';
@@ -314,29 +270,6 @@ public function testRoundTrip_XdrChangeTrustOperation(): void
         'XdrChangeTrustOperation XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrClaimClaimableBalanceOperation(): void
-{
-    // No deterministic default fixture available for XdrClaimClaimableBalanceOperation
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceOperation::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrClaimClaimableBalanceOperation::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrClaimClaimableBalanceOperation::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrClaimClaimableBalanceOperation::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrClaimClaimableBalanceOperation::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrClaimClaimableBalanceOperation::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrClaimLiquidityAtom(): void
 {
     $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
@@ -400,29 +333,6 @@ public function testRoundTrip_XdrClaimOfferAtomV0(): void
         'XdrClaimOfferAtomV0 XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrClaimableBalanceEntry(): void
-{
-    // No deterministic default fixture available for XdrClaimableBalanceEntry
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrClaimableBalanceEntry::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrClaimableBalanceEntry::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrClaimableBalanceEntry::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrClaimableBalanceEntry::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrClaimableBalanceEntry::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrClaimableBalanceEntryExtV1(): void
 {
     $base64 = 'AAAAAAAAAAA=';
@@ -484,29 +394,6 @@ public function testRoundTrip_XdrClaimantV0(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrClaimantV0 XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrClawbackClaimableBalanceOperation(): void
-{
-    // No deterministic default fixture available for XdrClawbackClaimableBalanceOperation
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrClawbackClaimableBalanceOperation::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrClawbackClaimableBalanceOperation::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrClawbackClaimableBalanceOperation::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrClawbackClaimableBalanceOperation::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrClawbackClaimableBalanceOperation::fromJsonValue must be static');
 }
 
 public function testRoundTrip_XdrClawbackOperation(): void
@@ -1139,29 +1026,6 @@ public function testRoundTrip_XdrDataEntryExt(): void
         'XdrDataEntryExt XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrDataValue(): void
-{
-    // No deterministic default fixture available for XdrDataValue
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDataValue::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrDataValue::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrDataValue::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrDataValue::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrDataValue::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrDataValue::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrDataValueMandatory(): void
 {
     $base64 = 'AAAAAA==';
@@ -1202,29 +1066,6 @@ public function testRoundTrip_XdrDependentTxCluster(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrDependentTxCluster::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrDependentTxCluster XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrDiagnosticEvent(): void
-{
-    // No deterministic default fixture available for XdrDiagnosticEvent
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrDiagnosticEvent::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrDiagnosticEvent::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrDiagnosticEvent::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrDiagnosticEvent::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrDiagnosticEvent::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrDiagnosticEvent::fromJsonValue must be static');
 }
 
 public function testRoundTrip_XdrEncodedLedgerKey(): void
@@ -1859,52 +1700,6 @@ public function testRoundTrip_XdrLedgerCloseMetaV0(): void
         'XdrLedgerCloseMetaV0::fromJsonValue must be static');
 }
 
-public function testRoundTrip_XdrLedgerCloseMetaV1(): void
-{
-    // No deterministic default fixture available for XdrLedgerCloseMetaV1
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV1::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrLedgerCloseMetaV1::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrLedgerCloseMetaV1::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrLedgerCloseMetaV1::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrLedgerCloseMetaV1::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrLedgerCloseMetaV1::fromJsonValue must be static');
-}
-
-public function testRoundTrip_XdrLedgerCloseMetaV2(): void
-{
-    // No deterministic default fixture available for XdrLedgerCloseMetaV2
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV2::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrLedgerCloseMetaV2::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrLedgerCloseMetaV2::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrLedgerCloseMetaV2::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrLedgerCloseMetaV2::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrLedgerCloseMetaV2::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrLedgerCloseValueSignature(): void
 {
     $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
@@ -1989,29 +1784,6 @@ public function testRoundTrip_XdrLedgerFootprint(): void
         'XdrLedgerFootprint XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrLedgerHeader(): void
-{
-    // No deterministic default fixture available for XdrLedgerHeader
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeader::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrLedgerHeader::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrLedgerHeader::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrLedgerHeader::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrLedgerHeader::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrLedgerHeader::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrLedgerHeaderExtensionV1(): void
 {
     $base64 = 'AAAAAAAAAAA=';
@@ -2054,29 +1826,6 @@ public function testRoundTrip_XdrLedgerHeaderExtensionV1Ext(): void
         'XdrLedgerHeaderExtensionV1Ext XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrLedgerHeaderHistoryEntry(): void
-{
-    // No deterministic default fixture available for XdrLedgerHeaderHistoryEntry
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerHeaderHistoryEntry::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrLedgerHeaderHistoryEntry::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrLedgerHeaderHistoryEntry::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrLedgerHeaderHistoryEntry::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrLedgerHeaderHistoryEntry::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrLedgerHeaderHistoryEntry::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrLedgerHeaderHistoryEntryExt(): void
 {
     $base64 = 'AAAAAA==';
@@ -2117,29 +1866,6 @@ public function testRoundTrip_XdrLedgerKeyAccount(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrLedgerKeyAccount XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrLedgerKeyClaimableBalance(): void
-{
-    // No deterministic default fixture available for XdrLedgerKeyClaimableBalance
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrLedgerKeyClaimableBalance::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrLedgerKeyClaimableBalance::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrLedgerKeyClaimableBalance::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrLedgerKeyClaimableBalance::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrLedgerKeyClaimableBalance::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrLedgerKeyClaimableBalance::fromJsonValue must be static');
 }
 
 public function testRoundTrip_XdrLedgerKeyContractCode(): void
@@ -2686,29 +2412,6 @@ public function testRoundTrip_XdrPaymentOperation(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrPaymentOperation XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrPeerAddress(): void
-{
-    // No deterministic default fixture available for XdrPeerAddress
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPeerAddress::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrPeerAddress::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrPeerAddress::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrPeerAddress::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrPeerAddress::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrPeerAddress::fromJsonValue must be static');
 }
 
 public function testRoundTrip_XdrPeerStats(): void
@@ -3950,29 +3653,6 @@ public function testRoundTrip_XdrStellarValue(): void
         'XdrStellarValue XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrStoredDebugTransactionSet(): void
-{
-    // No deterministic default fixture available for XdrStoredDebugTransactionSet
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStoredDebugTransactionSet::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrStoredDebugTransactionSet::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrStoredDebugTransactionSet::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrStoredDebugTransactionSet::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrStoredDebugTransactionSet::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrStoredDebugTransactionSet::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrTTLEntry(): void
 {
     $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
@@ -4328,52 +4008,6 @@ public function testRoundTrip_XdrTransactionResultExt(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResultExt::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrTransactionResultExt XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrTransactionResultMeta(): void
-{
-    // No deterministic default fixture available for XdrTransactionResultMeta
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultMeta::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrTransactionResultMeta::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrTransactionResultMeta::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrTransactionResultMeta::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrTransactionResultMeta::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrTransactionResultMeta::fromJsonValue must be static');
-}
-
-public function testRoundTrip_XdrTransactionResultMetaV1(): void
-{
-    // No deterministic default fixture available for XdrTransactionResultMetaV1
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionResultMetaV1::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrTransactionResultMetaV1::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrTransactionResultMetaV1::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrTransactionResultMetaV1::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrTransactionResultMetaV1::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrTransactionResultMetaV1::fromJsonValue must be static');
 }
 
 public function testRoundTrip_XdrTransactionResultPair(): void

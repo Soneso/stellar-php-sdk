@@ -2754,29 +2754,6 @@ public function testRoundTrip_XdrContractDataEntry(): void
         'XdrContractDataEntry XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrContractEvent(): void
-{
-    // No deterministic default fixture available for XdrContractEvent
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrContractEvent::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrContractEvent::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrContractEvent::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrContractEvent::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrContractEvent::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrContractEvent::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrContractExecutable(): void
 {
     $base64 = 'AAAAAQ==';
@@ -9926,29 +9903,6 @@ public function testRoundTrip_XdrPaymentResultUnion_UNDERFUNDED(): void
         'XdrPaymentResult arm UNDERFUNDED not found on any discriminant property');
 }
 
-public function testRoundTrip_XdrPeerAddressIp(): void
-{
-    // No deterministic default fixture available for XdrPeerAddressIp
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrPeerAddressIp::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrPeerAddressIp::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrPeerAddressIp::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrPeerAddressIp::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrPeerAddressIp::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrPeerAddressIp::fromJsonValue must be static');
-}
-
 public function testRoundTrip_XdrPreconditionsUnion_NONE(): void
 {
     // Default-fixture round-trip for the XdrPreconditions type;
@@ -12986,29 +12940,6 @@ public function testRoundTrip_XdrSurveyResponseMessage(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrSurveyResponseMessage::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrSurveyResponseMessage XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrTransactionEvent(): void
-{
-    // No deterministic default fixture available for XdrTransactionEvent
-    // (constructor demands populated members). The test asserts
-    // contract presence: the class declares toJsonValue,
-    // fromJsonValue, toJson and fromJson with the expected
-    // signatures so that corpus-driven snapshot tests can
-    // exercise it. Removing any of these methods breaks the
-    // contract and fails this test loudly.
-    $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionEvent::class);
-    $this->assertTrue($rc->hasMethod('toJsonValue'),
-        'XdrTransactionEvent::toJsonValue missing');
-    $this->assertTrue($rc->hasMethod('fromJsonValue'),
-        'XdrTransactionEvent::fromJsonValue missing');
-    $this->assertTrue($rc->hasMethod('toJson'),
-        'XdrTransactionEvent::toJson missing');
-    $this->assertTrue($rc->hasMethod('fromJson'),
-        'XdrTransactionEvent::fromJson missing');
-    $fromJsonValue = $rc->getMethod('fromJsonValue');
-    $this->assertTrue($fromJsonValue->isStatic(),
-        'XdrTransactionEvent::fromJsonValue must be static');
 }
 
 public function testRoundTrip_XdrTransactionResultResultUnion_BAD_AUTH(): void

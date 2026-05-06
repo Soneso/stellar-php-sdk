@@ -9,26 +9,45 @@ namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12;
+use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
 use Soneso\StellarSDK\Xdr\XdrBucketEntry;
+use Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceOperation;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
+use Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingEntry;
+use Soneso\StellarSDK\Xdr\XdrContractEvent;
+use Soneso\StellarSDK\Xdr\XdrDataValue;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
+use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
 use Soneso\StellarSDK\Xdr\XdrLedgerBounds;
 use Soneso\StellarSDK\Xdr\XdrLedgerCloseMeta;
+use Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV1;
+use Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV2;
+use Soneso\StellarSDK\Xdr\XdrLedgerHeader;
+use Soneso\StellarSDK\Xdr\XdrLedgerHeaderHistoryEntry;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyClaimableBalance;
 use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrOperation;
+use Soneso\StellarSDK\Xdr\XdrPeerAddress;
+use Soneso\StellarSDK\Xdr\XdrPeerAddressIp;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
+use Soneso\StellarSDK\Xdr\XdrStoredDebugTransactionSet;
 use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionEvent;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultMeta;
+use Soneso\StellarSDK\Xdr\XdrTransactionResultMetaV1;
 use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
 
@@ -90,25 +109,44 @@ class CorpusSnapshotTest extends TestCase
         return match ($type) {
             'AccountID' => XdrAccountID::class,
             'Asset' => XdrAsset::class,
+            'AssetAlphaNum4' => XdrAssetAlphaNum4::class,
+            'AssetAlphaNum12' => XdrAssetAlphaNum12::class,
             'BucketEntry' => XdrBucketEntry::class,
+            'ClaimClaimableBalanceOperation' => XdrClaimClaimableBalanceOperation::class,
+            'ClaimableBalanceEntry' => XdrClaimableBalanceEntry::class,
             'ClaimableBalanceID' => XdrClaimableBalanceID::class,
+            'ClawbackClaimableBalanceOperation' => XdrClawbackClaimableBalanceOperation::class,
             'ConfigSettingEntry' => XdrConfigSettingEntry::class,
+            'ContractEvent' => XdrContractEvent::class,
+            'DataValue' => XdrDataValue::class,
             'DecoratedSignature' => XdrDecoratedSignature::class,
+            'DiagnosticEvent' => XdrDiagnosticEvent::class,
             'HotArchiveBucketEntry' => XdrHotArchiveBucketEntry::class,
             'Int128Parts' => XdrInt128Parts::class,
             'Int256Parts' => XdrInt256Parts::class,
             'LedgerBounds' => XdrLedgerBounds::class,
             'LedgerCloseMeta' => XdrLedgerCloseMeta::class,
+            'LedgerCloseMetaV1' => XdrLedgerCloseMetaV1::class,
+            'LedgerCloseMetaV2' => XdrLedgerCloseMetaV2::class,
+            'LedgerHeader' => XdrLedgerHeader::class,
+            'LedgerHeaderHistoryEntry' => XdrLedgerHeaderHistoryEntry::class,
             'LedgerKey' => XdrLedgerKey::class,
+            'LedgerKeyClaimableBalance' => XdrLedgerKeyClaimableBalance::class,
             'Memo' => XdrMemo::class,
             'MuxedAccount' => XdrMuxedAccount::class,
             'Operation' => XdrOperation::class,
+            'PeerAddress' => XdrPeerAddress::class,
+            'PeerAddressIp' => XdrPeerAddressIp::class,
             'SCSpecEntry' => XdrSCSpecEntry::class,
             'SCVal' => XdrSCVal::class,
             'SignedPayload' => XdrSignedPayload::class,
             'SignerKey' => XdrSignerKey::class,
+            'StoredDebugTransactionSet' => XdrStoredDebugTransactionSet::class,
             'TimeBounds' => XdrTimeBounds::class,
             'TransactionEnvelope' => XdrTransactionEnvelope::class,
+            'TransactionEvent' => XdrTransactionEvent::class,
+            'TransactionResultMeta' => XdrTransactionResultMeta::class,
+            'TransactionResultMetaV1' => XdrTransactionResultMetaV1::class,
             'UInt128Parts' => XdrUInt128Parts::class,
             'UInt256Parts' => XdrUInt256Parts::class,
             default => throw new \RuntimeException(

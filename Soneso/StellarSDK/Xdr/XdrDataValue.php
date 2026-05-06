@@ -43,6 +43,20 @@ class XdrDataValue
         return new XdrDataValue($value);
     }
 
+    public function toBase64Xdr(): string
+    {
+        return base64_encode($this->encode());
+    }
+
+    public static function fromBase64Xdr(string $xdr): static
+    {
+        $decoded = base64_decode($xdr, true);
+        if ($decoded === false) {
+            throw new \InvalidArgumentException('Invalid base64-encoded XDR');
+        }
+        return static::decode(new XdrBuffer($decoded));
+    }
+
     /**
      * SEP-51 (XDR-JSON) emission for the DataValue typedef.
      *

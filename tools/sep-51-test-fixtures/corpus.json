@@ -4,7 +4,7 @@
     "role": "Snapshot regression baseline for the PHP SDK's SEP-0051 emission. Each entry's spec_reference_json is the SDK's own canonical toJson() output for the entry's base64 XDR input; CorpusSnapshotTest re-asserts every entry on every CI run to catch unintended drift.",
     "spec_anchor": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md"
   },
-  "generated_at": "2026-05-06T12:00:41.182521+00:00",
+  "generated_at": "2026-05-06T16:54:13.329398+00:00",
   "entries": [
     {
       "id": "scval_bool_true",
@@ -1733,6 +1733,182 @@
       "spec_reference_json": "{\"bytes\":\"00002400\"}",
       "spec_anchor": null,
       "notes": null
+    },
+    {
+      "id": "asset_alphanum4_standalone",
+      "type": "AssetAlphaNum4",
+      "base64": "VVNEWAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9w==",
+      "spec_reference_json": "{\"asset_code\":\"USDX\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > AssetCode4",
+      "notes": "standalone AssetAlphaNum4 (Asset fixtures above embed it as a nested arm)"
+    },
+    {
+      "id": "asset_alphanum12_standalone",
+      "type": "AssetAlphaNum12",
+      "base64": "Q1VTVE9NAAAAAAAAAAAAAD8MNL+TrQ2ZcdBMzJD3BVEcg4qtlzSkovsNegP8f+ia",
+      "spec_reference_json": "{\"asset_code\":\"CUSTOM\",\"issuer\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > AssetCode12",
+      "notes": "standalone AssetAlphaNum12 (Asset fixtures above embed it as a nested arm)"
+    },
+    {
+      "id": "data_value_present",
+      "type": "DataValue",
+      "base64": "AAAAAQAAAAt2YWx1ZS1ieXRlcwA=",
+      "spec_reference_json": "\"76616c75652d6279746573\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Opaque (variable)",
+      "notes": "DataValue carrying a non-null payload"
+    },
+    {
+      "id": "data_value_absent",
+      "type": "DataValue",
+      "base64": "AAAAAA==",
+      "spec_reference_json": "null",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Opaque (variable, optional)",
+      "notes": "DataValue with null payload (optional-absent form)"
+    },
+    {
+      "id": "ledger_key_claimable_balance_standalone",
+      "type": "LedgerKeyClaimableBalance",
+      "base64": "AAAAAKGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGh",
+      "spec_reference_json": "{\"balance_id\":\"BAAKDINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2DIKSXM\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > LedgerKey > CLAIMABLE_BALANCE",
+      "notes": null
+    },
+    {
+      "id": "claimable_balance_entry_native_no_claimants",
+      "type": "ClaimableBalanceEntry",
+      "base64": "AAAAALKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKyAAAAAAAAAAAAAAAAAA9CQAAAAAA=",
+      "spec_reference_json": "{\"balance_id\":\"BAALFMVSWKZLFMVSWKZLFMVSWKZLFMVSWKZLFMVSWKZLFMVSWKZLFMTDS4\",\"claimants\":[],\"asset\":\"native\",\"amount\":\"1000000\",\"ext\":\"v0\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > LedgerEntry > CLAIMABLE_BALANCE",
+      "notes": null
+    },
+    {
+      "id": "claim_claimable_balance_operation_standalone",
+      "type": "ClaimClaimableBalanceOperation",
+      "base64": "AAAAAMPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PD",
+      "spec_reference_json": "{\"balance_id\":\"BAAMHQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQYMIY\"}",
+      "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ClaimClaimableBalanceOp (standalone struct)",
+      "notes": null
+    },
+    {
+      "id": "clawback_claimable_balance_operation_standalone",
+      "type": "ClawbackClaimableBalanceOperation",
+      "base64": "AAAAANTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU",
+      "spec_reference_json": "{\"balance_id\":\"BAANJVGU2TKNJVGU2TKNJVGU2TKNJVGU2TKNJVGU2TKNJVGU2TKNJVGBMA\"}",
+      "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ClawbackClaimableBalanceOp (standalone struct)",
+      "notes": null
+    },
+    {
+      "id": "ledger_header_standalone",
+      "type": "LedgerHeader",
+      "base64": "AAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAKgAAAAAAAAAqAAAAKgAAAAAAAAAqAAAAKgAAACoAAAAqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "spec_reference_json": "{\"ledger_version\":42,\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"42\",\"upgrades\":[],\"ext\":\"basic\"},\"tx_set_result_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"bucket_list_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"ledger_seq\":42,\"total_coins\":\"42\",\"fee_pool\":\"42\",\"inflation_seq\":42,\"id_pool\":\"42\",\"base_fee\":42,\"base_reserve\":42,\"max_tx_set_size\":42,\"skip_list\":[\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\"],\"ext\":\"v0\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > LedgerHeader",
+      "notes": "minimal-zero LedgerHeader with empty upgrades and zeroed skip list"
+    },
+    {
+      "id": "ledger_header_history_entry_standalone",
+      "type": "LedgerHeaderHistoryEntry",
+      "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAqAAAAAAAAACoAAAAqAAAAAAAAACoAAAAqAAAAKgAAACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "spec_reference_json": "{\"hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"header\":{\"ledger_version\":42,\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"42\",\"upgrades\":[],\"ext\":\"basic\"},\"tx_set_result_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"bucket_list_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"ledger_seq\":42,\"total_coins\":\"42\",\"fee_pool\":\"42\",\"inflation_seq\":42,\"id_pool\":\"42\",\"base_fee\":42,\"base_reserve\":42,\"max_tx_set_size\":42,\"skip_list\":[\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\"],\"ext\":\"v0\"},\"ext\":\"v0\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > LedgerHeaderHistoryEntry",
+      "notes": "wraps the standalone LedgerHeader fixture above"
+    },
+    {
+      "id": "ledger_close_meta_v1_standalone",
+      "type": "LedgerCloseMetaV1",
+      "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAKgAAAAAAAAAqAAAAKgAAAAAAAAAqAAAAKgAAACoAAAAqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAA",
+      "spec_reference_json": "{\"ext\":\"v0\",\"ledger_header\":{\"hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"header\":{\"ledger_version\":42,\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"42\",\"upgrades\":[],\"ext\":\"basic\"},\"tx_set_result_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"bucket_list_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"ledger_seq\":42,\"total_coins\":\"42\",\"fee_pool\":\"42\",\"inflation_seq\":42,\"id_pool\":\"42\",\"base_fee\":42,\"base_reserve\":42,\"max_tx_set_size\":42,\"skip_list\":[\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\"],\"ext\":\"v0\"},\"ext\":\"v0\"},\"tx_set\":{\"v1\":{\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"phases\":[]}},\"tx_processing\":[],\"upgrades_processing\":[],\"scp_info\":[],\"total_byte_size_of_live_soroban_state\":\"42\",\"evicted_keys\":[],\"unused\":[]}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > LedgerCloseMetaV1",
+      "notes": null
+    },
+    {
+      "id": "ledger_close_meta_v2_standalone",
+      "type": "LedgerCloseMetaV2",
+      "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAKgAAAAAAAAAqAAAAKgAAAAAAAAAqAAAAKgAAACoAAAAqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAA=",
+      "spec_reference_json": "{\"ext\":\"v0\",\"ledger_header\":{\"hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"header\":{\"ledger_version\":42,\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"42\",\"upgrades\":[],\"ext\":\"basic\"},\"tx_set_result_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"bucket_list_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"ledger_seq\":42,\"total_coins\":\"42\",\"fee_pool\":\"42\",\"inflation_seq\":42,\"id_pool\":\"42\",\"base_fee\":42,\"base_reserve\":42,\"max_tx_set_size\":42,\"skip_list\":[\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\"],\"ext\":\"v0\"},\"ext\":\"v0\"},\"tx_set\":{\"v1\":{\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"phases\":[]}},\"tx_processing\":[],\"upgrades_processing\":[],\"scp_info\":[],\"total_byte_size_of_live_soroban_state\":\"42\",\"evicted_keys\":[]}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > LedgerCloseMetaV2",
+      "notes": null
+    },
+    {
+      "id": "peer_address_ip_ipv4",
+      "type": "PeerAddressIp",
+      "base64": "AAAAAH8AAAE=",
+      "spec_reference_json": "{\"ipv4\":\"7f000001\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > PeerAddress > IPv4",
+      "notes": null
+    },
+    {
+      "id": "peer_address_ip_ipv6",
+      "type": "PeerAddressIp",
+      "base64": "AAAAAQAAAAAAAAAAAAAAAAAAAAE=",
+      "spec_reference_json": "{\"ipv6\":\"00000000000000000000000000000001\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > PeerAddress > IPv6",
+      "notes": null
+    },
+    {
+      "id": "peer_address_ipv4_loopback",
+      "type": "PeerAddress",
+      "base64": "AAAAAH8AAAEAAC1pAAAAAA==",
+      "spec_reference_json": "{\"ip\":{\"ipv4\":\"7f000001\"},\"port\":11625,\"num_failures\":0}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > PeerAddress",
+      "notes": "PeerAddress carrying an IPv4 loopback at the standard Stellar overlay port"
+    },
+    {
+      "id": "contract_event_no_contract_id",
+      "type": "ContractEvent",
+      "base64": "AAAAAAAAAAAAAAABAAAAAAAAAAEAAAAPAAAACHRyYW5zZmVyAAAAAwAAAHs=",
+      "spec_reference_json": "{\"ext\":\"v0\",\"contract_id\":null,\"type\":\"contract\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"transfer\"}],\"data\":{\"u32\":123}}}}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ContractEvent",
+      "notes": "ContractEvent without optional contract id (single transfer topic + u32 data)"
+    },
+    {
+      "id": "contract_event_with_contract_id",
+      "type": "ContractEvent",
+      "base64": "AAAAAAAAAAHl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5QAAAAEAAAAAAAAAAQAAAA8AAAAIdHJhbnNmZXIAAAADAAAAew==",
+      "spec_reference_json": "{\"ext\":\"v0\",\"contract_id\":\"e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5\",\"type\":\"contract\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"transfer\"}],\"data\":{\"u32\":123}}}}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ContractEvent",
+      "notes": "ContractEvent carrying the optional contract id hash"
+    },
+    {
+      "id": "diagnostic_event_in_successful_call",
+      "type": "DiagnosticEvent",
+      "base64": "AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAABAAAADwAAAAh0cmFuc2ZlcgAAAAMAAAB7",
+      "spec_reference_json": "{\"in_successful_contract_call\":true,\"event\":{\"ext\":\"v0\",\"contract_id\":null,\"type\":\"contract\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"transfer\"}],\"data\":{\"u32\":123}}}}}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > DiagnosticEvent",
+      "notes": null
+    },
+    {
+      "id": "transaction_event_after_tx",
+      "type": "TransactionEvent",
+      "base64": "AAAAAQAAAAAAAAAAAAAAAQAAAAAAAAABAAAADwAAAAh0cmFuc2ZlcgAAAAMAAAB7",
+      "spec_reference_json": "{\"stage\":\"after_tx\",\"event\":{\"ext\":\"v0\",\"contract_id\":null,\"type\":\"contract\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"transfer\"}],\"data\":{\"u32\":123}}}}}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > TransactionEvent",
+      "notes": null
+    },
+    {
+      "id": "stored_debug_transaction_set_v0",
+      "type": "StoredDebugTransactionSet",
+      "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABlU/EAAAAAAAAAAAA=",
+      "spec_reference_json": "{\"tx_set\":{\"v0\":{\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"txs\":[]}},\"ledger_seq\":42,\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"1700000000\",\"upgrades\":[],\"ext\":\"basic\"}}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > StoredDebugTransactionSet",
+      "notes": "wraps an empty v0 StoredTransactionSet"
+    },
+    {
+      "id": "transaction_result_meta_success",
+      "type": "TransactionResultMeta",
+      "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "spec_reference_json": "{\"result\":{\"transaction_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"result\":{\"fee_charged\":\"100\",\"result\":{\"txsuccess\":[]},\"ext\":\"v0\"}},\"fee_processing\":[],\"tx_apply_processing\":{\"v0\":[]}}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > TransactionResultMeta",
+      "notes": "SUCCESS result with empty operation results, empty fee processing, v0 meta"
+    },
+    {
+      "id": "transaction_result_meta_v1_success",
+      "type": "TransactionResultMetaV1",
+      "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "spec_reference_json": "{\"ext\":\"v0\",\"result\":{\"transaction_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"result\":{\"fee_charged\":\"100\",\"result\":{\"txsuccess\":[]},\"ext\":\"v0\"}},\"fee_processing\":[],\"tx_apply_processing\":{\"v0\":[]},\"post_tx_apply_fee_processing\":[]}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > TransactionResultMetaV1",
+      "notes": "SUCCESS result with empty fee processing arrays and v0 meta"
     }
   ]
 }
