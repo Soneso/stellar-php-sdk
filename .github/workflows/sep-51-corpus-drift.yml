@@ -1,6 +1,6 @@
 name: SEP-51 corpus drift
 
-# Snapshot regression guard. Re-runs tools/sep-51-fixtures/refresh_corpus.sh,
+# Snapshot regression guard. Re-runs tools/sep-51-test-fixtures/refresh_corpus.sh,
 # which regenerates the SDK's SEP-0051 snapshot corpus from PHP's own toJson
 # output and diffs the result against the committed copy. Any drift fails the
 # workflow and opens a tracking issue.
@@ -45,7 +45,7 @@ jobs:
         id: refresh
         run: |
           set +e
-          bash tools/sep-51-fixtures/refresh_corpus.sh
+          bash tools/sep-51-test-fixtures/refresh_corpus.sh
           ec=$?
           echo "exit_code=$ec" >> "$GITHUB_OUTPUT"
           exit 0
@@ -58,7 +58,7 @@ jobs:
           gh issue create \
             --title "SEP-51 corpus drift detected" \
             --label sep-51-corpus-drift \
-            --body "Corpus drift detected vs the committed reference. Re-run \`tools/sep-51-fixtures/refresh_corpus.sh\` locally and update the corpus accordingly."
+            --body "Corpus drift detected vs the committed reference. Re-run \`tools/sep-51-test-fixtures/refresh_corpus.sh\` locally and update the corpus accordingly."
 
       - name: Halt on prerequisite failure
         if: steps.refresh.outputs.exit_code == '2'

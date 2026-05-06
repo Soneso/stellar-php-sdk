@@ -9,18 +9,18 @@ fails fast as a snapshot diff.
 
 Pipeline:
 
-  1. Run the PHP seed (tools/sep-51-fixtures/_corpus_seed.php) to obtain the
+  1. Run the PHP seed (tools/sep-51-test-fixtures/_corpus_seed.php) to obtain the
      fixture catalogue. The seed validates each fixture's base64 round-trips
      through the PHP SDK's XDR codec.
-  2. Pipe the seed list through tools/sep-51-fixtures/_corpus_to_json.php,
+  2. Pipe the seed list through tools/sep-51-test-fixtures/_corpus_to_json.php,
      which decodes each base64 via Xdr<Type>::fromBase64Xdr and re-emits the
      canonical SEP-0051 JSON via toJson(). The result is written into each
      entry's `spec_reference_json` field.
   3. Wrap the entries in a top-level object that documents the corpus's role
-     and write it to <output> (default tools/sep-51-fixtures/corpus.json).
+     and write it to <output> (default tools/sep-51-test-fixtures/corpus.json).
 
 Usage:
-  python3 tools/sep-51-fixtures/generate_corpus.py [--output <path>]
+  python3 tools/sep-51-test-fixtures/generate_corpus.py [--output <path>]
 """
 
 from __future__ import annotations
@@ -35,9 +35,9 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-COMMITTED_OUTPUT = REPO_ROOT / "tools" / "sep-51-fixtures" / "corpus.json"
-SEED_SCRIPT = REPO_ROOT / "tools" / "sep-51-fixtures" / "_corpus_seed.php"
-TO_JSON_SCRIPT = REPO_ROOT / "tools" / "sep-51-fixtures" / "_corpus_to_json.php"
+COMMITTED_OUTPUT = REPO_ROOT / "tools" / "sep-51-test-fixtures" / "corpus.json"
+SEED_SCRIPT = REPO_ROOT / "tools" / "sep-51-test-fixtures" / "_corpus_seed.php"
+TO_JSON_SCRIPT = REPO_ROOT / "tools" / "sep-51-test-fixtures" / "_corpus_to_json.php"
 
 
 def load_populated_fixtures() -> list[dict[str, Any]]:

@@ -35,7 +35,7 @@ class RollbackRehearsalTest extends TestCase
     /**
      * Canonical TransactionEnvelope XDR base64.
      *
-     * Source: tools/sep-51-fixtures/corpus.json entry transaction_envelope_canonical
+     * Source: tools/sep-51-test-fixtures/corpus.json entry transaction_envelope_canonical
      * (also matches SEP-0051 §Examples > TransactionEnvelope).
      */
     private const CANONICAL_TX_ENVELOPE_XDR_BASE64 =

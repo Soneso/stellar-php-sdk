@@ -9,12 +9,12 @@
 // Output: JSON list on stdout, one element per fixture, with keys
 //   id, type, base64, spec_anchor, notes, spec_reference_json (optional)
 //
-// The corpus generator (tools/sep-51-fixtures/generate_corpus.py) consumes
+// The corpus generator (tools/sep-51-test-fixtures/generate_corpus.py) consumes
 // this seed and populates spec_reference_json for every entry by snapshotting
 // the SDK's own toJson output, locking it as a regression baseline.
 //
 // Run directly:
-//   php tools/sep-51-fixtures/_corpus_seed.php > /tmp/seed.json
+//   php tools/sep-51-test-fixtures/_corpus_seed.php > /tmp/seed.json
 
 namespace Soneso\StellarSDKTests\Internal\Sep51Corpus;
 

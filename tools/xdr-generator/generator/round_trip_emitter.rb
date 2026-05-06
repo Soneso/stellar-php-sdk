@@ -17,7 +17,7 @@ require 'digest'
 #    property whose type itself is an enum-shaped Xdr class).
 # 3. For each enum, emit one round-trip test method per declared
 #    int-typed constant.
-# 4. For each (type, base64) entry in tools/sep-51-fixtures/corpus.json
+# 4. For each (type, base64) entry in tools/sep-51-test-fixtures/corpus.json
 #    whose type maps to an XdrXxx class with toJson, emit one round-trip
 #    test method that decodes the fixture, re-encodes via toJsonValue,
 #    decodes via fromJsonValue, re-encodes via toJsonValue, and asserts
@@ -41,7 +41,7 @@ require 'digest'
 class RoundTripEmitter
   REPO_ROOT = File.expand_path('../../..', __dir__)
   PHP_XDR_DIR = File.join(REPO_ROOT, 'Soneso', 'StellarSDK', 'Xdr')
-  CORPUS_PATH = File.join(REPO_ROOT, 'tools', 'sep-51-fixtures', 'corpus.json')
+  CORPUS_PATH = File.join(REPO_ROOT, 'tools', 'sep-51-test-fixtures', 'corpus.json')
   OUTPUT_PATH = File.join(
     REPO_ROOT,
     'Soneso', 'StellarSDKTests', 'Unit', 'Xdr', 'Sep51',

@@ -368,7 +368,7 @@ echo $memo->getType()->getValue() . PHP_EOL;
 
 ### Snapshot regression baseline
 
-The PHP SDK ships a snapshot corpus at `tools/sep-51-fixtures/corpus.json` covering every Stellar XDR type that participates in SEP-51. Each entry pairs a base64 XDR input with the canonical SEP-0051 JSON the SDK emits for that input. The corpus is regenerated from PHP's own `toJson` output and re-asserted on every CI run, so any unintended change to the emission surface fails fast as a snapshot diff.
+The PHP SDK ships a snapshot corpus at `tools/sep-51-test-fixtures/corpus.json` covering every Stellar XDR type that participates in SEP-51. Each entry pairs a base64 XDR input with the canonical SEP-0051 JSON the SDK emits for that input. The corpus is regenerated from PHP's own `toJson` output and re-asserted on every CI run, so any unintended change to the emission surface fails fast as a snapshot diff.
 
 ## API Reference
 

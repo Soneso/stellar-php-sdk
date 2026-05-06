@@ -9,8 +9,8 @@
 // for CorpusSnapshotTest.
 //
 // Run via:
-//   php tools/sep-51-fixtures/_corpus_seed.php \
-//     | php tools/sep-51-fixtures/_corpus_to_json.php
+//   php tools/sep-51-test-fixtures/_corpus_seed.php \
+//     | php tools/sep-51-test-fixtures/_corpus_to_json.php
 
 namespace Soneso\StellarSDKTests\Internal\Sep51Corpus;
 

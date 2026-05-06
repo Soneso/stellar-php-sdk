@@ -4,7 +4,7 @@
     "role": "Snapshot regression baseline for the PHP SDK's SEP-0051 emission. Each entry's spec_reference_json is the SDK's own canonical toJson() output for the entry's base64 XDR input; CorpusSnapshotTest re-asserts every entry on every CI run to catch unintended drift.",
     "spec_anchor": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md"
   },
-  "generated_at": "2026-05-06T10:46:41.892238+00:00",
+  "generated_at": "2026-05-06T11:19:26.329685+00:00",
   "entries": [
     {
       "id": "scval_bool_true",

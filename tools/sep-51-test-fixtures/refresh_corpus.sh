@@ -15,8 +15,8 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
-COMMITTED="tools/sep-51-fixtures/corpus.json"
-GENERATOR="tools/sep-51-fixtures/generate_corpus.py"
+COMMITTED="tools/sep-51-test-fixtures/corpus.json"
+GENERATOR="tools/sep-51-test-fixtures/generate_corpus.py"
 
 if [ ! -f "$GENERATOR" ]; then
     echo "refresh_corpus: $GENERATOR missing" >&2
