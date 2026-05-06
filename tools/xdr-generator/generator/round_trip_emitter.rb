@@ -43,11 +43,25 @@ class RoundTripEmitter
   REPO_ROOT = File.expand_path('../../..', __dir__)
   PHP_XDR_DIR = File.join(REPO_ROOT, 'Soneso', 'StellarSDK', 'Xdr')
   CORPUS_PATH = File.join(REPO_ROOT, 'tools', 'sep-51-test-fixtures', 'corpus.json')
-  OUTPUT_PATH = File.join(
+  TEST_DIR = File.join(
     REPO_ROOT,
     'Soneso', 'StellarSDKTests', 'Unit', 'Xdr', 'Sep51',
-    'AllTypesRoundTripTest.php',
   )
+  # Round-trip tests are split across four files by emit-pass category so no
+  # single PHP source file grows unbounded as the XDR schema expands. PHPUnit
+  # discovers each as a separate test class.
+  OUTPUT_FILES = {
+    enum: File.join(TEST_DIR, 'EnumRoundTripTest.php'),
+    corpus: File.join(TEST_DIR, 'CorpusRoundTripTest.php'),
+    union: File.join(TEST_DIR, 'UnionArmRoundTripTest.php'),
+    struct: File.join(TEST_DIR, 'StructRoundTripTest.php'),
+  }.freeze
+  CLASS_NAMES = {
+    enum: 'EnumRoundTripTest',
+    corpus: 'CorpusRoundTripTest',
+    union: 'UnionArmRoundTripTest',
+    struct: 'StructRoundTripTest',
+  }.freeze
   TEST_NAMESPACE = 'Soneso\\StellarSDKTests\\Unit\\Xdr\\Sep51'
   XDR_NAMESPACE = 'Soneso\\StellarSDK\\Xdr'
 
@@ -1220,21 +1234,21 @@ class RoundTripEmitter
   # ---------------------------------------------------------------------
 
   def emit(metadata:, corpus:)
-    method_blocks = []
+    buckets = { enum: [], corpus: [], union: [], struct: [] }
     used_methods = {}
 
     # Pass 1 — enums.
     metadata['types']
       .select { |t| t['kind'] == 'enum' }
       .each do |t|
-        emit_enum_methods(t, method_blocks, used_methods)
+        emit_enum_methods(t, buckets[:enum], used_methods)
       end
 
     # Pass 2 — corpus-driven coverage.
     types_with_corpus = corpus.group_by { |e| 'Xdr' + e['type'] }
     types_with_corpus.each do |type_name, entries|
       next unless type_metadata(metadata, type_name)
-      emit_corpus_methods(type_name, entries, method_blocks, used_methods)
+      emit_corpus_methods(type_name, entries, buckets[:corpus], used_methods)
     end
 
     # Pass 3a — fill in missing union arms for unions WITH a corpus
@@ -1244,28 +1258,28 @@ class RoundTripEmitter
     metadata['types']
       .select { |t| t['kind'] == 'union' && types_with_corpus.key?(t['name']) }
       .each do |t|
-        emit_union_arm_fill_methods(t, method_blocks, used_methods)
+        emit_union_arm_fill_methods(t, buckets[:union], used_methods)
       end
 
     # Pass 3b — unions not covered by corpus.
     metadata['types']
       .select { |t| t['kind'] == 'union' && !types_with_corpus.key?(t['name']) }
       .each do |t|
-        emit_union_arm_methods(t, method_blocks, used_methods)
+        emit_union_arm_methods(t, buckets[:union], used_methods)
       end
 
     # Pass 4 — structs without optionals.
     metadata['types']
       .select { |t| t['kind'] == 'struct' && (t['optionals'] || []).empty? && !types_with_corpus.key?(t['name']) }
       .each do |t|
-        emit_struct_basic_method(t, method_blocks, used_methods)
+        emit_struct_basic_method(t, buckets[:struct], used_methods)
       end
 
     # Pass 5 — structs with optionals (permutations).
     metadata['types']
       .select { |t| t['kind'] == 'struct' && !(t['optionals'] || []).empty? && !types_with_corpus.key?(t['name']) }
       .each do |t|
-        emit_struct_optional_methods(t, method_blocks, used_methods)
+        emit_struct_optional_methods(t, buckets[:struct], used_methods)
       end
 
     # Pass 6 — per-struct nested-union-field permutations. For each
@@ -1275,13 +1289,19 @@ class RoundTripEmitter
     metadata['types']
       .select { |t| t['kind'] == 'struct' && !((t['union_fields'] || []).empty?) }
       .each do |t|
-        emit_struct_union_field_methods(t, method_blocks, used_methods)
+        emit_struct_union_field_methods(t, buckets[:struct], used_methods)
       end
 
-    file = build_file(method_blocks)
-    File.write(OUTPUT_PATH, file)
-    method_count = method_blocks.size
-    warn("AllTypesRoundTripTest emitted with #{method_count} test methods.")
+    counts = {}
+    buckets.each do |kind, blocks|
+      counts[kind] = blocks.size
+      File.write(OUTPUT_FILES[kind], build_file(CLASS_NAMES[kind], blocks))
+    end
+    total = counts.values.sum
+    warn(
+      "Round-trip tests emitted: enum=#{counts[:enum]} corpus=#{counts[:corpus]} " \
+      "union=#{counts[:union]} struct=#{counts[:struct]} (total=#{total})."
+    )
   end
 
   def type_metadata(metadata, name)
@@ -1824,7 +1844,7 @@ class RoundTripEmitter
   # File assembly
   # ---------------------------------------------------------------------
 
-  def build_file(method_blocks)
+  def build_file(class_name, method_blocks)
     body = method_blocks.join("\n\n")
     <<~PHP
       <?php declare(strict_types=1);
@@ -1837,13 +1857,14 @@ class RoundTripEmitter
       //   cd tools/xdr-generator && bundle exec ruby generate.rb
       //
       // The emitter walks every Soneso\\StellarSDK\\Xdr class with toJson
-      // and emits per-arm / per-permutation round-trip tests.
+      // and emits per-arm / per-permutation round-trip tests, partitioned
+      // across four files by emit-pass category.
 
       namespace #{TEST_NAMESPACE};
 
       use PHPUnit\\Framework\\TestCase;
 
-      class AllTypesRoundTripTest extends TestCase
+      class #{class_name} extends TestCase
       {
       #{body}
       }
