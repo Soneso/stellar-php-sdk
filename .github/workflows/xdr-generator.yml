@@ -44,12 +44,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, bcmath, gmp, pcntl, sodium
+          tools: composer:v2
+
+      - name: Install composer dependencies
+        run: composer install --prefer-dist --no-progress
+
       - name: Regenerate XDR types
         run: make xdr-update
 
       - name: Check for drift
         run: |
-          if ! git diff --exit-code Soneso/StellarSDK/Xdr/; then
+          if ! git diff --exit-code Soneso/StellarSDK/Xdr/ Soneso/StellarSDKTests/Unit/Xdr/Sep51/AllTypesRoundTripTest.php; then
             echo "::error::Generated XDR files are out of date. Run 'make xdr-update' and commit the changes."
             exit 1
           fi

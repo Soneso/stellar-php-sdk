@@ -1,6 +1,5 @@
 require 'xdrgen'
 require_relative 'generator/generator'
-require_relative 'generator/round_trip_emitter'
 
 puts "Generating PHP XDR classes..."
 
@@ -12,8 +11,5 @@ Xdrgen::Compilation.new(
   generator: Generator,
   namespace: "stellar",
 ).compile
-
-puts "Emitting SEP-51 round-trip tests..."
-RoundTripEmitter.run
 
 puts "Done!"
