@@ -16,7 +16,6 @@
 - [Optionals (null vs void arm)](#optionals-null-vs-void-arm)
 - [Canonical JSON normalisation](#canonical-json-normalisation)
 - [Errors and validation](#errors-and-validation)
-- [Cross-SDK divergence anchors](#cross-sdk-divergence-anchors)
 
 ## The four-method contract
 
@@ -201,28 +200,3 @@ try {
 ```
 
 `fromJson` (the JSON-string entry point) throws `\JsonException` on malformed JSON before reaching `fromJsonValue`.
-
-## Cross-SDK divergence anchors
-
-The PHP SDK follows SEP-0051 spec semantics. Known divergences from py-stellar-base v14.0.0 are documented in `tools/baselines/sep-51-divergence-catalogue.md` and tested by `Soneso/StellarSDKTests/Unit/Xdr/Sep51/DivergenceTest.php`. Pointers AI agents should know:
-
-- `AssetCode4` / `AssetCode12` use the spec escape ladder (PHP), not raw-ASCII decode (py crashes on non-ASCII).
-- `$schema` input key is stripped silently (PHP), not rejected (py).
-- `AssetCode` renders bare-string + length-dispatch (PHP), not single-key object (py).
-- Standalone `ContractID` typedefs render as `C`-strkey (PHP), not hex (py).
-- Standalone `SignerKeyEd25519SignedPayload` renders as `P`-strkey (PHP), not struct dict (py).
-- `OperationResultCode` / `TransactionResultCode` strip the `op_` / `tx_` prefix (PHP, per rs-stellar-xdr); py keeps the prefix.
-- All-NUL `AssetCode12` is rejected (PHP chosen divergence from spec); spec mandates 5 NUL bytes.
-
-For full citations and rationale, see the divergence catalogue.
-
-## Method-name mapping (cross-SDK)
-
-| PHP | py-stellar-base v14 | js-stellar-base | java | kotlin |
-|---|---|---|---|---|
-| `toJsonValue()` | `to_json_dict()` | `toJSON()` | `toXdrJson()` | `toJson()` |
-| `fromJsonValue($v)` | `from_json_dict(d)` | `fromJSON(v)` | `fromXdrJson(v)` | `fromJson(v)` |
-| `toJson()` | `to_json()` | `toJSONString()` | `toXdrJsonString()` | `toJsonString()` |
-| `fromJson($s)` | `from_json(s)` | `fromJSONString(s)` | `fromXdrJsonString(s)` | `fromJsonString(s)` |
-
-PHP names mirror the existing `toBase64Xdr` / `fromBase64Xdr` boundary so the JSON-string boundary is one wrapper away from the value-level boundary.

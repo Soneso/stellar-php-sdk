@@ -156,11 +156,10 @@ FACTORY_ALIASES = {
 # ---------------------------------------------------------------------------
 EXTRA_ENUM_VALUES = {
   # XdrSignerKeyType: the wrapper introduces MUXED_ED25519 = 0x100 as a
-  # PHP-only sentinel for muxed signer keys surfaced at decode boundaries.
-  # py-stellar-base v14.0.0 does not have this constant on SignerKeyType
-  # (verified at `stellar_sdk/xdr/signer_key_type.py`); there is no cross-
-  # SDK wire compatibility requirement, but the wrapper's JSON round-trip
-  # path already emits/parses the `muxed_ed25519` arm via the Stellar JSON
-  # override, and the XDR decode path needs to accept the same int.
+  # wrapper-only sentinel for muxed signer keys surfaced at decode boundaries.
+  # This sentinel is not present in the canonical SEP-0051 SignerKeyType
+  # enum; it is emitted under an SDK-internal extension. The wrapper's JSON
+  # round-trip path already emits/parses the `muxed_ed25519` arm via the
+  # Stellar JSON override, and the XDR decode path accepts the same int.
   "XdrSignerKeyType" => [0x100],
 }.freeze

@@ -1,6 +1,9 @@
 name: SEP-51 corpus drift
 
-# Phase 10 maintenance workflow.
+# Snapshot regression guard. Re-runs tools/sep-51-fixtures/refresh_corpus.sh,
+# which regenerates the SDK's SEP-0051 snapshot corpus from PHP's own toJson
+# output and diffs the result against the committed copy. Any drift fails the
+# workflow and opens a tracking issue.
 #
 # Manual trigger only at commit time. Activation post-merge requires
 # uncommenting the schedule block below in a separate explicit PR.
@@ -17,7 +20,7 @@ permissions:
 
 jobs:
   drift-check:
-    name: Cross-SDK corpus drift check
+    name: SEP-51 snapshot drift check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -40,8 +43,6 @@ jobs:
 
       - name: Refresh corpus
         id: refresh
-        env:
-          DIFF_BASE: main
         run: |
           set +e
           bash tools/sep-51-fixtures/refresh_corpus.sh
@@ -57,10 +58,10 @@ jobs:
           gh issue create \
             --title "SEP-51 corpus drift detected" \
             --label sep-51-corpus-drift \
-            --body "Corpus drift detected vs the committed reference. Re-run \`tools/sep-51-fixtures/refresh_corpus.sh\` locally and update the corpus + tooling baseline accordingly."
+            --body "Corpus drift detected vs the committed reference. Re-run \`tools/sep-51-fixtures/refresh_corpus.sh\` locally and update the corpus accordingly."
 
       - name: Halt on prerequisite failure
         if: steps.refresh.outputs.exit_code == '2'
         run: |
-          echo "refresh_corpus.sh exit 2: prerequisite missing (py-stellar-base not installable)" >&2
+          echo "refresh_corpus.sh exit 2: prerequisite missing" >&2
           exit 1

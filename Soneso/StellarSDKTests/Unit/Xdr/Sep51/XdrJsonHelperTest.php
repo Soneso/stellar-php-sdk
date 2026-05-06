@@ -241,7 +241,7 @@ class XdrJsonHelperTest extends TestCase
 
     public function testHex_uppercaseRejected(): void
     {
-        // Documented divergence from py-stellar-base: PHP strictly enforces lowercase.
+        // SEP-0051 §Opaque mandates lowercase hex on output; the decoder mirrors that constraint.
         $this->expectException(\InvalidArgumentException::class);
         XdrJsonHelper::hexToBytes('FF');
     }

@@ -8,7 +8,7 @@ Use SEP-51 when:
 - Logging or pretty-printing transactions, ledger entries, contract events.
 - Exchanging Stellar payloads with services or tooling that prefer JSON over base64 XDR.
 - Diffing two transactions or contract values without a binary diff tool.
-- Cross-SDK interop where another SDK emits SEP-51 JSON.
+- Hand-editing test fixtures or small payloads in a JSON editor.
 
 Use binary base64 XDR when wire size matters, when you submit transactions to Horizon or Soroban RPC, or when you store envelopes for cryptographic verification.
 
@@ -327,9 +327,9 @@ echo $t->getType()->getValue() . PHP_EOL;
 There are two notions of equality for SEP-51 round-trips:
 
 - **Byte equality.** Two JSON strings are byte-identical: same key order, same whitespace, same number formatting. Practical SEP-51 producers do not all emit the same byte sequence — JSON object key order is not specified, and small whitespace differences are common.
-- **Structural equality.** Two JSON values decode to the same logical structure: same keys, same scalar values, same array order. This is the contract SEP-51 actually guarantees across SDKs.
+- **Structural equality.** Two JSON values decode to the same logical structure: same keys, same scalar values, same array order. This is the contract SEP-51 actually guarantees.
 
-`XdrJsonHelper::canonicalJson` normalises a JSON string to a deterministic byte form by lexicographically sorting object keys at every level and stripping insignificant whitespace. After canonical normalisation, structural equality coincides with byte equality, which is how cross-SDK byte-equal compares two emitters' output.
+`XdrJsonHelper::canonicalJson` normalises a JSON string to a deterministic byte form by lexicographically sorting object keys at every level and stripping insignificant whitespace. After canonical normalisation, structural equality coincides with byte equality, which is how the SDK compares snapshot regressions against committed baselines.
 
 ```php
 <?php declare(strict_types=1);
@@ -347,7 +347,7 @@ echo (XdrJsonHelper::canonicalJson($a) === XdrJsonHelper::canonicalJson($b) ? 'e
 equal
 -->
 
-A round-trip through XDR is lossless: parsing a base64 envelope to PHP objects, emitting JSON, parsing the JSON back to PHP objects, and re-encoding to base64 must yield the original bytes. This guarantee underlies the SDK's rollback rehearsal test that every release re-runs against the canonical SEP-51 transaction envelope example.
+A round-trip through XDR is lossless: parsing a base64 envelope to PHP objects, emitting JSON, parsing the JSON back to PHP objects, and re-encoding to base64 must yield the original bytes. This guarantee underlies the SDK's rollback rehearsal test that every release re-runs against the canonical SEP-0051 transaction envelope example.
 
 ## Pitfalls
 
@@ -366,40 +366,9 @@ echo $memo->getType()->getValue() . PHP_EOL;
 <!-- expected: 0
 -->
 
-### Divergences from py-stellar-base v14.0.0
+### Snapshot regression baseline
 
-The PHP SDK follows the SEP-51 specification rather than any single reference implementation. py-stellar-base v14.0.0 is the most widely deployed cross-SDK reference, so its known divergences from spec are documented and tested explicitly. Notable differences:
-
-- `AssetCode4` / `AssetCode12` use the spec escape ladder; py raw-ASCII-decodes and crashes on non-ASCII bytes.
-- A top-level `$schema` input key is silently stripped before dispatch; py rejects it as an unknown key.
-- `AssetCode` renders as a bare string with length-based dispatch on input; py emits a single-key object.
-- Standalone `ContractID` typedef sites render as `C`-strkey; py emits hex.
-- Standalone `SignerKeyEd25519SignedPayload` renders as `P`-strkey; py emits a struct dictionary.
-- `OperationResultCode` and `TransactionResultCode` enum members are emitted with the `op_` / `tx_` prefix stripped per the rs-stellar-xdr canonical algorithm; py keeps the prefix.
-- An all-NUL `AssetCode12` is rejected by the PHP SDK; spec mandates 5 NUL bytes. This is the one site where the PHP SDK intentionally diverges from spec.
-
-The full list of citations and reasoning is in [`tools/baselines/sep-51-divergence-catalogue.md`](../../tools/baselines/sep-51-divergence-catalogue.md).
-
-## Cross-SDK Compatibility
-
-Two SEP-51 emitters can be compared in three ways:
-
-1. **Spec-anchor equality.** Each emitter's output equals the SEP-0051 spec example for the same input. Achieved by every SDK that follows the spec literally.
-2. **Structural equality.** Each emitter's output decodes to the same PHP / Python / Go / Rust value. Tolerant of key-order drift; this is the strongest equality contract SEP-51 guarantees across SDKs.
-3. **Canonical-byte equality.** After `XdrJsonHelper::canonicalJson` normalisation on both sides, the two byte strings are identical. Used by the SDK's cross-SDK gate as a stricter check that key ordering was the only freedom each emitter exercised.
-
-The PHP SDK's cross-SDK fixture corpus is at `tools/sep-51-fixtures/corpus.json`. Each entry pairs a Stellar XDR base64 input with the spec-reference JSON, the py-stellar-base v14.0.0 reference JSON, and an optional `divergence_reason` that anchors the cross-SDK gate to the right reference. Entries with `divergence_reason: null` are asserted both structurally and byte-equal-after-canonicalisation. Entries with a non-null reason are asserted only against `spec_reference_json`.
-
-Method-name mapping across SDKs:
-
-| Concept | PHP | py-stellar-base v14 | js-stellar-base | java | kotlin |
-|---|---|---|---|---|---|
-| Type to JSON value (PHP/JS) or dict (py) | `toJsonValue()` | `to_json_dict()` | `toJSON()` | `toXdrJson()` | `toJson()` |
-| Type from JSON value | `fromJsonValue($v)` | `from_json_dict(d)` | `fromJSON(v)` | `fromXdrJson(v)` | `fromJson(v)` |
-| Type to JSON string | `toJson()` | `to_json()` | `toJSONString()` | `toXdrJsonString()` | `toJsonString()` |
-| Type from JSON string | `fromJson($s)` | `from_json(s)` | `fromJSONString(s)` | `fromXdrJsonString(s)` | `fromJsonString(s)` |
-
-The PHP SDK uses `Value` / no-`Value` paired naming (mirroring the existing `toBase64Xdr` / `fromBase64Xdr` boundary) so the JSON-string boundary is always one wrapper away from the value-level boundary.
+The PHP SDK ships a snapshot corpus at `tools/sep-51-fixtures/corpus.json` covering every Stellar XDR type that participates in SEP-51. Each entry pairs a base64 XDR input with the canonical SEP-0051 JSON the SDK emits for that input. The corpus is regenerated from PHP's own `toJson` output and re-asserted on every CI run, so any unintended change to the emission surface fails fast as a snapshot diff.
 
 ## API Reference
 

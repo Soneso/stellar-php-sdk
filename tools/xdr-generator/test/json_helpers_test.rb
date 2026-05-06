@@ -22,8 +22,8 @@ class JsonHelpersTest < Minitest::Test
 
   def test_tokenize_camel_case_yields_single_token
     # Underscore-only tokenisation: a CamelCase identifier becomes ONE
-    # lowercased token. Verified against py-stellar-base v14.0.0
-    # (e.g. "WasmInsnExec" -> "wasminsnexec").
+    # lowercased token, matching the SEP-0051 §Discriminated unions
+    # canonical algorithm (e.g. "WasmInsnExec" -> "wasminsnexec").
     assert_equal %w[assettypenative],
                  XdrJsonHelpers.tokenize_identifier('AssetTypeNative')
   end
@@ -36,7 +36,7 @@ class JsonHelpersTest < Minitest::Test
   def test_tokenize_ipv4_yields_single_token
     # IPv4 / IPv6 / IPvNN: case-boundary tokenisation would produce nonsense
     # like ["i","pv4"]. Underscore-only tokenisation produces ["ipv4"], the
-    # form py-stellar-base emits in IPAddrType wire mappings.
+    # canonical SEP-0051 wire form for IPAddrType members.
     assert_equal %w[ipv4], XdrJsonHelpers.tokenize_identifier('IPv4')
     assert_equal %w[ipv6], XdrJsonHelpers.tokenize_identifier('IPv6')
   end
@@ -175,11 +175,11 @@ class JsonHelpersTest < Minitest::Test
   end
 
   # ------------------------------------------------------------------
-  # Documented PHP-side divergences from py-stellar-base — both
   # OperationResultCode and TransactionResultCode have their op/tx
   # prefix stripped at codegen-name level (see MEMBER_PREFIX_STRIP),
-  # so the SEP-51 algorithm operates on the bare identifiers and emits
-  # the bare lowercase form.
+  # so by the time SEP-0051 §Discriminated unions runs the input
+  # identifiers are already prefix-free and the algorithm emits the
+  # bare lowercase form.
   # ------------------------------------------------------------------
 
   def test_strip_operation_result_code_php_side_inputs
@@ -223,8 +223,9 @@ class JsonHelpersTest < Minitest::Test
 
   # Single-member edge case: with only one identifier there is no other
   # entry to share tokens with, so the longest shared prefix is empty and
-  # the wire form is the full lowercase snake_case identifier. Verified
-  # against py-stellar-base v14.0.0 wire maps for every single-member enum.
+  # the wire form is the full lowercase snake_case identifier (SEP-0051
+  # §Discriminated unions: the prefix-strip rule degenerates to the empty
+  # prefix when only one member exists).
 
   def test_strip_claimable_balance_id_type_single_member
     inputs = %w[CLAIMABLE_BALANCE_ID_TYPE_V0]
@@ -342,7 +343,7 @@ class JsonHelpersTest < Minitest::Test
   # use CamelCase enum constants rather than ALL_CAPS_WITH_UNDERSCORES.
   # The tokeniser splits on '_' only, so each CamelCase identifier becomes
   # a single lowercased token. The shared-prefix step then trivially strips
-  # nothing, and the wire form matches py-stellar-base v14.0.0.
+  # nothing, producing the canonical SEP-0051 wire form.
   # ------------------------------------------------------------------
 
   def test_strip_ip_addr_type_camel_case

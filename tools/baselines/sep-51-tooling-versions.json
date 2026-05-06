@@ -1,7 +1,6 @@
 {
   "schema_version": 1,
   "xdr_commit": "0a56f5be107098efe67edf766c41955c2b277663",
-  "py_stellar_base_version": "14.0.0",
   "ruby_version": "3.4.6",
   "bundler_version": "2.7.2",
   "gemfile_lock_sha": "2b511d609e441e519080a1c6ecc847718c99edbbe3a23e1b47dc3f79498453cb",

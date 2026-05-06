@@ -175,9 +175,9 @@ final class XdrJsonHelper
      * Inverse of bytesToHex: decode a lowercase hex string back to raw bytes.
      *
      * Strict mode is enforced: only lowercase hexadecimal characters [0-9a-f]
-     * are accepted. Uppercase hex is rejected (divergence from py-stellar-base
-     * which accepts uppercase via bytes.fromhex(); PHP enforces lowercase per
-     * SEP-0051 which specifies lowercase hex output and consistent decode).
+     * are accepted. Uppercase hex is rejected; SEP-0051 §Opaque specifies
+     * lowercase hex output, and the decoder mirrors that constraint so that
+     * round-trips remain canonical.
      *
      * @param string $hex Lowercase hex string (even length; zero length allowed).
      * @return string Raw binary bytes.
@@ -229,7 +229,7 @@ final class XdrJsonHelper
      *   - Hex notation ("0x10") is rejected.
      *   - Leading "+" is rejected.
      *   - Only an optional leading "-" followed by one or more decimal digits is accepted.
-     *   - Leading zeros are accepted for compatibility with the spec (py-stellar-base accepts them).
+     *   - Leading zeros are accepted (SEP-0051 does not forbid them in 64-bit string-encoded integers).
      *   - The resulting value must be in [-2^63, 2^63-1].
      *   - intval() is explicitly NOT used because intval("abc") silently returns 0.
      *

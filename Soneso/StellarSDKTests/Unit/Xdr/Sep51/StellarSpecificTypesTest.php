@@ -299,8 +299,8 @@ class StellarSpecificTypesTest extends TestCase
 
     public function testXdrMuxedAccountMed25519PackOrderIsEd25519ThenIdBigEndian(): void
     {
-        // Pin: the 40-byte pack is `ed25519 (32 bytes) || id (uint64 big-endian, 8 bytes)`.
-        // Verified against py-stellar-base sc_address.py:152-157.
+        // Pin: the 40-byte pack is `ed25519 (32 bytes) || id (uint64 big-endian, 8 bytes)`,
+        // matching the M-strkey payload layout from SEP-0023.
         $rawEd25519 = str_repeat("\xee", 32);
         $id = 0x1122334455667788;
 
@@ -352,9 +352,8 @@ class StellarSpecificTypesTest extends TestCase
 
     public function testXdrSCAddressMuxedAccountArmPackOrder(): void
     {
-        // SC_ADDRESS muxed_account arm uses py-stellar-base's pack order:
-        // ed25519 (32 bytes) || id (uint64 BE, 8 bytes). py reference:
-        // sc_address.py:152-157.
+        // SC_ADDRESS muxed_account arm packs as ed25519 (32 bytes) || id (uint64 BE, 8 bytes),
+        // matching the M-strkey payload layout from SEP-0023.
         $rawEd25519 = str_repeat("\x30", 32);
         $id = 42;
 
@@ -609,18 +608,13 @@ class StellarSpecificTypesTest extends TestCase
     // XdrAllowTrustOperationAsset — credit_alphanum4 / credit_alphanum12
     // arm keys with trim-pad-escape AssetCode semantics.
     //
-    // py-stellar-base v14.0.0 reference:
-    //   /Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/allow_trust_op.py:92-97
-    //   /Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/asset_code.py:104-111
-    //   /Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/asset_code4.py:72-73
-    //
     // The IDL field is `AssetCode` (a union typedef whose CREDIT_ALPHANUM4 /
-    // CREDIT_ALPHANUM12 arms hold opaque[4] / opaque[12] respectively). py
-    // emits the AssetCode bytes as a SEP-51-escaped string under arm keys
-    // `credit_alphanum4` / `credit_alphanum12`, applying rtrim of trailing
+    // CREDIT_ALPHANUM12 arms hold opaque[4] / opaque[12] respectively). The
+    // SEP-0051 String encoding (§String) requires the AssetCode bytes to be
+    // emitted as a SEP-51-escaped string under arm keys
+    // `credit_alphanum4` / `credit_alphanum12`. The wire form rtrims trailing
     // NUL on the 4-byte arm and rtrim-then-pad-to-5 minimum on the 12-byte
-    // arm. The PHP override emits the corrected wire form via a type-level
-    // override registered in stellar_json_overrides.rb.
+    // arm. The override is registered in stellar_json_overrides.rb.
     // -----------------------------------------------------------------
 
     public function testXdrAllowTrustOperationAssetCode4Path(): void
@@ -656,10 +650,10 @@ class StellarSpecificTypesTest extends TestCase
 
     public function testXdrAllowTrustOperationAssetCreditAlphanum4RoundTrip(): void
     {
-        // 4-byte AlphaNum4 storage with trailing NUL on the wire becomes
-        // "USD\\0" (escaped) per the SEP-51 String escape ladder; py's
-        // raw-NUL rendering is non-conformant per SEP-0051 (recorded as
-        // chosen divergence, not modified here).
+        // 4-byte AlphaNum4 storage with trailing NUL is rtrimmed on the wire
+        // so the rendered code is the bare "USD" (per SEP-0051 §String, the
+        // emitted form is the escape-aware textual representation of the
+        // canonical AssetCode bytes).
         $allow = new XdrAllowTrustOperationAsset(
             new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4)
         );
@@ -755,8 +749,8 @@ class StellarSpecificTypesTest extends TestCase
     public function testXdrMemoReturnArmEmitsReturnArmKey(): void
     {
         // The arm wire key is "return" (prefix-stripped form of MEMO_RETURN),
-        // not "ret_hash" or "return_hash". Verified against py-stellar-base
-        // memo.py:148-150.
+        // not "ret_hash" or "return_hash" (SEP-0051 §Discriminated unions
+        // strips the well-known IDL prefix and lowercases the remainder).
         $hash = str_repeat("\x77", 32);
         $memo = new XdrMemo(XdrMemoType::MEMO_RETURN());
         $memo->returnHash = $hash;

@@ -55,9 +55,10 @@ SEP51_FIELD_OVERRIDES = {
   ['XdrClaimLiquidityAtom',                 'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
   ['XdrHashIDPreimageRevokeID',             'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
 
-  # ContractID -> C-strkey (one site outside SCAddress; chosen divergence
-  # from py-stellar-base which renders ContractID as a hex Hash at this
-  # site. Documented in the SEP-51 divergence catalogue.)
+  # ContractID -> C-strkey (one site outside SCAddress). The PHP wrapper stores
+  # the value as a hex Hash and the SEP-51 emission upgrades the textual form
+  # to the canonical C-strkey, matching the encoding used for ContractID
+  # everywhere else in the SDK.
   ['XdrConfigUpgradeSetKeyBase',            'contractID']       => { strkey: :contract, encoding: :hex },
 
   # AssetCode4 / AssetCode12 trim-pad-escape inline at consuming-field sites.

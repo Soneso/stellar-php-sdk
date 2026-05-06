@@ -46,10 +46,10 @@ use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
  *   - unknown wire-form string
  *   - long unknown string (truncated in the exception message)
  *
- * The OperationResultCode and TransactionResultCode coverage documents the
- * deliberate divergence from py-stellar-base v14.0.0: PHP emits the bare
- * member name without the `op` / `tx` prefix py retains. The divergence is
- * recorded in tools/baselines/sep-51-divergence-catalogue.md (entry 6).
+ * The OperationResultCode and TransactionResultCode coverage pins the
+ * SEP-0051 §Discriminated unions rule that strips the well-known IDL
+ * member prefix and emits the bare lowercase identifier (so OP_INNER
+ * becomes `inner`, TX_SUCCESS becomes `success`, etc.).
  */
 class PrimitivesAndEnumsRoundTripTest extends TestCase
 {
@@ -230,8 +230,8 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
     //
     // Single-member enums have no other entry to share tokens with, so the
     // longest shared prefix is empty and the wire form is the full lowercase
-    // snake_case identifier. Verified against py-stellar-base v14.0.0 wire
-    // maps for every single-member enum in the SDK.
+    // snake_case identifier (SEP-0051 §Discriminated unions: the prefix-strip
+    // rule degenerates to the empty prefix when only one member exists).
     // =========================================================================
 
     public function testClaimableBalanceIDType_singleMemberEmitsFullIdentifier(): void
@@ -353,8 +353,9 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
     // CamelCase identifier coverage — XdrIPAddrType, XdrContractCostType
     //
     // These two enums use CamelCase constants rather than ALL_CAPS_WITH_UNDERSCORES.
-    // The tokenizer splits on '_' only, so each CamelCase identifier becomes a
-    // single lowercased token. Wire forms verified against py-stellar-base v14.0.0
+    // SEP-0051 §Discriminated unions specifies the wire form is the lowercase
+    // identifier with the well-known prefix stripped; the tokenizer splits on
+    // '_' only, so each CamelCase identifier becomes a single lowercased token
     // (e.g. IPv4 -> "ipv4"; WasmInsnExec -> "wasminsnexec").
     // =========================================================================
 
@@ -449,17 +450,18 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
     }
 
     // =========================================================================
-    // OperationResultCode — documented divergence from py-stellar-base
+    // OperationResultCode — well-known IDL prefix stripped per SEP-0051
     // =========================================================================
 
     public function testOperationResultCode_emitsBareMemberNamesNoOpPrefix(): void
     {
-        // Divergence (6) in tools/baselines/sep-51-divergence-catalogue.md:
-        // py-stellar-base renders these as "opinner", "opbad_auth", ...; PHP
-        // emits the bare lowercase identifier without the `op` prefix because
-        // the PHP-side identifiers are already stripped at codegen-name level
-        // via MEMBER_PREFIX_STRIP. PHP follows the rs-stellar-xdr canonical
-        // algorithm; py retains the prefix.
+        // SEP-0051 §Discriminated unions specifies that the wire form is the
+        // lowercase identifier with the well-known IDL prefix removed. For
+        // OperationResultCode the well-known prefix is `op`, so OP_INNER is
+        // emitted as `inner`, OP_BAD_AUTH as `bad_auth`, etc. PHP-side
+        // identifiers are already stripped at codegen-name level via
+        // MEMBER_PREFIX_STRIP and the toJsonValue tokenizer applies the
+        // canonical algorithm.
         $cases = [
             XdrOperationResultCode::INNER               => 'inner',
             XdrOperationResultCode::BAD_AUTH            => 'bad_auth',
@@ -475,17 +477,17 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
         }
     }
 
-    public function testOperationResultCode_rejectsPyStyleOpPrefixedString(): void
+    public function testOperationResultCode_rejectsPrefixRetainingString(): void
     {
-        // py-stellar-base's "opinner" is NOT accepted by PHP; the divergence
-        // is asserted explicitly so cross-SDK consumers cannot mistake the
-        // prefix-retaining form for spec-compliant input.
+        // The prefix-retaining form `opinner` is NOT accepted by fromJsonValue;
+        // SEP-0051 §Discriminated unions specifies the canonical wire form
+        // strips the well-known IDL prefix, so only `inner` is accepted.
         $this->expectException(\InvalidArgumentException::class);
         XdrOperationResultCode::fromJsonValue('opinner');
     }
 
     // =========================================================================
-    // TransactionResultCode — same divergence pattern (`tx` prefix)
+    // TransactionResultCode — same prefix-strip rule (`tx` prefix)
     // =========================================================================
 
     public function testTransactionResultCode_emitsBareMemberNamesNoTxPrefix(): void
@@ -518,7 +520,7 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
         }
     }
 
-    public function testTransactionResultCode_rejectsPyStyleTxPrefixedString(): void
+    public function testTransactionResultCode_rejectsPrefixRetainingString(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         XdrTransactionResultCode::fromJsonValue('txsuccess');

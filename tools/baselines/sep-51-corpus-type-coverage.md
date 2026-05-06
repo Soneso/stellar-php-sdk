@@ -3,7 +3,7 @@
 **Date:** 2026-05-04
 **Corpus path:** `tools/sep-51-fixtures/corpus.json`
 
-This report tracks transitive type coverage of the SEP-51 cross-SDK fixture corpus. Each XDR type that will receive a `toJson` method is listed with a coverage status:
+This report tracks transitive type coverage of the SEP-51 snapshot fixture corpus. Each XDR type that will receive a `toJson` method is listed with a coverage status:
 
 - `[x] covered` — at least one corpus entry directly exercises the type at the top level.
 - `[~] indirect` — covered as an inner type of another corpus entry's container (e.g. SCVal arms inside a TransactionEnvelope).

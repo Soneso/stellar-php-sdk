@@ -21,8 +21,8 @@ module XdrJsonHelpers
 
   # Split an XDR identifier into lowercase snake_case tokens by splitting on
   # underscores only. Case-boundary transitions inside a token are NOT split:
-  # this matches the rs-stellar-xdr canonical algorithm verified against
-  # py-stellar-base v14.0.0 wire forms (e.g. "IPv4" tokenises to ["ipv4"], not
+  # this matches the rs-stellar-xdr canonical algorithm referenced by
+  # SEP-0051 §Discriminated unions (e.g. "IPv4" tokenises to ["ipv4"], not
   # ["i", "pv4"]; "WasmInsnExec" tokenises to ["wasminsnexec"], not
   # ["wasm", "insn", "exec"]).
   #
@@ -95,8 +95,7 @@ module XdrJsonHelpers
 
     # When the input is a single identifier, there is no other entry to share
     # tokens with: the longest shared prefix is empty, and the wire form is the
-    # full lowercase snake_case identifier. py-stellar-base v14.0.0 emits the
-    # full identifier here too (e.g. "PUBLIC_KEY_TYPE_ED25519" ->
+    # full lowercase snake_case identifier (e.g. "PUBLIC_KEY_TYPE_ED25519" ->
     # "public_key_type_ed25519"; "CLAIMABLE_BALANCE_ID_TYPE_V0" ->
     # "claimable_balance_id_type_v0"). The general path below produces the same
     # result via an empty prefix; the early return is retained for clarity.

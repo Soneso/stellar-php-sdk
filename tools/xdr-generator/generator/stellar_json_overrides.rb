@@ -586,11 +586,11 @@ module StellarJsonOverrides
     # Category B — bespoke wrappers with non-standard JSON shape
     # =====================================================================
 
-    # XdrClaimableBalanceID — B-strkey over the 33-byte slice
-    # corresponding to py-stellar-base's `to_xdr_bytes()[3:]` (drops the
-    # int32 discriminant high bytes; retains the type-byte 0x00 plus the
-    # 32-byte hash). The wrapper stores the hash as a 64-char hex string;
-    # we hex2bin and prepend the type byte to assemble the 33-byte buffer.
+    # XdrClaimableBalanceID — B-strkey over the 33-byte payload. SEP-0023
+    # specifies the B-strkey body as the type byte (0x00 for V0) followed
+    # by the 32-byte hash. The wrapper stores the hash as a 64-char hex
+    # string; we hex2bin and prepend the type byte to assemble the
+    # 33-byte buffer.
     'XdrClaimableBalanceID' => {
       to_value_signature: 'public function toJsonValue(): string',
       to_body: lambda do |_ctx|
@@ -835,19 +835,19 @@ module StellarJsonOverrides
     },
 
     # XdrAllowTrustOperationAsset — Cat-B union over (CREDIT_ALPHANUM4,
-    # CREDIT_ALPHANUM12). The default generator emission produces arm keys
-    # `alphanum4` / `alphanum12` (the prefix-stripped form of the
+    # CREDIT_ALPHANUM12). The default generator emission would produce arm
+    # keys `alphanum4` / `alphanum12` (the prefix-stripped form of the
     # ASSET_TYPE_CREDIT_ALPHANUM4 / ASSET_TYPE_CREDIT_ALPHANUM12 enum
-    # discriminants), but py-stellar-base v14.0.0 emits the AssetCode as a
-    # bare string under arm keys `credit_alphanum4` / `credit_alphanum12`
-    # (verified at `/Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/allow_trust_op.py:92-97`).
-    # The XDR IDL field is `AssetCode` (a typedef whose CREDIT_ALPHANUM4 /
-    # CREDIT_ALPHANUM12 arms hold opaque[4] and opaque[12] respectively);
-    # py-stellar-base applies trim-pad-escape AssetCode semantics to the
-    # bytes (rtrim trailing NULs for the 4-byte arm; rtrim then right-pad
-    # to 5 bytes minimum for the 12-byte arm; then SEP-51 escape both).
+    # discriminants). The XDR IDL field is `AssetCode` (a typedef whose
+    # CREDIT_ALPHANUM4 / CREDIT_ALPHANUM12 arms hold opaque[4] and
+    # opaque[12] respectively); SEP-0051 §String requires the AssetCode
+    # bytes to be emitted as a bare escape-aware string under arm keys
+    # `credit_alphanum4` / `credit_alphanum12`, applying trim-pad-escape
+    # AssetCode semantics (rtrim trailing NULs on the 4-byte arm; rtrim
+    # then right-pad to 5 bytes minimum on the 12-byte arm; then SEP-51
+    # escape both).
     #
-    # This override emits the corrected wire form directly; it bypasses the
+    # This override emits the canonical wire form directly; it bypasses the
     # generator's standard union dispatch entirely. The (parent_type,
     # field_name) entries for XdrAllowTrustOperationAssetBase.assetCode4 /
     # assetCode12 in SEP51_FIELD_OVERRIDES are documentary — they are not
@@ -965,15 +965,11 @@ module StellarJsonOverrides
     # `match` would throw an UnhandledMatchError when reached on
     # MUXED_ED25519 because the base does not list 0x100 as a case.
     #
-    # py-stellar-base v14.0.0 does NOT have KEY_TYPE_MUXED_ED25519 on
-    # SignerKeyType (verified at
-    # `/Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/signer_key_type.py`);
-    # the muxed variant lives on a different enum (CryptoKeyType). There is
-    # no cross-SDK wire compatibility requirement on this PHP-only constant;
-    # the requirement is correctness when reached. The override emits a
-    # PHP-internal extension arm `muxed_ed25519` so toJsonValue() never
-    # throws on a fully-constructed wrapper instance and fromJsonValue
-    # accepts the same string.
+    # MUXED_ED25519=0x100 is a wrapper-only sentinel not present in the
+    # canonical SEP-0051 SignerKeyType enum; it is emitted under an
+    # SDK-internal extension arm `muxed_ed25519` so that toJsonValue()
+    # never throws on a fully-constructed wrapper instance and
+    # fromJsonValue accepts the same string when round-tripping.
     'XdrSignerKeyType' => {
       to_value_signature: 'public function toJsonValue(): string',
       to_body: lambda do |_ctx|
@@ -1018,13 +1014,12 @@ module StellarJsonOverrides
     # generator's default base emission would build `new static(int, int)`
     # from the unpacked uint64 timestamps. At runtime `new static(...)`
     # resolves to the wrapper, so the int args trip a TypeError. This
-    # override emits SEP-51 directly on the base file: the wire form stays
-    # the canonical py-stellar-base shape (two uint64 decimal strings keyed
-    # `min_time` / `max_time` — verified at
-    # `/Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/time_bounds.py:82-95`),
-    # and the from-side constructs the wrapper with `\DateTime` instances
-    # built from the parsed integer timestamps via the `@<unix>` parse form
-    # so timezone defaults do not leak into the wrapper's stored DateTime.
+    # override emits SEP-51 directly on the base file: the wire form is
+    # the canonical SEP-0051 §Hyper Integer shape (two uint64 decimal
+    # strings keyed `min_time` / `max_time`), and the from-side
+    # constructs the wrapper with `\DateTime` instances built from the
+    # parsed integer timestamps via the `@<unix>` parse form so timezone
+    # defaults do not leak into the wrapper's stored DateTime.
     'XdrTimeBounds' => {
       to_value_signature: 'public function toJsonValue(): array',
       to_body: lambda do |_ctx|
@@ -1085,12 +1080,11 @@ module StellarJsonOverrides
     # the base's `(MuxedAccount, int fee, SequenceNumber, ...)`). At runtime
     # `new static(sourceAccount, fee, sequenceNumber, ...)` ends up in the
     # wrapper constructor, where the int `fee` is bound to `XdrSequenceNumber
-    # $sequenceNumber` and trips a TypeError. The override matches the wire
-    # form emitted by py-stellar-base (verified at
-    # `/Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/transaction.py:to_json_dict`)
-    # and the from-side calls the wrapper constructor through `new static(...)`
-    # using the wrapper's parameter order so the constructed instance is
-    # well-typed.
+    # $sequenceNumber` and trips a TypeError. The override emits the
+    # SEP-0051 §Structs wire form (camelCase IDL field names converted to
+    # snake_case keys) and the from-side calls the wrapper constructor
+    # through `new static(...)` using the wrapper's parameter order so the
+    # constructed instance is well-typed.
     'XdrTransaction' => {
       to_value_signature: 'public function toJsonValue(): array',
       to_body: lambda do |_ctx|
@@ -1158,9 +1152,9 @@ module StellarJsonOverrides
     # trips a TypeError on the second argument. The override decodes the
     # hex bytes (or null), wraps them in `XdrDataValue`, then calls
     # `new static(...)` so the wrapper constructor receives the type it
-    # declares. Wire form verified against py-stellar-base
-    # (`stellar_sdk/xdr/manage_data_op.py`): keys `data_name` (escaped
-    # string) and `data_value` (hex string or null).
+    # declares. Wire form per SEP-0051 §Structs: keys `data_name`
+    # (SEP-51-escaped string per §String) and `data_value` (lowercase
+    # hex string per §Opaque, or null when the optional bytes are absent).
     'XdrManageDataOperation' => {
       to_value_signature: 'public function toJsonValue(): array',
       to_body: lambda do |_ctx|
@@ -1221,9 +1215,9 @@ module StellarJsonOverrides
     # property (the property is typed `?XdrDataValueMandatory`). All other
     # arms (invoke_contract / create_contract / create_contract_v2)
     # delegate to inner struct toJsonValue/fromJsonValue exactly as the
-    # default emission would; we keep the same single-key object wire
-    # shape py-stellar-base produces (verified at
-    # `/Users/chris/projects/Stellar/py-stellar-base/stellar_sdk/xdr/host_function.py:to_json_dict`).
+    # default emission would; the override preserves the SEP-0051
+    # §Discriminated unions single-key object wire shape with the
+    # well-known `HOST_FUNCTION_TYPE_` prefix stripped from each arm key.
     'XdrHostFunction' => {
       to_value_signature: 'public function toJsonValue(): mixed',
       to_body: lambda do |_ctx|

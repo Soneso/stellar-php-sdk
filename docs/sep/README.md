@@ -67,7 +67,7 @@ The issuer's approval server reviews each transaction and either approves, rejec
 | Address encoding and validation | SEP-23 |
 | Require memo on incoming payments | SEP-29 |
 | Account recovery via custodians | SEP-30 |
-| Serialise or deserialise Stellar XDR types as JSON for cross-SDK or human-readable interchange | SEP-51 |
+| Serialise or deserialise Stellar XDR types as JSON for human-readable interchange, logging, or hand-editing | SEP-51 |
 | Message signing and verification | SEP-53 |
 
 ## Learning More

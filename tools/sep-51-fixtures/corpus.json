@@ -1,2270 +1,1819 @@
 {
-  "schema_version": 1,
-  "py_stellar_base_version": "14.0.0",
-  "py_xdr_dir_sha": "920214b1841906e255aa72a74623c6ace7f88805a4caab9ec9c32ca87b7087d8",
+  "schema_version": 2,
+  "_meta": {
+    "role": "Snapshot regression baseline for the PHP SDK's SEP-0051 emission. Each entry's spec_reference_json is the SDK's own canonical toJson() output for the entry's base64 XDR input; CorpusSnapshotTest re-asserts every entry on every CI run to catch unintended drift.",
+    "spec_anchor": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md"
+  },
   "xdr_commit": "0a56f5be107098efe67edf766c41955c2b277663",
   "generated_at": "2026-05-04T12:35:18Z",
-  "py_available_when_generated": false,
   "entries": [
     {
       "id": "scval_bool_true",
       "type": "SCVal",
       "base64": "AAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":true}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Boolean",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_false",
       "type": "SCVal",
       "base64": "AAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":false}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Boolean",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_void",
       "type": "SCVal",
       "base64": "AAAAAQ==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"void\"",
       "spec_anchor": "SEP-0051 \u00a7Specification > Discriminated Union (void arm)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_zero",
       "type": "SCVal",
       "base64": "AAAAAwAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":0}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Unsigned Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_max",
       "type": "SCVal",
       "base64": "AAAAA/////8=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":4294967295}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Unsigned Integer (max)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_typical",
       "type": "SCVal",
       "base64": "AAAAAwAB4kA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":123456}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Unsigned Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_zero",
       "type": "SCVal",
       "base64": "AAAABAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":0}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_max",
       "type": "SCVal",
       "base64": "AAAABH////8=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":2147483647}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Integer (max)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_min",
       "type": "SCVal",
       "base64": "AAAABIAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":-2147483648}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Integer (min)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_negative_one",
       "type": "SCVal",
       "base64": "AAAABP////8=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":-1}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_zero",
       "type": "SCVal",
       "base64": "AAAABQAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"0\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Unsigned Hyper Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_max_safe",
       "type": "SCVal",
       "base64": "AAAABX//////////",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"9223372036854775807\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Unsigned Hyper Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_typical",
       "type": "SCVal",
       "base64": "AAAABQAAAR9x+wTL",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"1234567890123\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Unsigned Hyper Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i64_zero",
       "type": "SCVal",
       "base64": "AAAABgAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i64\":\"0\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Hyper Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i64_max",
       "type": "SCVal",
       "base64": "AAAABn//////////",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i64\":\"9223372036854775807\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Hyper Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i64_min",
       "type": "SCVal",
       "base64": "AAAABoAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i64\":\"-9223372036854775808\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Hyper Integer",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u128_zero",
       "type": "SCVal",
       "base64": "AAAACQAAAAAAAAAAAAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u128\":\"0\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Unsigned Hyper Integer (extended)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u128_one_lo",
       "type": "SCVal",
       "base64": "AAAACQAAAAAAAAAAAAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u128\":\"1\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Unsigned Hyper Integer (extended)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u128_typical",
       "type": "SCVal",
       "base64": "AAAACQAAAAAAAAABAAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u128\":\"18446744073709551616\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i128_zero",
       "type": "SCVal",
       "base64": "AAAACgAAAAAAAAAAAAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i128\":\"0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i128_negative_one",
       "type": "SCVal",
       "base64": "AAAACv//////////f/////////8=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i128\":\"-9223372036854775809\"}",
       "spec_anchor": null,
-      "notes": "mixed-sign 128-bit Parts edge py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": "mixed-sign 128-bit Parts edge"
     },
     {
       "id": "scval_u256_zero",
       "type": "SCVal",
       "base64": "AAAACwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u256\":\"0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u256_one",
       "type": "SCVal",
       "base64": "AAAACwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u256\":\"1\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i256_zero",
       "type": "SCVal",
       "base64": "AAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i256\":\"0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i256_one",
       "type": "SCVal",
       "base64": "AAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i256\":\"1\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_timepoint_epoch",
       "type": "SCVal",
       "base64": "AAAABwAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"timepoint\":\"0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_timepoint_typical",
       "type": "SCVal",
       "base64": "AAAABwAAAABmNluA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"timepoint\":\"1714838400\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_duration_zero",
       "type": "SCVal",
       "base64": "AAAACAAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"duration\":\"0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_duration_typical",
       "type": "SCVal",
       "base64": "AAAACAAAAAAAAVGA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"duration\":\"86400\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_empty",
       "type": "SCVal",
       "base64": "AAAADQAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Opaque (variable, empty)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_single_zero",
       "type": "SCVal",
       "base64": "AAAADQAAAAEAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Opaque (variable)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_single_ff",
       "type": "SCVal",
       "base64": "AAAADQAAAAH/AAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"ff\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_typical",
       "type": "SCVal",
       "base64": "AAAADQAAAAtoZWxsbyB3b3JsZAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"68656c6c6f20776f726c64\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_non_ascii",
       "type": "SCVal",
       "base64": "AAAADQAAAATDgMOp",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"c380c3a9\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_empty",
       "type": "SCVal",
       "base64": "AAAADgAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > String (empty)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_typical",
       "type": "SCVal",
       "base64": "AAAADgAAAAVoZWxsbwAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"hello\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > String",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_non_ascii",
       "type": "SCVal",
       "base64": "AAAADgAAAAZow6lsbG8AAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"h\\\\xc3\\\\xa9llo\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > String (non-ASCII)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_with_special_chars",
       "type": "SCVal",
       "base64": "AAAADgAAAA9saW5lMQpsaW5lMgkicSIA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"line1\\\\nline2\\\\t\\\"q\\\"\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_empty",
       "type": "SCVal",
       "base64": "AAAADwAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_typical",
       "type": "SCVal",
       "base64": "AAAADwAAAAR4ZmVy",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"xfer\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_with_underscores",
       "type": "SCVal",
       "base64": "AAAADwAAAApiYWxhbmNlX29mAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"balance_of\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_vec_empty",
       "type": "SCVal",
       "base64": "AAAAEAAAAAEAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"vec\":[]}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Array (variable, empty)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_vec_single",
       "type": "SCVal",
       "base64": "AAAAEAAAAAEAAAABAAAAAwAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"vec\":[{\"u32\":1}]}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_vec_mixed",
       "type": "SCVal",
       "base64": "AAAAEAAAAAEAAAAEAAAAAwAAAAEAAAAE/////wAAAA8AAAABeAAAAAAAAAAAAAAB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"vec\":[{\"u32\":1},{\"i32\":-1},{\"symbol\":\"x\"},{\"bool\":true}]}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_map_empty",
       "type": "SCVal",
       "base64": "AAAAEQAAAAEAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"map\":[]}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_address_account",
       "type": "SCVal",
       "base64": "AAAAEgAAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"address\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > Address Types > G-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_address_contract",
       "type": "SCVal",
       "base64": "AAAAEgAAAAGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoQ==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"address\":\"CCQ2DINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2CNSG\"}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > Address Types > C-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_address_muxed",
       "type": "SCVal",
       "base64": "AAAAEgAAAAIAAAAAAAAwOQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"address\":\"MAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAAAAAAAAABQHGXNM\"}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > Address Types > M-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_address_liquidity_pool",
       "type": "SCVal",
       "base64": "AAAAEgAAAASysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysg==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"address\":\"LCZLFMVSWKZLFMVSWKZLFMVSWKZLFMVSWKZLFMVSWKZLFMVSWKZLEYRH\"}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > Address Types > L-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_address_claimable_balance",
       "type": "SCVal",
       "base64": "AAAAEgAAAAMAAAAAw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8M=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"address\":\"BAAMHQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQYMIY\"}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > Address Types > B-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_error_contract",
       "type": "SCVal",
       "base64": "AAAAAgAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"error\":{\"contract\":0}}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_ledger_key_contract_instance",
       "type": "SCVal",
       "base64": "AAAAFA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"ledger_key_contract_instance\"",
       "spec_anchor": "SEP-0051 \u00a7Specification > Discriminated Union (multi-void)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_ledger_key_nonce",
       "type": "SCVal",
       "base64": "AAAAFQAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"ledger_key_nonce\":{\"nonce\":\"0\"}}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_native",
       "type": "Asset",
       "base64": "AAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"native\"",
       "spec_anchor": "SEP-0051 \u00a7Examples > Asset native",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_alphanum4_jpy",
       "type": "Asset",
       "base64": "AAAAAUpQWQAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"credit_alphanum4\":{\"asset_code\":\"JPY\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Asset alphanum4",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_alphanum4_4byte",
       "type": "Asset",
       "base64": "AAAAAUVVUkMAAAAAPww0v5OtDZlx0EzMkPcFURyDiq2XNKSi+w16A/x/6Jo=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"credit_alphanum4\":{\"asset_code\":\"EURC\",\"issuer\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\"}}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_alphanum4_3byte",
       "type": "Asset",
       "base64": "AAAAAVVTRAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_alphanum12_6byte",
       "type": "Asset",
       "base64": "AAAAAkNVU1RPTQAAAAAAAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9w==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"credit_alphanum12\":{\"asset_code\":\"CUSTOM\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > AssetCode12",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_alphanum12_11byte",
       "type": "Asset",
       "base64": "AAAAAlRXRUxWRUNIQVJTAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omg==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"credit_alphanum12\":{\"asset_code\":\"TWELVECHARS\",\"issuer\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\"}}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_alphanum12_5byte",
       "type": "Asset",
       "base64": "AAAAAkZJVkVDAAAAAAAAAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9w==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"credit_alphanum12\":{\"asset_code\":\"FIVEC\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > AssetCode12 (5-byte boundary)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "memo_none",
       "type": "Memo",
       "base64": "AAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"none\"",
       "spec_anchor": "SEP-0051 \u00a7Specification > Discriminated Union (void)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "memo_text",
       "type": "Memo",
       "base64": "AAAAAQAAAAVoZWxsbwAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"text\":\"hello\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "memo_text_non_ascii",
       "type": "Memo",
       "base64": "AAAAAQAAAAZow6lsbG8AAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"text\":\"h\\\\xc3\\\\xa9llo\"}",
       "spec_anchor": "SEP-0051 \u00a7Specification > String (non-ASCII)",
-      "notes": "memo text containing UTF-8 bytes (\\xc3\\xa9 = \u00e9) py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": "memo text containing UTF-8 bytes (\\xc3\\xa9 = \u00e9)"
     },
     {
       "id": "memo_id",
       "type": "Memo",
       "base64": "AAAAAgAAAAAAEtaH",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"id\":\"1234567\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "memo_hash",
       "type": "Memo",
       "base64": "AAAAA6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"hash\":\"abababababababababababababababababababababababababababababababab\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "memo_return",
       "type": "Memo",
       "base64": "AAAABM3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"return\":\"cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "signer_key_ed25519",
       "type": "SignerKey",
       "base64": "AAAAABERERERERERERERERERERERERERERERERERERERERER",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"GAIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCF6M\"",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SignerKey > G-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "signer_key_pre_auth_tx",
       "type": "SignerKey",
       "base64": "AAAAASIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIi",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"TARCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEMHG\"",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SignerKey > T-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "signer_key_hash_x",
       "type": "SignerKey",
       "base64": "AAAAAjMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"XAZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTH33W\"",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SignerKey > X-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "signer_key_ed25519_signed_payload",
       "type": "SignerKey",
       "base64": "AAAAA0REREREREREREREREREREREREREREREREREREREREREAAAAEFVVVVVVVVVVVVVVVVVVVVU=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"PBCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIAAAAAIFKVKVKVKVKVKVKVKVKVKVKVKVLZ46\"",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SignerKey > P-strkey",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "signed_payload_standalone",
       "type": "SignedPayload",
       "base64": "ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmYAAAAMc2hvcnRwYXlsb2Fk",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"PBTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMAAAAAGHG2DPOJ2HAYLZNRXWCZCQAE\"",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SignerKey > P-strkey (standalone)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "muxed_account_ed25519",
       "type": "MuxedAccount",
       "base64": "AAAAACEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEh",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"GAQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCB5Q\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "muxed_account_med25519",
       "type": "MuxedAccount",
       "base64": "AAABAAAAAAAAAABjMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"MAZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGAAAAAAAAAAAMMJUA\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "account_id_g",
       "type": "AccountID",
       "base64": "AAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "account_id_g_alt",
       "type": "AccountID",
       "base64": "AAAAAD8MNL+TrQ2ZcdBMzJD3BVEcg4qtlzSkovsNegP8f+ia",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "ledger_bounds_zero",
       "type": "LedgerBounds",
       "base64": "AAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"min_ledger\":0,\"max_ledger\":0}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "ledger_bounds_typical",
       "type": "LedgerBounds",
       "base64": "AAAAZAADDUA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"min_ledger\":100,\"max_ledger\":200000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "time_bounds_zero",
       "type": "TimeBounds",
       "base64": "AAAAAAAAAAAAAAAAAAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"min_time\":\"0\",\"max_time\":\"0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "time_bounds_typical",
       "type": "TimeBounds",
       "base64": "AAAAAGVT8QAAAAAAa0nR/w==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"min_time\":\"1700000000\",\"max_time\":\"1799999999\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "ledger_key_account",
       "type": "LedgerKey",
       "base64": "AAAAAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9w==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"account\":{\"account_id\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "uint128_zero",
       "type": "UInt128Parts",
       "base64": "AAAAAAAAAAAAAAAAAAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"0\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "uint128_one",
       "type": "UInt128Parts",
       "base64": "AAAAAAAAAAAAAAAAAAAAAQ==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"1\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "uint128_typical",
       "type": "UInt128Parts",
       "base64": "AAAAAAAAAAEAAAAAAAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"18446744073709551616\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "int128_zero",
       "type": "Int128Parts",
       "base64": "AAAAAAAAAAAAAAAAAAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"0\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "int128_negative_one",
       "type": "Int128Parts",
       "base64": "//////////9//////////w==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"-9223372036854775809\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "uint256_zero",
       "type": "UInt256Parts",
       "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"0\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "uint256_one",
       "type": "UInt256Parts",
       "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"1\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "int256_zero",
       "type": "Int256Parts",
       "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"0\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "claimable_balance_id_v0",
       "type": "ClaimableBalanceID",
       "base64": "AAAAAB8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "\"BAAB6HY7D4PR6HY7D4PR6HY7D4PR6HY7D4PR6HY7D4PR6HY7D4PR6H4ZSI\"",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "decorated_signature",
       "type": "DecoratedSignature",
       "base64": "d3d3dwAAAECIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiI",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"hint\":\"77777777\",\"signature\":\"88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_alphanum4_1byte",
       "type": "Asset",
       "base64": "AAAAAUEAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"credit_alphanum4\":{\"asset_code\":\"A\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > AssetCode4 (1-byte)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "asset_alphanum4_non_ascii",
       "type": "Asset",
       "base64": "AAAAAUFCgAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=",
-      "py_reference_json": null,
-      "spec_reference_json": "\"AB\\x80\"",
-      "divergence_reason": "py-stellar-base v14 raw ASCII decode crashes on non-ASCII byte 0x80 for both AssetCode4 and AssetCode12; PHP follows spec String-escape ladder",
+      "spec_reference_json": "{\"credit_alphanum4\":{\"asset_code\":\"AB\\\\x80\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > AssetCode4 (non-ASCII)",
-      "notes": "divergence (1) entry \u2014 covers both AssetCode4 and AssetCode12 non-ASCII paths"
+      "notes": "AssetCode4 non-ASCII byte exercises the SEP-0051 \u00a7String escape ladder"
     },
     {
       "id": "asset_alphanum12_3byte_padded",
       "type": "Asset",
       "base64": "AAAAAkFCQwAAAAAAAAAAAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9w==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"credit_alphanum12\":{\"asset_code\":\"ABC\\\\0\\\\0\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > AssetCode12 (3-byte right-padded to 5)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_one",
       "type": "SCVal",
       "base64": "AAAABQAAAAAAAAAB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"1\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i64_negative_one",
       "type": "SCVal",
       "base64": "AAAABv//////////",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i64\":\"-1\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_vec_nested",
       "type": "SCVal",
       "base64": "AAAAEAAAAAEAAAACAAAAEAAAAAEAAAABAAAAAwAAAAEAAAAQAAAAAQAAAAIAAAADAAAAAgAAAAMAAAAD",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"vec\":[{\"vec\":[{\"u32\":1}]},{\"vec\":[{\"u32\":2},{\"u32\":3}]}]}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_vec_address",
       "type": "SCVal",
       "base64": "AAAAEAAAAAEAAAACAAAAEgAAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8BfcAAAASAAAAAaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGh",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"vec\":[{\"address\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"},{\"address\":\"CCQ2DINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2DINBUGQ2CNSG\"}]}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_64",
       "type": "SCVal",
       "base64": "AAAADQAAAEBCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJC",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"42424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_256",
       "type": "SCVal",
       "base64": "AAAADQAAAQBhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"61616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_32",
       "type": "SCVal",
       "base64": "AAAADwAAACB4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_long",
       "type": "SCVal",
       "base64": "AAAADgAAAQ5Mb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCBMb3JlbSBpcHN1bSBkb2xvciBzaXQgYW1ldCAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet \"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_contract_instance_wasm",
       "type": "SCVal",
       "base64": "AAAAEwAAAAChoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoQAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_instance\":{\"executable\":{\"wasm\":\"61316131613161316131613161316131613161316131613161316131613161316131613161316131613161316131613161316131613161316131613161316131\"},\"storage\":null}}",
       "spec_anchor": "SEP-0051 \u00a7Specification > SCV_CONTRACT_INSTANCE",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_contract_instance_stellar_asset",
       "type": "SCVal",
       "base64": "AAAAEwAAAAEAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_instance\":{\"executable\":\"stellar_asset\",\"storage\":null}}",
       "spec_anchor": "SEP-0051 \u00a7Specification > SCV_CONTRACT_INSTANCE (Stellar Asset Contract)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "transaction_envelope_canonical",
       "type": "TransactionEnvelope",
       "base64": "AAAAAgAAAAAhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhIQAAAGQAAAAAAAAAFAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAD8MNL+TrQ2ZcdBMzJD3BVEcg4qtlzSkovsNegP8f+iaAAAAAACYloAAAAAAAAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"tx\":{\"tx\":{\"source_account\":\"GAQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCB5Q\",\"fee\":100,\"seq_num\":\"20\",\"cond\":\"none\",\"memo\":\"none\",\"operations\":[{\"source_account\":null,\"body\":{\"create_account\":{\"destination\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\",\"starting_balance\":\"10000000\"}}}],\"ext\":\"v0\"},\"signatures\":[]}}",
       "spec_anchor": "SEP-0051 \u00a7Examples \u00a7TransactionEnvelope",
-      "notes": "canonical TransactionEnvelope: ENVELOPE_TYPE_TX with one CreateAccount operation, no signatures py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": "canonical TransactionEnvelope: ENVELOPE_TYPE_TX with one CreateAccount operation, no signatures"
     },
     {
       "id": "ledger_close_meta_v0",
       "type": "LedgerCloseMeta",
       "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAKgAAAAAAAAAqAAAAKgAAAAAAAAAqAAAAKgAAACoAAAAqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"v0\":{\"ledger_header\":{\"hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"header\":{\"ledger_version\":42,\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"42\",\"upgrades\":[],\"ext\":\"basic\"},\"tx_set_result_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"bucket_list_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"ledger_seq\":42,\"total_coins\":\"42\",\"fee_pool\":\"42\",\"inflation_seq\":42,\"id_pool\":\"42\",\"base_fee\":42,\"base_reserve\":42,\"max_tx_set_size\":42,\"skip_list\":[\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\"],\"ext\":\"v0\"},\"ext\":\"v0\"},\"tx_set\":{\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"txs\":[]},\"tx_processing\":[],\"upgrades_processing\":[],\"scp_info\":[]}}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Discriminated Union (int-cased) > LedgerCloseMeta v0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "ledger_close_meta_v1",
       "type": "LedgerCloseMeta",
       "base64": "AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqAAAAAAAAACoAAAAAAAAAKgAAACoAAAAAAAAAKgAAACoAAAAqAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"v1\":{\"ext\":\"v0\",\"ledger_header\":{\"hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"header\":{\"ledger_version\":42,\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"42\",\"upgrades\":[],\"ext\":\"basic\"},\"tx_set_result_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"bucket_list_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"ledger_seq\":42,\"total_coins\":\"42\",\"fee_pool\":\"42\",\"inflation_seq\":42,\"id_pool\":\"42\",\"base_fee\":42,\"base_reserve\":42,\"max_tx_set_size\":42,\"skip_list\":[\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\"],\"ext\":\"v0\"},\"ext\":\"v0\"},\"tx_set\":{\"v1\":{\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"phases\":[]}},\"tx_processing\":[],\"upgrades_processing\":[],\"scp_info\":[],\"total_byte_size_of_live_soroban_state\":\"42\",\"evicted_keys\":[],\"unused\":[]}}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Discriminated Union (int-cased) > LedgerCloseMeta v1",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "ledger_close_meta_v2",
       "type": "LedgerCloseMeta",
       "base64": "AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqAAAAAAAAACoAAAAAAAAAKgAAACoAAAAAAAAAKgAAACoAAAAqAAAAKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"v2\":{\"ext\":\"v0\",\"ledger_header\":{\"hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"header\":{\"ledger_version\":42,\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"42\",\"upgrades\":[],\"ext\":\"basic\"},\"tx_set_result_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"bucket_list_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"ledger_seq\":42,\"total_coins\":\"42\",\"fee_pool\":\"42\",\"inflation_seq\":42,\"id_pool\":\"42\",\"base_fee\":42,\"base_reserve\":42,\"max_tx_set_size\":42,\"skip_list\":[\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\",\"0000000000000000000000000000000000000000000000000000000000000000\"],\"ext\":\"v0\"},\"ext\":\"v0\"},\"tx_set\":{\"v1\":{\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"phases\":[]}},\"tx_processing\":[],\"upgrades_processing\":[],\"scp_info\":[],\"total_byte_size_of_live_soroban_state\":\"42\",\"evicted_keys\":[]}}",
       "spec_anchor": "SEP-0051 \u00a7Specification > Discriminated Union (int-cased) > LedgerCloseMeta v2",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "bucket_entry_metaentry",
       "type": "BucketEntry",
       "base64": "/////wAAACoAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"metaentry\":{\"ledger_version\":42,\"ext\":\"v0\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > BucketEntry > METAENTRY",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "bucket_entry_deadentry",
       "type": "BucketEntry",
       "base64": "AAAAAQAAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"deadentry\":{\"account\":{\"account_id\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > BucketEntry > DEADENTRY",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "bucket_entry_liveentry_account",
       "type": "BucketEntry",
       "base64": "AAAAAAAAAHsAAAAAAAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3AAAAAACYloAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"liveentry\":{\"last_modified_ledger_seq\":123,\"data\":{\"account\":{\"account_id\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\",\"balance\":\"10000000\",\"seq_num\":\"1\",\"num_sub_entries\":0,\"inflation_dest\":null,\"flags\":0,\"home_domain\":\"\",\"thresholds\":\"01000000\",\"signers\":[],\"ext\":\"v0\"}},\"ext\":\"v0\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > BucketEntry > LIVEENTRY",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "bucket_entry_initentry_account",
       "type": "BucketEntry",
       "base64": "AAAAAgAAAHsAAAAAAAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3AAAAAACYloAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"initentry\":{\"last_modified_ledger_seq\":123,\"data\":{\"account\":{\"account_id\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\",\"balance\":\"10000000\",\"seq_num\":\"1\",\"num_sub_entries\":0,\"inflation_dest\":null,\"flags\":0,\"home_domain\":\"\",\"thresholds\":\"01000000\",\"signers\":[],\"ext\":\"v0\"}},\"ext\":\"v0\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > BucketEntry > INITENTRY",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "hot_archive_bucket_entry_metaentry",
       "type": "HotArchiveBucketEntry",
       "base64": "/////wAAACoAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"metaentry\":{\"ledger_version\":42,\"ext\":\"v0\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > HotArchiveBucketEntry > HOT_ARCHIVE_METAENTRY",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "hot_archive_bucket_entry_archived",
       "type": "HotArchiveBucketEntry",
       "base64": "AAAAAAAAAHsAAAAAAAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3AAAAAACYloAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"archived\":{\"last_modified_ledger_seq\":123,\"data\":{\"account\":{\"account_id\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\",\"balance\":\"10000000\",\"seq_num\":\"1\",\"num_sub_entries\":0,\"inflation_dest\":null,\"flags\":0,\"home_domain\":\"\",\"thresholds\":\"01000000\",\"signers\":[],\"ext\":\"v0\"}},\"ext\":\"v0\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > HotArchiveBucketEntry > HOT_ARCHIVE_ARCHIVED",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "hot_archive_bucket_entry_live",
       "type": "HotArchiveBucketEntry",
       "base64": "AAAAAQAAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"live\":{\"account\":{\"account_id\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > HotArchiveBucketEntry > HOT_ARCHIVE_LIVE",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_create_account",
       "type": "Operation",
       "base64": "AAAAAAAAAAAAAAAAPww0v5OtDZlx0EzMkPcFURyDiq2XNKSi+w16A/x/6JoAAAAAAJiWgA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"create_account\":{\"destination\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\",\"starting_balance\":\"10000000\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > CreateAccountOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_payment",
       "type": "Operation",
       "base64": "AAAAAAAAAAEAAAAAISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEAAAAAAAAAAAAAw1A=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"payment\":{\"destination\":\"GAQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCB5Q\",\"asset\":\"native\",\"amount\":\"50000\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > PaymentOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_path_payment_strict_receive",
       "type": "Operation",
       "base64": "AAAAAAAAAAIAAAAAAAAAAAAAAGQAAAAAISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEAAAAAAAAAAAAAADIAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"path_payment_strict_receive\":{\"send_asset\":\"native\",\"send_max\":\"100\",\"destination\":\"GAQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCB5Q\",\"dest_asset\":\"native\",\"dest_amount\":\"50\",\"path\":[]}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > PathPaymentStrictReceiveOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_manage_sell_offer",
       "type": "Operation",
       "base64": "AAAAAAAAAAMAAAAAAAAAAVVTRAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8BfcAAAAAAAAD6AAAAAEAAAABAAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"manage_sell_offer\":{\"selling\":\"native\",\"buying\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}},\"amount\":\"1000\",\"price\":{\"n\":1,\"d\":1},\"offer_id\":\"0\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ManageSellOfferOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_create_passive_sell_offer",
       "type": "Operation",
       "base64": "AAAAAAAAAAQAAAAAAAAAAVVTRAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8BfcAAAAAAAAD6AAAAAEAAAAB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"create_passive_sell_offer\":{\"selling\":\"native\",\"buying\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}},\"amount\":\"1000\",\"price\":{\"n\":1,\"d\":1}}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > CreatePassiveSellOfferOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_set_options_minimal",
       "type": "Operation",
       "base64": "AAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"set_options\":{\"inflation_dest\":null,\"clear_flags\":null,\"set_flags\":null,\"master_weight\":null,\"low_threshold\":null,\"med_threshold\":null,\"high_threshold\":null,\"home_domain\":null,\"signer\":null}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > SetOptionsOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_change_trust",
       "type": "Operation",
       "base64": "AAAAAAAAAAYAAAABVVNEAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF93//////////",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"change_trust\":{\"line\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}},\"limit\":\"9223372036854775807\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ChangeTrustOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_allow_trust",
       "type": "Operation",
       "base64": "AAAAAAAAAAcAAAAAPww0v5OtDZlx0EzMkPcFURyDiq2XNKSi+w16A/x/6JoAAAABVVNEAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"allow_trust\":{\"trustor\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\",\"asset\":{\"credit_alphanum4\":\"USD\"},\"authorize\":1}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > AllowTrustOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_account_merge",
       "type": "Operation",
       "base64": "AAAAAAAAAAgAAAAAISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"account_merge\":\"GAQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCB5Q\"}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > AccountMergeOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_inflation",
       "type": "Operation",
       "base64": "AAAAAAAAAAk=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":\"inflation\"}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > InflationOp (void arm)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_manage_data",
       "type": "Operation",
       "base64": "AAAAAAAAAAoAAAAGY29uZmlnAAAAAAABAAAAC3ZhbHVlLWJ5dGVzAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"manage_data\":{\"data_name\":\"config\",\"data_value\":\"76616c75652d6279746573\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ManageDataOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_bump_sequence",
       "type": "Operation",
       "base64": "AAAAAAAAAAsAAAAAAAAAYw==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"bump_sequence\":{\"bump_to\":\"99\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > BumpSequenceOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_manage_buy_offer",
       "type": "Operation",
       "base64": "AAAAAAAAAAwAAAAAAAAAAVVTRAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8BfcAAAAAAAAD6AAAAAEAAAABAAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"manage_buy_offer\":{\"selling\":\"native\",\"buying\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}},\"buy_amount\":\"1000\",\"price\":{\"n\":1,\"d\":1},\"offer_id\":\"0\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ManageBuyOfferOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_path_payment_strict_send",
       "type": "Operation",
       "base64": "AAAAAAAAAA0AAAAAAAAAAAAAAGQAAAAAISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEAAAAAAAAAAAAAADIAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"path_payment_strict_send\":{\"send_asset\":\"native\",\"send_amount\":\"100\",\"destination\":\"GAQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCB5Q\",\"dest_asset\":\"native\",\"dest_min\":\"50\",\"path\":[]}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > PathPaymentStrictSendOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_create_claimable_balance",
       "type": "Operation",
       "base64": "AAAAAAAAAA4AAAAAAAAAAAAAA+gAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"create_claimable_balance\":{\"asset\":\"native\",\"amount\":\"1000\",\"claimants\":[]}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > CreateClaimableBalanceOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_claim_claimable_balance",
       "type": "Operation",
       "base64": "AAAAAAAAAA8AAAAAHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"claim_claimable_balance\":{\"balance_id\":\"BAAB6HY7D4PR6HY7D4PR6HY7D4PR6HY7D4PR6HY7D4PR6HY7D4PR6H4ZSI\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ClaimClaimableBalanceOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_begin_sponsoring_future_reserves",
       "type": "Operation",
       "base64": "AAAAAAAAABAAAAAAPww0v5OtDZlx0EzMkPcFURyDiq2XNKSi+w16A/x/6Jo=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"begin_sponsoring_future_reserves\":{\"sponsored_id\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > BeginSponsoringFutureReservesOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_end_sponsoring_future_reserves",
       "type": "Operation",
       "base64": "AAAAAAAAABE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":\"end_sponsoring_future_reserves\"}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > EndSponsoringFutureReservesOp (void arm)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_revoke_sponsorship_ledger_entry",
       "type": "Operation",
       "base64": "AAAAAAAAABIAAAAAAAAAAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9w==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"revoke_sponsorship\":{\"ledger_entry\":{\"account\":{\"account_id\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}}}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > RevokeSponsorshipOp (LEDGER_ENTRY)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_clawback",
       "type": "Operation",
       "base64": "AAAAAAAAABMAAAABVVNEAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9wAAAAAhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhIQAAAAAAAABk",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"clawback\":{\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}},\"from\":\"GAQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCB5Q\",\"amount\":\"100\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ClawbackOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_clawback_claimable_balance",
       "type": "Operation",
       "base64": "AAAAAAAAABQAAAAALi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"clawback_claimable_balance\":{\"balance_id\":\"BAAC4LROFYXC4LROFYXC4LROFYXC4LROFYXC4LROFYXC4LROFYXC4LRW5Q\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ClawbackClaimableBalanceOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_set_trust_line_flags",
       "type": "Operation",
       "base64": "AAAAAAAAABUAAAAAPww0v5OtDZlx0EzMkPcFURyDiq2XNKSi+w16A/x/6JoAAAABVVNEAAAAAABi/B0L0JGythwN1lY0aypo19NHxvLCyO5tBEcCVvwF9wAAAAAAAAAB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"set_trust_line_flags\":{\"trustor\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\",\"asset\":{\"credit_alphanum4\":{\"asset_code\":\"USD\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}},\"clear_flags\":0,\"set_flags\":1}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > SetTrustLineFlagsOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_liquidity_pool_deposit",
       "type": "Operation",
       "base64": "AAAAAAAAABaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgAAAAAAAABkAAAAAAAAAGQAAAABAAAAAQAAAAEAAAAB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"liquidity_pool_deposit\":{\"liquidity_pool_id\":\"LCVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKVKU2QZ\",\"max_amount_a\":\"100\",\"max_amount_b\":\"100\",\"min_price\":{\"n\":1,\"d\":1},\"max_price\":{\"n\":1,\"d\":1}}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > LiquidityPoolDepositOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_liquidity_pool_withdraw",
       "type": "Operation",
       "base64": "AAAAAAAAABe7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7uwAAAAAAAABkAAAAAAAAADIAAAAAAAAAMg==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"liquidity_pool_withdraw\":{\"liquidity_pool_id\":\"LC53XO53XO53XO53XO53XO53XO53XO53XO53XO53XO53XO53XO53WJJQ\",\"amount\":\"100\",\"min_amount_a\":\"50\",\"min_amount_b\":\"50\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > LiquidityPoolWithdrawOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_invoke_host_function_upload",
       "type": "Operation",
       "base64": "AAAAAAAAABgAAAACAAAACABhc20AAAAAAAAAAA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"invoke_host_function\":{\"host_function\":{\"upload_contract_wasm\":\"0061736d00000000\"},\"auth\":[]}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > InvokeHostFunctionOp (UPLOAD_CONTRACT_WASM)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_extend_footprint_ttl",
       "type": "Operation",
       "base64": "AAAAAAAAABkAAAAAAAAD6A==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"extend_footprint_ttl\":{\"ext\":\"v0\",\"extend_to\":1000}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > ExtendFootprintTTLOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "operation_restore_footprint",
       "type": "Operation",
       "base64": "AAAAAAAAABoAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"restore_footprint\":{\"ext\":\"v0\"}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > RestoreFootprintOp",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "sc_spec_entry_function_v0",
       "type": "SCSpecEntry",
       "base64": "AAAAAAAAAAlkb2NzdHJpbmcAAAAAAAAIdHJhbnNmZXIAAAABAAAAB2FtdC1kb2MAAAAABmFtb3VudAAAAAAABQAAAAEAAAAB",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"function_v0\":{\"doc\":\"docstring\",\"name\":\"transfer\",\"inputs\":[{\"doc\":\"amt-doc\",\"name\":\"amount\",\"type\":\"i32\"}],\"outputs\":[\"bool\"]}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SCSpecEntry > FUNCTION_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "sc_spec_entry_udt_struct_v0",
       "type": "SCSpecEntry",
       "base64": "AAAAAQAAAApzdHJ1Y3QtZG9jAAAAAAALc29yb2Jhbl9zZGsAAAAABVBvaW50AAAAAAAAAgAAAAV4LWRvYwAAAAAAAAF4AAAAAAAABQAAAAV5LWRvYwAAAAAAAAF5AAAAAAAABQ==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"udt_struct_v0\":{\"doc\":\"struct-doc\",\"lib\":\"soroban_sdk\",\"name\":\"Point\",\"fields\":[{\"doc\":\"x-doc\",\"name\":\"x\",\"type\":\"i32\"},{\"doc\":\"y-doc\",\"name\":\"y\",\"type\":\"i32\"}]}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SCSpecEntry > UDT_STRUCT_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "sc_spec_entry_udt_union_v0",
       "type": "SCSpecEntry",
       "base64": "AAAAAgAAAAl1bmlvbi1kb2MAAAAAAAALc29yb2Jhbl9zZGsAAAAABUNvbG9yAAAAAAAAAgAAAAAAAAAHcmVkLWRvYwAAAAADUmVkAAAAAAAAAAAJZ3JlZW4tZG9jAAAAAAAABUdyZWVuAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"udt_union_v0\":{\"doc\":\"union-doc\",\"lib\":\"soroban_sdk\",\"name\":\"Color\",\"cases\":[{\"void_v0\":{\"doc\":\"red-doc\",\"name\":\"Red\"}},{\"void_v0\":{\"doc\":\"green-doc\",\"name\":\"Green\"}}]}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SCSpecEntry > UDT_UNION_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "sc_spec_entry_udt_enum_v0",
       "type": "SCSpecEntry",
       "base64": "AAAAAwAAAAhlbnVtLWRvYwAAAAtzb3JvYmFuX3NkawAAAAAJRGlyZWN0aW9uAAAAAAAAAgAAAAlub3J0aC1kb2MAAAAAAAAFTm9ydGgAAAAAAAAAAAAACXNvdXRoLWRvYwAAAAAAAAVTb3V0aAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"udt_enum_v0\":{\"doc\":\"enum-doc\",\"lib\":\"soroban_sdk\",\"name\":\"Direction\",\"cases\":[{\"doc\":\"north-doc\",\"name\":\"North\",\"value\":0},{\"doc\":\"south-doc\",\"name\":\"South\",\"value\":1}]}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SCSpecEntry > UDT_ENUM_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "sc_spec_entry_udt_error_enum_v0",
       "type": "SCSpecEntry",
       "base64": "AAAABAAAAAtlcnJlbnVtLWRvYwAAAAALc29yb2Jhbl9zZGsAAAAABUVycm9yAAAAAAAAAgAAAA1ub3QtZm91bmQtZG9jAAAAAAAACE5vdEZvdW5kAAAAAQAAAA1mb3JiaWRkZW4tZG9jAAAAAAAACUZvcmJpZGRlbgAAAAAAAAI=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"udt_error_enum_v0\":{\"doc\":\"errenum-doc\",\"lib\":\"soroban_sdk\",\"name\":\"Error\",\"cases\":[{\"doc\":\"not-found-doc\",\"name\":\"NotFound\",\"value\":1},{\"doc\":\"forbidden-doc\",\"name\":\"Forbidden\",\"value\":2}]}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > SCSpecEntry > UDT_ERROR_ENUM_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_max_size_bytes",
       "type": "ConfigSettingEntry",
       "base64": "AAAAAAABAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_max_size_bytes\":65536}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_MAX_SIZE_BYTES",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_compute_v0",
       "type": "ConfigSettingEntry",
       "base64": "AAAAAQAAAAAF9eEAAAAAAAF9eEAAAAAAAAAAMgQAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_compute_v0\":{\"ledger_max_instructions\":\"100000000\",\"tx_max_instructions\":\"25000000\",\"fee_rate_per_instructions_increment\":\"50\",\"tx_memory_limit\":67108864}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_COMPUTE_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_ledger_cost_v0",
       "type": "ConfigSettingEntry",
       "base64": "AAAAAgAAAGQAEAAAAAAAGQABAAAAAAAyAAgAAAAAABkAAIAAAAAAAAAAA+gAAAAAAAATiAAAAAAAAAPoAAAAAAAPQkAAAAAAAAAAZAAAAAAAAAPoAAAAMg==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_ledger_cost_v0\":{\"ledger_max_disk_read_entries\":100,\"ledger_max_disk_read_bytes\":1048576,\"ledger_max_write_ledger_entries\":25,\"ledger_max_write_bytes\":65536,\"tx_max_disk_read_entries\":50,\"tx_max_disk_read_bytes\":524288,\"tx_max_write_ledger_entries\":25,\"tx_max_write_bytes\":32768,\"fee_disk_read_ledger_entry\":\"1000\",\"fee_write_ledger_entry\":\"5000\",\"fee_disk_read1_kb\":\"1000\",\"soroban_state_target_size_bytes\":\"1000000\",\"rent_fee1_kb_soroban_state_size_low\":\"100\",\"rent_fee1_kb_soroban_state_size_high\":\"1000\",\"soroban_state_rent_fee_growth_factor\":50}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_LEDGER_COST_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_historical_data_v0",
       "type": "ConfigSettingEntry",
       "base64": "AAAAAwAAAAAAAABk",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_historical_data_v0\":{\"fee_historical1_kb\":\"100\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_HISTORICAL_DATA_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_events_v0",
       "type": "ConfigSettingEntry",
       "base64": "AAAABAAAIAAAAAAAAAAAyA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_events_v0\":{\"tx_max_contract_events_size_bytes\":8192,\"fee_contract_events1_kb\":\"200\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_EVENTS_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_bandwidth_v0",
       "type": "ConfigSettingEntry",
       "base64": "AAAABQACAAAAAQAAAAAAAAAAAGQ=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_bandwidth_v0\":{\"ledger_max_txs_size_bytes\":131072,\"tx_max_size_bytes\":65536,\"fee_tx_size1_kb\":\"100\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_BANDWIDTH_V0",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_data_key_size",
       "type": "ConfigSettingEntry",
       "base64": "AAAACAAABAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_data_key_size_bytes\":1024}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_DATA_KEY_SIZE_BYTES",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_data_entry_size",
       "type": "ConfigSettingEntry",
       "base64": "AAAACQABAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_data_entry_size_bytes\":65536}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_DATA_ENTRY_SIZE_BYTES",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_execution_lanes",
       "type": "ConfigSettingEntry",
       "base64": "AAAACwAAADI=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"contract_execution_lanes\":{\"ledger_max_tx_count\":50}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > CONTRACT_EXECUTION_LANES",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "config_setting_entry_state_size_window",
       "type": "ConfigSettingEntry",
       "base64": "AAAADAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"live_soroban_state_size_window\":[]}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ConfigSettingEntry > LIVE_SOROBAN_STATE_SIZE_WINDOW (empty array)",
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_0",
       "type": "SCVal",
       "base64": "AAAAAwAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":0}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_1",
       "type": "SCVal",
       "base64": "AAAAAwABhqA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":100000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_2",
       "type": "SCVal",
       "base64": "AAAAAwADDUA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":200000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_3",
       "type": "SCVal",
       "base64": "AAAAAwAEk+A=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":300000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_4",
       "type": "SCVal",
       "base64": "AAAAAwAGGoA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":400000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_5",
       "type": "SCVal",
       "base64": "AAAAAwAHoSA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":500000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_6",
       "type": "SCVal",
       "base64": "AAAAAwAJJ8A=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":600000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_7",
       "type": "SCVal",
       "base64": "AAAAAwAKrmA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":700000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_8",
       "type": "SCVal",
       "base64": "AAAAAwAMNQA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":800000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u32_iter_9",
       "type": "SCVal",
       "base64": "AAAAAwANu6A=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u32\":900000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_0",
       "type": "SCVal",
       "base64": "AAAABP/4XuA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":-500000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_1",
       "type": "SCVal",
       "base64": "AAAABP/55YA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":-400000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_2",
       "type": "SCVal",
       "base64": "AAAABP/7bCA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":-300000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_3",
       "type": "SCVal",
       "base64": "AAAABP/88sA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":-200000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_4",
       "type": "SCVal",
       "base64": "AAAABP/+eWA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":-100000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_5",
       "type": "SCVal",
       "base64": "AAAABAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":0}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_6",
       "type": "SCVal",
       "base64": "AAAABAABhqA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":100000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_7",
       "type": "SCVal",
       "base64": "AAAABAADDUA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":200000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_8",
       "type": "SCVal",
       "base64": "AAAABAAEk+A=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":300000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_i32_iter_9",
       "type": "SCVal",
       "base64": "AAAABAAGGoA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"i32\":400000}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_0",
       "type": "SCVal",
       "base64": "AAAABQAAAAAAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_1",
       "type": "SCVal",
       "base64": "AAAABQAAAAA7msoA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"1000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_2",
       "type": "SCVal",
       "base64": "AAAABQAAAAB3NZQA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"2000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_3",
       "type": "SCVal",
       "base64": "AAAABQAAAACy0F4A",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"3000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_4",
       "type": "SCVal",
       "base64": "AAAABQAAAADuaygA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"4000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_5",
       "type": "SCVal",
       "base64": "AAAABQAAAAEqBfIA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"5000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_6",
       "type": "SCVal",
       "base64": "AAAABQAAAAFloLwA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"6000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_7",
       "type": "SCVal",
       "base64": "AAAABQAAAAGhO4YA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"7000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_8",
       "type": "SCVal",
       "base64": "AAAABQAAAAHc1lAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"8000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_u64_iter_9",
       "type": "SCVal",
       "base64": "AAAABQAAAAIYcRoA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"u64\":\"9000000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_0",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF8w",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_1",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF8x",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_1\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_2",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF8y",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_2\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_3",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF8z",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_3\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_4",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF80",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_4\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_5",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF81",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_5\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_6",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF82",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_6\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_7",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF83",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_7\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_8",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF84",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_8\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_symbol_iter_9",
       "type": "SCVal",
       "base64": "AAAADwAAAARvcF85",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"symbol\":\"op_9\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_0",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfMA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_0\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_1",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfMQ==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_1\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_2",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfMg==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_2\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_3",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfMw==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_3\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_4",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfNA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_4\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_5",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfNQ==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_5\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_6",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfNg==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_6\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_7",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfNw==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_7\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_8",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfOA==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_8\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_string_iter_9",
       "type": "SCVal",
       "base64": "AAAADgAAAAhzdHJpbmdfOQ==",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"string\":\"string_9\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_0",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAAAAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00000000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_1",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAAAQA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00000400\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_2",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAAAgA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00000800\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_3",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAAAwA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00000c00\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_4",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAABAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00001000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_5",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAABQA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00001400\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_6",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAABgA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00001800\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_7",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAABwA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00001c00\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_8",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAACAA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00002000\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bytes_iter_9",
       "type": "SCVal",
       "base64": "AAAADQAAAAQAACQA",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bytes\":\"00002400\"}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_0",
       "type": "SCVal",
       "base64": "AAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":true}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_1",
       "type": "SCVal",
       "base64": "AAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":false}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_2",
       "type": "SCVal",
       "base64": "AAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":true}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_3",
       "type": "SCVal",
       "base64": "AAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":false}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_4",
       "type": "SCVal",
       "base64": "AAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":true}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_5",
       "type": "SCVal",
       "base64": "AAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":false}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_6",
       "type": "SCVal",
       "base64": "AAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":true}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_7",
       "type": "SCVal",
       "base64": "AAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":false}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_8",
       "type": "SCVal",
       "base64": "AAAAAAAAAAE=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":true}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     },
     {
       "id": "scval_bool_iter_9",
       "type": "SCVal",
       "base64": "AAAAAAAAAAA=",
-      "py_reference_json": null,
-      "spec_reference_json": null,
-      "divergence_reason": null,
+      "spec_reference_json": "{\"bool\":false}",
       "spec_anchor": null,
-      "notes": "py reference deferred to first CI run; cross-SDK gate G-CrossSDK runs on CI lane only"
+      "notes": null
     }
   ]
 }

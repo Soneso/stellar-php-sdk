@@ -109,10 +109,10 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   def test_sep51_xdr_operation_result_code_emits_bare_member_names
-    # Documented divergence from py-stellar-base: PHP emits the bare
-    # lowercase identifier without the `op` prefix that py retains
-    # (py renders "opinner" / "opbad_auth" etc; PHP renders "inner" /
-    # "bad_auth"; see tools/baselines/sep-51-divergence-catalogue.md).
+    # SEP-0051 §Discriminated unions specifies the well-known IDL prefix
+    # is stripped from each member; the PHP-side identifiers have already
+    # been stripped at codegen-name level via MEMBER_PREFIX_STRIP, so the
+    # emission renders OP_INNER as "inner", OP_BAD_AUTH as "bad_auth", etc.
     assert_sep51_enum_shape("XdrOperationResultCode.php", expected_arms: %w[
       inner bad_auth no_account not_supported too_many_subentries
       exceeded_work_limit too_many_sponsoring
@@ -122,8 +122,8 @@ class GeneratorSnapshotTest < Minitest::Test
   def test_sep51_xdr_claimable_balance_id_type_single_member
     # Single-member edge case: there is no other entry to share tokens with,
     # so the longest shared prefix is empty and the wire form is the full
-    # lowercase snake_case identifier. Verified against py-stellar-base
-    # v14.0.0 (CLAIMABLE_BALANCE_ID_TYPE_V0 -> "claimable_balance_id_type_v0").
+    # lowercase snake_case identifier per SEP-0051 §Discriminated unions
+    # (CLAIMABLE_BALANCE_ID_TYPE_V0 -> "claimable_balance_id_type_v0").
     assert_sep51_enum_shape(
       "XdrClaimableBalanceIDType.php",
       expected_arms: %w[claimable_balance_id_type_v0]
@@ -147,8 +147,8 @@ class GeneratorSnapshotTest < Minitest::Test
     # XdrIPAddrType and XdrContractCostType use CamelCase constant names
     # (e.g. IPv4, IPv6, WasmInsnExec). The tokenizer splits on underscores
     # only, so each CamelCase identifier becomes a single lowercased token
-    # and produces the same wire form as py-stellar-base v14.0.0
-    # (e.g. ["ipv4","ipv6"]; ["wasminsnexec","memalloc",...]).
+    # and produces the canonical SEP-0051 wire form (e.g. ["ipv4","ipv6"];
+    # ["wasminsnexec","memalloc",...]).
     %w[XdrIPAddrType.php XdrContractCostType.php].each do |fname|
       path = File.join(OUTPUT_DIR, fname)
       assert File.exist?(path), "expected #{path} to exist; check generator output cwd"

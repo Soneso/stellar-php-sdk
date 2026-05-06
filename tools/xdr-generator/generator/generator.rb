@@ -2660,8 +2660,8 @@ class Generator < Xdrgen::Generators::Base
   # ALL_CAPS_WITH_UNDERSCORES (e.g. "ASSET_TYPE_NATIVE") and CamelCase
   # (e.g. "WasmInsnExec", "IPv4") shapes are accepted: tokenize_identifier in
   # XdrJsonHelpers splits on underscores only and lowercases the result, which
-  # produces the canonical wire form for both shapes — verified against
-  # py-stellar-base v14.0.0 (e.g. IPAddrType -> ["ipv4","ipv6"];
+  # produces the canonical wire form for both shapes per SEP-0051
+  # §Discriminated unions (e.g. IPAddrType -> ["ipv4","ipv6"];
   # ContractCostType -> ["wasminsnexec","memalloc",...]).
   def enum_uses_simple_identifier_members?(php_name, enum_defn)
     enum_defn.members.all? do |m|
@@ -2984,9 +2984,10 @@ class Generator < Xdrgen::Generators::Base
 
   # The SEP-51 wire-form key for one struct field. The post-name-override XDR
   # field name (after name_overrides.rb has run) feeds into ActiveSupport's
-  # String#underscore to produce snake_case (verified against py-stellar-base
-  # v14.0.0 which uses the same algorithm and emits e.g. "account_id" for
-  # `accountID`, "signer_sponsoring_i_ds" for `signerSponsoringIDs`).
+  # String#underscore to produce snake_case per SEP-0051 §Structs, which
+  # specifies the camelCase IDL field name is converted to snake_case
+  # (e.g. "account_id" for `accountID`, "signer_sponsoring_i_ds" for
+  # `signerSponsoringIDs`).
   def struct_field_json_key(field)
     field[:xdr_name].to_s.underscore
   end

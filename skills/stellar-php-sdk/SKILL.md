@@ -447,7 +447,7 @@ For complete security patterns including input validation, transaction verificat
 
 ## 10. SEP Implementations
 
-The PHP SDK implements 19 Stellar Ecosystem Proposals (SEPs). Most commonly used: SEP-01 (Stellar TOML discovery), SEP-02 (Federation address resolution), SEP-05 (BIP-39 mnemonic key derivation), SEP-10 (Web Authentication for account ownership proof), SEP-24 (Interactive deposit/withdrawal flows), SEP-51 (XDR-JSON encoding for cross-SDK and human-readable interchange of Stellar XDR types). All SEP classes are under the `Soneso\StellarSDK\SEP\` namespace; SEP-51 lives under `Soneso\StellarSDK\Xdr\` because it operates on XDR types directly.
+The PHP SDK implements 19 Stellar Ecosystem Proposals (SEPs). Most commonly used: SEP-01 (Stellar TOML discovery), SEP-02 (Federation address resolution), SEP-05 (BIP-39 mnemonic key derivation), SEP-10 (Web Authentication for account ownership proof), SEP-24 (Interactive deposit/withdrawal flows), SEP-51 (XDR-JSON encoding for human-readable interchange of Stellar XDR types). All SEP classes are under the `Soneso\StellarSDK\SEP\` namespace; SEP-51 lives under `Soneso\StellarSDK\Xdr\` because it operates on XDR types directly.
 
 For all SEP examples and the complete implementation table:
 [SEP Reference](./references/sep.md) and the per-SEP guides including [SEP-51 (XDR-JSON)](./references/sep-51.md).
