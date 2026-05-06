@@ -220,10 +220,9 @@ class Sep51FieldOverridesTest < Minitest::Test
                  'Expected exactly 4 asset_code field-override entries'
   end
 
-  def test_storage_form_per_pool_id_site_matches_audit_document
-    # Storage-form audit table (from sep-51-wrapper-storage-audit.md):
-    # - Deposit/Withdraw operation bases store hex (wrapper bin2hex).
-    # - All other PoolID sites store raw (no wrapper override).
+  def test_storage_form_per_pool_id_site
+    # Deposit/Withdraw operation bases store hex (wrapper bin2hex).
+    # All other PoolID sites store raw (no wrapper override).
     expected_encoding = {
       ['XdrLiquidityPoolDepositOperationBase',  'liquidityPoolID'] => :hex,
       ['XdrLiquidityPoolWithdrawOperationBase', 'liquidityPoolID'] => :hex,

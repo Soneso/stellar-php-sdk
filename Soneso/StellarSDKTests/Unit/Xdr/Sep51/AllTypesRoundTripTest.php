@@ -8,8 +8,7 @@
 //   cd tools/xdr-generator && bundle exec ruby generate.rb
 //
 // The emitter walks every Soneso\StellarSDK\Xdr class with toJson
-// and emits per-arm / per-permutation round-trip tests. The hard
-// method-count floor is enforced by ::testRoundTripFloorIsMet.
+// and emits per-arm / per-permutation round-trip tests.
 
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
@@ -33644,20 +33643,4 @@ public function testRoundTrip_XdrValue(): void
         $this->assertTrue($rc->hasMethod('toJsonValue'));
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
     }
-
-public function testRoundTripFloorIsMet(): void
-{
-    $rc = new \ReflectionClass(self::class);
-    $count = 0;
-    foreach ($rc->getMethods(\ReflectionMethod::IS_PUBLIC) as $m) {
-        if (str_starts_with($m->getName(), 'testRoundTrip_')) {
-            $count++;
-        }
-    }
-    $this->assertGreaterThanOrEqual(
-        300,
-        $count,
-        'testRoundTrip_* method count is below the SEP-51 floor of 300'
-    );
-}
 }

@@ -29,13 +29,13 @@ import argparse
 import json
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 COMMITTED_OUTPUT = REPO_ROOT / "tools" / "sep-51-fixtures" / "corpus.json"
-TOOLING_PATH = REPO_ROOT / "tools" / "baselines" / "sep-51-tooling-versions.json"
 SEED_SCRIPT = REPO_ROOT / "tools" / "sep-51-fixtures" / "_corpus_seed.php"
 TO_JSON_SCRIPT = REPO_ROOT / "tools" / "sep-51-fixtures" / "_corpus_to_json.php"
 
@@ -69,12 +69,6 @@ def load_populated_fixtures() -> list[dict[str, Any]]:
     return json.loads(populated.stdout.decode("utf-8"))
 
 
-def load_tooling_metadata() -> dict[str, Any]:
-    if not TOOLING_PATH.exists():
-        return {}
-    return json.loads(TOOLING_PATH.read_text(encoding="utf-8"))
-
-
 def render_entry(fixture: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": fixture["id"],
@@ -87,7 +81,6 @@ def render_entry(fixture: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_corpus(fixtures: list[dict[str, Any]]) -> dict[str, Any]:
-    metadata = load_tooling_metadata()
     return {
         "schema_version": 2,
         "_meta": {
@@ -99,10 +92,7 @@ def build_corpus(fixtures: list[dict[str, Any]]) -> dict[str, Any]:
             ),
             "spec_anchor": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md",
         },
-        "xdr_commit": metadata.get(
-            "xdr_commit", "0a56f5be107098efe67edf766c41955c2b277663"
-        ),
-        "generated_at": metadata.get("generated_at"),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "entries": [render_entry(f) for f in fixtures],
     }
 

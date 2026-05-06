@@ -7,10 +7,6 @@
 # encodes things like StrKey output, GMP integer reassembly, and prefix-stripped
 # discriminant strings.
 #
-# The list is frozen and must be kept in sync with the baseline mirror at
-# tools/baselines/sep-51-cat-a-targets.txt (consumed by the generator's entry
-# gate to detect drift between this list and its committed snapshot).
-
 CAT_A_INLINE_TARGETS = %w[
   XdrAsset
   XdrInt128Parts

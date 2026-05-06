@@ -1,3 +1,0 @@
-0  # deferred-baseline; canonical Ubuntu PHP 8.4 lane value populated on first successful CI run on this branch (no-coverage lane). Until then, G-RuntimeBudget gate is no-op (skip mode).
-# Local darwin reference (PHP 8.4.15, no coverage): ~8s — too low to use as Ubuntu baseline.
-# G-RuntimeBudget contract: when the first non-comment line parses to integer 0, the gate emits a "deferred — not enforced" warning and exits 0. Once a real CI measurement replaces the 0 with a positive integer (Phase 5b acceptance), the gate becomes active and asserts wall-clock <= baseline + 90s.

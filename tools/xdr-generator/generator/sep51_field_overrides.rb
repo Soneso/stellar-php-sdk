@@ -23,8 +23,9 @@
 #       field's runtime storage form is a 64-char hex string. The :raw
 #       variant uses the binary-form method (encodeXxxId / decodeXxxId) and
 #       assumes the field's runtime storage form is a raw 32-byte buffer.
-#       The storage form is verified per site in
-#       `tools/baselines/sep-51-wrapper-storage-audit.md`.
+#       The storage form is determined by reading the wrapper class's
+#       decode path (raw bytes by default; hex string when the wrapper
+#       converts via bin2hex after parent::decode).
 #
 #   { asset_code: 4 | 12 }
 #       Emit AssetCode4 / AssetCode12 trim-pad-escape semantics inline at
@@ -37,10 +38,9 @@
 #       receive the PHP field-access expression (e.g. "$this->fieldName")
 #       and must return the PHP source string the generator emits.
 #
-# Per-site storage-form audit rules and the eight strkey rows are pinned in
-# `tools/baselines/sep-51-wrapper-storage-audit.md`. Any change to a Cat-B
-# wrapper's decode path that alters a field's storage form requires the
-# audit document and this registry to be updated together.
+# Any change to a Cat-B wrapper's decode path that alters a field's
+# storage form requires the corresponding registry entry's `encoding`
+# value to be updated.
 
 SEP51_FIELD_OVERRIDES = {
   # PoolID -> L-strkey (7 sites verified by reading Soneso/StellarSDK/Xdr/).

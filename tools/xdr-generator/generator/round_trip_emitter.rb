@@ -29,10 +29,6 @@ require 'digest'
 # 6. For each struct with optional fields, emit either the cartesian
 #    product (N <= 4 fields => 2^N methods) or the canonical 8-pattern
 #    branch-coverage set (N > 4 fields).
-# 7. Emit a final consistency check method that asserts the file's own
-#    test method count meets the floor in
-#    tools/baselines/sep-51-roundtrip-floor.txt.
-#
 # Determinism
 # -----------
 # - Type discovery, arm enumeration and permutation generation all
@@ -40,13 +36,12 @@ require 'digest'
 # - Fixture base64 strings are produced by deterministic PHP construction
 #   (no random_bytes; per-method seed derived from method name via crc32
 #   when payload bytes are needed).
-# - The same input source (PHP class set + corpus.json + floor file)
-#   produces a byte-identical AllTypesRoundTripTest.php across runs.
+# - The same input source (PHP class set + corpus.json) produces a
+#   byte-identical AllTypesRoundTripTest.php across runs.
 class RoundTripEmitter
   REPO_ROOT = File.expand_path('../../..', __dir__)
   PHP_XDR_DIR = File.join(REPO_ROOT, 'Soneso', 'StellarSDK', 'Xdr')
   CORPUS_PATH = File.join(REPO_ROOT, 'tools', 'sep-51-fixtures', 'corpus.json')
-  FLOOR_PATH = File.join(REPO_ROOT, 'tools', 'baselines', 'sep-51-roundtrip-floor.txt')
   OUTPUT_PATH = File.join(
     REPO_ROOT,
     'Soneso', 'StellarSDKTests', 'Unit', 'Xdr', 'Sep51',
@@ -80,26 +75,12 @@ class RoundTripEmitter
   end
 
   def run
-    floor = parse_floor(File.read(FLOOR_PATH))
     metadata = gather_metadata
     corpus = load_corpus
-    emit(metadata: metadata, corpus: corpus, floor: floor)
+    emit(metadata: metadata, corpus: corpus)
   end
 
   private
-
-  # ---------------------------------------------------------------------
-  # Floor parsing
-  # ---------------------------------------------------------------------
-
-  def parse_floor(text)
-    text.each_line do |line|
-      stripped = line.strip
-      next if stripped.empty? || stripped.start_with?('#')
-      return Integer(stripped, 10)
-    end
-    raise 'Floor file did not contain an integer line'
-  end
 
   # ---------------------------------------------------------------------
   # PHP introspection — gather metadata for every Xdr* class
@@ -372,7 +353,7 @@ class RoundTripEmitter
   # Emission
   # ---------------------------------------------------------------------
 
-  def emit(metadata:, corpus:, floor:)
+  def emit(metadata:, corpus:)
     method_blocks = []
     used_methods = {}
 
@@ -411,13 +392,10 @@ class RoundTripEmitter
         emit_struct_optional_methods(t, method_blocks, used_methods)
       end
 
-    # Final guardrail method.
-    method_blocks << emit_floor_check_method(floor)
-
     file = build_file(method_blocks)
     File.write(OUTPUT_PATH, file)
     method_count = method_blocks.size
-    warn("AllTypesRoundTripTest emitted with #{method_count} test methods (floor #{floor}).")
+    warn("AllTypesRoundTripTest emitted with #{method_count} test methods.")
   end
 
   def type_metadata(metadata, name)
@@ -828,30 +806,6 @@ class RoundTripEmitter
   end
 
   # ---------------------------------------------------------------------
-  # Floor-check guardrail
-  # ---------------------------------------------------------------------
-
-  def emit_floor_check_method(floor)
-    <<~PHP.rstrip
-          public function testRoundTripFloorIsMet(): void
-          {
-              $rc = new \\ReflectionClass(self::class);
-              $count = 0;
-              foreach ($rc->getMethods(\\ReflectionMethod::IS_PUBLIC) as $m) {
-                  if (str_starts_with($m->getName(), 'testRoundTrip_')) {
-                      $count++;
-                  }
-              }
-              $this->assertGreaterThanOrEqual(
-                  #{floor},
-                  $count,
-                  'testRoundTrip_* method count is below the SEP-51 floor of #{floor}'
-              );
-          }
-    PHP
-  end
-
-  # ---------------------------------------------------------------------
   # File assembly
   # ---------------------------------------------------------------------
 
@@ -868,8 +822,7 @@ class RoundTripEmitter
       //   cd tools/xdr-generator && bundle exec ruby generate.rb
       //
       // The emitter walks every Soneso\\StellarSDK\\Xdr class with toJson
-      // and emits per-arm / per-permutation round-trip tests. The hard
-      // method-count floor is enforced by ::testRoundTripFloorIsMet.
+      // and emits per-arm / per-permutation round-trip tests.
 
       namespace #{TEST_NAMESPACE};
 

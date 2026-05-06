@@ -962,13 +962,12 @@ class StellarSpecificTypesTest extends TestCase
     }
 
     // -----------------------------------------------------------------
-    // F4-T1: per-registry-entry round-trip integration tests.
+    // Per-registry-entry round-trip integration tests.
     //
     // The SEP51_FIELD_OVERRIDES registry holds 12 entries (8 strkey rows +
-    // 4 asset_code rows). The strkey rows are pinned in the storage-form
-    // audit at tools/baselines/sep-51-wrapper-storage-audit.md. This block
-    // adds round-trip coverage for the remaining sites beyond the existing
-    // DepositOp / WithdrawOp / LedgerKeyLiquidityPool tests.
+    // 4 asset_code rows). This block adds round-trip coverage for the
+    // remaining sites beyond the existing DepositOp / WithdrawOp /
+    // LedgerKeyLiquidityPool tests.
     // -----------------------------------------------------------------
 
     public function testXdrTrustlineAssetBasePoolIDRoundTrip(): void
