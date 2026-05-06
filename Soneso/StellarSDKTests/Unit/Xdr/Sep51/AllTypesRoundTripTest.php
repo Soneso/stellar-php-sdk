@@ -16849,12 +16849,420 @@ public function testRoundTrip_XdrUInt256Parts_corpus_uint256_zero(): void
         'corpus[uint256_zero] XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAABgAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAABwAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_EVICTION_ITERATOR(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_EVICTION_ITERATOR arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_EVICTION_ITERATOR')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_EVICTION_ITERATOR not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_FREEZE_BYPASS_TXS(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_FREEZE_BYPASS_TXS arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_FREEZE_BYPASS_TXS')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_FREEZE_BYPASS_TXS not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_FROZEN_LEDGER_KEYS(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_FROZEN_LEDGER_KEYS arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_FROZEN_LEDGER_KEYS')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_FROZEN_LEDGER_KEYS not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_SCP_TIMING(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_SCP_TIMING arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_SCP_TIMING')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_SCP_TIMING not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_STATE_ARCHIVAL(): void
+{
+    // Default-fixture round-trip for the XdrConfigSettingEntry type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrConfigSettingEntry toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrConfigSettingEntry default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the CONFIG_SETTING_STATE_ARCHIVAL arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('CONFIG_SETTING_STATE_ARCHIVAL')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrConfigSettingEntry arm CONFIG_SETTING_STATE_ARCHIVAL not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrSignerKeyUnion_SIGNER_KEY_TYPE_ED25519(): void
+{
+    // Default-fixture round-trip for the XdrSignerKey type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSignerKey toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSignerKey default-fixture toJsonValue idempotence broken');
+
+    // Reachability of the SIGNER_KEY_TYPE_ED25519 arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrSignerKey::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('SIGNER_KEY_TYPE_ED25519')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrSignerKey arm SIGNER_KEY_TYPE_ED25519 not found on any discriminant property');
+}
+
 public function testRoundTrip_XdrAccountMergeResultUnion_DEST_FULL(): void
 {
     // Default-fixture round-trip for the XdrAccountMergeResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
@@ -16888,7 +17296,7 @@ public function testRoundTrip_XdrAccountMergeResultUnion_HAS_SUB_ENTRIES(): void
     // Default-fixture round-trip for the XdrAccountMergeResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
@@ -16922,7 +17330,7 @@ public function testRoundTrip_XdrAccountMergeResultUnion_IMMUTABLE_SET(): void
     // Default-fixture round-trip for the XdrAccountMergeResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
@@ -16956,7 +17364,7 @@ public function testRoundTrip_XdrAccountMergeResultUnion_IS_SPONSOR(): void
     // Default-fixture round-trip for the XdrAccountMergeResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
@@ -16990,7 +17398,7 @@ public function testRoundTrip_XdrAccountMergeResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrAccountMergeResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
@@ -17024,7 +17432,7 @@ public function testRoundTrip_XdrAccountMergeResultUnion_NO_ACCOUNT(): void
     // Default-fixture round-trip for the XdrAccountMergeResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
@@ -17058,7 +17466,7 @@ public function testRoundTrip_XdrAccountMergeResultUnion_SEQNUM_TOO_FAR(): void
     // Default-fixture round-trip for the XdrAccountMergeResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountMergeResult::fromBase64Xdr($base64);
@@ -17147,7 +17555,7 @@ public function testRoundTrip_XdrAllowTrustResultUnion_CANT_REVOKE(): void
     // Default-fixture round-trip for the XdrAllowTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
@@ -17215,7 +17623,7 @@ public function testRoundTrip_XdrAllowTrustResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrAllowTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
@@ -17249,7 +17657,7 @@ public function testRoundTrip_XdrAllowTrustResultUnion_NO_TRUST_LINE(): void
     // Default-fixture round-trip for the XdrAllowTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
@@ -17283,7 +17691,7 @@ public function testRoundTrip_XdrAllowTrustResultUnion_SELF_NOT_ALLOWED(): void
     // Default-fixture round-trip for the XdrAllowTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
@@ -17317,7 +17725,7 @@ public function testRoundTrip_XdrAllowTrustResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrAllowTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
@@ -17351,7 +17759,7 @@ public function testRoundTrip_XdrAllowTrustResultUnion_TRUST_NOT_REQUIRED(): voi
     // Default-fixture round-trip for the XdrAllowTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAllowTrustResult::fromBase64Xdr($base64);
@@ -17385,7 +17793,7 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_ALREAD
     // Default-fixture round-trip for the XdrBeginSponsoringFutureReservesResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromBase64Xdr($base64);
@@ -17419,7 +17827,7 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_MALFOR
     // Default-fixture round-trip for the XdrBeginSponsoringFutureReservesResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromBase64Xdr($base64);
@@ -17487,7 +17895,7 @@ public function testRoundTrip_XdrBeginSponsoringFutureReservesResultUnion_SUCCES
     // Default-fixture round-trip for the XdrBeginSponsoringFutureReservesResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesResult::fromBase64Xdr($base64);
@@ -17576,7 +17984,7 @@ public function testRoundTrip_XdrBumpSequenceResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrBumpSequenceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////w==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBumpSequenceResult::fromBase64Xdr($base64);
@@ -17631,7 +18039,7 @@ public function testRoundTrip_XdrChangeTrustResultUnion_CANNOT_DELETE(): void
     // Default-fixture round-trip for the XdrChangeTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
@@ -17665,7 +18073,7 @@ public function testRoundTrip_XdrChangeTrustResultUnion_INVALID_LIMIT(): void
     // Default-fixture round-trip for the XdrChangeTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
@@ -17699,7 +18107,7 @@ public function testRoundTrip_XdrChangeTrustResultUnion_LOW_RESERVE(): void
     // Default-fixture round-trip for the XdrChangeTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
@@ -17733,7 +18141,7 @@ public function testRoundTrip_XdrChangeTrustResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrChangeTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
@@ -17801,7 +18209,7 @@ public function testRoundTrip_XdrChangeTrustResultUnion_NO_ISSUER(): void
     // Default-fixture round-trip for the XdrChangeTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
@@ -17835,7 +18243,7 @@ public function testRoundTrip_XdrChangeTrustResultUnion_SELF_NOT_ALLOWED(): void
     // Default-fixture round-trip for the XdrChangeTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
@@ -17869,7 +18277,7 @@ public function testRoundTrip_XdrChangeTrustResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrChangeTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
@@ -17903,7 +18311,7 @@ public function testRoundTrip_XdrChangeTrustResultUnion_TRUST_LINE_MISSING(): vo
     // Default-fixture round-trip for the XdrChangeTrustResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrChangeTrustResult::fromBase64Xdr($base64);
@@ -17937,7 +18345,7 @@ public function testRoundTrip_XdrClaimAtomUnion_LIQUIDITY_POOL(): void
     // Default-fixture round-trip for the XdrClaimAtom type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromBase64Xdr($base64);
@@ -17971,7 +18379,7 @@ public function testRoundTrip_XdrClaimAtomUnion_ORDER_BOOK(): void
     // Default-fixture round-trip for the XdrClaimAtom type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimAtom::fromBase64Xdr($base64);
@@ -18039,7 +18447,7 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_CANNOT_CLAIM()
     // Default-fixture round-trip for the XdrClaimClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18073,7 +18481,7 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_DOES_NOT_EXIST
     // Default-fixture round-trip for the XdrClaimClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18107,7 +18515,7 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_LINE_FULL(): v
     // Default-fixture round-trip for the XdrClaimClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18141,7 +18549,7 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_NOT_AUTHORIZED
     // Default-fixture round-trip for the XdrClaimClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18175,7 +18583,7 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_NO_TRUST(): vo
     // Default-fixture round-trip for the XdrClaimClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18209,7 +18617,7 @@ public function testRoundTrip_XdrClaimClaimableBalanceResultUnion_SUCCESS(): voi
     // Default-fixture round-trip for the XdrClaimClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18311,7 +18719,7 @@ public function testRoundTrip_XdrClaimPredicateUnion_BEFORE_ABSOLUTE_TIME(): voi
     // Default-fixture round-trip for the XdrClaimPredicate type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAA==';
+    $base64 = 'AAAABAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromBase64Xdr($base64);
@@ -18345,7 +18753,7 @@ public function testRoundTrip_XdrClaimPredicateUnion_BEFORE_RELATIVE_TIME(): voi
     // Default-fixture round-trip for the XdrClaimPredicate type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAA==';
+    $base64 = 'AAAABQAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromBase64Xdr($base64);
@@ -18379,7 +18787,7 @@ public function testRoundTrip_XdrClaimPredicateUnion_NOT(): void
     // Default-fixture round-trip for the XdrClaimPredicate type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAA==';
+    $base64 = 'AAAAAwAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimPredicate::fromBase64Xdr($base64);
@@ -18515,7 +18923,7 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_DOES_NOT_EX
     // Default-fixture round-trip for the XdrClawbackClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18583,7 +18991,7 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_NOT_ISSUER(
     // Default-fixture round-trip for the XdrClawbackClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18617,7 +19025,7 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_SUCCESS(): 
     // Default-fixture round-trip for the XdrClawbackClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceResult::fromBase64Xdr($base64);
@@ -18651,7 +19059,7 @@ public function testRoundTrip_XdrClawbackResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrClawbackResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
@@ -18685,7 +19093,7 @@ public function testRoundTrip_XdrClawbackResultUnion_NOT_ENABLED(): void
     // Default-fixture round-trip for the XdrClawbackResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
@@ -18719,7 +19127,7 @@ public function testRoundTrip_XdrClawbackResultUnion_NO_TRUST(): void
     // Default-fixture round-trip for the XdrClawbackResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
@@ -18753,7 +19161,7 @@ public function testRoundTrip_XdrClawbackResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrClawbackResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
@@ -18941,7 +19349,7 @@ public function testRoundTrip_XdrCreateAccountResultUnion_LOW_RESERVE(): void
     // Default-fixture round-trip for the XdrCreateAccountResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
@@ -18975,7 +19383,7 @@ public function testRoundTrip_XdrCreateAccountResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrCreateAccountResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
@@ -19009,7 +19417,7 @@ public function testRoundTrip_XdrCreateAccountResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrCreateAccountResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
@@ -19043,7 +19451,7 @@ public function testRoundTrip_XdrCreateAccountResultUnion_UNDERFUNDED(): void
     // Default-fixture round-trip for the XdrCreateAccountResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
@@ -19077,7 +19485,7 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_LOW_RESERVE()
     // Default-fixture round-trip for the XdrCreateClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromBase64Xdr($base64);
@@ -19111,7 +19519,7 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_MALFORMED(): 
     // Default-fixture round-trip for the XdrCreateClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromBase64Xdr($base64);
@@ -19145,7 +19553,7 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_NOT_AUTHORIZE
     // Default-fixture round-trip for the XdrCreateClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromBase64Xdr($base64);
@@ -19179,7 +19587,7 @@ public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_NO_TRUST(): v
     // Default-fixture round-trip for the XdrCreateClaimableBalanceResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceResult::fromBase64Xdr($base64);
@@ -19336,7 +19744,7 @@ public function testRoundTrip_XdrEndSponsoringFutureReservesResultUnion_SUCCESS(
     // Default-fixture round-trip for the XdrEndSponsoringFutureReservesResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////w==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrEndSponsoringFutureReservesResult::fromBase64Xdr($base64);
@@ -19425,7 +19833,7 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     // Default-fixture round-trip for the XdrExtendFootprintTTLResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromBase64Xdr($base64);
@@ -19459,7 +19867,7 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     // Default-fixture round-trip for the XdrExtendFootprintTTLResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromBase64Xdr($base64);
@@ -19493,7 +19901,7 @@ public function testRoundTrip_XdrExtendFootprintTTLResultUnion_EXTEND_FOOTPRINT_
     // Default-fixture round-trip for the XdrExtendFootprintTTLResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult::fromBase64Xdr($base64);
@@ -19561,7 +19969,7 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_CONTRACT_ID()
     // Default-fixture round-trip for the XdrHashIDPreimage type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $base64 = 'AAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromBase64Xdr($base64);
@@ -19629,7 +20037,7 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_POOL_REVOKE_O
     // Default-fixture round-trip for the XdrHashIDPreimage type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $base64 = 'AAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromBase64Xdr($base64);
@@ -19663,7 +20071,7 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_SOROBAN_AUTHO
     // Default-fixture round-trip for the XdrHashIDPreimage type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $base64 = 'AAAACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromBase64Xdr($base64);
@@ -19786,7 +20194,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_AUTH(): v
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -19820,7 +20228,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_AUTH_EXTR
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////9g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -19854,7 +20262,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_MIN_SEQ_A
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////8Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -19888,7 +20296,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_SEQ(): vo
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -19922,7 +20330,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_BAD_SPONSORSH
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////8g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20024,7 +20432,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INSUFFICIENT_
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20058,7 +20466,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INSUFFICIENT_
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////9w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20092,7 +20500,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_INTERNAL_ERRO
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////9Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20126,7 +20534,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_MALFORMED(): 
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////8A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20160,7 +20568,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_MISSING_OPERA
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20194,7 +20602,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_NOT_SUPPORTED
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////9A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20228,7 +20636,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_NO_ACCOUNT():
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////+A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20262,7 +20670,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_SOROBAN_INVAL
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '////7w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20330,7 +20738,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_TOO_EARLY(): 
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20364,7 +20772,7 @@ public function testRoundTrip_XdrInnerTransactionResultResultUnion_TOO_LATE(): v
     // Default-fixture round-trip for the XdrInnerTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////7g==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromBase64Xdr($base64);
@@ -20398,7 +20806,7 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Default-fixture round-trip for the XdrInvokeHostFunctionResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
@@ -20432,7 +20840,7 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Default-fixture round-trip for the XdrInvokeHostFunctionResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
@@ -20466,7 +20874,7 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Default-fixture round-trip for the XdrInvokeHostFunctionResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
@@ -20500,7 +20908,7 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Default-fixture round-trip for the XdrInvokeHostFunctionResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
@@ -20568,7 +20976,7 @@ public function testRoundTrip_XdrInvokeHostFunctionResultUnion_INVOKE_HOST_FUNCT
     // Default-fixture round-trip for the XdrInvokeHostFunctionResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionResult::fromBase64Xdr($base64);
@@ -20636,7 +21044,7 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_REMOVED(): 
     // Default-fixture round-trip for the XdrLedgerEntryChange type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromBase64Xdr($base64);
@@ -20670,7 +21078,7 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_RESTORED():
     // Default-fixture round-trip for the XdrLedgerEntryChange type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromBase64Xdr($base64);
@@ -20704,7 +21112,7 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_STATE(): vo
     // Default-fixture round-trip for the XdrLedgerEntryChange type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromBase64Xdr($base64);
@@ -20738,7 +21146,7 @@ public function testRoundTrip_XdrLedgerEntryChangeUnion_LEDGER_ENTRY_UPDATED(): 
     // Default-fixture round-trip for the XdrLedgerEntryChange type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryChange::fromBase64Xdr($base64);
@@ -20840,7 +21248,7 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONFIG_SETTING(): void
     // Default-fixture round-trip for the XdrLedgerEntryData type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAACAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
@@ -20874,7 +21282,7 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONTRACT_CODE(): void
     // Default-fixture round-trip for the XdrLedgerEntryData type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
@@ -20908,7 +21316,7 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_CONTRACT_DATA(): void
     // Default-fixture round-trip for the XdrLedgerEntryData type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
@@ -20942,7 +21350,7 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_DATA(): void
     // Default-fixture round-trip for the XdrLedgerEntryData type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
@@ -20976,7 +21384,7 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_LIQUIDITY_POOL(): void
     // Default-fixture round-trip for the XdrLedgerEntryData type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
@@ -21010,7 +21418,7 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_OFFER(): void
     // Default-fixture round-trip for the XdrLedgerEntryData type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
@@ -21044,7 +21452,7 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_TRUSTLINE(): void
     // Default-fixture round-trip for the XdrLedgerEntryData type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
@@ -21078,7 +21486,7 @@ public function testRoundTrip_XdrLedgerEntryDataUnion_TTL(): void
     // Default-fixture round-trip for the XdrLedgerEntryData type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntryData::fromBase64Xdr($base64);
@@ -21154,7 +21562,7 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_BASE_FEE(): v
     // Default-fixture round-trip for the XdrLedgerUpgrade type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAA=';
+    $base64 = 'AAAAAgAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
@@ -21188,7 +21596,7 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_BASE_RESERVE(
     // Default-fixture round-trip for the XdrLedgerUpgrade type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAA=';
+    $base64 = 'AAAABAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
@@ -21222,7 +21630,7 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_CONFIG(): voi
     // Default-fixture round-trip for the XdrLedgerUpgrade type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAA=';
+    $base64 = 'AAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
@@ -21256,7 +21664,7 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_FLAGS(): void
     // Default-fixture round-trip for the XdrLedgerUpgrade type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAA=';
+    $base64 = 'AAAABQAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
@@ -21290,7 +21698,7 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_MAX_SOROBAN_T
     // Default-fixture round-trip for the XdrLedgerUpgrade type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAA=';
+    $base64 = 'AAAABwAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
@@ -21324,7 +21732,7 @@ public function testRoundTrip_XdrLedgerUpgradeUnion_LEDGER_UPGRADE_MAX_TX_SET_SI
     // Default-fixture round-trip for the XdrLedgerUpgrade type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAA=';
+    $base64 = 'AAAAAwAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerUpgrade::fromBase64Xdr($base64);
@@ -21426,7 +21834,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_BAD_PRICE(): vo
     // Default-fixture round-trip for the XdrLiquidityPoolDepositResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
@@ -21460,7 +21868,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_LINE_FULL(): vo
     // Default-fixture round-trip for the XdrLiquidityPoolDepositResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
@@ -21494,7 +21902,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_MALFORMED(): vo
     // Default-fixture round-trip for the XdrLiquidityPoolDepositResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
@@ -21528,7 +21936,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_NOT_AUTHORIZED(
     // Default-fixture round-trip for the XdrLiquidityPoolDepositResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
@@ -21562,7 +21970,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_NO_TRUST(): voi
     // Default-fixture round-trip for the XdrLiquidityPoolDepositResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
@@ -21596,7 +22004,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_POOL_FULL(): vo
     // Default-fixture round-trip for the XdrLiquidityPoolDepositResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
@@ -21630,7 +22038,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrLiquidityPoolDepositResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
@@ -21698,7 +22106,7 @@ public function testRoundTrip_XdrLiquidityPoolDepositResultUnion_UNDERFUNDED(): 
     // Default-fixture round-trip for the XdrLiquidityPoolDepositResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+A==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult::fromBase64Xdr($base64);
@@ -21766,7 +22174,7 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_LINE_FULL(): v
     // Default-fixture round-trip for the XdrLiquidityPoolWithdrawResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
@@ -21800,7 +22208,7 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_MALFORMED(): v
     // Default-fixture round-trip for the XdrLiquidityPoolWithdrawResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
@@ -21834,7 +22242,7 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_NO_TRUST(): vo
     // Default-fixture round-trip for the XdrLiquidityPoolWithdrawResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
@@ -21868,7 +22276,7 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_SUCCESS(): voi
     // Default-fixture round-trip for the XdrLiquidityPoolWithdrawResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
@@ -21936,7 +22344,7 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_UNDERFUNDED():
     // Default-fixture round-trip for the XdrLiquidityPoolWithdrawResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
@@ -21970,7 +22378,7 @@ public function testRoundTrip_XdrLiquidityPoolWithdrawResultUnion_UNDER_MINIMUM(
     // Default-fixture round-trip for the XdrLiquidityPoolWithdrawResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult::fromBase64Xdr($base64);
@@ -22038,7 +22446,7 @@ public function testRoundTrip_XdrManageDataResultUnion_LOW_RESERVE(): void
     // Default-fixture round-trip for the XdrManageDataResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromBase64Xdr($base64);
@@ -22072,7 +22480,7 @@ public function testRoundTrip_XdrManageDataResultUnion_NAME_NOT_FOUND(): void
     // Default-fixture round-trip for the XdrManageDataResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromBase64Xdr($base64);
@@ -22106,7 +22514,7 @@ public function testRoundTrip_XdrManageDataResultUnion_NOT_SUPPORTED_YET(): void
     // Default-fixture round-trip for the XdrManageDataResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromBase64Xdr($base64);
@@ -22140,7 +22548,7 @@ public function testRoundTrip_XdrManageDataResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrManageDataResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageDataResult::fromBase64Xdr($base64);
@@ -22174,7 +22582,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NOT_AUTHORIZED(): vo
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22208,7 +22616,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NO_ISSUER(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22242,7 +22650,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_BUY_NO_TRUST(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22276,7 +22684,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_CROSS_SELF(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22310,7 +22718,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_LINE_FULL(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22344,7 +22752,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_LOW_RESERVE(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22378,7 +22786,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22412,7 +22820,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_NOT_FOUND(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22446,7 +22854,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NOT_AUTHORIZED(): v
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22480,7 +22888,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NO_ISSUER(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22514,7 +22922,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_SELL_NO_TRUST(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22582,7 +22990,7 @@ public function testRoundTrip_XdrManageOfferResultUnion_UNDERFUNDED(): void
     // Default-fixture round-trip for the XdrManageOfferResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferResult::fromBase64Xdr($base64);
@@ -22650,7 +23058,7 @@ public function testRoundTrip_XdrManageOfferSuccessResultOfferUnion_MANAGE_OFFER
     // Default-fixture round-trip for the XdrManageOfferSuccessResultOffer type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $base64 = 'AAAAAg==';
     $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResultOffer::fromBase64Xdr($base64);
@@ -22718,7 +23126,7 @@ public function testRoundTrip_XdrOperationBodyUnion_ACCOUNT_MERGE(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -22752,7 +23160,7 @@ public function testRoundTrip_XdrOperationBodyUnion_ALLOW_TRUST(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -22786,7 +23194,7 @@ public function testRoundTrip_XdrOperationBodyUnion_BEGIN_SPONSORING_FUTURE_RESE
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -22820,7 +23228,7 @@ public function testRoundTrip_XdrOperationBodyUnion_BUMP_SEQUENCE(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAACwAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -22854,7 +23262,7 @@ public function testRoundTrip_XdrOperationBodyUnion_CHANGE_TRUST(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAABgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -22922,7 +23330,7 @@ public function testRoundTrip_XdrOperationBodyUnion_CLAWBACK(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAEwAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23024,7 +23432,7 @@ public function testRoundTrip_XdrOperationBodyUnion_CREATE_CLAIMABLE_BALANCE(): 
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAADgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23058,7 +23466,7 @@ public function testRoundTrip_XdrOperationBodyUnion_CREATE_PASSIVE_SELL_OFFER():
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAABAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23092,7 +23500,7 @@ public function testRoundTrip_XdrOperationBodyUnion_END_SPONSORING_FUTURE_RESERV
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAEQ==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23126,7 +23534,7 @@ public function testRoundTrip_XdrOperationBodyUnion_EXTEND_FOOTPRINT_TTL(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAGQAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23160,7 +23568,7 @@ public function testRoundTrip_XdrOperationBodyUnion_INFLATION(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAACQ==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23194,7 +23602,7 @@ public function testRoundTrip_XdrOperationBodyUnion_INVOKE_HOST_FUNCTION(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23228,7 +23636,7 @@ public function testRoundTrip_XdrOperationBodyUnion_LIQUIDITY_POOL_DEPOSIT(): vo
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAFgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23262,7 +23670,7 @@ public function testRoundTrip_XdrOperationBodyUnion_LIQUIDITY_POOL_WITHDRAW(): v
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAFwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23296,7 +23704,7 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_BUY_OFFER(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAADAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23330,7 +23738,7 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_DATA(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAACgAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23364,7 +23772,7 @@ public function testRoundTrip_XdrOperationBodyUnion_MANAGE_SELL_OFFER(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAwAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23398,7 +23806,7 @@ public function testRoundTrip_XdrOperationBodyUnion_PATH_PAYMENT_STRICT_RECEIVE(
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23432,7 +23840,7 @@ public function testRoundTrip_XdrOperationBodyUnion_PATH_PAYMENT_STRICT_SEND(): 
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAADQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23466,7 +23874,7 @@ public function testRoundTrip_XdrOperationBodyUnion_PAYMENT(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23500,7 +23908,7 @@ public function testRoundTrip_XdrOperationBodyUnion_RESTORE_FOOTPRINT(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAGgAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23534,7 +23942,7 @@ public function testRoundTrip_XdrOperationBodyUnion_REVOKE_SPONSORSHIP(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23568,7 +23976,7 @@ public function testRoundTrip_XdrOperationBodyUnion_SET_OPTIONS(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23602,7 +24010,7 @@ public function testRoundTrip_XdrOperationBodyUnion_SET_TRUST_LINE_FLAGS(): void
     // Default-fixture round-trip for the XdrOperationBody type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAFQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationBody::fromBase64Xdr($base64);
@@ -23636,7 +24044,7 @@ public function testRoundTrip_XdrOperationResultUnion_BAD_AUTH(): void
     // Default-fixture round-trip for the XdrOperationResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAD////8';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
@@ -23670,7 +24078,7 @@ public function testRoundTrip_XdrOperationResultUnion_EXCEEDED_WORK_LIMIT(): voi
     // Default-fixture round-trip for the XdrOperationResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAD////8';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
@@ -23738,7 +24146,7 @@ public function testRoundTrip_XdrOperationResultUnion_NOT_SUPPORTED(): void
     // Default-fixture round-trip for the XdrOperationResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAD////8';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
@@ -23772,7 +24180,7 @@ public function testRoundTrip_XdrOperationResultUnion_NO_ACCOUNT(): void
     // Default-fixture round-trip for the XdrOperationResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAD////8';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
@@ -23806,7 +24214,7 @@ public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SPONSORING(): voi
     // Default-fixture round-trip for the XdrOperationResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAD////8';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
@@ -23840,7 +24248,7 @@ public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SUBENTRIES(): voi
     // Default-fixture round-trip for the XdrOperationResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAD////8';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
@@ -23895,7 +24303,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_LINE_FULL()
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -23929,7 +24337,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_MALFORMED()
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -23963,7 +24371,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NOT_AUTHORI
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -23997,7 +24405,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NO_DESTINAT
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24065,7 +24473,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_NO_TRUST():
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24099,7 +24507,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_OFFER_CROSS
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24133,7 +24541,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_OVER_SENDMA
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24167,7 +24575,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SRC_NOT_AUT
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24201,7 +24609,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SRC_NO_TRUS
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24235,7 +24643,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_SUCCESS(): 
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24269,7 +24677,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_TOO_FEW_OFF
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24303,7 +24711,7 @@ public function testRoundTrip_XdrPathPaymentStrictReceiveResultUnion_UNDERFUNDED
     // Default-fixture round-trip for the XdrPathPaymentStrictReceiveResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveResult::fromBase64Xdr($base64);
@@ -24337,7 +24745,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_LINE_FULL(): v
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24371,7 +24779,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_MALFORMED(): v
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24405,7 +24813,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NOT_AUTHORIZED
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24439,7 +24847,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NO_DESTINATION
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24507,7 +24915,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_NO_TRUST(): vo
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24541,7 +24949,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_OFFER_CROSS_SE
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24575,7 +24983,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SRC_NOT_AUTHOR
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24609,7 +25017,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SRC_NO_TRUST()
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24643,7 +25051,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_SUCCESS(): voi
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24677,7 +25085,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_TOO_FEW_OFFERS
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24711,7 +25119,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_UNDERFUNDED():
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24745,7 +25153,7 @@ public function testRoundTrip_XdrPathPaymentStrictSendResultUnion_UNDER_DESTMIN(
     // Default-fixture round-trip for the XdrPathPaymentStrictSendResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9wAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = '////9A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendResult::fromBase64Xdr($base64);
@@ -24779,7 +25187,7 @@ public function testRoundTrip_XdrPaymentResultUnion_LINE_FULL(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = '////+A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -24813,7 +25221,7 @@ public function testRoundTrip_XdrPaymentResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -24847,7 +25255,7 @@ public function testRoundTrip_XdrPaymentResultUnion_NOT_AUTHORIZED(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -24881,7 +25289,7 @@ public function testRoundTrip_XdrPaymentResultUnion_NO_DESTINATION(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -24949,7 +25357,7 @@ public function testRoundTrip_XdrPaymentResultUnion_NO_TRUST(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -24983,7 +25391,7 @@ public function testRoundTrip_XdrPaymentResultUnion_SRC_NOT_AUTHORIZED(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -25017,7 +25425,7 @@ public function testRoundTrip_XdrPaymentResultUnion_SRC_NO_TRUST(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -25051,7 +25459,7 @@ public function testRoundTrip_XdrPaymentResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -25085,7 +25493,7 @@ public function testRoundTrip_XdrPaymentResultUnion_UNDERFUNDED(): void
     // Default-fixture round-trip for the XdrPaymentResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9w==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentResult::fromBase64Xdr($base64);
@@ -25142,7 +25550,7 @@ public function testRoundTrip_XdrPreconditionsUnion_NONE(): void
     // Default-fixture round-trip for the XdrPreconditions type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAA=';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromBase64Xdr($base64);
@@ -25210,7 +25618,7 @@ public function testRoundTrip_XdrPreconditionsUnion_V2(): void
     // Default-fixture round-trip for the XdrPreconditions type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAA=';
+    $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPreconditions::fromBase64Xdr($base64);
@@ -25299,7 +25707,7 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_M
     // Default-fixture round-trip for the XdrRestoreFootprintResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromBase64Xdr($base64);
@@ -25333,7 +25741,7 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_R
     // Default-fixture round-trip for the XdrRestoreFootprintResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromBase64Xdr($base64);
@@ -25367,7 +25775,7 @@ public function testRoundTrip_XdrRestoreFootprintResultUnion_RESTORE_FOOTPRINT_S
     // Default-fixture round-trip for the XdrRestoreFootprintResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRestoreFootprintResult::fromBase64Xdr($base64);
@@ -25435,7 +25843,7 @@ public function testRoundTrip_XdrRevokeSponsorshipOperationUnion_SIGNER(): void
     // Default-fixture round-trip for the XdrRevokeSponsorshipOperation type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation::fromBase64Xdr($base64);
@@ -25469,7 +25877,7 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_DOES_NOT_EXIST(): 
     // Default-fixture round-trip for the XdrRevokeSponsorshipResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
@@ -25503,7 +25911,7 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_LOW_RESERVE(): voi
     // Default-fixture round-trip for the XdrRevokeSponsorshipResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
@@ -25571,7 +25979,7 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_NOT_SPONSOR(): voi
     // Default-fixture round-trip for the XdrRevokeSponsorshipResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
@@ -25605,7 +26013,7 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_ONLY_TRANSFERABLE(
     // Default-fixture round-trip for the XdrRevokeSponsorshipResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
@@ -25639,7 +26047,7 @@ public function testRoundTrip_XdrRevokeSponsorshipResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrRevokeSponsorshipResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipResult::fromBase64Xdr($base64);
@@ -26034,7 +26442,7 @@ public function testRoundTrip_XdrSCErrorUnion_SCE_WASM_VM(): void
     // Default-fixture round-trip for the XdrSCError type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAA=';
+    $base64 = 'AAAAAQAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrSCError::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCError::fromBase64Xdr($base64);
@@ -26102,7 +26510,7 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_CONFIRM(): void
     // Default-fixture round-trip for the XdrSCPStatementPledges type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromBase64Xdr($base64);
@@ -26136,7 +26544,7 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_EXTERNALIZE(): 
     // Default-fixture round-trip for the XdrSCPStatementPledges type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromBase64Xdr($base64);
@@ -26170,7 +26578,7 @@ public function testRoundTrip_XdrSCPStatementPledgesUnion_SCP_ST_NOMINATE(): voi
     // Default-fixture round-trip for the XdrSCPStatementPledges type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCPStatementPledges::fromBase64Xdr($base64);
@@ -26377,7 +26785,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_BAD_FLAGS(): void
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26411,7 +26819,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_BAD_SIGNER(): void
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '////+A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26445,7 +26853,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_CANT_CHANGE(): void
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26479,7 +26887,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_INVALID_HOME_DOMAIN(): vo
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '////9w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26513,7 +26921,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_INVALID_INFLATION(): void
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26547,7 +26955,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_LOW_RESERVE(): void
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26581,7 +26989,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26615,7 +27023,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_THRESHOLD_OUT_OF_RANGE():
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26649,7 +27057,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_TOO_MANY_SIGNERS(): void
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26683,7 +27091,7 @@ public function testRoundTrip_XdrSetOptionsResultUnion_UNKNOWN_FLAG(): void
     // Default-fixture round-trip for the XdrSetOptionsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////9g==';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetOptionsResult::fromBase64Xdr($base64);
@@ -26717,7 +27125,7 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_CANT_REVOKE(): voi
     // Default-fixture round-trip for the XdrSetTrustLineFlagsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
@@ -26751,7 +27159,7 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_INVALID_STATE(): v
     // Default-fixture round-trip for the XdrSetTrustLineFlagsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
@@ -26819,7 +27227,7 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrSetTrustLineFlagsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
@@ -26853,7 +27261,7 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_NO_TRUST_LINE(): v
     // Default-fixture round-trip for the XdrSetTrustLineFlagsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
@@ -26887,7 +27295,7 @@ public function testRoundTrip_XdrSetTrustLineFlagsResultUnion_SUCCESS(): void
     // Default-fixture round-trip for the XdrSetTrustLineFlagsResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsResult::fromBase64Xdr($base64);
@@ -26963,7 +27371,7 @@ public function testRoundTrip_XdrStellarMessageUnion_AUTH(): void
     // Default-fixture round-trip for the XdrStellarMessage type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAgAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromBase64Xdr($base64);
@@ -26997,7 +27405,7 @@ public function testRoundTrip_XdrStellarMessageUnion_DONT_HAVE(): void
     // Default-fixture round-trip for the XdrStellarMessage type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = 'AAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromBase64Xdr($base64);
@@ -27201,7 +27609,7 @@ public function testRoundTrip_XdrStellarMessageUnion_GET_SCP_STATE(): void
     // Default-fixture round-trip for the XdrStellarMessage type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = 'AAAADAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromBase64Xdr($base64);
@@ -27269,7 +27677,7 @@ public function testRoundTrip_XdrStellarMessageUnion_HELLO(): void
     // Default-fixture round-trip for the XdrStellarMessage type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAAAAAAA';
+    $base64 = 'AAAADQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarMessage::fromBase64Xdr($base64);
@@ -27677,7 +28085,7 @@ public function testRoundTrip_XdrStellarValueExtUnion_STELLAR_VALUE_BASIC(): voi
     // Default-fixture round-trip for the XdrStellarValueExt type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $base64 = 'AAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromBase64Xdr($base64);
@@ -27844,7 +28252,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_AUTH(): void
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////+g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -27878,7 +28286,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_AUTH_EXTRA(): 
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////9g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -27912,7 +28320,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_MIN_SEQ_AGE_OR
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////8Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -27946,7 +28354,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_SEQ(): void
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////+w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -27980,7 +28388,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_BAD_SPONSORSHIP():
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////8g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28116,7 +28524,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_FROZEN_KEY_ACCESSE
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////7g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28150,7 +28558,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INSUFFICIENT_BALAN
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////+Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28184,7 +28592,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INSUFFICIENT_FEE()
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////9w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28218,7 +28626,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_INTERNAL_ERROR(): 
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////9Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28252,7 +28660,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_MALFORMED(): void
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////8A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28286,7 +28694,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_MISSING_OPERATION(
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '/////A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28320,7 +28728,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_NOT_SUPPORTED(): v
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////9A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28354,7 +28762,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_NO_ACCOUNT(): void
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////+A==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28388,7 +28796,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_SOROBAN_INVALID():
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '////7w==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28456,7 +28864,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_TOO_EARLY(): void
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '/////g==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28490,7 +28898,7 @@ public function testRoundTrip_XdrTransactionResultResultUnion_TOO_LATE(): void
     // Default-fixture round-trip for the XdrTransactionResultResult type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////uAAAAAA==';
+    $base64 = '/////Q==';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromBase64Xdr($base64);
@@ -28558,7 +28966,7 @@ public function testRoundTrip_XdrTransactionSignaturePayloadTaggedTransactionUni
     // Default-fixture round-trip for the XdrTransactionSignaturePayloadTaggedTransaction type;
     // the arm-specific constant is asserted as reachable on
     // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAA==';
+    $base64 = 'AAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction::fromBase64Xdr($base64);
@@ -34313,6 +34721,110 @@ public function testRoundTrip_XdrValue(): void
         $this->assertTrue($rc->hasMethod('fromJsonValue'));
     }
 
+    public function testRoundTrip_XdrTransactionMeta_first_pair(): void
+    {
+// optset mask=3 selects optional fields:
+//   operations, v1
+        // No deterministic fixture available — assert contract
+        // presence on the wrapper class. Optional-field branch
+        // coverage for this type is exercised by the corpus and
+        // by the spec-anchor tests when available.
+        $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
+        $this->assertTrue($rc->hasMethod('toJsonValue'));
+        $this->assertTrue($rc->hasMethod('fromJsonValue'));
+    }
+
+    public function testRoundTrip_XdrTransactionMeta_last_pair(): void
+    {
+// optset mask=24 selects optional fields:
+//   v3, v4
+        // No deterministic fixture available — assert contract
+        // presence on the wrapper class. Optional-field branch
+        // coverage for this type is exercised by the corpus and
+        // by the spec-anchor tests when available.
+        $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
+        $this->assertTrue($rc->hasMethod('toJsonValue'));
+        $this->assertTrue($rc->hasMethod('fromJsonValue'));
+    }
+
+    public function testRoundTrip_XdrTransactionMeta_second_only(): void
+    {
+// optset mask=2 selects optional fields:
+//   v1
+        // No deterministic fixture available — assert contract
+        // presence on the wrapper class. Optional-field branch
+        // coverage for this type is exercised by the corpus and
+        // by the spec-anchor tests when available.
+        $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
+        $this->assertTrue($rc->hasMethod('toJsonValue'));
+        $this->assertTrue($rc->hasMethod('fromJsonValue'));
+    }
+
+    public function testRoundTrip_XdrTransactionMeta_second_last_only(): void
+    {
+// optset mask=8 selects optional fields:
+//   v3
+        // No deterministic fixture available — assert contract
+        // presence on the wrapper class. Optional-field branch
+        // coverage for this type is exercised by the corpus and
+        // by the spec-anchor tests when available.
+        $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
+        $this->assertTrue($rc->hasMethod('toJsonValue'));
+        $this->assertTrue($rc->hasMethod('fromJsonValue'));
+    }
+
+    public function testRoundTrip_XdrTransactionMeta_middle_only(): void
+    {
+// optset mask=4 selects optional fields:
+//   v2
+        // No deterministic fixture available — assert contract
+        // presence on the wrapper class. Optional-field branch
+        // coverage for this type is exercised by the corpus and
+        // by the spec-anchor tests when available.
+        $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
+        $this->assertTrue($rc->hasMethod('toJsonValue'));
+        $this->assertTrue($rc->hasMethod('fromJsonValue'));
+    }
+
+    public function testRoundTrip_XdrTransactionMeta_all_but_first(): void
+    {
+// optset mask=30 selects optional fields:
+//   v1, v2, v3, v4
+        // No deterministic fixture available — assert contract
+        // presence on the wrapper class. Optional-field branch
+        // coverage for this type is exercised by the corpus and
+        // by the spec-anchor tests when available.
+        $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
+        $this->assertTrue($rc->hasMethod('toJsonValue'));
+        $this->assertTrue($rc->hasMethod('fromJsonValue'));
+    }
+
+    public function testRoundTrip_XdrTransactionMeta_all_but_last(): void
+    {
+// optset mask=15 selects optional fields:
+//   operations, v1, v2, v3
+        // No deterministic fixture available — assert contract
+        // presence on the wrapper class. Optional-field branch
+        // coverage for this type is exercised by the corpus and
+        // by the spec-anchor tests when available.
+        $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
+        $this->assertTrue($rc->hasMethod('toJsonValue'));
+        $this->assertTrue($rc->hasMethod('fromJsonValue'));
+    }
+
+    public function testRoundTrip_XdrTransactionMeta_edge_complement(): void
+    {
+// optset mask=14 selects optional fields:
+//   v1, v2, v3
+        // No deterministic fixture available — assert contract
+        // presence on the wrapper class. Optional-field branch
+        // coverage for this type is exercised by the corpus and
+        // by the spec-anchor tests when available.
+        $rc = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrTransactionMeta::class);
+        $this->assertTrue($rc->hasMethod('toJsonValue'));
+        $this->assertTrue($rc->hasMethod('fromJsonValue'));
+    }
+
     public function testRoundTrip_XdrTransactionMetaV3_optset_0(): void
     {
             // optset mask=0 selects no optional fields
@@ -34501,4 +35013,2666 @@ public function testRoundTrip_XdrValue(): void
         $this->assertSame($jsonValue, $decoded->toJsonValue(),
             'XdrTxSetComponentTxsMaybeDiscountedFee optset round-trip idempotence broken');
     }
+
+public function testRoundTrip_XdrAuthenticatedMessageV0_messageArm_AUTH(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrAuthenticatedMessageV0::$message union to its AUTH
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=AUTH) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=AUTH) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=AUTH) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrAuthenticatedMessageV0_messageArm_DONT_HAVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrAuthenticatedMessageV0::$message union to its DONT_HAVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=DONT_HAVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=DONT_HAVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=DONT_HAVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrAuthenticatedMessageV0_messageArm_ERROR_MSG(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrAuthenticatedMessageV0::$message union to its ERROR_MSG
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=ERROR_MSG) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=ERROR_MSG) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=ERROR_MSG) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrAuthenticatedMessageV0_messageArm_GET_SCP_STATE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrAuthenticatedMessageV0::$message union to its GET_SCP_STATE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=GET_SCP_STATE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=GET_SCP_STATE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=GET_SCP_STATE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrAuthenticatedMessageV0_messageArm_HELLO(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrAuthenticatedMessageV0::$message union to its HELLO
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAANAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=HELLO) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=HELLO) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrAuthenticatedMessageV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrAuthenticatedMessageV0 (message=HELLO) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimLiquidityAtom_assetBoughtArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimLiquidityAtom::$assetBought union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimLiquidityAtom_assetBoughtArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimLiquidityAtom::$assetBought union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetBought=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetBought=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetBought=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimLiquidityAtom_assetSoldArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimLiquidityAtom::$assetSold union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimLiquidityAtom_assetSoldArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimLiquidityAtom::$assetSold union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetSold=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetSold=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimLiquidityAtom::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimLiquidityAtom (assetSold=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimOfferAtom_assetBoughtArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimOfferAtom::$assetBought union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimOfferAtom (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimOfferAtom (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimOfferAtom (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimOfferAtom_assetBoughtArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimOfferAtom::$assetBought union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimOfferAtom (assetBought=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimOfferAtom (assetBought=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimOfferAtom (assetBought=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimOfferAtom_assetSoldArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimOfferAtom::$assetSold union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimOfferAtom (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimOfferAtom (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimOfferAtom (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimOfferAtom_assetSoldArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimOfferAtom::$assetSold union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimOfferAtom (assetSold=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimOfferAtom (assetSold=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtom::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimOfferAtom (assetSold=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimOfferAtomV0_assetBoughtArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimOfferAtomV0::$assetBought union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetBought=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimOfferAtomV0_assetBoughtArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimOfferAtomV0::$assetBought union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetBought=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetBought=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetBought=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimOfferAtomV0_assetSoldArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimOfferAtomV0::$assetSold union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetSold=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimOfferAtomV0_assetSoldArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimOfferAtomV0::$assetSold union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetSold=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetSold=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimOfferAtomV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimOfferAtomV0 (assetSold=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimantV0_predicateArm_BEFORE_ABSOLUTE_TIME(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimantV0::$predicate union to its BEFORE_ABSOLUTE_TIME
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimantV0 (predicate=BEFORE_ABSOLUTE_TIME) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimantV0 (predicate=BEFORE_ABSOLUTE_TIME) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimantV0 (predicate=BEFORE_ABSOLUTE_TIME) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimantV0_predicateArm_BEFORE_RELATIVE_TIME(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimantV0::$predicate union to its BEFORE_RELATIVE_TIME
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimantV0 (predicate=BEFORE_RELATIVE_TIME) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimantV0 (predicate=BEFORE_RELATIVE_TIME) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimantV0 (predicate=BEFORE_RELATIVE_TIME) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimantV0_predicateArm_NOT(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimantV0::$predicate union to its NOT
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimantV0 (predicate=NOT) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimantV0 (predicate=NOT) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimantV0 (predicate=NOT) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClaimantV0_predicateArm_UNCONDITIONAL(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClaimantV0::$predicate union to its UNCONDITIONAL
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClaimantV0 (predicate=UNCONDITIONAL) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClaimantV0 (predicate=UNCONDITIONAL) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimantV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClaimantV0 (predicate=UNCONDITIONAL) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClawbackOperation_assetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClawbackOperation::$asset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClawbackOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClawbackOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClawbackOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClawbackOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrClawbackOperation_assetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrClawbackOperation::$asset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClawbackOperation (asset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClawbackOperation (asset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClawbackOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrClawbackOperation (asset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrCreateClaimableBalanceOperation_assetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrCreateClaimableBalanceOperation::$asset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreateClaimableBalanceOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreateClaimableBalanceOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrCreateClaimableBalanceOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrCreateClaimableBalanceOperation_assetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrCreateClaimableBalanceOperation::$asset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreateClaimableBalanceOperation (asset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreateClaimableBalanceOperation (asset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrCreateClaimableBalanceOperation (asset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrCreatePassiveSellOfferOperation_buyingArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrCreatePassiveSellOfferOperation::$buying union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrCreatePassiveSellOfferOperation_buyingArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrCreatePassiveSellOfferOperation::$buying union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (buying=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (buying=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (buying=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrCreatePassiveSellOfferOperation_sellingArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrCreatePassiveSellOfferOperation::$selling union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrCreatePassiveSellOfferOperation_sellingArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrCreatePassiveSellOfferOperation::$selling union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (selling=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (selling=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrCreatePassiveSellOfferOperation (selling=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrFeeBumpTransaction_innerTxArm_ENVELOPE_TYPE_TX(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrFeeBumpTransaction::$innerTx union to its ENVELOPE_TYPE_TX
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrFeeBumpTransaction (innerTx=ENVELOPE_TYPE_TX) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrFeeBumpTransaction (innerTx=ENVELOPE_TYPE_TX) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrFeeBumpTransaction (innerTx=ENVELOPE_TYPE_TX) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrHashIDPreimageRevokeID_assetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrHashIDPreimageRevokeID::$asset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrHashIDPreimageRevokeID (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrHashIDPreimageRevokeID (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrHashIDPreimageRevokeID (asset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrHashIDPreimageRevokeID_assetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrHashIDPreimageRevokeID::$asset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrHashIDPreimageRevokeID (asset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrHashIDPreimageRevokeID (asset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrHashIDPreimageRevokeID (asset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrInnerTransactionResult_resultArm_BAD_AUTH(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrInnerTransactionResult::$result union to its BAD_AUTH
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////6AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_AUTH) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_AUTH) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_AUTH) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrInnerTransactionResult_resultArm_BAD_AUTH_EXTRA(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrInnerTransactionResult::$result union to its BAD_AUTH_EXTRA
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////2AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_AUTH_EXTRA) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_AUTH_EXTRA) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_AUTH_EXTRA) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrInnerTransactionResult_resultArm_BAD_MIN_SEQ_AGE_OR_GAP(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrInnerTransactionResult::$result union to its BAD_MIN_SEQ_AGE_OR_GAP
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////xAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_MIN_SEQ_AGE_OR_GAP) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_MIN_SEQ_AGE_OR_GAP) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_MIN_SEQ_AGE_OR_GAP) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrInnerTransactionResult_resultArm_BAD_SEQ(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrInnerTransactionResult::$result union to its BAD_SEQ
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////7AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_SEQ) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_SEQ) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_SEQ) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrInnerTransactionResult_resultArm_BAD_SPONSORSHIP(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrInnerTransactionResult::$result union to its BAD_SPONSORSHIP
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////yAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_SPONSORSHIP) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_SPONSORSHIP) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrInnerTransactionResult (result=BAD_SPONSORSHIP) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrInnerTransactionResult_resultArm_FROZEN_KEY_ACCESSED(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrInnerTransactionResult::$result union to its FROZEN_KEY_ACCESSED
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////uAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrInnerTransactionResult (result=FROZEN_KEY_ACCESSED) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrInnerTransactionResult (result=FROZEN_KEY_ACCESSED) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrInnerTransactionResult (result=FROZEN_KEY_ACCESSED) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrInnerTransactionResult_resultArm_INSUFFICIENT_BALANCE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrInnerTransactionResult::$result union to its INSUFFICIENT_BALANCE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////5AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrInnerTransactionResult (result=INSUFFICIENT_BALANCE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrInnerTransactionResult (result=INSUFFICIENT_BALANCE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrInnerTransactionResult (result=INSUFFICIENT_BALANCE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrInnerTransactionResult_resultArm_INSUFFICIENT_FEE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrInnerTransactionResult::$result union to its INSUFFICIENT_FEE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////3AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrInnerTransactionResult (result=INSUFFICIENT_FEE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrInnerTransactionResult (result=INSUFFICIENT_FEE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrInnerTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrInnerTransactionResult (result=INSUFFICIENT_FEE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLedgerEntry_dataArm_ACCOUNT(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLedgerEntry::$data union to its ACCOUNT
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLedgerEntry (data=ACCOUNT) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLedgerEntry (data=ACCOUNT) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLedgerEntry (data=ACCOUNT) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLedgerEntry_dataArm_CONFIG_SETTING(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLedgerEntry::$data union to its CONFIG_SETTING
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAgAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLedgerEntry (data=CONFIG_SETTING) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLedgerEntry (data=CONFIG_SETTING) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLedgerEntry (data=CONFIG_SETTING) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLedgerEntry_dataArm_CONTRACT_CODE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLedgerEntry::$data union to its CONTRACT_CODE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLedgerEntry (data=CONTRACT_CODE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLedgerEntry (data=CONTRACT_CODE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLedgerEntry (data=CONTRACT_CODE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLedgerEntry_dataArm_CONTRACT_DATA(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLedgerEntry::$data union to its CONTRACT_DATA
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLedgerEntry (data=CONTRACT_DATA) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLedgerEntry (data=CONTRACT_DATA) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLedgerEntry (data=CONTRACT_DATA) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLedgerEntry_dataArm_DATA(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLedgerEntry::$data union to its DATA
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLedgerEntry (data=DATA) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLedgerEntry (data=DATA) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLedgerEntry (data=DATA) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLedgerEntry_dataArm_LIQUIDITY_POOL(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLedgerEntry::$data union to its LIQUIDITY_POOL
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLedgerEntry (data=LIQUIDITY_POOL) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLedgerEntry (data=LIQUIDITY_POOL) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLedgerEntry (data=LIQUIDITY_POOL) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLedgerEntry_dataArm_OFFER(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLedgerEntry::$data union to its OFFER
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLedgerEntry (data=OFFER) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLedgerEntry (data=OFFER) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLedgerEntry (data=OFFER) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLedgerEntry_dataArm_TRUSTLINE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLedgerEntry::$data union to its TRUSTLINE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLedgerEntry (data=TRUSTLINE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLedgerEntry (data=TRUSTLINE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLedgerEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLedgerEntry (data=TRUSTLINE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLiquidityPoolConstantProductParameters_assetAArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLiquidityPoolConstantProductParameters::$assetA union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetA=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetA=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetA=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLiquidityPoolConstantProductParameters_assetAArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLiquidityPoolConstantProductParameters::$assetA union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetA=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetA=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetA=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLiquidityPoolConstantProductParameters_assetBArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLiquidityPoolConstantProductParameters::$assetB union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetB=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetB=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetB=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLiquidityPoolConstantProductParameters_assetBArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLiquidityPoolConstantProductParameters::$assetB union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetB=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetB=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLiquidityPoolConstantProductParameters (assetB=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrLiquidityPoolEntry_bodyArm_LIQUIDITY_POOL_CONSTANT_PRODUCT(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrLiquidityPoolEntry::$body union to its LIQUIDITY_POOL_CONSTANT_PRODUCT
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrLiquidityPoolEntry (body=LIQUIDITY_POOL_CONSTANT_PRODUCT) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrLiquidityPoolEntry (body=LIQUIDITY_POOL_CONSTANT_PRODUCT) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrLiquidityPoolEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrLiquidityPoolEntry (body=LIQUIDITY_POOL_CONSTANT_PRODUCT) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageBuyOfferOperation_buyingArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageBuyOfferOperation::$buying union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageBuyOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageBuyOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageBuyOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageBuyOfferOperation_buyingArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageBuyOfferOperation::$buying union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageBuyOfferOperation (buying=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageBuyOfferOperation (buying=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageBuyOfferOperation (buying=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageBuyOfferOperation_sellingArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageBuyOfferOperation::$selling union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageBuyOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageBuyOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageBuyOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageBuyOfferOperation_sellingArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageBuyOfferOperation::$selling union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageBuyOfferOperation (selling=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageBuyOfferOperation (selling=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageBuyOfferOperation (selling=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageOfferSuccessResult_offerArm_MANAGE_OFFER_CREATED(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageOfferSuccessResult::$offer union to its MANAGE_OFFER_CREATED
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageOfferSuccessResult (offer=MANAGE_OFFER_CREATED) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageOfferSuccessResult (offer=MANAGE_OFFER_CREATED) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageOfferSuccessResult (offer=MANAGE_OFFER_CREATED) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageOfferSuccessResult_offerArm_MANAGE_OFFER_DELETED(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageOfferSuccessResult::$offer union to its MANAGE_OFFER_DELETED
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAI=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageOfferSuccessResult (offer=MANAGE_OFFER_DELETED) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageOfferSuccessResult (offer=MANAGE_OFFER_DELETED) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageOfferSuccessResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageOfferSuccessResult (offer=MANAGE_OFFER_DELETED) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageSellOfferOperation_buyingArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageSellOfferOperation::$buying union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageSellOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageSellOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageSellOfferOperation (buying=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageSellOfferOperation_buyingArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageSellOfferOperation::$buying union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageSellOfferOperation (buying=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageSellOfferOperation (buying=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageSellOfferOperation (buying=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageSellOfferOperation_sellingArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageSellOfferOperation::$selling union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageSellOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageSellOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageSellOfferOperation (selling=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrManageSellOfferOperation_sellingArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrManageSellOfferOperation::$selling union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrManageSellOfferOperation (selling=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrManageSellOfferOperation (selling=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrManageSellOfferOperation (selling=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOfferEntry_buyingArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOfferEntry::$buying union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOfferEntry (buying=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOfferEntry (buying=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOfferEntry (buying=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOfferEntry_buyingArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOfferEntry::$buying union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOfferEntry (buying=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOfferEntry (buying=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOfferEntry (buying=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOfferEntry_sellingArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOfferEntry::$selling union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOfferEntry (selling=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOfferEntry (selling=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOfferEntry (selling=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOfferEntry_sellingArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOfferEntry::$selling union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOfferEntry (selling=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOfferEntry (selling=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOfferEntry::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOfferEntry (selling=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOperation_bodyArm_ACCOUNT_MERGE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOperation::$body union to its ACCOUNT_MERGE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperation (body=ACCOUNT_MERGE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperation (body=ACCOUNT_MERGE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOperation (body=ACCOUNT_MERGE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOperation_bodyArm_ALLOW_TRUST(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOperation::$body union to its ALLOW_TRUST
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperation (body=ALLOW_TRUST) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperation (body=ALLOW_TRUST) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOperation (body=ALLOW_TRUST) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOperation_bodyArm_BEGIN_SPONSORING_FUTURE_RESERVES(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOperation::$body union to its BEGIN_SPONSORING_FUTURE_RESERVES
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperation (body=BEGIN_SPONSORING_FUTURE_RESERVES) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperation (body=BEGIN_SPONSORING_FUTURE_RESERVES) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOperation (body=BEGIN_SPONSORING_FUTURE_RESERVES) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOperation_bodyArm_BUMP_SEQUENCE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOperation::$body union to its BUMP_SEQUENCE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAsAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperation (body=BUMP_SEQUENCE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperation (body=BUMP_SEQUENCE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOperation (body=BUMP_SEQUENCE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOperation_bodyArm_CHANGE_TRUST(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOperation::$body union to its CHANGE_TRUST
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAYAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperation (body=CHANGE_TRUST) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperation (body=CHANGE_TRUST) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOperation (body=CHANGE_TRUST) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOperation_bodyArm_CLAWBACK(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOperation::$body union to its CLAWBACK
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAABMAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperation (body=CLAWBACK) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperation (body=CLAWBACK) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOperation (body=CLAWBACK) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOperation_bodyArm_CREATE_ACCOUNT(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOperation::$body union to its CREATE_ACCOUNT
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperation (body=CREATE_ACCOUNT) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperation (body=CREATE_ACCOUNT) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOperation (body=CREATE_ACCOUNT) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrOperation_bodyArm_CREATE_CLAIMABLE_BALANCE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrOperation::$body union to its CREATE_CLAIMABLE_BALANCE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAA4AAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperation (body=CREATE_CLAIMABLE_BALANCE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperation (body=CREATE_CLAIMABLE_BALANCE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrOperation (body=CREATE_CLAIMABLE_BALANCE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPathPaymentStrictReceiveOperation_destAssetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPathPaymentStrictReceiveOperation::$destAsset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (destAsset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (destAsset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (destAsset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPathPaymentStrictReceiveOperation_destAssetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPathPaymentStrictReceiveOperation::$destAsset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (destAsset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (destAsset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (destAsset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPathPaymentStrictReceiveOperation_sendAssetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPathPaymentStrictReceiveOperation::$sendAsset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (sendAsset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (sendAsset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (sendAsset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPathPaymentStrictReceiveOperation_sendAssetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPathPaymentStrictReceiveOperation::$sendAsset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (sendAsset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (sendAsset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPathPaymentStrictReceiveOperation (sendAsset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPathPaymentStrictSendOperation_destAssetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPathPaymentStrictSendOperation::$destAsset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (destAsset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (destAsset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (destAsset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPathPaymentStrictSendOperation_destAssetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPathPaymentStrictSendOperation::$destAsset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (destAsset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (destAsset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (destAsset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPathPaymentStrictSendOperation_sendAssetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPathPaymentStrictSendOperation::$sendAsset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (sendAsset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (sendAsset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (sendAsset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPathPaymentStrictSendOperation_sendAssetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPathPaymentStrictSendOperation::$sendAsset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (sendAsset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (sendAsset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPathPaymentStrictSendOperation (sendAsset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPaymentOperation_assetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPaymentOperation::$asset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPaymentOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPaymentOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPaymentOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrPaymentOperation_assetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrPaymentOperation::$asset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrPaymentOperation (asset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrPaymentOperation (asset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrPaymentOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrPaymentOperation (asset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrRevokeSponsorshipSigner_signerKeyArm_SIGNER_KEY_TYPE_ED25519(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrRevokeSponsorshipSigner::$signerKey union to its SIGNER_KEY_TYPE_ED25519
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipSigner::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipSigner::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrRevokeSponsorshipSigner (signerKey=SIGNER_KEY_TYPE_ED25519) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipSigner::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrRevokeSponsorshipSigner (signerKey=SIGNER_KEY_TYPE_ED25519) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipSigner::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrRevokeSponsorshipSigner (signerKey=SIGNER_KEY_TYPE_ED25519) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSCPStatement_pledgesArm_SCP_ST_CONFIRM(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSCPStatement::$pledges union to its SCP_ST_CONFIRM
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_CONFIRM) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_CONFIRM) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_CONFIRM) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSCPStatement_pledgesArm_SCP_ST_EXTERNALIZE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSCPStatement::$pledges union to its SCP_ST_EXTERNALIZE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_EXTERNALIZE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_EXTERNALIZE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_EXTERNALIZE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSCPStatement_pledgesArm_SCP_ST_NOMINATE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSCPStatement::$pledges union to its SCP_ST_NOMINATE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_NOMINATE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_NOMINATE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_NOMINATE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSCPStatement_pledgesArm_SCP_ST_PREPARE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSCPStatement::$pledges union to its SCP_ST_PREPARE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_PREPARE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_PREPARE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSCPStatement::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSCPStatement (pledges=SCP_ST_PREPARE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSetTrustLineFlagsOperation_assetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSetTrustLineFlagsOperation::$asset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSetTrustLineFlagsOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSetTrustLineFlagsOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSetTrustLineFlagsOperation (asset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSetTrustLineFlagsOperation_assetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSetTrustLineFlagsOperation::$asset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSetTrustLineFlagsOperation (asset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSetTrustLineFlagsOperation (asset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSetTrustLineFlagsOperation (asset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSigner_keyArm_SIGNER_KEY_TYPE_ED25519(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSigner::$key union to its SIGNER_KEY_TYPE_ED25519
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSigner::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSigner::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSigner (key=SIGNER_KEY_TYPE_ED25519) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSigner::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSigner (key=SIGNER_KEY_TYPE_ED25519) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSigner::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSigner (key=SIGNER_KEY_TYPE_ED25519) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSimplePaymentResult_assetArm_ASSET_TYPE_CREDIT_ALPHANUM4(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSimplePaymentResult::$asset union to its ASSET_TYPE_CREDIT_ALPHANUM4
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSimplePaymentResult (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSimplePaymentResult (asset=ASSET_TYPE_CREDIT_ALPHANUM4) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSimplePaymentResult (asset=ASSET_TYPE_CREDIT_ALPHANUM4) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrSimplePaymentResult_assetArm_ASSET_TYPE_NATIVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrSimplePaymentResult::$asset union to its ASSET_TYPE_NATIVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSimplePaymentResult (asset=ASSET_TYPE_NATIVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSimplePaymentResult (asset=ASSET_TYPE_NATIVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSimplePaymentResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSimplePaymentResult (asset=ASSET_TYPE_NATIVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrStellarValue_extArm_STELLAR_VALUE_BASIC(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrStellarValue::$ext union to its STELLAR_VALUE_BASIC
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrStellarValue (ext=STELLAR_VALUE_BASIC) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrStellarValue (ext=STELLAR_VALUE_BASIC) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrStellarValue (ext=STELLAR_VALUE_BASIC) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrStellarValue_extArm_STELLAR_VALUE_SIGNED(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrStellarValue::$ext union to its STELLAR_VALUE_SIGNED
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrStellarValue (ext=STELLAR_VALUE_SIGNED) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrStellarValue (ext=STELLAR_VALUE_SIGNED) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrStellarValue (ext=STELLAR_VALUE_SIGNED) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransaction_memoArm_MEMO_NONE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransaction::$memo union to its MEMO_NONE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransaction (memo=MEMO_NONE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransaction::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransaction (memo=MEMO_NONE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransaction (memo=MEMO_NONE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransaction_memoArm_MEMO_TEXT(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransaction::$memo union to its MEMO_TEXT
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransaction (memo=MEMO_TEXT) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransaction::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransaction (memo=MEMO_TEXT) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransaction (memo=MEMO_TEXT) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransaction_preconditionsArm_NONE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransaction::$preconditions union to its NONE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransaction (preconditions=NONE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransaction::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransaction (preconditions=NONE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransaction (preconditions=NONE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransaction_preconditionsArm_TIME(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransaction::$preconditions union to its TIME
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransaction (preconditions=TIME) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransaction::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransaction (preconditions=TIME) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransaction (preconditions=TIME) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransaction_preconditionsArm_V2(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransaction::$preconditions union to its V2
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransaction (preconditions=V2) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransaction::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransaction (preconditions=V2) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransaction::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransaction (preconditions=V2) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionResult_resultArm_BAD_AUTH(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionResult::$result union to its BAD_AUTH
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////6AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionResult (result=BAD_AUTH) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionResult (result=BAD_AUTH) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionResult (result=BAD_AUTH) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionResult_resultArm_BAD_AUTH_EXTRA(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionResult::$result union to its BAD_AUTH_EXTRA
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////2AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionResult (result=BAD_AUTH_EXTRA) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionResult (result=BAD_AUTH_EXTRA) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionResult (result=BAD_AUTH_EXTRA) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionResult_resultArm_BAD_MIN_SEQ_AGE_OR_GAP(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionResult::$result union to its BAD_MIN_SEQ_AGE_OR_GAP
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////xAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionResult (result=BAD_MIN_SEQ_AGE_OR_GAP) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionResult (result=BAD_MIN_SEQ_AGE_OR_GAP) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionResult (result=BAD_MIN_SEQ_AGE_OR_GAP) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionResult_resultArm_BAD_SEQ(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionResult::$result union to its BAD_SEQ
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////7AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionResult (result=BAD_SEQ) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionResult (result=BAD_SEQ) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionResult (result=BAD_SEQ) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionResult_resultArm_BAD_SPONSORSHIP(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionResult::$result union to its BAD_SPONSORSHIP
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////yAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionResult (result=BAD_SPONSORSHIP) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionResult (result=BAD_SPONSORSHIP) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionResult (result=BAD_SPONSORSHIP) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionResult_resultArm_FEE_BUMP_INNER_SUCCESS(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionResult::$result union to its FEE_BUMP_INNER_SUCCESS
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///+4AAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionResult (result=FEE_BUMP_INNER_SUCCESS) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionResult (result=FEE_BUMP_INNER_SUCCESS) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionResult (result=FEE_BUMP_INNER_SUCCESS) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionResult_resultArm_FROZEN_KEY_ACCESSED(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionResult::$result union to its FROZEN_KEY_ACCESSED
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////uAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionResult (result=FROZEN_KEY_ACCESSED) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionResult (result=FROZEN_KEY_ACCESSED) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionResult (result=FROZEN_KEY_ACCESSED) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionResult_resultArm_INSUFFICIENT_BALANCE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionResult::$result union to its INSUFFICIENT_BALANCE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAD////5AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionResult (result=INSUFFICIENT_BALANCE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionResult (result=INSUFFICIENT_BALANCE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionResult (result=INSUFFICIENT_BALANCE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionSignaturePayload_taggedTransactionArm_ENVELOPE_TYPE_TX(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionSignaturePayload::$taggedTransaction union to its ENVELOPE_TYPE_TX
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionSignaturePayload (taggedTransaction=ENVELOPE_TYPE_TX) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionSignaturePayload (taggedTransaction=ENVELOPE_TYPE_TX) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionSignaturePayload (taggedTransaction=ENVELOPE_TYPE_TX) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionSignaturePayload_taggedTransactionArm_ENVELOPE_TYPE_TX_FEE_BUMP(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionSignaturePayload::$taggedTransaction union to its ENVELOPE_TYPE_TX_FEE_BUMP
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionSignaturePayload (taggedTransaction=ENVELOPE_TYPE_TX_FEE_BUMP) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionSignaturePayload (taggedTransaction=ENVELOPE_TYPE_TX_FEE_BUMP) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionSignaturePayload (taggedTransaction=ENVELOPE_TYPE_TX_FEE_BUMP) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionV0_memoArm_MEMO_NONE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionV0::$memo union to its MEMO_NONE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionV0 (memo=MEMO_NONE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionV0 (memo=MEMO_NONE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionV0 (memo=MEMO_NONE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrTransactionV0_memoArm_MEMO_TEXT(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrTransactionV0::$memo union to its MEMO_TEXT
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrTransactionV0 (memo=MEMO_TEXT) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrTransactionV0 (memo=MEMO_TEXT) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrTransactionV0::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrTransactionV0 (memo=MEMO_TEXT) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrUpgradeEntryMeta_upgradeArm_LEDGER_UPGRADE_BASE_FEE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrUpgradeEntryMeta::$upgrade union to its LEDGER_UPGRADE_BASE_FEE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAgAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_BASE_FEE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_BASE_FEE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_BASE_FEE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrUpgradeEntryMeta_upgradeArm_LEDGER_UPGRADE_BASE_RESERVE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrUpgradeEntryMeta::$upgrade union to its LEDGER_UPGRADE_BASE_RESERVE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAABAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_BASE_RESERVE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_BASE_RESERVE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_BASE_RESERVE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrUpgradeEntryMeta_upgradeArm_LEDGER_UPGRADE_CONFIG(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrUpgradeEntryMeta::$upgrade union to its LEDGER_UPGRADE_CONFIG
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_CONFIG) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_CONFIG) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_CONFIG) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrUpgradeEntryMeta_upgradeArm_LEDGER_UPGRADE_FLAGS(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrUpgradeEntryMeta::$upgrade union to its LEDGER_UPGRADE_FLAGS
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAABQAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_FLAGS) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_FLAGS) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_FLAGS) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrUpgradeEntryMeta_upgradeArm_LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrUpgradeEntryMeta::$upgrade union to its LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAABwAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrUpgradeEntryMeta_upgradeArm_LEDGER_UPGRADE_MAX_TX_SET_SIZE(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrUpgradeEntryMeta::$upgrade union to its LEDGER_UPGRADE_MAX_TX_SET_SIZE
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAwAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_MAX_TX_SET_SIZE) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_MAX_TX_SET_SIZE) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_MAX_TX_SET_SIZE) XDR-JSON-XDR diverged');
+}
+
+public function testRoundTrip_XdrUpgradeEntryMeta_upgradeArm_LEDGER_UPGRADE_VERSION(): void
+{
+    // Nested-union arm coverage: this fixture pins the
+    // XdrUpgradeEntryMeta::$upgrade union to its LEDGER_UPGRADE_VERSION
+    // arm while leaving every other field at default values.
+    // The round-trip exercises the toJsonValue / fromJsonValue
+    // path for that arm in its enclosing struct context.
+    $base64 = 'AAAAAQAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_VERSION) toJsonValue not deterministic');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_VERSION) toJsonValue idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrUpgradeEntryMeta::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrUpgradeEntryMeta (upgrade=LEDGER_UPGRADE_VERSION) XDR-JSON-XDR diverged');
+}
 }

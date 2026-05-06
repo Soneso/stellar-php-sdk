@@ -4,6 +4,7 @@ require 'json'
 require 'open3'
 require 'tempfile'
 require 'digest'
+require 'set'
 
 # Round-trip test emitter for the SEP-51 (XDR-JSON) deliverable.
 #
@@ -122,6 +123,7 @@ class RoundTripEmitter
   def build_php_introspector
     php_xdr_dir_literal = php_string_literal(PHP_XDR_DIR)
     autoload_literal = php_string_literal(File.join(REPO_ROOT, 'vendor', 'autoload.php'))
+    corpus_literal = php_string_literal(CORPUS_PATH)
 
     <<~PHP
       <?php declare(strict_types=1);
@@ -146,6 +148,25 @@ class RoundTripEmitter
       $xdrDir = #{php_xdr_dir_literal};
       $files = glob($xdrDir . '/Xdr*.php');
       sort($files, SORT_STRING);
+
+      // Pre-load corpus so per-union arm coverage can be computed during
+      // introspection. The same file is parsed by the Ruby driver; loading
+      // it here as well lets the helper compute corpus_covered_arms in PHP
+      // (we need the decoded discriminant value to derive the arm name).
+      $corpusPath = #{corpus_literal};
+      $corpusByType = []; // bare-type (no Xdr prefix) => list of base64 strings
+      if (is_file($corpusPath)) {
+          $raw = @json_decode((string)@file_get_contents($corpusPath), true);
+          if (is_array($raw) && isset($raw['entries']) && is_array($raw['entries'])) {
+              foreach ($raw['entries'] as $entry) {
+                  if (!is_array($entry)) continue;
+                  $t = isset($entry['type']) ? (string)$entry['type'] : '';
+                  $b = isset($entry['base64']) ? (string)$entry['base64'] : '';
+                  if ($t === '' || $b === '') continue;
+                  $corpusByType[$t][] = $b;
+              }
+          }
+      }
 
       $types = [];
       foreach ($files as $path) {
@@ -190,11 +211,30 @@ class RoundTripEmitter
               });
               $entry['members'] = $members;
           } elseif ($kind === 'union') {
-              $entry['arms'] = collect_union_arms($rc, $path);
+              $arms = collect_union_arms($rc, $path);
+              $entry['arms'] = $arms;
               $entry['fixture_base64'] = try_build_fixture($fqcn);
+              // Per-arm fixture base64s. Used by the round-trip emitter to
+              // synthesize one round-trip test per arm even when a corpus
+              // entry exercises a different arm. Arms with no constructable
+              // payload yield a null entry so the emitter falls back to a
+              // discriminant-reachability assertion.
+              $entry['arm_fixtures'] = build_arm_fixtures($rc, $arms);
+              // Corpus arm coverage. For each corpus base64 of the bare
+              // type name (Xdr stripped), decode through fromBase64Xdr,
+              // read the discriminator value, map back to the constant
+              // name on the discriminant enum class. Arms that never
+              // appear in corpus are filled in by the union arm-fill pass.
+              $bareName = str_starts_with($stem, 'Xdr') ? substr($stem, 3) : $stem;
+              $entry['corpus_covered_arms'] = corpus_covered_arms($rc, $fqcn, $corpusByType[$bareName] ?? []);
           } else { // struct
               $entry['optionals'] = collect_struct_optionals($rc);
               $entry['fixture_base64'] = try_build_fixture($fqcn);
+              // Non-nullable union-typed fields on this struct, with
+              // per-arm fixtures so the emitter can vary an inner union
+              // arm while keeping the rest of the struct at default
+              // values. Bounded to keep test counts manageable.
+              $entry['union_fields'] = collect_struct_union_fields($rc);
           }
 
           $types[] = $entry;
@@ -911,6 +951,262 @@ class RoundTripEmitter
           }
           return $cache[$cacheKey] = '';
       }
+
+      // Build a per-arm fixture map for a union. For each declared arm
+      // constant, attempt to construct a union instance pinned to that
+      // arm and return its base64-encoded XDR. Arms whose payload cannot
+      // be synthesised (sub-instance failures, recursive types that
+      // exceed cycle guard, etc.) yield null. Returned map is sorted by
+      // arm constant name for byte-identical regeneration.
+      function build_arm_fixtures(\\ReflectionClass $rc, array $arms): array {
+          $result = [];
+          if (empty($arms)) return $result;
+          $discProp = find_discriminator_property($rc);
+          if ($discProp === null) return $result;
+          $discType = $discProp->getType();
+          if (!($discType instanceof \\ReflectionNamedType)) return $result;
+          $discFqcn = $discType->getName();
+          if (!class_exists($discFqcn)) return $result;
+          $discRc = new \\ReflectionClass($discFqcn);
+          $intConsts = array_filter($discRc->getConstants(), fn($v) => is_int($v));
+          $encodeArmMap = parse_union_encode_arms($rc);
+
+          $sortedArms = $arms;
+          sort($sortedArms, SORT_STRING);
+          foreach ($sortedArms as $armConst) {
+              if (!array_key_exists($armConst, $intConsts)) {
+                  $result[$armConst] = null;
+                  continue;
+              }
+              $cand = ['name' => $armConst, 'value' => (int)$intConsts[$armConst]];
+              try {
+                  $inflight = [];
+                  $instance = construct_union_with_arm($rc, $discProp, $discRc, $cand, $encodeArmMap, $inflight);
+                  if ($instance === null) {
+                      $result[$armConst] = null;
+                      continue;
+                  }
+                  if (!instance_round_trip_ok($instance)) {
+                      $result[$armConst] = null;
+                      continue;
+                  }
+                  if (method_exists($instance, 'toBase64Xdr')) {
+                      $b64 = @$instance->toBase64Xdr();
+                  } elseif (method_exists($instance, 'encode')) {
+                      $bytes = @$instance->encode();
+                      $b64 = ($bytes === null || $bytes === '') ? null : base64_encode($bytes);
+                  } else {
+                      $b64 = null;
+                  }
+                  $result[$armConst] = ($b64 === '' || $b64 === null) ? null : $b64;
+              } catch (\\Throwable $t) {
+                  $result[$armConst] = null;
+              }
+          }
+          ksort($result, SORT_STRING);
+          return $result;
+      }
+
+      // For a union $rc with corpus base64 entries, decode each entry and
+      // record which arm constant the discriminator resolves to. Returns
+      // a sorted, deduplicated list of arm constant names. Failures (a
+      // base64 that cannot be decoded, an int that is not a constant on
+      // the discriminant) are silently skipped — the missing-arm pass
+      // will then emit the missing arms anyway.
+      function corpus_covered_arms(\\ReflectionClass $rc, string $fqcn, array $base64s): array {
+          if (empty($base64s)) return [];
+          if (!method_exists($fqcn, 'fromBase64Xdr')) return [];
+          $discProp = find_discriminator_property($rc);
+          if ($discProp === null) return [];
+          $discType = $discProp->getType();
+          if (!($discType instanceof \\ReflectionNamedType)) return [];
+          $discFqcn = $discType->getName();
+          if (!class_exists($discFqcn)) return [];
+          $discRc = new \\ReflectionClass($discFqcn);
+          $intConsts = array_filter($discRc->getConstants(), fn($v) => is_int($v));
+          $valueToName = [];
+          foreach ($intConsts as $cname => $cval) {
+              // Stable mapping: if multiple constants share the same
+              // value, prefer the first by sorted name. Reduces drift
+              // across runs without affecting arm coverage logic.
+              if (!isset($valueToName[$cval]) || strcmp($cname, $valueToName[$cval]) < 0) {
+                  $valueToName[$cval] = $cname;
+              }
+          }
+          $covered = [];
+          foreach ($base64s as $b64) {
+              try {
+                  $inst = @$fqcn::fromBase64Xdr($b64);
+                  if (!is_object($inst)) continue;
+                  if (!$discProp->isInitialized($inst)) continue;
+                  $disc = $discProp->getValue($inst);
+                  if (!is_object($disc) || !property_exists($disc, 'value')) continue;
+                  $val = $disc->value;
+                  if (!is_int($val)) continue;
+                  if (!isset($valueToName[$val])) continue;
+                  $covered[$valueToName[$val]] = true;
+              } catch (\\Throwable $t) {
+                  continue;
+              }
+          }
+          $names = array_keys($covered);
+          sort($names, SORT_STRING);
+          return $names;
+      }
+
+      // For a struct $rc, identify non-nullable public fields whose
+      // declared type is itself a union-shaped XDR class. For each such
+      // field, enumerate the union's arms and build a per-arm full
+      // struct fixture (base64) where the inner union arm is pinned to
+      // the requested constant. Returned shape:
+      //   [
+      //     ['field' => 'foo', 'union_type' => 'XdrBar',
+      //      'arm_fixtures' => ['ARM_A' => 'base64...', 'ARM_B' => null, ...]],
+      //     ...
+      //   ]
+      // Sorted by field name. Empty array when the struct has no
+      // qualifying union fields or cannot be constructed at all.
+      function collect_struct_union_fields(\\ReflectionClass $rc): array {
+          $result = [];
+          $discProp = find_discriminator_property($rc);
+          if ($discProp !== null) {
+              // Unions handle their own arm fixtures; skip.
+              return $result;
+          }
+          // Locate non-nullable public properties whose type is an Xdr
+          // union class. Constructor parameters that share a name with
+          // these properties are treated equivalently.
+          foreach ($rc->getProperties(\\ReflectionProperty::IS_PUBLIC) as $prop) {
+              $pt = $prop->getType();
+              if (!($pt instanceof \\ReflectionNamedType)) continue;
+              if ($pt->allowsNull()) continue;
+              $tn = $pt->getName();
+              if (!str_starts_with($tn, 'Soneso\\\\StellarSDK\\\\Xdr\\\\')) continue;
+              if (!class_exists($tn)) continue;
+              $tr = new \\ReflectionClass($tn);
+              if (is_xdr_enum_class($tr)) continue;
+              if (find_discriminator_property($tr) === null) continue;
+
+              // Enumerate arms and build per-arm full struct fixtures.
+              $sourceFile = $tr->getFileName() ?: '';
+              $arms = collect_union_arms($tr, $sourceFile);
+              if (empty($arms)) continue;
+
+              $armFixtures = build_struct_with_arm_fixtures($rc, $prop, $tr, $arms);
+              // Skip fields whose every arm fixture is null — no
+              // useful coverage to add and emitting null-only entries
+              // produces zero test methods anyway.
+              $hasFixture = false;
+              foreach ($armFixtures as $b64) {
+                  if ($b64 !== null && $b64 !== '') { $hasFixture = true; break; }
+              }
+              if (!$hasFixture) continue;
+              $result[] = [
+                  'field' => $prop->getName(),
+                  'union_type' => $tr->getShortName(),
+                  'arm_fixtures' => $armFixtures,
+              ];
+          }
+          usort($result, fn($a, $b) => strcmp($a['field'], $b['field']));
+          return $result;
+      }
+
+      // Build per-arm fixtures for a struct's union-typed field. The
+      // strategy: synthesise the rest of the struct via the recursive
+      // default-instance builder, then overwrite the union field with a
+      // freshly constructed arm-specific union instance. The resulting
+      // struct is round-tripped to validate before being captured.
+      function build_struct_with_arm_fixtures(
+          \\ReflectionClass $structRc,
+          \\ReflectionProperty $unionField,
+          \\ReflectionClass $unionRc,
+          array $arms
+      ): array {
+          $fixtures = [];
+          $discProp = find_discriminator_property($unionRc);
+          if ($discProp === null) {
+              foreach ($arms as $a) $fixtures[$a] = null;
+              ksort($fixtures, SORT_STRING);
+              return $fixtures;
+          }
+          $discType = $discProp->getType();
+          if (!($discType instanceof \\ReflectionNamedType)) {
+              foreach ($arms as $a) $fixtures[$a] = null;
+              ksort($fixtures, SORT_STRING);
+              return $fixtures;
+          }
+          $discFqcn = $discType->getName();
+          if (!class_exists($discFqcn)) {
+              foreach ($arms as $a) $fixtures[$a] = null;
+              ksort($fixtures, SORT_STRING);
+              return $fixtures;
+          }
+          $discRc = new \\ReflectionClass($discFqcn);
+          $intConsts = array_filter($discRc->getConstants(), fn($v) => is_int($v));
+          $encodeArmMap = parse_union_encode_arms($unionRc);
+
+          $sortedArms = $arms;
+          sort($sortedArms, SORT_STRING);
+          foreach ($sortedArms as $armConst) {
+              $fixtures[$armConst] = null;
+              if (!array_key_exists($armConst, $intConsts)) continue;
+              try {
+                  $inflightUnion = [];
+                  $cand = ['name' => $armConst, 'value' => (int)$intConsts[$armConst]];
+                  $unionInstance = construct_union_with_arm(
+                      $unionRc, $discProp, $discRc, $cand, $encodeArmMap, $inflightUnion
+                  );
+                  if ($unionInstance === null) continue;
+                  if (!instance_round_trip_ok($unionInstance)) continue;
+
+                  // Build the parent struct with default values, then
+                  // override the union field with the arm-pinned
+                  // instance. Re-encode through the wrapper's
+                  // toBase64Xdr / encode contract to capture the
+                  // resulting bytes.
+                  $inflightStruct = [];
+                  $parent = build_default_instance($structRc->getName(), $inflightStruct);
+                  if ($parent === null) continue;
+                  // The default instance might have a different concrete
+                  // class (e.g. wrapper rehydrated). Re-resolve property
+                  // by name on the runtime class so setValue does not
+                  // throw on private inheritance.
+                  $parentRc = new \\ReflectionClass(get_class($parent));
+                  if (!$parentRc->hasProperty($unionField->getName())) continue;
+                  $parentField = $parentRc->getProperty($unionField->getName());
+                  $parentField->setValue($parent, $unionInstance);
+                  if (!instance_can_encode($parent)) continue;
+                  if (method_exists($parent, 'toBase64Xdr')) {
+                      $b64 = @$parent->toBase64Xdr();
+                  } elseif (method_exists($parent, 'encode')) {
+                      $bytes = @$parent->encode();
+                      $b64 = ($bytes === null || $bytes === '') ? null : base64_encode($bytes);
+                  } else {
+                      $b64 = null;
+                  }
+                  if ($b64 === '' || $b64 === null) continue;
+                  // Validate that the encoded bytes round-trip through
+                  // the parent's fromBase64Xdr without throwing on
+                  // toJsonValue.
+                  $parentFqcn = get_class($parent);
+                  if (method_exists($parentFqcn, 'fromBase64Xdr')) {
+                      try {
+                          $rt = @$parentFqcn::fromBase64Xdr($b64);
+                          if (is_object($rt) && method_exists($rt, 'toJsonValue')) {
+                              @$rt->toJsonValue();
+                          }
+                      } catch (\\Throwable $t) {
+                          continue;
+                      }
+                  }
+                  $fixtures[$armConst] = $b64;
+              } catch (\\Throwable $t) {
+                  continue;
+              }
+          }
+          ksort($fixtures, SORT_STRING);
+          return $fixtures;
+      }
     PHP
   end
 
@@ -941,7 +1237,17 @@ class RoundTripEmitter
       emit_corpus_methods(type_name, entries, method_blocks, used_methods)
     end
 
-    # Pass 3 — unions not covered by corpus.
+    # Pass 3a — fill in missing union arms for unions WITH a corpus
+    # entry. The corpus typically only exercises a subset of arms; this
+    # pass synthesises arm-pinned fixtures for every remaining arm so
+    # each declared arm has at least one round-trip test.
+    metadata['types']
+      .select { |t| t['kind'] == 'union' && types_with_corpus.key?(t['name']) }
+      .each do |t|
+        emit_union_arm_fill_methods(t, method_blocks, used_methods)
+      end
+
+    # Pass 3b — unions not covered by corpus.
     metadata['types']
       .select { |t| t['kind'] == 'union' && !types_with_corpus.key?(t['name']) }
       .each do |t|
@@ -960,6 +1266,16 @@ class RoundTripEmitter
       .select { |t| t['kind'] == 'struct' && !(t['optionals'] || []).empty? && !types_with_corpus.key?(t['name']) }
       .each do |t|
         emit_struct_optional_methods(t, method_blocks, used_methods)
+      end
+
+    # Pass 6 — per-struct nested-union-field permutations. For each
+    # struct with one or more non-nullable union-typed fields, emit
+    # arm-pinned round-trip tests. Capped per struct so a struct with
+    # many union fields cannot dominate the test count.
+    metadata['types']
+      .select { |t| t['kind'] == 'struct' && !((t['union_fields'] || []).empty?) }
+      .each do |t|
+        emit_struct_union_field_methods(t, method_blocks, used_methods)
       end
 
     file = build_file(method_blocks)
@@ -1107,7 +1423,8 @@ class RoundTripEmitter
   def emit_union_arm_methods(t, blocks, used)
     name = t['name']
     arms = t['arms'] || []
-    fixture = t['fixture_base64']
+    fallback_fixture = t['fixture_base64']
+    arm_fixtures = t['arm_fixtures'] || {}
     if arms.empty?
       # Cat-A inline types (e.g. XdrPublicKey, XdrSCAddress, XdrHostFunction)
       # express their arms via direct StrKey / GMP emission rather than a
@@ -1116,8 +1433,8 @@ class RoundTripEmitter
       # is referenced by AllTypesRoundTripTest at least once.
       base = "testRoundTrip_#{name}"
       method_name = reserve(used, base)
-      blocks << if fixture
-        build_default_fixture_method(method_name, name, fixture)
+      blocks << if fallback_fixture
+        build_default_fixture_method(method_name, name, fallback_fixture)
       else
         build_class_existence_method(method_name, name)
       end
@@ -1126,6 +1443,32 @@ class RoundTripEmitter
     arms.each do |arm_const|
       base = "testRoundTrip_#{name}Union_#{php_method_safe(arm_const)}"
       method_name = reserve(used, base)
+      # Prefer the arm-specific fixture (matches the arm under test);
+      # fall back to the type-level default fixture which exercises a
+      # different arm but still validates the round-trip path.
+      fixture = arm_fixtures[arm_const] || fallback_fixture
+      blocks << build_union_arm_method(method_name, name, arm_const, fixture)
+    end
+  end
+
+  # Emit one round-trip method per arm constant that the corpus did not
+  # already exercise. Uses arm-specific synthesised fixtures so each
+  # missing arm gets a real round-trip rather than reachability-only.
+  # When a synthesised fixture is unavailable for an arm, falls back to
+  # the type-level default fixture so the arm constant is still
+  # referenced and the toJsonValue path is exercised.
+  def emit_union_arm_fill_methods(t, blocks, used)
+    name = t['name']
+    arms = t['arms'] || []
+    return if arms.empty?
+    fallback_fixture = t['fixture_base64']
+    arm_fixtures = t['arm_fixtures'] || {}
+    covered = (t['corpus_covered_arms'] || []).to_set
+    arms.each do |arm_const|
+      next if covered.include?(arm_const)
+      base = "testRoundTrip_#{name}Union_#{php_method_safe(arm_const)}"
+      method_name = reserve(used, base)
+      fixture = arm_fixtures[arm_const] || fallback_fixture
       blocks << build_union_arm_method(method_name, name, arm_const, fixture)
     end
   end
@@ -1285,6 +1628,16 @@ class RoundTripEmitter
     optionals = t['optionals'] || []
     fixture = t['fixture_base64']
 
+    # Cap rationale (kept in sync with the prompt for Strategy B v2):
+    #   N <= 4 — emit ALL 2^N permutations (max 16). Cheap and covers
+    #            every conditional in the (de)serialiser.
+    #   N == 5 — emit the 16-pattern extended set (8 canonical branch
+    #            patterns plus 8 boundary masks). Stops short of the
+    #            full 32 to keep the test count balanced against the
+    #            other passes.
+    #   N >= 6 — keep the 8-pattern canonical set; full enumeration
+    #            (>=64 methods per struct) would dominate the test
+    #            suite without proportional coverage gain.
     if optionals.size <= 4
       total = 1 << optionals.size
       width = optionals.size
@@ -1292,6 +1645,15 @@ class RoundTripEmitter
         bitmask = mask.to_s(2).rjust(width, '0')
         base = "testRoundTrip_#{name}_optset_#{bitmask}"
         method_name = reserve(used, base)
+        blocks << build_optional_permutation_method(method_name, name, fixture, optionals, mask)
+      end
+    elsif optionals.size == 5
+      o = optionals.size
+      patterns = extended_optional_branch_patterns(o)
+      patterns.each do |label, mask_bits|
+        base = "testRoundTrip_#{name}_#{label}"
+        method_name = reserve(used, base)
+        mask = bits_to_mask(mask_bits, o)
         blocks << build_optional_permutation_method(method_name, name, fixture, optionals, mask)
       end
     else
@@ -1319,12 +1681,93 @@ class RoundTripEmitter
     ]
   end
 
+  # Extended 16-pattern set for N=5. The first 8 entries match
+  # optional_branch_patterns to preserve method names that already
+  # existed in committed snapshots; the next 8 add coverage of every
+  # boundary mask the canonical set leaves out — first-pair, last-pair,
+  # second-only, second-last-only, middle-only, all-but-first,
+  # all-but-last and a complement-of-edge-pair. Each entry is keyed by
+  # a stable label so test names remain deterministic across runs.
+  def extended_optional_branch_patterns(o)
+    base = optional_branch_patterns(o)
+    base + [
+      ['first_pair', [0, 1]],
+      ['last_pair', [o - 2, o - 1]],
+      ['second_only', [1]],
+      ['second_last_only', [o - 2]],
+      ['middle_only', [o / 2]],
+      ['all_but_first', (1...o).to_a],
+      ['all_but_last', (0...(o - 1)).to_a],
+      ['edge_complement', (1...(o - 1)).to_a],
+    ]
+  end
+
   def bits_to_mask(indices, o)
     mask = 0
     indices.each do |i|
       mask |= (1 << i) if i >= 0 && i < o
     end
     mask
+  end
+
+  # ---------------------------------------------------------------------
+  # Struct nested-union-field permutation emission
+  # ---------------------------------------------------------------------
+
+  # Emit per-arm round-trip methods for every non-nullable union-typed
+  # field on $t. For each qualifying field we emit one method per arm
+  # whose synthesis succeeded, capped at STRUCT_UNION_FIELD_ARM_CAP per
+  # struct so a struct with many union fields cannot dominate the test
+  # count. Field order is deterministic (sorted by field name in PHP);
+  # arms are sorted by constant name.
+  STRUCT_UNION_FIELD_ARM_CAP = 8
+
+  def emit_struct_union_field_methods(t, blocks, used)
+    name = t['name']
+    fields = t['union_fields'] || []
+    return if fields.empty?
+    emitted_for_struct = 0
+    fields.each do |field|
+      break if emitted_for_struct >= STRUCT_UNION_FIELD_ARM_CAP
+      field_name = field['field']
+      arm_fixtures = field['arm_fixtures'] || {}
+      arm_fixtures.keys.sort.each do |arm_const|
+        break if emitted_for_struct >= STRUCT_UNION_FIELD_ARM_CAP
+        b64 = arm_fixtures[arm_const]
+        next if b64.nil? || b64.empty?
+        base = "testRoundTrip_#{name}_#{php_method_safe(field_name)}Arm_#{php_method_safe(arm_const)}"
+        method_name = reserve(used, base)
+        blocks << build_struct_union_field_method(method_name, name, field_name, arm_const, b64)
+        emitted_for_struct += 1
+      end
+    end
+  end
+
+  def build_struct_union_field_method(method_name, type_name, field_name, arm_const, fixture_base64)
+    fqcn = "#{XDR_NAMESPACE}\\#{type_name}"
+    <<~PHP.rstrip
+          public function #{method_name}(): void
+          {
+              // Nested-union arm coverage: this fixture pins the
+              // #{type_name}::$#{field_name} union to its #{arm_const}
+              // arm while leaving every other field at default values.
+              // The round-trip exercises the toJsonValue / fromJsonValue
+              // path for that arm in its enclosing struct context.
+              $base64 = #{php_string_literal(fixture_base64)};
+              $instance = \\#{fqcn}::fromBase64Xdr($base64);
+              $jsonValue = $instance->toJsonValue();
+              $instance2 = \\#{fqcn}::fromBase64Xdr($base64);
+              $this->assertSame($jsonValue, $instance2->toJsonValue(),
+                  '#{type_name} (#{field_name}=#{arm_const}) toJsonValue not deterministic');
+              $decoded = \\#{fqcn}::fromJsonValue($jsonValue);
+              $this->assertSame($jsonValue, $decoded->toJsonValue(),
+                  '#{type_name} (#{field_name}=#{arm_const}) toJsonValue idempotence broken');
+              $reEncodedXdr = $decoded->toBase64Xdr();
+              $reInstance = \\#{fqcn}::fromBase64Xdr($reEncodedXdr);
+              $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+                  '#{type_name} (#{field_name}=#{arm_const}) XDR-JSON-XDR diverged');
+          }
+    PHP
   end
 
   def build_optional_permutation_method(method_name, type_name, fixture_base64, optionals, mask)
