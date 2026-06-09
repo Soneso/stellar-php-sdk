@@ -1,4 +1,4 @@
-XDR_COMMIT = 0a56f5be107098efe67edf766c41955c2b277663
+XDR_COMMIT = 0e4b09985791e4b0e3f4cb04783e0873f4b3e101
 XDRS = Stellar-SCP.x Stellar-ledger-entries.x Stellar-ledger.x \
        Stellar-overlay.x Stellar-transaction.x Stellar-types.x \
        Stellar-contract.x Stellar-contract-spec.x \

@@ -82,6 +82,7 @@ use Soneso\StellarSDK\Xdr\XdrHashIDPreimageContractID;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageOperationID;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorization;
+use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorizationWithAddress;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionBase;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
@@ -168,6 +169,7 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 use Soneso\StellarSDK\Xdr\XdrSimplePaymentResult;
 use Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentials;
+use Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentialsWithDelegates;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntries;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunction;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionBase;
@@ -176,6 +178,7 @@ use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsBase;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
+use Soneso\StellarSDK\Xdr\XdrSorobanDelegateSignature;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanResourcesExtV0;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
@@ -1587,9 +1590,73 @@ class XdrTransactionGenTest extends TestCase
         $this->assertSame($newVal, $obj->getSignature());
     }
 
+    public function testXdrSorobanDelegateSignatureStructRoundTrip(): void
+    {
+        $original = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanDelegateSignature::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanDelegateSignature');
+        $b64Decoded = XdrSorobanDelegateSignature::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanDelegateSignature');
+    }
+
+    public function testXdrSorobanDelegateSignatureStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), [new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), [])]);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanDelegateSignature::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrSorobanDelegateSignature');
+        $b64Decoded = XdrSorobanDelegateSignature::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrSorobanDelegateSignature');
+    }
+
+    public function testXdrSorobanDelegateSignatureGettersSetters(): void
+    {
+        $obj = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $this->assertNotNull($obj->getAddress());
+        $newVal = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $obj->setAddress($newVal);
+        $this->assertSame($newVal, $obj->getAddress());
+        $this->assertNotNull($obj->getSignature());
+        $newVal = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID));
+        $obj->setSignature($newVal);
+        $this->assertSame($newVal, $obj->getSignature());
+        $this->assertIsArray($obj->getNestedDelegates());
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesStructRoundTrip(): void
+    {
+        $original = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanAddressCredentialsWithDelegates::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+        $b64Decoded = XdrSorobanAddressCredentialsWithDelegates::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), [new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), [])]);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanAddressCredentialsWithDelegates::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+        $b64Decoded = XdrSorobanAddressCredentialsWithDelegates::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesGettersSetters(): void
+    {
+        $obj = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $this->assertNotNull($obj->getAddressCredentials());
+        $newVal = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)));
+        $obj->setAddressCredentials($newVal);
+        $this->assertSame($newVal, $obj->getAddressCredentials());
+        $this->assertIsArray($obj->getDelegates());
+    }
+
     public function testXdrSorobanCredentialsTypeEnumRoundTrip(): void
     {
-        $values = [XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS];
+        $values = [XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES];
         foreach ($values as $v) {
             $original = new XdrSorobanCredentialsType($v);
             $encoded = $original->encode();
@@ -1611,6 +1678,8 @@ class XdrTransactionGenTest extends TestCase
     {
         $this->assertNotNull(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT());
         $this->assertNotNull(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS());
+        $this->assertNotNull(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2());
+        $this->assertNotNull(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES());
     }
 
     public function testXdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_ArmRoundTrip(): void
@@ -1621,6 +1690,38 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrSorobanCredentials::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
         $this->assertNotNull($decoded->address);
+        $this->assertNull($decoded->addressV2);
+        $this->assertNull($decoded->addressWithDelegates);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrSorobanCredentials::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2_ArmRoundTrip(): void
+    {
+        $original = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2));
+        $original->addressV2 = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)));
+        $encoded = $original->encode();
+        $decoded = XdrSorobanCredentials::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->addressV2);
+        $this->assertNull($decoded->address);
+        $this->assertNull($decoded->addressWithDelegates);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrSorobanCredentials::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES_ArmRoundTrip(): void
+    {
+        $original = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES));
+        $original->addressWithDelegates = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanCredentials::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->addressWithDelegates);
+        $this->assertNull($decoded->address);
+        $this->assertNull($decoded->addressV2);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrSorobanCredentials::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1640,6 +1741,8 @@ class XdrTransactionGenTest extends TestCase
         $obj = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT));
         $this->assertNotNull($obj->getType());
         $obj->getAddress();
+        $obj->getAddressV2();
+        $obj->getAddressWithDelegates();
     }
 
     public function testXdrSorobanCredentialsBaseRoundTrip(): void
@@ -1744,6 +1847,7 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNull($decoded->revokeID);
         $this->assertNull($decoded->contractID);
         $this->assertNull($decoded->sorobanAuthorization);
+        $this->assertNull($decoded->sorobanAuthorizationWithAddress);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrHashIDPreimage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1760,6 +1864,7 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNull($decoded->operationID);
         $this->assertNull($decoded->contractID);
         $this->assertNull($decoded->sorobanAuthorization);
+        $this->assertNull($decoded->sorobanAuthorizationWithAddress);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrHashIDPreimage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1773,6 +1878,7 @@ class XdrTransactionGenTest extends TestCase
         $obj->getRevokeID();
         $obj->getContractID();
         $obj->getSorobanAuthorization();
+        $obj->getSorobanAuthorizationWithAddress();
     }
 
     public function testXdrHashIDPreimageOperationIDStructRoundTrip(): void
@@ -1901,6 +2007,38 @@ class XdrTransactionGenTest extends TestCase
         $newVal = 42;
         $obj->setSignatureExpirationLedger($newVal);
         $this->assertSame($newVal, $obj->getSignatureExpirationLedger());
+        $this->assertNotNull($obj->getInvocation());
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationWithAddressStructRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageSorobanAuthorizationWithAddress(str_repeat("\xAB", 32), 42, 42, XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $encoded = $original->encode();
+        $decoded = XdrHashIDPreimageSorobanAuthorizationWithAddress::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrHashIDPreimageSorobanAuthorizationWithAddress');
+        $b64Decoded = XdrHashIDPreimageSorobanAuthorizationWithAddress::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrHashIDPreimageSorobanAuthorizationWithAddress');
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationWithAddressGettersSetters(): void
+    {
+        $obj = new XdrHashIDPreimageSorobanAuthorizationWithAddress(str_repeat("\xAB", 32), 42, 42, XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $this->assertNotNull($obj->getNetworkID());
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setNetworkID($newVal);
+        $this->assertSame($newVal, $obj->getNetworkID());
+        $this->assertNotNull($obj->getNonce());
+        $newVal = 42;
+        $obj->setNonce($newVal);
+        $this->assertSame($newVal, $obj->getNonce());
+        $this->assertNotNull($obj->getSignatureExpirationLedger());
+        $newVal = 42;
+        $obj->setSignatureExpirationLedger($newVal);
+        $this->assertSame($newVal, $obj->getSignatureExpirationLedger());
+        $this->assertNotNull($obj->getAddress());
+        $newVal = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $obj->setAddress($newVal);
+        $this->assertSame($newVal, $obj->getAddress());
         $this->assertNotNull($obj->getInvocation());
     }
 
@@ -5381,6 +5519,24 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAddressCredentials');
     }
 
+    public function testXdrSorobanDelegateSignatureTxRepRoundTrip(): void
+    {
+        $original = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanDelegateSignature::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanDelegateSignature');
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesTxRepRoundTrip(): void
+    {
+        $original = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanAddressCredentialsWithDelegates::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+    }
+
     public function testXdrSorobanCredentialsTypeTxRepEnumNames(): void
     {
         $val = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
@@ -5391,6 +5547,16 @@ class XdrTransactionGenTest extends TestCase
         $val = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS);
         $name = $val->enumName();
         $this->assertEquals('SOROBAN_CREDENTIALS_ADDRESS', $name);
+        $back = XdrSorobanCredentialsType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2);
+        $name = $val->enumName();
+        $this->assertEquals('SOROBAN_CREDENTIALS_ADDRESS_V2', $name);
+        $back = XdrSorobanCredentialsType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
+        $name = $val->enumName();
+        $this->assertEquals('SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES', $name);
         $back = XdrSorobanCredentialsType::fromTxRepName($name);
         $this->assertEquals($val->getValue(), $back->getValue());
     }
@@ -5413,6 +5579,24 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS');
     }
 
+    public function testXdrSorobanCredentialsTypeTxRepRoundTrip_SOROBAN_CREDENTIALS_ADDRESS_V2(): void
+    {
+        $original = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanCredentialsType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2');
+    }
+
+    public function testXdrSorobanCredentialsTypeTxRepRoundTrip_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES(): void
+    {
+        $original = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanCredentialsType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
+    }
+
     public function testXdrSorobanCredentialsTxRepRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS(): void
     {
         $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS)); $u->address = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })();
@@ -5420,6 +5604,24 @@ class XdrTransactionGenTest extends TestCase
         $original->toTxRep('test', $lines);
         $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS');
+    }
+
+    public function testXdrSorobanCredentialsTxRepRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2(): void
+    {
+        $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2)); $u->addressV2 = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2');
+    }
+
+    public function testXdrSorobanCredentialsTxRepRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES(): void
+    {
+        $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES)); $u->addressWithDelegates = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
     }
 
     public function testXdrSorobanCredentialsTxRepRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_SOURCE_ACCOUNT(): void

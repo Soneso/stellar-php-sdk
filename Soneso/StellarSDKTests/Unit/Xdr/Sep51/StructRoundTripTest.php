@@ -1446,6 +1446,27 @@ public function testRoundTrip_XdrHashIDPreimageSorobanAuthorization(): void
         'XdrHashIDPreimageSorobanAuthorization XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrHashIDPreimageSorobanAuthorizationWithAddress(): void
+{
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorizationWithAddress::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorizationWithAddress::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrHashIDPreimageSorobanAuthorizationWithAddress toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorizationWithAddress::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrHashIDPreimageSorobanAuthorizationWithAddress round-trip toJsonValue idempotence broken');
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorizationWithAddress::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrHashIDPreimageSorobanAuthorizationWithAddress round-trip toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorizationWithAddress::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrHashIDPreimageSorobanAuthorizationWithAddress XDR-JSON-XDR round trip diverged');
+}
+
 public function testRoundTrip_XdrHello(): void
 {
     $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
@@ -3422,6 +3443,27 @@ public function testRoundTrip_XdrSorobanAddressCredentials(): void
         'XdrSorobanAddressCredentials XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrSorobanAddressCredentialsWithDelegates(): void
+{
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentialsWithDelegates::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentialsWithDelegates::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSorobanAddressCredentialsWithDelegates toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentialsWithDelegates::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSorobanAddressCredentialsWithDelegates round-trip toJsonValue idempotence broken');
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentialsWithDelegates::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSorobanAddressCredentialsWithDelegates round-trip toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentialsWithDelegates::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSorobanAddressCredentialsWithDelegates XDR-JSON-XDR round trip diverged');
+}
+
 public function testRoundTrip_XdrSorobanAuthorizationEntries(): void
 {
     $base64 = 'AAAAAA==';
@@ -3483,6 +3525,27 @@ public function testRoundTrip_XdrSorobanAuthorizedInvocation(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrSorobanAuthorizedInvocation XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrSorobanDelegateSignature(): void
+{
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSorobanDelegateSignature::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSorobanDelegateSignature::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrSorobanDelegateSignature toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanDelegateSignature::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrSorobanDelegateSignature round-trip toJsonValue idempotence broken');
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanDelegateSignature::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrSorobanDelegateSignature round-trip toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSorobanDelegateSignature::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'XdrSorobanDelegateSignature XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrSorobanResources(): void

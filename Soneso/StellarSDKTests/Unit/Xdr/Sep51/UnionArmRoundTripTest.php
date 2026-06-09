@@ -3696,6 +3696,45 @@ public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_SOROBAN_AUTHO
         'XdrHashIDPreimage arm ENVELOPE_TYPE_SOROBAN_AUTHORIZATION not found on any discriminant property');
 }
 
+public function testRoundTrip_XdrHashIDPreimageUnion_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS(): void
+{
+    // Default-fixture round-trip for the XdrHashIDPreimage type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    $instance = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrHashIDPreimage toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrHashIDPreimage default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrHashIDPreimage::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrHashIDPreimage default-fixture toJson idempotence broken');
+
+    // Reachability of the ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrHashIDPreimage::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrHashIDPreimage arm ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS not found on any discriminant property');
+}
+
 public function testRoundTrip_XdrHostFunction(): void
 {
     $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';

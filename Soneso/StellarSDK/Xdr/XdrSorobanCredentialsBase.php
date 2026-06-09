@@ -12,6 +12,8 @@ class XdrSorobanCredentialsBase {
 
     public XdrSorobanCredentialsType $type;
     public ?XdrSorobanAddressCredentials $address = null;
+    public ?XdrSorobanAddressCredentials $addressV2 = null;
+    public ?XdrSorobanAddressCredentialsWithDelegates $addressWithDelegates = null;
 
     public function __construct(?XdrSorobanCredentialsType $type = null) {
         if ($type !== null) {
@@ -27,6 +29,12 @@ class XdrSorobanCredentialsBase {
             case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS:
                 $bytes .= $this->address->encode();
                 break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2:
+                $bytes .= $this->addressV2->encode();
+                break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+                $bytes .= $this->addressWithDelegates->encode();
+                break;
             default:
                 break;
         }
@@ -41,6 +49,12 @@ class XdrSorobanCredentialsBase {
             case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS:
                 $result->address = XdrSorobanAddressCredentials::decode($xdr);
                 break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2:
+                $result->addressV2 = XdrSorobanAddressCredentials::decode($xdr);
+                break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+                $result->addressWithDelegates = XdrSorobanAddressCredentialsWithDelegates::decode($xdr);
+                break;
             default:
                 break;
         }
@@ -51,6 +65,10 @@ class XdrSorobanCredentialsBase {
     public function setType(XdrSorobanCredentialsType $type): void { $this->type = $type; }
     public function getAddress(): ?XdrSorobanAddressCredentials { return $this->address; }
     public function setAddress(?XdrSorobanAddressCredentials $address): void { $this->address = $address; }
+    public function getAddressV2(): ?XdrSorobanAddressCredentials { return $this->addressV2; }
+    public function setAddressV2(?XdrSorobanAddressCredentials $addressV2): void { $this->addressV2 = $addressV2; }
+    public function getAddressWithDelegates(): ?XdrSorobanAddressCredentialsWithDelegates { return $this->addressWithDelegates; }
+    public function setAddressWithDelegates(?XdrSorobanAddressCredentialsWithDelegates $addressWithDelegates): void { $this->addressWithDelegates = $addressWithDelegates; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -68,6 +86,8 @@ class XdrSorobanCredentialsBase {
         return match ($this->type->getValue()) {
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT => 'source_account',
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS => ['address' => $this->address->toJsonValue()],
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2 => ['address_v2' => $this->addressV2->toJsonValue()],
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES => ['address_with_delegates' => $this->addressWithDelegates->toJsonValue()],
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrSorobanCredentialsType'
@@ -85,6 +105,12 @@ class XdrSorobanCredentialsBase {
                 'source_account' => new static(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT)),
                 'address' => throw new InvalidArgumentException(
                     "Arm 'address' on XdrSorobanCredentialsBase is non-void; supply a single-key object {\"address\": <payload>} instead of a bare string."
+                ),
+                'address_v2' => throw new InvalidArgumentException(
+                    "Arm 'address_v2' on XdrSorobanCredentialsBase is non-void; supply a single-key object {\"address_v2\": <payload>} instead of a bare string."
+                ),
+                'address_with_delegates' => throw new InvalidArgumentException(
+                    "Arm 'address_with_delegates' on XdrSorobanCredentialsBase is non-void; supply a single-key object {\"address_with_delegates\": <payload>} instead of a bare string."
                 ),
                 default => throw new InvalidArgumentException(
                     'Unknown XdrSorobanCredentialsBase void arm string: ' . XdrJsonHelper::safePreview($value)
@@ -105,6 +131,8 @@ class XdrSorobanCredentialsBase {
         $arm = $value[$key];
         return match ($key) {
             'address' => (static function () use ($arm) { $r = new static(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS)); $r->address = XdrSorobanAddressCredentials::fromJsonValue($arm); return $r; })(),
+            'address_v2' => (static function () use ($arm) { $r = new static(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2)); $r->addressV2 = XdrSorobanAddressCredentials::fromJsonValue($arm); return $r; })(),
+            'address_with_delegates' => (static function () use ($arm) { $r = new static(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES)); $r->addressWithDelegates = XdrSorobanAddressCredentialsWithDelegates::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrSorobanCredentialsBase: ' . XdrJsonHelper::safePreview($key)
             ),
@@ -137,6 +165,12 @@ class XdrSorobanCredentialsBase {
             case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS:
                 $this->address->toTxRep($prefix . '.address', $lines);
                 break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2:
+                $this->addressV2->toTxRep($prefix . '.addressV2', $lines);
+                break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+                $this->addressWithDelegates->toTxRep($prefix . '.addressWithDelegates', $lines);
+                break;
             default:
                 break;
         }
@@ -150,6 +184,12 @@ class XdrSorobanCredentialsBase {
                 break;
             case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS:
                 $result->address = XdrSorobanAddressCredentials::fromTxRep($map, $prefix . '.address');
+                break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2:
+                $result->addressV2 = XdrSorobanAddressCredentials::fromTxRep($map, $prefix . '.addressV2');
+                break;
+            case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+                $result->addressWithDelegates = XdrSorobanAddressCredentialsWithDelegates::fromTxRep($map, $prefix . '.addressWithDelegates');
                 break;
             default:
                 break;

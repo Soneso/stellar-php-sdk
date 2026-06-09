@@ -1519,6 +1519,44 @@ public function testRejectsBareStringFor_XdrSorobanCredentials_address(): void
     }
 }
 
+public function testRejectsBareStringFor_XdrSorobanCredentials_address_v2(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrSorobanCredentials::fromJson('"address_v2"');
+        $this->fail('Expected InvalidArgumentException for bare string "address_v2" on XdrSorobanCredentials');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('address_v2', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrSorobanCredentials_address_with_delegates(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrSorobanCredentials::fromJson('"address_with_delegates"');
+        $this->fail('Expected InvalidArgumentException for bare string "address_with_delegates" on XdrSorobanCredentials');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('address_with_delegates', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
 public function testRejectsBareStringFor_XdrStellarValueExt_signed(): void
 {
     // Per-non-void-arm rejection: round-trip tests pass valid

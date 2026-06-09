@@ -2044,7 +2044,7 @@ class XdrLedgerEntriesGenTest extends TestCase
 
     public function testXdrEnvelopeTypeEnumRoundTrip(): void
     {
-        $values = [XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, XdrEnvelopeType::ENVELOPE_TYPE_SCP, XdrEnvelopeType::ENVELOPE_TYPE_TX, XdrEnvelopeType::ENVELOPE_TYPE_AUTH, XdrEnvelopeType::ENVELOPE_TYPE_SCPVALUE, XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP, XdrEnvelopeType::ENVELOPE_TYPE_OP_ID, XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID, XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID, XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION];
+        $values = [XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, XdrEnvelopeType::ENVELOPE_TYPE_SCP, XdrEnvelopeType::ENVELOPE_TYPE_TX, XdrEnvelopeType::ENVELOPE_TYPE_AUTH, XdrEnvelopeType::ENVELOPE_TYPE_SCPVALUE, XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP, XdrEnvelopeType::ENVELOPE_TYPE_OP_ID, XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID, XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID, XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION, XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS];
         foreach ($values as $v) {
             $original = new XdrEnvelopeType($v);
             $encoded = $original->encode();
@@ -2074,6 +2074,7 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertNotNull(XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID());
         $this->assertNotNull(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID());
         $this->assertNotNull(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION());
+        $this->assertNotNull(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS());
     }
 
     public function testXdrBucketListTypeEnumRoundTrip(): void
@@ -2956,6 +2957,11 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals('ENVELOPE_TYPE_SOROBAN_AUTHORIZATION', $name);
         $back = XdrEnvelopeType::fromTxRepName($name);
         $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS);
+        $name = $val->enumName();
+        $this->assertEquals('ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS', $name);
+        $back = XdrEnvelopeType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
     }
 
     public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_TX_V0(): void
@@ -3046,6 +3052,15 @@ class XdrLedgerEntriesGenTest extends TestCase
         $original->toTxRep('test', $lines);
         $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION');
+    }
+
+    public function testXdrEnvelopeTypeTxRepRoundTrip_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS(): void
+    {
+        $original = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrEnvelopeType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrEnvelopeType_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS');
     }
 }
 

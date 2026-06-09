@@ -4179,6 +4179,25 @@ class EnumRoundTripTest extends TestCase
         $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
+    public function testRoundTrip_XdrEnvelopeType_ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrEnvelopeType(\Soneso\StellarSDK\Xdr\XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(10, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrEnvelopeType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
     public function testRoundTrip_XdrErrorCode_ERR_MISC(): void
     {
         $instance = new \Soneso\StellarSDK\Xdr\XdrErrorCode(\Soneso\StellarSDK\Xdr\XdrErrorCode::ERR_MISC);
@@ -10349,6 +10368,44 @@ class EnumRoundTripTest extends TestCase
         $back = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType(\Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2 round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(2, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType(\Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(3, $back->getValue());
         $xdr = $instance->toBase64Xdr();
         $fromXdr = \Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType::fromBase64Xdr($xdr);
         $this->assertSame($jsonValue, $fromXdr->toJsonValue());
