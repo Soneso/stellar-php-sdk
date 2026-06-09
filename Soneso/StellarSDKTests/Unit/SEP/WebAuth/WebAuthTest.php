@@ -226,6 +226,33 @@ class WebAuthTest extends TestCase
         return json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
     }
 
+    private function requestChallengeMissingTimeBounds(string $accountId) : string {
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($accountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        return json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+    }
+
+    private function infiniteTimeBounds() : TimeBounds {
+        return new TimeBounds((new DateTime)->setTimestamp(time()), (new DateTime)->setTimestamp(0));
+    }
+
+    private function requestChallengeInfiniteTimeBounds(string $accountId) : string {
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($accountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->setTimeBounds($this::infiniteTimeBounds())
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        return json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+    }
+
     private function requestChallengeInvalidOperationType(string $accountId) : string {
         $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
         $transaction = (new TransactionBuilder($transactionAccount))
@@ -510,6 +537,46 @@ class WebAuthTest extends TestCase
         $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
         $mock = new MockHandler([
             new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeInvalidTimeBounds($this->clientAccountId))
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof ChallengeValidationErrorInvalidTimeBounds) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testGetChallengeMissingTimeBounds(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeMissingTimeBounds($this->clientAccountId))
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof ChallengeValidationErrorInvalidTimeBounds) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testGetChallengeInfiniteTimeBounds(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeInfiniteTimeBounds($this->clientAccountId))
         ]);
         $webAuth->setMockHandler($mock);
         $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
