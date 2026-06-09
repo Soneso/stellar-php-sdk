@@ -16,9 +16,12 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Memo;
+use Soneso\StellarSDK\PaymentOperationBuilder;
+use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Requests\AccountsRequestBuilder;
 use Soneso\StellarSDK\Requests\AssetsRequestBuilder;
 use Soneso\StellarSDK\Requests\EffectsRequestBuilder;
@@ -947,5 +950,110 @@ class StellarSDKTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Service URL must use HTTPS');
         new StellarSDK('http://horizon-testnet.stellar.org');
+    }
+
+    /**
+     * Builds a minimal account JSON response for the given account id.
+     * Data values are base64-encoded, as Horizon returns them.
+     *
+     * @param array<string, string> $data raw (non-encoded) data entries.
+     */
+    private function accountJson(string $accountId, array $data = []): string
+    {
+        $encodedData = [];
+        foreach ($data as $k => $v) {
+            $encodedData[$k] = base64_encode($v);
+        }
+        return json_encode([
+            '_links' => ['self' => ['href' => 'https://horizon-testnet.stellar.org/accounts/' . $accountId]],
+            'id' => $accountId,
+            'account_id' => $accountId,
+            'sequence' => '123456789012',
+            'subentry_count' => 0,
+            'last_modified_ledger' => 1234567,
+            'last_modified_time' => '2024-01-20T12:00:00Z',
+            'thresholds' => ['low_threshold' => 0, 'med_threshold' => 0, 'high_threshold' => 0],
+            'flags' => ['auth_required' => false, 'auth_revocable' => false, 'auth_immutable' => false, 'auth_clawback_enabled' => false],
+            'balances' => [['balance' => '100.0000000', 'asset_type' => 'native']],
+            'signers' => [['key' => $accountId, 'weight' => 1, 'type' => 'ed25519_public_key']],
+            'data' => (object) $encodedData,
+            'num_sponsoring' => 0,
+            'num_sponsored' => 0,
+            'paging_token' => $accountId,
+        ]);
+    }
+
+    private function paymentTransaction(string $sourceAccountId, string ...$destinationAccountIds): Transaction
+    {
+        $builder = new TransactionBuilder(new Account($sourceAccountId, new BigInteger('123')));
+        foreach ($destinationAccountIds as $destinationAccountId) {
+            $builder->addOperation(
+                (new PaymentOperationBuilder($destinationAccountId, Asset::native(), '10'))->build()
+            );
+        }
+        return $builder->build();
+    }
+
+    public function testCheckMemoRequiredReturnsDestinationWhenFlagSet(): void
+    {
+        $source = KeyPair::random()->getAccountId();
+        $destination = KeyPair::random()->getAccountId();
+        $sdk = $this->createMockedSdk([
+            new Response(200, [], $this->accountJson($destination, ['config.memo_required' => '1'])),
+        ]);
+
+        $result = $sdk->checkMemoRequired($this->paymentTransaction($source, $destination));
+        $this->assertEquals($destination, $result);
+    }
+
+    public function testCheckMemoRequiredFalseWhenFlagNotSet(): void
+    {
+        $source = KeyPair::random()->getAccountId();
+        $destination = KeyPair::random()->getAccountId();
+        $sdk = $this->createMockedSdk([
+            new Response(200, [], $this->accountJson($destination)),
+        ]);
+
+        $this->assertFalse($sdk->checkMemoRequired($this->paymentTransaction($source, $destination)));
+    }
+
+    public function testCheckMemoRequiredFalseWhenMemoPresent(): void
+    {
+        $source = KeyPair::random()->getAccountId();
+        $destination = KeyPair::random()->getAccountId();
+        // Empty mock queue: a memo is already set, so no account lookup must happen.
+        $sdk = $this->createMockedSdk([]);
+
+        $builder = new TransactionBuilder(new Account($source, new BigInteger('123')));
+        $builder->addOperation((new PaymentOperationBuilder($destination, Asset::native(), '10'))->build());
+        $builder->addMemo(Memo::text('hello'));
+        $this->assertFalse($sdk->checkMemoRequired($builder->build()));
+    }
+
+    public function testCheckMemoRequiredFalseWhenNoPaymentOperations(): void
+    {
+        $source = KeyPair::random()->getAccountId();
+        $newAccount = KeyPair::random()->getAccountId();
+        // Empty mock queue: create-account is not a destination-bearing payment, so no lookup happens.
+        $sdk = $this->createMockedSdk([]);
+
+        $builder = new TransactionBuilder(new Account($source, new BigInteger('123')));
+        $builder->addOperation((new CreateAccountOperationBuilder($newAccount, '10'))->build());
+        $this->assertFalse($sdk->checkMemoRequired($builder->build()));
+    }
+
+    public function testCheckMemoRequiredDeduplicatesDestinations(): void
+    {
+        $source = KeyPair::random()->getAccountId();
+        $destination = KeyPair::random()->getAccountId();
+        // Two operations to the SAME destination, but only ONE mocked account response.
+        // Without de-duplication the second lookup would hit an empty mock queue and throw.
+        $sdk = $this->createMockedSdk([
+            new Response(200, [], $this->accountJson($destination)),
+        ]);
+
+        $this->assertFalse(
+            $sdk->checkMemoRequired($this->paymentTransaction($source, $destination, $destination))
+        );
     }
 }

@@ -563,6 +563,8 @@ class StellarSDK
                 }
             }
         }
+        // Collapse duplicate destinations so each account is queried at most once.
+        $destinations = array_unique($destinations);
         if (count($destinations) == 0) {
             return false;
         }
