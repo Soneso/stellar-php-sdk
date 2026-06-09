@@ -1,0 +1,11 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 6
+    paths:
+        - Soneso/StellarSDK
+    excludePaths:
+        # Generated XDR types are produced by tools/xdr-generator and validated
+        # by the round-trip test suite; they are not analysed here.
+        - Soneso/StellarSDK/Xdr

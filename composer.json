@@ -36,9 +36,11 @@
 	"require-dev" : {
 		"phpunit/phpunit" : "~10.0",
 		"phpdocumentor/phpdocumentor": "^3.9",
-		"league/uri": "7.5.1"
+		"league/uri": "7.5.1",
+		"phpstan/phpstan": "^2.2"
 	},
 	"scripts": {
+		"analyse": "phpstan analyse --memory-limit=2G",
 		"test": "phpunit --testsuite unit",
 		"test:integration": "phpunit --testsuite integration",
 		"test:all": "phpunit --testsuite all",
