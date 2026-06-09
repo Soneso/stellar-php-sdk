@@ -21,7 +21,7 @@ class XdrDecoder
     public static function unsignedInteger(string $xdr) : int {
         // unsigned 32-bit big-endian
         $unpacked = unpack('N', $xdr);
-        return array_pop($unpacked);
+        return $unpacked[1];
     }
     
     /**
@@ -37,7 +37,7 @@ class XdrDecoder
         
         $unpacked = unpack('l', $xdr);
         
-        return array_pop($unpacked);
+        return $unpacked[1];
     }
 
     /**
@@ -48,7 +48,7 @@ class XdrDecoder
     {
         // unsigned 64-bit big-endian
         $unpacked = unpack('J', $xdr);
-        return array_pop($unpacked);
+        return $unpacked[1];
     }
 
     /**
@@ -66,7 +66,7 @@ class XdrDecoder
         
         $unpacked = unpack('q', $xdr);
         
-        return array_pop($unpacked);
+        return $unpacked[1];
     }
 
     /**
@@ -88,9 +88,9 @@ class XdrDecoder
         if ($value !== 1 && $value !== 0) {
             throw new InvalidArgumentException('Unexpected XDR for a boolean value');
         }
-        
-        // Equivalent to 1 or 0 uint32
-        return (bool)self::unsignedInteger($xdr);
+
+        // $value is already the decoded 1 or 0 uint32.
+        return (bool)$value;
     }
 
     /**

@@ -26,11 +26,12 @@ class XdrEncoder
      */
     public static function opaqueFixed(string $value, ?int $expectedLength = null, bool $padUnexpectedLength = false): string
     {
+        $length = strlen($value);
         // Length greater than expected length is always an error
-        if ($expectedLength && strlen($value) > $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', strlen($value), $expectedLength));
-        if ($expectedLength && !$padUnexpectedLength && strlen($value) != $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', strlen($value), $expectedLength));
+        if ($expectedLength && $length > $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', $length, $expectedLength));
+        if ($expectedLength && !$padUnexpectedLength && $length != $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', $length, $expectedLength));
 
-        if ($expectedLength && strlen($value) != $expectedLength) {
+        if ($expectedLength && $length != $expectedLength) {
             $value = self::applyPadding($value, $expectedLength);
         }
 
@@ -47,7 +48,7 @@ class XdrEncoder
      */
     public static function opaqueVariable(string $value): string
     {
-        $maxLength = pow(2, 32) - 1;
+        $maxLength = 4294967295;
         if (strlen($value) > $maxLength) throw new InvalidArgumentException(sprintf('Value of length %s is greater than the maximum allowed length of %s', strlen($value), $maxLength));
 
         $bytes = '';
@@ -197,7 +198,7 @@ class XdrEncoder
      */
     public static function string(string $value, ?int $maximumLength = null): string
     {
-        if ($maximumLength === null) $maximumLength = pow(2, 32) - 1;
+        if ($maximumLength === null) $maximumLength = 4294967295;
 
         if (strlen($value) > $maximumLength) throw new InvalidArgumentException('string exceeds maximum length');
 
